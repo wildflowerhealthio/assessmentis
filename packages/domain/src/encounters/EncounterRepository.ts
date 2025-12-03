@@ -1,10 +1,12 @@
 import { Context, Data, Effect, Schema } from "effect";
-import {
-  Encounter,
-  EncounterId,
-} from "./models/Encounter";
+import { Encounter, EncounterId } from "./models/Encounter";
 
-import { ExternalAssertionError, NeedsAuthenticationError, NotFoundError, UnhandledError } from "../errors";
+import {
+  ExternalAssertionError,
+  NeedsAuthenticationError,
+  NotFoundError,
+  UnhandledError,
+} from "../errors";
 import { WithId } from "../general-purpose";
 
 export class EncounterError extends Data.TaggedError("EncounterError")<{
@@ -24,20 +26,43 @@ export class EncounterRepository extends Context.Tag("EncounterRepository")<
   {
     getEncounter(
       encounterId: EncounterId,
-    ): Effect.Effect<WithId<Encounter>, NotFoundError | NeedsAuthenticationError | ExternalAssertionError | UnhandledError, never>;
+    ): Effect.Effect<
+      WithId<Encounter>,
+      | NotFoundError
+      | NeedsAuthenticationError
+      | ExternalAssertionError
+      | UnhandledError,
+      never
+    >;
 
-    getEncounters({}: GetEncounterParams): Effect.Effect<
+    getEncounters(
+      params: GetEncounterParams,
+    ): Effect.Effect<
       WithId<Encounter>[],
-      NotFoundError | NeedsAuthenticationError | UnhandledError | ExternalAssertionError,
+      | NotFoundError
+      | NeedsAuthenticationError
+      | UnhandledError
+      | ExternalAssertionError,
       never
     >;
 
     createEncounter(
       encounter: Encounter,
-    ): Effect.Effect<WithId<Encounter>, NeedsAuthenticationError | ExternalAssertionError | UnhandledError, never>;
+    ): Effect.Effect<
+      WithId<Encounter>,
+      NeedsAuthenticationError | ExternalAssertionError | UnhandledError,
+      never
+    >;
 
     deleteEncounter(
       encounterId: EncounterId,
-    ): Effect.Effect<{}, NotFoundError | NeedsAuthenticationError | ExternalAssertionError | UnhandledError, never>;
+    ): Effect.Effect<
+      object,
+      | NotFoundError
+      | NeedsAuthenticationError
+      | ExternalAssertionError
+      | UnhandledError,
+      never
+    >;
   }
 >() {}

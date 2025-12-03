@@ -11,7 +11,13 @@ import UserMediaError from "../UserMediaError/UserMediaError";
 
 import "./HairCheck.css";
 
-export default function HairCheck({ joinCall, cancelCall }: { joinCall: (username: string) => void, cancelCall: () => void }) {
+export default function HairCheck({
+  joinCall,
+  cancelCall,
+}: {
+  joinCall: (username: string) => void;
+  cancelCall: () => void;
+}) {
   const localSessionId = useLocalSessionId();
   const initialUsername = useParticipantProperty(localSessionId, "user_name");
   const {
@@ -69,7 +75,9 @@ export default function HairCheck({ joinCall, cancelCall }: { joinCall: (usernam
     <form className="hair-check" onSubmit={handleJoin}>
       <h1>Setup your hardware</h1>
       {/* Video preview */}
-      {localSessionId && <DailyVideo type='video' sessionId={localSessionId} mirror />}
+      {localSessionId && (
+        <DailyVideo type="video" sessionId={localSessionId} mirror />
+      )}
 
       {/* Username */}
       <div>

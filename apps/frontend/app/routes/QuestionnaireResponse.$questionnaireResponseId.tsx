@@ -1,22 +1,20 @@
 import { Schema, Option, Effect, ManagedRuntime } from "effect";
-import { Suspense, useMemo, useState } from "react";
-import { ErrorBoundary } from "react-error-boundary";
-import { Questionnaire, QuestionnaireResponse, UnhandledError } from "assessmentis-domain";
 import {
-  QuestionnaireId,
-  QuestionnaireItemLink,
-} from "assessmentis-domain";
-import { QuestionnaireResponseId } from "assessmentis-domain";
-import { QuestionnaireResponseItemAnswer } from "assessmentis-domain";
-import { QuestionnaireRepository } from "assessmentis-domain";
-import { QuestionnaireResponseRepository } from "assessmentis-domain";
-import { clientAppLayer } from "~/clientRuntime";
+  Questionnaire,
+  QuestionnaireResponse,
+} from "@assessmentis/domain/questionnaires";
+import { UnhandledError } from "@assessmentis/domain/errors";
+import { QuestionnaireId } from "@assessmentis/domain/questionnaires";
+import { QuestionnaireResponseId } from "@assessmentis/domain/questionnaires";
+import { QuestionnaireRepository } from "@assessmentis/domain/questionnaires";
+import { QuestionnaireResponseRepository } from "@assessmentis/domain/questionnaires";
+import { clientAppLayer } from "app/clientRuntime";
 import type { Route } from "./+types/QuestionnaireResponse.$questionnaireResponseId";
-import QuestionnaireForm from "~/modules/questionnaire/features/QuestionnaireForm/QuestionnaireForm";
-import type { 
+import QuestionnaireForm from "app/modules/questionnaire/features/QuestionnaireForm/QuestionnaireForm";
+import type {
   Questionnaire as FhirQuestionnaire,
-  QuestionnaireResponse as FhirQuestionnaireResponse
-} from "fhir"
+  QuestionnaireResponse as FhirQuestionnaireResponse,
+} from "fhir/r4";
 
 const tryDecodeQuestionnaireResponseId = Schema.decodeOption(
   QuestionnaireResponseId,
@@ -27,11 +25,8 @@ export const QuestionnaireResponseWithQuestionnaire = Schema.Struct({
   _questionnaire: Questionnaire,
 });
 
-export async function clientLoader({
-  params,
-}: Route.ClientLoaderArgs) {
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const runtime = ManagedRuntime.make(clientAppLayer);
-  
 
   const questionnaireResponseIdStr = params.questionnaireResponseId;
 
@@ -60,7 +55,9 @@ export async function clientLoader({
       );
 
     const questionnaireId = QuestionnaireId.make(
-      questionnaireResponse.questionnaire?.split("/")[3] ?? questionnaireResponse.questionnaire ?? "",
+      questionnaireResponse.questionnaire?.split("/")[3] ??
+        questionnaireResponse.questionnaire ??
+        "",
     );
     const questionnaire =
       yield* questionnaireRepository.getQuestionnaire(questionnaireId);
@@ -71,22 +68,27 @@ export async function clientLoader({
     return yield* enc;
   });
 
-  const { _questionnaire, ...questionnaireResponse} = await runtime.runPromise(
+  const { _questionnaire, ...questionnaireResponse } = await runtime.runPromise(
     questionnaireResponseEffect,
   );
 
   return {
-    questionnaireResponse: JSON.parse(JSON.stringify(questionnaireResponse)) as FhirQuestionnaireResponse,
-    questionnaire: JSON.parse(JSON.stringify(_questionnaire)) as FhirQuestionnaire
-  }
+    questionnaireResponse: JSON.parse(
+      JSON.stringify(questionnaireResponse),
+    ) as FhirQuestionnaireResponse,
+    questionnaire: JSON.parse(
+      JSON.stringify(_questionnaire),
+    ) as FhirQuestionnaire,
+  };
 }
 
+const decodeQuestionnaire = Schema.decodeSync(Questionnaire);
+const decodeQuestionnaireResponse = Schema.decodeSync(QuestionnaireResponse);
 
 export default function QuestionnaireResponseDetailsPage({
   loaderData,
 }: Route.ComponentProps) {
-  const {questionnaire, questionnaireResponse} = loaderData;
-  console.log({loaderData});
+  const { questionnaire, questionnaireResponse } = loaderData;
   // const handleSubmitAnswer = async (
   //   questionnaireItemLink: QuestionnaireItemLink,
   //   answer: QuestionnaireResponseItemAnswer | null,
@@ -96,14 +98,15 @@ export default function QuestionnaireResponseDetailsPage({
   //     submitAnswer(questionnaireItemLink, answer),
   //   );
   // };
-  
 
   // This hook builds the form based on the questionnaire
   return (
     <section style={{ maxWidth: 800, margin: "auto" }}>
-      <QuestionnaireForm 
-        questionnaire={questionnaire}
-        questionnaireResponse={questionnaireResponse} 
+      <QuestionnaireForm
+        questionnaire={decodeQuestionnaire(questionnaire)}
+        questionnaireResponse={decodeQuestionnaireResponse(
+          questionnaireResponse,
+        )}
       />
     </section>
   );

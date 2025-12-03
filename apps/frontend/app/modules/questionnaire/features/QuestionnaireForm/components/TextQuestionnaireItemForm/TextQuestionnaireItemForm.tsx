@@ -2,18 +2,24 @@
 
 import { type ChangeEventHandler, type SetStateAction } from "react";
 import classes from "./TextQuestionnaireItemForm.module.css";
-import { QuestionnaireItem, QuestionnaireItemUIControlCode, QuestionnaireResponseItem, withAnsweredAt } from "assessmentis-domain";
-import { cn } from "assessmentis-react-util/src"
-import type { update } from "effect/Differ";
+import {
+  QuestionnaireItem,
+  QuestionnaireItemUIControlCode,
+  QuestionnaireResponseItem,
+  withAnsweredAt,
+} from "@assessmentis/domain/questionnaires";
+import { cn } from "@assessmentis/react-util";
 import { DateTime } from "effect";
-import { useRuntimeContext } from "~/clientRuntime";
+import { useRuntimeContext } from "app/clientRuntime";
 
 export interface IProps {
   questionnaireItem: QuestionnaireItem;
   questionnaireResponseItem: QuestionnaireResponseItem;
-  setQuestionnaireResponseItem: (update: SetStateAction<QuestionnaireResponseItem>) => void
+  setQuestionnaireResponseItem: (
+    update: SetStateAction<QuestionnaireResponseItem>,
+  ) => void;
   area?: boolean;
-  uiControl: typeof QuestionnaireItemUIControlCode.Type | undefined
+  uiControl: typeof QuestionnaireItemUIControlCode.Type | undefined;
 }
 
 const TextQuestionnaireItemForm = ({
@@ -27,15 +33,25 @@ const TextQuestionnaireItemForm = ({
     ev,
   ) => {
     const valueString = ev.currentTarget.value;
-    setQuestionnaireResponseItem((qri: QuestionnaireResponseItem): QuestionnaireResponseItem => ({
-      ...qri,
-      answer: [withAnsweredAt({ valueString, modifierExtension: [] }, clientRuntime.runSync(DateTime.now))]
-    }));
-  }
+    setQuestionnaireResponseItem(
+      (qri: QuestionnaireResponseItem): QuestionnaireResponseItem => ({
+        ...qri,
+        answer: [
+          withAnsweredAt(
+            { valueString, modifierExtension: [] },
+            clientRuntime.runSync(DateTime.now),
+          ),
+        ],
+      }),
+    );
+  };
 
-  const valueElement = questionnaireResponseItem.answer?.[0]
-  const valueString = valueElement && 'valueString' in valueElement ? valueElement.valueString : ''
-  
+  const valueElement = questionnaireResponseItem.answer?.[0];
+  const valueString =
+    valueElement && "valueString" in valueElement
+      ? valueElement.valueString
+      : "";
+
   return (
     <label className={cn("label-3", classes.TextQuestionnaireItem__label)}>
       {questionnaireItem.text}

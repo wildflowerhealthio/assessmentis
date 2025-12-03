@@ -1,28 +1,32 @@
 import { Effect, Schema } from "effect";
-import { 
-  EncounterRepository,
-  Encounter,
-   NeedsAuthenticationError, 
-  UnhandledError,
-  QuestionnaireResponse,
-  QuestionnaireResponseRepository,
+import {
   ExternalVideoCallClient,
   ExternalVideoCallServiceError,
-  VideoCallRoom,
-  VideoCallRepository, 
-  Code,
-  ExternalAssertionError
-} from "assessmentis-domain";
+  VideoCallRepository,
+} from "@assessmentis/domain/video-calls";
+import {
+  QuestionnaireResponse,
+  QuestionnaireResponseRepository,
+} from "@assessmentis/domain/questionnaires";
+import {
+  EncounterRepository,
+  Encounter,
+} from "@assessmentis/domain/encounters";
+import {
+  NeedsAuthenticationError,
+  UnhandledError,
+  ExternalAssertionError,
+} from "@assessmentis/domain/errors";
+import { Code } from "@assessmentis/domain/general-purpose";
 
-export const CreateEncounterArg = 
-Schema.extend(
+export const CreateEncounterArg = Schema.extend(
   Schema.partial(Encounter),
   Schema.Struct({
     //....pipe(Schema.omit("encounterId")).fields,
     questionnaireResponses: Schema.Array(
       QuestionnaireResponse.pipe(Schema.pick("questionnaire")),
     ),
-  })
+  }),
 );
 
 export type CreateEncounterArg = typeof CreateEncounterArg.Type;
@@ -39,7 +43,10 @@ export const createEncounter = (
   args: CreateEncounterArg,
 ): Effect.Effect<
   CreateEncounterResponse,
-  UnhandledError | NeedsAuthenticationError | ExternalVideoCallServiceError | ExternalAssertionError,
+  | UnhandledError
+  | NeedsAuthenticationError
+  | ExternalVideoCallServiceError
+  | ExternalAssertionError,
   | EncounterRepository
   | VideoCallRepository
   | QuestionnaireResponseRepository
@@ -47,29 +54,30 @@ export const createEncounter = (
 > => {
   return Effect.gen(function* () {
     const encounterRepository = yield* EncounterRepository;
-    const videoCallRepository = yield* VideoCallRepository;
     const questionnaireResponseRepository =
       yield* QuestionnaireResponseRepository;
     const videoCalls = yield* ExternalVideoCallClient;
 
     const externalVideoCallRoom = yield* videoCalls.createRoom({});
 
-    const createdEncounter = yield* encounterRepository.createEncounter({ 
-      resourceType: 'Encounter',
+    const createdEncounter = yield* encounterRepository.createEncounter({
+      resourceType: "Encounter",
       class: {
-        display: 'virtual',
-        system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
-        code: Code.make('VR'),
+        display: "virtual",
+        system: "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+        code: Code.make("VR"),
       },
-      location: [{
-        location: {
-          identifier: {
-            value: externalVideoCallRoom.url,
-          }
-        }
-      }],
-      status: 'planned',
-      ...args
+      location: [
+        {
+          location: {
+            identifier: {
+              value: externalVideoCallRoom.url,
+            },
+          },
+        },
+      ],
+      status: "planned",
+      ...args,
     });
 
     // const roomInsertsEffect = videoCallRepository.createVideoCallRooms([
@@ -94,9 +102,9 @@ export const createEncounter = (
       );
 
     const [
-      encounterRow, 
-      //rooms, 
-      questionnaireResponseRows
+      encounterRow,
+      //rooms,
+      questionnaireResponseRows,
     ] = yield* Effect.all([
       Effect.succeed(createdEncounter),
       // roomInsertsEffect,
@@ -107,8 +115,10 @@ export const createEncounter = (
     const questionnaireResponses: ReadonlyArray<QuestionnaireResponse> =
       questionnaireResponseRows;
 
-    return { ...encounterRow, 
-      // videoCallRooms, 
-      questionnaireResponses };
+    return {
+      ...encounterRow,
+      // videoCallRooms,
+      questionnaireResponses,
+    };
   });
 };

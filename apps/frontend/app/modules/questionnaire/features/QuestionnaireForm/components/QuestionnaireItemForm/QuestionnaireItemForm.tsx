@@ -1,7 +1,12 @@
 "use client";
 
-import { getUiControlCode, QuestionnaireItemType, QuestionnaireItemUIControlCode, QuestionnaireResponseItem, withAnsweredAt } from "assessmentis-domain";
-import { QuestionnaireItem } from "assessmentis-domain";
+import {
+  getUiControlCode,
+  QuestionnaireItemType,
+  QuestionnaireItemUIControlCode,
+  QuestionnaireResponseItem,
+  QuestionnaireItem,
+} from "@assessmentis/domain/questionnaires";
 import DisplayQuestionnaireItemForm from "app/modules/questionnaire/features/QuestionnaireForm/components/DisplayQuestionnaireItemForm/DisplayQuestionnaireItemForm";
 import RadioQuestionnaireItemForm, {
   RadioQuestionnaireItemFormGroup,
@@ -12,18 +17,20 @@ import type { SetStateAction } from "react";
 interface IProps {
   questionnaireItem: QuestionnaireItem;
   questionnaireResponseItem: QuestionnaireResponseItem;
-  setQuestionnaireResponseItem: (update: SetStateAction<QuestionnaireResponseItem>) => void
-  uiControl: typeof QuestionnaireItemUIControlCode.Type | undefined
+  setQuestionnaireResponseItem: (
+    update: SetStateAction<QuestionnaireResponseItem>,
+  ) => void;
+  uiControl: typeof QuestionnaireItemUIControlCode.Type | undefined;
 }
 
 const QuestionnaireItemForm = ({
   questionnaireItem,
   questionnaireResponseItem,
   setQuestionnaireResponseItem,
-  uiControl
+  uiControl,
 }: IProps) => {
   const questionText =
-    getUiControlCode(questionnaireItem) == 'grid' ? (
+    getUiControlCode(questionnaireItem) == "grid" ? (
       <p className="body-3" style={{ marginTop: "var(--space-2)" }}>
         {questionnaireItem.text}
       </p>
@@ -66,17 +73,33 @@ const QuestionnaireItemForm = ({
             <QuestionnaireItemForm
               key={qi.text}
               questionnaireItem={qi}
-              questionnaireResponseItem={questionnaireResponseItem.item?.find(({linkId}) => linkId == qi.linkId) ?? {linkId: qi.linkId}}
-              setQuestionnaireResponseItem={(update: SetStateAction<QuestionnaireResponseItem>) => 
-                setQuestionnaireResponseItem((qri: QuestionnaireResponseItem): QuestionnaireResponseItem => ({
-                  ...qri, 
-                  item: [
-                    ...(qri.item?.filter(({linkId}) => linkId != qi.linkId) ?? []), 
-                    typeof update == 'function' 
-                      ? update(qri.item?.find(({linkId}) => linkId == qi.linkId) ?? {linkId: qi.linkId}) 
-                      : update
-                  ] 
-                }))
+              questionnaireResponseItem={
+                questionnaireResponseItem.item?.find(
+                  ({ linkId }) => linkId == qi.linkId,
+                ) ?? { linkId: qi.linkId }
+              }
+              setQuestionnaireResponseItem={(
+                update: SetStateAction<QuestionnaireResponseItem>,
+              ) =>
+                setQuestionnaireResponseItem(
+                  (
+                    qri: QuestionnaireResponseItem,
+                  ): QuestionnaireResponseItem => ({
+                    ...qri,
+                    item: [
+                      ...(qri.item?.filter(
+                        ({ linkId }) => linkId != qi.linkId,
+                      ) ?? []),
+                      typeof update == "function"
+                        ? update(
+                            qri.item?.find(
+                              ({ linkId }) => linkId == qi.linkId,
+                            ) ?? { linkId: qi.linkId },
+                          )
+                        : update,
+                    ],
+                  }),
+                )
               }
               uiControl={getUiControlCode(questionnaireItem)}
             />
@@ -85,9 +108,9 @@ const QuestionnaireItemForm = ({
       );
       if (
         questionnaireItems.every(
-          (item) => item.type == QuestionnaireItemType.enums.boolean
-        ) && getUiControlCode(questionnaireItem) == 'table'
-
+          (item) => item.type == QuestionnaireItemType.enums.boolean,
+        ) &&
+        getUiControlCode(questionnaireItem) == "table"
       ) {
         return (
           <RadioQuestionnaireItemFormGroup
@@ -112,6 +135,7 @@ const QuestionnaireItemForm = ({
         />
       );
   }
+  throw new Error("Unknown item type");
 };
 
 export default QuestionnaireItemForm;

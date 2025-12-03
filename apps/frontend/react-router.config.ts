@@ -5,5 +5,5 @@ export default {
   // Server-side render by default, to enable SPA mode set this to `false`
   ssr: false,
   prerender: false,
-  buildDirectory: "dist"
+  buildDirectory: "dist",
 } satisfies Config;

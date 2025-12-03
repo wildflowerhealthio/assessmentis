@@ -1,20 +1,16 @@
 "use client";
 
-import { isPromise } from "effect/Predicate";
-import { type DetailedHTMLProps, type SelectHTMLAttributes, Suspense, use } from "react";
-import { Questionnaire } from "assessmentis-domain";
+import { type DetailedHTMLProps, type SelectHTMLAttributes } from "react";
+import { Questionnaire } from "@assessmentis/domain/questionnaires";
 
-interface IProps
-  extends DetailedHTMLProps<
-    SelectHTMLAttributes<HTMLSelectElement>,
-    HTMLSelectElement
-  > {
-  questionnaires:
-    | ReadonlyArray<Questionnaire>
+interface IProps extends DetailedHTMLProps<
+  SelectHTMLAttributes<HTMLSelectElement>,
+  HTMLSelectElement
+> {
+  questionnaires: ReadonlyArray<Questionnaire>;
 }
 
 const QuestionnaireSelect = ({ questionnaires, ...selectProps }: IProps) => {
-
   return (
     <select {...selectProps}>
       <option key={""} value={undefined}>
@@ -30,4 +26,3 @@ const QuestionnaireSelect = ({ questionnaires, ...selectProps }: IProps) => {
 };
 
 export default QuestionnaireSelect;
-

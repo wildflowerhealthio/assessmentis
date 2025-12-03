@@ -1,17 +1,23 @@
 import { FetchHttpClient, HttpBody, HttpClient } from "@effect/platform";
-import { Config, DateTime, Duration, Effect, Layer, Schema, Option } from "effect";
+import {
+  Config,
+  DateTime,
+  Duration,
+  Effect,
+  Layer,
+  Schema,
+  Option,
+} from "effect";
 import {
   ExternalVideoCallClient,
   ExternalVideoCallServiceError,
   ExternalVideoCallRecordingId,
   ExternalVideoCallRoomId,
   ExternalVideoCallRoomName,
-} from "assessmentis-domain";
-import type {
-    RoomCreationParams,
+  RoomCreationParams,
   ExternalVideoCallRecording,
   ExternalVideoCallRoom,
-} from "assessmentis-domain";
+} from "@assessmentis/domain/video-calls";
 
 const ApiDailyCoRecordingSchema = Schema.Struct({
   id: Schema.NonEmptyString,
@@ -45,8 +51,8 @@ export const DailyCoExternalVideoCallClientLayer = Layer.effect(
       "Content-Type": "application/json",
     } as const;
 
-    return {
-      fetchRecordingsByRoomName(roomName: string) {
+    const fetchRecordingsByRoomName: typeof ExternalVideoCallClient.Service.fetchRecordingsByRoomName =
+      (roomName: string) => {
         return Effect.gen(function* () {
           const url = new URL(`${baseDailyApiRoute}/recordings`);
           url.searchParams.set("room_name", roomName);
@@ -100,101 +106,106 @@ export const DailyCoExternalVideoCallClientLayer = Layer.effect(
               externalVideoCallRecordingId:
                 rec.id as ExternalVideoCallRecordingId,
               externalVideoCallRoomName: roomName as ExternalVideoCallRoomName,
-              startedAt: DateTime.make(rec.start_ts * 1000).pipe(Option.getOrThrow),
+              startedAt: DateTime.make(rec.start_ts * 1000).pipe(
+                Option.getOrThrow,
+              ),
               duration: Duration.seconds(rec.duration),
             }),
           );
         });
-      },
-      createRoom(
-        params: RoomCreationParams,
-      ): Effect.Effect<ExternalVideoCallRoom, ExternalVideoCallServiceError> {
-        return Effect.gen(function* () {
-          const expiryInstant = params.expiresAt
-            ? params.expiresAt
-            : (yield* DateTime.now).pipe(DateTime.addDuration("30 minutes"));
-          const exp = Math.floor(expiryInstant.epochMillis / 1000);
+      };
+    const createRoom: typeof ExternalVideoCallClient.Service.createRoom = (
+      params: RoomCreationParams,
+    ): Effect.Effect<
+      ExternalVideoCallRoom,
+      ExternalVideoCallServiceError,
+      never
+    > =>
+      Effect.gen(function* () {
+        const expiryInstant = params.expiresAt
+          ? params.expiresAt
+          : (yield* DateTime.now).pipe(DateTime.addDuration("30 minutes"));
+        const exp = Math.floor(expiryInstant.epochMillis / 1000);
 
-          const url = new URL(`${baseDailyApiRoute}/rooms`);
+        const url = new URL(`${baseDailyApiRoute}/rooms`);
 
-          const body = {
-            properties: {
-              exp,
-              enable_chat: params.enableChat ?? false,
-              enable_recording: params.enableRecoding ? "cloud" : undefined,
-            },
-          };
+        const body = {
+          properties: {
+            exp,
+            enable_chat: params.enableChat ?? false,
+            enable_recording: params.enableRecoding ? "cloud" : undefined,
+          },
+        };
 
-          const options = {
-            method: "POST",
-            body: yield* HttpBody.json(body).pipe(
-              Effect.mapError(
-                (cause) =>
-                  new ExternalVideoCallServiceError({
-                    message: "Error serializing request body JSON",
-                    cause,
-                  }),
-              ),
-            ),
-            headers,
-          };
-
-          const res = yield* httpClient.post(url, options).pipe(
+        const options = {
+          method: "POST",
+          body: yield* HttpBody.json(body).pipe(
             Effect.mapError(
               (cause) =>
                 new ExternalVideoCallServiceError({
-                  message: "HTTP Client Error while creating room",
+                  message: "Error serializing request body JSON",
                   cause,
                 }),
             ),
-          );
+          ),
+          headers,
+        };
 
-          if (res.status != 200) {
-            const text = yield* res.text.pipe(
-              Effect.mapError(
-                (cause) =>
-                  new ExternalVideoCallServiceError({
-                    message: "HTTP body read error",
-                    cause,
-                  }),
-              ),
-            );
-            yield* Effect.fail(
+        const res = yield* httpClient.post(url, options).pipe(
+          Effect.mapError(
+            (cause) =>
               new ExternalVideoCallServiceError({
-                message: `DailyCo returned an HTTP status of ${res.status} not 200: ${text}`,
-                cause: undefined,
+                message: "HTTP Client Error while creating room",
+                cause,
               }),
-            );
-          }
+          ),
+        );
 
-          const json = yield* res.json.pipe(
+        if (res.status != 200) {
+          const text = yield* res.text.pipe(
             Effect.mapError(
               (cause) =>
                 new ExternalVideoCallServiceError({
-                  message: "Error parsing JSON in response",
+                  message: "HTTP body read error",
                   cause,
                 }),
             ),
           );
-
-          const apiDailyCoRoom = yield* apiDailyCoRoomSchemaParser(json).pipe(
-            Effect.mapError(
-              (cause) =>
-                new ExternalVideoCallServiceError({
-                  message: "Error validating JSON Response",
-                  cause,
-                }),
-            ),
+          yield* Effect.fail(
+            new ExternalVideoCallServiceError({
+              message: `DailyCo returned an HTTP status of ${res.status} not 200: ${text}`,
+              cause: undefined,
+            }),
           );
+        }
 
-          return {
-            id: ExternalVideoCallRoomId.make(apiDailyCoRoom.id),
-            roomName: ExternalVideoCallRoomName.make(apiDailyCoRoom.name),
-            url: apiDailyCoRoom.url,
-          };
-        });
-      },
-    };
+        const json = yield* res.json.pipe(
+          Effect.mapError(
+            (cause) =>
+              new ExternalVideoCallServiceError({
+                message: "Error parsing JSON in response",
+                cause,
+              }),
+          ),
+        );
+
+        const apiDailyCoRoom = yield* apiDailyCoRoomSchemaParser(json).pipe(
+          Effect.mapError(
+            (cause) =>
+              new ExternalVideoCallServiceError({
+                message: "Error validating JSON Response",
+                cause,
+              }),
+          ),
+        );
+
+        return {
+          id: ExternalVideoCallRoomId.make(apiDailyCoRoom.id),
+          roomName: ExternalVideoCallRoomName.make(apiDailyCoRoom.name),
+          url: apiDailyCoRoom.url,
+        };
+      });
+    return { createRoom, fetchRecordingsByRoomName };
   }).pipe(
     Effect.withSpan("DailyCoExternalVideoCallClientLayer"),
     // Provide the HttpClient

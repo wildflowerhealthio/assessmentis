@@ -1,10 +1,7 @@
 import { Schema } from "effect";
 import { Element } from "./Element";
 import { CodeableConcept } from "./CodeableConcept";
-import {
-  Reference,
-  ReferenceEncoded,
-} from "./Reference";
+import { Reference, ReferenceEncoded } from "./Reference";
 
 export const IdentifierId = Schema.String.pipe(Schema.brand("IdentifierId"));
 
@@ -43,13 +40,15 @@ const identifierFields = {
   // _value?: Element | undefined;
 };
 
-export interface Identifier
-  extends Schema.Struct.Type<typeof identifierFields> {
+export interface Identifier extends Schema.Struct.Type<
+  typeof identifierFields
+> {
   assigner?: Reference | undefined;
 }
 
-export interface IdentifierEncoded
-  extends Schema.Struct.Encoded<typeof identifierFields> {
+export interface IdentifierEncoded extends Schema.Struct.Encoded<
+  typeof identifierFields
+> {
   assigner?: ReferenceEncoded | undefined;
 }
 

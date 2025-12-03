@@ -1,5 +1,5 @@
 {
-  "name": "assessmentis-frontend",
+  "name": "@assessmentis/frontend",
   "version": "0.0.1",
   "description": "The frontend for Assessment.is",
   "author": "Ruth Marks",
@@ -9,12 +9,18 @@
   "scripts": {
     "build": "react-router build",
     "check-types": "tsc --noEmit",
+    "lint": "eslint \"./app/**/*\"",
+    "lint:fix": "eslint --fix \"./app/**/*\"",
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
     "deploy": "firebase deploy --only hosting"
   },
   "dependencies": {
+    "@assessmentis/daily-co-infrastructure": "*",
+    "@assessmentis/domain": "*",
+    "@assessmentis/google-fhir-infrastructure": "*",
+    "@assessmentis/react-util": "*",
     "@effect/opentelemetry": "^0.59.1",
     "@effect/platform": "^0.93.5",
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
@@ -45,8 +51,10 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@assessmentis/eslint-config": "*",
+    "@assessmentis/typescript-config": "*",
     "@react-router/dev": "^7.9.6",
-    "@types/fhir": "^3.0.2",
+    "@types/fhir": "^0.0.41",
     "@types/gapi": "^0.0.47",
     "@types/gapi.client.healthcare-v1": "^0.0.4",
     "@types/node": "^24",

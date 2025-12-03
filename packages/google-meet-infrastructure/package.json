@@ -1,25 +1,29 @@
 {
-  "name": "assessmentis-google-meet-infrastructure",
+  "name": "@assessmentis/google-meet-infrastructure",
   "version": "0.0.1",
   "description": "Assessment.is infrastructure for Google Meet",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc",
-    "check-types": "tsc --noEmit",
-    "lint": "eslint .",
-    "preview": "vite preview"
-  },
   "author": "Ruth Marks",
   "license": "UNLICENSED",
   "private": true,
   "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint \"./src/**/*\"",
+    "lint:fix": "eslint --fix \"./src/**/*\"",
+    "preview": "vite preview"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "dependencies": {
+    "@assessmentis/domain": "*",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
+    "@assessmentis/eslint-config": "*",
+    "@assessmentis/typescript-config": "*",
     "@eslint/js": "^9.39.1",
     "@types/gapi.client.meet-v2": "^0.0.0",
     "@types/node": "^24.10.1",

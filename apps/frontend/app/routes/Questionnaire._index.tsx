@@ -1,16 +1,16 @@
-import { Effect, FastCheck, ManagedRuntime, Schema } from "effect";
-import { Suspense, useState } from "react";
+import { Effect, ManagedRuntime } from "effect";
 import { QuestionnairesList } from "./Questionnaire/QuestionnairesList";
-import { Identifier, Questionnaire, QuestionnaireId, QuestionnaireItem, QuestionnaireRepository } from "assessmentis-domain";
+import {
+  Questionnaire,
+  QuestionnaireId,
+  QuestionnaireRepository,
+} from "@assessmentis/domain/questionnaires";
 import questionnaireTemplates from "app/modules/admin/questionnaire-templates/questionnaireTemplates";
-import { clientAppLayer, useRuntimeContext } from "~/clientRuntime";
+import { clientAppLayer, useRuntimeContext } from "app/clientRuntime";
 import type { Route } from "./+types/Questionnaire._index";
-import { useCollection } from "assessmentis-react-util/src/hooks";
+import { useCollection } from "@assessmentis/react-util";
 
-
-export async function clientLoader({
-  params,
-}: Route.ClientLoaderArgs) {
+export async function clientLoader(_: Route.ClientLoaderArgs) {
   const runtime = ManagedRuntime.make(clientAppLayer);
 
   const questionnaires = await runtime.runPromise(
@@ -24,48 +24,55 @@ export async function clientLoader({
 }
 
 const useQuestionnaires = (initial: Questionnaire[]) => {
-  const clientRuntime = useRuntimeContext()
-  
-  return useCollection<QuestionnaireId, Questionnaire>({
-    apiDelete: async (id: QuestionnaireId) =>
-      clientRuntime.runPromise(Effect.all([
-        Effect.sleep('200 millis'),
-        QuestionnaireRepository.pipe(Effect.flatMap(
-          (qr) => qr.deleteQuestionnaire(id)
-        ))
-      ])),
-    apiCreate: async (q: Questionnaire) =>
-      clientRuntime.runPromise(Effect.all([
-        Effect.sleep('200 millis'),
-        QuestionnaireRepository.pipe(Effect.flatMap(
-          (qr) => qr.createQuestionnaire(q)
-        ))
-      ]).pipe(Effect.map(([,x]) => x))),
-  }, initial);
+  const clientRuntime = useRuntimeContext();
+
+  return useCollection<QuestionnaireId, Questionnaire>(
+    {
+      apiDelete: async (id: QuestionnaireId) =>
+        clientRuntime.runPromise(
+          Effect.all([
+            Effect.sleep("200 millis"),
+            QuestionnaireRepository.pipe(
+              Effect.flatMap((qr) => qr.deleteQuestionnaire(id)),
+            ),
+          ]),
+        ),
+      apiCreate: async (q: Questionnaire) =>
+        clientRuntime.runPromise(
+          Effect.all([
+            Effect.sleep("200 millis"),
+            QuestionnaireRepository.pipe(
+              Effect.flatMap((qr) => qr.createQuestionnaire(q)),
+            ),
+          ]).pipe(Effect.map(([, x]) => x)),
+        ),
+    },
+    initial,
+  );
 };
 
-export default function QuestionnairePage ({
+export default function QuestionnairePage({
   loaderData,
 }: Route.ComponentProps) {
-  const runtime = ManagedRuntime.make(clientAppLayer);
-  
   const {
-    collection: questionnaires, 
-    deleteItem: deleteQuestionnaire, 
-    createItem: createQuestionnaire
+    collection: questionnaires,
+    deleteItem: deleteQuestionnaire,
+    createItem: createQuestionnaire,
   } = useQuestionnaires(loaderData.questionnaires);
 
   const loadTemplateByTitleForm = async function (formData: FormData) {
-    const templateToCreate = questionnaireTemplates.find((t) => t.title == formData.get("title"))
-    if (templateToCreate) return await createQuestionnaire(templateToCreate)
+    const templateToCreate = questionnaireTemplates.find(
+      (t) => t.title == formData.get("title"),
+    );
+    if (templateToCreate) return await createQuestionnaire(templateToCreate);
   };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <h2 className="heading-3">Questionnaires</h2>
-      <QuestionnairesList 
-        deleteQuestionnaire={deleteQuestionnaire} 
-        questionnaires={questionnaires} 
+      <QuestionnairesList
+        deleteQuestionnaire={deleteQuestionnaire}
+        questionnaires={questionnaires}
       />
       <a
         href={`https://smartforms.csiro.au/launch?launch=xyz123&iss=${encodeURIComponent(
@@ -88,4 +95,4 @@ export default function QuestionnairePage ({
       })}
     </div>
   );
-};
+}

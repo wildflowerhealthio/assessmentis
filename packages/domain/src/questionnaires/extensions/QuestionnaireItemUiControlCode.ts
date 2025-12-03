@@ -7,31 +7,46 @@ export const QuestionnaireItemUIControlCode = Schema.Enums({
   table: Code.make("table"),
 } as const);
 
-export const questionnaireItemUiControlCodeExtension = (value: typeof QuestionnaireItemUIControlCode.Type): Extension => ({
-  url: questionnaireItemControlUrl, 
-  valueCode: value, 
-})
+export const questionnaireItemUiControlCodeExtension = (
+  value: typeof QuestionnaireItemUIControlCode.Type,
+): Extension => ({
+  url: questionnaireItemControlUrl,
+  valueCode: value,
+});
 
-export const questionnaireItemControlUrl = "http://hl7.org/fhir/questionnaire-item-control";
+export const questionnaireItemControlUrl =
+  "http://hl7.org/fhir/questionnaire-item-control";
 
-export const getUiControlCode = (be: BackboneElement<string>): typeof QuestionnaireItemUIControlCode.Type | undefined => {
-  const ext = be.modifierExtension?.find(ext => ext.url == questionnaireItemControlUrl)
-  const code = ext && 'valueCode' in ext 
-    ? Schema.decodeUnknownOption(QuestionnaireItemUIControlCode)((ext.valueCode)).pipe(Option.getOrUndefined)
-    : undefined
+export const getUiControlCode = (
+  be: BackboneElement<string>,
+): typeof QuestionnaireItemUIControlCode.Type | undefined => {
+  const ext = be.modifierExtension?.find(
+    (ext) => ext.url == questionnaireItemControlUrl,
+  );
+  const code =
+    ext && "valueCode" in ext
+      ? Schema.decodeUnknownOption(QuestionnaireItemUIControlCode)(
+          ext.valueCode,
+        ).pipe(Option.getOrUndefined)
+      : undefined;
 
   return code;
-}
+};
 
-export const withUiControlCode = <IdType extends string, T extends BackboneElement<IdType>>(
+export const withUiControlCode = <
+  IdType extends string,
+  T extends BackboneElement<IdType>,
+>(
   t: T,
-  value: typeof QuestionnaireItemUIControlCode.Type | undefined
+  value: typeof QuestionnaireItemUIControlCode.Type | undefined,
 ): T => {
   return {
     ...t,
     modifierExtension: [
-      ...t.modifierExtension?.filter(ext => ext.url == questionnaireItemControlUrl) ?? [],
-      ...value ? [questionnaireItemUiControlCodeExtension(value)] : [],
-    ]
+      ...(t.modifierExtension?.filter(
+        (ext) => ext.url == questionnaireItemControlUrl,
+      ) ?? []),
+      ...(value ? [questionnaireItemUiControlCodeExtension(value)] : []),
+    ],
   };
-}
+};

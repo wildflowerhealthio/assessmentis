@@ -1,10 +1,12 @@
-import { QuestionnaireItemType, QuestionnaireItemUIControlCode, QuestionnaireItemUiDisplayLevel } from "assessmentis-domain";
 import {
+  QuestionnaireItemType,
+  QuestionnaireItemUIControlCode,
+  QuestionnaireItemUiDisplayLevel,
   QuestionnaireItem,
   QuestionnaireItemLink,
   questionnaireItemUiControlCodeExtension,
-  questionnaireItemUiDisplayLevelExtension
-} from "assessmentis-domain";
+  questionnaireItemUiDisplayLevelExtension,
+} from "@assessmentis/domain/questionnaires";
 
 const sluggify = (s: string): QuestionnaireItemLink =>
   QuestionnaireItemLink.make(
@@ -31,9 +33,9 @@ const part1Preamble: QuestionnaireItem[] = [
     type: QuestionnaireItemType.enums.display,
     modifierExtension: [
       questionnaireItemUiDisplayLevelExtension(
-        QuestionnaireItemUiDisplayLevel.enums.heading1
-      )
-    ]
+        QuestionnaireItemUiDisplayLevel.enums.heading1,
+      ),
+    ],
   },
   {
     linkId: sluggify("part-1-title"),
@@ -41,9 +43,9 @@ const part1Preamble: QuestionnaireItem[] = [
     type: QuestionnaireItemType.enums.display,
     modifierExtension: [
       questionnaireItemUiDisplayLevelExtension(
-        QuestionnaireItemUiDisplayLevel.enums.heading2
-      )
-    ]
+        QuestionnaireItemUiDisplayLevel.enums.heading2,
+      ),
+    ],
   },
   {
     linkId: sluggify("part-1-instructions"),
@@ -260,9 +262,9 @@ const part1Criteria: QuestionnaireItem[] = [
     type: QuestionnaireItemType.enums.display,
     modifierExtension: [
       questionnaireItemUiDisplayLevelExtension(
-        QuestionnaireItemUiDisplayLevel.enums.heading2
-      )
-    ]
+        QuestionnaireItemUiDisplayLevel.enums.heading2,
+      ),
+    ],
   },
   {
     linkId: sluggify("part-1-criterion-a-adulthood-subtitle"),
@@ -270,9 +272,9 @@ const part1Criteria: QuestionnaireItem[] = [
     type: QuestionnaireItemType.enums.display,
     modifierExtension: [
       questionnaireItemUiDisplayLevelExtension(
-        QuestionnaireItemUiDisplayLevel.enums.heading3
-      )
-    ]
+        QuestionnaireItemUiDisplayLevel.enums.heading3,
+      ),
+    ],
   },
   {
     linkId: sluggify("part-1-criterion-a-adulthood"),
@@ -286,9 +288,9 @@ const part1Criteria: QuestionnaireItem[] = [
     type: QuestionnaireItemType.enums.display,
     modifierExtension: [
       questionnaireItemUiDisplayLevelExtension(
-        QuestionnaireItemUiDisplayLevel.enums.heading3
-      )
-    ]
+        QuestionnaireItemUiDisplayLevel.enums.heading3,
+      ),
+    ],
   },
   {
     linkId: sluggify("part-1-criterion-a-childhood"),
@@ -302,9 +304,9 @@ const part1Criteria: QuestionnaireItem[] = [
     type: QuestionnaireItemType.enums.display,
     modifierExtension: [
       questionnaireItemUiDisplayLevelExtension(
-        QuestionnaireItemUiDisplayLevel.enums.heading2
-      )
-    ]
+        QuestionnaireItemUiDisplayLevel.enums.heading2,
+      ),
+    ],
   },
 ];
 
@@ -503,9 +505,9 @@ const part2Criteria: QuestionnaireItem[] = [
     type: QuestionnaireItemType.enums.display,
     modifierExtension: [
       questionnaireItemUiDisplayLevelExtension(
-        QuestionnaireItemUiDisplayLevel.enums.heading2
-      )
-    ]
+        QuestionnaireItemUiDisplayLevel.enums.heading2,
+      ),
+    ],
   },
   {
     text: "Adulthood:",
@@ -513,9 +515,9 @@ const part2Criteria: QuestionnaireItem[] = [
     type: QuestionnaireItemType.enums.display,
     modifierExtension: [
       questionnaireItemUiDisplayLevelExtension(
-        QuestionnaireItemUiDisplayLevel.enums.heading3
-      )
-    ]
+        QuestionnaireItemUiDisplayLevel.enums.heading3,
+      ),
+    ],
   },
   {
     linkId: sluggify("part-2-criterion-a-adulthood"),
@@ -529,9 +531,9 @@ const part2Criteria: QuestionnaireItem[] = [
     type: QuestionnaireItemType.enums.display,
     modifierExtension: [
       questionnaireItemUiDisplayLevelExtension(
-        QuestionnaireItemUiDisplayLevel.enums.heading3
-      )
-    ]
+        QuestionnaireItemUiDisplayLevel.enums.heading3,
+      ),
+    ],
   },
   {
     linkId: sluggify("part-2-criterion-a-childhood"),
@@ -548,9 +550,9 @@ const part3Preamble: QuestionnaireItem[] = [
     type: QuestionnaireItemType.enums.display,
     modifierExtension: [
       questionnaireItemUiDisplayLevelExtension(
-        QuestionnaireItemUiDisplayLevel.enums.heading2
-      )
-    ]
+        QuestionnaireItemUiDisplayLevel.enums.heading2,
+      ),
+    ],
   },
   {
     linkId: sluggify("part-3-criterion-b-title"),
@@ -558,9 +560,9 @@ const part3Preamble: QuestionnaireItem[] = [
     type: QuestionnaireItemType.enums.display,
     modifierExtension: [
       questionnaireItemUiDisplayLevelExtension(
-        QuestionnaireItemUiDisplayLevel.enums.heading2
-      )
-    ]
+        QuestionnaireItemUiDisplayLevel.enums.heading2,
+      ),
+    ],
   },
   {
     text: "Have you always had these symptoms of attention deficit and/or hyperactivity/impulsivity? (a number of symptoms were present prior to the 7th year of age)",
@@ -580,9 +582,9 @@ const part3Preamble: QuestionnaireItem[] = [
     type: QuestionnaireItemType.enums.display,
     modifierExtension: [
       questionnaireItemUiDisplayLevelExtension(
-        QuestionnaireItemUiDisplayLevel.enums.heading2
-      )
-    ]
+        QuestionnaireItemUiDisplayLevel.enums.heading2,
+      ),
+    ],
   },
   {
     linkId: sluggify("part-3-criterion-c-instructions"),
@@ -590,9 +592,9 @@ const part3Preamble: QuestionnaireItem[] = [
     type: QuestionnaireItemType.enums.display,
     modifierExtension: [
       questionnaireItemUiDisplayLevelExtension(
-        QuestionnaireItemUiDisplayLevel.enums.heading3
-      )
-    ]
+        QuestionnaireItemUiDisplayLevel.enums.heading3,
+      ),
+    ],
   },
 ];
 
@@ -742,9 +744,9 @@ const conclusionItems: QuestionnaireItem[] = [
     type: QuestionnaireItemType.enums.display,
     modifierExtension: [
       questionnaireItemUiDisplayLevelExtension(
-        QuestionnaireItemUiDisplayLevel.enums.heading3
-      )
-    ]
+        QuestionnaireItemUiDisplayLevel.enums.heading3,
+      ),
+    ],
   },
   {
     linkId: sluggify("summary"),
@@ -772,10 +774,10 @@ const toItems = ({
       linkId: sluggify(prefix + "-title"),
       text: questionText,
       modifierExtension: [
-      questionnaireItemUiDisplayLevelExtension(
-        QuestionnaireItemUiDisplayLevel.enums.heading3
-      )
-    ],
+        questionnaireItemUiDisplayLevelExtension(
+          QuestionnaireItemUiDisplayLevel.enums.heading3,
+        ),
+      ],
       type: QuestionnaireItemType.enums.display,
     },
     {
@@ -785,8 +787,8 @@ const toItems = ({
       type: QuestionnaireItemType.enums.group,
       modifierExtension: [
         questionnaireItemUiControlCodeExtension(
-          QuestionnaireItemUIControlCode.enums.table
-        )
+          QuestionnaireItemUIControlCode.enums.table,
+        ),
       ],
       item: adultSymptoms.map(
         (text): QuestionnaireItem => ({
@@ -813,10 +815,10 @@ const toItems = ({
       linkId: sluggify(prefix + "-child-title"),
       text: childQuestionText,
       modifierExtension: [
-      questionnaireItemUiDisplayLevelExtension(
-        QuestionnaireItemUiDisplayLevel.enums.heading3
-      )
-    ],
+        questionnaireItemUiDisplayLevelExtension(
+          QuestionnaireItemUiDisplayLevel.enums.heading3,
+        ),
+      ],
       type: QuestionnaireItemType.enums.display,
     },
     {
@@ -824,8 +826,8 @@ const toItems = ({
       text: "Examples during childhood:",
       modifierExtension: [
         questionnaireItemUiControlCodeExtension(
-          QuestionnaireItemUIControlCode.enums.table
-        )
+          QuestionnaireItemUIControlCode.enums.table,
+        ),
       ],
       type: QuestionnaireItemType.enums.group,
       item: childSymptoms.map((text) => ({
@@ -863,4 +865,3 @@ export const divaQuestionnaireItems: QuestionnaireItem[] = [
 ];
 
 export default divaQuestionnaireItems;
-

@@ -1,5 +1,5 @@
 {
-  "name": "assessmentis-functions",
+  "name": "@assessmentis/functions",
   "version": "0.0.1",
   "description": "Cloud functions for Assessmentis",
   "author": "Ruth Marks",
@@ -7,6 +7,8 @@
   "scripts": {
     "build": "tsc",
     "check-types": "tsc --noEmit",
+    "lint": "eslint \"./src/**/*\"",
+    "lint:fix": "eslint --fix \"./src/**/*\"",
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
@@ -19,12 +21,16 @@
   "main": "dist/index.js",
   "types": "dist/index.d.js",
   "dependencies": {
+    "@assessmentis/daily-co-infrastructure": "file:../../packages/daily-co-infrastructure",
     "@effect/opentelemetry": "^0.59.1",
+    "eslint": "^9.39.1",
     "firebase-admin": "^13.6.0",
     "firebase-functions": "^7.0.0",
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {
+    "@types/gapi.client.healthcare-v1": "^0.0.4",
+    "@types/gapi": "^0.0.47",
     "@types/node-fetch": "^3.0.2",
     "firebase-functions-test": "^3.4.1",
     "typescript": "^5.9.2"

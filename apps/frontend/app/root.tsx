@@ -7,19 +7,16 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
-
 import type { Route } from "./+types/root";
 import "./globals.css";
-import { RuntimeContextOrErr } from "./clientRuntime";
-import { LoginButton } from "./firebase";
-
-
+import { RuntimeContextOrErr } from "./components/RuntimeContextOrErr";
+import { LoginButton } from "./components/LoginButton";
+import { FiberFailureCauseId } from "effect/Runtime";
 
 // HydrateFallback is rendered while the client loader is running
 export function HydrateFallback() {
   return <div>Loading...</div>;
 }
-
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -28,7 +25,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <head>
           <meta charSet="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <script src="https://accounts.google.com/gsi/client" async defer></script>
+          <script
+            src="https://accounts.google.com/gsi/client"
+            async
+            defer
+          ></script>
           <script src="https://apis.google.com/js/api.js"></script>
           <Links />
           <Meta />
@@ -43,7 +44,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
             }}
           >
             <Link to="/">
-              <h1 className="heading-4" style={{ marginRight: "var(--space-5)" }}>
+              <h1
+                className="heading-4"
+                style={{ marginRight: "var(--space-5)" }}
+              >
                 Assessment.is
               </h1>
             </Link>
@@ -98,10 +102,15 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   let message = "Oops!";
   let details = "An unexpected error occurred.";
   let stack: string | undefined;
+  const cause =
+    error != null && typeof error == "object" && FiberFailureCauseId in error
+      ? error[FiberFailureCauseId]
+      : undefined;
+
   console.error("Error Reached Boundary");
-  console.error(error);
-  if (typeof error === 'object' && error != null && 'cause' in error) {
-    console.error(error.cause);
+  console.error({ error });
+  if (cause) {
+    console.error({ cause });
   }
   if (isRouteErrorResponse(error)) {
     message = error.status === 404 ? "404" : "Error";
@@ -119,16 +128,16 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
       <h1>{message}</h1>
       <p>{details}</p>
       {stack && (
-        <pre className="w-full p-4 overflow-x-auto" style={{lineHeight: 1.5}}>
+        <pre className="w-full p-4 overflow-x-auto" style={{ lineHeight: 1.5 }}>
           <code>{stack}</code>
         </pre>
       )}
-
-      {stack && (
-        <pre className="w-full p-4 overflow-x-auto" style={{lineHeight: 1.5}}>
-          <code>{JSON.stringify((error as any).cause)}</code>
+      <h2>Cause:</h2>
+      {cause ? (
+        <pre className="w-full p-4 overflow-x-auto" style={{ lineHeight: 1.5 }}>
+          <code>{JSON.stringify(cause)}</code>
         </pre>
-      )}
+      ) : undefined}
     </main>
   );
 }

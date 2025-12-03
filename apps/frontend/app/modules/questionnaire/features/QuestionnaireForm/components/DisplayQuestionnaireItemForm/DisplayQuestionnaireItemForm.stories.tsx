@@ -2,8 +2,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { Arbitrary, FastCheck } from "effect";
-import { QuestionnaireItemType } from "assessmentis-domain";
-import { QuestionnaireItem } from "assessmentis-domain";
+import {
+  QuestionnaireItemType,
+  QuestionnaireItem,
+} from "@assessmentis/domain/questionnaires";
 import DisplayQuestionnaireItemForm from "app/modules/questionnaire/features/QuestionnaireForm/components/DisplayQuestionnaireItemForm/DisplayQuestionnaireItemForm";
 
 //👇 This default export determines where your story goes in the story list

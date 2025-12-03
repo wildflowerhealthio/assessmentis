@@ -1,9 +1,6 @@
 import { Schema } from "effect";
 import { Element } from "./Element";
-import {
-  Identifier,
-  IdentifierEncoded,
-} from "./Identifier";
+import { Identifier, IdentifierEncoded } from "./Identifier";
 
 const ReferenceId = Schema.String.pipe(Schema.brand("ReferenceId"));
 
@@ -30,8 +27,9 @@ export interface Reference extends Schema.Struct.Type<typeof referenceFields> {
   readonly identifier?: Identifier | undefined;
 }
 
-export interface ReferenceEncoded
-  extends Schema.Struct.Encoded<typeof referenceFields> {
+export interface ReferenceEncoded extends Schema.Struct.Encoded<
+  typeof referenceFields
+> {
   readonly identifier?: IdentifierEncoded | undefined;
 }
 

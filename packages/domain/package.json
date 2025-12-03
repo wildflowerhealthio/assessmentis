@@ -1,22 +1,28 @@
 {
-  "name": "assessmentis-domain",
+  "name": "@assessmentis/domain",
   "version": "0.0.1",
   "description": "The domain representations for Assessment.is",
   "author": "Ruth Marks",
   "license": "UNLICENSED",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "/dist"
-  ],
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./compositions": "./src/compositions/index.ts",
+    "./encounters": "./src/encounters/index.ts",
+    "./general-purpose": "./src/general-purpose/index.ts",
+    "./questionnaires": "./src/questionnaires/index.ts",
+    "./video-calls": "./src/video-calls/index.ts",
+    "./errors": "./src/errors.ts"
+  },
   "devDependencies": {
     "@types/fhir": "^3.0.2",
     "typescript": "^5.9.3",
     "vitest": "^4.0.15"
   },
   "scripts": {
-    "build": "tsc",
     "check-types": "tsc --noEmit",
+    "lint": "eslint \"./src/**/*\"",
+    "lint:fix": "eslint --fix \"./src/**/*\"",
     "test": "vitest"
   },
   "dependencies": {

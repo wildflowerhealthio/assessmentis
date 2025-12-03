@@ -38,7 +38,6 @@ export const QuestionnaireItemId = Schema.String.pipe(
 );
 export type QuestionnaireItemId = typeof QuestionnaireItemId.Type;
 
-
 const questionnaireItemFields = {
   ...BackboneElement(QuestionnaireItemId).fields,
   /**
@@ -78,7 +77,7 @@ const questionnaireItemFields = {
    * The user is allowed to change the value and override the default (unless marked as read-only). If the user doesn't change the value, then this initial value will be persisted when the QuestionnaireResponse is initially created.  Note that initial values can influence results.  The data type of initial[x] must agree with the item.type, and only repeating items can have more then one initial value.
    */
   initial: Schema.optional(Schema.Any), //QuestionnaireItemInitial[] | undefined;
-    /**
+  /**
    * This ''can'' be a meaningful identifier (e.g. a LOINC code) but is not intended to have any meaning.  GUIDs or sequential numbers are appropriate here.
    */
   linkId: QuestionnaireItemLink,
@@ -119,13 +118,17 @@ const questionnaireItemFields = {
    */
   type: QuestionItemType, // ('group'|'display'|'question'|'boolean'|'decimal'|'integer'|'date'|'dateTime'|'time'|'string'|'text'|'url'|'choice'|'open-choice'|'attachment'|'reference'|'quantity');
   // _type?: Element | undefined;
-}
+};
 
-export interface QuestionnaireItem extends Schema.Struct.Type<typeof questionnaireItemFields> {
+export interface QuestionnaireItem extends Schema.Struct.Type<
+  typeof questionnaireItemFields
+> {
   readonly item?: undefined | ReadonlyArray<QuestionnaireItem>;
 }
 
-export interface QuestionnaireItemEncoded extends Schema.Struct.Encoded<typeof questionnaireItemFields> {
+export interface QuestionnaireItemEncoded extends Schema.Struct.Encoded<
+  typeof questionnaireItemFields
+> {
   readonly item?: undefined | ReadonlyArray<QuestionnaireItemEncoded>;
 }
 
@@ -140,11 +143,8 @@ export const QuestionnaireItem = Schema.Struct({
   item: Schema.optional(
     Schema.Array(
       Schema.suspend(
-        (): Schema.Schema<
+        (): Schema.Schema<QuestionnaireItem, QuestionnaireItemEncoded, never> =>
           QuestionnaireItem,
-          QuestionnaireItemEncoded,
-          never
-        > => QuestionnaireItem,
       ),
     ),
   ),

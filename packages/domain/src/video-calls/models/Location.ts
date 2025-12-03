@@ -10,5 +10,5 @@ export const Location = Schema.Struct({
   ...Element(LocationId).fields,
   identifier: Schema.Struct({
     value: Schema.String,
-  })
+  }),
 });

@@ -1,11 +1,15 @@
+import {
+  getUiDisplayLevel,
+  QuestionnaireItem,
+  QuestionnaireItemUIControlCode,
+  QuestionnaireItemUiDisplayLevel,
+} from "@assessmentis/domain/questionnaires";
+import { cn } from "@assessmentis/react-util";
+import classes from "./DisplayQuestionnaireItemForm.module.css";
 
-import { getUiDisplayLevel, QuestionnaireItem, QuestionnaireItemUIControlCode, QuestionnaireItemUiDisplayLevel } from "assessmentis-domain";
-import { cn } from "assessmentis-react-util/src";
-import classes from "./DisplayQuestionnaireItemForm.module.css"
-
-interface IProps {
+export interface IProps {
   questionnaireItem: QuestionnaireItem;
-  uiControl: typeof QuestionnaireItemUIControlCode.Type | undefined
+  uiControl: typeof QuestionnaireItemUIControlCode.Type | undefined;
 }
 
 const DisplayQuestionnaireItemForm = ({ questionnaireItem }: IProps) => {

@@ -2,7 +2,17 @@ import "./Tile.css";
 import { DailyVideo, useVideoTrack } from "@daily-co/daily-react";
 import Username from "../Username/Username";
 
-export default function Tile({ id, isScreenShare, isLocal, isAlone }:{ id: string; isScreenShare?: boolean; isLocal?: boolean | undefined; isAlone?: boolean; }) {
+export default function Tile({
+  id,
+  isScreenShare,
+  isLocal,
+  isAlone,
+}: {
+  id: string;
+  isScreenShare?: boolean;
+  isLocal?: boolean | undefined;
+  isAlone?: boolean;
+}) {
   const videoState = useVideoTrack(id);
 
   let containerCssClasses = isScreenShare ? "tile-screenshare" : "tile-video";

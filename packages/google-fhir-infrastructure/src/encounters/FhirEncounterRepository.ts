@@ -1,12 +1,9 @@
 import { Layer, Effect } from "effect";
-import { 
+import {
   EncounterRepository,
   Encounter,
-} from "assessmentis-domain"
-import {
-  FhirClient,
-  LiveFhirClient,
-} from "../FhirLiveLayer";
+} from "@assessmentis/domain/encounters";
+import { FhirClient, LiveFhirClient } from "../FhirLiveLayer";
 
 export const FhirEncounterRepository = Layer.effect(
   EncounterRepository,
@@ -29,7 +26,7 @@ export const FhirEncounterRepository = Layer.effect(
       getEncounter,
       createEncounter,
       getEncounters,
-      deleteEncounter
+      deleteEncounter,
     };
   }),
 ).pipe(Layer.provide(LiveFhirClient));

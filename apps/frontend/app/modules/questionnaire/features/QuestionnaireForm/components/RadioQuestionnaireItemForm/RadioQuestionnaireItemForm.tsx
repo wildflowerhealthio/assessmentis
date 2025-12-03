@@ -1,21 +1,23 @@
-import { Data, DateTime, Equal, Match, Option } from "effect";
+import { Data, DateTime, Equal, Match } from "effect";
 import { type ChangeEventHandler, type SetStateAction } from "react";
 import classes from "./RadioQuestionnaireItemForm.module.css";
 import {
   QuestionnaireItem,
-  ValueElement,
   QuestionnaireItemUIControlCode,
   QuestionnaireResponseItem,
   withAnsweredAt,
-} from "assessmentis-domain";
-import { cn } from "assessmentis-react-util/src";
-import { useRuntimeContext } from "~/clientRuntime";
+} from "@assessmentis/domain/questionnaires";
+import { type ValueElement } from "@assessmentis/domain/general-purpose";
+import { cn } from "@assessmentis/react-util";
+import { useRuntimeContext } from "app/clientRuntime";
 
 export interface IProps {
   questionnaireItem: QuestionnaireItem;
   questionnaireResponseItem: QuestionnaireResponseItem;
-  setQuestionnaireResponseItem: (update: SetStateAction<QuestionnaireResponseItem>) => void
-  uiControl: typeof QuestionnaireItemUIControlCode.Type | undefined
+  setQuestionnaireResponseItem: (
+    update: SetStateAction<QuestionnaireResponseItem>,
+  ) => void;
+  uiControl: typeof QuestionnaireItemUIControlCode.Type | undefined;
 }
 
 const labelFor = (option: ValueElement) =>
@@ -35,35 +37,49 @@ const RadioQuestionnaireItemForm = ({
   questionnaireItem,
   questionnaireResponseItem,
   setQuestionnaireResponseItem,
-  uiControl
+  uiControl,
 }: IProps) => {
   const clientRuntime = useRuntimeContext();
-  
-  const displayAsGrid = uiControl === QuestionnaireItemUIControlCode.enums.table;
 
-  const answerOptions: undefined | ValueElement[] = questionnaireItem.answerOption
+  const displayAsGrid =
+    uiControl === QuestionnaireItemUIControlCode.enums.table;
+
+  const answerOptions: undefined | ValueElement[] =
+    questionnaireItem.answerOption;
   const options =
     answerOptions?.map((answerValue) => ({
       label: labelFor(answerValue),
       answerValue,
-    })) ?? ( questionnaireItem.type == 'boolean' ? [
-      { label: "Yes", answerValue: { valueBoolean: true } },
-      { label: "No", answerValue: { valueBoolean: false } },
-    ] : []);
+    })) ??
+    (questionnaireItem.type == "boolean"
+      ? [
+          { label: "Yes", answerValue: { valueBoolean: true } },
+          { label: "No", answerValue: { valueBoolean: false } },
+        ]
+      : []);
 
-  const onChange: ChangeEventHandler<HTMLInputElement> = (
-    ev,
-  ) => {
-    const selected = options.find((opt) => opt.label == ev.currentTarget.value)?.answerValue!
-    setQuestionnaireResponseItem((qri: QuestionnaireResponseItem): QuestionnaireResponseItem => ({
-      ...qri,
-      answer: [withAnsweredAt({ ...selected, modifierExtension: [] }, clientRuntime.runSync(DateTime.now))]
-    }));
-  }
+  const onChange: ChangeEventHandler<HTMLInputElement> = (ev) => {
+    const selected = options.find(
+      (opt) => opt.label == ev.currentTarget.value,
+    )?.answerValue;
+    if (!selected) throw new Error("Selected option doesn't match any label");
 
-  const answerValue = questionnaireResponseItem.answer?.[0] ?? {}
+    setQuestionnaireResponseItem(
+      (qri: QuestionnaireResponseItem): QuestionnaireResponseItem => ({
+        ...qri,
+        answer: [
+          withAnsweredAt(
+            { ...selected, modifierExtension: [] },
+            clientRuntime.runSync(DateTime.now),
+          ),
+        ],
+      }),
+    );
+  };
 
-  const { modifierExtension, ...valueElement} = answerValue
+  const answerValue = questionnaireResponseItem.answer?.[0] ?? {};
+
+  const { modifierExtension: _, ...valueElement } = answerValue;
   return (
     <fieldset
       key={questionnaireItem.linkId}
@@ -72,13 +88,13 @@ const RadioQuestionnaireItemForm = ({
         [classes["RadioQuestionnaireItemForm--grid"]]: displayAsGrid ?? false,
       })}
     >
-        <legend
-          key="legend"
-          className={cn("label-2", classes.RadioQuestionnaireItemForm__legend)}
-        >
-          {questionnaireItem.text}
-        </legend>
-      
+      <legend
+        key="legend"
+        className={cn("label-2", classes.RadioQuestionnaireItemForm__legend)}
+      >
+        {questionnaireItem.text}
+      </legend>
+
       {options.map(({ label, answerValue }) => (
         <label
           key={label}

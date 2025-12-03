@@ -10,8 +10,8 @@ export const Encounter = Schema.Struct({
   id: Schema.optional(EncounterId),
   resourceType: Schema.Literal("Encounter"),
   /**
-     * Concepts representing classification of patient encounter such as ambulatory (outpatient), inpatient, emergency, home health or others due to local variations.
-     */
+   * Concepts representing classification of patient encounter such as ambulatory (outpatient), inpatient, emergency, home health or others due to local variations.
+   */
   class: Coding,
   /**
    * Note that internal business rules will determine the appropriate transitions that may occur between statuses (and also classes).
@@ -19,10 +19,8 @@ export const Encounter = Schema.Struct({
   status: Schema.String,
   // ('planned'|'arrived'|'triaged'|'in-progress'|'onleave'|'finished'|'cancelled'|'entered-in-error'|'unknown');
   location: Schema.optional(
-    Schema.Array(
-      Schema.Struct({ location: Location })
-    )
-  )
+    Schema.Array(Schema.Struct({ location: Location })),
+  ),
 });
 
 export type Encounter = typeof Encounter.Type;

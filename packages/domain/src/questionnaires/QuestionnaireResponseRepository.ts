@@ -9,7 +9,7 @@ import {
   QuestionnaireResponse,
   QuestionnaireResponseId,
 } from "./models/QuestionnaireResponse";
-import { WithId } from "src/general-purpose";
+import { WithId } from "../general-purpose";
 
 export class QuestionnaireResponseRepository extends Context.Tag(
   "QuestionnaireResponseRepository",
@@ -20,7 +20,7 @@ export class QuestionnaireResponseRepository extends Context.Tag(
       questionnaireResponses: QuestionnaireResponse[],
     ) => Effect.Effect<
       ReadonlyArray<QuestionnaireResponse>,
-      UnhandledError | NeedsAuthenticationError| ExternalAssertionError,
+      UnhandledError | NeedsAuthenticationError | ExternalAssertionError,
       never
     >;
 
@@ -28,7 +28,10 @@ export class QuestionnaireResponseRepository extends Context.Tag(
       id: QuestionnaireResponseId,
     ) => Effect.Effect<
       QuestionnaireResponse,
-      UnhandledError | NotFoundError | NeedsAuthenticationError | ExternalAssertionError,
+      | UnhandledError
+      | NotFoundError
+      | NeedsAuthenticationError
+      | ExternalAssertionError,
       never
     >;
 
@@ -44,7 +47,10 @@ export class QuestionnaireResponseRepository extends Context.Tag(
       id: QuestionnaireResponseId,
     ) => Effect.Effect<
       object,
-      UnhandledError | NotFoundError | NeedsAuthenticationError | ExternalAssertionError,
+      | UnhandledError
+      | NotFoundError
+      | NeedsAuthenticationError
+      | ExternalAssertionError,
       never
     >;
 
@@ -52,7 +58,10 @@ export class QuestionnaireResponseRepository extends Context.Tag(
       questionnaireResponse: WithId<QuestionnaireResponse>,
     ) => Effect.Effect<
       WithId<QuestionnaireResponse>,
-      UnhandledError | NotFoundError | NeedsAuthenticationError | ExternalAssertionError,
+      | UnhandledError
+      | NotFoundError
+      | NeedsAuthenticationError
+      | ExternalAssertionError,
       never
     >;
   }

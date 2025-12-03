@@ -1,12 +1,9 @@
 import { Layer, Effect } from "effect";
-import { 
-  Questionnaire, 
-  QuestionnaireRepository 
-} from "assessmentis-domain"
 import {
-  FhirClient,
-  LiveFhirClient,
-} from "../FhirLiveLayer";
+  Questionnaire,
+  QuestionnaireRepository,
+} from "@assessmentis/domain/questionnaires";
+import { FhirClient, LiveFhirClient } from "../FhirLiveLayer";
 
 export const FhirQuestionnaireRepository = Layer.effect(
   QuestionnaireRepository,

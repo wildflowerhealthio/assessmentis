@@ -17,12 +17,12 @@ export type QuestionnaireResponseItemAnswerId =
 
 const questionnaireResponseItemAnswerFields = {
   ...BackboneElement(QuestionnaireResponseItemAnswerId).fields,
-}
+};
 
-export type QuestionnaireResponseItemAnswer = 
-  Schema.Struct.Type<typeof questionnaireResponseItemAnswerFields> 
-  & typeof ValueElement.Type
-  & {
+export type QuestionnaireResponseItemAnswer = Schema.Struct.Type<
+  typeof questionnaireResponseItemAnswerFields
+> &
+  typeof ValueElement.Type & {
     readonly item?: ReadonlyArray<QuestionnaireResponseItem> | undefined;
   };
 
@@ -81,16 +81,18 @@ const questionnaireResponseItemFields = {
   // _text?: Element | undefined;
 } as const;
 
-export interface QuestionnaireResponseItem
-  extends Schema.Struct.Type<typeof questionnaireResponseItemFields> {
+export interface QuestionnaireResponseItem extends Schema.Struct.Type<
+  typeof questionnaireResponseItemFields
+> {
   readonly item?: ReadonlyArray<QuestionnaireResponseItem> | undefined;
   readonly answer?:
     | ReadonlyArray<typeof QuestionnaireResponseItemAnswer.Type>
     | undefined;
 }
 
-export interface QuestionnaireResponseItemEncoded
-  extends Schema.Struct.Encoded<typeof questionnaireResponseItemFields> {
+export interface QuestionnaireResponseItemEncoded extends Schema.Struct.Encoded<
+  typeof questionnaireResponseItemFields
+> {
   readonly item?: ReadonlyArray<QuestionnaireResponseItemEncoded> | undefined;
 }
 

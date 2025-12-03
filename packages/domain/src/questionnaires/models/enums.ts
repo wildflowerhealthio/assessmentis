@@ -1,8 +1,6 @@
 import { Schema } from "effect";
 
-
-export const QuestionnaireItemType = Schema.Enums(
-  {
+export const QuestionnaireItemType = Schema.Enums({
   /**
    * Question with a long (potentially multi-paragraph) free-text entry answer (valueString).
    */
@@ -35,18 +33,17 @@ export const questionItemTypes: [
   QuestionnaireItemType.enums.display,
 ] as const;
 
-
 export const QuestionnaireItemStyle = Schema.Enums({
   /// The biggest heading, there should only be one H1
   heading1: "heading1",
   /// The second biggest heading, there can be many
-  heading2 : "heading2",
+  heading2: "heading2",
   /// The third biggest heading, they must be logically under an H2
-  heading3 : "heading3",
+  heading3: "heading3",
   /// Display as an independent question
-  question : "question",
+  question: "question",
   /// Display in a style to fit within a question
-  within_question : "within_question",
+  within_question: "within_question",
 } as const);
 
 export const questionnaireItemStyles: [

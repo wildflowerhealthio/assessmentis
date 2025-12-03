@@ -1,17 +1,15 @@
 import { Layer, Effect } from "effect";
 import {
-  QuestionnaireResponse, 
-  QuestionnaireResponseRepository, 
-} from "assessmentis-domain";
-import {
-  FhirClient,
-  LiveFhirClient,
-} from "../FhirLiveLayer";
+  QuestionnaireResponse,
+  QuestionnaireResponseRepository,
+} from "@assessmentis/domain/questionnaires";
+import { FhirClient, LiveFhirClient } from "../FhirLiveLayer";
 
 export const FhirQuestionnaireResponseRepository = Layer.effect(
   QuestionnaireResponseRepository,
   Effect.gen(function* () {
-    const { getAll, getById, createWithBundle, deleteById, update } = yield* FhirClient;
+    const { getAll, getById, createWithBundle, deleteById, update } =
+      yield* FhirClient;
 
     const createQuestionnaireResponses: typeof QuestionnaireResponseRepository.Service.createQuestionnaireResponses =
       (questionnaireResponses) =>
@@ -26,9 +24,9 @@ export const FhirQuestionnaireResponseRepository = Layer.effect(
     const deleteQuestionnaireResponse: typeof QuestionnaireResponseRepository.Service.deleteQuestionnaireResponse =
       deleteById("QuestionnaireResponse", QuestionnaireResponse);
 
-    const updateQuestionnaireResponse: typeof QuestionnaireResponseRepository.Service.updateQuestionnaireResponse = 
-      update("QuestionnaireResponse", QuestionnaireResponse)
-  
+    const updateQuestionnaireResponse: typeof QuestionnaireResponseRepository.Service.updateQuestionnaireResponse =
+      update("QuestionnaireResponse", QuestionnaireResponse);
+
     return {
       createQuestionnaireResponses,
       deleteQuestionnaireResponse,

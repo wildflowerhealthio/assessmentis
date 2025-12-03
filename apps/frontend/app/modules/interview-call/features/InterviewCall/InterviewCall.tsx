@@ -2,21 +2,21 @@
 
 import "./InterviewCall.css";
 
-import DailyIframe, { type DailyCall, type DailyEvent } from "@daily-co/daily-js";
+import DailyIframe, {
+  type DailyCall,
+  type DailyEvent,
+} from "@daily-co/daily-js";
 import { DailyAudio, DailyProvider } from "@daily-co/daily-react";
 
 import { Schema } from "effect";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import { Call, HairCheck, Header, Tray } from "assessmentis-daily-co-infrastructure/src";
-import {
-  FullEncounter,
-} from "app/modules/interview-call/actions/getFullEncounter";
-import { cons } from "effect/List";
+  Call,
+  HairCheck,
+  Header,
+  Tray,
+} from "@assessmentis/daily-co-infrastructure/components";
+import { FullEncounter } from "app/modules/interview-call/actions/getFullEncounter";
 
 /* We decide what UI to show to users based on the state of the app, which is dependent on the state of the call object. */
 enum VideoCallState {
@@ -162,9 +162,7 @@ interface IProps {
   encounterJson: typeof FullEncounter.Encoded;
 }
 
-function InterviewCall({
-  encounterJson,
-}: IProps) {
+function InterviewCall({ encounterJson }: IProps) {
   const encounter = Schema.decodeSync(FullEncounter)(encounterJson);
 
   const { joinCall, startLeavingCall, uiState, callObject, createCall } =

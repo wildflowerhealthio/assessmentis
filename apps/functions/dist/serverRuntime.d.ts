@@ -1,4 +1,4 @@
 import { Layer, ManagedRuntime } from "effect";
-export declare const serverAppLayer: Layer.Layer<import("@effect/opentelemetry/Resource").Resource | import("assessmentis-domain").ExternalVideoCallClient, never, never>;
-export declare const serverRuntime: () => ManagedRuntime.ManagedRuntime<import("@effect/opentelemetry/Resource").Resource | import("assessmentis-domain").ExternalVideoCallClient, never>;
+export declare const serverAppLayer: Layer.Layer<unknown, never, unknown>;
+export declare const serverRuntime: () => ManagedRuntime.ManagedRuntime<unknown, never>;
 export type ServerRuntime = typeof serverRuntime;

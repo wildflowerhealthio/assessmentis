@@ -2,8 +2,8 @@ import { Schema } from "effect";
 import { Code, Coding } from "./Coding";
 import { Reference } from "./Reference";
 
-const Attachment = Schema.Struct({ contentType: Schema.optional(Code)});
-const Quantity = Schema.Struct({value: Schema.optional(Schema.Number)});
+const Attachment = Schema.Struct({ contentType: Schema.optional(Code) });
+const Quantity = Schema.Struct({ value: Schema.optional(Schema.Number) });
 
 /**
  * Single-valued answer to the question
@@ -14,26 +14,26 @@ export const ValueElement = Schema.Union(
     /**
      * More complex structures (Attachment, Resource and Quantity) will typically be limited to electronic forms that can expose an appropriate user interface to capture the components and enforce the constraints of a complex data type.  Additional complex types can be introduced through extensions. Must match the datatype specified by Questionnaire.item.type in the corresponding Questionnaire.
      */
-    valueBoolean: (Schema.Boolean),
+    valueBoolean: Schema.Boolean,
     // _valueBoolean?: Element | undefined;
   }),
   Schema.Struct({
     /**
      * More complex structures (Attachment, Resource and Quantity) will typically be limited to electronic forms that can expose an appropriate user interface to capture the components and enforce the constraints of a complex data type.  Additional complex types can be introduced through extensions. Must match the datatype specified by Questionnaire.item.type in the corresponding Questionnaire.
      */
-    valueDecimal: (Schema.Number),
+    valueDecimal: Schema.Number,
   }),
   Schema.Struct({
     /**
      * More complex structures (Attachment, Resource and Quantity) will typically be limited to electronic forms that can expose an appropriate user interface to capture the components and enforce the constraints of a complex data type.  Additional complex types can be introduced through extensions. Must match the datatype specified by Questionnaire.item.type in the corresponding Questionnaire.
      */
-    valueInteger: (Schema.Number),
+    valueInteger: Schema.Number,
   }),
   Schema.Struct({
     /**
      * More complex structures (Attachment, Resource and Quantity) will typically be limited to electronic forms that can expose an appropriate user interface to capture the components and enforce the constraints of a complex data type.  Additional complex types can be introduced through extensions. Must match the datatype specified by Questionnaire.item.type in the corresponding Questionnaire.
      */
-    valueDate: (Schema.String),
+    valueDate: Schema.String,
     // _valueDate?: Element | undefined,
   }),
   Schema.Struct({
@@ -47,52 +47,51 @@ export const ValueElement = Schema.Union(
     /**
      * More complex structures (Attachment, Resource and Quantity) will typically be limited to electronic forms that can expose an appropriate user interface to capture the components and enforce the constraints of a complex data type.  Additional complex types can be introduced through extensions. Must match the datatype specified by Questionnaire.item.type in the corresponding Questionnaire.
      */
-    valueTime: (Schema.String),
+    valueTime: Schema.String,
     // _valueTime?: Element | undefined;
   }),
   Schema.Struct({
     /**
      * More complex structures (Attachment, Resource and Quantity) will typically be limited to electronic forms that can expose an appropriate user interface to capture the components and enforce the constraints of a complex data type.  Additional complex types can be introduced through extensions. Must match the datatype specified by Questionnaire.item.type in the corresponding Questionnaire.
      */
-    valueString: (Schema.String),
+    valueString: Schema.String,
     // _valueString?: Element | undefined;
   }),
   Schema.Struct({
     /**
      * More complex structures (Attachment, Resource and Quantity) will typically be limited to electronic forms that can expose an appropriate user interface to capture the components and enforce the constraints of a complex data type.  Additional complex types can be introduced through extensions. Must match the datatype specified by Questionnaire.item.type in the corresponding Questionnaire.
      */
-    valueUri: (Schema.URL),
+    valueUri: Schema.URL,
     // _valueUri?: Element | undefined;
   }),
   Schema.Struct({
     /**
      * More complex structures (Attachment, Resource and Quantity) will typically be limited to electronic forms that can expose an appropriate user interface to capture the components and enforce the constraints of a complex data type.  Additional complex types can be introduced through extensions. Must match the datatype specified by Questionnaire.item.type in the corresponding Questionnaire.
      */
-    valueAttachment: (Attachment), // Attachment | undefined;
+    valueAttachment: Attachment, // Attachment | undefined;
   }),
   Schema.Struct({
     /**
      * More complex structures (Attachment, Resource and Quantity) will typically be limited to electronic forms that can expose an appropriate user interface to capture the components and enforce the constraints of a complex data type.  Additional complex types can be introduced through extensions. Must match the datatype specified by Questionnaire.item.type in the corresponding Questionnaire.
      */
-    valueCoding: (Coding),
+    valueCoding: Coding,
   }),
   Schema.Struct({
     /**
      * More complex structures (Attachment, Resource and Quantity) will typically be limited to electronic forms that can expose an appropriate user interface to capture the components and enforce the constraints of a complex data type.  Additional complex types can be introduced through extensions. Must match the datatype specified by Questionnaire.item.type in the corresponding Questionnaire.
      */
-    valueQuantity: (Quantity), //  | undefined;
+    valueQuantity: Quantity, //  | undefined;
   }),
   Schema.Struct({
     /**
      * More complex structures (Attachment, Resource and Quantity) will typically be limited to electronic forms that can expose an appropriate user interface to capture the components and enforce the constraints of a complex data type.  Additional complex types can be introduced through extensions. Must match the datatype specified by Questionnaire.item.type in the corresponding Questionnaire.
      */
-    valueReference: (Reference),
+    valueReference: Reference,
   }),
   Schema.Struct({
-    valueCode: (Code),
+    valueCode: Code,
   }),
-  Schema.Struct({
-  })
+  Schema.Struct({}),
 );
 
 export type ValueElement = typeof ValueElement.Type;

@@ -5,10 +5,7 @@ import {
   NotFoundError,
   UnhandledError,
 } from "../errors";
-import {
-  Questionnaire,
-  QuestionnaireId,
-} from "./models/Questionnaire";
+import { Questionnaire, QuestionnaireId } from "./models/Questionnaire";
 
 export const GetQuestionnairesArg = Schema.Struct({});
 export type GetQuestionnairesArg = typeof GetQuestionnairesArg.Type;
@@ -29,7 +26,10 @@ export class QuestionnaireRepository extends Context.Tag(
       id: QuestionnaireId,
     ): Effect.Effect<
       Questionnaire,
-      UnhandledError | NeedsAuthenticationError | ExternalAssertionError | NotFoundError,
+      | UnhandledError
+      | NeedsAuthenticationError
+      | ExternalAssertionError
+      | NotFoundError,
       never
     >;
 
@@ -44,8 +44,11 @@ export class QuestionnaireRepository extends Context.Tag(
     deleteQuestionnaire(
       id: QuestionnaireId,
     ): Effect.Effect<
-      {},
-      UnhandledError | NeedsAuthenticationError | ExternalAssertionError | NotFoundError,
+      object,
+      | UnhandledError
+      | NeedsAuthenticationError
+      | ExternalAssertionError
+      | NotFoundError,
       never
     >;
   }

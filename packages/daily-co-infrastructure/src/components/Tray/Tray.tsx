@@ -24,7 +24,7 @@ import {
   Screenshare,
 } from "./Icons";
 
-export default function Tray({ leaveCall }: {leaveCall: () => void}) {
+export default function Tray({ leaveCall }: { leaveCall: () => void }) {
   const callObject = useDaily();
   const { isSharingScreen, startScreenShare, stopScreenShare } =
     useScreenShare();

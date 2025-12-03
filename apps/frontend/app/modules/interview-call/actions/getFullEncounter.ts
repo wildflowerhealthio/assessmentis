@@ -3,10 +3,19 @@ import {
   Encounter,
   EncounterId,
   EncounterNotFound,
-  EncounterRepository, NeedsAuthenticationError, UnhandledError,QuestionnaireResponse ,QuestionnaireResponseRepository, VideoCallRoom, VideoCallRepository,
+  EncounterRepository,
+} from "@assessmentis/domain/encounters";
+import {
+  NeedsAuthenticationError,
+  UnhandledError,
   NotFoundError,
   ExternalAssertionError,
-  } from "assessmentis-domain"
+} from "@assessmentis/domain/errors";
+import {
+  QuestionnaireResponse,
+  QuestionnaireResponseRepository,
+} from "@assessmentis/domain/questionnaires";
+import { VideoCallRepository } from "@assessmentis/domain/video-calls";
 
 export const FullEncounter = Schema.Struct({
   ...Encounter.fields,
@@ -31,7 +40,10 @@ export const getFullEncounter = (
   encounterIdMaybe: Option.Option<EncounterId>,
 ): Effect.Effect<
   FullEncounterResult,
-  UnhandledError | NeedsAuthenticationError | NotFoundError | ExternalAssertionError,
+  | UnhandledError
+  | NeedsAuthenticationError
+  | NotFoundError
+  | ExternalAssertionError,
   EncounterRepository | VideoCallRepository | QuestionnaireResponseRepository
 > => {
   return Effect.gen(function* () {
@@ -41,7 +53,6 @@ export const getFullEncounter = (
     );
 
     const encounterRepository = yield* EncounterRepository;
-    const videoCallRepository = yield* VideoCallRepository;
     const questionnaireResponseRepository =
       yield* QuestionnaireResponseRepository;
     yield* Effect.logDebug("Getting full encounter with ID ", encounterId);
@@ -55,11 +66,10 @@ export const getFullEncounter = (
         encounterId,
       });
 
-    const [encounter, questionnaireResponses] =
-      yield* Effect.all([
-        encounterEffect,
-        questionnaireResponseGroupEffect,
-      ]);
+    const [encounter, questionnaireResponses] = yield* Effect.all([
+      encounterEffect,
+      questionnaireResponseGroupEffect,
+    ]);
 
     const encounterRes: FullEncounter = {
       ...encounter,

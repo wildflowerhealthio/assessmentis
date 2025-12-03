@@ -1,8 +1,11 @@
 import "./HomeScreen.css";
 
-export default function HomeScreen({ createCall, startHairCheck }: {
-  createCall: () => Promise<string>
-  startHairCheck: (url: string) => void
+export default function HomeScreen({
+  createCall,
+  startHairCheck,
+}: {
+  createCall: () => Promise<string>;
+  startHairCheck: (url: string) => void;
 }) {
   const startDemo = () => {
     createCall().then((url) => {

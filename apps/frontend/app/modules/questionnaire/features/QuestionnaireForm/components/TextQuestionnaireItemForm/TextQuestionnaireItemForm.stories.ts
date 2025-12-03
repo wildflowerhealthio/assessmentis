@@ -3,8 +3,11 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { Arbitrary, FastCheck } from "effect";
 import { action } from "storybook/actions";
-import { QuestionnaireItemType } from "assessmentis-domain";
-import { QuestionnaireItem } from "assessmentis-domain";
+import { Code } from "@assessmentis/domain/general-purpose";
+import {
+  QuestionnaireItem,
+  QuestionnaireItemType,
+} from "@assessmentis/domain/questionnaires";
 import TextQuestionnaireItemForm from "app/modules/questionnaire/features/QuestionnaireForm/components/TextQuestionnaireItemForm/TextQuestionnaireItemForm";
 
 //👇 This default export determines where your story goes in the story list
@@ -15,7 +18,9 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const questionnaireItem = FastCheck.sample(Arbitrary.make(QuestionnaireItem))[0]
+const questionnaireItem = FastCheck.sample(
+  Arbitrary.make(QuestionnaireItem),
+)[0];
 
 const arbitraryProps = {
   questionnaireItem: {
@@ -25,12 +30,10 @@ const arbitraryProps = {
   },
   questionnaireResponseItem: {
     linkId: questionnaireItem.linkId,
-    answer: [
-      {valueString: "some text"}
-    ]
+    answer: [{ valueString: "some text" }],
   },
   setQuestionnaireResponseItem: action("setQuestionnaireResponseItem"),
-  uiControl: undefined
+  uiControl: undefined,
 };
 
 export const RegularQuestion: Story = {
@@ -49,7 +52,7 @@ export const WithinQuestion: Story = {
     questionnaireItem: {
       ...arbitraryProps.questionnaireItem,
     },
-    uiControl: 'table' as any
+    uiControl: Code.make("table"),
   },
 };
 

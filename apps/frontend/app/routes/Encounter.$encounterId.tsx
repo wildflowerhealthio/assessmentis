@@ -1,29 +1,27 @@
 import { ManagedRuntime, Match, Schema } from "effect";
-import { EncounterId } from "assessmentis-domain";
+import { EncounterId } from "@assessmentis/domain/encounters";
 import { getFullEncounter } from "app/modules/interview-call/actions/getFullEncounter";
 import InterviewCall from "app/modules/interview-call/features/InterviewCall/InterviewCall";
-import type { Route } from ".react-router/types/app/routes/+types/Encounter.$encounterId";
-import { clientAppLayer } from "~/clientRuntime";
+import type { Route } from "./+types/Encounter.$encounterId";
+import { clientAppLayer } from "app/clientRuntime";
 
 const tryDecodeEncounterId = Schema.decodeOption(EncounterId);
 
-export async function clientLoader({
-  params,
-}: Route.ClientLoaderArgs) {
-  const encounterIdStr = params.encounterId
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
+  const encounterIdStr = params.encounterId;
   const encounterIdMaybe = tryDecodeEncounterId(encounterIdStr);
 
   const runtime = ManagedRuntime.make(clientAppLayer);
-  const encounter = await runtime.runPromise(getFullEncounter(encounterIdMaybe));
+  const encounter = await runtime.runPromise(
+    getFullEncounter(encounterIdMaybe),
+  );
 
-  return { encounter }
+  return { encounter };
 }
 
-export default function EncounterPage({
-  loaderData,
-}: Route.ComponentProps) {
+export default function EncounterPage({ loaderData }: Route.ComponentProps) {
   const { encounter } = loaderData;
-  
+
   return Match.value(encounter).pipe(
     Match.tag("Success", ({ data }) => (
       <InterviewCall encounterJson={data}></InterviewCall>
@@ -36,5 +34,5 @@ export default function EncounterPage({
       ),
     ),
     Match.exhaustive,
-  )
+  );
 }

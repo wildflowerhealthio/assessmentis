@@ -3,8 +3,10 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { Arbitrary, FastCheck } from "effect";
 import { action } from "storybook/actions";
-import { QuestionnaireItemType } from "assessmentis-domain";
-import { QuestionnaireItem } from "assessmentis-domain";
+import {
+  QuestionnaireItemType,
+  QuestionnaireItem,
+} from "@assessmentis/domain/questionnaires";
 import RadioQuestionnaireItemForm, {
   RadioQuestionnaireItemFormGroup,
 } from "app/modules/questionnaire/features/QuestionnaireForm/components/RadioQuestionnaireItemForm/RadioQuestionnaireItemForm";
@@ -17,16 +19,21 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+const questionnaireItem = FastCheck.sample(
+  Arbitrary.make(QuestionnaireItem),
+)[0];
+
 const arbitraryProps = {
   questionnaireItem: {
-    ...FastCheck.sample(Arbitrary.make(QuestionnaireItem))[0],
+    ...questionnaireItem,
     type: QuestionnaireItemType.enums.boolean,
     text: "Do you often interrupt the activities of others, or intrude on others?",
     answerOption: [{ initialSelected: true }, { initialSelected: false }],
   },
-  answer: { valueBoolean: true },
-  setAnswer: action("set-answer"),
-  onSubmit: action("on-submit"),
+  questionnaireResponseItem: {
+    linkId: questionnaireItem.linkId,
+  },
+  setQuestionnaireResponseItem: action("setQuestionnaireResponseItem"),
   uiControl: undefined,
 };
 
@@ -72,7 +79,6 @@ export const StringQuestion: Story = {
         { valueString: "Blue" },
       ],
     },
-    answer: { valueString: "Green" },
   },
 };
 
@@ -88,7 +94,6 @@ export const GridStyleStringQuestion: Story = {
         { valueString: "Blue" },
       ],
     },
-    answer: { valueString: "Green" },
   },
 
   render: (args) => (

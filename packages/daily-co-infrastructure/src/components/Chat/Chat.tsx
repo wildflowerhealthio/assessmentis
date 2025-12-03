@@ -9,9 +9,15 @@ import { Arrow } from "../Tray/Icons/index";
 import "./Chat.css";
 import type { DailyEventObjectAppMessage } from "@daily-co/daily-js";
 
-type Message = {msg: string; name: string}
+type Message = { msg: string; name: string };
 
-export default function Chat({ showChat, toggleChat }: { showChat: boolean; toggleChat: () => void; }) {
+export default function Chat({
+  showChat,
+  toggleChat,
+}: {
+  showChat: boolean;
+  toggleChat: () => void;
+}) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const localSessionId = useLocalSessionId();
