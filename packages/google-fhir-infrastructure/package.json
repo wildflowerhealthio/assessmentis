@@ -1,0 +1,27 @@
+{
+  "name": "assessmentis-google-fhir-infrastructure",
+  "version": "0.0.1",
+  "description": "Infrastructure for Google's FHIR store",
+  "author": "Ruth Marks",
+  "license": "UNLICENSED",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "check-types": "tsc --noEmit",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "files": [
+    "/dist"
+  ],
+  "devDependencies": {
+    "@types/fhir": "^3.0.2",
+    "typescript": "^5.9.3",
+    "@types/gapi.client.healthcare-v1": "^0.0.4",
+    "@types/gapi": "^0.0.47"
+  },
+  "dependencies": {
+    "effect": "^3.19.8",
+    "temporal-polyfill": "^0.3.0"
+  }
+}

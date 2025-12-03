@@ -1,0 +1,93 @@
+@import 'modern-normalize';
+@import 'tundra-css';
+
+@layer reset {
+	* {
+		margin: 0;
+	}
+
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6,
+	p {
+		text-wrap: pretty;
+	}
+
+	a,
+	label {
+		cursor: pointer;
+	}
+
+	select {
+		/* Remove Safari default styles */
+		appearance: none;
+	}
+}
+
+/* Any global styles should come after this */
+
+:root {
+	--app-accent: var(--neutral-3);
+	--app-accent-1: var(--neutral-1);
+	--app-accent-2: var(--neutral-2);
+	--app-accent-3: var(--neutral-3);
+	--app-accent-4: var(--neutral-4);
+	--app-accent-5: var(--neutral-5);
+	--app-accent-6: var(--neutral-6);
+	--app-accent-7: var(--neutral-7);
+	--app-accent-8: var(--neutral-8);
+	--app-accent-9: var(--neutral-9);
+	--app-foreground: var(--neutral-1);
+	--app-background: var(--neutral-9);
+}
+
+html {
+	color: var(--app-foreground);
+	background-color: var(--neutral-1);
+}
+
+body {
+	background-color: #fff;
+}
+
+html,
+body {
+	min-height: 100svh;
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+}
+
+main {
+	width: 100%;
+	max-width: 1400px;
+	padding-block: var(--space-8);
+	padding-inline: var(--space-10);
+	margin-inline: auto;
+}
+
+code {
+	background-color: var(--neutral-9);
+	color: var(--app-accent);
+	padding-inline: var(--space-2);
+	padding-block: var(--space-1);
+	border-radius: var(--radius-1);
+}
+
+hr {
+	border: 0.5px solid var(--neutral-8);
+}
+
+a {
+	display: flex;
+	gap: var(--space-2);
+	color: var(--app-accent);
+	text-decoration: none;
+
+	&:hover {
+		text-decoration: underline;
+	}
+}

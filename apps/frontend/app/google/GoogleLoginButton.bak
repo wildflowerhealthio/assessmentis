@@ -1,0 +1,133 @@
+'use client'
+
+import { Schema } from "effect";
+import { useCallback, useEffect, useRef, useState } from "react"
+
+const JwtPayload = Schema.Struct({
+  exp: Schema.Number,
+  given_name: Schema.optional(Schema.String)
+})
+
+const parseJwtPayload = Schema.decodeUnknownSync(JwtPayload)
+
+
+const nameFromCred = (cred: string | null) => {
+  if (!cred) return;
+    
+    try {
+      const payloadBase64 = cred.split('.')[1]
+      const payload = JSON.parse(atob(payloadBase64))
+      const parsed = parseJwtPayload(payload)
+      if (parsed.exp < Date.now() / 1000) return
+
+      return parsed.given_name ?? 'User'
+    }
+    catch {
+      return undefined
+    }
+}
+
+const initGapi = async (token: string) => {
+  
+  const apiKey = import.meta.env.PUBLIC_GOOGLE_API_KEY
+  gapi.client.setApiKey(apiKey)
+  gapi.client.setToken({access_token: token})
+  await gapi.client.load('https://healthcare.googleapis.com/$discovery/rest?version=v1')
+}
+
+const scopes = [
+  "https://www.googleapis.com/auth/userinfo.email",
+  "https://www.googleapis.com/auth/userinfo.profile",
+  "https://www.googleapis.com/auth/cloud-platform",
+  'https://www.googleapis.com/auth/cloud-healthcare',
+] as const
+
+export default function GoogleLoginButton() { 
+  const client_id = import.meta.env.PUBLIC_GOOGLE_OAUTH_CLIENT_ID
+  
+  const [name, setName] = useState<string | undefined>()
+  const tokenClientRef = useRef<google.accounts.oauth2.TokenClient | null>(null);
+
+  useEffect(() => {
+    if (import.meta.env.SSR) return
+
+    const scope = scopes.join(" ")
+
+    const updateName = () => {
+      const accessToken = localStorage.getItem("GoogleAccessToken");
+      const cred = localStorage.getItem("GoogleCredential");
+      const name = nameFromCred(cred)
+      setName(name)
+    }
+
+    tokenClientRef.current = google.accounts.oauth2.initTokenClient({
+      client_id,
+      scope,
+      callback: (resp: google.accounts.oauth2.TokenResponse) => {
+        console.log("Response token", resp.access_token)
+        localStorage.setItem("GoogleAccessToken", resp.access_token);
+
+        gapi.load('client', () => initGapi(resp.access_token).then(() => updateName()))
+      },
+    });
+
+    const accessToken = localStorage.getItem("GoogleAccessToken");
+    const cred = localStorage.getItem("GoogleCredential");
+    const name = nameFromCred(cred)
+
+    if (name && accessToken) {
+      gapi.load('client', () => initGapi(accessToken).then(() => setName(name)))
+    }
+  })
+
+  const handleButtonLoad = useCallback((buttonDiv: HTMLDivElement) => {
+    
+    const onGoogleCredentialResponse = (result: google.accounts.id.CredentialResponse) => {
+      localStorage.setItem("GoogleCredential", result.credential);
+      tokenClientRef.current?.requestAccessToken()
+    }
+
+    google.accounts.id.initialize({
+      client_id,
+      callback: onGoogleCredentialResponse,
+      context: 'use',
+    });
+
+    google.accounts.id.renderButton(
+      buttonDiv,
+      { type: 'standard', theme: "outline", size: "large"  } as const
+    );
+  }, [])
+
+  if (name) {
+    return <div>
+      Hi {name} <button onClick={() => {
+        localStorage.removeItem("GoogleCredential")
+        localStorage.removeItem("GoogleCredential")
+        gapi.client.setToken(null)
+        google.accounts.id.revoke("Logout")
+        setName(undefined)
+      }}>Logout</button>
+    </div>
+  }
+
+  return <div>
+    <div
+      ref={handleButtonLoad}
+      data-client_id={client_id}
+      data-context="use"
+      data-ux_mode="popup"
+      data-callback="onGoogleCredentialResponse"
+      data-itp_support="true">
+    </div>
+
+    <div className="g_id_signin"
+        data-type="standard"
+        data-shape="rectangular"
+        data-theme="filled_blue"
+        data-text="signin_with"
+        data-size="large"
+        data-logo_alignment="left">
+    </div>
+  </div>
+}

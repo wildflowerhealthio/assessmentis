@@ -1,0 +1,17 @@
+.DisplayQuestionnaireItemForm {
+  display: inline-flex; 
+  width: 100%; 
+  justify-content: space-between;
+}
+
+.DisplayQuestionnaireItemForm:global(.heading-4) {
+  margin-top: var(--space-6);
+}
+
+.DisplayQuestionnaireItemForm:global(.heading-3) {
+  margin-top: var(--space-6);
+}
+
+.DisplayQuestionnaireItemForm:global(.heading-2) {
+  margin-top: var(--space-12);
+}

@@ -1,0 +1,32 @@
+{
+  "name": "assessmentis",
+  "version": "0.0.1",
+  "description": "A tool for diagnostic interviews",
+  "main": "index.js",
+  "packageManager": "npm@10.9.2",
+  "scripts": {
+    "test": "test-me",
+    "build": "npm run build --workspace=packages/domain && npm run build --workspace=packages/** && npm run build --workspace=apps/**",
+    "build:watch": "npm run build:watch --workspace=packages/domain & npm run build:watch --workspace=packages/google-fhir-infrastructure & npm run build:watch --workspace=apps/functions"
+  },
+  "author": "Ruth Marks",
+  "license": "UNLICENSED",
+  "workspaces": [
+    "packages/config",
+    "packages/domain",
+    "packages/react-util",
+    "packages/google-fhir-infrastructure",
+    "packages/daily-co-infrastructure",
+    "packages/google-meet-infrastructure",
+    "packages/functions",
+    "apps/functions",
+    "apps/frontend"
+  ],
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "turbo": "^2.6.1"
+  }
+}

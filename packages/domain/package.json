@@ -1,0 +1,26 @@
+{
+  "name": "assessmentis-domain",
+  "version": "0.0.1",
+  "description": "The domain representations for Assessment.is",
+  "author": "Ruth Marks",
+  "license": "UNLICENSED",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
+  "devDependencies": {
+    "@types/fhir": "^3.0.2",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
+  },
+  "scripts": {
+    "build": "tsc",
+    "check-types": "tsc --noEmit",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "effect": "^3.19.8",
+    "temporal-polyfill": "^0.3.0"
+  }
+}

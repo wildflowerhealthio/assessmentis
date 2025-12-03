@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "module": "es2022",
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "declaration": true,
+    "outDir": "dist",
+    "moduleResolution": "bundler",
+    "sourceMap": true,
+    "strict": true,
+    "target": "es2022",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+
+    "verbatimModuleSyntax": true,
+    "noEmit": false,
+    "resolveJsonModule": true
+  },
+  "compileOnSave": true,
+  "include": ["./src/**/*.*"],
+  "exclude": [
+    "./node_modules",
+    "../../node_modules"
+  ]
+}
