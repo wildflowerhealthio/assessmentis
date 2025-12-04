@@ -181,7 +181,7 @@ export const DailyCoExternalVideoCallClientLayer = Layer.effect(
                     Option.getOrThrow
                   ),
                   duration: Duration.seconds(rec.duration),
-                  uri: `api.daily.co/v1/recordings/${rec.id}`,
+                  uri: `https://api.daily.co/v1/recordings/${rec.id}`,
                   recordingUrl,
                 } as ExternalVideoCallRecording
               })

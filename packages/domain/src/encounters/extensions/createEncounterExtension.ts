@@ -44,15 +44,17 @@ export function createEncounterExtension<const TUrl extends string>(
     const existingExtensions =
       encounter.extension?.filter((ext) => ext.url !== url) ?? []
 
+    const newExtensions = [
+      ...existingExtensions,
+      ...values.map((value) => ({
+        url,
+        valueUrl: value,
+      })),
+    ]
+
     return {
       ...encounter,
-      extension: [
-        ...existingExtensions,
-        ...values.map((value) => ({
-          url,
-          valueUrl: value,
-        })),
-      ] as any,
+      extension: newExtensions as T['extension'],
     }
   }
 

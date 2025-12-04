@@ -58,14 +58,13 @@ export const updateEncounterRecordingsAndTranscripts = (
 
     // Update the encounter with recording URIs
     const updatedEncounter = withRecordings(
-      encounter as any,
+      encounter,
       recordings.map((rec) => rec.uri)
     )
 
     // Save the updated encounter
-    const savedEncounter = yield* encounterRepository.updateEncounter(
-      updatedEncounter as WithId<Encounter>
-    )
+    const savedEncounter =
+      yield* encounterRepository.updateEncounter(updatedEncounter)
 
     return savedEncounter
   })
