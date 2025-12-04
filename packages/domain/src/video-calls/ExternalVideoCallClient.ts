@@ -15,7 +15,7 @@ export class ExternalVideoCallServiceError extends Data.TaggedError(
 export interface RoomCreationParams {
   expiresAt?: Zoned
   enableChat?: boolean
-  enableRecoding?: boolean
+  enableRecording?: boolean
 }
 
 export class ExternalVideoCallClient extends Context.Tag(

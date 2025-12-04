@@ -191,7 +191,7 @@ export const DailyCoExternalVideoCallClientLayer = Layer.effect(
           properties: {
             exp,
             enable_chat: params.enableChat ?? false,
-            enable_recording: params.enableRecoding ? 'cloud' : undefined,
+            enable_recording: params.enableRecording ? 'cloud' : undefined,
           },
         }
 

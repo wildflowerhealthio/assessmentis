@@ -60,7 +60,7 @@ export const createEncounter = (
     const videoCalls = yield* ExternalVideoCallClient
 
     const externalVideoCallRoom = yield* videoCalls.createRoom({
-      enableRecoding: true,
+      enableRecording: true,
     })
 
     const encounterData = {
