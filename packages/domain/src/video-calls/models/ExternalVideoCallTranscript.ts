@@ -1,7 +1,14 @@
-import { ExternalVideoCallRecordingId } from './VideoCallRecording'
+import { Schema } from 'effect'
+import { ExternalVideoCallRoomId } from './VideoCallRoom'
+
+export const ExternalVideoCallTranscriptionId = Schema.String.pipe(
+  Schema.brand('ExternalVideoCallTranscriptionId')
+)
+
+export type ExternalVideoCallTranscriptionId =
+  typeof ExternalVideoCallTranscriptionId.Type
 
 export interface ExternalVideoCallTranscript {
-  externalVideoCallRecordingId: ExternalVideoCallRecordingId
-  transcriptText: string
-  language?: string
+  externalTranscriptionId: ExternalVideoCallTranscriptionId
+  externalRoomId: ExternalVideoCallRoomId
 }
