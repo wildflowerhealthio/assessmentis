@@ -7,7 +7,6 @@ import {
   ScrollRestoration,
   useNavigate,
 } from 'react-router'
-import type { Route } from './+types/root'
 import './globals.css'
 import { RuntimeContextOrErr } from './components/RuntimeContextOrErr'
 import { FiberFailureCauseId } from 'effect/Runtime'
@@ -74,7 +73,7 @@ export default function App() {
   return <Outlet />
 }
 
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+export function ErrorBoundary({ error }: { error: unknown }) {
   const navigate = useNavigate()
   let message = 'Oops!'
   let details = 'An unexpected error occurred.'
