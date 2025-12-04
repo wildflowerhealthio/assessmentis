@@ -3,5 +3,5 @@ export default function Home() {
     <section>
       <h1>Assessment.is</h1>
     </section>
-  );
+  )
 }

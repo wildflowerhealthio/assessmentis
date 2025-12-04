@@ -1,46 +1,43 @@
-import { Effect, Schema } from "effect";
+import { Effect, Schema } from 'effect'
 import {
   ExternalVideoCallClient,
   ExternalVideoCallServiceError,
   VideoCallRepository,
-} from "@assessmentis/domain/video-calls";
+} from '@assessmentis/domain/video-calls'
 import {
   QuestionnaireResponse,
   QuestionnaireResponseRepository,
-} from "@assessmentis/domain/questionnaires";
-import {
-  EncounterRepository,
-  Encounter,
-} from "@assessmentis/domain/encounters";
+} from '@assessmentis/domain/questionnaires'
+import { EncounterRepository, Encounter } from '@assessmentis/domain/encounters'
 import {
   NeedsAuthenticationError,
   UnhandledError,
   ExternalAssertionError,
-} from "@assessmentis/domain/errors";
-import { Code } from "@assessmentis/domain/general-purpose";
+} from '@assessmentis/domain/errors'
+import { Code } from '@assessmentis/domain/general-purpose'
 
 export const CreateEncounterArg = Schema.extend(
   Schema.partial(Encounter),
   Schema.Struct({
     //....pipe(Schema.omit("encounterId")).fields,
     questionnaireResponses: Schema.Array(
-      QuestionnaireResponse.pipe(Schema.pick("questionnaire")),
+      QuestionnaireResponse.pipe(Schema.pick('questionnaire'))
     ),
-  }),
-);
+  })
+)
 
-export type CreateEncounterArg = typeof CreateEncounterArg.Type;
+export type CreateEncounterArg = typeof CreateEncounterArg.Type
 
 export const CreateEncounterResponse = Schema.Struct({
   ...Encounter.fields,
   // videoCallRooms: Schema.Array(VideoCallRoom),
   questionnaireResponses: Schema.Array(QuestionnaireResponse),
-});
+})
 
-export type CreateEncounterResponse = typeof CreateEncounterResponse.Type;
+export type CreateEncounterResponse = typeof CreateEncounterResponse.Type
 
 export const createEncounter = (
-  args: CreateEncounterArg,
+  args: CreateEncounterArg
 ): Effect.Effect<
   CreateEncounterResponse,
   | UnhandledError
@@ -53,19 +50,19 @@ export const createEncounter = (
   | ExternalVideoCallClient
 > => {
   return Effect.gen(function* () {
-    const encounterRepository = yield* EncounterRepository;
+    const encounterRepository = yield* EncounterRepository
     const questionnaireResponseRepository =
-      yield* QuestionnaireResponseRepository;
-    const videoCalls = yield* ExternalVideoCallClient;
+      yield* QuestionnaireResponseRepository
+    const videoCalls = yield* ExternalVideoCallClient
 
-    const externalVideoCallRoom = yield* videoCalls.createRoom({});
+    const externalVideoCallRoom = yield* videoCalls.createRoom({})
 
     const createdEncounter = yield* encounterRepository.createEncounter({
-      resourceType: "Encounter",
+      resourceType: 'Encounter',
       class: {
-        display: "virtual",
-        system: "http://terminology.hl7.org/CodeSystem/v3-ActCode",
-        code: Code.make("VR"),
+        display: 'virtual',
+        system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+        code: Code.make('VR'),
       },
       location: [
         {
@@ -76,9 +73,9 @@ export const createEncounter = (
           },
         },
       ],
-      status: "planned",
+      status: 'planned',
       ...args,
-    });
+    })
 
     // const roomInsertsEffect = videoCallRepository.createVideoCallRooms([
     //   {
@@ -92,14 +89,14 @@ export const createEncounter = (
     const questionnaireResponsesEffect =
       questionnaireResponseRepository.createQuestionnaireResponses(
         args.questionnaireResponses.map((questionnaireResponse) => ({
-          resourceType: "QuestionnaireResponse",
+          resourceType: 'QuestionnaireResponse',
           encounter: {
             reference: `Encounter/${createdEncounter.id}`,
           },
           ...questionnaireResponse,
-          status: "in-progress",
-        })),
-      );
+          status: 'in-progress',
+        }))
+      )
 
     const [
       encounterRow,
@@ -109,16 +106,16 @@ export const createEncounter = (
       Effect.succeed(createdEncounter),
       // roomInsertsEffect,
       questionnaireResponsesEffect,
-    ] as const);
+    ] as const)
 
     // const videoCallRooms: VideoCallRoom[] = rooms;
     const questionnaireResponses: ReadonlyArray<QuestionnaireResponse> =
-      questionnaireResponseRows;
+      questionnaireResponseRows
 
     return {
       ...encounterRow,
       // videoCallRooms,
       questionnaireResponses,
-    };
-  });
-};
+    }
+  })
+}

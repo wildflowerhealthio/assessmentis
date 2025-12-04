@@ -1,37 +1,37 @@
-import { signOut } from "firebase/auth";
-import { useState, useEffect } from "react";
-import { auth, signIn } from "../firebase";
+import { signOut } from 'firebase/auth'
+import { useState, useEffect } from 'react'
+import { auth, signIn } from '../firebase'
 
 export const LoginButton = (props: { className: string }) => {
   const [[label, action, disabled], setLabelAndAction] = useState<
     [string, undefined | (() => void), boolean]
-  >(["Logout", undefined, true]);
+  >(['Logout', undefined, true])
 
   useEffect(() => {
     return auth.onIdTokenChanged((maybeUser) => {
       if (maybeUser) {
         setLabelAndAction([
-          "Logout",
+          'Logout',
           () => {
-            signOut(auth);
+            signOut(auth)
           },
           false,
-        ]);
+        ])
       } else {
         setLabelAndAction([
-          "Login",
+          'Login',
           () => {
-            signIn();
+            signIn()
           },
           false,
-        ]);
+        ])
       }
-    });
-  }, []);
+    })
+  }, [])
 
   return (
     <button className={props.className} onClick={action} disabled={disabled}>
       {label}
     </button>
-  );
-};
+  )
+}

@@ -1,25 +1,25 @@
-"use client";
+'use client'
 
-import { type ChangeEventHandler, type SetStateAction } from "react";
-import classes from "./TextQuestionnaireItemForm.module.css";
+import { type ChangeEventHandler, type SetStateAction } from 'react'
+import classes from './TextQuestionnaireItemForm.module.css'
 import {
   QuestionnaireItem,
   QuestionnaireItemUIControlCode,
   QuestionnaireResponseItem,
   withAnsweredAt,
-} from "@assessmentis/domain/questionnaires";
-import { cn } from "@assessmentis/react-util";
-import { DateTime } from "effect";
-import { useRuntimeContext } from "app/clientRuntime";
+} from '@assessmentis/domain/questionnaires'
+import { cn } from '@assessmentis/react-util'
+import { DateTime } from 'effect'
+import { useRuntimeContext } from 'app/clientRuntime'
 
 export interface IProps {
-  questionnaireItem: QuestionnaireItem;
-  questionnaireResponseItem: QuestionnaireResponseItem;
+  questionnaireItem: QuestionnaireItem
+  questionnaireResponseItem: QuestionnaireResponseItem
   setQuestionnaireResponseItem: (
-    update: SetStateAction<QuestionnaireResponseItem>,
-  ) => void;
-  area?: boolean;
-  uiControl: typeof QuestionnaireItemUIControlCode.Type | undefined;
+    update: SetStateAction<QuestionnaireResponseItem>
+  ) => void
+  area?: boolean
+  uiControl: typeof QuestionnaireItemUIControlCode.Type | undefined
 }
 
 const TextQuestionnaireItemForm = ({
@@ -28,32 +28,32 @@ const TextQuestionnaireItemForm = ({
   setQuestionnaireResponseItem,
   area,
 }: IProps) => {
-  const clientRuntime = useRuntimeContext();
+  const clientRuntime = useRuntimeContext()
   const onChange: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> = (
-    ev,
+    ev
   ) => {
-    const valueString = ev.currentTarget.value;
+    const valueString = ev.currentTarget.value
     setQuestionnaireResponseItem(
       (qri: QuestionnaireResponseItem): QuestionnaireResponseItem => ({
         ...qri,
         answer: [
           withAnsweredAt(
             { valueString, modifierExtension: [] },
-            clientRuntime.runSync(DateTime.now),
+            clientRuntime.runSync(DateTime.now)
           ),
         ],
-      }),
-    );
-  };
+      })
+    )
+  }
 
-  const valueElement = questionnaireResponseItem.answer?.[0];
+  const valueElement = questionnaireResponseItem.answer?.[0]
   const valueString =
-    valueElement && "valueString" in valueElement
+    valueElement && 'valueString' in valueElement
       ? valueElement.valueString
-      : "";
+      : ''
 
   return (
-    <label className={cn("label-3", classes.TextQuestionnaireItem__label)}>
+    <label className={cn('label-3', classes.TextQuestionnaireItem__label)}>
       {questionnaireItem.text}
       {area ? (
         <textarea
@@ -78,7 +78,7 @@ const TextQuestionnaireItemForm = ({
         ></input>
       )}
     </label>
-  );
-};
+  )
+}
 
-export default TextQuestionnaireItemForm;
+export default TextQuestionnaireItemForm

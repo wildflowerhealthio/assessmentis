@@ -1,32 +1,32 @@
-import { Encounter, type EncounterId } from "@assessmentis/domain/encounters";
-import { Link } from "react-router";
+import { Encounter, type EncounterId } from '@assessmentis/domain/encounters'
+import { Link } from 'react-router'
 
 const EncountersList = ({
   encounters,
   deleteEncounter,
 }: {
-  encounters: { data: Encounter; loading: boolean }[];
-  deleteEncounter: (id: EncounterId | undefined) => Promise<void>;
+  encounters: { data: Encounter; loading: boolean }[]
+  deleteEncounter: (id: EncounterId | undefined) => Promise<void>
 }) => (
   <ul>
     {encounters.map(({ data: { id }, loading }) => (
       <li
         key={id}
         className="body-3"
-        style={loading ? { color: "rgba(0,0,0,0.5)" } : {}}
+        style={loading ? { color: 'rgba(0,0,0,0.5)' } : {}}
       >
         <button
           onClick={() => deleteEncounter(id)}
-          style={{ border: "none", display: "inline" }}
+          style={{ border: 'none', display: 'inline' }}
         >
           ❌
         </button>
-        <Link key={id} to={`/Encounter/${id}`} style={{ display: "inline" }}>
+        <Link key={id} to={`/Encounter/${id}`} style={{ display: 'inline' }}>
           {id}
         </Link>
       </li>
     ))}
   </ul>
-);
+)
 
-export default EncountersList;
+export default EncountersList

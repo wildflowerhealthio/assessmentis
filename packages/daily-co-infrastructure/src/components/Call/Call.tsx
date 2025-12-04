@@ -6,7 +6,7 @@ import {
 } from "@daily-co/daily-react";
 import { JSX, useCallback, useState } from "react";
 
-import classes from "./Call.module.css";
+import styles from "./Call.module.css";
 import Tile from "../Tile/Tile";
 import UserMediaError from "../UserMediaError/UserMediaError";
 
@@ -50,7 +50,7 @@ export default function Call() {
     );
   } else {
     focus = (
-      <div className={classes.Call__info}>
+      <div className={styles.Call__info}>
         <h2 className="heading-3">Waiting for others</h2>
         <p>Invite someone by sharing this link:</p>
         <span className="room-url">{window.location.href}</span>
@@ -58,9 +58,9 @@ export default function Call() {
     );
   }
   return (
-    <div className={classes.Call}>
+    <div className={styles.Call}>
       {focus}
-      <div className={classes.Call__miniVideoRow}>
+      <div className={styles.Call__miniVideoRow}>
         {localSessionId && (
           <Tile
             id={localSessionId}

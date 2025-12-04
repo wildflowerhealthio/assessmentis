@@ -1,55 +1,55 @@
-import { Effect, ManagedRuntime } from "effect";
-import { QuestionnairesList } from "./Questionnaire/QuestionnairesList";
+import { Effect, ManagedRuntime } from 'effect'
+import { QuestionnairesList } from './Questionnaire/QuestionnairesList'
 import {
   Questionnaire,
   QuestionnaireId,
   QuestionnaireRepository,
-} from "@assessmentis/domain/questionnaires";
-import questionnaireTemplates from "app/modules/admin/questionnaire-templates/questionnaireTemplates";
-import { clientAppLayer, useRuntimeContext } from "app/clientRuntime";
-import type { Route } from "./+types/Questionnaire._index";
-import { useCollection } from "@assessmentis/react-util";
+} from '@assessmentis/domain/questionnaires'
+import questionnaireTemplates from 'app/modules/admin/questionnaire-templates/questionnaireTemplates'
+import { clientAppLayer, useRuntimeContext } from 'app/clientRuntime'
+import type { Route } from './+types/Questionnaire._index'
+import { useCollection } from '@assessmentis/react-util'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {
-  const runtime = ManagedRuntime.make(clientAppLayer);
+  const runtime = ManagedRuntime.make(clientAppLayer)
 
   const questionnaires = await runtime.runPromise(
     Effect.gen(function* () {
-      const questionnaireRepository = yield* QuestionnaireRepository;
-      return yield* questionnaireRepository.getQuestionnaires({});
-    }),
-  );
+      const questionnaireRepository = yield* QuestionnaireRepository
+      return yield* questionnaireRepository.getQuestionnaires({})
+    })
+  )
 
-  return { questionnaires };
+  return { questionnaires }
 }
 
 const useQuestionnaires = (initial: Questionnaire[]) => {
-  const clientRuntime = useRuntimeContext();
+  const clientRuntime = useRuntimeContext()
 
   return useCollection<QuestionnaireId, Questionnaire>(
     {
       apiDelete: async (id: QuestionnaireId) =>
         clientRuntime.runPromise(
           Effect.all([
-            Effect.sleep("200 millis"),
+            Effect.sleep('200 millis'),
             QuestionnaireRepository.pipe(
-              Effect.flatMap((qr) => qr.deleteQuestionnaire(id)),
+              Effect.flatMap((qr) => qr.deleteQuestionnaire(id))
             ),
-          ]),
+          ])
         ),
       apiCreate: async (q: Questionnaire) =>
         clientRuntime.runPromise(
           Effect.all([
-            Effect.sleep("200 millis"),
+            Effect.sleep('200 millis'),
             QuestionnaireRepository.pipe(
-              Effect.flatMap((qr) => qr.createQuestionnaire(q)),
+              Effect.flatMap((qr) => qr.createQuestionnaire(q))
             ),
-          ]).pipe(Effect.map(([, x]) => x)),
+          ]).pipe(Effect.map(([, x]) => x))
         ),
     },
-    initial,
-  );
-};
+    initial
+  )
+}
 
 export default function QuestionnairePage({
   loaderData,
@@ -58,17 +58,17 @@ export default function QuestionnairePage({
     collection: questionnaires,
     deleteItem: deleteQuestionnaire,
     createItem: createQuestionnaire,
-  } = useQuestionnaires(loaderData.questionnaires);
+  } = useQuestionnaires(loaderData.questionnaires)
 
   const loadTemplateByTitleForm = async function (formData: FormData) {
     const templateToCreate = questionnaireTemplates.find(
-      (t) => t.title == formData.get("title"),
-    );
-    if (templateToCreate) return await createQuestionnaire(templateToCreate);
-  };
+      (t) => t.title == formData.get('title')
+    )
+    if (templateToCreate) return await createQuestionnaire(templateToCreate)
+  }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       <h2 className="heading-3">Questionnaires</h2>
       <QuestionnairesList
         deleteQuestionnaire={deleteQuestionnaire}
@@ -76,7 +76,7 @@ export default function QuestionnairePage({
       />
       <a
         href={`https://smartforms.csiro.au/launch?launch=xyz123&iss=${encodeURIComponent(
-          "https://healthcare.googleapis.com/v1/projects/assessment-is-sandbox/locations/northamerica-northeast2/datasets/Sandbox/fhirStores/fhir-store/fhir",
+          'https://healthcare.googleapis.com/v1/projects/assessment-is-sandbox/locations/northamerica-northeast2/datasets/Sandbox/fhirStores/fhir-store/fhir'
         )}`}
       >
         <h2 className="heading-3">Edit Questionnaires</h2>
@@ -91,8 +91,8 @@ export default function QuestionnairePage({
               {title}
             </button>
           </form>
-        );
+        )
       })}
     </div>
-  );
+  )
 }

@@ -1,4 +1,4 @@
-import { handleRedirectResult, redirectToSignIn } from "app/firebase";
+import { handleRedirectResult, redirectToSignIn } from 'app/firebase'
 
 export default function AuthHandlerPage() {
   return (
@@ -15,5 +15,5 @@ export default function AuthHandlerPage() {
         Handle Result
       </button>
     </>
-  );
+  )
 }

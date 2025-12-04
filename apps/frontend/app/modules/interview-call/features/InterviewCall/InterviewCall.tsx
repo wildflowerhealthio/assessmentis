@@ -1,40 +1,40 @@
-"use client";
+'use client'
 
-import classes from "./InterviewCall.module.css";
+import classes from './InterviewCall.module.css'
 
 import DailyIframe, {
   type DailyCall,
   type DailyEvent,
-} from "@daily-co/daily-js";
-import { DailyAudio, DailyProvider } from "@daily-co/daily-react";
+} from '@daily-co/daily-js'
+import { DailyAudio, DailyProvider } from '@daily-co/daily-react'
 
-import { Schema } from "effect";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Schema } from 'effect'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Call,
   HairCheck,
   Tray,
-} from "@assessmentis/daily-co-infrastructure/components";
-import { FullEncounter } from "app/modules/interview-call/actions/getFullEncounter";
-import QuestionnaireForm from "app/modules/questionnaire/features/QuestionnaireForm/QuestionnaireForm";
-import { useNavigate } from "react-router";
+} from '@assessmentis/daily-co-infrastructure/components'
+import { FullEncounter } from 'app/modules/interview-call/actions/getFullEncounter'
+import QuestionnaireForm from 'app/modules/questionnaire/features/QuestionnaireForm/QuestionnaireForm'
+import { useNavigate } from 'react-router'
 
 /* We decide what UI to show to users based on the state of the app, which is dependent on the state of the call object. */
 enum VideoCallState {
-  STATE_IDLE = "STATE_IDLE",
-  STATE_CREATING = "STATE_CREATING",
-  STATE_JOINING = "STATE_JOINING",
-  STATE_JOINED = "STATE_JOINED",
-  STATE_LEAVING = "STATE_LEAVING",
-  STATE_ERROR = "STATE_ERROR",
-  STATE_HAIRCHECK = "STATE_HAIRCHECK",
+  STATE_IDLE = 'STATE_IDLE',
+  STATE_CREATING = 'STATE_CREATING',
+  STATE_JOINING = 'STATE_JOINING',
+  STATE_JOINED = 'STATE_JOINED',
+  STATE_LEAVING = 'STATE_LEAVING',
+  STATE_ERROR = 'STATE_ERROR',
+  STATE_HAIRCHECK = 'STATE_HAIRCHECK',
 }
 
 const useDailyCall = (roomUrl: string | undefined) => {
-  const navigate = useNavigate();
-  const [appState, setAppState] = useState(VideoCallState.STATE_IDLE);
-  const [callObject, setCallObject] = useState<DailyCall | null>(null);
-  const [apiError] = useState(false);
+  const navigate = useNavigate()
+  const [appState, setAppState] = useState(VideoCallState.STATE_IDLE)
+  const [callObject, setCallObject] = useState<DailyCall | null>(null)
+  const [apiError] = useState(false)
 
   /**
    * Create a new call room. This function will return the newly created room URL.
@@ -42,31 +42,31 @@ const useDailyCall = (roomUrl: string | undefined) => {
    * or joining (https://docs.daily.co/reference/rn-daily-js/instance-methods/join) a call.
    */
   const createCall = useCallback(() => {
-    setAppState(VideoCallState.STATE_CREATING);
-    const newCallObject = DailyIframe.createCallObject({ url: roomUrl });
-    setCallObject(newCallObject);
-    setAppState(VideoCallState.STATE_HAIRCHECK);
-    newCallObject.preAuth({ url: roomUrl }); // add a meeting token here if your room is private
-    newCallObject.startCamera();
-  }, [roomUrl]);
+    setAppState(VideoCallState.STATE_CREATING)
+    const newCallObject = DailyIframe.createCallObject({ url: roomUrl })
+    setCallObject(newCallObject)
+    setAppState(VideoCallState.STATE_HAIRCHECK)
+    newCallObject.preAuth({ url: roomUrl }) // add a meeting token here if your room is private
+    newCallObject.startCamera()
+  }, [roomUrl])
 
   /**
    * Start leaving the current call.
    */
   const startLeavingCall = () => {
-    if (!callObject) return;
+    if (!callObject) return
     // If we're in the error state, we've already "left", so just clean up
     if (appState === VideoCallState.STATE_ERROR) {
       callObject.destroy().then(() => {
-        setAppState(VideoCallState.STATE_HAIRCHECK);
-      });
+        setAppState(VideoCallState.STATE_HAIRCHECK)
+      })
     } else {
       /* This will trigger a `left-meeting` event, which in turn will trigger
       the full clean-up as seen in handleNewMeetingState() below. */
-      setAppState(VideoCallState.STATE_LEAVING);
-      callObject.leave().then(() => navigate(-1));
+      setAppState(VideoCallState.STATE_LEAVING)
+      callObject.leave().then(() => navigate(-1))
     }
-  };
+  }
 
   /**
    * Update app state based on reported meeting state changes.
@@ -77,35 +77,35 @@ const useDailyCall = (roomUrl: string | undefined) => {
    * longer listening to its events.
    */
   useEffect(() => {
-    if (!callObject) return;
+    if (!callObject) return
 
     function handleNewMeetingState() {
       switch (callObject?.meetingState()) {
-        case "joined-meeting":
-          setAppState(VideoCallState.STATE_JOINED);
-          break;
-        case "left-meeting":
+        case 'joined-meeting':
+          setAppState(VideoCallState.STATE_JOINED)
+          break
+        case 'left-meeting':
           callObject.destroy().then(() => {
-            setAppState(VideoCallState.STATE_HAIRCHECK);
-          });
-          break;
-        case "error":
-          setAppState(VideoCallState.STATE_ERROR);
-          break;
+            setAppState(VideoCallState.STATE_HAIRCHECK)
+          })
+          break
+        case 'error':
+          setAppState(VideoCallState.STATE_ERROR)
+          break
         default:
-          break;
+          break
       }
     }
 
     // Use initial state
-    handleNewMeetingState();
+    handleNewMeetingState()
 
     const eventsOfInterest: DailyEvent[] = [
-      "joined-meeting",
-      "left-meeting",
-      "error",
-      "camera-error",
-    ];
+      'joined-meeting',
+      'left-meeting',
+      'error',
+      'camera-error',
+    ]
 
     /*
      * Listen for changes in state.
@@ -114,33 +114,33 @@ const useDailyCall = (roomUrl: string | undefined) => {
      * context yet. We can't access the call object via daily-react just yet, but we will later in Call.js and HairCheck.js!
      */
     eventsOfInterest.forEach((event) =>
-      callObject.on(event, handleNewMeetingState),
-    );
+      callObject.on(event, handleNewMeetingState)
+    )
 
     // Stop listening for changes in state
     return () => {
       eventsOfInterest.forEach((event) =>
-        callObject.off(event, handleNewMeetingState),
-      );
-    };
-  }, [callObject]);
+        callObject.off(event, handleNewMeetingState)
+      )
+    }
+  }, [callObject])
 
   const uiState = useMemo(() => {
-    if (apiError) return { state: "api_error" } as const;
+    if (apiError) return { state: 'api_error' } as const
 
     switch (appState) {
       case VideoCallState.STATE_HAIRCHECK:
-        return { state: "haircheck" } as const;
+        return { state: 'haircheck' } as const
       case VideoCallState.STATE_JOINING:
       case VideoCallState.STATE_JOINED:
       case VideoCallState.STATE_ERROR:
-        return { state: "in_call" } as const;
+        return { state: 'in_call' } as const
       case VideoCallState.STATE_IDLE:
       case VideoCallState.STATE_CREATING:
       case VideoCallState.STATE_LEAVING:
-        return { state: "loading" } as const;
+        return { state: 'loading' } as const
     }
-  }, [apiError, appState]);
+  }, [apiError, appState])
 
   /**
    * Once we pass the hair check, we can actually join the call.
@@ -148,10 +148,10 @@ const useDailyCall = (roomUrl: string | undefined) => {
    */
   const joinCall = useCallback(
     (userName: string) => {
-      callObject?.join({ url: roomUrl ?? undefined, userName });
+      callObject?.join({ url: roomUrl ?? undefined, userName })
     },
-    [callObject, roomUrl],
-  );
+    [callObject, roomUrl]
+  )
 
   return {
     joinCall,
@@ -159,27 +159,27 @@ const useDailyCall = (roomUrl: string | undefined) => {
     uiState,
     callObject,
     createCall,
-  };
-};
+  }
+}
 
 interface IProps {
-  encounterJson: typeof FullEncounter.Encoded;
+  encounterJson: typeof FullEncounter.Encoded
 }
 
 function InterviewCall({ encounterJson }: IProps) {
-  const encounter = Schema.decodeSync(FullEncounter)(encounterJson);
-  const callCreatedRef = useRef(false);
+  const encounter = Schema.decodeSync(FullEncounter)(encounterJson)
+  const callCreatedRef = useRef(false)
   const { joinCall, startLeavingCall, uiState, callObject, createCall } =
-    useDailyCall(encounter.location?.[0].location?.identifier?.value);
+    useDailyCall(encounter.location?.[0].location?.identifier?.value)
 
   useEffect(() => {
-    if (callCreatedRef.current) return;
+    if (callCreatedRef.current) return
 
-    callCreatedRef.current = true;
-    createCall();
-  }, [createCall]);
+    callCreatedRef.current = true
+    createCall()
+  }, [createCall])
   // If something goes wrong with creating the room.
-  if (uiState.state === "api_error") {
+  if (uiState.state === 'api_error') {
     return (
       <div className="api-error">
         <h1>Error</h1>
@@ -189,15 +189,15 @@ function InterviewCall({ encounterJson }: IProps) {
         </p>
         <button className="button-4">Recreate Video Call</button>
       </div>
-    );
+    )
   }
 
-  if (uiState.state === "haircheck" || uiState.state === "in_call") {
+  if (uiState.state === 'haircheck' || uiState.state === 'in_call') {
     return (
       <div className={classes.EncounterPage}>
         <div className={classes.VideoZone}>
           <DailyProvider callObject={callObject}>
-            {uiState.state == "haircheck" ? (
+            {uiState.state == 'haircheck' ? (
               // No API errors? Let's check our hair then.
               <HairCheck joinCall={joinCall} cancelCall={startLeavingCall} />
             ) : (
@@ -217,11 +217,11 @@ function InterviewCall({ encounterJson }: IProps) {
           />
         </div>
       </div>
-    );
+    )
   }
 
   // The default view is the HomeScreen, from where we start the demo.
-  return <button onClick={createCall}> Start {uiState.state} </button>;
+  return <button onClick={createCall}> Start {uiState.state} </button>
 }
 
-export default InterviewCall;
+export default InterviewCall

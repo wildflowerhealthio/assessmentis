@@ -1,24 +1,24 @@
-"use client";
+'use client'
 
 import {
   Questionnaire,
   QuestionnaireId,
-} from "@assessmentis/domain/questionnaires";
+} from '@assessmentis/domain/questionnaires'
 
 export const QuestionnairesList = ({
   questionnaires,
   deleteQuestionnaire,
 }: {
-  questionnaires: { data: Questionnaire; loading: boolean }[];
-  deleteQuestionnaire: (id: QuestionnaireId | undefined) => Promise<void>;
+  questionnaires: { data: Questionnaire; loading: boolean }[]
+  deleteQuestionnaire: (id: QuestionnaireId | undefined) => Promise<void>
 }) => {
   return (
     <ul>
       {questionnaires.map(({ data: { title, id, status }, loading }) => (
-        <li key={id} style={loading ? { color: "rgba(0,0,0,0.5)" } : {}}>
+        <li key={id} style={loading ? { color: 'rgba(0,0,0,0.5)' } : {}}>
           <button
             onClick={() => deleteQuestionnaire(id)}
-            style={{ border: "none" }}
+            style={{ border: 'none' }}
           >
             ❌
           </button>
@@ -26,5 +26,5 @@ export const QuestionnairesList = ({
         </li>
       ))}
     </ul>
-  );
-};
+  )
+}

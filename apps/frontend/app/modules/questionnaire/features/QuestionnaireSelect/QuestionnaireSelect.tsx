@@ -1,19 +1,19 @@
-"use client";
+'use client'
 
-import { type DetailedHTMLProps, type SelectHTMLAttributes } from "react";
-import { Questionnaire } from "@assessmentis/domain/questionnaires";
+import { type DetailedHTMLProps, type SelectHTMLAttributes } from 'react'
+import { Questionnaire } from '@assessmentis/domain/questionnaires'
 
 interface IProps extends DetailedHTMLProps<
   SelectHTMLAttributes<HTMLSelectElement>,
   HTMLSelectElement
 > {
-  questionnaires: ReadonlyArray<Questionnaire>;
+  questionnaires: ReadonlyArray<Questionnaire>
 }
 
 const QuestionnaireSelect = ({ questionnaires, ...selectProps }: IProps) => {
   return (
     <select {...selectProps}>
-      <option key={""} value={undefined}>
+      <option key={''} value={undefined}>
         -
       </option>
       {questionnaires.map((q) => (
@@ -22,7 +22,7 @@ const QuestionnaireSelect = ({ questionnaires, ...selectProps }: IProps) => {
         </option>
       ))}
     </select>
-  );
-};
+  )
+}
 
-export default QuestionnaireSelect;
+export default QuestionnaireSelect

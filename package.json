@@ -22,7 +22,8 @@
     "packages/google-meet-infrastructure",
     "packages/functions",
     "apps/functions",
-    "apps/frontend"
+    "apps/frontend",
+    "packages/prettier-config"
   ],
   "dependencies": {
     "prettier": "^3.7.3",

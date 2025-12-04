@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import {
   getUiControlCode,
@@ -6,21 +6,21 @@ import {
   QuestionnaireItemUIControlCode,
   QuestionnaireResponseItem,
   QuestionnaireItem,
-} from "@assessmentis/domain/questionnaires";
-import DisplayQuestionnaireItemForm from "app/modules/questionnaire/features/QuestionnaireForm/components/DisplayQuestionnaireItemForm/DisplayQuestionnaireItemForm";
+} from '@assessmentis/domain/questionnaires'
+import DisplayQuestionnaireItemForm from 'app/modules/questionnaire/features/QuestionnaireForm/components/DisplayQuestionnaireItemForm/DisplayQuestionnaireItemForm'
 import RadioQuestionnaireItemForm, {
   RadioQuestionnaireItemFormGroup,
-} from "app/modules/questionnaire/features/QuestionnaireForm/components/RadioQuestionnaireItemForm/RadioQuestionnaireItemForm";
-import TextQuestionnaireItemForm from "app/modules/questionnaire/features/QuestionnaireForm/components/TextQuestionnaireItemForm/TextQuestionnaireItemForm";
-import type { SetStateAction } from "react";
+} from 'app/modules/questionnaire/features/QuestionnaireForm/components/RadioQuestionnaireItemForm/RadioQuestionnaireItemForm'
+import TextQuestionnaireItemForm from 'app/modules/questionnaire/features/QuestionnaireForm/components/TextQuestionnaireItemForm/TextQuestionnaireItemForm'
+import type { SetStateAction } from 'react'
 
 interface IProps {
-  questionnaireItem: QuestionnaireItem;
-  questionnaireResponseItem: QuestionnaireResponseItem;
+  questionnaireItem: QuestionnaireItem
+  questionnaireResponseItem: QuestionnaireResponseItem
   setQuestionnaireResponseItem: (
-    update: SetStateAction<QuestionnaireResponseItem>,
-  ) => void;
-  uiControl: typeof QuestionnaireItemUIControlCode.Type | undefined;
+    update: SetStateAction<QuestionnaireResponseItem>
+  ) => void
+  uiControl: typeof QuestionnaireItemUIControlCode.Type | undefined
 }
 
 const QuestionnaireItemForm = ({
@@ -30,11 +30,11 @@ const QuestionnaireItemForm = ({
   uiControl,
 }: IProps) => {
   const questionText =
-    getUiControlCode(questionnaireItem) == "grid" ? (
-      <p className="body-3" style={{ marginTop: "var(--space-2)" }}>
+    getUiControlCode(questionnaireItem) == 'grid' ? (
+      <p className="body-3" style={{ marginTop: 'var(--space-2)' }}>
         {questionnaireItem.text}
       </p>
-    ) : undefined;
+    ) : undefined
 
   switch (questionnaireItem.type) {
     case QuestionnaireItemType.enums.boolean: {
@@ -49,7 +49,7 @@ const QuestionnaireItemForm = ({
             uiControl={uiControl}
           />
         </>
-      );
+      )
     }
     case QuestionnaireItemType.enums.text: {
       return (
@@ -63,10 +63,10 @@ const QuestionnaireItemForm = ({
             uiControl={uiControl}
           />
         </>
-      );
+      )
     }
     case QuestionnaireItemType.enums.group: {
-      const questionnaireItems = questionnaireItem.item ?? [];
+      const questionnaireItems = questionnaireItem.item ?? []
       const items = (
         <>
           {questionnaireItems.map((qi) => (
@@ -75,42 +75,42 @@ const QuestionnaireItemForm = ({
               questionnaireItem={qi}
               questionnaireResponseItem={
                 questionnaireResponseItem.item?.find(
-                  ({ linkId }) => linkId == qi.linkId,
+                  ({ linkId }) => linkId == qi.linkId
                 ) ?? { linkId: qi.linkId }
               }
               setQuestionnaireResponseItem={(
-                update: SetStateAction<QuestionnaireResponseItem>,
+                update: SetStateAction<QuestionnaireResponseItem>
               ) =>
                 setQuestionnaireResponseItem(
                   (
-                    qri: QuestionnaireResponseItem,
+                    qri: QuestionnaireResponseItem
                   ): QuestionnaireResponseItem => ({
                     ...qri,
                     item: [
                       ...(qri.item?.filter(
-                        ({ linkId }) => linkId != qi.linkId,
+                        ({ linkId }) => linkId != qi.linkId
                       ) ?? []),
-                      typeof update == "function"
+                      typeof update == 'function'
                         ? update(
                             qri.item?.find(
-                              ({ linkId }) => linkId == qi.linkId,
-                            ) ?? { linkId: qi.linkId },
+                              ({ linkId }) => linkId == qi.linkId
+                            ) ?? { linkId: qi.linkId }
                           )
                         : update,
                     ],
-                  }),
+                  })
                 )
               }
               uiControl={getUiControlCode(questionnaireItem)}
             />
           ))}
         </>
-      );
+      )
       if (
         questionnaireItems.every(
-          (item) => item.type == QuestionnaireItemType.enums.boolean,
+          (item) => item.type == QuestionnaireItemType.enums.boolean
         ) &&
-        getUiControlCode(questionnaireItem) == "table"
+        getUiControlCode(questionnaireItem) == 'table'
       ) {
         return (
           <RadioQuestionnaireItemFormGroup
@@ -122,9 +122,9 @@ const QuestionnaireItemForm = ({
           >
             {items}
           </RadioQuestionnaireItemFormGroup>
-        );
+        )
       }
-      return items;
+      return items
     }
     case QuestionnaireItemType.enums.display:
       return (
@@ -133,9 +133,9 @@ const QuestionnaireItemForm = ({
           questionnaireItem={questionnaireItem}
           uiControl={uiControl}
         />
-      );
+      )
   }
-  throw new Error("Unknown item type");
-};
+  throw new Error('Unknown item type')
+}
 
-export default QuestionnaireItemForm;
+export default QuestionnaireItemForm

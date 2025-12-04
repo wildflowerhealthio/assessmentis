@@ -1,49 +1,49 @@
-import { Effect, ManagedRuntime } from "effect";
+import { Effect, ManagedRuntime } from 'effect'
 import {
   Questionnaire,
   QuestionnaireResponse,
   QuestionnaireRepository,
   QuestionnaireResponseRepository,
   QuestionnaireResponseId,
-} from "@assessmentis/domain/questionnaires";
-import { clientAppLayer, useRuntimeContext } from "app/clientRuntime";
-import type { Route } from "./+types/QuestionnaireResponse._index";
-import QuestionnaireResponseList from "./QuestionnaireResponse/QuestionnaireResponseList";
-import { useCollection } from "@assessmentis/react-util";
+} from '@assessmentis/domain/questionnaires'
+import { clientAppLayer, useRuntimeContext } from 'app/clientRuntime'
+import type { Route } from './+types/QuestionnaireResponse._index'
+import QuestionnaireResponseList from './QuestionnaireResponse/QuestionnaireResponseList'
+import { useCollection } from '@assessmentis/react-util'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {
-  const runtime = ManagedRuntime.make(clientAppLayer);
+  const runtime = ManagedRuntime.make(clientAppLayer)
   const questionnaireResponses = await runtime.runPromise(
     Effect.gen(function* () {
-      const questionnaireRepository = yield* QuestionnaireRepository;
+      const questionnaireRepository = yield* QuestionnaireRepository
       const questionnaireResponseRepository =
-        yield* QuestionnaireResponseRepository;
+        yield* QuestionnaireResponseRepository
       const [questionnaires, responses] = yield* Effect.all([
         questionnaireRepository.getQuestionnaires({}),
         questionnaireResponseRepository.getQuestionnaireResponses(),
-      ]);
+      ])
       return responses.map(
         (
-          r,
+          r
         ): QuestionnaireResponse & {
-          _questionnaire: Questionnaire | undefined;
+          _questionnaire: Questionnaire | undefined
         } => ({
           ...r,
           _questionnaire:
             questionnaires.find((q) => q.id == r.questionnaire) ?? undefined,
-        }),
-      );
-    }),
-  );
-  return { questionnaireResponses };
+        })
+      )
+    })
+  )
+  return { questionnaireResponses }
 }
 
 const useQuestionnaireResponse = (
   initial: (QuestionnaireResponse & {
-    _questionnaire: Questionnaire | undefined;
-  })[],
+    _questionnaire: Questionnaire | undefined
+  })[]
 ) => {
-  const clientRuntime = useRuntimeContext();
+  const clientRuntime = useRuntimeContext()
 
   return useCollection<
     QuestionnaireResponseId,
@@ -51,27 +51,27 @@ const useQuestionnaireResponse = (
   >(
     {
       apiDelete: async (id: QuestionnaireResponseId | undefined) => {
-        if (!id) return;
+        if (!id) return
         return clientRuntime.runPromise(
           Effect.all([
-            Effect.sleep("200 millis"),
+            Effect.sleep('200 millis'),
             QuestionnaireResponseRepository.pipe(
-              Effect.flatMap((qrr) => qrr.deleteQuestionnaireResponse(id)),
+              Effect.flatMap((qrr) => qrr.deleteQuestionnaireResponse(id))
             ),
-          ]),
-        );
+          ])
+        )
       },
       apiCreate: (
         _: QuestionnaireResponse & {
-          _questionnaire: Questionnaire | undefined;
-        },
+          _questionnaire: Questionnaire | undefined
+        }
       ): Promise<
         QuestionnaireResponse & { _questionnaire: Questionnaire | undefined }
-      > => Promise.reject("Not implemented"),
+      > => Promise.reject('Not implemented'),
     },
-    initial,
-  );
-};
+    initial
+  )
+}
 
 export default function QuestionnaireResponsePage({
   loaderData,
@@ -79,7 +79,7 @@ export default function QuestionnaireResponsePage({
   const {
     collection: questionnaireResponses,
     deleteItem: deleteQuestionnaireResponse,
-  } = useQuestionnaireResponse(loaderData.questionnaireResponses);
+  } = useQuestionnaireResponse(loaderData.questionnaireResponses)
   return (
     <>
       <h2 className="heading-3">Edit a Questionnaire Response</h2>
@@ -87,7 +87,7 @@ export default function QuestionnaireResponsePage({
         deleteQuestionnaireResponse={deleteQuestionnaireResponse}
         questionnaireResponses={questionnaireResponses}
       />
-      <h2 className="heading-3" style={{ marginTop: "var(--space-7)" }}>
+      <h2 className="heading-3" style={{ marginTop: 'var(--space-7)' }}>
         Create a new Questionnaire Response
       </h2>
       <div className="subheading-3">
@@ -95,5 +95,5 @@ export default function QuestionnaireResponsePage({
         encounter
       </div>
     </>
-  );
+  )
 }

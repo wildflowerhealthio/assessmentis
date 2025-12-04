@@ -1,0 +1,13 @@
+{
+  "name": "@assessmentis/prettier-config",
+  "version": "0.0.0",
+  "description": "A base prettier config",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {},
+  "peerDependencies": {
+    "prettier": ">=3.0.0"
+  },
+  "author": "Ruth Marks",
+  "license": "UNLICENSED"
+}

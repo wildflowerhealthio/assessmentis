@@ -6,6 +6,7 @@
   "license": "UNLICENSED",
   "private": true,
   "type": "module",
+  "prettier": "@assessmentis/prettier-config",
   "scripts": {
     "build": "react-router build",
     "check-types": "tsc --noEmit",
@@ -17,6 +18,7 @@
     "deploy": "firebase deploy --only hosting"
   },
   "dependencies": {
+    "@assessmentis/prettier-config": "*",
     "@assessmentis/daily-co-infrastructure": "*",
     "@assessmentis/domain": "*",
     "@assessmentis/google-fhir-infrastructure": "*",
@@ -42,6 +44,7 @@
     "isbot": "^5.1.32",
     "jsonwebtoken": "^9.0.2",
     "modern-normalize": "^3.0.1",
+    "prettier": "^3.7.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-error-boundary": "^6.0.0",

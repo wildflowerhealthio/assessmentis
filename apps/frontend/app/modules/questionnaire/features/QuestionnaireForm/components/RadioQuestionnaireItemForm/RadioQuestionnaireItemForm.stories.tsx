@@ -1,41 +1,39 @@
 // Replace your-framework with the framework you are using, e.g. react-vite, nextjs, nextjs-vite, etc.
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
-import { Arbitrary, FastCheck } from "effect";
-import { action } from "storybook/actions";
+import { Arbitrary, FastCheck } from 'effect'
+import { action } from 'storybook/actions'
 import {
   QuestionnaireItemType,
   QuestionnaireItem,
-} from "@assessmentis/domain/questionnaires";
+} from '@assessmentis/domain/questionnaires'
 import RadioQuestionnaireItemForm, {
   RadioQuestionnaireItemFormGroup,
-} from "app/modules/questionnaire/features/QuestionnaireForm/components/RadioQuestionnaireItemForm/RadioQuestionnaireItemForm";
+} from 'app/modules/questionnaire/features/QuestionnaireForm/components/RadioQuestionnaireItemForm/RadioQuestionnaireItemForm'
 
 //👇 This default export determines where your story goes in the story list
 const meta = {
   component: RadioQuestionnaireItemForm,
-} satisfies Meta<typeof RadioQuestionnaireItemForm>;
+} satisfies Meta<typeof RadioQuestionnaireItemForm>
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
-const questionnaireItem = FastCheck.sample(
-  Arbitrary.make(QuestionnaireItem),
-)[0];
+const questionnaireItem = FastCheck.sample(Arbitrary.make(QuestionnaireItem))[0]
 
 const arbitraryProps = {
   questionnaireItem: {
     ...questionnaireItem,
     type: QuestionnaireItemType.enums.boolean,
-    text: "Do you often interrupt the activities of others, or intrude on others?",
+    text: 'Do you often interrupt the activities of others, or intrude on others?',
     answerOption: [{ initialSelected: true }, { initialSelected: false }],
   },
   questionnaireResponseItem: {
     linkId: questionnaireItem.linkId,
   },
-  setQuestionnaireResponseItem: action("setQuestionnaireResponseItem"),
+  setQuestionnaireResponseItem: action('setQuestionnaireResponseItem'),
   uiControl: undefined,
-};
+}
 
 export const RegularBooleanQuestion: Story = {
   args: {
@@ -45,7 +43,7 @@ export const RegularBooleanQuestion: Story = {
       // style: QuestionnaireItemStyle.QUESTION,
     },
   },
-};
+}
 
 export const GridStyleBooleanQuestion: Story = {
   args: {
@@ -65,7 +63,7 @@ export const GridStyleBooleanQuestion: Story = {
       <RadioQuestionnaireItemForm {...args} />
     </RadioQuestionnaireItemFormGroup>
   ),
-};
+}
 
 export const StringQuestion: Story = {
   args: {
@@ -74,13 +72,13 @@ export const StringQuestion: Story = {
       ...arbitraryProps.questionnaireItem,
       // style: QuestionnaireItemStyle.QUESTION,
       answerOption: [
-        { valueString: "Red" },
-        { valueString: "Green" },
-        { valueString: "Blue" },
+        { valueString: 'Red' },
+        { valueString: 'Green' },
+        { valueString: 'Blue' },
       ],
     },
   },
-};
+}
 
 export const GridStyleStringQuestion: Story = {
   args: {
@@ -89,9 +87,9 @@ export const GridStyleStringQuestion: Story = {
       ...arbitraryProps.questionnaireItem,
       // style: QuestionnaireItemStyle.WITHIN_QUESTION,
       answerOption: [
-        { valueString: "Red" },
-        { valueString: "Green" },
-        { valueString: "Blue" },
+        { valueString: 'Red' },
+        { valueString: 'Green' },
+        { valueString: 'Blue' },
       ],
     },
   },
@@ -105,4 +103,4 @@ export const GridStyleStringQuestion: Story = {
       <RadioQuestionnaireItemForm {...args} />
     </RadioQuestionnaireItemFormGroup>
   ),
-};
+}

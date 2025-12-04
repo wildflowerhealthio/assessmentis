@@ -1,40 +1,38 @@
 // Replace your-framework with the framework you are using, e.g. react-vite, nextjs, nextjs-vite, etc.
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
-import { Arbitrary, FastCheck } from "effect";
-import { action } from "storybook/actions";
-import { Code } from "@assessmentis/domain/general-purpose";
+import { Arbitrary, FastCheck } from 'effect'
+import { action } from 'storybook/actions'
+import { Code } from '@assessmentis/domain/general-purpose'
 import {
   QuestionnaireItem,
   QuestionnaireItemType,
-} from "@assessmentis/domain/questionnaires";
-import TextQuestionnaireItemForm from "app/modules/questionnaire/features/QuestionnaireForm/components/TextQuestionnaireItemForm/TextQuestionnaireItemForm";
+} from '@assessmentis/domain/questionnaires'
+import TextQuestionnaireItemForm from 'app/modules/questionnaire/features/QuestionnaireForm/components/TextQuestionnaireItemForm/TextQuestionnaireItemForm'
 
 //👇 This default export determines where your story goes in the story list
 const meta = {
   component: TextQuestionnaireItemForm,
-} satisfies Meta<typeof TextQuestionnaireItemForm>;
+} satisfies Meta<typeof TextQuestionnaireItemForm>
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
-const questionnaireItem = FastCheck.sample(
-  Arbitrary.make(QuestionnaireItem),
-)[0];
+const questionnaireItem = FastCheck.sample(Arbitrary.make(QuestionnaireItem))[0]
 
 const arbitraryProps = {
   questionnaireItem: {
     ...questionnaireItem,
     type: QuestionnaireItemType.enums.text,
-    text: "Do you often interrupt the activities of others, or intrude on others?",
+    text: 'Do you often interrupt the activities of others, or intrude on others?',
   },
   questionnaireResponseItem: {
     linkId: questionnaireItem.linkId,
-    answer: [{ valueString: "some text" }],
+    answer: [{ valueString: 'some text' }],
   },
-  setQuestionnaireResponseItem: action("setQuestionnaireResponseItem"),
+  setQuestionnaireResponseItem: action('setQuestionnaireResponseItem'),
   uiControl: undefined,
-};
+}
 
 export const RegularQuestion: Story = {
   args: {
@@ -44,7 +42,7 @@ export const RegularQuestion: Story = {
       // style: QuestionnaireItemStyle.QUESTION,
     },
   },
-};
+}
 
 export const WithinQuestion: Story = {
   args: {
@@ -52,9 +50,9 @@ export const WithinQuestion: Story = {
     questionnaireItem: {
       ...arbitraryProps.questionnaireItem,
     },
-    uiControl: Code.make("table"),
+    uiControl: Code.make('table'),
   },
-};
+}
 
 export const RegularQuestionArea: Story = {
   args: {
@@ -65,7 +63,7 @@ export const RegularQuestionArea: Story = {
     },
     area: true,
   },
-};
+}
 
 export const WithinQuestionArea: Story = {
   args: {
@@ -76,4 +74,4 @@ export const WithinQuestionArea: Story = {
     },
     area: true,
   },
-};
+}
