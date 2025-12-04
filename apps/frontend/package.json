@@ -8,8 +8,8 @@
   "type": "module",
   "prettier": "@assessmentis/prettier-config",
   "scripts": {
-    "build": "react-router build",
-    "check-types": "tsc --noEmit",
+    "build": "react-router typegen && react-router build",
+    "check-types": "react-router typegen && tsc --noEmit",
     "lint": "eslint \"./app/**/*\"",
     "lint:fix": "eslint --fix \"./app/**/*\"",
     "dev": "react-router dev",
