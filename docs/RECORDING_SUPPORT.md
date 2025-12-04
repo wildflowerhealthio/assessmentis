@@ -33,9 +33,10 @@ const updatedEncounter = yield* updateEncounterRecordingsAndTranscripts(encounte
 
 Recordings and transcripts are stored as FHIR extensions on the Encounter resource:
 
-- **Room Name**: `http://assessment.is/fhir/encounter-video-call-room-name`
-- **Recording Reference**: `http://assessment.is/fhir/encounter-recording-reference`
-- **Transcript Reference**: `http://assessment.is/fhir/encounter-transcript-reference`
+- **Recording URLs**: `http://assessment.is/fhir/encounter-recording` (supports multiple values)
+- **Transcript URL**: `http://assessment.is/fhir/encounter-transcript`
+
+The video call room name is stored in `encounter.location[0].location.identifier.value` with system `http://assessment.is/fhir/video-call-room-name`.
 
 ### 4. Accessing Recording Data
 
@@ -43,14 +44,22 @@ To access recording and transcript data from an encounter:
 
 ```typescript
 import { 
-  getVideoCallRoomName,
-  getRecordingReference,
-  getTranscriptReference 
+  getRecordings,
+  getRecording,
+  getTranscript 
 } from '@assessmentis/domain/encounters'
 
-const roomName = getVideoCallRoomName(encounter)
-const recordingId = getRecordingReference(encounter)
-const transcriptText = getTranscriptReference(encounter)
+// Get room name from location
+const roomName = encounter.location?.[0]?.location?.identifier?.value
+
+// Get recordings (returns array)
+const recordingUrls = getRecordings(encounter)
+
+// Get first recording
+const firstRecordingUrl = getRecording(encounter)
+
+// Get transcript URL
+const transcriptUrl = getTranscript(encounter)
 ```
 
 ## Important Notes
@@ -88,20 +97,18 @@ Potential areas for improvement:
 
 ### Models
 
-- `ExternalVideoCallRecording`: Represents a recording from Daily.co
-- `ExternalVideoCallTranscript`: Represents a transcript associated with a recording
+- `ExternalVideoCallRecording`: Represents a recording from Daily.co (includes `uri` and `recordingUrl` fields)
 
 ### Repository Methods
 
 - `EncounterRepository.updateEncounter`: Updates an existing encounter
-- `ExternalVideoCallClient.fetchRecordingsByRoomName`: Fetches recordings for a room
-- `ExternalVideoCallClient.fetchTranscriptByRecordingId`: Fetches transcript for a recording
+- `ExternalVideoCallClient.fetchRecordingsByRoomName`: Fetches recordings for a room (includes recording links from Daily.co API)
 
 ### Extension Helpers
 
-- `withVideoCallRoomName`: Adds room name to an encounter
-- `withRecordingReference`: Adds recording reference to an encounter
-- `withTranscriptReference`: Adds transcript reference to an encounter
-- `getVideoCallRoomName`: Retrieves room name from an encounter
-- `getRecordingReference`: Retrieves recording reference from an encounter
-- `getTranscriptReference`: Retrieves transcript reference from an encounter
+- `withRecordings`: Adds multiple recording URLs to an encounter
+- `withRecording`: Adds a single recording URL to an encounter
+- `withTranscript`: Adds transcript URL to an encounter
+- `getRecordings`: Retrieves all recording URLs from an encounter
+- `getRecording`: Retrieves first recording URL from an encounter
+- `getTranscript`: Retrieves transcript URL from an encounter
