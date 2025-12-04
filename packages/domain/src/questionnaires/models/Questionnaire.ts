@@ -1,42 +1,42 @@
-import { Schema } from "effect";
-import { BackboneElement } from "../../general-purpose/BackboneElement";
-import { Coding } from "../../general-purpose/Coding";
-import { Resource } from "../../general-purpose/Resource";
+import { Schema } from 'effect'
+import { BackboneElement } from '../../general-purpose/BackboneElement'
+import { Coding } from '../../general-purpose/Coding'
+import { Resource } from '../../general-purpose/Resource'
 export const QuestionnaireId = Schema.String.pipe(
-  Schema.brand("QuestionnaireId"),
-);
+  Schema.brand('QuestionnaireId')
+)
 
-export type QuestionnaireId = typeof QuestionnaireId.Type;
+export type QuestionnaireId = typeof QuestionnaireId.Type
 
 const QuestionItemType = Schema.Union(
-  Schema.Literal("group"),
-  Schema.Literal("display"),
-  Schema.Literal("question"),
-  Schema.Literal("boolean"),
-  Schema.Literal("decimal"),
-  Schema.Literal("integer"),
-  Schema.Literal("date"),
-  Schema.Literal("dateTime"),
-  Schema.Literal("time"),
-  Schema.Literal("string"),
-  Schema.Literal("text"),
-  Schema.Literal("url"),
-  Schema.Literal("choice"),
-  Schema.Literal("open-choice"),
-  Schema.Literal("attachment"),
-  Schema.Literal("reference"),
-  Schema.Literal("quantity"),
-);
+  Schema.Literal('group'),
+  Schema.Literal('display'),
+  Schema.Literal('question'),
+  Schema.Literal('boolean'),
+  Schema.Literal('decimal'),
+  Schema.Literal('integer'),
+  Schema.Literal('date'),
+  Schema.Literal('dateTime'),
+  Schema.Literal('time'),
+  Schema.Literal('string'),
+  Schema.Literal('text'),
+  Schema.Literal('url'),
+  Schema.Literal('choice'),
+  Schema.Literal('open-choice'),
+  Schema.Literal('attachment'),
+  Schema.Literal('reference'),
+  Schema.Literal('quantity')
+)
 
 export const QuestionnaireItemLink = Schema.String.pipe(
-  Schema.brand("QuestionnaireItemLink"),
-);
-export type QuestionnaireItemLink = typeof QuestionnaireItemLink.Type;
+  Schema.brand('QuestionnaireItemLink')
+)
+export type QuestionnaireItemLink = typeof QuestionnaireItemLink.Type
 
 export const QuestionnaireItemId = Schema.String.pipe(
-  Schema.brand("QuestionnaireItemId"),
-);
-export type QuestionnaireItemId = typeof QuestionnaireItemId.Type;
+  Schema.brand('QuestionnaireItemId')
+)
+export type QuestionnaireItemId = typeof QuestionnaireItemId.Type
 
 const questionnaireItemFields = {
   ...BackboneElement(QuestionnaireItemId).fields,
@@ -62,11 +62,7 @@ const questionnaireItemFields = {
    * This element must be specified if more than one enableWhen value is provided.
    */
   enableBehavior: Schema.optional(
-    Schema.Union(
-      Schema.Literal("all"),
-      Schema.Literal("any"),
-      Schema.Undefined,
-    ),
+    Schema.Union(Schema.Literal('all'), Schema.Literal('any'), Schema.Undefined)
   ),
   // _enableBehavior?: Element | undefined;
   /**
@@ -118,18 +114,18 @@ const questionnaireItemFields = {
    */
   type: QuestionItemType, // ('group'|'display'|'question'|'boolean'|'decimal'|'integer'|'date'|'dateTime'|'time'|'string'|'text'|'url'|'choice'|'open-choice'|'attachment'|'reference'|'quantity');
   // _type?: Element | undefined;
-};
+}
 
 export interface QuestionnaireItem extends Schema.Struct.Type<
   typeof questionnaireItemFields
 > {
-  readonly item?: undefined | ReadonlyArray<QuestionnaireItem>;
+  readonly item?: undefined | ReadonlyArray<QuestionnaireItem>
 }
 
 export interface QuestionnaireItemEncoded extends Schema.Struct.Encoded<
   typeof questionnaireItemFields
 > {
-  readonly item?: undefined | ReadonlyArray<QuestionnaireItemEncoded>;
+  readonly item?: undefined | ReadonlyArray<QuestionnaireItemEncoded>
 }
 
 /**
@@ -144,11 +140,11 @@ export const QuestionnaireItem = Schema.Struct({
     Schema.Array(
       Schema.suspend(
         (): Schema.Schema<QuestionnaireItem, QuestionnaireItemEncoded, never> =>
-          QuestionnaireItem,
-      ),
-    ),
+          QuestionnaireItem
+      )
+    )
   ),
-});
+})
 
 /**
  * A structured set of questions intended to guide the collection of answers from end-users. Questionnaires provide detailed control over order, presentation, phraseology and grouping to allow coherent, consistent data collection.
@@ -156,7 +152,7 @@ export const QuestionnaireItem = Schema.Struct({
 export const Questionnaire = Schema.Struct({
   ...Resource(QuestionnaireId).fields,
   /** Resource Type Name (for serialization) */
-  resourceType: Schema.Literal("Questionnaire"),
+  resourceType: Schema.Literal('Questionnaire'),
   /**
    * The 'date' element may be more recent than the approval date because of minor changes or editorial corrections.
    */
@@ -235,10 +231,10 @@ export const Questionnaire = Schema.Struct({
    * Allows filtering of questionnaires that are appropriate for use versus not.
    */
   status: Schema.Union(
-    Schema.Literal("draft"),
-    Schema.Literal("active"),
-    Schema.Literal("retired"),
-    Schema.Literal("unknown"),
+    Schema.Literal('draft'),
+    Schema.Literal('active'),
+    Schema.Literal('retired'),
+    Schema.Literal('unknown')
   ),
   // _status?: Element | undefined;
   /**
@@ -265,6 +261,6 @@ export const Questionnaire = Schema.Struct({
    */
   version: Schema.optional(Schema.String),
   // _version?: Element | undefined;
-});
+})
 
-export type Questionnaire = typeof Questionnaire.Type;
+export type Questionnaire = typeof Questionnaire.Type

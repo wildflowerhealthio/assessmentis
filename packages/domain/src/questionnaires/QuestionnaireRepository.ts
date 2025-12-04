@@ -1,30 +1,30 @@
-import { Effect, Context, Schema } from "effect";
+import { Effect, Context, Schema } from 'effect'
 import {
   ExternalAssertionError,
   NeedsAuthenticationError,
   NotFoundError,
   UnhandledError,
-} from "../errors";
-import { Questionnaire, QuestionnaireId } from "./models/Questionnaire";
-import { WithId } from "../general-purpose";
+} from '../errors'
+import { Questionnaire, QuestionnaireId } from './models/Questionnaire'
+import { WithId } from '../general-purpose'
 
-export const GetQuestionnairesArg = Schema.Struct({});
-export type GetQuestionnairesArg = typeof GetQuestionnairesArg.Type;
+export const GetQuestionnairesArg = Schema.Struct({})
+export type GetQuestionnairesArg = typeof GetQuestionnairesArg.Type
 export class QuestionnaireRepository extends Context.Tag(
-  "QuestionnaireRepository",
+  'QuestionnaireRepository'
 )<
   QuestionnaireRepository,
   {
     createQuestionnaire(
-      questionnaire: Questionnaire,
+      questionnaire: Questionnaire
     ): Effect.Effect<
       Questionnaire,
       UnhandledError | NeedsAuthenticationError | ExternalAssertionError,
       never
-    >;
+    >
 
     getQuestionnaire(
-      id: QuestionnaireId,
+      id: QuestionnaireId
     ): Effect.Effect<
       WithId<Questionnaire>,
       | UnhandledError
@@ -32,18 +32,18 @@ export class QuestionnaireRepository extends Context.Tag(
       | ExternalAssertionError
       | NotFoundError,
       never
-    >;
+    >
 
     getQuestionnaires(
-      params: GetQuestionnairesArg,
+      params: GetQuestionnairesArg
     ): Effect.Effect<
       WithId<Questionnaire>[],
       UnhandledError | NeedsAuthenticationError | ExternalAssertionError,
       never
-    >;
+    >
 
     deleteQuestionnaire(
-      id: QuestionnaireId,
+      id: QuestionnaireId
     ): Effect.Effect<
       object,
       | UnhandledError
@@ -51,6 +51,6 @@ export class QuestionnaireRepository extends Context.Tag(
       | ExternalAssertionError
       | NotFoundError,
       never
-    >;
+    >
   }
 >() {}

@@ -1,11 +1,11 @@
-import "./UserMediaError.css";
+import './UserMediaError.css'
 
 const refreshPage = () => {
   console.log(
-    "make sure to allow access to your microphone and camera in your browser's permissions",
-  );
-  window.location.reload();
-};
+    "make sure to allow access to your microphone and camera in your browser's permissions"
+  )
+  window.location.reload()
+}
 
 export default function UserMediaError() {
   return (
@@ -26,5 +26,5 @@ export default function UserMediaError() {
         </p>
       </div>
     </div>
-  );
+  )
 }

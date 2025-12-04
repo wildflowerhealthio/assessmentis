@@ -1,17 +1,17 @@
-import "./HomeScreen.css";
+import './HomeScreen.css'
 
 export default function HomeScreen({
   createCall,
   startHairCheck,
 }: {
-  createCall: () => Promise<string>;
-  startHairCheck: (url: string) => void;
+  createCall: () => Promise<string>
+  startHairCheck: (url: string) => void
 }) {
   const startDemo = () => {
     createCall().then((url) => {
-      startHairCheck(url);
-    });
-  };
+      startHairCheck(url)
+    })
+  }
 
   return (
     <div className="home-screen">
@@ -24,5 +24,5 @@ export default function HomeScreen({
         Select “Allow” to use your camera and mic for this call if prompted
       </p>
     </div>
-  );
+  )
 }

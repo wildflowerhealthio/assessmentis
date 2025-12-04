@@ -1,1 +1,1 @@
-export * from "./GoogleMeetExternalVideoCallClient";
+export * from './GoogleMeetExternalVideoCallClient'

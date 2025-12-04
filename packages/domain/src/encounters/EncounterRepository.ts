@@ -1,31 +1,31 @@
-import { Context, Data, Effect, Schema } from "effect";
-import { Encounter, EncounterId } from "./models/Encounter";
+import { Context, Data, Effect, Schema } from 'effect'
+import { Encounter, EncounterId } from './models/Encounter'
 
 import {
   ExternalAssertionError,
   NeedsAuthenticationError,
   NotFoundError,
   UnhandledError,
-} from "../errors";
-import { WithId } from "../general-purpose";
+} from '../errors'
+import { WithId } from '../general-purpose'
 
-export class EncounterError extends Data.TaggedError("EncounterError")<{
-  message: string;
-  cause?: unknown;
+export class EncounterError extends Data.TaggedError('EncounterError')<{
+  message: string
+  cause?: unknown
 }> {}
 
-export class EncounterNotFound extends Data.TaggedError("EncounterNotFound")<{
-  encounterId?: EncounterId;
+export class EncounterNotFound extends Data.TaggedError('EncounterNotFound')<{
+  encounterId?: EncounterId
 }> {}
 
-const GetEncounterParams = Schema.Struct({});
-type GetEncounterParams = typeof GetEncounterParams.Type;
+const GetEncounterParams = Schema.Struct({})
+type GetEncounterParams = typeof GetEncounterParams.Type
 
-export class EncounterRepository extends Context.Tag("EncounterRepository")<
+export class EncounterRepository extends Context.Tag('EncounterRepository')<
   EncounterRepository,
   {
     getEncounter(
-      encounterId: EncounterId,
+      encounterId: EncounterId
     ): Effect.Effect<
       WithId<Encounter>,
       | NotFoundError
@@ -33,10 +33,10 @@ export class EncounterRepository extends Context.Tag("EncounterRepository")<
       | ExternalAssertionError
       | UnhandledError,
       never
-    >;
+    >
 
     getEncounters(
-      params: GetEncounterParams,
+      params: GetEncounterParams
     ): Effect.Effect<
       WithId<Encounter>[],
       | NotFoundError
@@ -44,18 +44,18 @@ export class EncounterRepository extends Context.Tag("EncounterRepository")<
       | UnhandledError
       | ExternalAssertionError,
       never
-    >;
+    >
 
     createEncounter(
-      encounter: Encounter,
+      encounter: Encounter
     ): Effect.Effect<
       WithId<Encounter>,
       NeedsAuthenticationError | ExternalAssertionError | UnhandledError,
       never
-    >;
+    >
 
     deleteEncounter(
-      encounterId: EncounterId,
+      encounterId: EncounterId
     ): Effect.Effect<
       object,
       | NotFoundError
@@ -63,6 +63,6 @@ export class EncounterRepository extends Context.Tag("EncounterRepository")<
       | ExternalAssertionError
       | UnhandledError,
       never
-    >;
+    >
   }
 >() {}

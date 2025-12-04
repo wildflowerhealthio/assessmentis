@@ -1,10 +1,10 @@
-import { Schema } from "effect";
-import { Coding } from "./Coding";
-import { Element } from "./Element";
+import { Schema } from 'effect'
+import { Coding } from './Coding'
+import { Element } from './Element'
 
 export const CodeableConceptId = Schema.String.pipe(
-  Schema.brand("CodeableConceptId"),
-);
+  Schema.brand('CodeableConceptId')
+)
 
 export const CodeableConcept = Schema.Struct({
   ...Element(CodeableConceptId).fields,
@@ -21,4 +21,4 @@ export const CodeableConcept = Schema.Struct({
    */
   text: Schema.optional(Schema.String),
   // _text?: Element | undefined;
-});
+})

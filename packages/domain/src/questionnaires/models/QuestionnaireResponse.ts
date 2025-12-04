@@ -1,30 +1,30 @@
-import { Schema } from "effect";
-import { DomainResource } from "../../general-purpose/DomainResource";
-import { Identifier } from "../../general-purpose/Identifier";
-import { Reference } from "../../general-purpose/Reference";
-import { QuestionnaireResponseItem } from "./QuestionnaireResponseItem";
-import { QuestionnaireId } from "./Questionnaire";
+import { Schema } from 'effect'
+import { DomainResource } from '../../general-purpose/DomainResource'
+import { Identifier } from '../../general-purpose/Identifier'
+import { Reference } from '../../general-purpose/Reference'
+import { QuestionnaireResponseItem } from './QuestionnaireResponseItem'
+import { QuestionnaireId } from './Questionnaire'
 
 export const QuestionnaireResponseId = Schema.UUID.pipe(
-  Schema.brand("QuestionnaireResponseId"),
-);
+  Schema.brand('QuestionnaireResponseId')
+)
 
-export type QuestionnaireResponseId = typeof QuestionnaireResponseId.Type;
+export type QuestionnaireResponseId = typeof QuestionnaireResponseId.Type
 
 export const QuestionnaireResponseStatus = Schema.Enums({
-  "in-progress": "in-progress",
-  completed: "completed",
-  amended: "amended",
-  "entered-in-error": "entered-in-error",
-  stopped: "stopped",
-} as const);
+  'in-progress': 'in-progress',
+  completed: 'completed',
+  amended: 'amended',
+  'entered-in-error': 'entered-in-error',
+  stopped: 'stopped',
+} as const)
 /**
  * A structured set of questions and their answers. The questions are ordered and grouped into coherent subsets, corresponding to the structure of the grouping of the questionnaire being responded to.
  */
 export const QuestionnaireResponse = Schema.Struct({
   ...DomainResource(QuestionnaireResponseId).fields,
   /** Resource Type Name (for serialization) */
-  resourceType: Schema.Literal("QuestionnaireResponse"),
+  resourceType: Schema.Literal('QuestionnaireResponse'),
   /**
    * Mapping a subject's answers to multiple choice options and determining what to put in the textual answer is a matter of interpretation.  Authoring by device would indicate that some portion of the questionnaire had been auto-populated.
    */
@@ -74,6 +74,6 @@ export const QuestionnaireResponse = Schema.Struct({
    * If the Questionnaire declared a subjectType, the resource pointed to by this element must be an instance of one of the listed types.
    */
   subject: Schema.optional(Reference),
-});
+})
 
-export type QuestionnaireResponse = typeof QuestionnaireResponse.Type;
+export type QuestionnaireResponse = typeof QuestionnaireResponse.Type

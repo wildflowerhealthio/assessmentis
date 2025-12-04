@@ -1,31 +1,31 @@
-import { Effect, Context } from "effect";
+import { Effect, Context } from 'effect'
 import {
   ExternalAssertionError,
   NeedsAuthenticationError,
   NotFoundError,
   UnhandledError,
-} from "../errors";
+} from '../errors'
 import {
   QuestionnaireResponse,
   QuestionnaireResponseId,
-} from "./models/QuestionnaireResponse";
-import { WithId } from "../general-purpose";
+} from './models/QuestionnaireResponse'
+import { WithId } from '../general-purpose'
 
 export class QuestionnaireResponseRepository extends Context.Tag(
-  "QuestionnaireResponseRepository",
+  'QuestionnaireResponseRepository'
 )<
   QuestionnaireResponseRepository,
   {
     createQuestionnaireResponses: (
-      questionnaireResponses: QuestionnaireResponse[],
+      questionnaireResponses: QuestionnaireResponse[]
     ) => Effect.Effect<
       ReadonlyArray<QuestionnaireResponse>,
       UnhandledError | NeedsAuthenticationError | ExternalAssertionError,
       never
-    >;
+    >
 
     getQuestionnaireResponse: (
-      id: QuestionnaireResponseId,
+      id: QuestionnaireResponseId
     ) => Effect.Effect<
       QuestionnaireResponse,
       | UnhandledError
@@ -33,18 +33,18 @@ export class QuestionnaireResponseRepository extends Context.Tag(
       | NeedsAuthenticationError
       | ExternalAssertionError,
       never
-    >;
+    >
 
     getQuestionnaireResponses: (
-      args?: unknown,
+      args?: unknown
     ) => Effect.Effect<
       ReadonlyArray<QuestionnaireResponse>,
       UnhandledError | NeedsAuthenticationError | ExternalAssertionError,
       never
-    >;
+    >
 
     deleteQuestionnaireResponse: (
-      id: QuestionnaireResponseId,
+      id: QuestionnaireResponseId
     ) => Effect.Effect<
       object,
       | UnhandledError
@@ -52,10 +52,10 @@ export class QuestionnaireResponseRepository extends Context.Tag(
       | NeedsAuthenticationError
       | ExternalAssertionError,
       never
-    >;
+    >
 
     updateQuestionnaireResponse: (
-      questionnaireResponse: WithId<QuestionnaireResponse>,
+      questionnaireResponse: WithId<QuestionnaireResponse>
     ) => Effect.Effect<
       WithId<QuestionnaireResponse>,
       | UnhandledError
@@ -63,6 +63,6 @@ export class QuestionnaireResponseRepository extends Context.Tag(
       | NeedsAuthenticationError
       | ExternalAssertionError,
       never
-    >;
+    >
   }
 >() {}

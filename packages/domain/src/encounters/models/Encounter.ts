@@ -1,14 +1,14 @@
-import { Schema } from "effect";
-import { Coding } from "../../general-purpose/Coding";
-import { Location } from "../../video-calls/models/Location";
+import { Schema } from 'effect'
+import { Coding } from '../../general-purpose/Coding'
+import { Location } from '../../video-calls/models/Location'
 
-export const EncounterId = Schema.String.pipe(Schema.brand("EncounterId"));
+export const EncounterId = Schema.String.pipe(Schema.brand('EncounterId'))
 
-export type EncounterId = typeof EncounterId.Type;
+export type EncounterId = typeof EncounterId.Type
 
 export const Encounter = Schema.Struct({
   id: Schema.optional(EncounterId),
-  resourceType: Schema.Literal("Encounter"),
+  resourceType: Schema.Literal('Encounter'),
   /**
    * Concepts representing classification of patient encounter such as ambulatory (outpatient), inpatient, emergency, home health or others due to local variations.
    */
@@ -19,8 +19,8 @@ export const Encounter = Schema.Struct({
   status: Schema.String,
   // ('planned'|'arrived'|'triaged'|'in-progress'|'onleave'|'finished'|'cancelled'|'entered-in-error'|'unknown');
   location: Schema.optional(
-    Schema.Array(Schema.Struct({ location: Location })),
+    Schema.Array(Schema.Struct({ location: Location }))
   ),
-});
+})
 
-export type Encounter = typeof Encounter.Type;
+export type Encounter = typeof Encounter.Type

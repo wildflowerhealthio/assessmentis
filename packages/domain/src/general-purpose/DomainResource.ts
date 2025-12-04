@@ -1,9 +1,9 @@
-import { Schema } from "effect";
-import { Coding } from "./Coding";
-import { Narrative } from "./Narrative";
-import { Resource } from "./Resource";
+import { Schema } from 'effect'
+import { Coding } from './Coding'
+import { Narrative } from './Narrative'
+import { Resource } from './Resource'
 export const DomainResource = <IdType extends string>(
-  idSchema: Schema.Schema<IdType, string>,
+  idSchema: Schema.Schema<IdType, string>
 ) =>
   Schema.Struct({
     ...Resource(idSchema).fields,
@@ -17,7 +17,7 @@ export const DomainResource = <IdType extends string>(
     contained: Schema.optional(Schema.Array(Schema.Unknown)), // Resource
     // extension
     // modifierExtension
-  });
+  })
 
 export const Meta = Schema.Struct({
   versionId: Schema.optional(Schema.String),
@@ -26,4 +26,4 @@ export const Meta = Schema.Struct({
   // profile: canonical(StructureDefinition),
   security: Schema.optional(Schema.Array(Coding)),
   tag: Schema.optional(Schema.Array(Coding)),
-});
+})

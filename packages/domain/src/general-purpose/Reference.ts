@@ -1,8 +1,8 @@
-import { Schema } from "effect";
-import { Element } from "./Element";
-import { Identifier, IdentifierEncoded } from "./Identifier";
+import { Schema } from 'effect'
+import { Element } from './Element'
+import { Identifier, IdentifierEncoded } from './Identifier'
 
-const ReferenceId = Schema.String.pipe(Schema.brand("ReferenceId"));
+const ReferenceId = Schema.String.pipe(Schema.brand('ReferenceId'))
 
 const referenceFields = {
   ...Element(ReferenceId).fields,
@@ -21,16 +21,16 @@ const referenceFields = {
    */
   type: Schema.optional(Schema.String),
   // _type?: Element | undefined;
-};
+}
 
 export interface Reference extends Schema.Struct.Type<typeof referenceFields> {
-  readonly identifier?: Identifier | undefined;
+  readonly identifier?: Identifier | undefined
 }
 
 export interface ReferenceEncoded extends Schema.Struct.Encoded<
   typeof referenceFields
 > {
-  readonly identifier?: IdentifierEncoded | undefined;
+  readonly identifier?: IdentifierEncoded | undefined
 }
 
 export const Reference = Schema.Struct({
@@ -43,7 +43,7 @@ export const Reference = Schema.Struct({
    */
   identifier: Schema.optional(
     Schema.suspend(
-      (): Schema.Schema<Identifier, IdentifierEncoded, never> => Identifier,
-    ),
+      (): Schema.Schema<Identifier, IdentifierEncoded, never> => Identifier
+    )
   ),
-});
+})
