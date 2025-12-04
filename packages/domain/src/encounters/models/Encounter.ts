@@ -1,6 +1,7 @@
 import { Schema } from 'effect'
 import { Coding } from '../../general-purpose/Coding'
 import { Location } from '../../video-calls/models/Location'
+import { Extension } from '../../general-purpose/BackboneElement'
 
 export const EncounterId = Schema.String.pipe(Schema.brand('EncounterId'))
 
@@ -21,6 +22,10 @@ export const Encounter = Schema.Struct({
   location: Schema.optional(
     Schema.Array(Schema.Struct({ location: Location }))
   ),
+  /**
+   * Extensions for additional data such as recording and transcript references
+   */
+  extension: Schema.optional(Schema.Array(Extension)),
 })
 
 export type Encounter = typeof Encounter.Type

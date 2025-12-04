@@ -55,7 +55,9 @@ export const createEncounter = (
       yield* QuestionnaireResponseRepository
     const videoCalls = yield* ExternalVideoCallClient
 
-    const externalVideoCallRoom = yield* videoCalls.createRoom({})
+    const externalVideoCallRoom = yield* videoCalls.createRoom({
+      enableRecoding: true,
+    })
 
     const createdEncounter = yield* encounterRepository.createEncounter({
       resourceType: 'Encounter',

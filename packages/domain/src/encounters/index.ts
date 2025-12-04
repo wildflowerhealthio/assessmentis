@@ -1,2 +1,4 @@
 export * from './EncounterRepository'
 export * from './models/Encounter'
+export * from './extensions/EncounterRecordingReference'
+export * from './extensions/EncounterTranscriptReference'

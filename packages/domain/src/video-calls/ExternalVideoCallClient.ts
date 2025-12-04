@@ -1,6 +1,8 @@
 import { Context, Data, Effect } from 'effect'
 import { ExternalVideoCallRoom } from './models/ExternalVideoCallRoom'
 import { ExternalVideoCallRecording } from './models/ExternalVideoCallRecording'
+import { ExternalVideoCallTranscript } from './models/ExternalVideoCallTranscript'
+import { ExternalVideoCallRecordingId } from './models/VideoCallRecording'
 import { Zoned } from 'effect/DateTime'
 
 export class ExternalVideoCallServiceError extends Data.TaggedError(
@@ -25,6 +27,12 @@ export class ExternalVideoCallClient extends Context.Tag(
       roomName: string
     ) => Effect.Effect<
       ExternalVideoCallRecording[],
+      ExternalVideoCallServiceError
+    >
+    fetchTranscriptByRecordingId: (
+      recordingId: ExternalVideoCallRecordingId
+    ) => Effect.Effect<
+      ExternalVideoCallTranscript | null,
       ExternalVideoCallServiceError
     >
     createRoom: (
