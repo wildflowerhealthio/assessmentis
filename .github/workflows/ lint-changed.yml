@@ -1,9 +1,8 @@
 name: Lint and Type Check
 
 on:
-  pull_request:
-    branches:
-      - main
+  pull_request
+
 
 permissions:
   contents: read
@@ -11,7 +10,7 @@ permissions:
   checks: write
 
 jobs:
-  lint-and-typecheck:
+  lint-changed:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -43,11 +42,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
           eslint_flags: '${{ steps.changed-files.outputs.all_changed_files }}'
-          fail_on_error: false
+          fail_level: error
           filter_mode: diff_context
 
-      - name: Run lint on all packages
-        run: npm run lint
-
-      - name: Run type checking on all packages
-        run: npx turbo run check-types

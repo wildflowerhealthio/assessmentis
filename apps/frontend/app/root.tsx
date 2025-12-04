@@ -21,6 +21,8 @@ import * as firebase from 'app/firebase'
 import NavHeader from './components/NavHeader'
 import { useAuthedGapi } from 'app/firebase'
 
+const a: string = 123;
+
 // HydrateFallback is rendered while the client loader is running
 export function HydrateFallback() {
   return <div>Loading...</div>
