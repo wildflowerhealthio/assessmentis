@@ -4,6 +4,7 @@
   "description": "A tool for diagnostic interviews",
   "main": "index.js",
   "packageManager": "npm@10.9.2",
+  "prettier": "@assessmentis/prettier-config",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
@@ -31,6 +32,7 @@
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
+    "eslint": "^9.39.1",
     "turbo": "^2.6.1"
   }
 }

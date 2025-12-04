@@ -5,21 +5,21 @@ import {
   useDevices,
   useLocalSessionId,
   useParticipantProperty,
-} from "@daily-co/daily-react";
-import React, { useCallback, useEffect, useState } from "react";
-import UserMediaError from "../UserMediaError/UserMediaError";
+} from '@daily-co/daily-react'
+import React, { useCallback, useEffect, useState } from 'react'
+import UserMediaError from '../UserMediaError/UserMediaError'
 
-import "./HairCheck.css";
+import './HairCheck.css'
 
 export default function HairCheck({
   joinCall,
   cancelCall,
 }: {
-  joinCall: (username: string) => void;
-  cancelCall: () => void;
+  joinCall: (username: string) => void
+  cancelCall: () => void
 }) {
-  const localSessionId = useLocalSessionId();
-  const initialUsername = useParticipantProperty(localSessionId, "user_name");
+  const localSessionId = useLocalSessionId()
+  const initialUsername = useParticipantProperty(localSessionId, 'user_name')
   const {
     currentCam,
     currentMic,
@@ -30,44 +30,44 @@ export default function HairCheck({
     setMicrophone,
     setCamera,
     setSpeaker,
-  } = useDevices();
-  const callObject = useDaily();
-  const [username, setUsername] = useState(initialUsername);
+  } = useDevices()
+  const callObject = useDaily()
+  const [username, setUsername] = useState(initialUsername)
 
-  const [getUserMediaError, setGetUserMediaError] = useState(false);
+  const [getUserMediaError, setGetUserMediaError] = useState(false)
 
   useEffect(() => {
-    setUsername(initialUsername);
-  }, [initialUsername]);
+    setUsername(initialUsername)
+  }, [initialUsername])
 
   useDailyEvent(
-    "camera-error",
+    'camera-error',
     useCallback(() => {
-      setGetUserMediaError(true);
-    }, []),
-  );
+      setGetUserMediaError(true)
+    }, [])
+  )
 
   const handleChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    setUsername(e.target.value);
-    callObject?.setUserName(e.target.value);
-  };
+    setUsername(e.target.value)
+    callObject?.setUserName(e.target.value)
+  }
 
   const handleJoin = (e: React.SyntheticEvent) => {
-    e.preventDefault();
-    joinCall(username.trim());
-  };
+    e.preventDefault()
+    joinCall(username.trim())
+  }
 
   const updateMicrophone: React.ChangeEventHandler<HTMLSelectElement> = (e) => {
-    setMicrophone(e.target.value);
-  };
+    setMicrophone(e.target.value)
+  }
 
   const updateSpeakers: React.ChangeEventHandler<HTMLSelectElement> = (e) => {
-    setSpeaker(e.target.value);
-  };
+    setSpeaker(e.target.value)
+  }
 
   const updateCamera: React.ChangeEventHandler<HTMLSelectElement> = (e) => {
-    setCamera(e.target.value);
-  };
+    setCamera(e.target.value)
+  }
 
   return getUserMediaError ? (
     <UserMediaError />
@@ -89,7 +89,7 @@ export default function HairCheck({
             type="text"
             placeholder="Enter username"
             onChange={handleChange}
-            value={username || " "}
+            value={username || ' '}
           />
         </label>
 
@@ -154,7 +154,7 @@ export default function HairCheck({
         </label>
 
         <button
-          style={{ width: "100%" }}
+          style={{ width: '100%' }}
           className="element-button button-3 outline accent-blue"
           onClick={handleJoin}
           type="submit"
@@ -163,7 +163,7 @@ export default function HairCheck({
         </button>
 
         <button
-          style={{ width: "100%" }}
+          style={{ width: '100%' }}
           className="element-button button-3 outline"
           onClick={cancelCall}
           type="button"
@@ -172,5 +172,5 @@ export default function HairCheck({
         </button>
       </div>
     </form>
-  );
+  )
 }

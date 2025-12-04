@@ -1,37 +1,37 @@
-import { Schema } from "effect";
-import { QuestionnaireItemLink } from "./Questionnaire";
-import { BackboneElement } from "../../general-purpose/BackboneElement";
-import { ValueElement } from "../../general-purpose/ValueElement";
+import { Schema } from 'effect'
+import { QuestionnaireItemLink } from './Questionnaire'
+import { BackboneElement } from '../../general-purpose/BackboneElement'
+import { ValueElement } from '../../general-purpose/ValueElement'
 
 export const QuestionnaireResponseItemId = Schema.String.pipe(
-  Schema.brand("QuestionnaireResponseItemId"),
-);
+  Schema.brand('QuestionnaireResponseItemId')
+)
 export type QuestionnaireResponseItemId =
-  typeof QuestionnaireResponseItemId.Type;
+  typeof QuestionnaireResponseItemId.Type
 
 export const QuestionnaireResponseItemAnswerId = Schema.String.pipe(
-  Schema.brand("QuestionnaireResponseItemAnswerId"),
-);
+  Schema.brand('QuestionnaireResponseItemAnswerId')
+)
 export type QuestionnaireResponseItemAnswerId =
-  typeof QuestionnaireResponseItemAnswerId.Type;
+  typeof QuestionnaireResponseItemAnswerId.Type
 
 const questionnaireResponseItemAnswerFields = {
   ...BackboneElement(QuestionnaireResponseItemAnswerId).fields,
-};
+}
 
 export type QuestionnaireResponseItemAnswer = Schema.Struct.Type<
   typeof questionnaireResponseItemAnswerFields
 > &
   typeof ValueElement.Type & {
-    readonly item?: ReadonlyArray<QuestionnaireResponseItem> | undefined;
-  };
+    readonly item?: ReadonlyArray<QuestionnaireResponseItem> | undefined
+  }
 
 type QuestionnaireResponseItemAnswerEncoded = Schema.Struct.Encoded<
   typeof questionnaireResponseItemAnswerFields
 > &
   typeof ValueElement.Encoded & {
-    readonly item?: ReadonlyArray<QuestionnaireResponseItemEncoded> | undefined;
-  };
+    readonly item?: ReadonlyArray<QuestionnaireResponseItemEncoded> | undefined
+  }
 
 /**
  * The value is nested because we cannot have a repeating structure that has variable type.
@@ -53,13 +53,13 @@ export const QuestionnaireResponseItemAnswer: Schema.Schema<
             QuestionnaireResponseItem,
             QuestionnaireResponseItemEncoded,
             never
-          > => QuestionnaireResponseItem,
-        ),
-      ),
+          > => QuestionnaireResponseItem
+        )
+      )
     ),
   }),
-  ValueElement,
-);
+  ValueElement
+)
 
 const questionnaireResponseItemFields = {
   ...BackboneElement(QuestionnaireResponseItemId).fields,
@@ -79,21 +79,21 @@ const questionnaireResponseItemFields = {
    */
   text: Schema.optional(Schema.String),
   // _text?: Element | undefined;
-} as const;
+} as const
 
 export interface QuestionnaireResponseItem extends Schema.Struct.Type<
   typeof questionnaireResponseItemFields
 > {
-  readonly item?: ReadonlyArray<QuestionnaireResponseItem> | undefined;
+  readonly item?: ReadonlyArray<QuestionnaireResponseItem> | undefined
   readonly answer?:
     | ReadonlyArray<typeof QuestionnaireResponseItemAnswer.Type>
-    | undefined;
+    | undefined
 }
 
 export interface QuestionnaireResponseItemEncoded extends Schema.Struct.Encoded<
   typeof questionnaireResponseItemFields
 > {
-  readonly item?: ReadonlyArray<QuestionnaireResponseItemEncoded> | undefined;
+  readonly item?: ReadonlyArray<QuestionnaireResponseItemEncoded> | undefined
 }
 
 /**
@@ -111,9 +111,9 @@ export const QuestionnaireResponseItem = Schema.Struct({
           QuestionnaireResponseItem,
           QuestionnaireResponseItemEncoded,
           never
-        > => QuestionnaireResponseItem,
-      ),
-    ),
+        > => QuestionnaireResponseItem
+      )
+    )
   ),
   /**
    * The value is nested because we cannot have a repeating structure that has variable type.
@@ -124,8 +124,8 @@ export const QuestionnaireResponseItem = Schema.Struct({
         (): Schema.Schema<
           QuestionnaireResponseItemAnswer,
           QuestionnaireResponseItemAnswerEncoded
-        > => QuestionnaireResponseItemAnswer,
-      ),
-    ),
+        > => QuestionnaireResponseItemAnswer
+      )
+    )
   ),
-});
+})

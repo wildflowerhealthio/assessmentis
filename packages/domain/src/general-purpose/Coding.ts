@@ -1,7 +1,7 @@
-import { Schema } from "effect";
+import { Schema } from 'effect'
 
-export const Code = Schema.String.pipe(Schema.brand("code"));
-export const brandAsCode = Schema.brand("code");
+export const Code = Schema.String.pipe(Schema.brand('code'))
+export const brandAsCode = Schema.brand('code')
 /**
  * A reference to a code defined by a terminology system.
  */
@@ -31,5 +31,5 @@ export const Coding = Schema.Struct({
    */
   version: Schema.optional(Schema.String),
   // _version?: Element | undefined;
-});
-export type Coding = typeof Coding.Type;
+})
+export type Coding = typeof Coding.Type

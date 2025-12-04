@@ -5,6 +5,7 @@
   "author": "Ruth Marks",
   "license": "UNLICENSED",
   "type": "module",
+  "prettier": "@assessmentis/prettier-config",
   "exports": {
     ".": "./src/index.ts",
     "./compositions": "./src/compositions/index.ts",
@@ -15,6 +16,7 @@
     "./errors": "./src/errors.ts"
   },
   "devDependencies": {
+    "@assessmentis/prettier-config": "*",
     "@types/fhir": "^3.0.2",
     "typescript": "^5.9.3",
     "vitest": "^4.0.15"

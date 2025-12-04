@@ -1,11 +1,11 @@
-import { Layer, Effect } from "effect";
+import { Layer, Effect } from 'effect'
 import {
   ExternalVideoCallClient,
   ExternalVideoCallRoomId,
   ExternalVideoCallRoomName,
   ExternalVideoCallServiceError,
   type RoomCreationParams,
-} from "@assessmentis/domain/video-calls";
+} from '@assessmentis/domain/video-calls'
 
 export const GoogleMeetExternalVideoCallClientLayer = Layer.effect(
   ExternalVideoCallClient,
@@ -15,47 +15,47 @@ export const GoogleMeetExternalVideoCallClientLayer = Layer.effect(
         (_: string) =>
           Effect.fail(
             new ExternalVideoCallServiceError({
-              message: "not-implemented",
+              message: 'not-implemented',
               cause: undefined,
-            }),
-          );
+            })
+          )
 
       const createRoom: typeof ExternalVideoCallClient.Service.createRoom = (
-        _: RoomCreationParams,
+        _: RoomCreationParams
       ) =>
         Effect.gen(function* () {
           const space = yield* Effect.tryPromise(() =>
             gapi.client.meet.spaces.create({
               resource: {
                 config: {
-                  accessType: "RESTRICTED",
-                  entryPointAccess: "ALL",
+                  accessType: 'RESTRICTED',
+                  entryPointAccess: 'ALL',
                   artifactConfig: {
                     transcriptionConfig: {
-                      autoTranscriptionGeneration: "ON",
+                      autoTranscriptionGeneration: 'ON',
                     },
                   },
                 },
               },
-            }),
-          );
-          console.log({ space });
+            })
+          )
+          console.log({ space })
           return {
             url: space.result.meetingUri!,
             roomName: ExternalVideoCallRoomName.make(space.result.meetingCode!),
             id: ExternalVideoCallRoomId.make(space.result.name!),
-          };
+          }
         }).pipe(
           Effect.mapError(
             (cause) =>
               new ExternalVideoCallServiceError({
-                message: "Error creating the room",
+                message: 'Error creating the room',
                 cause,
-              }),
-          ),
-        );
+              })
+          )
+        )
 
-      return { fetchRecordingsByRoomName, createRoom };
-    })(),
-  ),
-);
+      return { fetchRecordingsByRoomName, createRoom }
+    })()
+  )
+)

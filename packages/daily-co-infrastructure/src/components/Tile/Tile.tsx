@@ -1,6 +1,6 @@
-import { DailyVideo } from "@daily-co/daily-react";
-import Username from "../Username/Username";
-import { CSSProperties } from "react";
+import { DailyVideo } from '@daily-co/daily-react'
+import Username from '../Username/Username'
+import { CSSProperties } from 'react'
 
 export default function Tile({
   id,
@@ -8,10 +8,10 @@ export default function Tile({
   isLocal,
   style,
 }: {
-  id: string;
-  isScreenShare?: boolean;
-  isLocal?: boolean | undefined;
-  style?: CSSProperties | undefined;
+  id: string
+  isScreenShare?: boolean
+  isLocal?: boolean | undefined
+  style?: CSSProperties | undefined
 }) {
   // const videoState = useVideoTrack(id);
 
@@ -21,9 +21,9 @@ export default function Tile({
         automirror
         style={style}
         sessionId={id}
-        type={isScreenShare ? "screenVideo" : "video"}
+        type={isScreenShare ? 'screenVideo' : 'video'}
       />
       {!isScreenShare && <Username id={id} isLocal={isLocal} />}
     </div>
-  );
+  )
 }

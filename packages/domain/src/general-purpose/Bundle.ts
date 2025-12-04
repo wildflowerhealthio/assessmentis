@@ -1,18 +1,18 @@
-import { Schema } from "effect";
-import { BackboneElement } from "./BackboneElement";
-import { Identifier } from "./Identifier";
-import { Resource } from "./Resource";
+import { Schema } from 'effect'
+import { BackboneElement } from './BackboneElement'
+import { Identifier } from './Identifier'
+import { Resource } from './Resource'
 
-const BundleId = Schema.String.pipe(Schema.brand("BundleId"));
+const BundleId = Schema.String.pipe(Schema.brand('BundleId'))
 
-const BundleEntryId = Schema.String.pipe(Schema.brand("BundleEntryId"));
+const BundleEntryId = Schema.String.pipe(Schema.brand('BundleEntryId'))
 
 const bundleEntryFields = <BundleContentType, BundleContentEncoded>(
   contentTypeSchema: Schema.Schema<
     BundleContentType,
     BundleContentEncoded,
     never
-  >,
+  >
 ) => ({
   ...BackboneElement(BundleEntryId).fields,
   /**
@@ -41,7 +41,7 @@ const bundleEntryFields = <BundleContentType, BundleContentEncoded>(
    * Information about the search process that lead to the creation of this entry.
    */
   search: Schema.optional(Schema.Any), // ?: BundleEntrySearch | undefined;
-});
+})
 
 /**
  * An entry in a bundle resource - will either contain a resource or information about a resource (transactions and history only).
@@ -51,31 +51,31 @@ const BundleEntry = <BundleContentType, BundleContentEncoded>(
     BundleContentType,
     BundleContentEncoded,
     never
-  >,
-) => Schema.Struct(bundleEntryFields(contentTypeSchema));
+  >
+) => Schema.Struct(bundleEntryFields(contentTypeSchema))
 
 const BundleType = Schema.Enums({
-  document: "document",
-  message: "message",
-  transaction: "transaction",
-  "transaction-response": "transaction-response",
-  batch: "batch",
-  "batch-response": "batch-response",
-  history: "history",
-  searchset: "searchset",
-  collection: "collection",
-} as const);
+  document: 'document',
+  message: 'message',
+  transaction: 'transaction',
+  'transaction-response': 'transaction-response',
+  batch: 'batch',
+  'batch-response': 'batch-response',
+  history: 'history',
+  searchset: 'searchset',
+  collection: 'collection',
+} as const)
 
 const bundleFields = <BundleContentType, BundleContentEncoded>(
   contentTypeSchema: Schema.Schema<
     BundleContentType,
     BundleContentEncoded,
     never
-  >,
+  >
 ) => ({
   ...Resource(BundleId).fields,
   /** Resource Type Name (for serialization) */
-  resourceType: Schema.Literal("Bundle"),
+  resourceType: Schema.Literal('Bundle'),
   /**
    * An entry in a bundle resource - will either contain a resource or information about a resource (transactions and history only).
    */
@@ -115,7 +115,7 @@ const bundleFields = <BundleContentType, BundleContentEncoded>(
    */
   type: BundleType,
   // _type?: Element | undefined;
-});
+})
 
 /**
  * A container for a collection of resources.
@@ -125,9 +125,9 @@ export const Bundle = <BundleContentType, BundleContentEncoded>(
     BundleContentType,
     BundleContentEncoded,
     never
-  >,
-) => Schema.Struct(bundleFields(contentTypeSchema));
+  >
+) => Schema.Struct(bundleFields(contentTypeSchema))
 
 export type Bundle<T> = Schema.Struct.Type<
   ReturnType<typeof bundleFields<T, T>>
->;
+>

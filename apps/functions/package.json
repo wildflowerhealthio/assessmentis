@@ -4,6 +4,7 @@
   "description": "Cloud functions for Assessmentis",
   "author": "Ruth Marks",
   "license": "UNLICENSED",
+  "prettier": "@assessmentis/prettier-config",
   "scripts": {
     "build": "tsc",
     "check-types": "tsc --noEmit",
@@ -29,6 +30,7 @@
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {
+    "@assessmentis/prettier-config": "*",
     "@types/gapi.client.healthcare-v1": "^0.0.4",
     "@types/gapi": "^0.0.47",
     "@types/node-fetch": "^3.0.2",

@@ -1,9 +1,9 @@
-import { Schema } from "effect";
-import { Code, Coding } from "./Coding";
-import { Reference } from "./Reference";
+import { Schema } from 'effect'
+import { Code, Coding } from './Coding'
+import { Reference } from './Reference'
 
-const Attachment = Schema.Struct({ contentType: Schema.optional(Code) });
-const Quantity = Schema.Struct({ value: Schema.optional(Schema.Number) });
+const Attachment = Schema.Struct({ contentType: Schema.optional(Code) })
+const Quantity = Schema.Struct({ value: Schema.optional(Schema.Number) })
 
 /**
  * Single-valued answer to the question
@@ -91,7 +91,7 @@ export const ValueElement = Schema.Union(
   Schema.Struct({
     valueCode: Code,
   }),
-  Schema.Struct({}),
-);
+  Schema.Struct({})
+)
 
-export type ValueElement = typeof ValueElement.Type;
+export type ValueElement = typeof ValueElement.Type

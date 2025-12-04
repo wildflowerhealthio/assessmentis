@@ -6,6 +6,7 @@
   "license": "UNLICENSED",
   "private": true,
   "type": "module",
+  "prettier": "@assessmentis/prettier-config",
   "scripts": {
     "build": "tsc",
     "check-types": "tsc --noEmit",
@@ -23,6 +24,7 @@
   },
   "devDependencies": {
     "@assessmentis/eslint-config": "*",
+    "@assessmentis/prettier-config": "*",
     "@assessmentis/typescript-config": "*",
     "@eslint/js": "^9.39.1",
     "@types/gapi.client.meet-v2": "^0.0.0",

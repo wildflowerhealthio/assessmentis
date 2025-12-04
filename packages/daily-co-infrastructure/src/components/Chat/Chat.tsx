@@ -2,26 +2,26 @@ import {
   useAppMessage,
   useLocalSessionId,
   useParticipantProperty,
-} from "@daily-co/daily-react";
-import { useCallback, useState, type SyntheticEvent } from "react";
+} from '@daily-co/daily-react'
+import { useCallback, useState, type SyntheticEvent } from 'react'
 
-import { Arrow } from "../Tray/Icons/index";
-import "./Chat.css";
-import type { DailyEventObjectAppMessage } from "@daily-co/daily-js";
+import { Arrow } from '../Tray/Icons/index'
+import './Chat.css'
+import type { DailyEventObjectAppMessage } from '@daily-co/daily-js'
 
-type Message = { msg: string; name: string };
+type Message = { msg: string; name: string }
 
 export default function Chat({
   showChat,
   toggleChat,
 }: {
-  showChat: boolean;
-  toggleChat: () => void;
+  showChat: boolean
+  toggleChat: () => void
 }) {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [inputValue, setInputValue] = useState("");
-  const localSessionId = useLocalSessionId();
-  const username = useParticipantProperty(localSessionId, "user_name");
+  const [messages, setMessages] = useState<Message[]>([])
+  const [inputValue, setInputValue] = useState('')
+  const localSessionId = useLocalSessionId()
+  const username = useParticipantProperty(localSessionId, 'user_name')
 
   const sendAppMessage = useAppMessage({
     onAppMessage: useCallback(
@@ -33,9 +33,9 @@ export default function Chat({
             name: ev.data.name,
           },
         ]),
-      [],
+      []
     ),
-  });
+  })
 
   const sendMessage = useCallback(
     (message: string) => {
@@ -45,10 +45,10 @@ export default function Chat({
       sendAppMessage(
         {
           msg: message,
-          name: username || "Guest",
+          name: username || 'Guest',
         },
-        "*",
-      );
+        '*'
+      )
 
       /* Since we don't receive our own messages, we will set our message in the messages array.
        * This way _we_ can also see what we wrote.
@@ -57,23 +57,23 @@ export default function Chat({
         ...messages,
         {
           msg: message,
-          name: username || "Guest",
+          name: username || 'Guest',
         },
-      ]);
+      ])
     },
-    [messages, sendAppMessage, username],
-  );
+    [messages, sendAppMessage, username]
+  )
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
-  };
+    setInputValue(e.target.value)
+  }
 
   const handleSubmit = (e: SyntheticEvent) => {
-    e.preventDefault();
-    if (!inputValue.trim()) return; // don't allow people to submit empty strings
-    sendMessage(inputValue);
-    setInputValue("");
-  };
+    e.preventDefault()
+    if (!inputValue.trim()) return // don't allow people to submit empty strings
+    sendMessage(inputValue)
+    setInputValue('')
+  }
 
   return showChat ? (
     <aside className="chat">
@@ -83,7 +83,7 @@ export default function Chat({
       <ul className="chat-messages">
         {messages.map((message, index) => (
           <li key={`message-${index}`} className="chat-message">
-            <span className="chat-message-author">{message?.name}</span>:{" "}
+            <span className="chat-message-author">{message?.name}</span>:{' '}
             <p className="chat-message-body">{message?.msg}</p>
           </li>
         ))}
@@ -103,5 +103,5 @@ export default function Chat({
         </form>
       </div>
     </aside>
-  ) : null;
+  ) : null
 }

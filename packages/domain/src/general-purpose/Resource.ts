@@ -1,9 +1,9 @@
-import { Schema } from "effect";
-import { Code } from "./Coding";
-import { Meta } from "./DomainResource";
+import { Schema } from 'effect'
+import { Code } from './Coding'
+import { Meta } from './DomainResource'
 
 export const Resource = <IdType extends string>(
-  idSchema: Schema.Schema<IdType, string>,
+  idSchema: Schema.Schema<IdType, string>
 ) =>
   Schema.Struct({
     /**
@@ -22,4 +22,4 @@ export const Resource = <IdType extends string>(
      * Metadata about the resource
      */
     language: Schema.optional(Code),
-  });
+  })

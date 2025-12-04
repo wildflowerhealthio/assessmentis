@@ -1,17 +1,17 @@
-import { Schema } from "effect";
-import { Element } from "./Element";
-import { CodeableConcept } from "./CodeableConcept";
-import { Reference, ReferenceEncoded } from "./Reference";
+import { Schema } from 'effect'
+import { Element } from './Element'
+import { CodeableConcept } from './CodeableConcept'
+import { Reference, ReferenceEncoded } from './Reference'
 
-export const IdentifierId = Schema.String.pipe(Schema.brand("IdentifierId"));
+export const IdentifierId = Schema.String.pipe(Schema.brand('IdentifierId'))
 
 const IdentifierUse = Schema.Enums({
-  usual: "usual",
-  official: "official",
-  temp: "temp",
-  secondary: "secondary",
-  old: "old",
-} as const);
+  usual: 'usual',
+  official: 'official',
+  temp: 'temp',
+  secondary: 'secondary',
+  old: 'old',
+} as const)
 
 const identifierFields = {
   ...Element(IdentifierId).fields,
@@ -38,18 +38,18 @@ const identifierFields = {
    */
   value: Schema.optional(Schema.String),
   // _value?: Element | undefined;
-};
+}
 
 export interface Identifier extends Schema.Struct.Type<
   typeof identifierFields
 > {
-  assigner?: Reference | undefined;
+  assigner?: Reference | undefined
 }
 
 export interface IdentifierEncoded extends Schema.Struct.Encoded<
   typeof identifierFields
 > {
-  assigner?: ReferenceEncoded | undefined;
+  assigner?: ReferenceEncoded | undefined
 }
 
 /**
@@ -62,7 +62,7 @@ export const Identifier = Schema.Struct({
    */
   assigner: Schema.optional(
     Schema.suspend(
-      (): Schema.Schema<Reference, ReferenceEncoded, never> => Reference,
-    ),
+      (): Schema.Schema<Reference, ReferenceEncoded, never> => Reference
+    )
   ),
-});
+})

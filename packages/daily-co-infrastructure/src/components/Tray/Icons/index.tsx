@@ -15,7 +15,7 @@ export function CameraOn() {
         fill="currentColor"
       />
     </svg>
-  );
+  )
 }
 
 export function CameraOff() {
@@ -41,7 +41,7 @@ export function CameraOff() {
         fill="#f63135"
       />
     </svg>
-  );
+  )
 }
 
 export function MicrophoneOn() {
@@ -61,7 +61,7 @@ export function MicrophoneOn() {
         fill="currentColor"
       />
     </svg>
-  );
+  )
 }
 
 export function MicrophoneOff() {
@@ -87,7 +87,7 @@ export function MicrophoneOff() {
         fill="#f63135"
       />
     </svg>
-  );
+  )
 }
 
 export function Screenshare() {
@@ -107,7 +107,7 @@ export function Screenshare() {
         fill="currentColor"
       />
     </svg>
-  );
+  )
 }
 
 export function Leave() {
@@ -129,7 +129,7 @@ export function Leave() {
         fill="#f63135"
       />
     </svg>
-  );
+  )
 }
 
 export function Info() {
@@ -161,7 +161,7 @@ export function Info() {
         strokeLinejoin="round"
       />
     </svg>
-  );
+  )
 }
 
 export function ChatIcon() {
@@ -180,7 +180,7 @@ export function ChatIcon() {
         fill="#121A24"
       />
     </svg>
-  );
+  )
 }
 
 export function ChatHighlighted() {
@@ -199,7 +199,7 @@ export function ChatHighlighted() {
         fill="#f63135"
       />
     </svg>
-  );
+  )
 }
 
 export function Arrow() {
@@ -216,5 +216,5 @@ export function Arrow() {
         fill="#121A24"
       />
     </svg>
-  );
+  )
 }

@@ -5,13 +5,13 @@ import {
   useLocalSessionId,
   useScreenShare,
   useVideoTrack,
-} from "@daily-co/daily-react";
-import { useCallback, useState } from "react";
+} from '@daily-co/daily-react'
+import { useCallback, useState } from 'react'
 
-import Chat from "../Chat/Chat";
-import MeetingInformation from "../MeetingInformation/MeetingInformation";
+import Chat from '../Chat/Chat'
+import MeetingInformation from '../MeetingInformation/MeetingInformation'
 
-import "./Tray.css";
+import './Tray.css'
 import {
   CameraOff,
   CameraOn,
@@ -22,22 +22,22 @@ import {
   MicrophoneOff,
   MicrophoneOn,
   Screenshare,
-} from "./Icons";
+} from './Icons'
 
 export default function Tray({ leaveCall }: { leaveCall: () => void }) {
-  const callObject = useDaily();
+  const callObject = useDaily()
   const { isSharingScreen, startScreenShare, stopScreenShare } =
-    useScreenShare();
+    useScreenShare()
 
-  const [showMeetingInformation, setShowMeetingInformation] = useState(false);
-  const [showChat, setShowChat] = useState(false);
-  const [newChatMessage, setNewChatMessage] = useState(false);
+  const [showMeetingInformation, setShowMeetingInformation] = useState(false)
+  const [showChat, setShowChat] = useState(false)
+  const [newChatMessage, setNewChatMessage] = useState(false)
 
-  const localSessionId = useLocalSessionId();
-  const localVideo = useVideoTrack(localSessionId);
-  const localAudio = useAudioTrack(localSessionId);
-  const mutedVideo = localVideo.isOff;
-  const mutedAudio = localAudio.isOff;
+  const localSessionId = useLocalSessionId()
+  const localVideo = useVideoTrack(localSessionId)
+  const localAudio = useAudioTrack(localSessionId)
+  const mutedVideo = localVideo.isOff
+  const mutedAudio = localAudio.isOff
 
   /* When a remote participant sends a message in the chat, we want to display a differently colored
    * chat icon in the Tray as a notification. By listening for the `"app-message"` event we'll know
@@ -46,32 +46,32 @@ export default function Tray({ leaveCall }: { leaveCall: () => void }) {
     onAppMessage: useCallback(() => {
       /* Only light up the chat icon if the chat isn't already open. */
       if (!showChat) {
-        setNewChatMessage(true);
+        setNewChatMessage(true)
       }
     }, [showChat]),
-  });
+  })
 
   const toggleVideo = useCallback(() => {
-    callObject?.setLocalVideo(mutedVideo);
-  }, [callObject, mutedVideo]);
+    callObject?.setLocalVideo(mutedVideo)
+  }, [callObject, mutedVideo])
 
   const toggleAudio = useCallback(() => {
-    callObject?.setLocalAudio(mutedAudio);
-  }, [callObject, mutedAudio]);
+    callObject?.setLocalAudio(mutedAudio)
+  }, [callObject, mutedAudio])
 
   const toggleScreenShare = () =>
-    isSharingScreen ? stopScreenShare() : startScreenShare();
+    isSharingScreen ? stopScreenShare() : startScreenShare()
 
   const toggleMeetingInformation = () => {
-    setShowMeetingInformation(!showMeetingInformation);
-  };
+    setShowMeetingInformation(!showMeetingInformation)
+  }
 
   const toggleChat = () => {
-    setShowChat(!showChat);
+    setShowChat(!showChat)
     if (newChatMessage) {
-      setNewChatMessage(!newChatMessage);
+      setNewChatMessage(!newChatMessage)
     }
-  };
+  }
 
   return (
     <div className="tray">
@@ -88,25 +88,25 @@ export default function Tray({ leaveCall }: { leaveCall: () => void }) {
         <div className="controls">
           <button onClick={toggleVideo} type="button">
             {mutedVideo ? <CameraOff /> : <CameraOn />}
-            {mutedVideo ? "Turn camera on" : "Turn camera off"}
+            {mutedVideo ? 'Turn camera on' : 'Turn camera off'}
           </button>
           <button onClick={toggleAudio} type="button">
             {mutedAudio ? <MicrophoneOff /> : <MicrophoneOn />}
-            {mutedAudio ? "Unmute mic" : "Mute mic"}
+            {mutedAudio ? 'Unmute mic' : 'Mute mic'}
           </button>
         </div>
         <div className="actions">
           <button onClick={toggleScreenShare} type="button">
             <Screenshare />
-            {isSharingScreen ? "Stop sharing screen" : "Share screen"}
+            {isSharingScreen ? 'Stop sharing screen' : 'Share screen'}
           </button>
           <button onClick={toggleMeetingInformation} type="button">
             <Info />
-            {showMeetingInformation ? "Hide info" : "Show info"}
+            {showMeetingInformation ? 'Hide info' : 'Show info'}
           </button>
           <button onClick={toggleChat} type="button">
             {newChatMessage ? <ChatHighlighted /> : <ChatIcon />}
-            {showChat ? "Hide chat" : "Show chat"}
+            {showChat ? 'Hide chat' : 'Show chat'}
           </button>
         </div>
         <div className="leave">
@@ -116,5 +116,5 @@ export default function Tray({ leaveCall }: { leaveCall: () => void }) {
         </div>
       </div>
     </div>
-  );
+  )
 }

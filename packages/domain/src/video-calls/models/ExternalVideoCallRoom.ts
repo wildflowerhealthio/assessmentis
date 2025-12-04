@@ -1,10 +1,10 @@
 import {
   ExternalVideoCallRoomId,
   ExternalVideoCallRoomName,
-} from "./VideoCallRoom";
+} from './VideoCallRoom'
 
 export interface ExternalVideoCallRoom {
-  id: ExternalVideoCallRoomId;
-  roomName: ExternalVideoCallRoomName;
-  url: string;
+  id: ExternalVideoCallRoomId
+  roomName: ExternalVideoCallRoomName
+  url: string
 }

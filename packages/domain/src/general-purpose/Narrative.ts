@@ -1,14 +1,14 @@
-import { Schema } from "effect";
-import { Element } from "./Element";
+import { Schema } from 'effect'
+import { Element } from './Element'
 
-const NarrativeId = Schema.String.pipe(Schema.brand("NarrativeId"));
+const NarrativeId = Schema.String.pipe(Schema.brand('NarrativeId'))
 const NarrativeStatus = Schema.Union(
   /**The contents of the narrative are entirely generated from the core elements in the content. */
-  Schema.Literal("generated"),
-  Schema.Literal("extensions"),
-  Schema.Literal("additional"),
-  Schema.Literal("empty"),
-);
+  Schema.Literal('generated'),
+  Schema.Literal('extensions'),
+  Schema.Literal('additional'),
+  Schema.Literal('empty')
+)
 
 export const Narrative = Schema.Struct({
   ...Element(NarrativeId).fields,
@@ -22,4 +22,4 @@ export const Narrative = Schema.Struct({
    * some non-whitespace characters
    */
   div: Schema.String,
-});
+})
