@@ -12,7 +12,7 @@ export type EncounterRecordingReferenceExtension =
   typeof EncounterRecordingReferenceExtension.Type
 
 export const getRecordingReference = (
-  encounter: { extension?: Array<{ url: string; valueString?: string }> }
+  encounter: { extension?: ReadonlyArray<{ url: string; valueString?: string }> }
 ): string | undefined => {
   const ext = encounter.extension?.find(
     (ext) => ext.url === encounterRecordingReferenceUrl
@@ -20,7 +20,7 @@ export const getRecordingReference = (
   return ext && 'valueString' in ext ? (ext.valueString as string) : undefined
 }
 
-export const withRecordingReference = <T extends { extension?: Array<any> }>(
+export const withRecordingReference = <T extends { extension?: ReadonlyArray<any> }>(
   encounter: T,
   recordingId: string | undefined
 ): T => {
@@ -41,6 +41,6 @@ export const withRecordingReference = <T extends { extension?: Array<any> }>(
             },
           ]
         : []),
-    ],
+    ] as any,
   }
 }

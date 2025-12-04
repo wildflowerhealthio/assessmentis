@@ -8,7 +8,11 @@ import {
   QuestionnaireResponse,
   QuestionnaireResponseRepository,
 } from '@assessmentis/domain/questionnaires'
-import { EncounterRepository, Encounter } from '@assessmentis/domain/encounters'
+import {
+  EncounterRepository,
+  Encounter,
+  withVideoCallRoomName,
+} from '@assessmentis/domain/encounters'
 import {
   NeedsAuthenticationError,
   UnhandledError,
@@ -59,8 +63,8 @@ export const createEncounter = (
       enableRecoding: true,
     })
 
-    const createdEncounter = yield* encounterRepository.createEncounter({
-      resourceType: 'Encounter',
+    const encounterData = {
+      resourceType: 'Encounter' as const,
       class: {
         display: 'virtual',
         system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
@@ -77,7 +81,17 @@ export const createEncounter = (
       ],
       status: 'planned',
       ...args,
-    })
+    }
+
+    // Add room name as an extension so we can fetch recordings later
+    const encounterWithRoomName = withVideoCallRoomName(
+      encounterData,
+      externalVideoCallRoom.roomName
+    )
+
+    const createdEncounter = yield* encounterRepository.createEncounter(
+      encounterWithRoomName
+    )
 
     // const roomInsertsEffect = videoCallRepository.createVideoCallRooms([
     //   {

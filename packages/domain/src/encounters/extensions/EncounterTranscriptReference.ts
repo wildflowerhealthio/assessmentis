@@ -12,7 +12,7 @@ export type EncounterTranscriptReferenceExtension =
   typeof EncounterTranscriptReferenceExtension.Type
 
 export const getTranscriptReference = (
-  encounter: { extension?: Array<{ url: string; valueString?: string }> }
+  encounter: { extension?: ReadonlyArray<{ url: string; valueString?: string }> }
 ): string | undefined => {
   const ext = encounter.extension?.find(
     (ext) => ext.url === encounterTranscriptReferenceUrl
@@ -20,7 +20,7 @@ export const getTranscriptReference = (
   return ext && 'valueString' in ext ? (ext.valueString as string) : undefined
 }
 
-export const withTranscriptReference = <T extends { extension?: Array<any> }>(
+export const withTranscriptReference = <T extends { extension?: ReadonlyArray<any> }>(
   encounter: T,
   transcriptId: string | undefined
 ): T => {
@@ -41,6 +41,6 @@ export const withTranscriptReference = <T extends { extension?: Array<any> }>(
             },
           ]
         : []),
-    ],
+    ] as any,
   }
 }
