@@ -1,4 +1,4 @@
-name: Lint and Type Check
+name: Lint all projects
 
 on:
   pull_request:

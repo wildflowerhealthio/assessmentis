@@ -1,4 +1,4 @@
-name: Lint and Type Check
+name: Lint changed files
 
 on:
   pull_request
