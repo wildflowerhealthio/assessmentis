@@ -8,9 +8,10 @@
 
 - Enable virtual encounters between healthcare providers and patients
 - Administer structured diagnostic questionnaires during video calls
-- Store all data in FHIR (Fast Healthcare Interoperability Resources) format
-- Integrate with Google Cloud Healthcare API for data persistence
-- Support video conferencing via Daily.co
+- Internally, data is represented in FHIR (Fast Healthcare Interoperability Resources) format
+- Integrations
+  - Integrate with Google Cloud Healthcare API for data persistence
+  - Support video conferencing via Daily.co
 
 ## Architecture and System Design
 
@@ -134,7 +135,6 @@ packages/domain/src/
 #### Files and Folders
 - **PascalCase** for component files: `NavHeader.tsx`, `QuestionnaireForm.tsx`
 - **camelCase** for utility files: `clientRuntime.tsx`, `createEncounter.ts`
-- **kebab-case** for CSS module files: `NavHeader.module.css`
 - **Folders**: Use singular nouns when possible, plural for collections: `components/`, `actions/`, `models/`
 
 #### Code
@@ -276,11 +276,11 @@ export default ComponentName
 - Import as: `import classes from './Component.module.css'`
 - Use `cn()` utility from `@assessmentis/react-util` to combine classes
 - Keep modules small and component-specific
+- Classes should be named with Block-Element-Modifier style names
 
 #### Inline Styles
-- Use for dynamic styles or one-off values
+- Use for dynamic styles or one-off values. Prefer adding a CSS Module
 - Use CSS custom properties: `var(--space-4)`, `var(--radius-1)`
-- Prefer object syntax: `style={{ width: '100%', margin: '0 auto' }}`
 
 ### Linting and Formatting
 
@@ -382,9 +382,7 @@ export type Questionnaire = typeof Questionnaire.Type
 
 #### Form Handling
 - Use controlled components with `useState`
-- Debounce auto-save with `setTimeout` (see `QuestionnaireForm.tsx`)
 - Use Effect to persist data
-- Clear timeouts in cleanup
 
 ### Error Handling
 
@@ -429,7 +427,6 @@ Effect.gen(function* () {
 #### Storybook
 - Use Storybook for component development
 - Story files alongside components: `*.stories.tsx`
-- Focus on UI components, not connected components
 
 ### Performance Considerations
 - Use CSS Modules and Tundra CSS (no runtime CSS-in-JS)
@@ -502,83 +499,6 @@ firebase deploy --only functions
 ```
 
 ## Common Patterns and Idioms
-
-### Creating a New Repository
-
-1. **Define in domain package**:
-```typescript
-// packages/domain/src/new-resource/NewResourceRepository.ts
-export class NewResourceRepository extends Context.Tag(
-  "NewResourceRepository"
-)<NewResourceRepository, {
-  getResource: (id: string) => Effect.Effect<Resource, DomainError, never>
-}>() {}
-```
-
-2. **Implement in infrastructure package**:
-```typescript
-// packages/google-fhir-infrastructure/src/new-resource/FhirNewResourceRepository.ts
-export const FhirNewResourceRepository = Layer.effect(
-  NewResourceRepository,
-  Effect.gen(function* () {
-    const fhirClient = yield* FhirClient
-    return {
-      getResource: (id) => Effect.gen(function* () {
-        // Implementation
-      })
-    }
-  })
-)
-```
-
-3. **Add to app layer**:
-```typescript
-// apps/frontend/app/clientRuntime.tsx
-export const clientAppLayer = Layer.mergeAll(
-  FhirNewResourceRepository.pipe(Layer.provide(ConfigLayer)),
-  // ... other layers
-)
-```
-
-### Creating a New Feature Module
-
-1. Create folder structure:
-```
-modules/new-feature/
-├── actions/
-│   └── someAction.ts      # Business logic
-└── features/
-    └── FeatureComponent/
-        ├── FeatureComponent.tsx
-        ├── FeatureComponent.module.css
-        └── components/        # Sub-components if needed
-```
-
-2. Define actions with Effect:
-```typescript
-// modules/new-feature/actions/someAction.ts
-export const someAction = (args: Args) =>
-  Effect.gen(function* () {
-    const repo = yield* SomeRepository
-    return yield* repo.doSomething(args)
-  })
-```
-
-3. Create component:
-```typescript
-// modules/new-feature/features/FeatureComponent/FeatureComponent.tsx
-const FeatureComponent = ({ prop }: IProps) => {
-  const runtime = useRuntimeContext()
-  
-  useEffect(() => {
-    runtime.runPromise(someAction(args))
-      .then(handleSuccess)
-      .catch(handleError)
-  }, [runtime])
-  
-  return <div>{/* UI */}</div>
-}
-```
 
 ### Adding a New Route
 
