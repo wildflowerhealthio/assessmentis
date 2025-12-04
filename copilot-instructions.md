@@ -220,7 +220,7 @@ export const createEncounter = (args: CreateEncounterArg) =>
 
 #### Component Structure
 ```typescript
-'use client' // Use for interactive components (common in this codebase)
+'use client' // Used in this codebase for React Router v7 compatibility
 
 import { useState, useEffect } from 'react'
 // ... other imports
@@ -641,6 +641,7 @@ const Component = () => {
 - File-based routing with `routes/` directory
 - Use route-specific types from `+types/` virtual modules
 - Export `loader`, `action`, `ErrorBoundary`, etc. from route files
+- `'use client'` directive is used in this codebase (appearing in ~8 component files) for React Router v7 compatibility, even though SSR is disabled
 
 ### OpenTelemetry
 - Configured in `clientRuntime.tsx` with WebSDK
