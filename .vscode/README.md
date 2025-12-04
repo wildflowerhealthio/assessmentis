@@ -43,12 +43,13 @@ If format-on-save or ESLint annotations aren't working:
 You can also run linting from the command line:
 
 ```bash
-# Lint all projects
+# From an individual project folder
 npm run lint
+npm run lint:fix
+
+# Lint all projects
+turbo run lint
 
 # Fix all auto-fixable issues
 turbo run lint:fix
-
-# Format all files with Prettier
-npm run format
 ```
