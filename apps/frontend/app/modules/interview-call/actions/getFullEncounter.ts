@@ -12,6 +12,8 @@ import {
   ExternalAssertionError,
 } from "@assessmentis/domain/errors";
 import {
+  Questionnaire,
+  QuestionnaireRepository,
   QuestionnaireResponse,
   QuestionnaireResponseRepository,
 } from "@assessmentis/domain/questionnaires";
@@ -22,7 +24,7 @@ export const FullEncounter = Schema.Struct({
   questionnaireResponses: Schema.Array(
     Schema.Struct({
       ...QuestionnaireResponse.fields,
-      // _questionnaire: Questionnaire,
+      _questionnaire: Questionnaire,
     }),
   ),
 });
@@ -44,7 +46,10 @@ export const getFullEncounter = (
   | NeedsAuthenticationError
   | NotFoundError
   | ExternalAssertionError,
-  EncounterRepository | VideoCallRepository | QuestionnaireResponseRepository
+  | EncounterRepository
+  | VideoCallRepository
+  | QuestionnaireResponseRepository
+  | QuestionnaireRepository
 > => {
   return Effect.gen(function* () {
     const encounterId = yield* encounterIdMaybe.pipe(
@@ -53,6 +58,7 @@ export const getFullEncounter = (
     );
 
     const encounterRepository = yield* EncounterRepository;
+    const questionnaireRepository = yield* QuestionnaireRepository;
     const questionnaireResponseRepository =
       yield* QuestionnaireResponseRepository;
     yield* Effect.logDebug("Getting full encounter with ID ", encounterId);
@@ -61,10 +67,42 @@ export const getFullEncounter = (
 
     const encounterEffect = encounterRepository.getEncounter(encounterId);
 
-    const questionnaireResponseGroupEffect =
-      questionnaireResponseRepository.getQuestionnaireResponses({
-        encounterId,
-      });
+    const questionnaireResponseGroupEffect = Effect.gen(function* () {
+      const allQuestionnaires =
+        yield* questionnaireRepository.getQuestionnaires({});
+      const responses =
+        yield* questionnaireResponseRepository.getQuestionnaireResponses({
+          encounterId,
+        });
+
+      return yield* Effect.all(
+        responses.map(
+          (
+            qr,
+          ): Effect.Effect<
+            FullEncounter["questionnaireResponses"][0],
+            UnhandledError
+          > =>
+            Option.fromNullable<Questionnaire | undefined>(
+              allQuestionnaires.find(({ id }) => id == qr.questionnaire),
+            ).pipe(
+              Option.map((_questionnaire: Questionnaire) =>
+                Effect.succeed<FullEncounter["questionnaireResponses"][0]>({
+                  ...qr,
+                  _questionnaire,
+                }),
+              ),
+              Option.getOrElse(() =>
+                Effect.fail(
+                  new UnhandledError({
+                    cause: `Questionnaire Response's Questionnaire '${qr.questionnaire}' could not be found`,
+                  }),
+                ),
+              ),
+            ),
+        ),
+      );
+    });
 
     const [encounter, questionnaireResponses] = yield* Effect.all([
       encounterEffect,

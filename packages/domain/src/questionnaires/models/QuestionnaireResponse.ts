@@ -3,6 +3,7 @@ import { DomainResource } from "../../general-purpose/DomainResource";
 import { Identifier } from "../../general-purpose/Identifier";
 import { Reference } from "../../general-purpose/Reference";
 import { QuestionnaireResponseItem } from "./QuestionnaireResponseItem";
+import { QuestionnaireId } from "./Questionnaire";
 
 export const QuestionnaireResponseId = Schema.UUID.pipe(
   Schema.brand("QuestionnaireResponseId"),
@@ -58,7 +59,7 @@ export const QuestionnaireResponse = Schema.Struct({
   /**
    * If a QuestionnaireResponse references a Questionnaire, then the QuestionnaireResponse structure must be consistent with the Questionnaire (i.e. questions must be organized into the same groups, nested questions must still be nested, etc.).
    */
-  questionnaire: Schema.optional(Schema.String),
+  questionnaire: Schema.optional(Schema.Union(Schema.String, QuestionnaireId)),
   // _questionnaire?: Element | undefined;
   /**
    * If not specified, no inference can be made about who provided the data.

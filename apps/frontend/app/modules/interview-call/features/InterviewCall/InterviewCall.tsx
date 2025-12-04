@@ -1,6 +1,6 @@
 "use client";
 
-import "./InterviewCall.css";
+import classes from "./InterviewCall.module.css";
 
 import DailyIframe, {
   type DailyCall,
@@ -9,14 +9,15 @@ import DailyIframe, {
 import { DailyAudio, DailyProvider } from "@daily-co/daily-react";
 
 import { Schema } from "effect";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Call,
   HairCheck,
-  Header,
   Tray,
 } from "@assessmentis/daily-co-infrastructure/components";
 import { FullEncounter } from "app/modules/interview-call/actions/getFullEncounter";
+import QuestionnaireForm from "app/modules/questionnaire/features/QuestionnaireForm/QuestionnaireForm";
+import { useNavigate } from "react-router";
 
 /* We decide what UI to show to users based on the state of the app, which is dependent on the state of the call object. */
 enum VideoCallState {
@@ -30,6 +31,7 @@ enum VideoCallState {
 }
 
 const useDailyCall = (roomUrl: string | undefined) => {
+  const navigate = useNavigate();
   const [appState, setAppState] = useState(VideoCallState.STATE_IDLE);
   const [callObject, setCallObject] = useState<DailyCall | null>(null);
   const [apiError] = useState(false);
@@ -41,7 +43,7 @@ const useDailyCall = (roomUrl: string | undefined) => {
    */
   const createCall = useCallback(() => {
     setAppState(VideoCallState.STATE_CREATING);
-    const newCallObject = DailyIframe.createCallObject();
+    const newCallObject = DailyIframe.createCallObject({ url: roomUrl });
     setCallObject(newCallObject);
     setAppState(VideoCallState.STATE_HAIRCHECK);
     newCallObject.preAuth({ url: roomUrl }); // add a meeting token here if your room is private
@@ -51,7 +53,7 @@ const useDailyCall = (roomUrl: string | undefined) => {
   /**
    * Start leaving the current call.
    */
-  const startLeavingCall = useCallback(() => {
+  const startLeavingCall = () => {
     if (!callObject) return;
     // If we're in the error state, we've already "left", so just clean up
     if (appState === VideoCallState.STATE_ERROR) {
@@ -62,9 +64,9 @@ const useDailyCall = (roomUrl: string | undefined) => {
       /* This will trigger a `left-meeting` event, which in turn will trigger
       the full clean-up as seen in handleNewMeetingState() below. */
       setAppState(VideoCallState.STATE_LEAVING);
-      callObject.leave();
+      callObject.leave().then(() => navigate(-1));
     }
-  }, [callObject, appState]);
+  };
 
   /**
    * Update app state based on reported meeting state changes.
@@ -133,8 +135,10 @@ const useDailyCall = (roomUrl: string | undefined) => {
       case VideoCallState.STATE_JOINED:
       case VideoCallState.STATE_ERROR:
         return { state: "in_call" } as const;
-      default:
-        return { state: "home" } as const;
+      case VideoCallState.STATE_IDLE:
+      case VideoCallState.STATE_CREATING:
+      case VideoCallState.STATE_LEAVING:
+        return { state: "loading" } as const;
     }
   }, [apiError, appState]);
 
@@ -164,55 +168,60 @@ interface IProps {
 
 function InterviewCall({ encounterJson }: IProps) {
   const encounter = Schema.decodeSync(FullEncounter)(encounterJson);
-
+  const callCreatedRef = useRef(false);
   const { joinCall, startLeavingCall, uiState, callObject, createCall } =
     useDailyCall(encounter.location?.[0].location?.identifier?.value);
 
-  const body = useMemo(() => {
-    // If something goes wrong with creating the room.
-    if (uiState.state === "api_error") {
-      return (
-        <div className="api-error">
-          <h1>Error</h1>
-          <p>
-            Room could not be created. Check if your `.env` file is set up
-            correctly. For more information, see the{" "}
-            <a href="https://github.com/daily-demos/custom-video-daily-react-hooks#readme">
-              readme
-            </a>
-          </p>
+  useEffect(() => {
+    if (callCreatedRef.current) return;
+
+    callCreatedRef.current = true;
+    createCall();
+  }, [createCall]);
+  // If something goes wrong with creating the room.
+  if (uiState.state === "api_error") {
+    return (
+      <div className="api-error">
+        <h1>Error</h1>
+        <p>
+          Something went wrong creating a video call room. You can try
+          recreating it
+        </p>
+        <button className="button-4">Recreate Video Call</button>
+      </div>
+    );
+  }
+
+  if (uiState.state === "haircheck" || uiState.state === "in_call") {
+    return (
+      <div className={classes.EncounterPage}>
+        <div className={classes.VideoZone}>
+          <DailyProvider callObject={callObject}>
+            {uiState.state == "haircheck" ? (
+              // No API errors? Let's check our hair then.
+              <HairCheck joinCall={joinCall} cancelCall={startLeavingCall} />
+            ) : (
+              // No API errors, we passed the hair check, and we've joined the call? Then show the call.
+              <>
+                <Call />
+                <Tray leaveCall={startLeavingCall} />
+                <DailyAudio />
+              </>
+            )}
+          </DailyProvider>
         </div>
-      );
-    }
+        <div className={classes.ActionZone}>
+          <QuestionnaireForm
+            questionnaire={encounter.questionnaireResponses[0]._questionnaire}
+            questionnaireResponse={encounter.questionnaireResponses[0]}
+          />
+        </div>
+      </div>
+    );
+  }
 
-    if (uiState.state === "haircheck" || uiState.state === "in_call") {
-      return (
-        <DailyProvider callObject={callObject}>
-          {uiState.state == "haircheck" ? (
-            // No API errors? Let's check our hair then.
-            <HairCheck joinCall={joinCall} cancelCall={startLeavingCall} />
-          ) : (
-            // No API errors, we passed the hair check, and we've joined the call? Then show the call.
-            <>
-              <Call />
-              <Tray leaveCall={startLeavingCall} />
-              <DailyAudio />
-            </>
-          )}
-        </DailyProvider>
-      );
-    }
-
-    // The default view is the HomeScreen, from where we start the demo.
-    return <button onClick={createCall}> Start </button>;
-  }, [joinCall, startLeavingCall, uiState, callObject, createCall]);
-
-  return (
-    <div className="app">
-      <Header />
-      {body}
-    </div>
-  );
+  // The default view is the HomeScreen, from where we start the demo.
+  return <button onClick={createCall}> Start {uiState.state} </button>;
 }
 
 export default InterviewCall;

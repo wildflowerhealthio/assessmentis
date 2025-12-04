@@ -33,6 +33,10 @@
         }
       },
       {
+        "source": "/__/auth/**",
+        "destination": "https://assessment-is-sandbox.firebaseapp.com"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }

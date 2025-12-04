@@ -29,7 +29,8 @@ export async function clientLoader(_: Route.ClientLoaderArgs) {
           _questionnaire: Questionnaire | undefined;
         } => ({
           ...r,
-          _questionnaire: questionnaires.find((q) => q.id == r.id) ?? undefined,
+          _questionnaire:
+            questionnaires.find((q) => q.id == r.questionnaire) ?? undefined,
         }),
       );
     }),

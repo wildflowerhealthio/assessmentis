@@ -1,4 +1,4 @@
-import { Config, Context, Effect, Layer, Match, Schema, Option } from "effect";
+import { Config, Context, Effect, Layer, Schema, Option } from "effect";
 import {
   Bundle,
   type Element,
@@ -12,7 +12,6 @@ import {
   UnhandledError,
   ExternalAssertionError,
 } from "@assessmentis/domain/errors";
-import { ParseError } from "effect/ParseResult";
 import { UnknownException } from "effect/Cause";
 
 export const TransactionResponseBundle = Bundle(
@@ -134,8 +133,8 @@ const gapiPoll = (): Effect.Effect<void, NeedsAuthenticationError, never> =>
   Effect.gen(function* () {
     let polls = 0;
     while (
-      gapi?.client?.healthcare?.projects?.locations?.datasets?.fhirStores
-        ?.fhir == undefined
+      window?.gapi?.client?.healthcare?.projects?.locations?.datasets
+        ?.fhirStores?.fhir == undefined
     ) {
       yield* Effect.sleep("100 millis");
       polls += 1;
@@ -187,7 +186,7 @@ export const LiveFhirClient = Layer.effect(
         _args: unknown,
       ): Effect.Effect<
         WithId<A>[],
-        UnhandledError | NeedsAuthenticationError,
+        UnhandledError | NeedsAuthenticationError | ExternalAssertionError,
         never
       > =>
         Effect.gen(function* () {
@@ -200,9 +199,17 @@ export const LiveFhirClient = Layer.effect(
                 resource: { resourceType },
               },
             ),
-          ).pipe(handleFhirApiErrors());
+          ).pipe(handleFhirApiErrors<never>());
 
-          const { entry } = yield* decodeBundle(response.result);
+          const { entry } = yield* decodeBundle(response.result).pipe(
+            Effect.mapError(
+              (cause) =>
+                new ExternalAssertionError({
+                  cause,
+                  expected: "Search response could not be decoded",
+                }),
+            ),
+          );
 
           if (entry == undefined) {
             return [];
@@ -217,22 +224,7 @@ export const LiveFhirClient = Layer.effect(
               })
               .filter((q) => q != undefined);
           }
-        }).pipe(
-          Effect.mapError((cause): UnhandledError | NeedsAuthenticationError =>
-            Match.value(cause).pipe(
-              Match.when(Match.instanceOf(UnhandledError), (err) => err),
-              Match.when(
-                Match.instanceOf(ParseError),
-                (cause) => new UnhandledError({ cause }),
-              ),
-              Match.discriminatorStartsWith("message")(
-                "Request had invalid authentication credentials.",
-                (cause) => new NeedsAuthenticationError({ cause }),
-              ),
-              Match.orElse((cause) => new UnhandledError({ cause })),
-            ),
-          ),
-        );
+        });
     };
 
     const getById: typeof FhirClient.Service.getById = <

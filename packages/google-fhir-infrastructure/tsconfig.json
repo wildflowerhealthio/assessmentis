@@ -5,6 +5,7 @@
   "compilerOptions": {
     "types": ["gapi", "gapi.client.healthcare-v1"],
     "baseUrl": "",
-    "rootDir": "src"
+    "rootDir": "src",
+    "outDir": "dist"
   }
 }

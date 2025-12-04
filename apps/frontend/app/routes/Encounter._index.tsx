@@ -1,4 +1,4 @@
-import { Effect, Exit, ManagedRuntime, Schema } from "effect";
+import { Effect, ManagedRuntime, Schema } from "effect";
 import {
   Encounter,
   EncounterId,
@@ -8,11 +8,12 @@ import { QuestionnaireId } from "@assessmentis/domain/questionnaires";
 import { QuestionnaireRepository } from "@assessmentis/domain/questionnaires";
 import { createEncounter } from "app/modules/encounters/actions/createEncounter";
 import QuestionnaireSelect from "app/modules/questionnaire/features/QuestionnaireSelect/QuestionnaireSelect";
-import { Form } from "react-router";
+import { Form, useNavigate } from "react-router";
 import { clientAppLayer, useRuntimeContext } from "app/clientRuntime";
 import EncountersList from "./Encounter/EncountersList";
 import type { Route } from "./+types/Encounter._index";
 import { useCollection } from "@assessmentis/react-util";
+import { useEffect } from "react";
 
 const decodeQuestionnaireId = Schema.decodeUnknownSync(QuestionnaireId);
 
@@ -42,27 +43,15 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
   const event = await request.formData();
 
   const runtime = ManagedRuntime.make(clientAppLayer);
-  const encounter = runtime
-    .runPromiseExit(
-      createEncounter({
-        questionnaireResponses: [
-          {
-            questionnaire: decodeQuestionnaireId(event.get("questionnaireId")),
-          },
-        ],
-      }),
-    )
-    .then(
-      Exit.match({
-        onSuccess(encounter) {
-          console.log("Created Encounter", encounter);
-          // navigate(`/Encounter/${encounter.id}`);
+  const encounter = runtime.runPromise(
+    createEncounter({
+      questionnaireResponses: [
+        {
+          questionnaire: decodeQuestionnaireId(event.get("questionnaireId")),
         },
-        onFailure(err) {
-          console.log({ err });
-        },
-      }),
-    );
+      ],
+    }),
+  );
   return await encounter;
 }
 
@@ -94,10 +83,18 @@ const useEncounters = (initial: Encounter[]) => {
   );
 };
 
-export default function EncounterPage({ loaderData }: Route.ComponentProps) {
+export default function EncounterPage({
+  loaderData,
+  actionData,
+}: Route.ComponentProps) {
+  const navigate = useNavigate();
   const { encounters: initialEncounters, questionnaires } = loaderData;
   const { collection: encounters, deleteItem: deleteEncounter } =
     useEncounters(initialEncounters);
+
+  useEffect(() => {
+    if (actionData?.id) navigate(`/Encounter/${actionData.id}`);
+  }, [actionData, navigate]);
 
   return (
     <>

@@ -13,7 +13,8 @@
     "preview": "vite preview"
   },
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./hooks": "./src/hooks/index.ts"
   },
   "peerDependencies": {
     "react": "19.x",

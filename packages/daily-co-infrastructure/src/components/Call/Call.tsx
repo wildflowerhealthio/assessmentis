@@ -4,9 +4,9 @@ import {
   useParticipantIds,
   useScreenShare,
 } from "@daily-co/daily-react";
-import { useCallback, useState } from "react";
+import { JSX, useCallback, useState } from "react";
 
-import "./Call.css";
+import classes from "./Call.module.css";
 import Tile from "../Tile/Tile";
 import UserMediaError from "../UserMediaError/UserMediaError";
 
@@ -29,32 +29,51 @@ export default function Call() {
 
   /* This is for displaying our self-view. */
   const localSessionId = useLocalSessionId();
-  const isAlone = remoteParticipantIds.length < 1 || screens.length < 1;
 
-  const renderCallScreen = () => (
-    <div className={screens.length > 0 ? "is-screenshare" : "call"}>
-      {/* Your self view */}
-      {localSessionId && <Tile id={localSessionId} isLocal isAlone={isAlone} />}
-      {/* Videos of remote participants and screen shares */}
-      {remoteParticipantIds.length > 0 || screens.length > 0 ? (
-        <>
-          {remoteParticipantIds.map((id) => (
-            <Tile key={id} id={id} />
-          ))}
-          {screens.map((screen) => (
-            <Tile key={screen.screenId} id={screen.session_id} isScreenShare />
-          ))}
-        </>
-      ) : (
-        // When there are no remote participants or screen shares
-        <div className="info-box">
-          <h1>Waiting for others</h1>
-          <p>Invite someone by sharing this link:</p>
-          <span className="room-url">{window.location.href}</span>
-        </div>
-      )}
+  if (getUserMediaError) {
+    return <UserMediaError />;
+  }
+
+  let focus: JSX.Element;
+  if (screens.length > 0) {
+    focus = <Tile id={screens[0].session_id} isScreenShare />;
+  } else if (remoteParticipantIds.length > 0) {
+    focus = (
+      <Tile
+        id={remoteParticipantIds[0]}
+        style={{
+          aspectRatio: "calc(16/9)",
+          margin: "auto",
+          maxWidth: "100%",
+        }}
+      />
+    );
+  } else {
+    focus = (
+      <div className={classes.Call__info}>
+        <h2 className="heading-3">Waiting for others</h2>
+        <p>Invite someone by sharing this link:</p>
+        <span className="room-url">{window.location.href}</span>
+      </div>
+    );
+  }
+  return (
+    <div className={classes.Call}>
+      {focus}
+      <div className={classes.Call__miniVideoRow}>
+        {localSessionId && (
+          <Tile
+            id={localSessionId}
+            isLocal
+            style={{
+              height: "100%",
+              aspectRatio: "calc(16/9)",
+              margin: "auto",
+              maxWidth: "100%",
+            }}
+          />
+        )}
+      </div>
     </div>
   );
-
-  return getUserMediaError ? <UserMediaError /> : renderCallScreen();
 }

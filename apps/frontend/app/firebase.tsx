@@ -1,5 +1,18 @@
-import { initializeApp, type FirebaseOptions } from "firebase/app";
-import { GoogleAuthProvider, getAuth, signInWithPopup } from "firebase/auth";
+import {
+  FirebaseError,
+  initializeApp,
+  type FirebaseOptions,
+} from "firebase/app";
+import {
+  GoogleAuthProvider,
+  UserCredential,
+  getAuth,
+  getRedirectResult,
+  signInWithPopup,
+  signInWithRedirect,
+  signOut,
+} from "firebase/auth";
+import { useEffect } from "react";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -39,42 +52,59 @@ export const initGapi = async (token: string) => {
   );
 };
 
+export const redirectToSignIn = () =>
+  signInWithRedirect(getAuth(), googleAuthProvider);
+
+export const handleRedirectResult = () =>
+  getRedirectResult(getAuth())
+    .then((result) => {
+      if (result == null) throw new Error("Invalid Redirect Result");
+      console.log({ result });
+      return result;
+    })
+    .then(signInResultHandler)
+    .catch(handleAuthError);
+
 export const signIn = () =>
   signInWithPopup(auth, googleAuthProvider)
-    .then(async (result) => {
-      // This gives you a Google Access Token. You can use it to access the Google API.
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      const token = credential?.accessToken;
+    .then(signInResultHandler)
+    .catch(handleAuthError);
 
-      if (token) {
-        await new Promise<void>((resolve) => {
-          if (gapi.client) {
-            gapi.client.setToken({
-              access_token: token,
-            });
-            resolve();
-          } else {
-            gapi.load("client", async () => {
-              await initGapi(token);
-              resolve();
-            });
-          }
+const signInResultHandler = async (result: UserCredential) => {
+  // This gives you a Google Access Token. You can use it to access the Google API.
+  const credential = GoogleAuthProvider.credentialFromResult(result);
+  const token = credential?.accessToken;
+
+  if (token) {
+    await new Promise<void>((resolve) => {
+      if (gapi.client) {
+        gapi.client.setToken({
+          access_token: token,
         });
-        await setOauth2FromDb(token);
+        resolve();
+      } else {
+        gapi.load("client", async () => {
+          await initGapi(token);
+          resolve();
+        });
       }
-
-      console.log({ result, credential });
-    })
-    .catch((error) => {
-      // Handle Errors here.
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      // The email of the user's account used.
-      const email = error.customData?.email;
-      // The AuthCredential type that was used.
-      const credential = GoogleAuthProvider.credentialFromError(error);
-      console.error({ errorCode, errorMessage, email, credential });
     });
+    await setOauth2FromDb(token);
+  }
+
+  console.log({ result, credential });
+};
+
+const handleAuthError = (error: FirebaseError) => {
+  // Handle Errors here.
+  const errorCode = error.code;
+  const errorMessage = error.message;
+  // The email of the user's account used.
+  const email = error.customData?.email;
+  // The AuthCredential type that was used.
+  const credential = GoogleAuthProvider.credentialFromError(error);
+  console.error({ errorCode, errorMessage, email, credential });
+};
 
 export const setOauth2FromDb = (authToken: string | undefined) => {
   if (authToken === undefined) {
@@ -87,3 +117,21 @@ export const setOauth2FromDb = (authToken: string | undefined) => {
 export const getOauth2FromDb = () => {
   return localStorage.getItem("oauth2Token") ?? undefined;
 };
+
+export const useAuthedGapi = () =>
+  useEffect(() => {
+    return auth.onIdTokenChanged(async (user) => {
+      if (user) {
+        const token = await getOauth2FromDb();
+        if (!token) {
+          signOut(auth);
+          return;
+        }
+        if (gapi.client) {
+          gapi.client.setToken({ access_token: token });
+        } else {
+          gapi.load("client", () => initGapi(token));
+        }
+      }
+    });
+  }, []);

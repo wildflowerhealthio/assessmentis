@@ -42,6 +42,8 @@
 	--app-accent-9: var(--neutral-9);
 	--app-foreground: var(--neutral-1);
 	--app-background: var(--neutral-9);
+
+	--header-height: 78px;
 }
 
 html {
@@ -55,7 +57,7 @@ body {
 
 html,
 body {
-	min-height: 100svh;
+	height: 100dvh;
 	display: flex;
 	flex-direction: column;
 	flex: 1;

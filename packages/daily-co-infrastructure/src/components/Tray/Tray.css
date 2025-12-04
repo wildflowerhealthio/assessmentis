@@ -10,31 +10,35 @@
 .tray-buttons-container {
   padding: 10px;
   display: flex;
+  gap: var(--space-3);
+  flex-grow: 1;
+  flex-basis: 0;
 }
 
 .tray-buttons-container button {
-  padding: 0;
+  padding: var(--space-1) var(--space-2);
   background-color: white;
   display: flex;
   align-items: center;
   flex-direction: column;
   font-weight: normal;
+  height: 100%;
+  margin: auto;
+  flex-grow: 1;
+  flex-basis: 0;
 }
 
 .tray-buttons-container button svg {
   color: #121a24;
 }
 
-.tray-buttons-container button + button {
-  margin-left: 2rem;
-}
-
 .controls,
 .actions,
 .leave {
   display: flex;
-  flex: 1;
-  align-items: center;
+  flex-grow: 1;
+  flex-basis: 0;
+  gap: var(--space-2);
 }
 
 .controls {
@@ -43,6 +47,7 @@
 
 .actions {
   justify-content: center;
+  flex-grow: 1.5;
 }
 
 .leave {

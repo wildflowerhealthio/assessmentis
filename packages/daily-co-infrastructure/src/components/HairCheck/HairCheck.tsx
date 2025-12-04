@@ -73,90 +73,104 @@ export default function HairCheck({
     <UserMediaError />
   ) : (
     <form className="hair-check" onSubmit={handleJoin}>
-      <h1>Setup your hardware</h1>
+      <h2 className="heading-4">Setup your hardware</h2>
       {/* Video preview */}
       {localSessionId && (
         <DailyVideo type="video" sessionId={localSessionId} mirror />
       )}
 
       {/* Username */}
-      <div>
-        <label htmlFor="username">Your name:</label>
-        <input
-          name="username"
-          type="text"
-          placeholder="Enter username"
-          onChange={handleChange}
-          value={username || " "}
-        />
-      </div>
+      <div className="inputs">
+        <label className="text-label-2" htmlFor="username">
+          Your name:
+          <input
+            className="element-text-entry input-2"
+            name="username"
+            type="text"
+            placeholder="Enter username"
+            onChange={handleChange}
+            value={username || " "}
+          />
+        </label>
 
-      {/* Microphone select */}
-      <div>
-        <label htmlFor="micOptions">Microphone:</label>
-        <select
-          name="micOptions"
-          id="micSelect"
-          onChange={updateMicrophone}
-          value={currentMic?.device?.deviceId}
+        <label className="text-label-2" htmlFor="micOptions">
+          Microphone:
+          <select
+            className="element-text-entry input-2"
+            name="micOptions"
+            id="micSelect"
+            onChange={updateMicrophone}
+            value={currentMic?.device?.deviceId}
+          >
+            {microphones.map((mic) => (
+              <option
+                key={`mic-${mic.device.deviceId}`}
+                value={mic.device.deviceId}
+              >
+                {mic.device.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="text-label-2" htmlFor="speakersOptions">
+          Speakers:
+          <select
+            name="speakersOptions"
+            className="element-text-entry input-2"
+            id="speakersSelect"
+            onChange={updateSpeakers}
+            value={currentSpeaker?.device?.deviceId}
+          >
+            {speakers.map((speaker) => (
+              <option
+                key={`speaker-${speaker.device.deviceId}`}
+                value={speaker.device.deviceId}
+              >
+                {speaker.device.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="text-label-2" htmlFor="cameraOptions">
+          Camera:
+          <select
+            name="cameraOptions"
+            className="element-text-entry input-2"
+            id="cameraSelect"
+            onChange={updateCamera}
+            value={currentCam?.device?.deviceId}
+          >
+            {cameras.map((camera) => (
+              <option
+                key={`cam-${camera.device.deviceId}`}
+                value={camera.device.deviceId}
+              >
+                {camera.device.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <button
+          style={{ width: "100%" }}
+          className="element-button button-3 outline accent-blue"
+          onClick={handleJoin}
+          type="submit"
         >
-          {microphones.map((mic) => (
-            <option
-              key={`mic-${mic.device.deviceId}`}
-              value={mic.device.deviceId}
-            >
-              {mic.device.label}
-            </option>
-          ))}
-        </select>
-      </div>
+          Join call
+        </button>
 
-      {/* Speakers select */}
-      <div>
-        <label htmlFor="speakersOptions">Speakers:</label>
-        <select
-          name="speakersOptions"
-          id="speakersSelect"
-          onChange={updateSpeakers}
-          value={currentSpeaker?.device?.deviceId}
+        <button
+          style={{ width: "100%" }}
+          className="element-button button-3 outline"
+          onClick={cancelCall}
+          type="button"
         >
-          {speakers.map((speaker) => (
-            <option
-              key={`speaker-${speaker.device.deviceId}`}
-              value={speaker.device.deviceId}
-            >
-              {speaker.device.label}
-            </option>
-          ))}
-        </select>
+          Back to start
+        </button>
       </div>
-
-      {/* Camera select */}
-      <div>
-        <label htmlFor="cameraOptions">Camera:</label>
-        <select
-          name="cameraOptions"
-          id="cameraSelect"
-          onChange={updateCamera}
-          value={currentCam?.device?.deviceId}
-        >
-          {cameras.map((camera) => (
-            <option
-              key={`cam-${camera.device.deviceId}`}
-              value={camera.device.deviceId}
-            >
-              {camera.device.label}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <button onClick={handleJoin} type="submit">
-        Join call
-      </button>
-      <button onClick={cancelCall} className="cancel-call" type="button">
-        Back to start
-      </button>
     </form>
   );
 }

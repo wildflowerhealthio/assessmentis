@@ -6,6 +6,7 @@ import {
   UnhandledError,
 } from "../errors";
 import { Questionnaire, QuestionnaireId } from "./models/Questionnaire";
+import { WithId } from "../general-purpose";
 
 export const GetQuestionnairesArg = Schema.Struct({});
 export type GetQuestionnairesArg = typeof GetQuestionnairesArg.Type;
@@ -25,7 +26,7 @@ export class QuestionnaireRepository extends Context.Tag(
     getQuestionnaire(
       id: QuestionnaireId,
     ): Effect.Effect<
-      Questionnaire,
+      WithId<Questionnaire>,
       | UnhandledError
       | NeedsAuthenticationError
       | ExternalAssertionError
@@ -36,7 +37,7 @@ export class QuestionnaireRepository extends Context.Tag(
     getQuestionnaires(
       params: GetQuestionnairesArg,
     ): Effect.Effect<
-      Questionnaire[],
+      WithId<Questionnaire>[],
       UnhandledError | NeedsAuthenticationError | ExternalAssertionError,
       never
     >;

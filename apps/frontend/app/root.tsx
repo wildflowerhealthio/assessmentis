@@ -1,17 +1,26 @@
 import {
   isRouteErrorResponse,
-  Link,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  useNavigate,
 } from "react-router";
 import type { Route } from "./+types/root";
 import "./globals.css";
 import { RuntimeContextOrErr } from "./components/RuntimeContextOrErr";
-import { LoginButton } from "./components/LoginButton";
 import { FiberFailureCauseId } from "effect/Runtime";
+import { Cause } from "effect";
+import {
+  ExternalAssertionError,
+  NeedsAuthenticationError,
+  NotFoundError,
+  UnhandledError,
+} from "@assessmentis/domain/errors";
+import * as firebase from "app/firebase";
+import NavHeader from "./components/NavHeader";
+import { useAuthedGapi } from "app/firebase";
 
 // HydrateFallback is rendered while the client loader is running
 export function HydrateFallback() {
@@ -19,6 +28,7 @@ export function HydrateFallback() {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  useAuthedGapi();
   return (
     <RuntimeContextOrErr>
       <html lang="en">
@@ -34,54 +44,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <Links />
           <Meta />
         </head>
-        <body style={{ padding: "var(--space-2)" }}>
-          <nav
-            style={{
-              display: "inline-flex",
-              flexDirection: "row",
-              alignItems: "baseline",
-              gap: "var(--space-5)",
-            }}
-          >
-            <Link to="/">
-              <h1
-                className="heading-4"
-                style={{ marginRight: "var(--space-5)" }}
-              >
-                Assessment.is
-              </h1>
-            </Link>
-
-            <Link
-              className="heading-2"
-              style={{ color: "var(--app-foreground)" }}
-              to="/Questionnaire"
-            >
-              Questionnaires
-            </Link>
-
-            <Link
-              className="heading-2"
-              style={{ color: "var(--app-foreground)" }}
-              to="/Encounter"
-            >
-              Encounters
-            </Link>
-
-            <Link
-              className="heading-2"
-              style={{ color: "var(--app-foreground)" }}
-              to="/QuestionnaireResponse"
-            >
-              Questionnaire Responses
-            </Link>
-            <LoginButton />
-          </nav>
+        <body>
+          <NavHeader />
           <div
             style={{
               width: "100%",
-              maxWidth: 1024,
-              margin: "var(--space-4) auto",
+              margin: "0 auto",
+              flexGrow: 1,
+              flexShrink: 1,
+              flexDirection: "column",
+              overflowY: "hidden",
+
+              paddingBlock: "var(--space-4)",
+              paddingInline: "var(--space-8)",
+              marginInline: "auto",
             }}
           >
             {children}
@@ -99,13 +75,13 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  const navigate = useNavigate();
   let message = "Oops!";
   let details = "An unexpected error occurred.";
   let stack: string | undefined;
-  const cause =
-    error != null && typeof error == "object" && FiberFailureCauseId in error
-      ? error[FiberFailureCauseId]
-      : undefined;
+  let cause: Cause.Cause<unknown> | undefined;
+  let rootError: unknown | undefined;
+  let action: undefined | { label: string; onClick: () => void };
 
   console.error("Error Reached Boundary");
   console.error({ error });
@@ -113,29 +89,76 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     console.error({ cause });
   }
   if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? "404" : "Error";
+    message = error.status === 404 ? "404 - Not Found" : "Unhandled Error";
     details =
       error.status === 404
         ? "The requested page could not be found."
         : error.statusText || details;
-  } else if (import.meta.env.DEV && error && error instanceof Error) {
-    details = error.message;
-    stack = error.stack;
+    action = { label: "Go Home", onClick: () => navigate("/") };
+  } else if (error && error instanceof Error) {
+    const errorCause =
+      FiberFailureCauseId in error ? error[FiberFailureCauseId] : undefined;
+    if (import.meta.env.DEV) {
+      details = error.message;
+      stack = error.stack;
+    }
+    cause = Cause.isCause(errorCause) ? errorCause : undefined;
+    rootError = cause && "error" in cause ? cause.error : undefined;
+
+    if (cause && Cause.isFailure(cause) && rootError) {
+      if (rootError instanceof NeedsAuthenticationError) {
+        message = "Please Reauthenticate";
+        details = "Please log back into your Google account to reconnect";
+        firebase.auth.signOut();
+        action = {
+          label: "Log In",
+          onClick: () => firebase.signIn().then(() => navigate(0)),
+        };
+      } else if (rootError instanceof NotFoundError) {
+        message = "404 - Not Found";
+        details = "The requested resource could not be found.";
+        action = { label: "Go Back", onClick: () => navigate(-1) };
+      } else if (rootError instanceof UnhandledError) {
+        message = "Unhandled Error";
+        details = `An error occurred within this application: ${rootError.message}`;
+        action = { label: "Go Back", onClick: () => navigate(-1) };
+      } else if (rootError instanceof ExternalAssertionError) {
+        message = "External Error";
+        details = `An external service isn't behaving as expected: ${rootError.message}`;
+        action = { label: "Go Back", onClick: () => navigate(-1) };
+      }
+    }
   }
 
   return (
-    <main className="pt-16 p-4 container mx-auto">
+    <main style={{ overflowY: "scroll" }}>
       <h1>{message}</h1>
       <p>{details}</p>
+
+      {action ? (
+        <button
+          style={{ margin: "var(--space-2)" }}
+          className="element-button button-3 filled accent-blue"
+          onClick={action.onClick}
+        >
+          {action.label}
+        </button>
+      ) : undefined}
+
       {stack && (
-        <pre className="w-full p-4 overflow-x-auto" style={{ lineHeight: 1.5 }}>
+        <pre
+          style={{
+            lineHeight: 1.7,
+            whiteSpace: "pre-wrap",
+          }}
+        >
           <code>{stack}</code>
         </pre>
       )}
       <h2>Cause:</h2>
-      {cause ? (
-        <pre className="w-full p-4 overflow-x-auto" style={{ lineHeight: 1.5 }}>
-          <code>{JSON.stringify(cause)}</code>
+      {(rootError ?? cause) ? (
+        <pre style={{ lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
+          <code>{JSON.stringify(rootError ?? cause, null, 2)}</code>
         </pre>
       ) : undefined}
     </main>

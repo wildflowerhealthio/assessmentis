@@ -1,14 +1,8 @@
 import { signOut } from "firebase/auth";
 import { useState, useEffect } from "react";
-import {
-  auth,
-  signIn,
-  getOauth2FromDb,
-  initGapi,
-  setOauth2FromDb,
-} from "../firebase";
+import { auth, signIn } from "../firebase";
 
-export const LoginButton = () => {
+export const LoginButton = (props: { className: string }) => {
   const [[label, action, disabled], setLabelAndAction] = useState<
     [string, undefined | (() => void), boolean]
   >(["Logout", undefined, true]);
@@ -35,35 +29,9 @@ export const LoginButton = () => {
     });
   }, []);
 
-  useEffect(() => {
-    return auth.onIdTokenChanged(async (user) => {
-      if (user) {
-        const token = await getOauth2FromDb();
-        if (!token) {
-          // signOut(auth);
-          return;
-        }
-        if (gapi.client) {
-          gapi.client.setToken({ access_token: token });
-        } else {
-          gapi.load("client", () => initGapi(token));
-        }
-      } else {
-        setOauth2FromDb(undefined);
-      }
-    });
-  }, []);
-
   return (
-    <>
-      <button
-        className="button-2"
-        style={{ width: 90, margin: "auto" }}
-        onClick={action}
-        disabled={disabled}
-      >
-        {label}
-      </button>
-    </>
+    <button className={props.className} onClick={action} disabled={disabled}>
+      {label}
+    </button>
   );
 };

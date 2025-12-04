@@ -12,6 +12,7 @@
   "compilerOptions": {
     "types": ["node", "vite/client", "google.accounts", "gapi", "gapi.client.healthcare-v1"],
     "jsx": "react-jsx",
+    "outDir": "dist",
     "baseUrl": "./",
     "rootDirs": [
       ".",

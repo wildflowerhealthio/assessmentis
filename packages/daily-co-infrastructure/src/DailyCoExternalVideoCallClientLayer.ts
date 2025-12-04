@@ -37,9 +37,9 @@ export const DailyCoExternalVideoCallClientLayer = Layer.effect(
   Effect.gen(function* () {
     const httpClient = yield* HttpClient.HttpClient;
 
-    const baseDailyApiRoute = yield* Config.string(
-      "PUBLIC_BASE_DAILY_API_ROUTE",
-    );
+    const baseDailyApiRoute =
+      window.location.origin +
+      (yield* Config.string("PUBLIC_BASE_DAILY_API_ROUTE"));
 
     const apiDailyCoRoomSchemaParser =
       Schema.decodeUnknown(ApiDailyCoRoomSchema);

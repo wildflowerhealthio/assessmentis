@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { RefObject, useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 export const useCollection = <
@@ -62,4 +62,25 @@ export const useCollection = <
       );
   };
   return { collection, deleteItem, createItem };
+};
+
+export const useOutsideClickHandler = (
+  ref: RefObject<Node | null>,
+  handler: () => void,
+) => {
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (!(event.target instanceof Node)) return;
+
+      if (ref.current != null && !ref.current.contains(event.target)) {
+        handler();
+      }
+    }
+    // Bind the event listener
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [ref, handler]);
 };
