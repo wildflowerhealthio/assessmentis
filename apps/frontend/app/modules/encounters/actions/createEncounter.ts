@@ -11,7 +11,6 @@ import {
 import {
   EncounterRepository,
   Encounter,
-  withVideoCallRoomName,
 } from '@assessmentis/domain/encounters'
 import {
   NeedsAuthenticationError,
@@ -74,7 +73,8 @@ export const createEncounter = (
         {
           location: {
             identifier: {
-              value: externalVideoCallRoom.url,
+              system: 'http://assessment.is/fhir/video-call-room-name',
+              value: externalVideoCallRoom.roomName,
             },
           },
         },
@@ -83,14 +83,8 @@ export const createEncounter = (
       ...args,
     }
 
-    // Add room name as an extension so we can fetch recordings later
-    const encounterWithRoomName = withVideoCallRoomName(
-      encounterData,
-      externalVideoCallRoom.roomName
-    )
-
     const createdEncounter = yield* encounterRepository.createEncounter(
-      encounterWithRoomName
+      encounterData
     )
 
     // const roomInsertsEffect = videoCallRepository.createVideoCallRooms([

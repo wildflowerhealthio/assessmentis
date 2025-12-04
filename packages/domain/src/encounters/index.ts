@@ -1,5 +1,4 @@
 export * from './EncounterRepository'
 export * from './models/Encounter'
-export * from './extensions/EncounterRecordingReference'
-export * from './extensions/EncounterTranscriptReference'
-export * from './extensions/EncounterVideoCallRoomName'
+export * from './extensions/EncounterRecording'
+export * from './extensions/EncounterTranscript'

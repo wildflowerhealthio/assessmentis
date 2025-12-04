@@ -21,9 +21,13 @@ import {
 
 const ApiDailyCoRecordingSchema = Schema.Struct({
   id: Schema.NonEmptyString,
-  externalVideoCallRoomName: Schema.NonEmptyString,
+  room_name: Schema.NonEmptyString,
   start_ts: Schema.Number,
   duration: Schema.Number,
+})
+
+const ApiDailyCoRecordingLinkSchema = Schema.Struct({
+  download_link: Schema.String,
 })
 
 const ApiDailyCoRoomSchema = Schema.Struct({
@@ -46,68 +50,72 @@ export const DailyCoExternalVideoCallClientLayer = Layer.effect(
     const apiDailyCoRecordingSchemaParser = Schema.decodeUnknown(
       Schema.Array(ApiDailyCoRecordingSchema)
     )
+    const apiDailyCoRecordingLinkSchemaParser = Schema.decodeUnknown(
+      ApiDailyCoRecordingLinkSchema
+    )
 
     const headers = {
       'Content-Type': 'application/json',
     } as const
 
-    const fetchTranscriptByRecordingId: typeof ExternalVideoCallClient.Service.fetchTranscriptByRecordingId =
-      (recordingId: ExternalVideoCallRecordingId) => {
-        return Effect.gen(function* () {
-          const url = new URL(
-            `${baseDailyApiRoute}/recordings/${recordingId}/transcript`
-          )
-          const options = {
-            method: 'GET',
-            headers,
-          }
-          const res = yield* httpClient.get(url, options).pipe(
-            Effect.mapError(
-              (cause) =>
-                new ExternalVideoCallServiceError({
-                  message: 'HTTP Client Error while fetching transcript',
-                  cause,
-                })
-            )
-          )
-
-          if (res.status === 404) {
-            // Transcript not available yet
-            return null
-          }
-
-          if (res.status != 200) {
-            yield* Effect.fail(
+    const fetchRecordingLink = (
+      recordingId: string
+    ): Effect.Effect<string | undefined, ExternalVideoCallServiceError> => {
+      return Effect.gen(function* () {
+        const url = new URL(
+          `${baseDailyApiRoute}/recordings/${recordingId}/access-link`
+        )
+        const options = {
+          method: 'GET',
+          headers,
+        }
+        const res = yield* httpClient.get(url, options).pipe(
+          Effect.mapError(
+            (cause) =>
               new ExternalVideoCallServiceError({
-                message: `DailyCo returned an HTTP status of ${res.status} not 200`,
-                cause: undefined,
+                message: 'HTTP Client Error while fetching recording link',
+                cause,
               })
-            )
-          }
-
-          const json = yield* res.json.pipe(
-            Effect.mapError(
-              (cause) =>
-                new ExternalVideoCallServiceError({
-                  message: 'Error parsing JSON in response',
-                  cause,
-                })
-            )
           )
+        )
 
-          // Daily.co returns transcript as text in a specific format
-          // The exact format may vary, but typically it's a text field
-          const transcriptText =
-            typeof json === 'string'
-              ? json
-              : (json as any).text || JSON.stringify(json)
+        if (res.status === 404) {
+          // Recording link not available yet
+          return undefined
+        }
 
-          return {
-            externalVideoCallRecordingId: recordingId,
-            transcriptText,
-          }
-        })
-      }
+        if (res.status != 200) {
+          yield* Effect.fail(
+            new ExternalVideoCallServiceError({
+              message: `DailyCo returned an HTTP status of ${res.status} not 200`,
+              cause: undefined,
+            })
+          )
+        }
+
+        const json = yield* res.json.pipe(
+          Effect.mapError(
+            (cause) =>
+              new ExternalVideoCallServiceError({
+                message: 'Error parsing JSON in response',
+                cause,
+              })
+          )
+        )
+
+        const linkData = yield* apiDailyCoRecordingLinkSchemaParser(json).pipe(
+          Effect.mapError(
+            (cause) =>
+              new ExternalVideoCallServiceError({
+                message: 'Error validating JSON Response',
+                cause,
+              })
+          )
+        )
+
+        return linkData.download_link
+      })
+    }
 
     const fetchRecordingsByRoomName: typeof ExternalVideoCallClient.Service.fetchRecordingsByRoomName =
       (roomName: string) => {
@@ -147,7 +155,7 @@ export const DailyCoExternalVideoCallClientLayer = Layer.effect(
             )
           )
 
-          const apiDailyCoRooms = yield* apiDailyCoRecordingSchemaParser(
+          const apiDailyCoRecordings = yield* apiDailyCoRecordingSchemaParser(
             json
           ).pipe(
             Effect.mapError(
@@ -159,17 +167,28 @@ export const DailyCoExternalVideoCallClientLayer = Layer.effect(
             )
           )
 
-          return apiDailyCoRooms.map(
-            (rec): ExternalVideoCallRecording => ({
-              externalVideoCallRecordingId:
-                rec.id as ExternalVideoCallRecordingId,
-              externalVideoCallRoomName: roomName as ExternalVideoCallRoomName,
-              startedAt: DateTime.make(rec.start_ts * 1000).pipe(
-                Option.getOrThrow
-              ),
-              duration: Duration.seconds(rec.duration),
-            })
+          // Fetch recording links for all recordings
+          const recordingsWithLinks = yield* Effect.all(
+            apiDailyCoRecordings.map((rec) =>
+              Effect.gen(function* () {
+                const recordingUrl = yield* fetchRecordingLink(rec.id)
+                return {
+                  externalVideoCallRecordingId:
+                    rec.id as ExternalVideoCallRecordingId,
+                  externalVideoCallRoomName:
+                    roomName as ExternalVideoCallRoomName,
+                  startedAt: DateTime.make(rec.start_ts * 1000).pipe(
+                    Option.getOrThrow
+                  ),
+                  duration: Duration.seconds(rec.duration),
+                  uri: `api.daily.co/v1/recordings/${rec.id}`,
+                  recordingUrl,
+                } as ExternalVideoCallRecording
+              })
+            )
           )
+
+          return recordingsWithLinks
         })
       }
     const createRoom: typeof ExternalVideoCallClient.Service.createRoom = (
@@ -266,7 +285,6 @@ export const DailyCoExternalVideoCallClientLayer = Layer.effect(
     return {
       createRoom,
       fetchRecordingsByRoomName,
-      fetchTranscriptByRecordingId,
     }
   }).pipe(
     Effect.withSpan('DailyCoExternalVideoCallClientLayer'),

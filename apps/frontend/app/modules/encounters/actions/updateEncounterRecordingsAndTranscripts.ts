@@ -5,9 +5,7 @@ import {
 } from '@assessmentis/domain/video-calls'
 import {
   EncounterRepository,
-  withRecordingReference,
-  withTranscriptReference,
-  getVideoCallRoomName,
+  withRecordings,
 } from '@assessmentis/domain/encounters'
 import {
   NeedsAuthenticationError,
@@ -20,7 +18,7 @@ import { Encounter, EncounterId } from '@assessmentis/domain/encounters'
 
 /**
  * Fetches recordings for an encounter's video call room and updates the encounter
- * with references to the recording and transcript if available.
+ * with references to the recordings.
  *
  * @param encounterId - The ID of the encounter to update
  */
@@ -42,8 +40,8 @@ export const updateEncounterRecordingsAndTranscripts = (
     // Get the current encounter
     const encounter = yield* encounterRepository.getEncounter(encounterId)
 
-    // Extract the room name from the encounter extensions
-    const roomName = getVideoCallRoomName(encounter)
+    // Extract the room name from the encounter location
+    const roomName = encounter.location?.[0]?.location?.identifier?.value
 
     if (!roomName) {
       // If no room name is found, return the encounter unchanged
@@ -58,27 +56,16 @@ export const updateEncounterRecordingsAndTranscripts = (
       return encounter
     }
 
-    // Use the first (most recent) recording
-    const recording = recordings[0]
-    const recordingId = recording.externalVideoCallRecordingId
-
-    // Try to fetch the transcript for this recording
-    const transcript =
-      yield* videoCalls.fetchTranscriptByRecordingId(recordingId)
-
-    // Update the encounter with recording and transcript references
-    let updatedEncounter = withRecordingReference(encounter, recordingId)
-
-    if (transcript) {
-      updatedEncounter = withTranscriptReference(
-        updatedEncounter,
-        transcript.transcriptText
-      )
-    }
+    // Update the encounter with recording URIs
+    const updatedEncounter = withRecordings(
+      encounter as any,
+      recordings.map((rec) => rec.uri)
+    )
 
     // Save the updated encounter
-    const savedEncounter =
-      yield* encounterRepository.updateEncounter(updatedEncounter)
+    const savedEncounter = yield* encounterRepository.updateEncounter(
+      updatedEncounter as WithId<Encounter>
+    )
 
     return savedEncounter
   })

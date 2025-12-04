@@ -20,15 +20,6 @@ export const GoogleMeetExternalVideoCallClientLayer = Layer.effect(
             })
           )
 
-      const fetchTranscriptByRecordingId: typeof ExternalVideoCallClient.Service.fetchTranscriptByRecordingId =
-        (_: any) =>
-          Effect.fail(
-            new ExternalVideoCallServiceError({
-              message: 'not-implemented',
-              cause: undefined,
-            })
-          )
-
       const createRoom: typeof ExternalVideoCallClient.Service.createRoom = (
         _: RoomCreationParams
       ) =>
@@ -66,7 +57,6 @@ export const GoogleMeetExternalVideoCallClientLayer = Layer.effect(
 
       return {
         fetchRecordingsByRoomName,
-        fetchTranscriptByRecordingId,
         createRoom,
       }
     })()

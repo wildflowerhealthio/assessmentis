@@ -7,4 +7,6 @@ export interface ExternalVideoCallRecording {
   externalVideoCallRoomName: ExternalVideoCallRoomName
   startedAt: DateTime.Utc
   duration: Duration.Duration
+  uri: string
+  recordingUrl?: string
 }
