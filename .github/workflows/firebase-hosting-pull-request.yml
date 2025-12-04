@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: |
           npm install
-          turbo build
+          npm run build # With Turbo
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
