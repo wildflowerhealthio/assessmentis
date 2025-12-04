@@ -4,6 +4,7 @@
   "description": "A tool for diagnostic interviews",
   "main": "index.js",
   "packageManager": "npm@10.9.2",
+  "prettier": "@assessmentis/prettier-config",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
