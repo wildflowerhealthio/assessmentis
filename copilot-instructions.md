@@ -220,7 +220,7 @@ export const createEncounter = (args: CreateEncounterArg) =>
 
 #### Component Structure
 ```typescript
-'use client' // Only if needed for client-only features
+'use client' // Use for interactive components (common in this codebase)
 
 import { useState, useEffect } from 'react'
 // ... other imports
@@ -257,7 +257,7 @@ export default ComponentName
 
 #### Props Types
 - Use `type IProps` for component props
-- Use `Route.LoaderProps`, `Route.ActionProps` etc. from React Router types
+- Use `Route.LoaderParams`, `Route.ActionParams` etc. from React Router types
 
 ### Styling
 
@@ -587,8 +587,8 @@ const FeatureComponent = ({ prop }: IProps) => {
 // routes/NewResource._index.tsx
 import type { Route } from './+types/NewResource._index'
 
-export async function loader({ params }: Route.LoaderArgs) {
-  // Optional server loader
+export async function loader({ params }: Route.LoaderParams) {
+  // Optional loader
 }
 
 export default function NewResourceIndex() {
