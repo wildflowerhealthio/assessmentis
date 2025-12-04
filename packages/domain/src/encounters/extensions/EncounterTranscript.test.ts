@@ -2,16 +2,14 @@ import { expect, test, describe } from 'vitest'
 import {
   EncounterTranscriptExtension,
   getTranscripts,
-  getTranscript,
   withTranscripts,
-  withTranscript,
   encounterTranscriptUrl,
 } from './EncounterTranscript'
 import { Schema, Either } from 'effect'
 
 describe('EncounterTranscript extension', () => {
   test('Schema encodes correctly', () => {
-    const encode = Schema.encodeEither(EncounterTranscriptExtension)
+    const encode = Schema.encodeUnknownEither(EncounterTranscriptExtension as any)
     const result = encode({
       url: encounterTranscriptUrl,
       valueUrl: 'https://example.com/transcript/123',
@@ -36,28 +34,18 @@ describe('EncounterTranscript extension', () => {
     expect(getTranscripts(encounter)).toEqual(['transcript-1'])
   })
 
-  test('getTranscript returns first transcript URL', () => {
-    const encounter = {
-      extension: [
-        { url: encounterTranscriptUrl, valueUrl: 'transcript-1' },
-      ],
-    }
-
-    expect(getTranscript(encounter)).toBe('transcript-1')
-  })
-
-  test('getTranscript returns undefined when no transcripts', () => {
+  test('getTranscripts returns empty array when no transcripts', () => {
     const encounter = {
       extension: [{ url: 'other-url', valueUrl: 'other-value' }],
     }
 
-    expect(getTranscript(encounter)).toBeUndefined()
+    expect(getTranscripts(encounter)).toEqual([])
   })
 
-  test('withTranscript adds transcript URL', () => {
+  test('withTranscripts adds transcript URLs', () => {
     const encounter = { extension: [] }
 
-    const result = withTranscript(encounter, 'transcript-1')
+    const result = withTranscripts(encounter, ['transcript-1'])
 
     expect(result.extension).toHaveLength(1)
     expect(result.extension[0]).toEqual({
@@ -66,27 +54,27 @@ describe('EncounterTranscript extension', () => {
     })
   })
 
-  test('withTranscript replaces existing transcript', () => {
+  test('withTranscripts replaces existing transcripts', () => {
     const encounter = {
       extension: [
         { url: encounterTranscriptUrl, valueUrl: 'old-transcript' },
       ],
     }
 
-    const result = withTranscript(encounter, 'new-transcript')
+    const result = withTranscripts(encounter, ['new-transcript'])
 
     expect(result.extension).toHaveLength(1)
     expect(result.extension[0].valueUrl).toBe('new-transcript')
   })
 
-  test('withTranscript removes transcript when undefined', () => {
+  test('withTranscripts removes transcripts when empty array', () => {
     const encounter = {
       extension: [
         { url: encounterTranscriptUrl, valueUrl: 'transcript-1' },
       ],
     }
 
-    const result = withTranscript(encounter, undefined)
+    const result = withTranscripts(encounter, [])
 
     expect(result.extension).toHaveLength(0)
   })

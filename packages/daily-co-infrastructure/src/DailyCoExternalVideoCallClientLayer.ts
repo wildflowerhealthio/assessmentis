@@ -1,17 +1,11 @@
 import { FetchHttpClient, HttpBody, HttpClient } from '@effect/platform'
-import {
-  Config,
-  DateTime,
-  Duration,
-  Effect,
-  Layer,
-  Schema,
-  Option,
-} from 'effect'
+import { Config, DateTime, Effect, Layer, Schema } from 'effect'
 import {
   ExternalVideoCallClient,
   ExternalVideoCallServiceError,
   ExternalVideoCallRecordingId,
+  ExternalVideoCallRecordingUri,
+  ExternalVideoCallRecordingUrl,
   ExternalVideoCallRoomId,
   ExternalVideoCallRoomName,
   RoomCreationParams,
@@ -60,7 +54,10 @@ export const DailyCoExternalVideoCallClientLayer = Layer.effect(
 
     const fetchRecordingLink = (
       recordingId: string
-    ): Effect.Effect<string | undefined, ExternalVideoCallServiceError> => {
+    ): Effect.Effect<
+      ExternalVideoCallRecordingUrl | undefined,
+      ExternalVideoCallServiceError
+    > => {
       return Effect.gen(function* () {
         const url = new URL(
           `${baseDailyApiRoute}/recordings/${recordingId}/access-link`
@@ -113,7 +110,7 @@ export const DailyCoExternalVideoCallClientLayer = Layer.effect(
           )
         )
 
-        return linkData.download_link
+        return linkData.download_link as ExternalVideoCallRecordingUrl
       })
     }
 
@@ -167,23 +164,39 @@ export const DailyCoExternalVideoCallClientLayer = Layer.effect(
             )
           )
 
-          // Fetch recording links for all recordings
+          // Fetch recording links for all recordings and decode
           const recordingsWithLinks = yield* Effect.all(
             apiDailyCoRecordings.map((rec) =>
               Effect.gen(function* () {
                 const recordingUrl = yield* fetchRecordingLink(rec.id)
-                return {
+                
+                // Convert timestamp to ISO string for DateTimeUtc schema
+                const startedAtUtc = DateTime.unsafeMake(rec.start_ts * 1000)
+                const startedAtIso = DateTime.formatIso(startedAtUtc)
+                
+                const recordingData = {
                   externalVideoCallRecordingId:
                     rec.id as ExternalVideoCallRecordingId,
                   externalVideoCallRoomName:
                     roomName as ExternalVideoCallRoomName,
-                  startedAt: DateTime.make(rec.start_ts * 1000).pipe(
-                    Option.getOrThrow
-                  ),
-                  duration: Duration.seconds(rec.duration),
-                  uri: `https://api.daily.co/v1/recordings/${rec.id}`,
+                  startedAt: startedAtIso,
+                  duration: rec.duration * 1000, // convert to milliseconds
+                  uri: `https://api.daily.co/v1/recordings/${rec.id}` as ExternalVideoCallRecordingUri,
                   recordingUrl,
-                } as ExternalVideoCallRecording
+                }
+                
+                // Decode using the schema to ensure type safety
+                return yield* Schema.decode(ExternalVideoCallRecording)(
+                  recordingData
+                ).pipe(
+                  Effect.mapError(
+                    (cause) =>
+                      new ExternalVideoCallServiceError({
+                        message: 'Error decoding recording data',
+                        cause,
+                      })
+                  )
+                )
               })
             )
           )

@@ -2,16 +2,14 @@ import { expect, test, describe } from 'vitest'
 import {
   EncounterRecordingExtension,
   getRecordings,
-  getRecording,
   withRecordings,
-  withRecording,
   encounterRecordingUrl,
 } from './EncounterRecording'
 import { Schema, Either } from 'effect'
 
 describe('EncounterRecording extension', () => {
   test('Schema encodes correctly', () => {
-    const encode = Schema.encodeEither(EncounterRecordingExtension)
+    const encode = Schema.encodeUnknownEither(EncounterRecordingExtension as any)
     const result = encode({
       url: encounterRecordingUrl,
       valueUrl: 'api.daily.co/v1/recordings/123',
@@ -37,23 +35,12 @@ describe('EncounterRecording extension', () => {
     expect(getRecordings(encounter)).toEqual(['recording-1', 'recording-2'])
   })
 
-  test('getRecording returns first recording URL', () => {
-    const encounter = {
-      extension: [
-        { url: encounterRecordingUrl, valueUrl: 'recording-1' },
-        { url: encounterRecordingUrl, valueUrl: 'recording-2' },
-      ],
-    }
-
-    expect(getRecording(encounter)).toBe('recording-1')
-  })
-
-  test('getRecording returns undefined when no recordings', () => {
+  test('getRecordings returns empty array when no recordings', () => {
     const encounter = {
       extension: [{ url: 'other-url', valueUrl: 'other-value' }],
     }
 
-    expect(getRecording(encounter)).toBeUndefined()
+    expect(getRecordings(encounter)).toEqual([])
   })
 
   test('withRecordings adds multiple recording URLs', () => {
@@ -91,24 +78,12 @@ describe('EncounterRecording extension', () => {
     expect(recordings[0].valueUrl).toBe('new-recording')
   })
 
-  test('withRecording adds single recording URL', () => {
-    const encounter = { extension: [] }
-
-    const result = withRecording(encounter, 'recording-1')
-
-    expect(result.extension).toHaveLength(1)
-    expect(result.extension[0]).toEqual({
-      url: encounterRecordingUrl,
-      valueUrl: 'recording-1',
-    })
-  })
-
-  test('withRecording removes recording when undefined', () => {
+  test('withRecordings removes all recordings when empty array', () => {
     const encounter = {
       extension: [{ url: encounterRecordingUrl, valueUrl: 'recording-1' }],
     }
 
-    const result = withRecording(encounter, undefined)
+    const result = withRecordings(encounter, [])
 
     expect(result.extension).toHaveLength(0)
   })

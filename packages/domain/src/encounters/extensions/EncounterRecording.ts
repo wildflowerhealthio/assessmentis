@@ -1,14 +1,17 @@
-import { createEncounterExtension } from './createEncounterExtension'
+import { Schema } from 'effect'
+import { createExtension } from './createExtension'
 
 export const encounterRecordingUrl =
   'http://assessment.is/fhir/encounter-recording'
 
-const extension = createEncounterExtension(encounterRecordingUrl, true)
+const extension = createExtension(
+  encounterRecordingUrl,
+  'valueUrl',
+  Schema.String
+)
 
 export const EncounterRecordingExtension = extension.ExtensionSchema
 export type EncounterRecordingExtension = typeof EncounterRecordingExtension.Type
 
 export const getRecordings = extension.getValues
-export const getRecording = extension.getValue
 export const withRecordings = extension.withValues
-export const withRecording = extension.withValue
