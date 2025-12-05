@@ -2,6 +2,7 @@ import { Context, Data, Effect } from 'effect'
 import { ExternalVideoCallRoom } from './models/ExternalVideoCallRoom'
 import { ExternalVideoCallRecording } from './models/ExternalVideoCallRecording'
 import { Zoned } from 'effect/DateTime'
+import { ExternalVideoCallRoomName } from './models/VideoCallRoom'
 
 export class ExternalVideoCallServiceError extends Data.TaggedError(
   'ExternalVideoCallServiceError'
@@ -13,7 +14,7 @@ export class ExternalVideoCallServiceError extends Data.TaggedError(
 export interface RoomCreationParams {
   expiresAt?: Zoned
   enableChat?: boolean
-  enableRecoding?: boolean
+  enableRecording?: boolean
 }
 
 export class ExternalVideoCallClient extends Context.Tag(
@@ -22,7 +23,7 @@ export class ExternalVideoCallClient extends Context.Tag(
   ExternalVideoCallClient,
   {
     fetchRecordingsByRoomName: (
-      roomName: string
+      roomName: ExternalVideoCallRoomName
     ) => Effect.Effect<
       ExternalVideoCallRecording[],
       ExternalVideoCallServiceError
@@ -30,5 +31,9 @@ export class ExternalVideoCallClient extends Context.Tag(
     createRoom: (
       params: RoomCreationParams
     ) => Effect.Effect<ExternalVideoCallRoom, ExternalVideoCallServiceError>
+
+    extractRoomNameFromUrl: (
+      url: string
+    ) => ExternalVideoCallRoomName | undefined
   }
 >() {}

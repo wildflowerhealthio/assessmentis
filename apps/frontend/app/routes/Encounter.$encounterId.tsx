@@ -1,9 +1,9 @@
-import { ManagedRuntime, Match, Schema } from 'effect'
+import { Match, Schema } from 'effect'
 import { EncounterId } from '@assessmentis/domain/encounters'
 import { getFullEncounter } from 'app/modules/interview-call/actions/getFullEncounter'
 import InterviewCall from 'app/modules/interview-call/features/InterviewCall/InterviewCall'
 import type { Route } from './+types/Encounter.$encounterId'
-import { clientAppLayer } from 'app/clientRuntime'
+import { getRuntime } from '../firebase'
 
 const tryDecodeEncounterId = Schema.decodeOption(EncounterId)
 
@@ -11,7 +11,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const encounterIdStr = params.encounterId
   const encounterIdMaybe = tryDecodeEncounterId(encounterIdStr)
 
-  const runtime = ManagedRuntime.make(clientAppLayer)
+  const runtime = await getRuntime()
   const encounter = await runtime.runPromise(getFullEncounter(encounterIdMaybe))
 
   return { encounter }

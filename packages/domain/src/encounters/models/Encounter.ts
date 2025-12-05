@@ -1,5 +1,6 @@
 import { Schema } from 'effect'
 import { Coding } from '../../general-purpose/Coding'
+import { DomainResource } from '../../general-purpose/DomainResource'
 import { Location } from '../../video-calls/models/Location'
 
 export const EncounterId = Schema.String.pipe(Schema.brand('EncounterId'))
@@ -7,7 +8,7 @@ export const EncounterId = Schema.String.pipe(Schema.brand('EncounterId'))
 export type EncounterId = typeof EncounterId.Type
 
 export const Encounter = Schema.Struct({
-  id: Schema.optional(EncounterId),
+  ...DomainResource(EncounterId).fields,
   resourceType: Schema.Literal('Encounter'),
   /**
    * Concepts representing classification of patient encounter such as ambulatory (outpatient), inpatient, emergency, home health or others due to local variations.

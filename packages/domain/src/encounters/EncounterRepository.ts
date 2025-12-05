@@ -54,6 +54,17 @@ export class EncounterRepository extends Context.Tag('EncounterRepository')<
       never
     >
 
+    updateEncounter(
+      encounter: WithId<Encounter>
+    ): Effect.Effect<
+      WithId<Encounter>,
+      | NotFoundError
+      | NeedsAuthenticationError
+      | ExternalAssertionError
+      | UnhandledError,
+      never
+    >
+
     deleteEncounter(
       encounterId: EncounterId
     ): Effect.Effect<

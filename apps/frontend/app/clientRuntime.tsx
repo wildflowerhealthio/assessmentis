@@ -21,6 +21,7 @@ import {
 } from '@assessmentis/google-fhir-infrastructure'
 import { FetchHttpClient, HttpClient } from '@effect/platform'
 import { layerCurrentZoneLocal, type CurrentTimeZone } from 'effect/DateTime'
+import { auth } from './firebase'
 
 export class ContextSetupError extends Error {
   constructor(message: string, cause: unknown) {
@@ -53,21 +54,35 @@ const ShamVideoCallRepository = Layer.effect(
   }).pipe(Effect.withSpan('createDbQuestionnaireRepository'))
 )
 
-const ConfigLayer = Layer.setConfigProvider(
-  ConfigProvider.fromMap(new Map(Object.entries(import.meta.env)), {})
-)
+const makeConfigLayer = (configs: Record<string, string>) =>
+  Layer.setConfigProvider(
+    ConfigProvider.fromMap(
+      new Map(Object.entries({ ...import.meta.env, ...configs })),
+      {}
+    )
+  )
 
-export const clientAppLayer: Layer.Layer<ClientRuntimeContext> = Layer.mergeAll(
-  DailyCoExternalVideoCallClientLayer.pipe(Layer.provide(ConfigLayer)),
-  FhirQuestionnaireRepository.pipe(Layer.provide(ConfigLayer)),
-  FhirQuestionnaireResponseRepository.pipe(Layer.provide(ConfigLayer)),
-  FhirEncounterRepository.pipe(Layer.provide(ConfigLayer)),
-  ShamVideoCallRepository.pipe(Layer.provide(ConfigLayer)),
-  layerCurrentZoneLocal,
-  FetchHttpClient.layer,
-  WebSdkLive,
-  ConfigLayer
-).pipe(Layer.annotateSpans('NODE_ENV', process.env.NODE_ENV), Layer.orDie)
+export const makeRuntime = (configs: Record<string, string>) =>
+  ManagedRuntime.make(makeClientAppLayer(makeConfigLayer(configs)))
+
+const makeClientAppLayer: (
+  ConfigLayer: Layer.Layer<never, never, never>
+) => Layer.Layer<ClientRuntimeContext> = (
+  ConfigLayer: Layer.Layer<never, never, never>
+) =>
+  Layer.mergeAll(
+    DailyCoExternalVideoCallClientLayer(async () =>
+      auth.currentUser?.getIdToken()
+    ).pipe(Layer.provide(ConfigLayer)),
+    FhirQuestionnaireRepository.pipe(Layer.provide(ConfigLayer)),
+    FhirQuestionnaireResponseRepository.pipe(Layer.provide(ConfigLayer)),
+    FhirEncounterRepository.pipe(Layer.provide(ConfigLayer)),
+    ShamVideoCallRepository.pipe(Layer.provide(ConfigLayer)),
+    layerCurrentZoneLocal,
+    FetchHttpClient.layer,
+    WebSdkLive,
+    ConfigLayer
+  ).pipe(Layer.annotateSpans('NODE_ENV', process.env.NODE_ENV), Layer.orDie)
 
 export const RuntimeContext = createContext<
   ManagedRuntime.ManagedRuntime<ClientRuntimeContext, never> | undefined

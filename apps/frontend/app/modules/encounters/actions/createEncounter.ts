@@ -55,10 +55,12 @@ export const createEncounter = (
       yield* QuestionnaireResponseRepository
     const videoCalls = yield* ExternalVideoCallClient
 
-    const externalVideoCallRoom = yield* videoCalls.createRoom({})
+    const externalVideoCallRoom = yield* videoCalls.createRoom({
+      enableRecording: true,
+    })
 
-    const createdEncounter = yield* encounterRepository.createEncounter({
-      resourceType: 'Encounter',
+    const encounterData = {
+      resourceType: 'Encounter' as const,
       class: {
         display: 'virtual',
         system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
@@ -68,14 +70,18 @@ export const createEncounter = (
         {
           location: {
             identifier: {
-              value: externalVideoCallRoom.url,
+              system: 'http://assessment.is/fhir/video-call-room-name',
+              value: externalVideoCallRoom.roomName,
             },
           },
         },
       ],
       status: 'planned',
       ...args,
-    })
+    }
+
+    const createdEncounter =
+      yield* encounterRepository.createEncounter(encounterData)
 
     // const roomInsertsEffect = videoCallRepository.createVideoCallRooms([
     //   {

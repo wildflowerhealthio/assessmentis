@@ -1,10 +1,29 @@
+import { Schema } from 'effect'
 import { ExternalVideoCallRecordingId } from './VideoCallRecording'
 import { ExternalVideoCallRoomName } from './VideoCallRoom'
-import { Duration, DateTime } from 'effect'
+import { DateTimeUtc, DurationFromMillis } from 'effect/Schema'
 
-export interface ExternalVideoCallRecording {
-  externalVideoCallRecordingId: ExternalVideoCallRecordingId
-  externalVideoCallRoomName: ExternalVideoCallRoomName
-  startedAt: DateTime.Utc
-  duration: Duration.Duration
-}
+export const ExternalVideoCallRecordingUri = Schema.String.pipe(
+  Schema.brand('ExternalVideoCallRecordingUri')
+)
+
+export type ExternalVideoCallRecordingUri =
+  typeof ExternalVideoCallRecordingUri.Type
+
+export const ExternalVideoCallRecordingFileUrl = Schema.String.pipe(
+  Schema.brand('ExternalVideoCallRecordingUrl')
+)
+
+export type ExternalVideoCallRecordingFileUrl =
+  typeof ExternalVideoCallRecordingFileUrl.Type
+
+export const ExternalVideoCallRecording = Schema.Struct({
+  externalVideoCallRecordingId: ExternalVideoCallRecordingId,
+  externalVideoCallRoomName: ExternalVideoCallRoomName,
+  startedAt: DateTimeUtc,
+  duration: DurationFromMillis,
+  uri: ExternalVideoCallRecordingUri,
+  recordingFileUrl: Schema.optional(ExternalVideoCallRecordingFileUrl),
+})
+
+export type ExternalVideoCallRecording = typeof ExternalVideoCallRecording.Type

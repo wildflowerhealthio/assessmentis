@@ -1,4 +1,4 @@
-import { Effect, ManagedRuntime, Schema } from 'effect'
+import { Effect, Schema } from 'effect'
 import {
   Encounter,
   EncounterId,
@@ -9,16 +9,17 @@ import { QuestionnaireRepository } from '@assessmentis/domain/questionnaires'
 import { createEncounter } from 'app/modules/encounters/actions/createEncounter'
 import QuestionnaireSelect from 'app/modules/questionnaire/features/QuestionnaireSelect/QuestionnaireSelect'
 import { Form, useNavigate } from 'react-router'
-import { clientAppLayer, useRuntimeContext } from 'app/clientRuntime'
+import { useRuntimeContext } from 'app/clientRuntime'
 import EncountersList from './Encounter/EncountersList'
 import type { Route } from './+types/Encounter._index'
 import { useCollection } from '@assessmentis/react-util'
 import { useEffect } from 'react'
+import { getRuntime } from '../firebase'
 
 const decodeQuestionnaireId = Schema.decodeUnknownSync(QuestionnaireId)
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {
-  const runtime = ManagedRuntime.make(clientAppLayer)
+  const runtime = await getRuntime()
   const encounters = await runtime.runPromise(
     Effect.gen(function* () {
       const encounterRepository = yield* EncounterRepository
@@ -42,7 +43,7 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
   console.log('Creating encounter')
   const event = await request.formData()
 
-  const runtime = ManagedRuntime.make(clientAppLayer)
+  const runtime = await getRuntime()
   const encounter = runtime.runPromise(
     createEncounter({
       questionnaireResponses: [

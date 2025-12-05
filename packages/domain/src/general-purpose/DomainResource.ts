@@ -2,6 +2,8 @@ import { Schema } from 'effect'
 import { Coding } from './Coding'
 import { Narrative } from './Narrative'
 import { Resource } from './Resource'
+import { Extension } from './BackboneElement'
+
 export const DomainResource = <IdType extends string>(
   idSchema: Schema.Schema<IdType, string>
 ) =>
@@ -15,8 +17,14 @@ export const DomainResource = <IdType extends string>(
      * Contained, inline Resources
      */
     contained: Schema.optional(Schema.Array(Schema.Unknown)), // Resource
-    // extension
-    // modifierExtension
+    /**
+     * Additional content defined by implementations
+     */
+    extension: Schema.optional(Schema.Array(Extension)),
+    /**
+     * Extensions that cannot be ignored
+     */
+    modifierExtension: Schema.optional(Schema.Array(Extension)),
   })
 
 export const Meta = Schema.Struct({
