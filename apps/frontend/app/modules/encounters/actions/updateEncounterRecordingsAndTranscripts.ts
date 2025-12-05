@@ -5,7 +5,7 @@ import {
 } from '@assessmentis/domain/video-calls'
 import {
   EncounterRepository,
-  withRecordings,
+  withRecordingFileUrls,
 } from '@assessmentis/domain/encounters'
 import {
   NeedsAuthenticationError,
@@ -41,23 +41,22 @@ export const updateEncounterRecordingsAndTranscripts = (
     const encounter = yield* encounterRepository.getEncounter(encounterId)
 
     // Extract the room name from the encounter location
-    const roomName = encounter.location?.[0]?.location?.identifier?.value
+    const roomUrl = encounter.location?.[0]?.location?.identifier?.value
 
-    if (!roomName) {
-      // If no room name is found, return the encounter unchanged
-      return encounter
-    }
+    // If no room name is found, return the encounter unchanged
+    if (!roomUrl) return encounter
 
     // Fetch recordings for the room
+    const roomName = videoCalls.extractRoomNameFromUrl(roomUrl)
+    if (!roomName) return encounter
+
     const recordings = yield* videoCalls.fetchRecordingsByRoomName(roomName)
 
     // If no recordings found yet, return the encounter unchanged
-    if (recordings.length === 0) {
-      return encounter
-    }
+    if (recordings.length == 0) return encounter
 
     // Update the encounter with recording URIs
-    const updatedEncounter = withRecordings(
+    const updatedEncounter = withRecordingFileUrls(
       encounter,
       recordings.map((rec) => rec.uri)
     )

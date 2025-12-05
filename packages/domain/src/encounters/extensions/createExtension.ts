@@ -11,18 +11,13 @@ export function createExtension<
   ValueKey extends string,
   A,
   I = A,
-  R = never,
->(
-  url: TUrl,
-  valueKey: ValueKey,
-  ValueSchema: Schema.Schema<A, I, R>
-) {
-  // Note: ExtensionSchema typing is complex due to dynamic keys, 
+>(url: TUrl, valueKey: ValueKey, ValueSchema: Schema.Schema<A, I, never>) {
+  // Note: ExtensionSchema typing is complex due to dynamic keys,
   // so we use any and rely on runtime schema validation
   const ExtensionSchema = Schema.Struct({
     url: Schema.Literal(url),
     [valueKey]: ValueSchema,
-  } as any)
+  })
 
   type ExtensionType = { url: TUrl } & { [K in ValueKey]: A }
 

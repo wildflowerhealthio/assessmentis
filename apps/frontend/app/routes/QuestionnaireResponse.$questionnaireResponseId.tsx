@@ -11,18 +11,21 @@ import { QuestionnaireResponseRepository } from '@assessmentis/domain/questionna
 import { clientAppLayer } from 'app/clientRuntime'
 import type { Route } from './+types/QuestionnaireResponse.$questionnaireResponseId'
 import QuestionnaireForm from 'app/modules/questionnaire/features/QuestionnaireForm/QuestionnaireForm'
-import type {
-  Questionnaire as FhirQuestionnaire,
-  QuestionnaireResponse as FhirQuestionnaireResponse,
-} from 'fhir/r4'
+import { updateEncounterRecordingsAndTranscripts } from '../modules/encounters/actions/updateEncounterRecordingsAndTranscripts'
+import {
+  Encounter,
+  EncounterId,
+  getRecordingFileUrls,
+} from '@assessmentis/domain/encounters'
 
 const tryDecodeQuestionnaireResponseId = Schema.decodeOption(
   QuestionnaireResponseId
 )
 
 export const QuestionnaireResponseWithQuestionnaire = Schema.Struct({
-  ...QuestionnaireResponse.fields,
-  _questionnaire: Questionnaire,
+  questionnaireResponse: QuestionnaireResponse,
+  questionnaire: Questionnaire,
+  encounter: Schema.optional(Encounter),
 })
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
@@ -59,27 +62,25 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
         questionnaireResponse.questionnaire ??
         ''
     )
+    const encounterId =
+      questionnaireResponse.encounter?.reference?.split('/')[1] ?? undefined
+    const encounter = encounterId
+      ? yield* updateEncounterRecordingsAndTranscripts(
+          EncounterId.make(encounterId)
+        )
+      : undefined
+
     const questionnaire =
       yield* questionnaireRepository.getQuestionnaire(questionnaireId)
     const enc = Schema.encode(QuestionnaireResponseWithQuestionnaire)({
-      ...questionnaireResponse,
-      _questionnaire: questionnaire,
+      questionnaireResponse,
+      questionnaire,
+      encounter,
     })
     return yield* enc
   })
 
-  const { _questionnaire, ...questionnaireResponse } = await runtime.runPromise(
-    questionnaireResponseEffect
-  )
-
-  return {
-    questionnaireResponse: JSON.parse(
-      JSON.stringify(questionnaireResponse)
-    ) as FhirQuestionnaireResponse,
-    questionnaire: JSON.parse(
-      JSON.stringify(_questionnaire)
-    ) as FhirQuestionnaire,
-  }
+  return await runtime.runPromise(questionnaireResponseEffect)
 }
 
 const decodeQuestionnaire = Schema.decodeSync(Questionnaire)
@@ -88,7 +89,7 @@ const decodeQuestionnaireResponse = Schema.decodeSync(QuestionnaireResponse)
 export default function QuestionnaireResponseDetailsPage({
   loaderData,
 }: Route.ComponentProps) {
-  const { questionnaire, questionnaireResponse } = loaderData
+  const { questionnaire, questionnaireResponse, encounter } = loaderData
   // const handleSubmitAnswer = async (
   //   questionnaireItemLink: QuestionnaireItemLink,
   //   answer: QuestionnaireResponseItemAnswer | null,
@@ -102,6 +103,7 @@ export default function QuestionnaireResponseDetailsPage({
   // This hook builds the form based on the questionnaire
   return (
     <section style={{ maxWidth: 800, margin: 'auto' }}>
+      {encounter ? JSON.stringify(getRecordingFileUrls(encounter)) : undefined}
       <QuestionnaireForm
         questionnaire={decodeQuestionnaire(questionnaire)}
         questionnaireResponse={decodeQuestionnaireResponse(

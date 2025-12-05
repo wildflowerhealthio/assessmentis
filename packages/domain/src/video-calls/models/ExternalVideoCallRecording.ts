@@ -10,12 +10,12 @@ export const ExternalVideoCallRecordingUri = Schema.String.pipe(
 export type ExternalVideoCallRecordingUri =
   typeof ExternalVideoCallRecordingUri.Type
 
-export const ExternalVideoCallRecordingUrl = Schema.String.pipe(
+export const ExternalVideoCallRecordingFileUrl = Schema.String.pipe(
   Schema.brand('ExternalVideoCallRecordingUrl')
 )
 
-export type ExternalVideoCallRecordingUrl =
-  typeof ExternalVideoCallRecordingUrl.Type
+export type ExternalVideoCallRecordingFileUrl =
+  typeof ExternalVideoCallRecordingFileUrl.Type
 
 export const ExternalVideoCallRecording = Schema.Struct({
   externalVideoCallRecordingId: ExternalVideoCallRecordingId,
@@ -23,8 +23,7 @@ export const ExternalVideoCallRecording = Schema.Struct({
   startedAt: DateTimeUtc,
   duration: DurationFromMillis,
   uri: ExternalVideoCallRecordingUri,
-  recordingUrl: Schema.optional(ExternalVideoCallRecordingUrl),
+  recordingFileUrl: Schema.optional(ExternalVideoCallRecordingFileUrl),
 })
 
-export type ExternalVideoCallRecording =
-  typeof ExternalVideoCallRecording.Type
+export type ExternalVideoCallRecording = typeof ExternalVideoCallRecording.Type

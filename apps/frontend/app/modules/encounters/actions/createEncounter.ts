@@ -8,10 +8,7 @@ import {
   QuestionnaireResponse,
   QuestionnaireResponseRepository,
 } from '@assessmentis/domain/questionnaires'
-import {
-  EncounterRepository,
-  Encounter,
-} from '@assessmentis/domain/encounters'
+import { EncounterRepository, Encounter } from '@assessmentis/domain/encounters'
 import {
   NeedsAuthenticationError,
   UnhandledError,
@@ -83,9 +80,8 @@ export const createEncounter = (
       ...args,
     }
 
-    const createdEncounter = yield* encounterRepository.createEncounter(
-      encounterData
-    )
+    const createdEncounter =
+      yield* encounterRepository.createEncounter(encounterData)
 
     // const roomInsertsEffect = videoCallRepository.createVideoCallRooms([
     //   {

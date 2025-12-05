@@ -12,7 +12,7 @@ export const GoogleMeetExternalVideoCallClientLayer = Layer.effect(
   Effect.succeed(
     (function () {
       const fetchRecordingsByRoomName: typeof ExternalVideoCallClient.Service.fetchRecordingsByRoomName =
-        (_: string) =>
+        (_: ExternalVideoCallRoomName) =>
           Effect.fail(
             new ExternalVideoCallServiceError({
               message: 'not-implemented',
@@ -55,9 +55,18 @@ export const GoogleMeetExternalVideoCallClientLayer = Layer.effect(
           )
         )
 
+      const extractRoomNameFromUrl: typeof ExternalVideoCallClient.Service.extractRoomNameFromUrl =
+        (url: string): ExternalVideoCallRoomName | undefined => {
+          const urlParts = url.split('/')
+          if (urlParts.length === 0) return undefined
+
+          return ExternalVideoCallRoomName.make(urlParts[urlParts.length - 1])
+        }
+
       return {
         fetchRecordingsByRoomName,
         createRoom,
+        extractRoomNameFromUrl,
       }
     })()
   )
