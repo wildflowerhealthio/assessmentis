@@ -1,4 +1,4 @@
-import { Schema, Option, Effect, ManagedRuntime } from 'effect'
+import { Schema, Option, Effect } from 'effect'
 import {
   Questionnaire,
   QuestionnaireResponse,
@@ -8,7 +8,7 @@ import { QuestionnaireId } from '@assessmentis/domain/questionnaires'
 import { QuestionnaireResponseId } from '@assessmentis/domain/questionnaires'
 import { QuestionnaireRepository } from '@assessmentis/domain/questionnaires'
 import { QuestionnaireResponseRepository } from '@assessmentis/domain/questionnaires'
-import { clientAppLayer } from 'app/clientRuntime'
+import { getRuntime } from 'app/firebase'
 import type { Route } from './+types/QuestionnaireResponse.$questionnaireResponseId'
 import QuestionnaireForm from 'app/modules/questionnaire/features/QuestionnaireForm/QuestionnaireForm'
 import { updateEncounterRecordingsAndTranscripts } from '../modules/encounters/actions/updateEncounterRecordingsAndTranscripts'
@@ -29,7 +29,7 @@ export const QuestionnaireResponseWithQuestionnaire = Schema.Struct({
 })
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-  const runtime = ManagedRuntime.make(clientAppLayer)
+  const runtime = await getRuntime()
 
   const questionnaireResponseIdStr = params.questionnaireResponseId
 
@@ -94,7 +94,7 @@ export default function QuestionnaireResponseDetailsPage({
   //   questionnaireItemLink: QuestionnaireItemLink,
   //   answer: QuestionnaireResponseItemAnswer | null,
   // ): Promise<unknown> => {
-  //   const runtime = ManagedRuntime.make(clientAppLayer);
+  //   const runtime = await getRuntime();
   //   return await runtime.runPromise(
   //     submitAnswer(questionnaireItemLink, answer),
   //   );

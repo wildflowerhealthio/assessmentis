@@ -9,9 +9,7 @@ import { Schema, Either } from 'effect'
 
 describe('EncounterRecording extension', () => {
   test('Schema encodes correctly', () => {
-    const encode = Schema.encodeUnknownEither(
-      EncounterRecordingFileExtension as any
-    )
+    const encode = Schema.encodeUnknownEither(EncounterRecordingFileExtension)
     const result = encode({
       url: encounterRecordingFileUrl,
       valueUrl: 'api.daily.co/v1/recordings/123',
@@ -80,7 +78,7 @@ describe('EncounterRecording extension', () => {
     const result = withRecordingFileUrls(encounter, ['new-recording'])
 
     const recordings = result.extension.filter(
-      (ext: any) => ext.url === encounterRecordingFileUrl
+      (ext) => ext.url === encounterRecordingFileUrl
     )
     expect(recordings).toHaveLength(1)
     expect(recordings[0].valueUrl).toBe('new-recording')

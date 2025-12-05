@@ -27,13 +27,13 @@
     "@effect/opentelemetry": "^0.59.1",
     "eslint": "^9.39.1",
     "firebase-admin": "^13.6.0",
-    "firebase-functions": "^7.0.0",
+    "firebase-functions": "^7.0.1",
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {
-    "@assessmentis/prettier-config": "*",
-    "@types/gapi.client.healthcare-v1": "^0.0.4",
+    "@assessmentis/prettier-config": "file:../../packages/prettier-config",
     "@types/gapi": "^0.0.47",
+    "@types/gapi.client.healthcare-v1": "^0.0.4",
     "@types/node-fetch": "^3.0.2",
     "firebase-functions-test": "^3.4.1",
     "typescript": "^5.9.2"

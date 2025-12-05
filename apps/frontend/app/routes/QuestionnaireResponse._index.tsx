@@ -1,4 +1,4 @@
-import { Effect, ManagedRuntime } from 'effect'
+import { Effect } from 'effect'
 import {
   Questionnaire,
   QuestionnaireResponse,
@@ -6,13 +6,14 @@ import {
   QuestionnaireResponseRepository,
   QuestionnaireResponseId,
 } from '@assessmentis/domain/questionnaires'
-import { clientAppLayer, useRuntimeContext } from 'app/clientRuntime'
+import { useRuntimeContext } from 'app/clientRuntime'
 import type { Route } from './+types/QuestionnaireResponse._index'
 import QuestionnaireResponseList from './QuestionnaireResponse/QuestionnaireResponseList'
 import { useCollection } from '@assessmentis/react-util'
+import { getRuntime } from '../firebase'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {
-  const runtime = ManagedRuntime.make(clientAppLayer)
+  const runtime = await getRuntime()
   const questionnaireResponses = await runtime.runPromise(
     Effect.gen(function* () {
       const questionnaireRepository = yield* QuestionnaireRepository

@@ -9,7 +9,7 @@ import { Schema, Either } from 'effect'
 
 describe('EncounterTranscript extension', () => {
   test('Schema encodes correctly', () => {
-    const encode = Schema.encodeUnknownEither(EncounterTranscriptExtension as any)
+    const encode = Schema.encodeUnknownEither(EncounterTranscriptExtension)
     const result = encode({
       url: encounterTranscriptUrl,
       valueUrl: 'https://example.com/transcript/123',
@@ -56,9 +56,7 @@ describe('EncounterTranscript extension', () => {
 
   test('withTranscripts replaces existing transcripts', () => {
     const encounter = {
-      extension: [
-        { url: encounterTranscriptUrl, valueUrl: 'old-transcript' },
-      ],
+      extension: [{ url: encounterTranscriptUrl, valueUrl: 'old-transcript' }],
     }
 
     const result = withTranscripts(encounter, ['new-transcript'])
@@ -69,9 +67,7 @@ describe('EncounterTranscript extension', () => {
 
   test('withTranscripts removes transcripts when empty array', () => {
     const encounter = {
-      extension: [
-        { url: encounterTranscriptUrl, valueUrl: 'transcript-1' },
-      ],
+      extension: [{ url: encounterTranscriptUrl, valueUrl: 'transcript-1' }],
     }
 
     const result = withTranscripts(encounter, [])

@@ -31,7 +31,11 @@ export function createExtension<
       .map((ext) => ext[valueKey])
   }
 
-  const withValues = <T extends { extension?: ReadonlyArray<any> }>(
+  const withValues = <
+    T extends {
+      extension?: ReadonlyArray<{ url: string } | { url: TUrl; [valueKey]: A }>
+    },
+  >(
     resource: T,
     values: A[]
   ): T => {
