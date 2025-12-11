@@ -1,4 +1,7 @@
-import { Encounter, type EncounterId } from '@assessmentis/domain/encounters'
+import {
+  Encounter,
+  type EncounterId,
+} from '@assessmentis/clinical-domain/encounters'
 import { Link } from 'react-router'
 
 const EncountersList = ({

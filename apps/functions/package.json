@@ -23,7 +23,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.js",
   "dependencies": {
-    "@assessmentis/daily-co-infrastructure": "file:../../packages/daily-co-infrastructure",
+    "@assessmentis/daily-co-infrastructure": "file:../../infrastructure/daily-co-infrastructure",
     "@effect/opentelemetry": "^0.59.1",
     "eslint": "^9.39.1",
     "firebase-admin": "^13.6.0",
@@ -31,7 +31,7 @@
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {
-    "@assessmentis/prettier-config": "file:../../packages/prettier-config",
+    "@assessmentis/prettier-config": "file:../../global/prettier-config",
     "@types/gapi": "^0.0.47",
     "@types/gapi.client.healthcare-v1": "^0.0.4",
     "@types/node-fetch": "^3.0.2",

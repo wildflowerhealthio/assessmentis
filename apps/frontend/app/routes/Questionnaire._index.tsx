@@ -4,12 +4,12 @@ import {
   Questionnaire,
   QuestionnaireId,
   QuestionnaireRepository,
-} from '@assessmentis/domain/questionnaires'
+} from '@assessmentis/clinical-domain/questionnaires'
 import questionnaireTemplates from 'app/modules/admin/questionnaire-templates/questionnaireTemplates'
 import { useRuntimeContext } from 'app/clientRuntime'
 import type { Route } from './+types/Questionnaire._index'
 import { useCollection } from '@assessmentis/react-util'
-import { getRuntime } from '../firebase'
+import { getRuntime } from '../clientRuntime'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {
   const runtime = await getRuntime()

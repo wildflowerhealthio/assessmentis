@@ -11,19 +11,12 @@
         "firebase-debug.*.log",
         "*.local"
       ],
-      "predeploy": [
-        "npm run lint",
-        "npm run build"
-      ]
+      "predeploy": ["npm run lint", "npm run build"]
     }
   ],
   "hosting": {
     "public": "apps/frontend/dist/client/",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       {
         "source": "/api/daily-co-proxies/**",
@@ -50,7 +43,7 @@
   "firestore": {
     "database": "assessmentis-sandbox",
     "location": "northamerica-northeast2",
-    "rules": "packages/firestore/firestore.rules",
-    "indexes": "packages/firestore/firestore.indexes.json"
+    "rules": "infrastructure/firebase-web-infrastructure/firestore.rules",
+    "indexes": "infrastructure/firebase-web-infrastructure/firestore.indexes.json"
   }
 }

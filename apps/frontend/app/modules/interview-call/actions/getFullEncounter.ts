@@ -4,20 +4,19 @@ import {
   EncounterId,
   EncounterNotFound,
   EncounterRepository,
-} from '@assessmentis/domain/encounters'
+} from '@assessmentis/clinical-domain/encounters'
 import {
   NeedsAuthenticationError,
   UnhandledError,
   NotFoundError,
   ExternalAssertionError,
-} from '@assessmentis/domain/errors'
+} from '@assessmentis/clinical-domain/errors'
 import {
   Questionnaire,
   QuestionnaireRepository,
   QuestionnaireResponse,
   QuestionnaireResponseRepository,
-} from '@assessmentis/domain/questionnaires'
-import { VideoCallRepository } from '@assessmentis/domain/video-calls'
+} from '@assessmentis/clinical-domain/questionnaires'
 
 export const FullEncounter = Schema.Struct({
   ...Encounter.fields,
@@ -47,7 +46,6 @@ export const getFullEncounter = (
   | NotFoundError
   | ExternalAssertionError,
   | EncounterRepository
-  | VideoCallRepository
   | QuestionnaireResponseRepository
   | QuestionnaireRepository
 > => {

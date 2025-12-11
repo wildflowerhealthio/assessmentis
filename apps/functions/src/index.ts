@@ -1,7 +1,7 @@
 import { onRequest } from 'firebase-functions/v2/https'
 import { logger, setGlobalOptions } from 'firebase-functions/v2'
 import type { Request } from 'firebase-functions/v2/https'
-import type { Response } from 'express'
+import { type Response } from 'express'
 import fetch from 'node-fetch'
 import { initializeApp } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'
@@ -11,13 +11,25 @@ import { error, info, warn } from 'firebase-functions/logger'
 setGlobalOptions({ region: 'northamerica-northeast2' })
 
 export const dailyco = onRequest(
-  { timeoutSeconds: 60, ingressSettings: 'ALLOW_ALL' },
+  {
+    timeoutSeconds: 60,
+    ingressSettings: 'ALLOW_ALL',
+    cors: [
+      /^http:\/\/localhost$/,
+      /assessment\.is$/,
+      /assessment-is-sandbox\.web\.app$/,
+      /assessment-is-sandbox--.*\.web\.app$/,
+    ],
+  },
   async (request: Request, response: Response) => {
+    info('Received request for Daily.co proxy:', request.method, request.path)
+
     const urlMatch = request.path.match(
       /^\/api\/daily-co-proxies\/([^/]+)\/(.*)$/
     )
+
     if (urlMatch == null || urlMatch.length < 3) {
-      error('No authorization header ,or invalid format')
+      error('Invalid URL')
       response.status(400).json({
         message: 'Bad Request, URL did not start with /api/daily-co-proxies',
       })
@@ -30,7 +42,10 @@ export const dailyco = onRequest(
     const authHeader = request.headers['authorization']
     const authHeaderPrefix = 'Bearer '
     if (authHeader == undefined || !authHeader.startsWith(authHeaderPrefix)) {
-      warn('No authorization header ,or invalid format')
+      warn(
+        'No authorization header, or invalid format. All Headers:',
+        JSON.stringify(request.headers)
+      )
       response.status(401).json({ message: 'Unauthorized' })
       return
     }
@@ -94,8 +109,8 @@ export const dailyco = onRequest(
       response.status(401).json({ message: 'Unauthorized' })
       return
     }
-
-    const url = `https://api.daily.co/v1/${destination}`
+    const queryParams = new URLSearchParams(request.params).toString()
+    const url = `https://api.daily.co/v1/${destination}/${queryParams}`
     const dailyApiKey = process.env.DAILY_API_KEY
 
     if (!dailyApiKey) {
@@ -108,6 +123,7 @@ export const dailyco = onRequest(
     const {
       host: _host,
       'set-cookie': _setCookie,
+      authorization: _authorization,
       ...forwardedHeaders
     } = request.headers
 
@@ -116,6 +132,8 @@ export const dailyco = onRequest(
       'Content-Type': 'application/json',
       Authorization: 'Bearer ' + dailyApiKey,
     } as const
+
+    info('Forwarding request to Daily.co API:', request.method, url)
 
     const externalRes = await fetch(url, {
       headers,

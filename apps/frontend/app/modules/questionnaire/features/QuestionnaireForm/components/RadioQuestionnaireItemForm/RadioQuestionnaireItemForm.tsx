@@ -6,8 +6,8 @@ import {
   QuestionnaireItemUIControlCode,
   QuestionnaireResponseItem,
   withAnsweredAt,
-} from '@assessmentis/domain/questionnaires'
-import { type ValueElement } from '@assessmentis/domain/general-purpose'
+} from '@assessmentis/clinical-domain/questionnaires'
+import { type ValueElement } from '@assessmentis/clinical-domain/general-purpose'
 import { cn } from '@assessmentis/react-util'
 import { useRuntimeContext } from 'app/clientRuntime'
 

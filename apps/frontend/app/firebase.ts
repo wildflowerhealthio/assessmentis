@@ -1,5 +1,3 @@
-import { ManagedRuntime, Schema, Either } from 'effect'
-import { makeRuntime } from './clientRuntime'
 import {
   FirebaseError,
   initializeApp,
@@ -14,10 +12,9 @@ import {
   signInWithRedirect,
   signOut,
 } from 'firebase/auth'
-import { doc, getFirestore, onSnapshot } from 'firebase/firestore'
+import { getFirestore } from 'firebase/firestore'
 
 import { useEffect } from 'react'
-import { ClientRuntimeContext } from './clientRuntime'
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -142,118 +139,3 @@ export const useAuthedGapi = () =>
       }
     })
   }, [])
-
-export const PublicOrgConfigSchema = Schema.Struct({
-  google_fhir: Schema.Struct({
-    project_id: Schema.String,
-    region: Schema.String,
-    dataset: Schema.String,
-    store_id: Schema.String,
-  }),
-})
-
-export const decodeGoogleFhirConfig = Schema.decodeUnknownEither(
-  PublicOrgConfigSchema
-)
-
-export const subscribeToRuntime = (
-  onReady: (
-    runtime: ManagedRuntime.ManagedRuntime<ClientRuntimeContext, never> | null
-  ) => void
-) => {
-  let unsubscribePublicOrgConfig: null | (() => void) = null
-  let unsubscribeUser: null | (() => void) = null
-  const unsubscribeIdToken = auth.onIdTokenChanged((user) => {
-    console.log('Auth state changed, user:', user)
-    if (user) {
-      unsubscribeUser?.()
-      console.log('Subscribing to user document for uid:', user.uid)
-      unsubscribeUser = onSnapshot(
-        doc(db, 'users', user.uid),
-        (userSnapshot) => {
-          const userData = userSnapshot.data()
-          console.log('Loaded user document for uid:', user.uid, userData)
-          if (!userData) {
-            console.error('No user document found for uid:', user.uid)
-            return
-          }
-          if ('org_roles' in userData) {
-            const orgsAndRoles = Object.entries(userData.org_roles)
-            if (orgsAndRoles.length != 1) {
-              console.warn(
-                'User does not have one, single orgs, this is unsupported:',
-                orgsAndRoles
-              )
-            }
-            const [orgId, _roles] = orgsAndRoles[0]
-            unsubscribePublicOrgConfig?.()
-            unsubscribePublicOrgConfig = onSnapshot(
-              doc(db, 'public_org_configs', orgId),
-              (orgConfigSnapshot) => {
-                console.log('Loaded org config for orgId:', orgId)
-                const orgConfigData = orgConfigSnapshot.data()
-                if (!orgConfigData) {
-                  console.error(
-                    'No org config document found for orgId:',
-                    orgId
-                  )
-                  return
-                }
-                const orgConfigEither = decodeGoogleFhirConfig(orgConfigData)
-                orgConfigEither.pipe(
-                  Either.match({
-                    onLeft: (err) => {
-                      console.error(
-                        'Invalid org config schema for orgId:',
-                        orgId,
-                        err
-                      )
-                    },
-                    onRight: (config) => {
-                      console.log(
-                        'Decoded org config for orgId:',
-                        orgId,
-                        config
-                      )
-                      onReady(
-                        makeRuntime({
-                          PUBLIC_GOOGLE_FHIR_REGION: config.google_fhir.region,
-                          PUBLIC_GOOGLE_FHIR_PROJECT_ID:
-                            config.google_fhir.project_id,
-                          PUBLIC_GOOGLE_FHIR_DATASET:
-                            config.google_fhir.dataset,
-                          PUBLIC_GOOGLE_FHIR_STORE_ID:
-                            config.google_fhir.store_id,
-                        })
-                      )
-                    },
-                  })
-                )
-              }
-            )
-          }
-        },
-        (error) => {
-          console.error('Error fetching user document:', error)
-        }
-      )
-    }
-  })
-  return () => {
-    unsubscribeIdToken()
-    unsubscribeUser?.()
-    unsubscribePublicOrgConfig?.()
-  }
-}
-
-export const getRuntime = () =>
-  new Promise<ManagedRuntime.ManagedRuntime<ClientRuntimeContext, never>>(
-    (resolve) => {
-      const unsubscribe = subscribeToRuntime((runtime) => {
-        if (runtime !== null) {
-          resolve(runtime)
-          unsubscribe()
-        }
-      })
-    }
-  )

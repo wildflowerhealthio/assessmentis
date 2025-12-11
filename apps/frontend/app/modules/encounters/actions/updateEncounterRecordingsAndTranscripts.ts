@@ -2,19 +2,22 @@ import { Effect } from 'effect'
 import {
   ExternalVideoCallClient,
   ExternalVideoCallServiceError,
-} from '@assessmentis/domain/video-calls'
+} from '@assessmentis/clinical-domain/video-calls'
 import {
   EncounterRepository,
   withRecordingFileUrls,
-} from '@assessmentis/domain/encounters'
+} from '@assessmentis/clinical-domain/encounters'
 import {
   NeedsAuthenticationError,
   UnhandledError,
   ExternalAssertionError,
   NotFoundError,
-} from '@assessmentis/domain/errors'
-import { WithId } from '@assessmentis/domain/general-purpose'
-import { Encounter, EncounterId } from '@assessmentis/domain/encounters'
+} from '@assessmentis/clinical-domain/errors'
+import { WithId } from '@assessmentis/clinical-domain/general-purpose'
+import {
+  Encounter,
+  EncounterId,
+} from '@assessmentis/clinical-domain/encounters'
 
 /**
  * Fetches recordings for an encounter's video call room and updates the encounter

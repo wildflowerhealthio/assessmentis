@@ -6,7 +6,7 @@ import {
   QuestionnaireItemUIControlCode,
   QuestionnaireResponseItem,
   QuestionnaireItem,
-} from '@assessmentis/domain/questionnaires'
+} from '@assessmentis/clinical-domain/questionnaires'
 import DisplayQuestionnaireItemForm from 'app/modules/questionnaire/features/QuestionnaireForm/components/DisplayQuestionnaireItemForm/DisplayQuestionnaireItemForm'
 import RadioQuestionnaireItemForm, {
   RadioQuestionnaireItemFormGroup,
