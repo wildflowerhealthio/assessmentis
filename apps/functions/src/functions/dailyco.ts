@@ -30,7 +30,7 @@ export const dailyco = onRequest(
       app,
       rolesWithDailyCoAccess
     )
-    if (!shouldHaveDailyCoAccess(uid, orgId, response)) return
+    if (!(await shouldHaveDailyCoAccess(uid, orgId, response))) return
 
     const queryParams = new URLSearchParams(
       Object.entries(request.query).map(([key, value]) => [key, String(value)])

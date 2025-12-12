@@ -550,14 +550,16 @@ export const LiveClient = (config: BaseConfig) => {
                   }
                   const locationParts = entry.response.location.split('/')
                   if (locationParts.length < 15) {
-                    new ExternalAssertionError({
-                      cause: undefined,
-                      expected:
-                        'Expected entry in transaction response bundle to have a location URL shaped like `https://healthcare.googleapis.com/v1/projects/PROJECT_ID/locations/REGION/datasets/REGION/fhirStores/FHIR_STORE_ID/fhir/Patient/PATIENT_ID/_history/HISTORY_ID`',
-                    })
+                    return Effect.fail(
+                      new ExternalAssertionError({
+                        cause: undefined,
+                        expected:
+                          'Expected entry in transaction response bundle to have a location URL shaped like `https://healthcare.googleapis.com/v1/projects/PROJECT_ID/locations/REGION/datasets/REGION/fhirStores/FHIR_STORE_ID/fhir/Patient/PATIENT_ID/_history/HISTORY_ID`',
+                      })
+                    )
                   }
 
-                  return Effect.succeed(locationParts[locationParts[14]])
+                  return Effect.succeed(locationParts[14])
                 })
               )
 

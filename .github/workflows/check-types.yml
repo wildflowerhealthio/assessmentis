@@ -23,7 +23,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --workspaces
 
       - name: Run type checking on all packages
         run: npx turbo run check-types

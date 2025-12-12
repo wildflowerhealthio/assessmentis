@@ -23,7 +23,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --workspaces
 
       - name: Get changed files
         id: changed-files
@@ -42,4 +42,3 @@ jobs:
           eslint_flags: '${{ steps.changed-files.outputs.all_changed_files }}'
           fail_level: error
           filter_mode: diff_context
-
