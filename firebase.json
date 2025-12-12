@@ -26,8 +26,25 @@
         }
       },
       {
-        "source": "/__/auth/**",
-        "destination": "https://assessment-is-sandbox.firebaseapp.com"
+        "source": "/api/googleLogin",
+        "function": {
+          "functionId": "googleLogin",
+          "region": "northamerica-northeast2"
+        }
+      },
+      {
+        "source": "/api/authed",
+        "function": {
+          "functionId": "oAuthCallback",
+          "region": "northamerica-northeast2"
+        }
+      },
+      {
+        "source": "/api/refreshGoogleOAuthToken",
+        "function": {
+          "functionId": "refreshGoogleOAuthToken",
+          "region": "northamerica-northeast2"
+        }
       },
       {
         "source": "**",
@@ -41,7 +58,7 @@
     }
   },
   "firestore": {
-    "database": "assessmentis-sandbox",
+    "database": "assessmentis",
     "location": "northamerica-northeast2",
     "rules": "infrastructure/firebase-web-infrastructure/firestore.rules",
     "indexes": "infrastructure/firebase-web-infrastructure/firestore.indexes.json"

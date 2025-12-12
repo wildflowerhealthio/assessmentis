@@ -7,21 +7,19 @@ service cloud.firestore {
       return request.auth != null;
     }
     
-    function getUserData() {
-    	let userDoc = get(/databases/$(database)/documents/users/$(request.auth.uid));
-    	return userDoc == null ? null : userDoc.data;
-    }
-    
     function isGlobalAdmin() {
-      return isSignedIn() && false && request.auth.uid == "ivUtykX8c1biNMLw84godmIsmno2";
+      let globalAdmins = [
+        "NYHqWb9dcRg1v2XxijROridZOur2"
+      ];
+      return isSignedIn() && (request.auth.uid in globalAdmins);
     }
     
     function getOrgRoles(orgId) {
-    	let userData = getUserData();
+    	let userData = get(/databases/$(database)/documents/orgs/$(orgId)/users/$(request.auth.uid));
       return (
       	isSignedIn()
       	&& userData != null 
-        	? userData.org_roles[orgId]
+        	? userData.roles
           : []
       )
     }
@@ -39,6 +37,11 @@ service cloud.firestore {
 
 
     match /users/{uid} {
+      allow get, list: if isSignedIn() && request.auth.uid == uid || isGlobalAdmin();
+      allow create, update, delete: if isSignedIn() && isGlobalAdmin();
+    }
+    
+    match /users/{uid}/tokens/googleOAuthAccessToken {
       allow get, list: if isSignedIn() && request.auth.uid == uid || isGlobalAdmin();
       allow create, update, delete: if isSignedIn() && isGlobalAdmin();
     }

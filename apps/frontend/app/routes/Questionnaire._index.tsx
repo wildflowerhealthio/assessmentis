@@ -26,6 +26,7 @@ export async function clientLoader(_: Route.ClientLoaderArgs) {
 
 const useQuestionnaires = (initial: Questionnaire[]) => {
   const clientRuntime = useRuntimeContext()
+  console.log('clientRuntime', clientRuntime)
 
   return useCollection<QuestionnaireId, Questionnaire>(
     {

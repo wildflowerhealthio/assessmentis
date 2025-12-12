@@ -72,7 +72,7 @@ export const createEncounter = (
           location: {
             identifier: {
               system: 'http://assessment.is/fhir/video-call-room-name',
-              value: externalVideoCallRoom.roomName,
+              value: externalVideoCallRoom.url,
             },
           },
         },

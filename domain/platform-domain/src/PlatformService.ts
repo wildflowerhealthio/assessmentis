@@ -1,11 +1,7 @@
 import { Context, Layer } from 'effect'
 import { Resource } from '@effect/opentelemetry'
-
-import { FrontendConfig } from './loadedValues/FrontendConfig'
 import { CurrentUserIdError, UserId } from './loadedValues/UserId'
 import { type CurrentUserError, type User } from './loadedValues/User'
-import { OrgRole, OrgRoleError } from './loadedValues/OrgRole'
-import { FrontendConfigError } from './loadedValues/FrontendConfig'
 import { LoadedResultStream } from '@assessmentis/util/LoadedResult'
 import { CurrentTimeZone } from 'effect/DateTime'
 import {
@@ -15,6 +11,7 @@ import {
   EncounterRepository,
 } from '@assessmentis/clinical-domain'
 import { HttpClient } from '@effect/platform'
+import { Org, OrgError } from './loadedValues/Org'
 
 export type ClientRuntimeContext =
   | Resource.Resource
@@ -32,13 +29,11 @@ export class PlatformService extends Context.Tag('PlatformService')<
 
     currentUser: LoadedResultStream<User, CurrentUserError>
 
-    orgRole: LoadedResultStream<OrgRole, OrgRoleError>
-
-    frontendConfig: LoadedResultStream<FrontendConfig, FrontendConfigError>
+    org: LoadedResultStream<Org, OrgError>
 
     runtime: LoadedResultStream<
       Layer.Layer<ClientRuntimeContext, never>,
-      FrontendConfigError
+      OrgError
     >
   }
 >() {}

@@ -8,7 +8,6 @@ import {
   useNavigate,
 } from 'react-router'
 import './globals.css'
-import { RuntimeContextOrErr } from './components/RuntimeContextOrErr'
 import { FiberFailureCauseId } from 'effect/Runtime'
 import { Cause } from 'effect'
 import {
@@ -19,7 +18,7 @@ import {
 } from '@assessmentis/clinical-domain/errors'
 import * as firebase from 'app/firebase'
 import NavHeader from './components/NavHeader'
-import { useAuthedGapi } from 'app/firebase'
+import { RuntimeContextOrErr } from './components/RuntimeContextOrErr'
 
 // HydrateFallback is rendered while the client loader is running
 export function HydrateFallback() {
@@ -69,7 +68,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  useAuthedGapi()
   return <Outlet />
 }
 

@@ -1,4 +1,4 @@
-import { db } from '../firebase'
+import { auth, db } from '../firebase'
 import { DailyCoProxyConfig } from '@assessmentis/config-domain/dailyCo'
 import {
   EncounterConfig,
@@ -13,10 +13,10 @@ import { Form } from 'react-router'
 const frontendConfig = (): FrontendConfig => {
   const fhirStore = {
     _tag: 'google_fhir_store' as const,
-    dataset: 'Sandbox',
+    dataset: 'sandbox-dataset',
     projectId: 'assessment-is-sandbox',
     region: 'northamerica-northeast2',
-    storeId: 'fhir-store',
+    storeId: 'sandbox-store',
   }
 
   return FrontendConfig.make({
@@ -30,9 +30,14 @@ const frontendConfig = (): FrontendConfig => {
 }
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
+  console.log('Loading auth state')
+  await auth.authStateReady()
+  console.log('Loading org data for', params.orgSlug)
   const data = await getDoc(doc(db, 'orgs', params.orgSlug))
+  console.log('loaded org data for', data)
   return { data: data.exists() ? data.data() : null }
 }
+
 export async function clientAction({ params }: Route.ClientActionArgs) {
   await setDoc(doc(db, 'orgs', params.orgSlug), {
     slug: params.orgSlug,
@@ -48,7 +53,12 @@ export default function OrgPage({
     <div>
       <h1>Organization: {params.orgSlug}</h1>
       {data ? (
-        <pre>{JSON.stringify(data, null, 2)}</pre>
+        <>
+          (<pre>{JSON.stringify(data, null, 2)}</pre>)
+          <Form method="post">
+            <button type="submit">Update Org</button>
+          </Form>
+        </>
       ) : (
         <>
           <p>This organization has been created in Firestore.</p>

@@ -1,15 +1,10 @@
 import { useEffect, useState } from 'react'
 import { RuntimeContext } from '../clientRuntime'
-import { FirebaseWebPlatformServiceLayer } from '@assessmentis/firebase-web-infrastructure'
 import { Effect, ManagedRuntime, Stream } from 'effect'
-import {
-  ClientRuntimeContext,
-  FrontendConfigError,
-  PlatformService,
-} from '@assessmentis/platform-domain'
+import { ClientRuntimeContext, OrgError } from '@assessmentis/platform-domain'
 import { LoadedResult } from '@assessmentis/util/LoadedResult'
 import { pipe } from 'effect'
-import { app, auth, db } from '../firebase'
+import { platform } from '../firebase'
 
 export const RuntimeContextOrErr = ({
   children,
@@ -17,7 +12,7 @@ export const RuntimeContextOrErr = ({
   const [runtime, setRuntime] = useState<
     LoadedResult<
       ManagedRuntime.ManagedRuntime<ClientRuntimeContext, never>,
-      FrontendConfigError
+      OrgError
     >
   >(LoadedResult.loading())
 
@@ -26,26 +21,21 @@ export const RuntimeContextOrErr = ({
 
     const abort = new AbortController()
 
-    ManagedRuntime.make(FirebaseWebPlatformServiceLayer(app, auth, db))
-      .runPromise(
-        PlatformService.pipe(
-          Effect.flatMap((platform) =>
-            platform.runtime.pipe(
-              Stream.runForEach((r) =>
-                Effect.sync(() => {
-                  setRuntime(
-                    pipe(
-                      r,
-                      LoadedResult.map((layer) => ManagedRuntime.make(layer))
-                    )
-                  )
-                })
+    Effect.runPromise(
+      platform.runtime.changes.pipe(
+        Stream.runForEach((r) =>
+          Effect.sync(() => {
+            setRuntime(
+              pipe(
+                r,
+                LoadedResult.map((layer) => ManagedRuntime.make(layer))
               )
             )
-          )
-        ),
-        { signal: abort.signal }
-      )
+          })
+        )
+      ),
+      { signal: abort.signal }
+    )
       .then(() => {
         console.log('Finished getting runtime Effect')
       })

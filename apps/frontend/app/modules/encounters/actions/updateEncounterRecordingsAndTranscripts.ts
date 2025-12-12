@@ -1,6 +1,7 @@
 import { Effect } from 'effect'
 import {
   ExternalVideoCallClient,
+  ExternalVideoCallRecordingFileUrl,
   ExternalVideoCallServiceError,
 } from '@assessmentis/clinical-domain/video-calls'
 import {
@@ -59,10 +60,10 @@ export const updateEncounterRecordingsAndTranscripts = (
     if (recordings.length == 0) return encounter
 
     // Update the encounter with recording URIs
-    const updatedEncounter = withRecordingFileUrls(
-      encounter,
-      recordings.map((rec) => rec.uri)
-    )
+    const recordingFileUrls: ExternalVideoCallRecordingFileUrl[] = recordings
+      .map((rec) => rec.recordingFileUrl)
+      .filter((url): url is ExternalVideoCallRecordingFileUrl => !!url)
+    const updatedEncounter = withRecordingFileUrls(encounter, recordingFileUrls)
 
     // Save the updated encounter
     const savedEncounter =

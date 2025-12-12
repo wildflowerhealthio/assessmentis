@@ -5,7 +5,6 @@ import {
   QuestionnaireResponseConfig,
 } from '@assessmentis/config-domain/googleFhir'
 import { DailyCoProxyConfig } from '@assessmentis/config-domain/dailyCo'
-import { OrgRoleError } from './OrgRole'
 
 /**
  * The public parts of an org's configuration that are provided to clients.
@@ -34,24 +33,3 @@ export const FrontendConfig = Schema.Struct({
   ),
 })
 export type FrontendConfig = typeof FrontendConfig.Type
-
-export const FrontendConfigLoading = Schema.TaggedStruct(
-  'FrontendConfigLoading',
-  {}
-)
-export type FrontendConfigLoading = typeof FrontendConfigLoading.Type
-
-export const FrontendConfigDataError = Schema.TaggedStruct(
-  'FrontendConfigDataError',
-  {
-    cause: Schema.optional(Schema.Unknown),
-  }
-)
-export type FrontendConfigDataError = typeof FrontendConfigDataError.Type
-
-export const FrontendConfigError = Schema.Union(
-  OrgRoleError,
-  FrontendConfigLoading,
-  FrontendConfigDataError
-)
-export type FrontendConfigError = typeof FrontendConfigError.Type

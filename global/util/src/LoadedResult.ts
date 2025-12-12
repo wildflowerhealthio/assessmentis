@@ -1,4 +1,4 @@
-import { Stream } from 'effect'
+import { Effect, pipe, Stream, Subscribable, SubscriptionRef } from 'effect'
 
 export type LoadedResult<A, E> =
   | { _tag: 'loading' }
@@ -24,41 +24,71 @@ export const LoadedResult = {
     },
 }
 
-export type LoadedResultStream<A, E> = Stream.Stream<LoadedResult<A, E>>
+export type LoadedResultStream<A, E> = Subscribable.Subscribable<
+  LoadedResult<A, E>
+>
 
 export const LoadedResultStream = {
-  succeed: <A, E>(value: A): LoadedResultStream<A, E> =>
-    Stream.succeed(LoadedResult.loaded<A, E>(value)),
+  succeed: <A, E>(value: A): Effect.Effect<LoadedResultStream<A, E>> =>
+    SubscriptionRef.make<LoadedResult<A, E>>(LoadedResult.loaded<A, E>(value)),
 
   map:
     <A, B, E>(f: (a: A) => B) =>
-    (source: LoadedResultStream<A, E>): LoadedResultStream<B, E> =>
-      source.pipe(Stream.map(LoadedResult.map(f))),
-  andThen:
-    <A, E, A1>(f: (a: A) => Stream.Stream<A1, E>) =>
-    (source: LoadedResultStream<A, E>): LoadedResultStream<A1, E> =>
-      source.pipe(
-        Stream.flatMap(
-          (lr) => {
-            switch (lr._tag) {
-              case 'loading':
-                return Stream.succeed(LoadedResult.loading<A1, E>())
-              case 'error':
-                return Stream.succeed(LoadedResult.error<A1, E>(lr.error))
-              case 'loaded':
-                return Stream.concat(
-                  Stream.succeed(LoadedResult.loading<A1, E>()),
-                  f(lr.value).pipe(
-                    Stream.map((a1) => LoadedResult.loaded<A1, E>(a1)),
-                    Stream.catchAll((error) =>
-                      Stream.succeed(LoadedResult.error<A1, E>(error))
-                    )
-                  )
-                )
-            }
-          },
-          { switch: true }
+    (
+      source: LoadedResultStream<A, E>
+    ): Effect.Effect<LoadedResultStream<B, E>, never, never> =>
+      Effect.gen(function* () {
+        const initial = yield* source.get
+        const mappedRef = yield* SubscriptionRef.make<LoadedResult<B, E>>(
+          pipe(initial, LoadedResult.map(f))
         )
-        //  Stream.buffer({ capacity: 1, strategy: 'sliding' })
-      ),
+
+        yield* Effect.forkDaemon(
+          source.changes.pipe(
+            Stream.runForEach((a) =>
+              SubscriptionRef.set(mappedRef, pipe(a, LoadedResult.map(f)))
+            )
+          )
+        )
+        return mappedRef
+      }),
+  andThen:
+    <A, E, A1>(f: (a: A) => Stream.Stream<LoadedResult<A1, E>>) =>
+    (
+      source: LoadedResultStream<A, E>
+    ): Effect.Effect<LoadedResultStream<A1, E>> =>
+      Effect.gen(function* () {
+        const mappedRef = yield* SubscriptionRef.make<LoadedResult<A1, E>>(
+          LoadedResult.loading<A1, E>()
+        )
+        yield* Effect.forkDaemon(
+          source.changes.pipe(
+            Stream.flatMap(
+              (lr): Stream.Stream<LoadedResult<A1, E>> => {
+                switch (lr._tag) {
+                  case 'loading':
+                    return Stream.succeed(LoadedResult.loading<A1, E>())
+                  case 'error':
+                    return Stream.succeed(LoadedResult.error<A1, E>(lr.error))
+                  case 'loaded':
+                    return f(lr.value).pipe(
+                      Stream.map((a1) => {
+                        if (a1._tag === 'loaded') {
+                          return LoadedResult.loaded<A1, E>(a1.value)
+                        } else if (a1._tag === 'error') {
+                          return LoadedResult.error<A1, E>(a1.error)
+                        } else {
+                          return LoadedResult.loading<A1, E>()
+                        }
+                      })
+                    )
+                }
+              },
+              { switch: true }
+            ),
+            Stream.runForEach((a1) => SubscriptionRef.set(mappedRef, a1))
+          )
+        )
+        return mappedRef
+      }),
 }

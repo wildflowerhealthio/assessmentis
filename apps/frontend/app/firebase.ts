@@ -1,3 +1,5 @@
+import { createPlatformService } from '@assessmentis/firebase-web-infrastructure'
+import { Effect } from 'effect'
 import {
   FirebaseError,
   initializeApp,
@@ -5,7 +7,6 @@ import {
 } from 'firebase/app'
 import {
   GoogleAuthProvider,
-  UserCredential,
   getAuth,
   getRedirectResult,
   signInWithPopup,
@@ -18,19 +19,19 @@ import { useEffect } from 'react'
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: 'AIzaSyApjnjc-e4lKXujxcj6Iq4HOgTHHY-2srU',
-  authDomain: 'assessment-is-sandbox.firebaseapp.com',
-  projectId: 'assessment-is-sandbox',
-  storageBucket: 'assessment-is-sandbox.firebasestorage.app',
-  messagingSenderId: '581867958758',
-  appId: '1:581867958758:web:1e8ab38f0397d9707c6627',
+  apiKey: 'AIzaSyC1OAnpn5Aj6EQqnDNCKI4b26CgHm_-aTc',
+  authDomain: 'assessmentis.firebaseapp.com',
+  projectId: 'assessmentis',
+  storageBucket: 'assessmentis.firebasestorage.app',
+  messagingSenderId: '363489601410',
+  appId: '1:363489601410:web:5a39eb160d09c84fae519b',
 } satisfies FirebaseOptions
 // Initialize Firebase
 
 export const app = initializeApp(firebaseConfig)
 app.automaticDataCollectionEnabled = false
 
-export const db = getFirestore(app, 'assessmentis-sandbox')
+export const db = getFirestore(app, 'assessmentis')
 
 // Initialize Firebase Authentication and get a reference to the service
 export const auth = getAuth(app)
@@ -40,20 +41,11 @@ export const googleAuthProvider = new GoogleAuthProvider()
 const scopes = [
   'https://www.googleapis.com/auth/userinfo.email',
   'https://www.googleapis.com/auth/userinfo.profile',
-  'https://www.googleapis.com/auth/cloud-platform',
+  // 'https://www.googleapis.com/auth/cloud-platform',
   'https://www.googleapis.com/auth/cloud-healthcare',
 ] as const
 for (const scope of scopes) {
   googleAuthProvider.addScope(scope)
-}
-
-export const initGapi = async (token: string) => {
-  const apiKey = import.meta.env.PUBLIC_GOOGLE_API_KEY
-  gapi.client.setApiKey(apiKey)
-  gapi.client.setToken({ access_token: token })
-  await gapi.client.load(
-    'https://healthcare.googleapis.com/$discovery/rest?version=v1'
-  )
 }
 
 export const redirectToSignIn = () =>
@@ -66,38 +58,13 @@ export const handleRedirectResult = () =>
       console.log({ result })
       return result
     })
-    .then(signInResultHandler)
+    // .then(signInResultHandler)
     .catch(handleAuthError)
 
 export const signIn = () =>
   signInWithPopup(auth, googleAuthProvider)
-    .then(signInResultHandler)
+    // .then(signInResultHandler)
     .catch(handleAuthError)
-
-const signInResultHandler = async (result: UserCredential) => {
-  // This gives you a Google Access Token. You can use it to access the Google API.
-  const credential = GoogleAuthProvider.credentialFromResult(result)
-  const token = credential?.accessToken
-
-  if (token) {
-    await new Promise<void>((resolve) => {
-      if (gapi.client) {
-        gapi.client.setToken({
-          access_token: token,
-        })
-        resolve()
-      } else {
-        gapi.load('client', async () => {
-          await initGapi(token)
-          resolve()
-        })
-      }
-    })
-    await setOauth2FromDb(token)
-  }
-
-  console.log({ result, credential })
-}
 
 const handleAuthError = (error: FirebaseError) => {
   // Handle Errors here.
@@ -129,13 +96,36 @@ export const useAuthedGapi = () =>
         const token = await getOauth2FromDb()
         if (!token) {
           signOut(auth)
+
+          if (auth.currentUser) {
+            auth.currentUser
+              .getIdToken()
+              .then(function (idToken) {
+                fetch('/api/googleLogin', {
+                  method: 'POST',
+                  headers: {
+                    'Content-type': 'application/json',
+                    authorization: 'Bearer ' + idToken,
+                  },
+                  body: JSON.stringify({}),
+                })
+                  .then((response) => response.json())
+                  .then((result) => {
+                    window.open(result.url, '_self')
+                  })
+                  .catch(function (error) {
+                    console.log('failed to fetch ' + error)
+                  })
+              })
+              .catch(function (error) {
+                console.log('couldnt get user token ' + error)
+              })
+          }
+
           return
-        }
-        if (gapi.client) {
-          gapi.client.setToken({ access_token: token })
-        } else {
-          gapi.load('client', () => initGapi(token))
         }
       }
     })
   }, [])
+
+export const platform = Effect.runSync(createPlatformService(app, auth, db))

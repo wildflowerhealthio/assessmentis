@@ -24,7 +24,13 @@ import {
   Screenshare,
 } from './Icons'
 
-export default function Tray({ leaveCall }: { leaveCall: () => void }) {
+export default function Tray({
+  leaveCall,
+  recording,
+}: {
+  leaveCall: () => void
+  recording: { state: 'stopped' | 'loading' | 'started'; action: () => void }
+}) {
   const callObject = useDaily()
   const { isSharingScreen, startScreenShare, stopScreenShare } =
     useScreenShare()
@@ -107,6 +113,21 @@ export default function Tray({ leaveCall }: { leaveCall: () => void }) {
           <button onClick={toggleChat} type="button">
             {newChatMessage ? <ChatHighlighted /> : <ChatIcon />}
             {showChat ? 'Hide chat' : 'Show chat'}
+          </button>
+        </div>
+        <div className="record">
+          <button
+            onClick={recording.action}
+            type="button"
+            disabled={recording.state == 'loading'}
+          >
+            {
+              {
+                stopped: 'Start Recording',
+                loading: 'Loading...',
+                started: 'Stop Recording',
+              }[recording.state]
+            }
           </button>
         </div>
         <div className="leave">
