@@ -1,20 +1,24 @@
 import { Effect } from 'effect'
 import {
   ExternalVideoCallClient,
+  ExternalVideoCallRecordingFileUrl,
   ExternalVideoCallServiceError,
-} from '@assessmentis/domain/video-calls'
+} from '@assessmentis/clinical-domain/video-calls'
 import {
   EncounterRepository,
   withRecordingFileUrls,
-} from '@assessmentis/domain/encounters'
+} from '@assessmentis/clinical-domain/encounters'
 import {
   NeedsAuthenticationError,
   UnhandledError,
   ExternalAssertionError,
   NotFoundError,
-} from '@assessmentis/domain/errors'
-import { WithId } from '@assessmentis/domain/general-purpose'
-import { Encounter, EncounterId } from '@assessmentis/domain/encounters'
+} from '@assessmentis/clinical-domain/errors'
+import { WithId } from '@assessmentis/clinical-domain/general-purpose'
+import {
+  Encounter,
+  EncounterId,
+} from '@assessmentis/clinical-domain/encounters'
 
 /**
  * Fetches recordings for an encounter's video call room and updates the encounter
@@ -56,10 +60,10 @@ export const updateEncounterRecordingsAndTranscripts = (
     if (recordings.length == 0) return encounter
 
     // Update the encounter with recording URIs
-    const updatedEncounter = withRecordingFileUrls(
-      encounter,
-      recordings.map((rec) => rec.uri)
-    )
+    const recordingFileUrls: ExternalVideoCallRecordingFileUrl[] = recordings
+      .map((rec) => rec.recordingFileUrl)
+      .filter((url): url is ExternalVideoCallRecordingFileUrl => !!url)
+    const updatedEncounter = withRecordingFileUrls(encounter, recordingFileUrls)
 
     // Save the updated encounter
     const savedEncounter =

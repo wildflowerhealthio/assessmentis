@@ -10,10 +10,14 @@
   z-index: 2;
   display: flex;
   align-items: center;
-  max-width: 1450px;
   justify-content: space-between;
   top: var(--space-2);
-  transition: top .7s ease-in-out;
+  width: 100%;
+  max-width: 1400px;
+  padding-block: var(--space-8);
+  padding-inline: var(--space-10);
+  margin-inline: auto;
+  transition: top 0.7s ease-in-out;
   color: var(--app-accent);
   padding-inline: var(--space-10);
   padding-block: var(--space-6);
@@ -21,7 +25,6 @@
   background-color: #fff;
   border-radius: var(--radius-3);
   /* margin-inline: auto; */
-  margin-inline: var(--space-8) var(--space-8);
   margin-block: var(--space-2);
 
   /*  */
@@ -29,7 +32,7 @@
 }
 
 .NavHeader__backLink {
-  content: "←";
+  content: '←';
 }
 
 .NavHeader__nav {
@@ -103,7 +106,8 @@
   gap: var(--space-3);
   padding: var(--space-8);
   border-radius: var(--radius-2);
-  box-shadow: var(--space-2) var(--space-1) var(--space-3) var(--space-1) rgba(0, 0, 0, 0.1);
+  box-shadow: var(--space-2) var(--space-1) var(--space-3) var(--space-1)
+    rgba(0, 0, 0, 0.1);
 }
 
 .NavHeader__link {
@@ -112,7 +116,7 @@
   justify-content: space-between;
 
   border: none;
-  
+
   &:hover {
     text-decoration: underline;
   }

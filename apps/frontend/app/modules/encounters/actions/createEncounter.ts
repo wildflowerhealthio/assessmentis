@@ -2,19 +2,21 @@ import { Effect, Schema } from 'effect'
 import {
   ExternalVideoCallClient,
   ExternalVideoCallServiceError,
-  VideoCallRepository,
-} from '@assessmentis/domain/video-calls'
+} from '@assessmentis/clinical-domain/video-calls'
 import {
   QuestionnaireResponse,
   QuestionnaireResponseRepository,
-} from '@assessmentis/domain/questionnaires'
-import { EncounterRepository, Encounter } from '@assessmentis/domain/encounters'
+} from '@assessmentis/clinical-domain/questionnaires'
+import {
+  EncounterRepository,
+  Encounter,
+} from '@assessmentis/clinical-domain/encounters'
 import {
   NeedsAuthenticationError,
   UnhandledError,
   ExternalAssertionError,
-} from '@assessmentis/domain/errors'
-import { Code } from '@assessmentis/domain/general-purpose'
+} from '@assessmentis/clinical-domain/errors'
+import { Code } from '@assessmentis/clinical-domain/general-purpose'
 
 export const CreateEncounterArg = Schema.extend(
   Schema.partial(Encounter),
@@ -45,7 +47,6 @@ export const createEncounter = (
   | ExternalVideoCallServiceError
   | ExternalAssertionError,
   | EncounterRepository
-  | VideoCallRepository
   | QuestionnaireResponseRepository
   | ExternalVideoCallClient
 > => {
@@ -71,7 +72,7 @@ export const createEncounter = (
           location: {
             identifier: {
               system: 'http://assessment.is/fhir/video-call-room-name',
-              value: externalVideoCallRoom.roomName,
+              value: externalVideoCallRoom.url,
             },
           },
         },

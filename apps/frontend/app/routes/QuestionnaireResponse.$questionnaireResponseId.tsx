@@ -2,13 +2,13 @@ import { Schema, Option, Effect } from 'effect'
 import {
   Questionnaire,
   QuestionnaireResponse,
-} from '@assessmentis/domain/questionnaires'
-import { UnhandledError } from '@assessmentis/domain/errors'
-import { QuestionnaireId } from '@assessmentis/domain/questionnaires'
-import { QuestionnaireResponseId } from '@assessmentis/domain/questionnaires'
-import { QuestionnaireRepository } from '@assessmentis/domain/questionnaires'
-import { QuestionnaireResponseRepository } from '@assessmentis/domain/questionnaires'
-import { getRuntime } from 'app/firebase'
+} from '@assessmentis/clinical-domain/questionnaires'
+import { UnhandledError } from '@assessmentis/clinical-domain/errors'
+import { QuestionnaireId } from '@assessmentis/clinical-domain/questionnaires'
+import { QuestionnaireResponseId } from '@assessmentis/clinical-domain/questionnaires'
+import { QuestionnaireRepository } from '@assessmentis/clinical-domain/questionnaires'
+import { QuestionnaireResponseRepository } from '@assessmentis/clinical-domain/questionnaires'
+import { getRuntime } from 'app/clientRuntime'
 import type { Route } from './+types/QuestionnaireResponse.$questionnaireResponseId'
 import QuestionnaireForm from 'app/modules/questionnaire/features/QuestionnaireForm/QuestionnaireForm'
 import { updateEncounterRecordingsAndTranscripts } from '../modules/encounters/actions/updateEncounterRecordingsAndTranscripts'
@@ -16,7 +16,7 @@ import {
   Encounter,
   EncounterId,
   getRecordingFileUrls,
-} from '@assessmentis/domain/encounters'
+} from '@assessmentis/clinical-domain/encounters'
 
 const tryDecodeQuestionnaireResponseId = Schema.decodeOption(
   QuestionnaireResponseId

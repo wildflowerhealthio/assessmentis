@@ -13,11 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: |
-          npm install
+      - run:  |
+          NODE_ENV=development npm ci --include=dev
+          npm ci --workspaces
           npm run build # With Turbo
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASSESSMENT_IS_SANDBOX }}
-          projectId: assessment-is-sandbox
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASSESSMENTIS }}
+          projectId: assessmentis

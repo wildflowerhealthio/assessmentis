@@ -32,6 +32,9 @@ enum VideoCallState {
 
 const useDailyCall = (roomUrl: string | undefined) => {
   const navigate = useNavigate()
+  const [recordingState, setRecordingState] = useState<
+    'stopped' | 'loading' | 'started'
+  >('loading')
   const [appState, setAppState] = useState(VideoCallState.STATE_IDLE)
   const [callObject, setCallObject] = useState<DailyCall | null>(null)
   const [apiError] = useState(false)
@@ -148,9 +151,41 @@ const useDailyCall = (roomUrl: string | undefined) => {
    */
   const joinCall = useCallback(
     (userName: string) => {
+      setRecordingState('stopped')
       callObject?.join({ url: roomUrl ?? undefined, userName })
     },
     [callObject, roomUrl]
+  )
+
+  const recording = useMemo(
+    () =>
+      ({
+        loading: {
+          state: 'loading' as const,
+          action: () => {},
+        },
+        started: {
+          state: 'started' as const,
+          action: () => {
+            callObject?.stopRecording()
+            setRecordingState('stopped')
+          },
+        },
+        stopped: {
+          state: 'stopped' as const,
+          action: () => {
+            callObject?.startRecording({
+              width: 1280,
+              height: 720,
+              minIdleTimeOut: 60,
+              type: 'cloud',
+              layout: { preset: 'active-participant' },
+            })
+            setRecordingState('started')
+          },
+        },
+      })[recordingState],
+    [callObject, recordingState]
   )
 
   return {
@@ -159,6 +194,7 @@ const useDailyCall = (roomUrl: string | undefined) => {
     uiState,
     callObject,
     createCall,
+    recording,
   }
 }
 
@@ -169,8 +205,14 @@ interface IProps {
 function InterviewCall({ encounterJson }: IProps) {
   const encounter = Schema.decodeSync(FullEncounter)(encounterJson)
   const callCreatedRef = useRef(false)
-  const { joinCall, startLeavingCall, uiState, callObject, createCall } =
-    useDailyCall(encounter.location?.[0].location?.identifier?.value)
+  const {
+    joinCall,
+    startLeavingCall,
+    uiState,
+    callObject,
+    createCall,
+    recording,
+  } = useDailyCall(encounter.location?.[0].location?.identifier?.value)
 
   useEffect(() => {
     if (callCreatedRef.current) return
@@ -204,7 +246,7 @@ function InterviewCall({ encounterJson }: IProps) {
               // No API errors, we passed the hair check, and we've joined the call? Then show the call.
               <>
                 <Call />
-                <Tray leaveCall={startLeavingCall} />
+                <Tray leaveCall={startLeavingCall} recording={recording} />
                 <DailyAudio />
               </>
             )}

@@ -8,12 +8,8 @@ export default defineConfig({
   optimizeDeps: {},
   server: {
     proxy: {
-      '/api/daily-co-proxies': {
-        target: 'https://assessment-is-sandbox.firebaseapp.com',
-        changeOrigin: true,
-      },
-      '/__/auth': {
-        target: 'https://assessment-is-sandbox.firebaseapp.com',
+      '/api/': {
+        target: 'https://assessmentis.firebaseapp.com',
         changeOrigin: true,
       },
     },

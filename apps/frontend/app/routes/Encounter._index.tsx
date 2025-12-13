@@ -3,9 +3,9 @@ import {
   Encounter,
   EncounterId,
   EncounterRepository,
-} from '@assessmentis/domain/encounters'
-import { QuestionnaireId } from '@assessmentis/domain/questionnaires'
-import { QuestionnaireRepository } from '@assessmentis/domain/questionnaires'
+} from '@assessmentis/clinical-domain/encounters'
+import { QuestionnaireId } from '@assessmentis/clinical-domain/questionnaires'
+import { QuestionnaireRepository } from '@assessmentis/clinical-domain/questionnaires'
 import { createEncounter } from 'app/modules/encounters/actions/createEncounter'
 import QuestionnaireSelect from 'app/modules/questionnaire/features/QuestionnaireSelect/QuestionnaireSelect'
 import { Form, useNavigate } from 'react-router'
@@ -14,7 +14,7 @@ import EncountersList from './Encounter/EncountersList'
 import type { Route } from './+types/Encounter._index'
 import { useCollection } from '@assessmentis/react-util'
 import { useEffect } from 'react'
-import { getRuntime } from '../firebase'
+import { getRuntime } from '../clientRuntime'
 
 const decodeQuestionnaireId = Schema.decodeUnknownSync(QuestionnaireId)
 

@@ -1,0 +1,29 @@
+{
+  "name": "@assessmentis/config-domain",
+  "version": "0.0.1",
+  "description": "A domain to model config objects for infrastructure projects",
+  "author": "Ruth Marks",
+  "license": "UNLICENSED",
+  "prettier": "@assessmentis/prettier-config",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./googleFhir": "./src/googleFhir/index.ts",
+    "./dailyCo": "./src/dailyCo/index.ts"
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "lint": "eslint \"./src/**/*\"",
+    "lint:fix": "eslint --fix \"./src/**/*\"",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "effect": "^3.19.8",
+    "temporal-polyfill": "^0.3.0"
+  },
+  "devDependencies": {
+    "@assessmentis/prettier-config": "*",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
+  }
+}

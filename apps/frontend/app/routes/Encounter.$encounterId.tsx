@@ -1,9 +1,9 @@
 import { Match, Schema } from 'effect'
-import { EncounterId } from '@assessmentis/domain/encounters'
+import { EncounterId } from '@assessmentis/clinical-domain/encounters'
 import { getFullEncounter } from 'app/modules/interview-call/actions/getFullEncounter'
 import InterviewCall from 'app/modules/interview-call/features/InterviewCall/InterviewCall'
 import type { Route } from './+types/Encounter.$encounterId'
-import { getRuntime } from '../firebase'
+import { getRuntime } from '../clientRuntime'
 
 const tryDecodeEncounterId = Schema.decodeOption(EncounterId)
 

@@ -3,8 +3,8 @@
 import {
   Questionnaire,
   QuestionnaireResponseId,
-} from '@assessmentis/domain/questionnaires'
-import { QuestionnaireResponse } from '@assessmentis/domain/questionnaires'
+} from '@assessmentis/clinical-domain/questionnaires'
+import { QuestionnaireResponse } from '@assessmentis/clinical-domain/questionnaires'
 import { Link } from 'react-router'
 
 const QuestionnaireResponseList = ({

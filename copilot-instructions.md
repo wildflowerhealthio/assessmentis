@@ -46,6 +46,7 @@ assessmentis/
 ### Technology Stack
 
 #### Frontend (apps/frontend)
+
 - **React 19** with React Router v7 (SPA mode, SSR disabled)
 - **Vite** for build tooling
 - **Effect-TS** for functional effects and dependency injection
@@ -55,17 +56,20 @@ assessmentis/
 - **OpenTelemetry** for observability and tracing
 
 #### Backend (apps/functions)
+
 - **Firebase Cloud Functions**
 - **Effect-TS** for business logic
 - **Daily.co API** integration
 
 #### Domain Layer (packages/domain)
+
 - **Effect-TS** for all business logic
 - **Effect Schema** for runtime type validation
 - **Vitest** for testing
 - **FHIR R4** type definitions
 
 #### Infrastructure
+
 - **Firebase** (Hosting, Functions, Auth)
 - **Google Cloud Healthcare API** (FHIR Store)
 - **Daily.co** for video conferencing
@@ -133,17 +137,20 @@ packages/domain/src/
 ### Naming Conventions
 
 #### Files and Folders
+
 - **PascalCase** for component files: `NavHeader.tsx`, `QuestionnaireForm.tsx`
 - **camelCase** for utility files: `clientRuntime.tsx`, `createEncounter.ts`
 - **Folders**: Use singular nouns when possible, plural for collections: `components/`, `actions/`, `models/`
 
 #### Code
+
 - **PascalCase** for types, interfaces, classes, React components, and Effect Tags
 - **camelCase** for variables, functions, and properties
 - **UPPER_SNAKE_CASE** for constants (rare, prefer const declarations)
 - Prefix interfaces with `I` only when necessary for clarity (generally avoid)
 
 #### React Components
+
 - Use **default exports** for route components and main feature components
 - Use **named exports** for shared/reusable components
 - Component files should match component name: `NavHeader.tsx` exports `NavHeader`
@@ -153,12 +160,14 @@ packages/domain/src/
 ### TypeScript
 
 #### Type Safety
+
 - Enable strict mode (already configured in `tsconfig.json`)
 - Use `Schema` from Effect for runtime validation
 - Prefer `type` over `interface` for object types
 - Use branded types for IDs: `Schema.String.pipe(Schema.brand("EncounterId"))`
 
 #### Type Annotations
+
 - Explicitly type function parameters
 - Let TypeScript infer return types when obvious
 - Use Effect-TS type utilities: `Effect.Effect<Success, Error, Requirements>`
@@ -166,11 +175,12 @@ packages/domain/src/
 ### Effect-TS Patterns
 
 #### Repository Pattern
+
 All data access goes through repositories defined as Effect Tags:
 
 ```typescript
 export class QuestionnaireRepository extends Context.Tag(
-  "QuestionnaireRepository"
+  'QuestionnaireRepository'
 )<
   QuestionnaireRepository,
   {
@@ -185,6 +195,7 @@ export class QuestionnaireRepository extends Context.Tag(
 ```
 
 #### Effect Generators
+
 Use generator syntax for Effect composition:
 
 ```typescript
@@ -197,11 +208,13 @@ export const createEncounter = (args: CreateEncounterArg) =>
 ```
 
 #### Error Handling
+
 - Define domain-specific errors extending `Data.TaggedError`
 - Use Effect's type system to track possible errors
 - Handle errors at boundaries (UI components, API handlers)
 
 #### Layers and Dependency Injection
+
 - Use `Layer` to compose dependencies
 - Define layers in infrastructure packages
 - Compose app layer in `clientRuntime.tsx` or `serverRuntime.ts`
@@ -209,16 +222,19 @@ export const createEncounter = (args: CreateEncounterArg) =>
 ### React Patterns
 
 #### Hooks
+
 - Use Effect runtime via `useRuntimeContext()`
 - Run effects in `useEffect` with proper cleanup
 - Use custom hooks from `@assessmentis/react-util/hooks` when available
 
 #### State Management
+
 - Local state with `useState` for UI state
 - Effect-TS runtime for data fetching and business logic
 - No global state library (Redux, Zustand, etc.)
 
 #### Component Structure
+
 ```typescript
 'use client' // Used in this codebase for React Router v7 compatibility
 
@@ -256,35 +272,41 @@ export default ComponentName
 ```
 
 #### Props Types
+
 - Use `type IProps` for component props
 - Use `Route.LoaderParams`, `Route.ActionParams` etc. from React Router types
 
 ### Styling
 
 #### CSS Strategy
+
 1. **Tundra CSS** for utility classes (similar to Tailwind)
 2. **CSS Modules** for component-specific styles
 3. **Global styles** in `globals.css` (minimal)
 
 #### Tundra CSS Classes
+
 - Use semantic class names from Tundra: `element-button`, `button-3`, `filled`, `accent-blue`
 - Typography: `heading-1`, `heading-2`, `text-alt-heading-3`
 - Spacing: `var(--space-1)` through `var(--space-10)`
 - Colors: `var(--neutral-1)` through `var(--neutral-9)`
 
 #### CSS Modules
+
 - Import as: `import classes from './Component.module.css'`
 - Use `cn()` utility from `@assessmentis/react-util` to combine classes
 - Keep modules small and component-specific
 - Classes should be named with Block-Element-Modifier style names
 
 #### Inline Styles
+
 - Use for dynamic styles or one-off values. Prefer adding a CSS Module
 - Use CSS custom properties: `var(--space-4)`, `var(--radius-1)`
 
 ### Linting and Formatting
 
 #### Prettier Configuration
+
 ```javascript
 {
   trailingComma: "es5",
@@ -295,28 +317,32 @@ export default ComponentName
 ```
 
 #### ESLint Rules
+
 - **Unused vars**: Prefix with `_` to ignore: `const _unused = value`
 - **React Hooks**: Follow hooks rules strictly
 - **React Refresh**: Allow specific exports in route files (loader, action, etc.)
 - **Prettier integration**: Format on lint via `eslint-plugin-prettier`
 
 ### Import Organization
+
 Organize imports in this order:
+
 1. React and React-related libraries
 2. Third-party libraries
 3. Effect-TS imports
-4. Domain imports (`@assessmentis/domain/*`)
+4. Domain imports (`@assessmentis/clinical-domain/*`)
 5. Infrastructure imports (`@assessmentis/*-infrastructure`)
 6. Local utility imports (`@assessmentis/react-util`)
 7. Relative imports (components, styles)
 8. Type imports (if using `import type`)
 
 Example:
+
 ```typescript
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { Effect, Schema } from 'effect'
-import { Questionnaire } from '@assessmentis/domain/questionnaires'
+import { Questionnaire } from '@assessmentis/clinical-domain/questionnaires'
 import { FhirClient } from '@assessmentis/google-fhir-infrastructure'
 import { cn } from '@assessmentis/react-util'
 import { useRuntimeContext } from 'app/clientRuntime'
@@ -327,6 +353,7 @@ import classes from './Component.module.css'
 ## Best Practices and Patterns
 
 ### FHIR Modeling
+
 - Follow FHIR R4 specifications strictly
 - Use Effect Schema to model FHIR resources
 - Support optional fields as per FHIR spec
@@ -335,24 +362,26 @@ import classes from './Component.module.css'
   - Store in `extension` or `modifierExtension` arrays
 
 ### Schema Definition with Effect
+
 - Define schemas using `Schema.Struct`
 - Use branded types for IDs and specific string types
 - Support recursive structures with `Schema.suspend`
 - Provide both encoding and decoding types
 
 Example:
+
 ```typescript
 export const QuestionnaireId = Schema.String.pipe(
-  Schema.brand("QuestionnaireId")
+  Schema.brand('QuestionnaireId')
 )
 
 export const Questionnaire = Schema.Struct({
-  resourceType: Schema.Literal("Questionnaire"),
+  resourceType: Schema.Literal('Questionnaire'),
   id: Schema.optional(QuestionnaireId),
   status: Schema.Union(
-    Schema.Literal("draft"),
-    Schema.Literal("active"),
-    Schema.Literal("retired")
+    Schema.Literal('draft'),
+    Schema.Literal('active'),
+    Schema.Literal('retired')
   ),
   // ... other fields
 })
@@ -361,6 +390,7 @@ export type Questionnaire = typeof Questionnaire.Type
 ```
 
 ### Repository Implementation
+
 1. Define repository interface as Effect Tag in domain package
 2. Implement concrete repository in infrastructure package
 3. Use Effect.gen for async operations
@@ -370,65 +400,73 @@ export type Questionnaire = typeof Questionnaire.Type
 ### Component Patterns
 
 #### Feature Components
+
 - Large, feature-specific components go in `modules/{feature}/features/`
 - Include CSS module alongside component
 - Can include sub-components folder
 - Example: `modules/questionnaire/features/QuestionnaireForm/`
 
 #### Shared Components
-- Small, reusable components go in `components/` or `packages/react-util/src/components/`
+
+- Small, reusable components go in `components/` or `packages/react-util/components/`
 - Should be framework-agnostic when possible
 - Provide clear prop types
 
 #### Form Handling
+
 - Use controlled components with `useState`
 - Use Effect to persist data
 
 ### Error Handling
 
 #### Domain Errors
+
 Define custom errors in `packages/domain/src/errors.ts`:
+
 ```typescript
 export class NeedsAuthenticationError extends Data.TaggedError(
-  "NeedsAuthenticationError"
+  'NeedsAuthenticationError'
 )<{ cause?: unknown }> {}
 ```
 
 #### Error Boundaries
+
 - Use React Router's `ErrorBoundary` export in route files
 - Check error type with Effect's `Cause` utilities
 - Provide user-friendly messages and actions
 - Log detailed errors in development
 
 #### Effect Error Flow
+
 ```typescript
 Effect.gen(function* () {
   const repo = yield* SomeRepository
-  const result = yield* repo.getData()  // Can fail with typed errors
+  const result = yield* repo.getData() // Can fail with typed errors
   return result
 }).pipe(
-  Effect.catchTag("NotFoundError", (error) => 
+  Effect.catchTag('NotFoundError', (error) =>
     Effect.fail(/* handle specific error */)
   ),
-  Effect.catchAll((error) => 
-    Effect.fail(new UnhandledError({ cause: error }))
-  )
+  Effect.catchAll((error) => Effect.fail(new UnhandledError({ cause: error })))
 )
 ```
 
 ### Testing
 
 #### Unit Tests
+
 - Use Vitest for testing
 - Test Schema encoding/decoding (see `QuestionnaireResponseItemAnswer.test.ts`)
 - Use Effect's test utilities
 - Test files alongside source: `*.test.ts`
 
 #### Storybook
+
 - Use Storybook for component development
 - Story files alongside components: `*.stories.tsx`
 
 ### Performance Considerations
+
 - Use CSS Modules and Tundra CSS (no runtime CSS-in-JS)
 - Lazy load routes with React Router's code splitting (automatic)
 - Memoize expensive computations with `useMemo`
@@ -436,6 +474,7 @@ Effect.gen(function* () {
 - Keep Effect chains efficient (avoid unnecessary work)
 
 ### Security
+
 - Never commit secrets or API keys
 - Use Firebase Auth for authentication
 - Validate all user input with Effect Schema
@@ -447,17 +486,20 @@ Effect.gen(function* () {
 ### Local Development
 
 #### Initial Setup
+
 ```bash
 npm install                 # Install dependencies
 ```
 
 #### Running the Application
+
 ```bash
 npm run dev                 # Start all dev servers (Turbo)
 cd apps/frontend && npm run dev  # Start only frontend
 ```
 
 #### Linting and Type Checking
+
 ```bash
 npm run lint               # Lint all packages
 npm run format             # Format all files with Prettier
@@ -465,12 +507,15 @@ cd apps/frontend && npm run check-types  # Type check
 ```
 
 #### Building
+
 ```bash
 npm run build              # Build all packages (Turbo)
 ```
 
 ### Turborepo Tasks
+
 The project uses Turborepo for task orchestration:
+
 - **build**: Build package/app (depends on dependencies being built first)
 - **lint**: Run ESLint
 - **lint:fix**: Run ESLint with auto-fix
@@ -478,6 +523,7 @@ The project uses Turborepo for task orchestration:
 - **dev**: Start development server (for apps)
 
 ### Git Workflow
+
 - Use conventional commits (optional but recommended)
 - Keep changes focused and small
 - Write descriptive commit messages
@@ -486,6 +532,7 @@ The project uses Turborepo for task orchestration:
 ### Deployment
 
 #### Frontend
+
 ```bash
 cd apps/frontend
 npm run build              # Build for production
@@ -493,7 +540,9 @@ npm run deploy             # Deploy to Firebase Hosting
 ```
 
 #### Functions
+
 Configured in `firebase.json` with predeploy hooks:
+
 ```bash
 firebase deploy --only functions
 ```
@@ -503,6 +552,7 @@ firebase deploy --only functions
 ### Adding a New Route
 
 1. Create route file in `apps/frontend/app/routes/`:
+
 ```typescript
 // routes/NewResource._index.tsx
 import type { Route } from './+types/NewResource._index'
@@ -517,6 +567,7 @@ export default function NewResourceIndex() {
 ```
 
 2. File-based routing (React Router v7):
+
 - `_index.tsx` → index route
 - `$param.tsx` → dynamic route
 - `Prefix.$param.tsx` → nested dynamic route
@@ -528,28 +579,28 @@ export default function NewResourceIndex() {
 const Component = () => {
   const runtime = useRuntimeContext()
   const [data, setData] = useState<Data | null>(null)
-  
+
   useEffect(() => {
     const effect = Effect.gen(function* () {
       const repo = yield* SomeRepository
       return yield* repo.getData()
     })
-    
+
     const promise = runtime.runPromise(effect)
-    
+
     promise
       .then(setData)
       .catch((error) => {
         console.error(error)
         // Handle error
       })
-    
+
     // Cleanup if needed
     return () => {
       // Cancel effect if possible
     }
   }, [runtime])
-  
+
   return <div>{data ? <Display data={data} /> : 'Loading...'}</div>
 }
 ```
@@ -557,6 +608,7 @@ const Component = () => {
 ## Additional Notes
 
 ### React Router v7
+
 - **SPA mode** is enabled (SSR disabled in config)
 - File-based routing with `routes/` directory
 - Use route-specific types from `+types/` virtual modules
@@ -564,19 +616,23 @@ const Component = () => {
 - `'use client'` directive is used in this codebase (appearing in ~8 component files) for React Router v7 compatibility, even though SSR is disabled
 
 ### OpenTelemetry
+
 - Configured in `clientRuntime.tsx` with WebSDK
 - Use Effect's tracing capabilities
 - Spans are automatically created for Effects
 - Annotate with `Effect.withSpan` when needed
 
 ### Firebase
+
 - Authentication via Google Sign-In
 - Hosting for frontend SPA
 - Cloud Functions for backend API
 - Configuration in `firebase.json`
 
 ### CSS Custom Properties
+
 The project uses Tundra CSS variables:
+
 - Spacing: `--space-1` to `--space-10`
 - Radii: `--radius-1` to `--radius-4`
 - Colors: `--neutral-1` to `--neutral-9`, `--blue-1` to `--blue-9`, etc.
@@ -584,7 +640,7 @@ The project uses Tundra CSS variables:
 
 ### When to Use Each Package
 
-- **@assessmentis/domain**: Types, schemas, repository interfaces, business logic
+- **@assessmentis/clinical-domain**: Types, schemas, repository interfaces, business logic
 - **@assessmentis/react-util**: Shared React hooks, components, utilities
 - **@assessmentis/google-fhir-infrastructure**: FHIR/Google Healthcare implementations
 - **@assessmentis/daily-co-infrastructure**: Daily.co video call implementation

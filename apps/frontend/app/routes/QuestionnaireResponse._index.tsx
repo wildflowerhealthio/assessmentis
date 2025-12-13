@@ -5,12 +5,11 @@ import {
   QuestionnaireRepository,
   QuestionnaireResponseRepository,
   QuestionnaireResponseId,
-} from '@assessmentis/domain/questionnaires'
-import { useRuntimeContext } from 'app/clientRuntime'
+} from '@assessmentis/clinical-domain/questionnaires'
+import { getRuntime, useRuntimeContext } from 'app/clientRuntime'
 import type { Route } from './+types/QuestionnaireResponse._index'
 import QuestionnaireResponseList from './QuestionnaireResponse/QuestionnaireResponseList'
 import { useCollection } from '@assessmentis/react-util'
-import { getRuntime } from '../firebase'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {
   const runtime = await getRuntime()

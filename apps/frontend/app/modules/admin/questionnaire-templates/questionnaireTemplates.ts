@@ -1,4 +1,4 @@
-import { Questionnaire } from '@assessmentis/domain/questionnaires'
+import { Questionnaire } from '@assessmentis/clinical-domain/questionnaires'
 import divaQuestionnaireItems from 'app/modules/admin/questionnaire-templates/data/diva2'
 
 const divaTitle = 'Diagnostic Interview for ADHD in adults (DIVA) 2.0'

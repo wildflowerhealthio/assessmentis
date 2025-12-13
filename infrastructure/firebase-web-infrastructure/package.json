@@ -1,0 +1,31 @@
+{
+  "name": "@assessmentis/firebase-web-infrastructure",
+  "version": "0.0.1",
+  "description": "Firebase based infrastructure implementations",
+  "author": "Ruth Marks",
+  "license": "UNLICENSED",
+  "type": "module",
+  "prettier": "@assessmentis/prettier-config",
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "lint": "eslint \"./src/**/*\"",
+    "lint:fix": "eslint --fix \"./src/**/*\"",
+    "test": "vitest"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "devDependencies": {
+    "@assessmentis/eslint-config": "*",
+    "@assessmentis/prettier-config": "*",
+    "@assessmentis/typescript-config": "*"
+  },
+  "dependencies": {
+    "@assessmentis/platform-domain": "*",
+    "@assessmentis/clinical-domain": "*",
+    "@assessmentis/config-domain": "*",
+    "@effect/opentelemetry": "^0.59.2",
+    "effect": "^3.19.9",
+    "firebase": "^12.6.0"
+  }
+}

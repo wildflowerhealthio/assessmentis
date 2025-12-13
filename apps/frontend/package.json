@@ -21,7 +21,7 @@
   "dependencies": {
     "@assessmentis/prettier-config": "*",
     "@assessmentis/daily-co-infrastructure": "*",
-    "@assessmentis/domain": "*",
+    "@assessmentis/clinical-domain": "*",
     "@assessmentis/google-fhir-infrastructure": "*",
     "@assessmentis/react-util": "*",
     "@effect/opentelemetry": "^0.59.1",
