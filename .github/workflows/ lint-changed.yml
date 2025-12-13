@@ -23,14 +23,14 @@ jobs:
             working-directory: domain/config-domain
           - name: platform-domain
             working-directory: domain/platform-domain
-          - name: daily-co-infrastructure
-            working-directory: domain/daily-co-infrastructure
           - name: react-util
             working-directory: global/react-util
           - name: util
             working-directory: global/util
-          - name: firebase-infrastructure
-            working-directory: infrastructure/firebase-infrastructure
+          - name: daily-co-infrastructure
+            working-directory: domain/daily-co-infrastructure
+          - name: firebase-web-infrastructure
+            working-directory: infrastructure/firebase-web-infrastructure
           - name: google-fhir-infrastructure
             working-directory: infrastructure/google-fhir-infrastructure
           - name: google-meet-infrastructure
