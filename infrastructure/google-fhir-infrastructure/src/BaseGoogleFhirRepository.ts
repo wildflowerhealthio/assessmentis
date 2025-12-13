@@ -16,54 +16,6 @@ import {
 import { BaseConfig } from '@assessmentis/config-domain/googleFhir'
 import { UnknownException } from 'effect/Cause'
 
-const getStatus = (resp: unknown) =>
-  Schema.decodeUnknownOption(Schema.Struct({ status: Schema.Number }))(
-    resp
-  ).pipe(Option.getOrElse(() => ({ status: undefined }))).status
-
-const gapiPoll = (): Effect.Effect<void, NeedsAuthenticationError, never> =>
-  Effect.gen(function* () {
-    let polls = 0
-    while (
-      window?.gapi?.client?.healthcare?.projects?.locations?.datasets
-        ?.fhirStores?.fhir == undefined ||
-      window?.gapi?.client?.getToken().access_token == undefined
-    ) {
-      console.log('Polling for gapi healthcare client availability...')
-      yield* Effect.sleep('100 millis')
-      polls += 1
-      if (polls > 20) {
-        return yield* Effect.fail(
-          new NeedsAuthenticationError({
-            cause:
-              'Polled for two seconds and never found gapi?.client?.healthcare?.projects?.locations?.datasets?.fhirStores?.fhir',
-          })
-        )
-      }
-    }
-    return
-  })
-
-const handleFhirApiErrors: <OtherErrors>() => (
-  _: Effect.Effect<
-    gapi.client.Response<gapi.client.healthcare.HttpBody>,
-    OtherErrors | UnknownException,
-    never
-  >
-) => Effect.Effect<
-  gapi.client.Response<gapi.client.healthcare.HttpBody>,
-  OtherErrors | NeedsAuthenticationError | UnhandledError,
-  never
-> = <OtherErrors>() =>
-  Effect.mapError((err: OtherErrors | UnknownException) => {
-    if (!(err instanceof UnknownException)) return err
-
-    if (getStatus(err.cause) == 401) {
-      return new NeedsAuthenticationError({ cause: err })
-    }
-    return new UnhandledError({ cause: err })
-  })
-
 /**
  * Base class for Google FHIR repository implementations.
  * Extends BaseClinicalDataRepository and provides concrete implementations
@@ -106,48 +58,110 @@ export abstract class BaseGoogleFhirRepository<
     this.parent = `projects/${config.projectId}/locations/${config.region}/datasets/${config.dataset}/fhirStores/${config.storeId}`
   }
 
-  get(id: TId) {
+  /**
+   * Extract status code from an error response
+   */
+  protected getStatus(resp: unknown): number | undefined {
+    return Schema.decodeUnknownOption(Schema.Struct({ status: Schema.Number }))(
+      resp
+    ).pipe(Option.getOrElse(() => ({ status: undefined }))).status
+  }
+
+  /**
+   * Poll for gapi healthcare client availability
+   */
+  protected gapiPoll(): Effect.Effect<void, NeedsAuthenticationError, never> {
+    return Effect.gen(function* () {
+      let polls = 0
+      while (
+        window?.gapi?.client?.healthcare?.projects?.locations?.datasets
+          ?.fhirStores?.fhir == undefined ||
+        window?.gapi?.client?.getToken().access_token == undefined
+      ) {
+        console.log('Polling for gapi healthcare client availability...')
+        yield* Effect.sleep('100 millis')
+        polls += 1
+        if (polls > 20) {
+          return yield* Effect.fail(
+            new NeedsAuthenticationError({
+              cause:
+                'Polled for two seconds and never found gapi?.client?.healthcare?.projects?.locations?.datasets?.fhirStores?.fhir',
+            })
+          )
+        }
+      }
+      return
+    })
+  }
+
+  /**
+   * Handle common FHIR API errors
+   */
+  protected handleFhirApiErrors<OtherErrors>(): (
+    _: Effect.Effect<
+      gapi.client.Response<gapi.client.healthcare.HttpBody>,
+      OtherErrors | UnknownException,
+      never
+    >
+  ) => Effect.Effect<
+    gapi.client.Response<gapi.client.healthcare.HttpBody>,
+    OtherErrors | NeedsAuthenticationError | UnhandledError,
+    never
+  > {
+    return Effect.mapError((err: OtherErrors | UnknownException) => {
+      if (!(err instanceof UnknownException)) return err
+
+      if (this.getStatus(err.cause) == 401) {
+        return new NeedsAuthenticationError({ cause: err })
+      }
+      return new UnhandledError({ cause: err })
+    })
+  }
+
+  /**
+   * Handle 404/410 errors by converting them to NotFoundError
+   */
+  protected handleNotFoundErrors(
+    id: string
+  ): (err: unknown) => NotFoundError | unknown {
+    return (err: unknown) => {
+      const status = this.getStatus((err as { cause?: unknown }).cause)
+
+      if (status == 404 || status == 410) {
+        return new NotFoundError({
+          resourceType: this.resourceType,
+          params: { id },
+          cause: err,
+        })
+      }
+      return err
+    }
+  }
+
+  /**
+   * Decode and assert resource has ID
+   */
+  protected decodeAndAssertId(
+    response: gapi.client.Response<gapi.client.healthcare.HttpBody>,
+    expectedMessage: string
+  ) {
     const decode = Schema.decodeUnknown(this.schema)
 
     return Effect.gen(
       function* (
         this: BaseGoogleFhirRepository<TResource, TResourceEncoded, TId>
       ) {
-        yield* gapiPoll()
-
-        const response = yield* Effect.tryPromise(() =>
-          gapi.client.healthcare.projects.locations.datasets.fhirStores.fhir.read(
-            {
-              name: `${this.parent}/fhir/${this.resourceType}/${id}`,
-            }
-          )
-        ).pipe(
-          Effect.mapError((err) => {
-            const status = getStatus(err.cause)
-
-            if (status == 404 || status == 410) {
-              return new NotFoundError({
-                resourceType: this.resourceType,
-                params: { id },
-                cause: err,
-              })
-            }
-            return err
-          }),
-          handleFhirApiErrors()
-        )
-
-        const gotten = yield* decode(response.result).pipe(
+        const decoded = yield* decode(response.result).pipe(
           Effect.mapError(
             (cause) =>
               new ExternalAssertionError({
-                expected: 'Expected resource to conform to schema',
+                expected: expectedMessage,
                 cause,
               })
           )
         )
 
-        const resourceWithId: WithId<TResource> = yield* assertId(gotten).pipe(
+        const resourceWithId: WithId<TResource> = yield* assertId(decoded).pipe(
           Effect.mapError(
             (cause) =>
               new ExternalAssertionError({
@@ -162,7 +176,55 @@ export abstract class BaseGoogleFhirRepository<
     )
   }
 
-  getMany(_params: unknown) {
+  get(
+    id: TId
+  ): Effect.Effect<
+    WithId<TResource>,
+    | UnhandledError
+    | NeedsAuthenticationError
+    | ExternalAssertionError
+    | NotFoundError,
+    never
+  > {
+    return Effect.gen(
+      function* (
+        this: BaseGoogleFhirRepository<TResource, TResourceEncoded, TId>
+      ) {
+        yield* this.gapiPoll()
+
+        const response = yield* Effect.tryPromise(() =>
+          gapi.client.healthcare.projects.locations.datasets.fhirStores.fhir.read(
+            {
+              name: `${this.parent}/fhir/${this.resourceType}/${id}`,
+            }
+          )
+        ).pipe(
+          Effect.mapError(this.handleNotFoundErrors(id)),
+          this.handleFhirApiErrors()
+        )
+
+        return yield* this.decodeAndAssertId(
+          response,
+          'Expected resource to conform to schema'
+        )
+      }.bind(this)
+    ) as Effect.Effect<
+      WithId<TResource>,
+      | UnhandledError
+      | NeedsAuthenticationError
+      | ExternalAssertionError
+      | NotFoundError,
+      never
+    >
+  }
+
+  getMany(
+    _params: unknown
+  ): Effect.Effect<
+    WithId<TResource>[],
+    UnhandledError | NeedsAuthenticationError | ExternalAssertionError,
+    never
+  > {
     const DataBundle = Bundle(this.schema)
     const decodeBundle = Schema.decodeUnknown(DataBundle)
 
@@ -170,7 +232,7 @@ export abstract class BaseGoogleFhirRepository<
       function* (
         this: BaseGoogleFhirRepository<TResource, TResourceEncoded, TId>
       ) {
-        yield* gapiPoll()
+        yield* this.gapiPoll()
 
         const response = yield* Effect.tryPromise(() =>
           gapi.client.healthcare.projects.locations.datasets.fhirStores.fhir.search(
@@ -181,7 +243,7 @@ export abstract class BaseGoogleFhirRepository<
               } as gapi.client.healthcare.HttpBody,
             }
           )
-        ).pipe(handleFhirApiErrors<never>())
+        ).pipe(this.handleFhirApiErrors<never>())
 
         const { entry } = yield* decodeBundle(response.result).pipe(
           Effect.mapError(
@@ -210,9 +272,14 @@ export abstract class BaseGoogleFhirRepository<
     )
   }
 
-  create(resource: TResource) {
+  create(
+    resource: TResource
+  ): Effect.Effect<
+    WithId<TResource>,
+    UnhandledError | NeedsAuthenticationError | ExternalAssertionError,
+    never
+  > {
     const encode = Schema.encode(this.schema)
-    const decode = Schema.decodeUnknown(this.schema)
 
     return Effect.gen(
       function* (
@@ -222,7 +289,7 @@ export abstract class BaseGoogleFhirRepository<
           Effect.mapError((cause) => new UnhandledError({ cause }))
         )
 
-        yield* gapiPoll()
+        yield* this.gapiPoll()
 
         const response = yield* Effect.tryPromise(() =>
           gapi.client.healthcare.projects.locations.datasets.fhirStores.fhir.create(
@@ -232,36 +299,31 @@ export abstract class BaseGoogleFhirRepository<
               resource: resourceData as gapi.client.healthcare.HttpBody,
             }
           )
-        ).pipe(handleFhirApiErrors<never>())
+        ).pipe(this.handleFhirApiErrors<never>())
 
-        const gotten = yield* decode(response.result).pipe(
-          Effect.mapError(
-            (cause) =>
-              new ExternalAssertionError({
-                expected: 'Created resource to conform to schema',
-                cause,
-              })
-          )
+        return yield* this.decodeAndAssertId(
+          response,
+          'Created resource to conform to schema'
         )
-
-        const resourceWithId: WithId<TResource> = yield* assertId(gotten).pipe(
-          Effect.mapError(
-            (cause: unknown): ExternalAssertionError =>
-              new ExternalAssertionError({
-                expected: 'Created resource to have id',
-                cause,
-              })
-          )
-        )
-
-        return resourceWithId
       }.bind(this)
-    )
+    ) as Effect.Effect<
+      WithId<TResource>,
+      UnhandledError | NeedsAuthenticationError | ExternalAssertionError,
+      never
+    >
   }
 
-  update(resource: WithId<TResource>) {
+  update(
+    resource: WithId<TResource>
+  ): Effect.Effect<
+    WithId<TResource>,
+    | UnhandledError
+    | NotFoundError
+    | NeedsAuthenticationError
+    | ExternalAssertionError,
+    never
+  > {
     const encode = Schema.encode(this.schema)
-    const decode = Schema.decodeUnknown(this.schema)
 
     return Effect.gen(
       function* (
@@ -271,7 +333,7 @@ export abstract class BaseGoogleFhirRepository<
           Effect.mapError((cause) => new UnhandledError({ cause }))
         )
 
-        yield* gapiPoll()
+        yield* this.gapiPoll()
 
         const response = yield* Effect.tryPromise(() =>
           gapi.client.healthcare.projects.locations.datasets.fhirStores.fhir.update(
@@ -281,52 +343,40 @@ export abstract class BaseGoogleFhirRepository<
             }
           )
         ).pipe(
-          Effect.mapError((err) => {
-            const status = getStatus(err.cause)
-
-            if (status == 404 || status == 410) {
-              return new NotFoundError({
-                resourceType: this.resourceType,
-                params: { id: resource.id },
-                cause: err,
-              })
-            }
-            return err
-          }),
-          handleFhirApiErrors()
+          Effect.mapError(this.handleNotFoundErrors(resource.id)),
+          this.handleFhirApiErrors()
         )
 
-        const gotten = yield* decode(response.result).pipe(
-          Effect.mapError(
-            (cause) =>
-              new ExternalAssertionError({
-                expected: 'Expected resource to conform to schema',
-                cause,
-              })
-          )
+        return yield* this.decodeAndAssertId(
+          response,
+          'Expected resource to conform to schema'
         )
-
-        const resourceWithId: WithId<TResource> = yield* assertId(gotten).pipe(
-          Effect.mapError(
-            (cause) =>
-              new ExternalAssertionError({
-                expected: 'Resource to have id',
-                cause,
-              })
-          )
-        )
-
-        return resourceWithId
       }.bind(this)
-    )
+    ) as Effect.Effect<
+      WithId<TResource>,
+      | UnhandledError
+      | NotFoundError
+      | NeedsAuthenticationError
+      | ExternalAssertionError,
+      never
+    >
   }
 
-  delete(id: TId) {
+  delete(
+    id: TId
+  ): Effect.Effect<
+    object,
+    | UnhandledError
+    | NotFoundError
+    | NeedsAuthenticationError
+    | ExternalAssertionError,
+    never
+  > {
     return Effect.gen(
       function* (
         this: BaseGoogleFhirRepository<TResource, TResourceEncoded, TId>
       ) {
-        yield* gapiPoll()
+        yield* this.gapiPoll()
 
         const response = yield* Effect.tryPromise(() =>
           gapi.client.healthcare.projects.locations.datasets.fhirStores.fhir.delete(
@@ -335,33 +385,35 @@ export abstract class BaseGoogleFhirRepository<
             }
           )
         ).pipe(
-          Effect.mapError((err) => {
-            const status = getStatus(err.cause)
-
-            if (status == 404 || status == 410) {
-              return new NotFoundError({
-                resourceType: this.resourceType,
-                params: { id },
-                cause: err,
-              })
-            }
-            return err
-          }),
-          handleFhirApiErrors()
+          Effect.mapError(this.handleNotFoundErrors(id)),
+          this.handleFhirApiErrors()
         )
 
         console.log('Delete response:', response)
 
         return {}
       }.bind(this)
-    )
+    ) as Effect.Effect<
+      object,
+      | UnhandledError
+      | NotFoundError
+      | NeedsAuthenticationError
+      | ExternalAssertionError,
+      never
+    >
   }
 
   /**
    * Helper method for creating multiple resources using a FHIR bundle transaction.
    * Can be used for batch creation operations.
    */
-  createMany(resources: ReadonlyArray<TResource>) {
+  createMany(
+    resources: ReadonlyArray<TResource>
+  ): Effect.Effect<
+    ReadonlyArray<WithId<TResource>>,
+    UnhandledError | NeedsAuthenticationError | ExternalAssertionError,
+    never
+  > {
     const TransactionResponseBundle = Bundle(
       Schema.Struct({
         request: Schema.Struct({
@@ -394,7 +446,7 @@ export abstract class BaseGoogleFhirRepository<
           })),
         }
 
-        yield* gapiPoll()
+        yield* this.gapiPoll()
 
         const response = yield* Effect.tryPromise(() =>
           gapi.client.healthcare.projects.locations.datasets.fhirStores.fhir.executeBundle(
@@ -403,7 +455,7 @@ export abstract class BaseGoogleFhirRepository<
               resource: resource as gapi.client.healthcare.HttpBody,
             }
           )
-        ).pipe(handleFhirApiErrors<never>())
+        ).pipe(this.handleFhirApiErrors<never>())
 
         const responseBundle = yield* Schema.decodeUnknown(
           TransactionResponseBundle
