@@ -18,12 +18,13 @@
   "devDependencies": {
     "@assessmentis/eslint-config": "*",
     "@assessmentis/prettier-config": "*",
-    "@assessmentis/typescript-config": "*"
+    "@assessmentis/typescript-config": "*",
+    "vitest": "^4.0.15"
   },
   "dependencies": {
-    "@assessmentis/platform-domain": "*",
     "@assessmentis/clinical-domain": "*",
     "@assessmentis/config-domain": "*",
+    "@assessmentis/platform-domain": "*",
     "@effect/opentelemetry": "^0.59.2",
     "effect": "^3.19.9",
     "firebase": "^12.6.0"
