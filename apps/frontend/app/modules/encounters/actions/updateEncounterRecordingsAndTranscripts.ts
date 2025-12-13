@@ -19,10 +19,14 @@ import {
   Encounter,
   EncounterId,
 } from '@assessmentis/clinical-domain/encounters'
+import {
+  Media,
+  MediaRepository,
+} from '@assessmentis/clinical-domain/diagnostic-medicine'
 
 /**
- * Fetches recordings for an encounter's video call room and updates the encounter
- * with references to the recordings.
+ * Fetches recordings for an encounter's video call room and creates Media resources
+ * linked to the encounter.
  *
  * @param encounterId - The ID of the encounter to update
  */
@@ -35,11 +39,12 @@ export const updateEncounterRecordingsAndTranscripts = (
   | ExternalVideoCallServiceError
   | ExternalAssertionError
   | NotFoundError,
-  EncounterRepository | ExternalVideoCallClient
+  EncounterRepository | ExternalVideoCallClient | MediaRepository
 > => {
   return Effect.gen(function* () {
     const encounterRepository = yield* EncounterRepository
     const videoCalls = yield* ExternalVideoCallClient
+    const mediaRepository = yield* MediaRepository
 
     // Get the current encounter
     const encounter = yield* encounterRepository.get(encounterId)
@@ -59,13 +64,36 @@ export const updateEncounterRecordingsAndTranscripts = (
     // If no recordings found yet, return the encounter unchanged
     if (recordings.length == 0) return encounter
 
-    // Update the encounter with recording URIs
+    // Create Media resources for each recording
     const recordingFileUrls: ExternalVideoCallRecordingFileUrl[] = recordings
       .map((rec) => rec.recordingFileUrl)
       .filter((url): url is ExternalVideoCallRecordingFileUrl => !!url)
-    const updatedEncounter = withRecordingFileUrls(encounter, recordingFileUrls)
 
-    // Save the updated encounter
+    // Create Media resources for recordings that don't exist yet
+    for (const recordingUrl of recordingFileUrls) {
+      // Check if a Media resource already exists for this recording URL
+      const existingMedia = yield* mediaRepository.getMany({})
+      const mediaExists = existingMedia.some(
+        (media) => media.content.url === recordingUrl
+      )
+
+      if (!mediaExists) {
+        const media: Media = {
+          resourceType: 'Media',
+          status: 'completed',
+          encounter: {
+            reference: `Encounter/${encounterId}`,
+          },
+          content: {
+            url: recordingUrl,
+          },
+        }
+        yield* mediaRepository.create(media)
+      }
+    }
+
+    // Also update encounter extensions for backward compatibility
+    const updatedEncounter = withRecordingFileUrls(encounter, recordingFileUrls)
     const savedEncounter = yield* encounterRepository.update(updatedEncounter)
 
     return savedEncounter

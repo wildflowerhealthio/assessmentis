@@ -6,6 +6,7 @@ import {
   EncounterRepository,
   ExternalVideoCallClient,
   ExternalVideoCallServiceError,
+  MediaRepository,
   QuestionnaireResponseRepository,
   UnhandledError,
 } from '@assessmentis/clinical-domain'
@@ -42,6 +43,19 @@ const notImplemented = {
     }),
   Encounter: () =>
     Layer.succeed(EncounterRepository, {
+      create: () =>
+        Effect.fail(new UnhandledError({ cause: 'not implemented' })),
+      get: () => Effect.fail(new UnhandledError({ cause: 'not implemented' })),
+      getMany: () =>
+        Effect.fail(new UnhandledError({ cause: 'not implemented' })),
+      delete: () =>
+        Effect.fail(new UnhandledError({ cause: 'not implemented' })),
+      update: () =>
+        Effect.fail(new UnhandledError({ cause: 'not implemented' })),
+    }),
+
+  Media: () =>
+    Layer.succeed(MediaRepository, {
       create: () =>
         Effect.fail(new UnhandledError({ cause: 'not implemented' })),
       get: () => Effect.fail(new UnhandledError({ cause: 'not implemented' })),
@@ -102,6 +116,14 @@ export const createRuntime = (frontendConfig: FrontendConfig) => {
     Match.exhaustive
   )
 
+  const mediaRepositoryLayer = Match.value(
+    frontendConfig.mediaRepository
+  ).pipe(
+    Match.tag('google_fhir_store', GoogleFhir.Media.Repository),
+    Match.tag('not_implemented', notImplemented.Media),
+    Match.exhaustive
+  )
+
   const externalVideoCallClientLayer = Match.value(
     frontendConfig.videoCallClient
   ).pipe(
@@ -120,6 +142,7 @@ export const createRuntime = (frontendConfig: FrontendConfig) => {
     questionnaireRepositoryLayer,
     questionnaireResponseRepositoryLayer,
     encounterRepositoryLayer,
+    mediaRepositoryLayer,
     layerCurrentZoneLocal,
     FetchHttpClient.layer,
     WebSdkLive

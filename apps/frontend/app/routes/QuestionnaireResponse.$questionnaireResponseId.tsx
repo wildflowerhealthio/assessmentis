@@ -12,11 +12,13 @@ import { getRuntime } from 'app/clientRuntime'
 import type { Route } from './+types/QuestionnaireResponse.$questionnaireResponseId'
 import QuestionnaireForm from 'app/modules/questionnaire/features/QuestionnaireForm/QuestionnaireForm'
 import { updateEncounterRecordingsAndTranscripts } from '../modules/encounters/actions/updateEncounterRecordingsAndTranscripts'
+import { getEncounterRecordings } from '../modules/encounters/actions/getEncounterRecordings'
 import {
   Encounter,
   EncounterId,
   getRecordingFileUrls,
 } from '@assessmentis/clinical-domain/encounters'
+import { Media } from '@assessmentis/clinical-domain/diagnostic-medicine'
 
 const tryDecodeQuestionnaireResponseId = Schema.decodeOption(
   QuestionnaireResponseId
@@ -26,6 +28,7 @@ export const QuestionnaireResponseWithQuestionnaire = Schema.Struct({
   questionnaireResponse: QuestionnaireResponse,
   questionnaire: Questionnaire,
   encounter: Schema.optional(Encounter),
+  recordings: Schema.Array(Media),
 })
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
@@ -69,11 +72,16 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
         )
       : undefined
 
+    const recordings = encounterId
+      ? yield* getEncounterRecordings(EncounterId.make(encounterId))
+      : []
+
     const questionnaire = yield* questionnaireRepository.get(questionnaireId)
     const enc = Schema.encode(QuestionnaireResponseWithQuestionnaire)({
       questionnaireResponse,
       questionnaire,
       encounter,
+      recordings,
     })
     return yield* enc
   })
@@ -87,7 +95,8 @@ const decodeQuestionnaireResponse = Schema.decodeSync(QuestionnaireResponse)
 export default function QuestionnaireResponseDetailsPage({
   loaderData,
 }: Route.ComponentProps) {
-  const { questionnaire, questionnaireResponse, encounter } = loaderData
+  const { questionnaire, questionnaireResponse, encounter, recordings } =
+    loaderData
   // const handleSubmitAnswer = async (
   //   questionnaireItemLink: QuestionnaireItemLink,
   //   answer: QuestionnaireResponseItemAnswer | null,
@@ -101,7 +110,26 @@ export default function QuestionnaireResponseDetailsPage({
   // This hook builds the form based on the questionnaire
   return (
     <section style={{ maxWidth: 800, margin: 'auto' }}>
-      {encounter ? JSON.stringify(getRecordingFileUrls(encounter)) : undefined}
+      {/* Display recordings from Media resources */}
+      {recordings.length > 0 && (
+        <div>
+          <h3>Recordings:</h3>
+          <ul>
+            {recordings.map((media, idx) => (
+              <li key={idx}>{media.content.url || 'No URL'}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {/* Fallback: Show legacy extension recordings if Media resources not available */}
+      {recordings.length === 0 &&
+        encounter &&
+        getRecordingFileUrls(encounter).length > 0 && (
+          <div>
+            <h3>Recordings (legacy):</h3>
+            {JSON.stringify(getRecordingFileUrls(encounter))}
+          </div>
+        )}
       <QuestionnaireForm
         questionnaire={decodeQuestionnaire(questionnaire)}
         questionnaireResponse={decodeQuestionnaireResponse(
