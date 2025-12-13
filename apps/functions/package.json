@@ -23,7 +23,6 @@
   "main": "dist/index.js",
   "types": "dist/index.d.js",
   "dependencies": {
-    "@assessmentis/daily-co-infrastructure": "file:../../infrastructure/daily-co-infrastructure",
     "@effect/opentelemetry": "^0.59.1",
     "eslint": "^9.39.1",
     "firebase-admin": "^13.6.0",

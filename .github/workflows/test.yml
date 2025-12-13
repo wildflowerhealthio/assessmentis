@@ -25,7 +25,9 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install --workspaces
+        run:  |
+          npm ci
+          npm ci --workspaces
 
       - name: Run tests
         run: npm test

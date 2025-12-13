@@ -11,8 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: |
-          npm install --workspaces
+      - run:  |
+          npm ci
+          npm ci --workspaces
           npm run build # With Turbo
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
