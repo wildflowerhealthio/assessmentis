@@ -95,6 +95,10 @@ export const createStandardRepository = <
     Effect.gen(function* () {
       const baseClient = yield* Base.BaseGoogleFhirStoreClient
 
+      // Pre-apply the resourceType and schema to create partially applied functions.
+      // For example, createWithBundle is a curried function that first takes a schema,
+      // then returns a function that takes resources. By applying the schema here,
+      // consumers only need to provide the resources.
       const operations = {
         getById: baseClient.getById(resourceType, schema),
         getAll: baseClient.getAll(resourceType, schema),
