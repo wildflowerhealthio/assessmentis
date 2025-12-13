@@ -20,25 +20,25 @@ export type ClinicalDataRepositoryErrorsWithNotFound =
   | NotFoundError
 
 /**
- * Base interface for clinical data repositories that support CRUD operations
+ * Base class for clinical data repositories that support CRUD operations
  * on FHIR resources. This provides a common structure for repositories
  * managing clinical data in the FHIR store.
  *
  * @template TResource - The resource type (e.g., Questionnaire, Encounter)
  * @template TId - The ID type for the resource (e.g., QuestionnaireId)
  * @template TCreateParams - Optional parameters for create operations
- * @template TGetAllParams - Optional parameters for getAll operations
+ * @template TGetManyParams - Optional parameters for getMany operations
  */
-export interface BaseClinicalDataRepository<
-  TResource extends { id?: string | undefined },
+export abstract class BaseClinicalDataRepository<
+  TResource extends { id?: TId | undefined },
   TId extends string,
   TCreateParams = unknown,
-  TGetAllParams = unknown,
+  TGetManyParams = unknown,
 > {
   /**
    * Retrieve a single resource by ID
    */
-  get(
+  abstract get(
     id: TId
   ): Effect.Effect<
     WithId<TResource>,
@@ -49,14 +49,14 @@ export interface BaseClinicalDataRepository<
   /**
    * Retrieve all resources matching the given parameters
    */
-  getAll(
-    params: TGetAllParams
+  abstract getMany(
+    params: TGetManyParams
   ): Effect.Effect<WithId<TResource>[], ClinicalDataRepositoryErrors, never>
 
   /**
    * Create a new resource
    */
-  create(
+  abstract create(
     resource: TResource,
     params?: TCreateParams
   ): Effect.Effect<WithId<TResource>, ClinicalDataRepositoryErrors, never>
@@ -64,7 +64,7 @@ export interface BaseClinicalDataRepository<
   /**
    * Update an existing resource
    */
-  update(
+  abstract update(
     resource: WithId<TResource>
   ): Effect.Effect<
     WithId<TResource>,
@@ -75,7 +75,7 @@ export interface BaseClinicalDataRepository<
   /**
    * Delete a resource by ID
    */
-  delete(
+  abstract delete(
     id: TId
   ): Effect.Effect<object, ClinicalDataRepositoryErrorsWithNotFound, never>
 }

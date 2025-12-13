@@ -1,13 +1,26 @@
-import { EncounterRepository, Encounter } from '@assessmentis/clinical-domain'
+import {
+  EncounterRepository,
+  Encounter,
+  EncounterId,
+} from '@assessmentis/clinical-domain'
 import { EncounterConfig } from '@assessmentis/config-domain/googleFhir'
-import { createStandardRepository } from './BaseGoogleFhirRepository'
+import { BaseGoogleFhirRepository } from './BaseGoogleFhirRepository'
 
-export const Repository = (config: EncounterConfig) =>
-  createStandardRepository(
+class EncounterGoogleFhirRepository extends BaseGoogleFhirRepository<
+  typeof Encounter.Type,
+  typeof Encounter.Encoded,
+  EncounterId
+> {
+  constructor(config: EncounterConfig) {
+    super('Encounter', Encounter, config)
+  }
+}
+
+export const Repository = (config: EncounterConfig) => {
+  const repository = new EncounterGoogleFhirRepository(config)
+
+  return repository.createLayer(
     EncounterRepository,
-    'Encounter',
-    Encounter,
-    config,
     ({ getById, getAll, create, update, deleteById }) => ({
       getEncounter: getById,
       getEncounters: getAll,
@@ -16,3 +29,4 @@ export const Repository = (config: EncounterConfig) =>
       deleteEncounter: deleteById,
     })
   )
+}

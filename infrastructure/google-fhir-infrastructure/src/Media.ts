@@ -1,16 +1,26 @@
 import {
   Media,
   MediaRepository,
+  MediaId,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { MediaConfig } from '@assessmentis/config-domain/googleFhir'
-import { createStandardRepository } from './BaseGoogleFhirRepository'
+import { BaseGoogleFhirRepository } from './BaseGoogleFhirRepository'
 
-export const Repository = (config: MediaConfig) =>
-  createStandardRepository(
+class MediaGoogleFhirRepository extends BaseGoogleFhirRepository<
+  typeof Media.Type,
+  typeof Media.Encoded,
+  MediaId
+> {
+  constructor(config: MediaConfig) {
+    super('Media', Media, config)
+  }
+}
+
+export const Repository = (config: MediaConfig) => {
+  const repository = new MediaGoogleFhirRepository(config)
+
+  return repository.createLayer(
     MediaRepository,
-    'Media',
-    Media,
-    config,
     ({ getById, getAll, create, update, deleteById }) => ({
       getMedia: getById,
       getAllMedia: getAll,
@@ -19,3 +29,4 @@ export const Repository = (config: MediaConfig) =>
       deleteMedia: deleteById,
     })
   )
+}

@@ -1,16 +1,26 @@
 import {
   Questionnaire,
   QuestionnaireRepository,
+  QuestionnaireId,
 } from '@assessmentis/clinical-domain/questionnaires'
 import { QuestionnaireConfig } from '@assessmentis/config-domain/googleFhir'
-import { createStandardRepository } from './BaseGoogleFhirRepository'
+import { BaseGoogleFhirRepository } from './BaseGoogleFhirRepository'
 
-export const Repository = (config: QuestionnaireConfig) =>
-  createStandardRepository(
+class QuestionnaireGoogleFhirRepository extends BaseGoogleFhirRepository<
+  typeof Questionnaire.Type,
+  typeof Questionnaire.Encoded,
+  QuestionnaireId
+> {
+  constructor(config: QuestionnaireConfig) {
+    super('Questionnaire', Questionnaire, config)
+  }
+}
+
+export const Repository = (config: QuestionnaireConfig) => {
+  const repository = new QuestionnaireGoogleFhirRepository(config)
+
+  return repository.createLayer(
     QuestionnaireRepository,
-    'Questionnaire',
-    Questionnaire,
-    config,
     ({ getById, getAll, create, deleteById }) => ({
       getQuestionnaire: getById,
       getQuestionnaires: getAll,
@@ -18,3 +28,4 @@ export const Repository = (config: QuestionnaireConfig) =>
       deleteQuestionnaire: deleteById,
     })
   )
+}
