@@ -49,26 +49,39 @@ export abstract class BaseGoogleFhirRepository<
     this.config = config
   }
 
-  // Abstract method implementations from BaseClinicalDataRepository
-  // These are not used directly but required by the abstract class
+  // Abstract method implementations from BaseClinicalDataRepository.
+  // These methods are not called directly - they exist only to satisfy the abstract class contract.
+  // The actual implementations are provided through the createLayer method which properly
+  // integrates with the Effect runtime and BaseGoogleFhirStoreClient.
+  // Direct calls will throw an error to prevent misuse.
   get(_id: TId): never {
-    throw new Error('Method should not be called directly. Use via Layer.')
+    throw new Error(
+      'Method should not be called directly. Use repository via Layer.'
+    )
   }
 
   getMany(_params: unknown): never {
-    throw new Error('Method should not be called directly. Use via Layer.')
+    throw new Error(
+      'Method should not be called directly. Use repository via Layer.'
+    )
   }
 
   create(_resource: TResource): never {
-    throw new Error('Method should not be called directly. Use via Layer.')
+    throw new Error(
+      'Method should not be called directly. Use repository via Layer.'
+    )
   }
 
   update(_resource: WithId<TResource>): never {
-    throw new Error('Method should not be called directly. Use via Layer.')
+    throw new Error(
+      'Method should not be called directly. Use repository via Layer.'
+    )
   }
 
   delete(_id: TId): never {
-    throw new Error('Method should not be called directly. Use via Layer.')
+    throw new Error(
+      'Method should not be called directly. Use repository via Layer.'
+    )
   }
 
   /**
