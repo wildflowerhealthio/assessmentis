@@ -69,15 +69,15 @@ export const updateEncounterRecordingsAndTranscripts = (
       .map((rec) => rec.recordingFileUrl)
       .filter((url): url is ExternalVideoCallRecordingFileUrl => !!url)
 
+    // Fetch all existing Media resources once to check for duplicates
+    const existingMedia = yield* mediaRepository.getMany({})
+    const existingUrls = new Set(
+      existingMedia.map((media) => media.content.url).filter((url) => !!url)
+    )
+
     // Create Media resources for recordings that don't exist yet
     for (const recordingUrl of recordingFileUrls) {
-      // Check if a Media resource already exists for this recording URL
-      const existingMedia = yield* mediaRepository.getMany({})
-      const mediaExists = existingMedia.some(
-        (media) => media.content.url === recordingUrl
-      )
-
-      if (!mediaExists) {
+      if (!existingUrls.has(recordingUrl)) {
         const media: Media = {
           resourceType: 'Media',
           status: 'completed',

@@ -4,6 +4,7 @@ import { getEncounterRecordings } from './getEncounterRecordings'
 import {
   MediaRepository,
   Media,
+  MediaId,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { EncounterId } from '@assessmentis/clinical-domain/encounters'
 import { WithId } from '@assessmentis/clinical-domain/general-purpose'
@@ -15,7 +16,7 @@ describe('getEncounterRecordings', () => {
 
     const mockMedia: WithId<Media>[] = [
       {
-        id: 'media-1',
+        id: MediaId.make('media-1'),
         resourceType: 'Media',
         status: 'completed',
         encounter: {
@@ -26,7 +27,7 @@ describe('getEncounterRecordings', () => {
         },
       },
       {
-        id: 'media-2',
+        id: MediaId.make('media-2'),
         resourceType: 'Media',
         status: 'completed',
         encounter: {
@@ -37,7 +38,7 @@ describe('getEncounterRecordings', () => {
         },
       },
       {
-        id: 'media-3',
+        id: MediaId.make('media-3'),
         resourceType: 'Media',
         status: 'completed',
         encounter: {
@@ -67,8 +68,8 @@ describe('getEncounterRecordings', () => {
     )
 
     expect(result).toHaveLength(2)
-    expect(result[0].id).toBe('media-1')
-    expect(result[1].id).toBe('media-3')
+    expect(result[0].id).toBe(MediaId.make('media-1'))
+    expect(result[1].id).toBe(MediaId.make('media-3'))
     expect(result[0].content.url).toBe('https://example.com/recording1.mp4')
     expect(result[1].content.url).toBe('https://example.com/recording3.mp4')
   })
@@ -78,7 +79,7 @@ describe('getEncounterRecordings', () => {
 
     const mockMedia: WithId<Media>[] = [
       {
-        id: 'media-1',
+        id: MediaId.make('media-1'),
         resourceType: 'Media',
         status: 'completed',
         encounter: {
