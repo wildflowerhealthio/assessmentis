@@ -6,11 +6,11 @@
   "packageManager": "npm@10.9.2",
   "prettier": "@assessmentis/prettier-config",
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "test": "turbo run test",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "build": "npm exec turbo run build",
+    "dev": "npm exec turbo run dev",
+    "lint": "npm exec turbo run lint",
+    "test": "npm exec turbo run test",
+    "format": "npm exec prettier --write \"**/*.{ts,tsx,md}\""
   },
   "author": "Ruth Marks",
   "license": "UNLICENSED",
