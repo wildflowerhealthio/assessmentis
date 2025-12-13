@@ -52,10 +52,9 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
         )
       )
     )
-    const questionnaireResponse =
-      yield* questionnaireResponseRepository.getQuestionnaireResponse(
-        questionnaireResponseId
-      )
+    const questionnaireResponse = yield* questionnaireResponseRepository.get(
+      questionnaireResponseId
+    )
 
     const questionnaireId = QuestionnaireId.make(
       questionnaireResponse.questionnaire?.split('/')[3] ??
@@ -70,8 +69,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
         )
       : undefined
 
-    const questionnaire =
-      yield* questionnaireRepository.getQuestionnaire(questionnaireId)
+    const questionnaire = yield* questionnaireRepository.get(questionnaireId)
     const enc = Schema.encode(QuestionnaireResponseWithQuestionnaire)({
       questionnaireResponse,
       questionnaire,

@@ -42,7 +42,7 @@ export const updateEncounterRecordingsAndTranscripts = (
     const videoCalls = yield* ExternalVideoCallClient
 
     // Get the current encounter
-    const encounter = yield* encounterRepository.getEncounter(encounterId)
+    const encounter = yield* encounterRepository.get(encounterId)
 
     // Extract the room name from the encounter location
     const roomUrl = encounter.location?.[0]?.location?.identifier?.value
@@ -66,8 +66,7 @@ export const updateEncounterRecordingsAndTranscripts = (
     const updatedEncounter = withRecordingFileUrls(encounter, recordingFileUrls)
 
     // Save the updated encounter
-    const savedEncounter =
-      yield* encounterRepository.updateEncounter(updatedEncounter)
+    const savedEncounter = yield* encounterRepository.update(updatedEncounter)
 
     return savedEncounter
   })

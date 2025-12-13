@@ -361,7 +361,7 @@ export abstract class BaseGoogleFhirRepository<
    * Helper method for creating multiple resources using a FHIR bundle transaction.
    * Can be used for batch creation operations.
    */
-  createWithBundle(resources: ReadonlyArray<TResource>) {
+  createMany(resources: ReadonlyArray<TResource>) {
     const TransactionResponseBundle = Bundle(
       Schema.Struct({
         request: Schema.Struct({

@@ -16,7 +16,7 @@ export class QuestionnaireResponseRepository extends Context.Tag(
 )<
   QuestionnaireResponseRepository,
   {
-    createQuestionnaireResponses: (
+    createMany: (
       questionnaireResponses: QuestionnaireResponse[]
     ) => Effect.Effect<
       ReadonlyArray<QuestionnaireResponse>,
@@ -24,7 +24,7 @@ export class QuestionnaireResponseRepository extends Context.Tag(
       never
     >
 
-    getQuestionnaireResponse: (
+    get: (
       id: QuestionnaireResponseId
     ) => Effect.Effect<
       QuestionnaireResponse,
@@ -35,7 +35,7 @@ export class QuestionnaireResponseRepository extends Context.Tag(
       never
     >
 
-    getQuestionnaireResponses: (
+    getMany: (
       args?: unknown
     ) => Effect.Effect<
       ReadonlyArray<QuestionnaireResponse>,
@@ -43,7 +43,7 @@ export class QuestionnaireResponseRepository extends Context.Tag(
       never
     >
 
-    deleteQuestionnaireResponse: (
+    delete: (
       id: QuestionnaireResponseId
     ) => Effect.Effect<
       object,
@@ -54,7 +54,7 @@ export class QuestionnaireResponseRepository extends Context.Tag(
       never
     >
 
-    updateQuestionnaireResponse: (
+    update: (
       questionnaireResponse: WithId<QuestionnaireResponse>
     ) => Effect.Effect<
       WithId<QuestionnaireResponse>,

@@ -24,7 +24,7 @@ type GetEncounterParams = typeof GetEncounterParams.Type
 export class EncounterRepository extends Context.Tag('EncounterRepository')<
   EncounterRepository,
   {
-    getEncounter(
+    get(
       encounterId: EncounterId
     ): Effect.Effect<
       WithId<Encounter>,
@@ -35,7 +35,7 @@ export class EncounterRepository extends Context.Tag('EncounterRepository')<
       never
     >
 
-    getEncounters(
+    getMany(
       params: GetEncounterParams
     ): Effect.Effect<
       WithId<Encounter>[],
@@ -46,7 +46,7 @@ export class EncounterRepository extends Context.Tag('EncounterRepository')<
       never
     >
 
-    createEncounter(
+    create(
       encounter: Encounter
     ): Effect.Effect<
       WithId<Encounter>,
@@ -54,7 +54,7 @@ export class EncounterRepository extends Context.Tag('EncounterRepository')<
       never
     >
 
-    updateEncounter(
+    update(
       encounter: WithId<Encounter>
     ): Effect.Effect<
       WithId<Encounter>,
@@ -65,7 +65,7 @@ export class EncounterRepository extends Context.Tag('EncounterRepository')<
       never
     >
 
-    deleteEncounter(
+    delete(
       encounterId: EncounterId
     ): Effect.Effect<
       object,

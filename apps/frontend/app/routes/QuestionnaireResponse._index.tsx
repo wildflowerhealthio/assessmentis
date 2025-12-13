@@ -19,8 +19,8 @@ export async function clientLoader(_: Route.ClientLoaderArgs) {
       const questionnaireResponseRepository =
         yield* QuestionnaireResponseRepository
       const [questionnaires, responses] = yield* Effect.all([
-        questionnaireRepository.getQuestionnaires({}),
-        questionnaireResponseRepository.getQuestionnaireResponses(),
+        questionnaireRepository.getMany({}),
+        questionnaireResponseRepository.getMany({}),
       ])
       return responses.map(
         (
@@ -56,7 +56,7 @@ const useQuestionnaireResponse = (
           Effect.all([
             Effect.sleep('200 millis'),
             QuestionnaireResponseRepository.pipe(
-              Effect.flatMap((qrr) => qrr.deleteQuestionnaireResponse(id))
+              Effect.flatMap((qrr) => qrr.delete(id))
             ),
           ])
         )

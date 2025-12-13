@@ -18,13 +18,5 @@ class MediaGoogleFhirRepository extends BaseGoogleFhirRepository<
 }
 
 export const Repository = (config: MediaConfig) => {
-  const repository = new MediaGoogleFhirRepository(config)
-
-  return Layer.succeed(MediaRepository, {
-    getMedia: repository.get.bind(repository),
-    getAllMedia: repository.getMany.bind(repository),
-    createMedia: repository.create.bind(repository),
-    updateMedia: repository.update.bind(repository),
-    deleteMedia: repository.delete.bind(repository),
-  })
+  return Layer.succeed(MediaRepository, new MediaGoogleFhirRepository(config))
 }

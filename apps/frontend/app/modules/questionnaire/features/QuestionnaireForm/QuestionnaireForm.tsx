@@ -33,7 +33,7 @@ const QuestionnaireForm = ({
             const questionnaireResponseClient =
               yield* QuestionnaireResponseRepository
             if (!hasId(questionnaireResponse)) return
-            return yield* questionnaireResponseClient.updateQuestionnaireResponse(
+            return yield* questionnaireResponseClient.update(
               questionnaireResponse
             )
           })

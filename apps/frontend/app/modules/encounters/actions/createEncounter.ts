@@ -81,8 +81,7 @@ export const createEncounter = (
       ...args,
     }
 
-    const createdEncounter =
-      yield* encounterRepository.createEncounter(encounterData)
+    const createdEncounter = yield* encounterRepository.create(encounterData)
 
     // const roomInsertsEffect = videoCallRepository.createVideoCallRooms([
     //   {
@@ -94,7 +93,7 @@ export const createEncounter = (
     // ]);
 
     const questionnaireResponsesEffect =
-      questionnaireResponseRepository.createQuestionnaireResponses(
+      questionnaireResponseRepository.createMany(
         args.questionnaireResponses.map((questionnaireResponse) => ({
           resourceType: 'QuestionnaireResponse',
           encounter: {

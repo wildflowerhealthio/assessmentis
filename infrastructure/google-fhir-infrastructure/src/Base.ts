@@ -82,7 +82,7 @@ export class BaseGoogleFhirStoreClient extends Context.Tag(
       never
     >
 
-    createWithBundle: <
+    createMany: <
       A extends Element,
       I extends { resourceType: string; id?: string | undefined },
     >(
@@ -477,115 +477,112 @@ export const LiveClient = (config: BaseConfig) => {
           )
       }
 
-      const createWithBundle: typeof BaseGoogleFhirStoreClient.Service.createWithBundle =
-
-          <
-            A extends Element,
-            I extends { resourceType: string; id?: string | undefined },
-          >(
-            schema: Schema.Schema<A, I, never>
-          ) =>
-          (resources: ReadonlyArray<A>) =>
-            Effect.gen(function* () {
-              const resourceArraySchema = Schema.Array(schema)
-              const encodedResources = yield* Schema.encode(
-                resourceArraySchema
-              )(resources).pipe(
-                Effect.mapError((cause) => new UnhandledError({ cause }))
+      const createMany: typeof BaseGoogleFhirStoreClient.Service.createMany =
+        <
+          A extends Element,
+          I extends { resourceType: string; id?: string | undefined },
+        >(
+          schema: Schema.Schema<A, I, never>
+        ) =>
+        (resources: ReadonlyArray<A>) =>
+          Effect.gen(function* () {
+            const resourceArraySchema = Schema.Array(schema)
+            const encodedResources = yield* Schema.encode(resourceArraySchema)(
+              resources
+            ).pipe(Effect.mapError((cause) => new UnhandledError({ cause })))
+            const resource = {
+              resourceType: 'Bundle',
+              type: 'transaction',
+              entry: encodedResources.map((resource) => ({
+                resource,
+                request: {
+                  method: 'POST',
+                  url: resource.resourceType,
+                } as const,
+              })),
+            }
+            yield* gapiPoll()
+            const response = yield* Effect.tryPromise(() =>
+              gapi.client.healthcare.projects.locations.datasets.fhirStores.fhir.executeBundle(
+                {
+                  parent,
+                  resource: resource as gapi.client.healthcare.HttpBody,
+                }
               )
-              const resource = {
-                resourceType: 'Bundle',
-                type: 'transaction',
-                entry: encodedResources.map((resource) => ({
-                  resource,
-                  request: {
-                    method: 'POST',
-                    url: resource.resourceType,
-                  } as const,
-                })),
-              }
-              yield* gapiPoll()
-              const response = yield* Effect.tryPromise(() =>
-                gapi.client.healthcare.projects.locations.datasets.fhirStores.fhir.executeBundle(
-                  {
-                    parent,
-                    resource: resource as gapi.client.healthcare.HttpBody,
-                  }
-                )
-              ).pipe(handleFhirApiErrors<never>())
+            ).pipe(handleFhirApiErrors<never>())
 
-              const responseBundle = yield* Schema.decodeUnknown(
-                TransactionResponseBundle
-              )(response.result).pipe(
-                Effect.mapError(
-                  (cause) =>
-                    new ExternalAssertionError({
-                      expected:
-                        'Response should be an transaction response bundle',
-                      cause,
-                    })
-                )
-              )
-
-              if (responseBundle.entry == undefined) {
-                return yield* Effect.fail(
+            const responseBundle = yield* Schema.decodeUnknown(
+              TransactionResponseBundle
+            )(response.result).pipe(
+              Effect.mapError(
+                (cause) =>
                   new ExternalAssertionError({
-                    cause: undefined,
                     expected:
-                      'Expected transaction response bundle to have entries',
+                      'Response should be an transaction response bundle',
+                    cause,
                   })
-                )
-              }
+              )
+            )
 
-              const ids = yield* Effect.all(
-                responseBundle.entry.map((entry) => {
-                  if (typeof entry?.response?.location != 'string') {
-                    return Effect.fail(
-                      new ExternalAssertionError({
-                        expected:
-                          'Expected entry in transaction response bundle to have a location URL',
-                        cause: undefined,
-                      })
-                    )
-                  }
-                  const locationParts = entry.response.location.split('/')
-                  if (locationParts.length < 15) {
-                    return Effect.fail(
-                      new ExternalAssertionError({
-                        cause: undefined,
-                        expected:
-                          'Expected entry in transaction response bundle to have a location URL shaped like `https://healthcare.googleapis.com/v1/projects/PROJECT_ID/locations/REGION/datasets/REGION/fhirStores/FHIR_STORE_ID/fhir/Patient/PATIENT_ID/_history/HISTORY_ID`',
-                      })
-                    )
-                  }
-
-                  return Effect.succeed(locationParts[14])
+            if (responseBundle.entry == undefined) {
+              return yield* Effect.fail(
+                new ExternalAssertionError({
+                  cause: undefined,
+                  expected:
+                    'Expected transaction response bundle to have entries',
                 })
               )
+            }
 
-              const updated = yield* Schema.decode(resourceArraySchema)(
-                encodedResources.map((resource, idx) => ({
-                  ...resource,
-                  id: ids[idx],
-                }))
-              ).pipe(
-                Effect.mapError(
-                  (cause) =>
+            const ids = yield* Effect.all(
+              responseBundle.entry.map((entry) => {
+                if (typeof entry?.response?.location != 'string') {
+                  return Effect.fail(
                     new ExternalAssertionError({
-                      expected: 'Response should be an array of resources',
-                      cause,
+                      expected:
+                        'Expected entry in transaction response bundle to have a location URL',
+                      cause: undefined,
                     })
-                )
+                  )
+                }
+                const locationParts = entry.response.location.split('/')
+                if (locationParts.length < 15) {
+                  return Effect.fail(
+                    new ExternalAssertionError({
+                      cause: undefined,
+                      expected:
+                        'Expected entry in transaction response bundle to have a location URL shaped like `https://healthcare.googleapis.com/v1/projects/PROJECT_ID/locations/REGION/datasets/REGION/fhirStores/FHIR_STORE_ID/fhir/Patient/PATIENT_ID/_history/HISTORY_ID`',
+                    })
+                  )
+                }
+
+                return Effect.succeed(locationParts[14])
+              })
+            )
+
+            const updated = yield* Schema.decode(resourceArraySchema)(
+              encodedResources.map((resource, idx) => ({
+                ...resource,
+                id: ids[idx],
+              }))
+            ).pipe(
+              Effect.mapError(
+                (cause) =>
+                  new ExternalAssertionError({
+                    expected: 'Response should be an array of resources',
+                    cause,
+                  })
               )
-              return updated as WithId<A>[]
-            })
+            )
+            return updated as WithId<A>[]
+          })
 
       return {
         parent,
         getById,
         getAll,
         create,
-        createWithBundle,
+        createMany,
         deleteById,
         update,
       }

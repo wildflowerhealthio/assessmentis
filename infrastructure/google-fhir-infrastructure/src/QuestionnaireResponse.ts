@@ -18,15 +18,8 @@ class QuestionnaireResponseGoogleFhirRepository extends BaseGoogleFhirRepository
 }
 
 export const Repository = (config: QuestionnaireResponseConfig) => {
-  const repository = new QuestionnaireResponseGoogleFhirRepository(config)
-
-  return Layer.succeed(QuestionnaireResponseRepository, {
-    createQuestionnaireResponses: (
-      questionnaireResponses: ReadonlyArray<typeof QuestionnaireResponse.Type>
-    ) => repository.createWithBundle(questionnaireResponses),
-    getQuestionnaireResponse: repository.get.bind(repository),
-    getQuestionnaireResponses: repository.getMany.bind(repository),
-    deleteQuestionnaireResponse: repository.delete.bind(repository),
-    updateQuestionnaireResponse: repository.update.bind(repository),
-  })
+  return Layer.succeed(
+    QuestionnaireResponseRepository,
+    new QuestionnaireResponseGoogleFhirRepository(config)
+  )
 }
