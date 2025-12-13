@@ -33,7 +33,9 @@ jobs:
         with:
           files: |
             apps/**/*.{ts,tsx,js,jsx}
-            packages/**/*.{ts,tsx,js,jsx}
+            domain/**/*.{ts,tsx,js,jsx}
+            global/**/*.{ts,tsx,js,jsx}
+            infrastructure/**/*.{ts,tsx,js,jsx}
 
       - name: Run ESLint with reviewdog on changed files
         if: steps.changed-files.outputs.any_changed == 'true'
