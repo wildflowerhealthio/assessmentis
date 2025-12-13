@@ -54,6 +54,14 @@ export class MediaRepository extends Context.Tag('MediaRepository')<
       never
     >
 
+    createMany(
+      media: ReadonlyArray<Media>
+    ): Effect.Effect<
+      ReadonlyArray<WithId<Media>>,
+      NeedsAuthenticationError | ExternalAssertionError | UnhandledError,
+      never
+    >
+
     update(
       media: WithId<Media>
     ): Effect.Effect<

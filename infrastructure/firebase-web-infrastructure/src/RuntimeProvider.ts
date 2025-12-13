@@ -58,6 +58,8 @@ const notImplemented = {
     Layer.succeed(MediaRepository, {
       create: () =>
         Effect.fail(new UnhandledError({ cause: 'not implemented' })),
+      createMany: () =>
+        Effect.fail(new UnhandledError({ cause: 'not implemented' })),
       get: () => Effect.fail(new UnhandledError({ cause: 'not implemented' })),
       getMany: () =>
         Effect.fail(new UnhandledError({ cause: 'not implemented' })),

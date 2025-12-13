@@ -55,6 +55,8 @@ describe('getEncounterRecordings', () => {
       get: () => Effect.fail(new UnhandledError({ cause: 'not implemented' })),
       create: () =>
         Effect.fail(new UnhandledError({ cause: 'not implemented' })),
+      createMany: () =>
+        Effect.fail(new UnhandledError({ cause: 'not implemented' })),
       update: () =>
         Effect.fail(new UnhandledError({ cause: 'not implemented' })),
       delete: () =>
@@ -96,6 +98,8 @@ describe('getEncounterRecordings', () => {
       get: () => Effect.fail(new UnhandledError({ cause: 'not implemented' })),
       create: () =>
         Effect.fail(new UnhandledError({ cause: 'not implemented' })),
+      createMany: () =>
+        Effect.fail(new UnhandledError({ cause: 'not implemented' })),
       update: () =>
         Effect.fail(new UnhandledError({ cause: 'not implemented' })),
       delete: () =>
@@ -118,6 +122,8 @@ describe('getEncounterRecordings', () => {
       getMany: () => Effect.succeed([]),
       get: () => Effect.fail(new UnhandledError({ cause: 'not implemented' })),
       create: () =>
+        Effect.fail(new UnhandledError({ cause: 'not implemented' })),
+      createMany: () =>
         Effect.fail(new UnhandledError({ cause: 'not implemented' })),
       update: () =>
         Effect.fail(new UnhandledError({ cause: 'not implemented' })),
