@@ -76,6 +76,7 @@ export const updateEncounterRecordingsAndTranscripts = (
     )
 
     // Create Media resources for recordings that don't exist yet
+    let newMediaCreated = false
     for (const recordingUrl of recordingFileUrls) {
       if (!existingUrls.has(recordingUrl)) {
         const media: Media = {
@@ -89,13 +90,19 @@ export const updateEncounterRecordingsAndTranscripts = (
           },
         }
         yield* mediaRepository.create(media)
+        newMediaCreated = true
       }
     }
 
-    // Also update encounter extensions for backward compatibility
-    const updatedEncounter = withRecordingFileUrls(encounter, recordingFileUrls)
-    const savedEncounter = yield* encounterRepository.update(updatedEncounter)
+    // Update encounter extensions for backward compatibility only if something changed
+    if (newMediaCreated) {
+      const updatedEncounter = withRecordingFileUrls(
+        encounter,
+        recordingFileUrls
+      )
+      return yield* encounterRepository.update(updatedEncounter)
+    }
 
-    return savedEncounter
+    return encounter
   })
 }

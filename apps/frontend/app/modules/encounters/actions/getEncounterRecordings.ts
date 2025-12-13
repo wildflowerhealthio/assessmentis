@@ -37,9 +37,7 @@ export const getEncounterRecordings = (
     const allMedia = yield* mediaRepository.getMany({})
 
     const encounterMedia = allMedia.filter(
-      (media) =>
-        media.encounter?.reference === `Encounter/${encounterId}` ||
-        media.encounter?.reference === encounterId
+      (media) => media.encounter?.reference === `Encounter/${encounterId}`
     )
 
     return encounterMedia
