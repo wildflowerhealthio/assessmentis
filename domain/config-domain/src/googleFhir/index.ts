@@ -17,3 +17,6 @@ export type QuestionnaireConfig = typeof QuestionnaireConfig.Type
 export const QuestionnaireResponseConfig = BaseConfig
 export type QuestionnaireResponseConfig =
   typeof QuestionnaireResponseConfig.Type
+
+export const MediaConfig = BaseConfig
+export type MediaConfig = typeof MediaConfig.Type
