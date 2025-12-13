@@ -109,7 +109,7 @@ describe('LoadedResultStream', () => {
 
       // Update the source
       yield* SubscriptionRef.set(source, LoadedResult.loaded(10))
-      
+
       // Allow time for the stream to propagate
       yield* Effect.sleep('10 millis')
 
