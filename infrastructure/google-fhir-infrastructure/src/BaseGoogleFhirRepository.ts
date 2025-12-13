@@ -1,42 +1,7 @@
 import { Layer, Effect, Context, Schema } from 'effect'
-import { Element, WithId } from '@assessmentis/clinical-domain/general-purpose'
+import { Element } from '@assessmentis/clinical-domain/general-purpose'
 import { BaseConfig } from '@assessmentis/config-domain/googleFhir'
 import * as Base from './Base'
-
-/**
- * Standard CRUD repository operations for FHIR resources.
- * Used as a base interface for repository implementations.
- */
-export interface StandardRepositoryOperations<
-  TResource extends Element<TId>,
-  TId extends string,
-> {
-  get(
-    id: TId
-  ): ReturnType<
-    ReturnType<typeof Base.BaseGoogleFhirStoreClient.Service.getById>
-  >
-  getAll(
-    params: unknown
-  ): ReturnType<
-    ReturnType<typeof Base.BaseGoogleFhirStoreClient.Service.getAll>
-  >
-  create(
-    resource: TResource
-  ): ReturnType<
-    ReturnType<typeof Base.BaseGoogleFhirStoreClient.Service.create>
-  >
-  update(
-    resource: WithId<TResource>
-  ): ReturnType<
-    ReturnType<typeof Base.BaseGoogleFhirStoreClient.Service.update>
-  >
-  delete(
-    id: TId
-  ): ReturnType<
-    ReturnType<typeof Base.BaseGoogleFhirStoreClient.Service.deleteById>
-  >
-}
 
 /**
  * Creates a standard FHIR repository layer with CRUD operations.
@@ -74,13 +39,13 @@ export interface StandardRepositoryOperations<
  * ```
  */
 export const createStandardRepository = <
-  TTag extends Context.Tag<unknown, unknown>,
+  TTag,
   TResource extends Element<TId>,
   TResourceEncoded extends { resourceType: string; id?: string | undefined },
   TId extends string,
   TService,
 >(
-  tag: TTag,
+  tag: Context.Tag<TTag, TService>,
   resourceType: string,
   schema: Schema.Schema<TResource, TResourceEncoded, never>,
   config: BaseConfig,
