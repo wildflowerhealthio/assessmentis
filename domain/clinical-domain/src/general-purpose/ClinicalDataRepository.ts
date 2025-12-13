@@ -55,7 +55,7 @@ export abstract class BaseClinicalDataRepository<
    * Create a new resource
    */
   abstract create(
-    resource: TResource,
+    resource: TResource
   ): Effect.Effect<WithId<TResource>, ClinicalDataRepositoryErrors, never>
 
   /**
