@@ -1,4 +1,5 @@
 export * from './compositions'
+export * from './diagnostic-medicine'
 export * from './encounters'
 export * from './general-purpose'
 export * from './questionnaires'
