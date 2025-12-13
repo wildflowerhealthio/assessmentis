@@ -32,8 +32,6 @@ export type ClinicalDataRepositoryErrorsWithNotFound =
 export abstract class BaseClinicalDataRepository<
   TResource extends { id?: TId | undefined },
   TId extends string,
-  TCreateParams = unknown,
-  TGetManyParams = unknown,
 > {
   /**
    * Retrieve a single resource by ID
@@ -50,7 +48,7 @@ export abstract class BaseClinicalDataRepository<
    * Retrieve all resources matching the given parameters
    */
   abstract getMany(
-    params: TGetManyParams
+    params: TResource
   ): Effect.Effect<WithId<TResource>[], ClinicalDataRepositoryErrors, never>
 
   /**
@@ -58,7 +56,6 @@ export abstract class BaseClinicalDataRepository<
    */
   abstract create(
     resource: TResource,
-    params?: TCreateParams
   ): Effect.Effect<WithId<TResource>, ClinicalDataRepositoryErrors, never>
 
   /**

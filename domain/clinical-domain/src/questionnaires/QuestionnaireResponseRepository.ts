@@ -19,7 +19,7 @@ export class QuestionnaireResponseRepository extends Context.Tag(
     createMany: (
       questionnaireResponses: QuestionnaireResponse[]
     ) => Effect.Effect<
-      ReadonlyArray<QuestionnaireResponse>,
+      ReadonlyArray<WithId<QuestionnaireResponse>>,
       UnhandledError | NeedsAuthenticationError | ExternalAssertionError,
       never
     >
@@ -38,7 +38,7 @@ export class QuestionnaireResponseRepository extends Context.Tag(
     getMany: (
       args?: unknown
     ) => Effect.Effect<
-      ReadonlyArray<QuestionnaireResponse>,
+      ReadonlyArray<WithId<QuestionnaireResponse>>,
       UnhandledError | NeedsAuthenticationError | ExternalAssertionError,
       never
     >
