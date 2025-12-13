@@ -14,6 +14,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./Encounter": "./src/Encounter.ts",
+    "./Media": "./src/Media.ts",
     "./Questionnaire": "./src/Questionnaire.ts",
     "./QuestionnaireResponse": "./src/QuestionnaireResponse.ts"
   },
