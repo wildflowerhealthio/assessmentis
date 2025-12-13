@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run:  |
-          npm ci --include=dev
+          NODE_ENV=development npm ci --include=dev
           npm ci --workspaces
           npm run build # With Turbo
       - uses: FirebaseExtended/action-hosting-deploy@v0

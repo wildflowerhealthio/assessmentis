@@ -24,7 +24,7 @@ jobs:
 
       - name: Install dependencies
         run:  |
-          npm ci --include=dev
+          NODE_ENV=development npm ci --include=dev
           npm ci --workspaces
 
       - name: Run lint on all packages
