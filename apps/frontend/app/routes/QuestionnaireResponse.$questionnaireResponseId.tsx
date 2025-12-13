@@ -115,8 +115,8 @@ export default function QuestionnaireResponseDetailsPage({
         <div>
           <h3>Recordings:</h3>
           <ul>
-            {recordings.map((media, idx) => (
-              <li key={idx}>{media.content.url || 'No URL'}</li>
+            {recordings.map((media) => (
+              <li key={media.id}>{media.content.url || 'No URL'}</li>
             ))}
           </ul>
         </div>
