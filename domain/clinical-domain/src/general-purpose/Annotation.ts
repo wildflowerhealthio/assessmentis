@@ -21,7 +21,9 @@ const annotationFields = {
   text: Schema.String,
 }
 
-export interface Annotation extends Schema.Struct.Type<typeof annotationFields> {
+export interface Annotation extends Schema.Struct.Type<
+  typeof annotationFields
+> {
   readonly authorReference?: Reference | undefined
 }
 

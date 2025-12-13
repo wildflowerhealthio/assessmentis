@@ -69,7 +69,7 @@ describe('Media model', () => {
 
   test('Schema validates MediaStatus enum', () => {
     const encode = Schema.encodeUnknownEither(MediaStatus)
-    
+
     expect(Either.isRight(encode('completed'))).toBe(true)
     expect(Either.isRight(encode('preparation'))).toBe(true)
     expect(Either.isRight(encode('in-progress'))).toBe(true)
