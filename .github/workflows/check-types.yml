@@ -27,4 +27,4 @@ jobs:
           NODE_ENV=development npm ci --include=dev
           npm ci --workspaces
       - name: Run type checking on all packages
-        run: npx turbo run check-types
+        run: npm run check-types

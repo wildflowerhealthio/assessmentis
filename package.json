@@ -9,6 +9,7 @@
     "build": "npm exec turbo run build",
     "dev": "npm exec turbo run dev",
     "lint": "npm exec turbo run lint",
+    "check-types": "npm exec turbo run check-types",
     "test": "npm exec turbo run test",
     "format": "npm exec prettier --write \"**/*.{ts,tsx,md}\""
   },

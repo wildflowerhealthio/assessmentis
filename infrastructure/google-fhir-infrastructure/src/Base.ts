@@ -179,7 +179,7 @@ export const LiveClient = (config: BaseConfig) => {
               gapi.client.healthcare.projects.locations.datasets.fhirStores.fhir.search(
                 {
                   parent,
-                  resource: { resourceType },
+                  resource: { resourceType } as gapi.client.healthcare.HttpBody,
                 }
               )
             ).pipe(handleFhirApiErrors<never>())

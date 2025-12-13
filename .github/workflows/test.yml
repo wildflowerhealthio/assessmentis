@@ -30,4 +30,4 @@ jobs:
           npm ci --workspaces
 
       - name: Run tests
-        run: npm test
+        run: npm run test
