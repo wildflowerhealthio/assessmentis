@@ -25,14 +25,14 @@ export async function clientLoader(_: Route.ClientLoaderArgs) {
       const encounterRepository = yield* EncounterRepository
       //yield* Effect.fail("Error");
 
-      return yield* encounterRepository.getEncounters({})
+      return yield* encounterRepository.getMany({})
     })
   )
 
   const questionnaires = await runtime.runPromise(
     Effect.gen(function* () {
       const questionnaireRepository = yield* QuestionnaireRepository
-      return yield* questionnaireRepository.getQuestionnaires({})
+      return yield* questionnaireRepository.getMany({})
     })
   )
 
@@ -65,18 +65,14 @@ const useEncounters = (initial: Encounter[]) => {
         clientRuntime.runPromise(
           Effect.all([
             Effect.sleep('200 millis'),
-            EncounterRepository.pipe(
-              Effect.flatMap((er) => er.deleteEncounter(id))
-            ),
+            EncounterRepository.pipe(Effect.flatMap((er) => er.delete(id))),
           ])
         ),
       apiCreate: async (q: Encounter) =>
         clientRuntime.runPromise(
           Effect.all([
             Effect.sleep('200 millis'),
-            EncounterRepository.pipe(
-              Effect.flatMap((qr) => qr.createEncounter(q))
-            ),
+            EncounterRepository.pipe(Effect.flatMap((qr) => qr.create(q))),
           ]).pipe(Effect.map(([, x]) => x))
         ),
     },

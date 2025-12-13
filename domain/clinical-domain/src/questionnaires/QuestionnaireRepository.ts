@@ -15,7 +15,7 @@ export class QuestionnaireRepository extends Context.Tag(
 )<
   QuestionnaireRepository,
   {
-    createQuestionnaire(
+    create(
       questionnaire: Questionnaire
     ): Effect.Effect<
       Questionnaire,
@@ -23,7 +23,7 @@ export class QuestionnaireRepository extends Context.Tag(
       never
     >
 
-    getQuestionnaire(
+    get(
       id: QuestionnaireId
     ): Effect.Effect<
       WithId<Questionnaire>,
@@ -34,7 +34,7 @@ export class QuestionnaireRepository extends Context.Tag(
       never
     >
 
-    getQuestionnaires(
+    getMany(
       params: GetQuestionnairesArg
     ): Effect.Effect<
       WithId<Questionnaire>[],
@@ -42,7 +42,7 @@ export class QuestionnaireRepository extends Context.Tag(
       never
     >
 
-    deleteQuestionnaire(
+    delete(
       id: QuestionnaireId
     ): Effect.Effect<
       object,

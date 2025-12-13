@@ -24,7 +24,7 @@ type GetMediaParams = typeof GetMediaParams.Type
 export class MediaRepository extends Context.Tag('MediaRepository')<
   MediaRepository,
   {
-    getMedia(
+    get(
       mediaId: MediaId
     ): Effect.Effect<
       WithId<Media>,
@@ -35,7 +35,7 @@ export class MediaRepository extends Context.Tag('MediaRepository')<
       never
     >
 
-    getAllMedia(
+    getMany(
       params: GetMediaParams
     ): Effect.Effect<
       WithId<Media>[],
@@ -46,7 +46,7 @@ export class MediaRepository extends Context.Tag('MediaRepository')<
       never
     >
 
-    createMedia(
+    create(
       media: Media
     ): Effect.Effect<
       WithId<Media>,
@@ -54,7 +54,7 @@ export class MediaRepository extends Context.Tag('MediaRepository')<
       never
     >
 
-    updateMedia(
+    update(
       media: WithId<Media>
     ): Effect.Effect<
       WithId<Media>,
@@ -65,7 +65,7 @@ export class MediaRepository extends Context.Tag('MediaRepository')<
       never
     >
 
-    deleteMedia(
+    delete(
       mediaId: MediaId
     ): Effect.Effect<
       object,

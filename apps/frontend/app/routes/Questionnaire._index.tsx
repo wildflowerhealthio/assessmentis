@@ -17,7 +17,7 @@ export async function clientLoader(_: Route.ClientLoaderArgs) {
   const questionnaires = await runtime.runPromise(
     Effect.gen(function* () {
       const questionnaireRepository = yield* QuestionnaireRepository
-      return yield* questionnaireRepository.getQuestionnaires({})
+      return yield* questionnaireRepository.getMany({})
     })
   )
 
@@ -34,18 +34,14 @@ const useQuestionnaires = (initial: Questionnaire[]) => {
         clientRuntime.runPromise(
           Effect.all([
             Effect.sleep('200 millis'),
-            QuestionnaireRepository.pipe(
-              Effect.flatMap((qr) => qr.deleteQuestionnaire(id))
-            ),
+            QuestionnaireRepository.pipe(Effect.flatMap((qr) => qr.delete(id))),
           ])
         ),
       apiCreate: async (q: Questionnaire) =>
         clientRuntime.runPromise(
           Effect.all([
             Effect.sleep('200 millis'),
-            QuestionnaireRepository.pipe(
-              Effect.flatMap((qr) => qr.createQuestionnaire(q))
-            ),
+            QuestionnaireRepository.pipe(Effect.flatMap((qr) => qr.create(q))),
           ]).pipe(Effect.map(([, x]) => x))
         ),
     },

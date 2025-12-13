@@ -139,7 +139,7 @@ packages/domain/src/
 #### Files and Folders
 
 - **PascalCase** for component files: `NavHeader.tsx`, `QuestionnaireForm.tsx`
-- **camelCase** for utility files: `clientRuntime.tsx`, `createEncounter.ts`
+- **camelCase** for utility files: `clientRuntime.tsx`, `create.ts`
 - **Folders**: Use singular nouns when possible, plural for collections: `components/`, `actions/`, `models/`
 
 #### Code
@@ -199,10 +199,10 @@ export class QuestionnaireRepository extends Context.Tag(
 Use generator syntax for Effect composition:
 
 ```typescript
-export const createEncounter = (args: CreateEncounterArg) =>
+export const create = (args: CreateEncounterArg) =>
   Effect.gen(function* () {
     const encounterRepository = yield* EncounterRepository
-    const createdEncounter = yield* encounterRepository.createEncounter(args)
+    const createdEncounter = yield* encounterRepository.create(args)
     return createdEncounter
   })
 ```

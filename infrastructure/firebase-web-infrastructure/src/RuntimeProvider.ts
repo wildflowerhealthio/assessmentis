@@ -20,39 +20,36 @@ import { getAuth } from 'firebase/auth'
 const notImplemented = {
   Questionnaire: () =>
     Layer.succeed(QuestionnaireRepository, {
-      createQuestionnaire: () =>
+      create: () =>
         Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-      getQuestionnaire: () =>
+      get: () => Effect.fail(new UnhandledError({ cause: 'not implemented' })),
+      getMany: () =>
         Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-      getQuestionnaires: () =>
-        Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-      deleteQuestionnaire: () =>
+      delete: () =>
         Effect.fail(new UnhandledError({ cause: 'not implemented' })),
     }),
   QuestionnaireResponse: () =>
     Layer.succeed(QuestionnaireResponseRepository, {
-      createQuestionnaireResponses: () =>
+      createMany: () =>
         Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-      getQuestionnaireResponse: () =>
+      get: () => Effect.fail(new UnhandledError({ cause: 'not implemented' })),
+      getMany: () =>
         Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-      getQuestionnaireResponses: () =>
+      delete: () =>
         Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-      deleteQuestionnaireResponse: () =>
-        Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-      updateQuestionnaireResponse: () =>
+      update: () =>
         Effect.fail(new UnhandledError({ cause: 'not implemented' })),
     }),
   Encounter: () =>
     Layer.succeed(EncounterRepository, {
-      createEncounter: () =>
+      create: () =>
         Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-      getEncounter: () =>
+      get: () => Effect.fail(new UnhandledError({ cause: 'not implemented' })),
+      getMany: () =>
         Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-      getEncounters: () =>
+      delete: () =>
         Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-      deleteEncounter: () =>
-        Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-      updateEncounter: () =>
+      update: () =>
         Effect.fail(new UnhandledError({ cause: 'not implemented' })),
     }),
 
