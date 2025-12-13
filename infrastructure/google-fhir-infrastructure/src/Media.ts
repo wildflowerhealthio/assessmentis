@@ -1,3 +1,4 @@
+import { Layer } from 'effect'
 import {
   Media,
   MediaRepository,
@@ -19,14 +20,11 @@ class MediaGoogleFhirRepository extends BaseGoogleFhirRepository<
 export const Repository = (config: MediaConfig) => {
   const repository = new MediaGoogleFhirRepository(config)
 
-  return repository.createLayer(
-    MediaRepository,
-    ({ getById, getAll, create, update, deleteById }) => ({
-      getMedia: getById,
-      getAllMedia: getAll,
-      createMedia: create,
-      updateMedia: update,
-      deleteMedia: deleteById,
-    })
-  )
+  return Layer.succeed(MediaRepository, {
+    getMedia: repository.get.bind(repository),
+    getAllMedia: repository.getMany.bind(repository),
+    createMedia: repository.create.bind(repository),
+    updateMedia: repository.update.bind(repository),
+    deleteMedia: repository.delete.bind(repository),
+  })
 }

@@ -1,3 +1,4 @@
+import { Layer } from 'effect'
 import {
   Questionnaire,
   QuestionnaireRepository,
@@ -19,13 +20,10 @@ class QuestionnaireGoogleFhirRepository extends BaseGoogleFhirRepository<
 export const Repository = (config: QuestionnaireConfig) => {
   const repository = new QuestionnaireGoogleFhirRepository(config)
 
-  return repository.createLayer(
-    QuestionnaireRepository,
-    ({ getById, getAll, create, deleteById }) => ({
-      getQuestionnaire: getById,
-      getQuestionnaires: getAll,
-      createQuestionnaire: create,
-      deleteQuestionnaire: deleteById,
-    })
-  )
+  return Layer.succeed(QuestionnaireRepository, {
+    getQuestionnaire: repository.get.bind(repository),
+    getQuestionnaires: repository.getMany.bind(repository),
+    createQuestionnaire: repository.create.bind(repository),
+    deleteQuestionnaire: repository.delete.bind(repository),
+  })
 }

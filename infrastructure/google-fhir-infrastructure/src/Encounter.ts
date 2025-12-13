@@ -1,3 +1,4 @@
+import { Layer } from 'effect'
 import {
   EncounterRepository,
   Encounter,
@@ -19,14 +20,11 @@ class EncounterGoogleFhirRepository extends BaseGoogleFhirRepository<
 export const Repository = (config: EncounterConfig) => {
   const repository = new EncounterGoogleFhirRepository(config)
 
-  return repository.createLayer(
-    EncounterRepository,
-    ({ getById, getAll, create, update, deleteById }) => ({
-      getEncounter: getById,
-      getEncounters: getAll,
-      createEncounter: create,
-      updateEncounter: update,
-      deleteEncounter: deleteById,
-    })
-  )
+  return Layer.succeed(EncounterRepository, {
+    getEncounter: repository.get.bind(repository),
+    getEncounters: repository.getMany.bind(repository),
+    createEncounter: repository.create.bind(repository),
+    updateEncounter: repository.update.bind(repository),
+    deleteEncounter: repository.delete.bind(repository),
+  })
 }
