@@ -6,72 +6,152 @@ import {
   encounterTranscriptUrl,
 } from './EncounterTranscript'
 import { Schema, Either } from 'effect'
+import * as fc from 'fast-check'
 
 describe('EncounterTranscript extension', () => {
-  test('Schema encodes correctly', () => {
-    const encode = Schema.encodeUnknownEither(EncounterTranscriptExtension)
-    const result = encode({
-      url: encounterTranscriptUrl,
-      valueUrl: 'https://example.com/transcript/123',
-    })
+  test('property: encode-decode cycle preserves extension structure', () => {
+    // Property: For any valid extension, decode(encode(x)) === x
+    fc.assert(
+      fc.property(fc.webUrl(), (valueUrl) => {
+        const encode = Schema.encodeUnknownEither(EncounterTranscriptExtension)
+        const decode = Schema.decodeUnknownEither(EncounterTranscriptExtension)
 
-    expect(result).toStrictEqual(
-      Either.right({
-        url: encounterTranscriptUrl,
-        valueUrl: 'https://example.com/transcript/123',
+        const extension = {
+          url: encounterTranscriptUrl,
+          valueUrl,
+        }
+
+        const encoded = encode(extension)
+        expect(Either.isRight(encoded)).toBe(true)
+
+        if (Either.isRight(encoded)) {
+          const decoded = decode(encoded.right)
+          expect(Either.isRight(decoded)).toBe(true)
+          if (Either.isRight(decoded)) {
+            expect(decoded.right.url).toBe(encounterTranscriptUrl)
+            expect(decoded.right.valueUrl).toBe(valueUrl)
+          }
+        }
       })
     )
   })
 
-  test('getTranscripts returns all transcript URLs', () => {
-    const encounter = {
-      extension: [
-        { url: encounterTranscriptUrl, valueUrl: 'transcript-1' },
-        { url: 'other-url', valueUrl: 'other-value' },
-      ],
-    }
+  test('property: getTranscripts extracts all matching URLs', () => {
+    // Property: getTranscripts should extract exactly the URLs with the transcript URL tag
+    fc.assert(
+      fc.property(
+        fc.array(fc.webUrl()),
+        fc.array(fc.record({ url: fc.string(), valueUrl: fc.webUrl() })),
+        (transcriptUrls, otherExtensions) => {
+          const transcriptExtensions = transcriptUrls.map((url) => ({
+            url: encounterTranscriptUrl,
+            valueUrl: url,
+          }))
 
-    expect(getTranscripts(encounter)).toEqual(['transcript-1'])
+          const encounter = {
+            extension: [
+              ...transcriptExtensions,
+              ...otherExtensions.filter((ext) => ext.url !== encounterTranscriptUrl),
+            ],
+          }
+
+          const result = getTranscripts(encounter)
+          expect(result).toEqual(transcriptUrls)
+          expect(result.length).toBe(transcriptUrls.length)
+        }
+      )
+    )
   })
 
-  test('getTranscripts returns empty array when no transcripts', () => {
-    const encounter = {
-      extension: [{ url: 'other-url', valueUrl: 'other-value' }],
-    }
+  test('property: withTranscripts replaces all transcript URLs', () => {
+    // Property: withTranscripts should replace all transcript extensions with new ones
+    fc.assert(
+      fc.property(
+        fc.array(fc.webUrl()),
+        fc.array(fc.webUrl()),
+        fc.array(
+          fc.record({
+            url: fc.string().filter((s) => s !== encounterTranscriptUrl),
+            valueUrl: fc.webUrl(),
+          })
+        ),
+        (oldTranscripts, newTranscripts, otherExtensions) => {
+          const oldExtensions = oldTranscripts.map((url) => ({
+            url: encounterTranscriptUrl,
+            valueUrl: url,
+          }))
 
-    expect(getTranscripts(encounter)).toEqual([])
+          const encounter = {
+            extension: [...oldExtensions, ...otherExtensions],
+          }
+
+          const result = withTranscripts(encounter, newTranscripts)
+
+          // Check that result has exactly the new transcripts
+          const resultTranscripts = getTranscripts(result)
+          expect(resultTranscripts).toEqual(newTranscripts)
+
+          // Check that other extensions are preserved
+          const otherUrls = otherExtensions.map((e) => e.valueUrl)
+          const resultOtherExtensions = result.extension.filter(
+            (ext) => ext.url !== encounterTranscriptUrl
+          )
+          expect(resultOtherExtensions.map((e) => e.valueUrl)).toEqual(otherUrls)
+        }
+      )
+    )
   })
 
-  test('withTranscripts adds transcript URLs', () => {
-    const encounter = { extension: [] }
+  test('property: withTranscripts then getTranscripts is identity', () => {
+    // Property: getTranscripts(withTranscripts(encounter, urls)) === urls
+    fc.assert(
+      fc.property(
+        fc.array(fc.record({ url: fc.string(), valueUrl: fc.webUrl() })),
+        fc.array(fc.webUrl()),
+        (extensions, transcriptUrls) => {
+          const encounter = { extension: extensions }
+          const result = withTranscripts(encounter, transcriptUrls)
+          const extracted = getTranscripts(result)
 
-    const result = withTranscripts(encounter, ['transcript-1'])
-
-    expect(result.extension).toHaveLength(1)
-    expect(result.extension[0]).toEqual({
-      url: encounterTranscriptUrl,
-      valueUrl: 'transcript-1',
-    })
+          expect(extracted).toEqual(transcriptUrls)
+        }
+      )
+    )
   })
 
-  test('withTranscripts replaces existing transcripts', () => {
-    const encounter = {
-      extension: [{ url: encounterTranscriptUrl, valueUrl: 'old-transcript' }],
-    }
+  test('property: withTranscripts with empty array removes all transcripts', () => {
+    // Property: Setting empty transcripts should remove all transcript extensions
+    fc.assert(
+      fc.property(
+        fc.array(fc.webUrl()),
+        fc.array(
+          fc.record({
+            url: fc.string().filter((s) => s !== encounterTranscriptUrl),
+            valueUrl: fc.webUrl(),
+          })
+        ),
+        (transcriptUrls, otherExtensions) => {
+          const transcriptExtensions = transcriptUrls.map((url) => ({
+            url: encounterTranscriptUrl,
+            valueUrl: url,
+          }))
 
-    const result = withTranscripts(encounter, ['new-transcript'])
+          const encounter = {
+            extension: [...transcriptExtensions, ...otherExtensions],
+          }
 
-    expect(result.extension).toHaveLength(1)
-    expect(result.extension[0].valueUrl).toBe('new-transcript')
-  })
+          const result = withTranscripts(encounter, [])
 
-  test('withTranscripts removes transcripts when empty array', () => {
-    const encounter = {
-      extension: [{ url: encounterTranscriptUrl, valueUrl: 'transcript-1' }],
-    }
+          // No transcript extensions should remain
+          const transcripts = result.extension.filter(
+            (ext) => ext.url === encounterTranscriptUrl
+          )
+          expect(transcripts).toHaveLength(0)
 
-    const result = withTranscripts(encounter, [])
-
-    expect(result.extension).toHaveLength(0)
+          // Other extensions should be preserved
+          expect(result.extension.length).toBe(otherExtensions.length)
+        }
+      )
+    )
   })
 })

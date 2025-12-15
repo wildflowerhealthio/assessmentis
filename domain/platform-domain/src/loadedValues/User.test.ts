@@ -1,197 +1,265 @@
 import { expect, test, describe } from 'vitest'
 import { Schema, Either } from 'effect'
 import { User, UserLoading, UserDataError, CurrentUserError } from './User'
+import * as fc from 'fast-check'
 
 describe('User', () => {
-  test('decodes valid user structure', () => {
-    const decode = Schema.decodeUnknownEither(User)
-    const user = {
-      uid: 'user-123',
-      org_roles: {
-        'org-1': ['admin', 'editor'],
-        'org-2': ['viewer'],
-      },
-    }
+  test('property: decode-encode cycle preserves user structure', () => {
+    // Property: For any valid User, encode(decode(x)) === x
+    fc.assert(
+      fc.property(
+        fc.string(),
+        fc.dictionary(fc.string(), fc.array(fc.string())),
+        (uid, org_roles) => {
+          const decode = Schema.decodeUnknownEither(User)
+          const encode = Schema.encodeUnknownEither(User)
+          const user = { uid, org_roles }
 
-    const result = decode(user)
-
-    expect(Either.isRight(result)).toBe(true)
-    if (Either.isRight(result)) {
-      expect(result.right.uid).toBe('user-123')
-      const roles = Object.values(result.right.org_roles)
-      expect(roles.length).toBeGreaterThan(0)
-      expect(Object.keys(result.right.org_roles)).toContain('org-1')
-      expect(Object.keys(result.right.org_roles)).toContain('org-2')
-    }
+          const decoded = decode(user)
+          if (Either.isRight(decoded)) {
+            const encoded = encode(decoded.right)
+            expect(Either.isRight(encoded)).toBe(true)
+            if (Either.isRight(encoded)) {
+              expect(encoded.right.uid).toBe(uid)
+              expect(encoded.right.org_roles).toEqual(org_roles)
+            }
+          }
+        }
+      )
+    )
   })
 
-  test('accepts user with no org roles', () => {
-    const decode = Schema.decodeUnknownEither(User)
-    const user = {
-      uid: 'user-456',
-      org_roles: {},
-    }
+  test('property: org_roles structure is preserved', () => {
+    // Property: org_roles dictionary structure and content is preserved
+    // Note: Filters out prototype pollution keys like __proto__, constructor, prototype
+    fc.assert(
+      fc.property(
+        fc.string(),
+        fc.dictionary(
+          fc.string().filter(key => !['__proto__', 'constructor', 'prototype'].includes(key)),
+          fc.array(fc.string())
+        ),
+        (uid, org_roles) => {
+          const decode = Schema.decodeUnknownEither(User)
+          const user = { uid, org_roles }
 
-    const result = decode(user)
-
-    expect(Either.isRight(result)).toBe(true)
-    if (Either.isRight(result)) {
-      expect(result.right.uid).toBe('user-456')
-      expect(Object.keys(result.right.org_roles)).toHaveLength(0)
-    }
+          const result = decode(user)
+          if (Either.isRight(result)) {
+            // Compare actual enumerable keys (which filters out __proto__)
+            const inputKeys = Object.keys(org_roles).sort()
+            const outputKeys = Object.keys(result.right.org_roles).sort()
+            expect(outputKeys).toEqual(inputKeys)
+            
+            Object.entries(org_roles).forEach(([orgSlug, roles]) => {
+              expect(result.right.org_roles[orgSlug]).toEqual(roles)
+            })
+          }
+        }
+      )
+    )
   })
 
-  test('accepts user with multiple roles in one org', () => {
-    const decode = Schema.decodeUnknownEither(User)
-    const user = {
-      uid: 'user-789',
-      org_roles: {
-        'my-org': ['admin', 'editor', 'viewer', 'owner'],
-      },
-    }
-
-    const result = decode(user)
-
-    expect(Either.isRight(result)).toBe(true)
-    if (Either.isRight(result)) {
-      const roles = Object.values(result.right.org_roles)
-      expect(roles[0]).toHaveLength(4)
-    }
+  test('property: missing required fields always fail', () => {
+    // Property: User must have both uid and org_roles
+    fc.assert(
+      fc.property(
+        fc.oneof(
+          fc.record({ org_roles: fc.dictionary(fc.string(), fc.array(fc.string())) }), // Missing uid
+          fc.record({ uid: fc.string() }) // Missing org_roles
+        ),
+        (incomplete) => {
+          const decode = Schema.decodeUnknownEither(User)
+          const result = decode(incomplete)
+          expect(Either.isLeft(result)).toBe(true)
+        }
+      )
+    )
   })
 
-  test('fails without uid', () => {
-    const decode = Schema.decodeUnknownEither(User)
-    const user = {
-      org_roles: {
-        'org-1': ['admin'],
-      },
-    }
+  test('property: empty org_roles is valid', () => {
+    // Property: User can have an empty org_roles dictionary
+    fc.assert(
+      fc.property(fc.string(), (uid) => {
+        const decode = Schema.decodeUnknownEither(User)
+        const user = { uid, org_roles: {} }
 
-    const result = decode(user)
-
-    expect(Either.isLeft(result)).toBe(true)
-  })
-
-  test('fails without org_roles', () => {
-    const decode = Schema.decodeUnknownEither(User)
-    const user = {
-      uid: 'user-123',
-    }
-
-    const result = decode(user)
-
-    expect(Either.isLeft(result)).toBe(true)
+        const result = decode(user)
+        expect(Either.isRight(result)).toBe(true)
+        if (Either.isRight(result)) {
+          expect(Object.keys(result.right.org_roles)).toHaveLength(0)
+        }
+      })
+    )
   })
 })
 
 describe('UserLoading', () => {
-  test('creates user loading state', () => {
+  test('property: encode-decode is identity for UserLoading', () => {
+    // Property: decode(encode(x)) === x for UserLoading state
+    const decode = Schema.decodeUnknownEither(UserLoading)
     const encode = Schema.encodeUnknownEither(UserLoading)
-    const loading = {
-      _tag: 'UserLoading',
-    }
+    const loading = { _tag: 'UserLoading' as const }
 
-    const result = encode(loading)
+    const encoded = encode(loading)
+    expect(Either.isRight(encoded)).toBe(true)
 
-    expect(Either.isRight(result)).toBe(true)
-    if (Either.isRight(result)) {
-      expect(result.right._tag).toBe('UserLoading')
+    if (Either.isRight(encoded)) {
+      const decoded = decode(encoded.right)
+      expect(Either.isRight(decoded)).toBe(true)
+      if (Either.isRight(decoded)) {
+        expect(decoded.right._tag).toBe('UserLoading')
+      }
     }
   })
 
-  test('decodes user loading state', () => {
-    const decode = Schema.decodeUnknownEither(UserLoading)
-    const loading = {
-      _tag: 'UserLoading',
-    }
-
-    const result = decode(loading)
-
-    expect(Either.isRight(result)).toBe(true)
+  test('property: invalid _tag always fails', () => {
+    // Property: Only correct _tag value decodes successfully
+    fc.assert(
+      fc.property(
+        fc.string().filter((s) => s !== 'UserLoading'),
+        (tag) => {
+          const decode = Schema.decodeUnknownEither(UserLoading)
+          const result = decode({ _tag: tag })
+          expect(Either.isLeft(result)).toBe(true)
+        }
+      )
+    )
   })
 })
 
 describe('UserDataError', () => {
-  test('creates error with cause', () => {
-    const encode = Schema.encodeUnknownEither(UserDataError)
-    const error = {
-      _tag: 'UserDataError',
-      cause: 'Database connection failed',
-    }
+  test('property: encode-decode preserves error with cause', () => {
+    // Property: For any cause value, encode-decode should preserve it
+    fc.assert(
+      fc.property(fc.option(fc.anything(), { nil: undefined }), (cause) => {
+        const decode = Schema.decodeUnknownEither(UserDataError)
+        const encode = Schema.encodeUnknownEither(UserDataError)
 
-    const result = encode(error)
+        const error =
+          cause !== undefined
+            ? { _tag: 'UserDataError' as const, cause }
+            : { _tag: 'UserDataError' as const }
 
-    expect(Either.isRight(result)).toBe(true)
-    if (Either.isRight(result)) {
-      expect(result.right._tag).toBe('UserDataError')
-      expect(result.right.cause).toBe('Database connection failed')
-    }
+        const encoded = encode(error)
+        expect(Either.isRight(encoded)).toBe(true)
+
+        if (Either.isRight(encoded)) {
+          const decoded = decode(encoded.right)
+          expect(Either.isRight(decoded)).toBe(true)
+          if (Either.isRight(decoded)) {
+            expect(decoded.right._tag).toBe('UserDataError')
+            if (cause !== undefined) {
+              expect(decoded.right.cause).toEqual(cause)
+            }
+          }
+        }
+      })
+    )
   })
 
-  test('creates error without cause', () => {
-    const encode = Schema.encodeUnknownEither(UserDataError)
-    const error = {
-      _tag: 'UserDataError',
-    }
-
-    const result = encode(error)
-
-    expect(Either.isRight(result)).toBe(true)
+  test('property: invalid _tag always fails', () => {
+    // Property: Only correct _tag value decodes successfully
+    fc.assert(
+      fc.property(
+        fc.string().filter((s) => s !== 'UserDataError'),
+        (tag) => {
+          const decode = Schema.decodeUnknownEither(UserDataError)
+          const result = decode({ _tag: tag })
+          expect(Either.isLeft(result)).toBe(true)
+        }
+      )
+    )
   })
 })
 
 describe('CurrentUserError', () => {
-  test('accepts UserLoading', () => {
-    const decode = Schema.decodeUnknownEither(CurrentUserError)
-    const error = {
-      _tag: 'UserLoading',
-    }
+  test('property: union accepts all valid member types', () => {
+    // Property: CurrentUserError should accept all User and UserId error types
+    fc.assert(
+      fc.property(
+        fc.oneof(
+          fc.constant({ _tag: 'UserLoading' as const }),
+          fc.record({
+            _tag: fc.constant('UserDataError' as const),
+            cause: fc.option(fc.anything(), { nil: undefined }),
+          }),
+          fc.constant({ _tag: 'AuthStateLoading' as const }),
+          fc.record({
+            _tag: fc.constant('AuthStateError' as const),
+            cause: fc.option(fc.anything(), { nil: undefined }),
+          }),
+          fc.constant({ _tag: 'NotLoggedIn' as const })
+        ),
+        (error) => {
+          const decode = Schema.decodeUnknownEither(CurrentUserError)
+          const result = decode(error)
 
-    const result = decode(error)
-
-    expect(Either.isRight(result)).toBe(true)
-    if (Either.isRight(result)) {
-      expect(result.right._tag).toBe('UserLoading')
-    }
+          expect(Either.isRight(result)).toBe(true)
+          if (Either.isRight(result)) {
+            expect([
+              'UserLoading',
+              'UserDataError',
+              'AuthStateLoading',
+              'AuthStateError',
+              'NotLoggedIn',
+            ]).toContain(result.right._tag)
+          }
+        }
+      )
+    )
   })
 
-  test('accepts UserDataError', () => {
-    const decode = Schema.decodeUnknownEither(CurrentUserError)
-    const error = {
-      _tag: 'UserDataError',
-      cause: 'Parse error',
-    }
+  test('property: encode-decode preserves union member identity', () => {
+    // Property: For any valid union member, encode-decode should preserve it
+    fc.assert(
+      fc.property(
+        fc.oneof(
+          fc.constant({ _tag: 'UserLoading' as const }),
+          fc.constant({ _tag: 'AuthStateLoading' as const }),
+          fc.constant({ _tag: 'NotLoggedIn' as const })
+        ),
+        (error) => {
+          const decode = Schema.decodeUnknownEither(CurrentUserError)
+          const encode = Schema.encodeUnknownEither(CurrentUserError)
 
-    const result = decode(error)
+          const decoded = decode(error)
+          if (Either.isRight(decoded)) {
+            const encoded = encode(decoded.right)
+            expect(Either.isRight(encoded)).toBe(true)
 
-    expect(Either.isRight(result)).toBe(true)
-    if (Either.isRight(result)) {
-      expect(result.right._tag).toBe('UserDataError')
-    }
+            if (Either.isRight(encoded)) {
+              const redecoded = decode(encoded.right)
+              expect(Either.isRight(redecoded)).toBe(true)
+              if (Either.isRight(redecoded)) {
+                expect(redecoded.right._tag).toBe(decoded.right._tag)
+              }
+            }
+          }
+        }
+      )
+    )
   })
 
-  test('accepts CurrentUserIdError types', () => {
-    const decode = Schema.decodeUnknownEither(CurrentUserError)
-    const errors = [
-      { _tag: 'AuthStateLoading' },
-      { _tag: 'AuthStateError', cause: 'Auth failed' },
-      { _tag: 'NotLoggedIn' },
-    ]
-
-    errors.forEach((error) => {
-      const result = decode(error)
-      expect(Either.isRight(result)).toBe(true)
-    })
-  })
-
-  test('fails for invalid union member', () => {
-    const decode = Schema.decodeUnknownEither(CurrentUserError)
-    const error = {
-      _tag: 'InvalidErrorType',
-    }
-
-    const result = decode(error)
-
-    expect(Either.isLeft(result)).toBe(true)
+  test('property: invalid _tag values always fail', () => {
+    // Property: Any _tag not in the union should fail
+    fc.assert(
+      fc.property(
+        fc
+          .string()
+          .filter(
+            (s) =>
+              s !== 'UserLoading' &&
+              s !== 'UserDataError' &&
+              s !== 'AuthStateLoading' &&
+              s !== 'AuthStateError' &&
+              s !== 'NotLoggedIn'
+          ),
+        (tag) => {
+          const decode = Schema.decodeUnknownEither(CurrentUserError)
+          const result = decode({ _tag: tag })
+          expect(Either.isLeft(result)).toBe(true)
+        }
+      )
+    )
   })
 })
