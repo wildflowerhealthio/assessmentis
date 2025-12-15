@@ -12,7 +12,7 @@ export const useCollection = <
     apiDelete: (id: Id) => Promise<unknown>
     apiCreate: (value: T) => Promise<T>
   },
-  initial: T[]
+  initial: ReadonlyArray<T>
 ) => {
   const [collection, setCollection] = useState(
     initial.map((item) => ({ data: item, loading: false }))

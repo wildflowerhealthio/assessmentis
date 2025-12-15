@@ -31,15 +31,8 @@ export const getEncounterRecordings = (
   return Effect.gen(function* () {
     const mediaRepository = yield* MediaRepository
 
-    // Fetch all Media resources and filter by encounter reference
-    // Note: The current FHIR search implementation doesn't support filtering parameters,
-    // so we filter in memory. This is consistent with other repository implementations.
-    const allMedia = yield* mediaRepository.getMany({})
-
-    const encounterMedia = allMedia.filter(
-      (media) => media.encounter?.reference === `Encounter/${encounterId}`
-    )
-
-    return encounterMedia
+    return yield* mediaRepository.getMany({
+      encounter: `Encounter/${encounterId}`,
+    })
   })
 }

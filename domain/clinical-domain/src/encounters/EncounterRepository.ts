@@ -1,4 +1,4 @@
-import { Context, Data, Effect, Schema } from 'effect'
+import { Context, Data, Effect } from 'effect'
 import { Encounter, EncounterId } from './models/Encounter'
 
 import {
@@ -18,9 +18,6 @@ export class EncounterNotFound extends Data.TaggedError('EncounterNotFound')<{
   encounterId?: EncounterId
 }> {}
 
-const GetEncounterParams = Schema.Struct({})
-type GetEncounterParams = typeof GetEncounterParams.Type
-
 export class EncounterRepository extends Context.Tag('EncounterRepository')<
   EncounterRepository,
   {
@@ -36,7 +33,7 @@ export class EncounterRepository extends Context.Tag('EncounterRepository')<
     >
 
     getMany(
-      params: GetEncounterParams
+      params?: Encounter
     ): Effect.Effect<
       WithId<Encounter>[],
       | NotFoundError

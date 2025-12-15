@@ -26,7 +26,7 @@ const NavHeader = () => {
           Assessment.is
         </h1>
       </Link>
-      <nav className={classes.NavHeader__nav}>
+      <nav ref={navRef} className={classes.NavHeader__nav}>
         <button
           aria-label={showMenu ? 'Show menu' : 'Hide menu'}
           className={cn(
@@ -39,7 +39,7 @@ const NavHeader = () => {
           <div></div>
         </button>
         {showMenu ? (
-          <menu ref={navRef} className={classes.NavHeader__menu}>
+          <menu className={classes.NavHeader__menu}>
             <Link
               className={cn('heading-2', classes.NavHeader__link)}
               to="/Encounter"

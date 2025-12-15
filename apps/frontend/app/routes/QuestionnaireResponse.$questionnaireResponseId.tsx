@@ -1,24 +1,31 @@
-import { Schema, Option, Effect } from 'effect'
+import { Schema, Option, Effect, DateTime } from 'effect'
 import {
+  getAnsweredAt,
   Questionnaire,
+  QuestionnaireItemLink,
   QuestionnaireResponse,
+  QuestionnaireResponseItem,
 } from '@assessmentis/clinical-domain/questionnaires'
 import { UnhandledError } from '@assessmentis/clinical-domain/errors'
 import { QuestionnaireId } from '@assessmentis/clinical-domain/questionnaires'
 import { QuestionnaireResponseId } from '@assessmentis/clinical-domain/questionnaires'
 import { QuestionnaireRepository } from '@assessmentis/clinical-domain/questionnaires'
 import { QuestionnaireResponseRepository } from '@assessmentis/clinical-domain/questionnaires'
-import { getRuntime } from 'app/clientRuntime'
+import { getRuntime, useRuntimeContext } from 'app/clientRuntime'
 import type { Route } from './+types/QuestionnaireResponse.$questionnaireResponseId'
 import QuestionnaireForm from 'app/modules/questionnaire/features/QuestionnaireForm/QuestionnaireForm'
 import { updateEncounterRecordingsAndTranscripts } from '../modules/encounters/actions/updateEncounterRecordingsAndTranscripts'
 import { getEncounterRecordings } from '../modules/encounters/actions/getEncounterRecordings'
+import { EncounterId } from '@assessmentis/clinical-domain/encounters'
 import {
-  Encounter,
-  EncounterId,
-  getRecordingFileUrls,
-} from '@assessmentis/clinical-domain/encounters'
-import { Media } from '@assessmentis/clinical-domain/diagnostic-medicine'
+  Media,
+  MediaId,
+  MediaRepository,
+} from '@assessmentis/clinical-domain/diagnostic-medicine'
+import { useClinicalDataCollection } from '../hooks/useClinicalDataCollection'
+import { useNavigate } from 'react-router'
+import { useState } from 'react'
+import SplitPane from '../components/SplitPane/SplitPane'
 
 const tryDecodeQuestionnaireResponseId = Schema.decodeOption(
   QuestionnaireResponseId
@@ -27,7 +34,6 @@ const tryDecodeQuestionnaireResponseId = Schema.decodeOption(
 export const QuestionnaireResponseWithQuestionnaire = Schema.Struct({
   questionnaireResponse: QuestionnaireResponse,
   questionnaire: Questionnaire,
-  encounter: Schema.optional(Encounter),
   recordings: Schema.Array(Media),
 })
 
@@ -66,11 +72,6 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     )
     const encounterId =
       questionnaireResponse.encounter?.reference?.split('/')[1] ?? undefined
-    const encounter = encounterId
-      ? yield* updateEncounterRecordingsAndTranscripts(
-          EncounterId.make(encounterId)
-        )
-      : undefined
 
     const recordings = encounterId
       ? yield* getEncounterRecordings(EncounterId.make(encounterId))
@@ -80,7 +81,6 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     const enc = Schema.encode(QuestionnaireResponseWithQuestionnaire)({
       questionnaireResponse,
       questionnaire,
-      encounter,
       recordings,
     })
     return yield* enc
@@ -89,53 +89,148 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   return await runtime.runPromise(questionnaireResponseEffect)
 }
 
-const decodeQuestionnaire = Schema.decodeSync(Questionnaire)
-const decodeQuestionnaireResponse = Schema.decodeSync(QuestionnaireResponse)
-
 export default function QuestionnaireResponseDetailsPage({
   loaderData,
 }: Route.ComponentProps) {
-  const { questionnaire, questionnaireResponse, encounter, recordings } =
-    loaderData
-  // const handleSubmitAnswer = async (
-  //   questionnaireItemLink: QuestionnaireItemLink,
-  //   answer: QuestionnaireResponseItemAnswer | null,
-  // ): Promise<unknown> => {
-  //   const runtime = await getRuntime();
-  //   return await runtime.runPromise(
-  //     submitAnswer(questionnaireItemLink, answer),
-  //   );
-  // };
+  const runtime = useRuntimeContext()
+  const navigate = useNavigate()
+  const [highlightLinks, setHighlightLinks] = useState<
+    Set<QuestionnaireItemLink>
+  >(new Set())
+  const { questionnaire, questionnaireResponse, recordings } =
+    Schema.decodeSync(QuestionnaireResponseWithQuestionnaire)(loaderData)
 
-  // This hook builds the form based on the questionnaire
+  const { collection: media, deleteItem: deleteMedia } =
+    useClinicalDataCollection<
+      MediaId,
+      Media,
+      MediaRepository,
+      typeof MediaRepository
+    >(MediaRepository, recordings)
+
+  const syncVideo = (() => {
+    const encounterIdStr =
+      questionnaireResponse.encounter?.reference?.split('/')[1] ?? undefined
+    if (!encounterIdStr) return undefined
+    const encounterId = EncounterId.make(encounterIdStr)
+    if (!runtime) return undefined
+
+    return () =>
+      runtime
+        .runPromise(updateEncounterRecordingsAndTranscripts(encounterId))
+        .then(() => navigate(0))
+  })()
+
   return (
-    <section style={{ maxWidth: 800, margin: 'auto' }}>
-      {/* Display recordings from Media resources */}
-      {recordings.length > 0 && (
-        <div>
-          <h3>Recordings:</h3>
-          <ul>
-            {recordings.map((media) => (
-              <li key={media.id}>{media.content.url || 'No URL'}</li>
-            ))}
-          </ul>
+    <SplitPane
+      left={
+        <div style={{ overflowY: 'scroll' }}>
+          <QuestionnaireForm
+            questionnaire={questionnaire}
+            questionnaireResponse={questionnaireResponse}
+            highlightLinks={highlightLinks}
+          />
         </div>
-      )}
-      {/* Fallback: Show legacy extension recordings if Media resources not available */}
-      {recordings.length === 0 &&
-        encounter &&
-        getRecordingFileUrls(encounter).length > 0 && (
-          <div>
-            <h3>Recordings (legacy):</h3>
-            {JSON.stringify(getRecordingFileUrls(encounter))}
-          </div>
-        )}
-      <QuestionnaireForm
-        questionnaire={decodeQuestionnaire(questionnaire)}
-        questionnaireResponse={decodeQuestionnaireResponse(
-          questionnaireResponse
-        )}
-      />
-    </section>
+      }
+      right={
+        <div style={{ overflowY: 'scroll' }}>
+          <h3
+            className="heading-3"
+            style={{
+              display: 'inline-flex',
+              width: '100%',
+              marginTop: 'var(--space-2)',
+              marginBottom: 'var(--space-5)',
+            }}
+          >
+            Recordings:
+            <button
+              className="button-1"
+              style={{
+                display: 'inline-block',
+                marginTop: 'auto',
+                marginBottom: 'auto',
+                marginLeft: 'auto',
+              }}
+              onClick={syncVideo}
+              disabled={!syncVideo}
+            >
+              Refresh
+            </button>
+          </h3>
+          {media.map(({ data }) => (
+            <>
+              <video
+                style={{ width: '100%', aspectRatio: 'calc(16/9)' }}
+                onTimeUpdate={(e) => {
+                  if (data.createdDateTime) {
+                    const videoTime = DateTime.add(data.createdDateTime, {
+                      seconds: e.currentTarget.currentTime,
+                    })
+                    function* deepItems(
+                      items: ReadonlyArray<QuestionnaireResponseItem>
+                    ): Generator<QuestionnaireResponseItem> {
+                      for (const child of items) {
+                        yield child
+                        if (child.item) yield* deepItems(child.item)
+                      }
+                    }
+                    const nextAnswer = deepItems(
+                      questionnaireResponse.item ?? []
+                    ).reduce(
+                      (next, item) => {
+                        if (!item.answer || item.answer.length === 0)
+                          return next
+
+                        const itemAnsweredAt = getAnsweredAt(item.answer[0])
+                        const answeredBeforeVideoTime =
+                          itemAnsweredAt &&
+                          DateTime.greaterThan(videoTime, itemAnsweredAt)
+                        if (!answeredBeforeVideoTime) {
+                          return next
+                        }
+
+                        if (!next || !next.answer || next.answer.length === 0)
+                          return item
+                        const nextAnsweredAt = getAnsweredAt(next.answer[0])
+
+                        if (
+                          nextAnsweredAt &&
+                          DateTime.greaterThan(itemAnsweredAt, nextAnsweredAt)
+                        ) {
+                          return item
+                        }
+
+                        return next
+                      },
+                      undefined as QuestionnaireResponseItem | undefined
+                    )
+
+                    setHighlightLinks(
+                      nextAnswer ? new Set([nextAnswer.linkId]) : new Set()
+                    )
+                  }
+                }}
+                controls
+              >
+                <source src={data.content.url} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+              <button
+                className="element-button button-1 filled accent-red"
+                style={{
+                  marginTop: 'var(--space-1)',
+                  marginBottom: 'var(--space-5)',
+                  width: '100%',
+                }}
+                onClick={() => deleteMedia(data.id)}
+              >
+                Delete
+              </button>
+            </>
+          ))}
+        </div>
+      }
+    />
   )
 }

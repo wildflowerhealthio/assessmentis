@@ -1,4 +1,4 @@
-import { Effect, Schema, Option } from 'effect'
+import { Effect, Schema, Option, Schedule } from 'effect'
 import {
   Element,
   BaseClinicalDataRepository,
@@ -39,16 +39,16 @@ import { UnknownException } from 'effect/Cause'
  * ```
  */
 export abstract class BaseGoogleFhirRepository<
-  TResource extends Element<TId>,
+  TResource extends Element<TId> & { resourceType: string },
   TResourceEncoded extends { resourceType: string; id?: string | undefined },
   TId extends string,
 > extends BaseClinicalDataRepository<TResource, TId> {
-  protected readonly resourceType: string
+  protected readonly resourceType: TResource['resourceType']
   protected readonly schema: Schema.Schema<TResource, TResourceEncoded, never>
   protected readonly parent: string
 
   constructor(
-    resourceType: string,
+    resourceType: TResource['resourceType'],
     schema: Schema.Schema<TResource, TResourceEncoded, never>,
     config: BaseConfig
   ) {
@@ -178,9 +178,17 @@ export abstract class BaseGoogleFhirRepository<
   > {
     return this.gapiPoll().pipe(
       Effect.flatMap(() =>
-        Effect.tryPromise(() => fhirApiCall()(args)).pipe(
-          this.handleFhirApiErrors<ExternalAssertionError>().bind(this)
-        )
+        Effect.retry(
+          Effect.tryPromise(() => fhirApiCall()(args)),
+          {
+            until: (err) => {
+              console.error('FHIR API call error:', err)
+              return getStatus(err.cause) != 502
+            },
+            times: 3,
+            schedule: Schedule.exponential('500 millis', 2),
+          }
+        ).pipe(this.handleFhirApiErrors<ExternalAssertionError>().bind(this))
       )
     )
   }
@@ -232,7 +240,7 @@ export abstract class BaseGoogleFhirRepository<
   }
 
   getMany(
-    _params: unknown
+    params = {}
   ): Effect.Effect<
     WithId<TResource>[],
     UnhandledError | NeedsAuthenticationError | ExternalAssertionError,
@@ -247,8 +255,9 @@ export abstract class BaseGoogleFhirRepository<
           .search,
       {
         parent: this.parent,
+        resourceType: this.resourceType,
         resource: {
-          resourceType: this.resourceType,
+          ...params,
         } as gapi.client.healthcare.HttpBody,
       }
     ).pipe(
