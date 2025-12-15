@@ -1,10 +1,9 @@
 import { Schema, Option, Effect, DateTime } from 'effect'
 import {
-  getAnsweredAt,
+  firstItemAnsweredAfter,
   Questionnaire,
   QuestionnaireItemLink,
   QuestionnaireResponse,
-  QuestionnaireResponseItem,
 } from '@assessmentis/clinical-domain/questionnaires'
 import { UnhandledError } from '@assessmentis/clinical-domain/errors'
 import { QuestionnaireId } from '@assessmentis/clinical-domain/questionnaires'
@@ -167,43 +166,9 @@ export default function QuestionnaireResponseDetailsPage({
                     const videoTime = DateTime.add(data.createdDateTime, {
                       seconds: e.currentTarget.currentTime,
                     })
-                    function* deepItems(
-                      items: ReadonlyArray<QuestionnaireResponseItem>
-                    ): Generator<QuestionnaireResponseItem> {
-                      for (const child of items) {
-                        yield child
-                        if (child.item) yield* deepItems(child.item)
-                      }
-                    }
-                    const nextAnswer = deepItems(
-                      questionnaireResponse.item ?? []
-                    ).reduce(
-                      (next, item) => {
-                        if (!item.answer || item.answer.length === 0)
-                          return next
-
-                        const itemAnsweredAt = getAnsweredAt(item.answer[0])
-                        const answeredBeforeVideoTime =
-                          itemAnsweredAt &&
-                          DateTime.greaterThan(videoTime, itemAnsweredAt)
-                        if (!answeredBeforeVideoTime) {
-                          return next
-                        }
-
-                        if (!next || !next.answer || next.answer.length === 0)
-                          return item
-                        const nextAnsweredAt = getAnsweredAt(next.answer[0])
-
-                        if (
-                          nextAnsweredAt &&
-                          DateTime.greaterThan(itemAnsweredAt, nextAnsweredAt)
-                        ) {
-                          return item
-                        }
-
-                        return next
-                      },
-                      undefined as QuestionnaireResponseItem | undefined
+                    const nextAnswer = firstItemAnsweredAfter(
+                      questionnaireResponse,
+                      videoTime
                     )
 
                     setHighlightLinks(

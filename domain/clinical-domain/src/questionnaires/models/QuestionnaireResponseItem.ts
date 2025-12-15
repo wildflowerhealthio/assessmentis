@@ -129,3 +129,12 @@ export const QuestionnaireResponseItem = Schema.Struct({
     )
   ),
 })
+
+export function* allQuestionnaireResponseItems(
+  items: ReadonlyArray<QuestionnaireResponseItem>
+): Generator<QuestionnaireResponseItem> {
+  for (const child of items) {
+    yield child
+    if (child.item) yield* allQuestionnaireResponseItems(child.item)
+  }
+}

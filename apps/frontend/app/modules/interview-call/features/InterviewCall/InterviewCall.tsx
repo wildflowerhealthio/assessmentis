@@ -45,11 +45,9 @@ const useDailyCall = (roomUrl: string | undefined) => {
    */
   const createCall = useCallback(() => {
     setAppState(VideoCallState.STATE_CREATING)
-    console.log('Creating call object')
     setAppState(VideoCallState.STATE_HAIRCHECK)
     callObject?.preAuth({ url: roomUrl }) // add a meeting token here if your room is private
     callObject?.startCamera()
-    console.log('Created call object')
   }, [roomUrl, callObject])
 
   /**
