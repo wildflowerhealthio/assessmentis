@@ -109,7 +109,14 @@ describe('Media model', () => {
           const decode = Schema.decodeUnknownEither(Media)
           const encode = Schema.encodeUnknownEither(Media)
 
-          const media: any = {
+          const media: {
+            resourceType: 'Media'
+            status: string
+            content: { contentType: string }
+            height?: number
+            width?: number
+            deviceName?: string
+          } = {
             resourceType: 'Media',
             status,
             content: { contentType },
@@ -148,7 +155,13 @@ describe('Media model', () => {
           const decode = Schema.decodeUnknownEither(Media)
           const encode = Schema.encodeUnknownEither(Media)
 
-          const media: any = {
+          const media: {
+            resourceType: 'Media'
+            status: string
+            content: { contentType: string }
+            duration?: number
+            frames?: number
+          } = {
             resourceType: 'Media',
             status: 'completed',
             content: { contentType: 'video/mp4' },

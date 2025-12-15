@@ -29,14 +29,17 @@ describe('User', () => {
     )
   })
 
+  // Keys that can cause prototype pollution and should be filtered in tests
+  const DANGEROUS_KEYS = ['__proto__', 'constructor', 'prototype'] as const
+
   test('property: org_roles structure is preserved', () => {
     // Property: org_roles dictionary structure and content is preserved
-    // Note: Filters out prototype pollution keys like __proto__, constructor, prototype
+    // Note: Filters out prototype pollution keys
     fc.assert(
       fc.property(
         fc.string(),
         fc.dictionary(
-          fc.string().filter(key => !['__proto__', 'constructor', 'prototype'].includes(key)),
+          fc.string().filter((key) => !DANGEROUS_KEYS.includes(key as any)),
           fc.array(fc.string())
         ),
         (uid, org_roles) => {
@@ -49,7 +52,7 @@ describe('User', () => {
             const inputKeys = Object.keys(org_roles).sort()
             const outputKeys = Object.keys(result.right.org_roles).sort()
             expect(outputKeys).toEqual(inputKeys)
-            
+
             Object.entries(org_roles).forEach(([orgSlug, roles]) => {
               expect(result.right.org_roles[orgSlug]).toEqual(roles)
             })

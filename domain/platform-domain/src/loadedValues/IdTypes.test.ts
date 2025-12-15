@@ -1,5 +1,5 @@
 import { expect, test, describe } from 'vitest'
-import { Schema, Either, Arbitrary } from 'effect'
+import { Schema, Either } from 'effect'
 import { OrgSlug, Role } from './IdTypes'
 import * as fc from 'fast-check'
 
