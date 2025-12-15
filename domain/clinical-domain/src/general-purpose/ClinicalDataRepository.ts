@@ -6,6 +6,7 @@ import {
   UnhandledError,
 } from '../errors'
 import { WithId } from './Element'
+import { Reference } from './Reference'
 
 /**
  * Common error types for clinical data repository operations
@@ -47,9 +48,13 @@ export abstract class BaseClinicalDataRepository<
   /**
    * Retrieve all resources matching the given parameters
    */
-  abstract getMany(
-    params: TResource
-  ): Effect.Effect<WithId<TResource>[], ClinicalDataRepositoryErrors, never>
+  abstract getMany(params?: {
+    [key in Exclude<keyof TResource, 'resourceType'>]?: TResource[key] extends
+      | Reference
+      | undefined
+      ? string
+      : TResource[key]
+  }): Effect.Effect<WithId<TResource>[], ClinicalDataRepositoryErrors, never>
 
   /**
    * Create a new resource
@@ -57,6 +62,17 @@ export abstract class BaseClinicalDataRepository<
   abstract create(
     resource: TResource
   ): Effect.Effect<WithId<TResource>, ClinicalDataRepositoryErrors, never>
+
+  /**
+   * Create many new resources
+   */
+  abstract createMany(
+    resources: ReadonlyArray<TResource>
+  ): Effect.Effect<
+    ReadonlyArray<WithId<TResource>>,
+    ClinicalDataRepositoryErrors,
+    never
+  >
 
   /**
    * Update an existing resource

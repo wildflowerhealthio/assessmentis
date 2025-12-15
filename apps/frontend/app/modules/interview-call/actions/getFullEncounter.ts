@@ -66,9 +66,9 @@ export const getFullEncounter = (
     const encounterEffect = encounterRepository.get(encounterId)
 
     const questionnaireResponseGroupEffect = Effect.gen(function* () {
-      const allQuestionnaires = yield* questionnaireRepository.getMany({})
+      const allQuestionnaires = yield* questionnaireRepository.getMany()
       const responses = yield* questionnaireResponseRepository.getMany({
-        encounterId,
+        encounter: `Encounter/${encounterId}`,
       })
 
       return yield* Effect.all(

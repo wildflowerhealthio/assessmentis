@@ -2,6 +2,7 @@ import { auth, db } from '../firebase'
 import { DailyCoProxyConfig } from '@assessmentis/config-domain/dailyCo'
 import {
   EncounterConfig,
+  MediaConfig,
   QuestionnaireConfig,
   QuestionnaireResponseConfig,
 } from '@assessmentis/config-domain/googleFhir'
@@ -25,6 +26,7 @@ const frontendConfig = (): FrontendConfig => {
       ...fhirStore,
     }),
     encounterRepository: EncounterConfig.make({ ...fhirStore }),
+    mediaRepository: MediaConfig.make({ ...fhirStore }),
     videoCallClient: DailyCoProxyConfig.make({ dailyCoProxyUrl: '' }),
   } as const)
 }

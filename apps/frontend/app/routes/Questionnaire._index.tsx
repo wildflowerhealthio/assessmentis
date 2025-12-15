@@ -17,7 +17,7 @@ export async function clientLoader(_: Route.ClientLoaderArgs) {
   const questionnaires = await runtime.runPromise(
     Effect.gen(function* () {
       const questionnaireRepository = yield* QuestionnaireRepository
-      return yield* questionnaireRepository.getMany({})
+      return yield* questionnaireRepository.getMany()
     })
   )
 

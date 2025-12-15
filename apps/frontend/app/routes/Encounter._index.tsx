@@ -25,14 +25,14 @@ export async function clientLoader(_: Route.ClientLoaderArgs) {
       const encounterRepository = yield* EncounterRepository
       //yield* Effect.fail("Error");
 
-      return yield* encounterRepository.getMany({})
+      return yield* encounterRepository.getMany()
     })
   )
 
   const questionnaires = await runtime.runPromise(
     Effect.gen(function* () {
       const questionnaireRepository = yield* QuestionnaireRepository
-      return yield* questionnaireRepository.getMany({})
+      return yield* questionnaireRepository.getMany()
     })
   )
 

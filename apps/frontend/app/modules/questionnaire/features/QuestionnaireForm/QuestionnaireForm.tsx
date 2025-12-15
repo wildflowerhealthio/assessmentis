@@ -3,6 +3,7 @@
 import { useEffect, useState, type SetStateAction } from 'react'
 import {
   Questionnaire,
+  QuestionnaireItemLink,
   QuestionnaireResponse,
   QuestionnaireResponseItem,
   QuestionnaireResponseRepository,
@@ -15,11 +16,13 @@ import { hasId } from '@assessmentis/clinical-domain/general-purpose'
 type IProps = {
   questionnaire: Questionnaire
   questionnaireResponse: QuestionnaireResponse
+  highlightLinks?: Set<QuestionnaireItemLink>
 }
 
 const QuestionnaireForm = ({
   questionnaire,
   questionnaireResponse: loadedQuestionnaireResponse,
+  highlightLinks,
 }: IProps) => {
   const clientRuntime = useRuntimeContext()
   const [questionnaireResponse, setQuestionnaireResponse] =
@@ -50,6 +53,7 @@ const QuestionnaireForm = ({
         <QuestionnaireItemForm
           key={item.linkId}
           questionnaireItem={item}
+          highlightLinks={highlightLinks ?? new Set<QuestionnaireItemLink>()}
           questionnaireResponseItem={
             questionnaireResponse.item?.find(
               ({ linkId }) => linkId == item.linkId

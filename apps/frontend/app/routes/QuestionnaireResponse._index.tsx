@@ -19,8 +19,8 @@ export async function clientLoader(_: Route.ClientLoaderArgs) {
       const questionnaireResponseRepository =
         yield* QuestionnaireResponseRepository
       const [questionnaires, responses] = yield* Effect.all([
-        questionnaireRepository.getMany({}),
-        questionnaireResponseRepository.getMany({}),
+        questionnaireRepository.getMany(),
+        questionnaireResponseRepository.getMany(),
       ])
       return responses.map(
         (

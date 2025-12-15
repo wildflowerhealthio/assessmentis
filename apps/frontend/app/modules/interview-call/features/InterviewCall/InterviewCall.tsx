@@ -2,14 +2,11 @@
 
 import classes from './InterviewCall.module.css'
 
-import DailyIframe, {
-  type DailyCall,
-  type DailyEvent,
-} from '@daily-co/daily-js'
-import { DailyAudio, DailyProvider } from '@daily-co/daily-react'
+import { type DailyEvent } from '@daily-co/daily-js'
+import { DailyAudio, DailyProvider, useCallObject } from '@daily-co/daily-react'
 
 import { Schema } from 'effect'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Call,
   HairCheck,
@@ -18,6 +15,7 @@ import {
 import { FullEncounter } from 'app/modules/interview-call/actions/getFullEncounter'
 import QuestionnaireForm from 'app/modules/questionnaire/features/QuestionnaireForm/QuestionnaireForm'
 import { useNavigate } from 'react-router'
+import SplitPane from '../../../../components/SplitPane/SplitPane'
 
 /* We decide what UI to show to users based on the state of the app, which is dependent on the state of the call object. */
 enum VideoCallState {
@@ -36,7 +34,8 @@ const useDailyCall = (roomUrl: string | undefined) => {
     'stopped' | 'loading' | 'started'
   >('loading')
   const [appState, setAppState] = useState(VideoCallState.STATE_IDLE)
-  const [callObject, setCallObject] = useState<DailyCall | null>(null)
+  const callObject = useCallObject({})
+
   const [apiError] = useState(false)
 
   /**
@@ -46,12 +45,10 @@ const useDailyCall = (roomUrl: string | undefined) => {
    */
   const createCall = useCallback(() => {
     setAppState(VideoCallState.STATE_CREATING)
-    const newCallObject = DailyIframe.createCallObject({ url: roomUrl })
-    setCallObject(newCallObject)
     setAppState(VideoCallState.STATE_HAIRCHECK)
-    newCallObject.preAuth({ url: roomUrl }) // add a meeting token here if your room is private
-    newCallObject.startCamera()
-  }, [roomUrl])
+    callObject?.preAuth({ url: roomUrl }) // add a meeting token here if your room is private
+    callObject?.startCamera()
+  }, [roomUrl, callObject])
 
   /**
    * Start leaving the current call.
@@ -204,7 +201,7 @@ interface IProps {
 
 function InterviewCall({ encounterJson }: IProps) {
   const encounter = Schema.decodeSync(FullEncounter)(encounterJson)
-  const callCreatedRef = useRef(false)
+  const roomUrl = encounter.location?.[0].location?.identifier?.value
   const {
     joinCall,
     startLeavingCall,
@@ -212,14 +209,11 @@ function InterviewCall({ encounterJson }: IProps) {
     callObject,
     createCall,
     recording,
-  } = useDailyCall(encounter.location?.[0].location?.identifier?.value)
+  } = useDailyCall(roomUrl)
 
   useEffect(() => {
-    if (callCreatedRef.current) return
-
-    callCreatedRef.current = true
-    createCall()
-  }, [createCall])
+    if (callObject) createCall()
+  }, [createCall, callObject])
   // If something goes wrong with creating the room.
   if (uiState.state === 'api_error') {
     return (
@@ -236,29 +230,34 @@ function InterviewCall({ encounterJson }: IProps) {
 
   if (uiState.state === 'haircheck' || uiState.state === 'in_call') {
     return (
-      <div className={classes.EncounterPage}>
-        <div className={classes.VideoZone}>
-          <DailyProvider callObject={callObject}>
-            {uiState.state == 'haircheck' ? (
-              // No API errors? Let's check our hair then.
-              <HairCheck joinCall={joinCall} cancelCall={startLeavingCall} />
-            ) : (
-              // No API errors, we passed the hair check, and we've joined the call? Then show the call.
-              <>
-                <Call />
-                <Tray leaveCall={startLeavingCall} recording={recording} />
-                <DailyAudio />
-              </>
-            )}
-          </DailyProvider>
-        </div>
-        <div className={classes.ActionZone}>
-          <QuestionnaireForm
-            questionnaire={encounter.questionnaireResponses[0]._questionnaire}
-            questionnaireResponse={encounter.questionnaireResponses[0]}
-          />
-        </div>
-      </div>
+      <SplitPane
+        className={classes.EncounterPage}
+        left={
+          <div className={classes.VideoZone}>
+            <DailyProvider url={roomUrl} callObject={callObject}>
+              {uiState.state == 'haircheck' ? (
+                // No API errors? Let's check our hair then.
+                <HairCheck joinCall={joinCall} cancelCall={startLeavingCall} />
+              ) : (
+                // No API errors, we passed the hair check, and we've joined the call? Then show the call.
+                <>
+                  <Call />
+                  <Tray leaveCall={startLeavingCall} recording={recording} />
+                  <DailyAudio />
+                </>
+              )}
+            </DailyProvider>
+          </div>
+        }
+        right={
+          <div className={classes.ActionZone}>
+            <QuestionnaireForm
+              questionnaire={encounter.questionnaireResponses[0]._questionnaire}
+              questionnaireResponse={encounter.questionnaireResponses[0]}
+            />
+          </div>
+        }
+      />
     )
   }
 

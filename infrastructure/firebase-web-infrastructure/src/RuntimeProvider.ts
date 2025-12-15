@@ -6,6 +6,7 @@ import {
   EncounterRepository,
   ExternalVideoCallClient,
   ExternalVideoCallServiceError,
+  MediaRepository,
   QuestionnaireResponseRepository,
   UnhandledError,
 } from '@assessmentis/clinical-domain'
@@ -17,41 +18,28 @@ import { layerCurrentZoneLocal } from 'effect/DateTime'
 import { FrontendConfig } from '@assessmentis/platform-domain'
 import { getAuth } from 'firebase/auth'
 
+const unimplementedClinicalDataRepository = {
+  create: () => Effect.fail(new UnhandledError({ cause: 'not implemented' })),
+  createMany: () =>
+    Effect.fail(new UnhandledError({ cause: 'not implemented' })),
+  get: () => Effect.fail(new UnhandledError({ cause: 'not implemented' })),
+  getMany: () => Effect.fail(new UnhandledError({ cause: 'not implemented' })),
+  delete: () => Effect.fail(new UnhandledError({ cause: 'not implemented' })),
+  update: () => Effect.fail(new UnhandledError({ cause: 'not implemented' })),
+}
+
 const notImplemented = {
   Questionnaire: () =>
-    Layer.succeed(QuestionnaireRepository, {
-      create: () =>
-        Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-      get: () => Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-      getMany: () =>
-        Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-      delete: () =>
-        Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-    }),
+    Layer.succeed(QuestionnaireRepository, unimplementedClinicalDataRepository),
   QuestionnaireResponse: () =>
-    Layer.succeed(QuestionnaireResponseRepository, {
-      createMany: () =>
-        Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-      get: () => Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-      getMany: () =>
-        Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-      delete: () =>
-        Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-      update: () =>
-        Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-    }),
+    Layer.succeed(
+      QuestionnaireResponseRepository,
+      unimplementedClinicalDataRepository
+    ),
   Encounter: () =>
-    Layer.succeed(EncounterRepository, {
-      create: () =>
-        Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-      get: () => Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-      getMany: () =>
-        Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-      delete: () =>
-        Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-      update: () =>
-        Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-    }),
+    Layer.succeed(EncounterRepository, unimplementedClinicalDataRepository),
+  Media: () =>
+    Layer.succeed(MediaRepository, unimplementedClinicalDataRepository),
 
   ExternalVideoCallClient: () =>
     Layer.succeed(ExternalVideoCallClient, {
@@ -102,6 +90,12 @@ export const createRuntime = (frontendConfig: FrontendConfig) => {
     Match.exhaustive
   )
 
+  const mediaRepositoryLayer = Match.value(frontendConfig.mediaRepository).pipe(
+    Match.tag('google_fhir_store', GoogleFhir.Media.Repository),
+    Match.tag('not_implemented', notImplemented.Media),
+    Match.exhaustive
+  )
+
   const externalVideoCallClientLayer = Match.value(
     frontendConfig.videoCallClient
   ).pipe(
@@ -120,6 +114,7 @@ export const createRuntime = (frontendConfig: FrontendConfig) => {
     questionnaireRepositoryLayer,
     questionnaireResponseRepositoryLayer,
     encounterRepositoryLayer,
+    mediaRepositoryLayer,
     layerCurrentZoneLocal,
     FetchHttpClient.layer,
     WebSdkLive

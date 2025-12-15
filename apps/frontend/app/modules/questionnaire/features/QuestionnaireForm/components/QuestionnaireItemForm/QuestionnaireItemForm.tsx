@@ -6,6 +6,7 @@ import {
   QuestionnaireItemUIControlCode,
   QuestionnaireResponseItem,
   QuestionnaireItem,
+  QuestionnaireItemLink,
 } from '@assessmentis/clinical-domain/questionnaires'
 import DisplayQuestionnaireItemForm from 'app/modules/questionnaire/features/QuestionnaireForm/components/DisplayQuestionnaireItemForm/DisplayQuestionnaireItemForm'
 import RadioQuestionnaireItemForm, {
@@ -20,6 +21,7 @@ interface IProps {
   setQuestionnaireResponseItem: (
     update: SetStateAction<QuestionnaireResponseItem>
   ) => void
+  highlightLinks: Set<QuestionnaireItemLink>
   uiControl: typeof QuestionnaireItemUIControlCode.Type | undefined
 }
 
@@ -27,6 +29,7 @@ const QuestionnaireItemForm = ({
   questionnaireItem,
   questionnaireResponseItem,
   setQuestionnaireResponseItem,
+  highlightLinks,
   uiControl,
 }: IProps) => {
   const questionText =
@@ -39,7 +42,13 @@ const QuestionnaireItemForm = ({
   switch (questionnaireItem.type) {
     case QuestionnaireItemType.enums.boolean: {
       return (
-        <>
+        <div
+          style={
+            highlightLinks.has(questionnaireItem.linkId)
+              ? { border: '2px solid yellow' }
+              : {}
+          }
+        >
           {questionText}
           <RadioQuestionnaireItemForm
             key={questionnaireItem.linkId}
@@ -48,12 +57,18 @@ const QuestionnaireItemForm = ({
             setQuestionnaireResponseItem={setQuestionnaireResponseItem}
             uiControl={uiControl}
           />
-        </>
+        </div>
       )
     }
     case QuestionnaireItemType.enums.text: {
       return (
-        <>
+        <div
+          style={
+            highlightLinks.has(questionnaireItem.linkId)
+              ? { border: '2px solid yellow' }
+              : {}
+          }
+        >
           {questionText}
           <TextQuestionnaireItemForm
             key={questionnaireItem.linkId}
@@ -62,7 +77,7 @@ const QuestionnaireItemForm = ({
             setQuestionnaireResponseItem={setQuestionnaireResponseItem}
             uiControl={uiControl}
           />
-        </>
+        </div>
       )
     }
     case QuestionnaireItemType.enums.group: {
@@ -72,6 +87,7 @@ const QuestionnaireItemForm = ({
           {questionnaireItems.map((qi) => (
             <QuestionnaireItemForm
               key={qi.text}
+              highlightLinks={highlightLinks}
               questionnaireItem={qi}
               questionnaireResponseItem={
                 questionnaireResponseItem.item?.find(

@@ -9,6 +9,10 @@
       "webRoot": "${workspaceFolder}",
       "pathMappings": [
         {
+          "url": "http://localhost:5173/app",
+          "path": "${workspaceFolder}/apps/frontend/app"
+        },
+        {
           "url": "http://localhost:5173/@fs",
           "path": ""
         }

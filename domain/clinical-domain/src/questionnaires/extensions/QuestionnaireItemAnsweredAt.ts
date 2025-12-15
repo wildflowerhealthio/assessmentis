@@ -1,4 +1,4 @@
-import { Schema, Option, DateTime } from 'effect'
+import { Schema, DateTime } from 'effect'
 import { type BackboneElement } from '../../general-purpose/BackboneElement'
 
 export const questionnaireItemAnsweredAtUrl =
@@ -15,14 +15,7 @@ export const getAnsweredAt = (
   const ext = be.modifierExtension?.find(
     (ext) => ext.url == questionnaireItemAnsweredAtUrl
   )
-  const code =
-    ext && 'valueDateTime' in ext
-      ? Schema.decodeUnknownOption(QuestionnaireItemAnsweredAtExtension)(
-          ext
-        ).pipe(Option.getOrUndefined)
-      : undefined
-
-  return code?.valueDateTime
+  return ext && 'valueDateTime' in ext ? ext.valueDateTime : undefined
 }
 
 export const withAnsweredAt = <

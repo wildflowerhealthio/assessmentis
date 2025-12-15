@@ -29,6 +29,13 @@ describe('Org', () => {
           dataset: 'encounters',
           storeId: 'store-3',
         },
+        mediaRepository: {
+          _tag: 'google_fhir_store',
+          projectId: 'project-1',
+          region: 'us-central1',
+          dataset: 'media',
+          storeId: 'store-4',
+        },
         videoCallClient: {
           _tag: 'daily_co_proxy',
           dailyCoProxyUrl: 'https://proxy.example.com',
@@ -62,6 +69,9 @@ describe('Org', () => {
           _tag: 'not_implemented',
         },
         encounterRepository: {
+          _tag: 'not_implemented',
+        },
+        mediaRepository: {
           _tag: 'not_implemented',
         },
         videoCallClient: {
@@ -99,6 +109,9 @@ describe('Org', () => {
         encounterRepository: {
           _tag: 'not_implemented',
         },
+        mediaRepository: {
+          _tag: 'not_implemented',
+        },
         videoCallClient: {
           _tag: 'daily_co_proxy',
           dailyCoProxyUrl: 'https://daily.example.com',
@@ -118,6 +131,7 @@ describe('Org', () => {
         questionnaireRepository: { _tag: 'not_implemented' },
         questionnaireResponseRepository: { _tag: 'not_implemented' },
         encounterRepository: { _tag: 'not_implemented' },
+        mediaRepository: { _tag: 'not_implemented' },
         videoCallClient: { _tag: 'not_implemented' },
       },
     }

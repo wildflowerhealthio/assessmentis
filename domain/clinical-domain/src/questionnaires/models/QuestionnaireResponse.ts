@@ -1,9 +1,13 @@
-import { Schema } from 'effect'
+import { DateTime, Schema, Option } from 'effect'
 import { DomainResource } from '../../general-purpose/DomainResource'
 import { Identifier } from '../../general-purpose/Identifier'
 import { Reference } from '../../general-purpose/Reference'
-import { QuestionnaireResponseItem } from './QuestionnaireResponseItem'
+import {
+  allQuestionnaireResponseItems,
+  QuestionnaireResponseItem,
+} from './QuestionnaireResponseItem'
 import { QuestionnaireId } from './Questionnaire'
+import { getAnsweredAt } from '../extensions/QuestionnaireItemAnsweredAt'
 
 export const QuestionnaireResponseId = Schema.UUID.pipe(
   Schema.brand('QuestionnaireResponseId')
@@ -77,3 +81,60 @@ export const QuestionnaireResponse = Schema.Struct({
 })
 
 export type QuestionnaireResponse = typeof QuestionnaireResponse.Type
+
+export const firstItemAnsweredAfter = (
+  questionnaireResponse: QuestionnaireResponse,
+  time: DateTime.Utc
+) => {
+  if (!questionnaireResponse.item) return undefined
+
+  const allItems = [
+    ...allQuestionnaireResponseItems(questionnaireResponse.item),
+  ]
+  if (!allItems.length) return undefined
+
+  const isInPast = DateTime.lessThan(time)
+
+  return allItems.reduce(
+    (
+      proposedNextItem: QuestionnaireResponseItem | undefined,
+      candidate: QuestionnaireResponseItem
+    ) => {
+      const candidateAnswerTimeInFuture = Option.fromNullable(
+        candidate.answer?.[0]
+      ).pipe(
+        Option.flatMap((candidateAnswer) =>
+          Option.fromNullable(getAnsweredAt(candidateAnswer))
+        ),
+        Option.flatMap((candidateAnswerTime) =>
+          isInPast(candidateAnswerTime)
+            ? Option.none()
+            : Option.some(candidateAnswerTime)
+        ),
+        Option.getOrElse(() => undefined)
+      )
+
+      if (candidateAnswerTimeInFuture === undefined) return proposedNextItem
+
+      const proposedAnswerTime = Option.fromNullable(
+        proposedNextItem?.answer?.[0]
+      ).pipe(
+        Option.flatMap((proposedAnswer) =>
+          Option.fromNullable(getAnsweredAt(proposedAnswer))
+        ),
+        Option.getOrElse(() => undefined)
+      )
+
+      if (proposedAnswerTime == undefined) return candidate
+
+      const wasAnsweredBeforeProposed = DateTime.lessThan(proposedAnswerTime)
+
+      if (wasAnsweredBeforeProposed(candidateAnswerTimeInFuture)) {
+        return candidate
+      }
+
+      return proposedNextItem
+    },
+    undefined
+  )
+}

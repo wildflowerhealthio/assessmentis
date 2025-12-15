@@ -1,0 +1,37 @@
+.SplitPane {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+  overflow-y: hidden;
+  gap: var(--space-3);
+}
+
+.SplitPane>:nth-child(1) {
+  width: 100vh;
+  height: 100%;
+  flex-shrink: 1;
+  flex-grow: 2;
+  margin: 0 auto;
+
+  border: 1px solid var(--neutral-7);
+  border-radius: var(--radius-2);
+  box-shadow: 0 var(--space-1) var(--space-2) calc(var(--space-1) * -1) #0003;
+
+
+}
+
+.SplitPane>:nth-child(2) {
+  height: 100%;
+  flex-basis: 390px;
+  min-width: 390px;
+  flex-grow: 1;
+
+  margin: auto;
+  padding: 0 var(--space-3);
+  overflow-y: scroll;
+
+  border: 1px solid var(--neutral-7);
+  border-radius: var(--radius-2);
+  box-shadow: 0 var(--space-1) var(--space-2) calc(var(--space-1) * -1) #0003;
+}

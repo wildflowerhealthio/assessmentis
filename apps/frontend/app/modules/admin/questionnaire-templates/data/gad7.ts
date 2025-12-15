@@ -1,0 +1,402 @@
+import { Questionnaire } from '@assessmentis/clinical-domain'
+import { Schema } from 'effect'
+
+const gad7: Questionnaire = Schema.decodeSync(Questionnaire)({
+  resourceType: 'Questionnaire',
+  id: '69737-5',
+  meta: {
+    versionId: '6',
+    lastUpdated: '2023-02-22T21:38:07.178+00:00',
+  },
+  // text: {
+  //   status: 'extensions',
+  //   div: '<div xmlns="http://www.w3.org/1999/xhtml"><p class="res-header-id"><b>Generated Narrative: Questionnaire 69737-5</b></p><a name="69737-5"> </a><a name="hc69737-5"> </a><div style="display: inline-block; background-color: #d9e0e7; padding: 6px; margin: 4px; border: 1px solid #8da1b4; border-radius: 5px; line-height: 60%"><p style="margin-bottom: 0px">version: 6; Last updated: 2023-02-22 21:38:07+0000</p></div><b>Structure</b><table border="1" cellpadding="0" cellspacing="0" style="border: 1px #F0F0F0 solid; font-size: 11px; font-family: verdana; vertical-align: top;"><tr style="border: 2px #F0F0F0 solid; font-size: 11px; font-family: verdana; vertical-align: top"><th style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px; padding-top: 3px; padding-bottom: 3px" class="hierarchy"><a href="https://hl7.org/fhir/R4/formats.html#table" title="The linkID for the item">LinkID</a></th><th style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px; padding-top: 3px; padding-bottom: 3px" class="hierarchy"><a href="https://hl7.org/fhir/R4/formats.html#table" title="Text for the item">Text</a></th><th style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px; padding-top: 3px; padding-bottom: 3px" class="hierarchy"><a href="https://hl7.org/fhir/R4/formats.html#table" title="Minimum and Maximum # of times the item can appear in the instance">Cardinality</a></th><th style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px; padding-top: 3px; padding-bottom: 3px" class="hierarchy"><a href="https://hl7.org/fhir/R4/formats.html#table" title="The type of the item">Type</a></th><th style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px; padding-top: 3px; padding-bottom: 3px" class="hierarchy"><a href="https://hl7.org/fhir/R4/formats.html#table" title="Additional information about the item">Description &amp; Constraints</a><span style="float: right"><a href="https://hl7.org/fhir/R4/formats.html#table" title="Legend for this format"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3goXBCwdPqAP0wAAAldJREFUOMuNk0tIlFEYhp9z/vE2jHkhxXA0zJCMitrUQlq4lnSltEqCFhFG2MJFhIvIFpkEWaTQqjaWZRkp0g26URZkTpbaaOJkDqk10szoODP//7XIMUe0elcfnPd9zsfLOYplGrpRwZaqTtw3K7PtGem7Q6FoidbGgqHVy/HRb669R+56zx7eRV1L31JGxYbBtjKK93cxeqfyQHbehkZbUkK20goELEuIzEd+dHS+qz/Y8PTSif0FnGkbiwcAjHaU1+QWOptFiyCLp/LnKptpqIuXHx6rbR26kJcBX3yLgBfnd7CxwJmflpP2wUg0HIAoUUpZBmKzELGWcN8nAr6Gpu7tLU/CkwAaoKTWRSQyt89Q8w6J+oVQkKnBoblH7V0PPvUOvDYXfopE/SJmALsxnVm6LbkotrUtNowMeIrVrBcBpaMmdS0j9df7abpSuy7HWehwJdt1lhVwi/J58U5beXGAF6c3UXLycw1wdFklArBn87xdh0ZsZtArghBdAA3+OEDVubG4UEzP6x1FOWneHh2VDAHBAt80IbdXDcesNoCvs3E5AFyNSU5nbrDPZpcUEQQTFZiEVx+51fxMhhyJEAgvlriadIJZZksRuwBYMOPBbO3hePVVqgEJhFeUuFLhIPkRP6BQLIBrmMenujm/3g4zc398awIe90Zb5A1vREALqneMcYgP/xVQWlG+Ncu5vgwwlaUNx+3799rfe96u9K0JSDXcOzOTJg4B6IgmXfsygc7/Bvg9g9E58/cDVmGIBOP/zT8Bz1zqWqpbXIsd0O9hajXfL6u4BaOS6SeWAAAAAElFTkSuQmCC" alt="doco" style="background-color: inherit"/></a></span></th></tr><tr style="border: 1px #F0F0F0 solid; padding:0px; vertical-align: top; background-color: white"><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px; white-space: nowrap; background-image: url(tbl_bck1.png)" class="hierarchy"><img src="tbl_spacer.png" alt="." style="background-color: inherit" class="hierarchy"/><img src="icon_q_root.gif" alt="." style="background-color: white; background-color: inherit" title="QuestionnaireRoot" class="hierarchy"/> Generalized_anxiety_disorder_item</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">Generalized anxiety disorder 7-item assessment</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy"/><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">Questionnaire</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">http://hl7.org/fhir/us/pco/Questionnaire/69737-5#1.0.0</td></tr>\r\n<tr style="border: 1px #F0F0F0 solid; padding:0px; vertical-align: top; background-color: #F7F7F7"><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: #F7F7F7; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px; white-space: nowrap; background-image: url(tbl_bck10.png)" id="item.57541" class="hierarchy"><img src="tbl_spacer.png" alt="." style="background-color: inherit" class="hierarchy"/><img src="tbl_vjoin.png" alt="." style="background-color: inherit" class="hierarchy"/><img src="icon-q-coding.png" alt="." style="background-color: #F7F7F7; background-color: inherit" title="coding" class="hierarchy"/> 57541</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: #F7F7F7; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">GAD7_01. Feeling nervous, anxious or on edge</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: #F7F7F7; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">0..1</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: #F7F7F7; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy"><a href="https://hl7.org/fhir/R4/codesystem-item-type.html#item-type-choice">choice</a></td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: #F7F7F7; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">Options: <a href="#opt-item.57541">4 options</a></td></tr>\r\n<tr style="border: 1px #F0F0F0 solid; padding:0px; vertical-align: top; background-color: white"><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px; white-space: nowrap; background-image: url(tbl_bck10.png)" id="item.57542" class="hierarchy"><img src="tbl_spacer.png" alt="." style="background-color: inherit" class="hierarchy"/><img src="tbl_vjoin.png" alt="." style="background-color: inherit" class="hierarchy"/><img src="icon-q-coding.png" alt="." style="background-color: white; background-color: inherit" title="coding" class="hierarchy"/> 57542</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">GAD7_02. Over the past 2 weeks have you not been able to stop or control worrying</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">0..1</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy"><a href="https://hl7.org/fhir/R4/codesystem-item-type.html#item-type-choice">choice</a></td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">Options: <a href="#opt-item.57542">4 options</a></td></tr>\r\n<tr style="border: 1px #F0F0F0 solid; padding:0px; vertical-align: top; background-color: #F7F7F7"><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: #F7F7F7; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px; white-space: nowrap; background-image: url(tbl_bck10.png)" id="item.57543" class="hierarchy"><img src="tbl_spacer.png" alt="." style="background-color: inherit" class="hierarchy"/><img src="tbl_vjoin.png" alt="." style="background-color: inherit" class="hierarchy"/><img src="icon-q-coding.png" alt="." style="background-color: #F7F7F7; background-color: inherit" title="coding" class="hierarchy"/> 57543</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: #F7F7F7; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">GAD7_03. Worrying too much about different things</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: #F7F7F7; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">0..1</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: #F7F7F7; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy"><a href="https://hl7.org/fhir/R4/codesystem-item-type.html#item-type-choice">choice</a></td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: #F7F7F7; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">Options: <a href="#opt-item.57543">4 options</a></td></tr>\r\n<tr style="border: 1px #F0F0F0 solid; padding:0px; vertical-align: top; background-color: white"><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px; white-space: nowrap; background-image: url(tbl_bck10.png)" id="item.57544" class="hierarchy"><img src="tbl_spacer.png" alt="." style="background-color: inherit" class="hierarchy"/><img src="tbl_vjoin.png" alt="." style="background-color: inherit" class="hierarchy"/><img src="icon-q-coding.png" alt="." style="background-color: white; background-color: inherit" title="coding" class="hierarchy"/> 57544</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">GAD7_04. Trouble relaxing</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">0..1</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy"><a href="https://hl7.org/fhir/R4/codesystem-item-type.html#item-type-choice">choice</a></td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">Options: <a href="#opt-item.57544">4 options</a></td></tr>\r\n<tr style="border: 1px #F0F0F0 solid; padding:0px; vertical-align: top; background-color: #F7F7F7"><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: #F7F7F7; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px; white-space: nowrap; background-image: url(tbl_bck10.png)" id="item.57545" class="hierarchy"><img src="tbl_spacer.png" alt="." style="background-color: inherit" class="hierarchy"/><img src="tbl_vjoin.png" alt="." style="background-color: inherit" class="hierarchy"/><img src="icon-q-coding.png" alt="." style="background-color: #F7F7F7; background-color: inherit" title="coding" class="hierarchy"/> 57545</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: #F7F7F7; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">GAD7_05. Being so restless that it is hard to sit still</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: #F7F7F7; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">0..1</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: #F7F7F7; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy"><a href="https://hl7.org/fhir/R4/codesystem-item-type.html#item-type-choice">choice</a></td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: #F7F7F7; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">Options: <a href="#opt-item.57545">4 options</a></td></tr>\r\n<tr style="border: 1px #F0F0F0 solid; padding:0px; vertical-align: top; background-color: white"><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px; white-space: nowrap; background-image: url(tbl_bck10.png)" id="item.57546" class="hierarchy"><img src="tbl_spacer.png" alt="." style="background-color: inherit" class="hierarchy"/><img src="tbl_vjoin.png" alt="." style="background-color: inherit" class="hierarchy"/><img src="icon-q-coding.png" alt="." style="background-color: white; background-color: inherit" title="coding" class="hierarchy"/> 57546</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">GAD7_06. Becoming easily annoyed or irritable.</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">0..1</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy"><a href="https://hl7.org/fhir/R4/codesystem-item-type.html#item-type-choice">choice</a></td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">Options: <a href="#opt-item.57546">4 options</a></td></tr>\r\n<tr style="border: 1px #F0F0F0 solid; padding:0px; vertical-align: top; background-color: #F7F7F7"><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: #F7F7F7; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px; white-space: nowrap; background-image: url(tbl_bck10.png)" id="item.57547" class="hierarchy"><img src="tbl_spacer.png" alt="." style="background-color: inherit" class="hierarchy"/><img src="tbl_vjoin.png" alt="." style="background-color: inherit" class="hierarchy"/><img src="icon-q-coding.png" alt="." style="background-color: #F7F7F7; background-color: inherit" title="coding" class="hierarchy"/> 57547</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: #F7F7F7; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">GAD7_07. Feeling afraid as if something awful might happen</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: #F7F7F7; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">0..1</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: #F7F7F7; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy"><a href="https://hl7.org/fhir/R4/codesystem-item-type.html#item-type-choice">choice</a></td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: #F7F7F7; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">Options: <a href="#opt-item.57547">4 options</a></td></tr>\r\n<tr style="border: 1px #F0F0F0 solid; padding:0px; vertical-align: top; background-color: white"><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px; white-space: nowrap; background-image: url(tbl_bck00.png)" id="item.58628" class="hierarchy"><img src="tbl_spacer.png" alt="." style="background-color: inherit" class="hierarchy"/><img src="tbl_vjoin_end.png" alt="." style="background-color: inherit" class="hierarchy"/><img src="icon-q-decimal.png" alt="." style="background-color: white; background-color: inherit" title="decimal" class="hierarchy"/> 58628</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">Generalized anxiety disorder 7 item total score</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy">0..1</td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy"><a href="https://hl7.org/fhir/R4/codesystem-item-type.html#item-type-decimal">decimal</a></td><td style="vertical-align: top; text-align : var(--ig-left,left); background-color: white; border: 1px #F0F0F0 solid; padding:0px 4px 0px 4px" class="hierarchy"/></tr>\r\n<tr><td colspan="5" class="hierarchy"><br/><a href="https://hl7.org/fhir/R4/formats.html#table" title="Legend for this format"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3goXBCwdPqAP0wAAAldJREFUOMuNk0tIlFEYhp9z/vE2jHkhxXA0zJCMitrUQlq4lnSltEqCFhFG2MJFhIvIFpkEWaTQqjaWZRkp0g26URZkTpbaaOJkDqk10szoODP//7XIMUe0elcfnPd9zsfLOYplGrpRwZaqTtw3K7PtGem7Q6FoidbGgqHVy/HRb669R+56zx7eRV1L31JGxYbBtjKK93cxeqfyQHbehkZbUkK20goELEuIzEd+dHS+qz/Y8PTSif0FnGkbiwcAjHaU1+QWOptFiyCLp/LnKptpqIuXHx6rbR26kJcBX3yLgBfnd7CxwJmflpP2wUg0HIAoUUpZBmKzELGWcN8nAr6Gpu7tLU/CkwAaoKTWRSQyt89Q8w6J+oVQkKnBoblH7V0PPvUOvDYXfopE/SJmALsxnVm6LbkotrUtNowMeIrVrBcBpaMmdS0j9df7abpSuy7HWehwJdt1lhVwi/J58U5beXGAF6c3UXLycw1wdFklArBn87xdh0ZsZtArghBdAA3+OEDVubG4UEzP6x1FOWneHh2VDAHBAt80IbdXDcesNoCvs3E5AFyNSU5nbrDPZpcUEQQTFZiEVx+51fxMhhyJEAgvlriadIJZZksRuwBYMOPBbO3hePVVqgEJhFeUuFLhIPkRP6BQLIBrmMenujm/3g4zc398awIe90Zb5A1vREALqneMcYgP/xVQWlG+Ncu5vgwwlaUNx+3799rfe96u9K0JSDXcOzOTJg4B6IgmXfsygc7/Bvg9g9E58/cDVmGIBOP/zT8Bz1zqWqpbXIsd0O9hajXfL6u4BaOS6SeWAAAAAElFTkSuQmCC" alt="doco" style="background-color: inherit"/> Documentation for this format</a></td></tr></table><hr/><p><b>Options Sets</b></p><a name="opt-item.57541"> </a><p><b>Answer options for 57541 </b></p><ul><li style="font-size: 11px">http://loinc.org#LA6568-5 (&quot;Not at all&quot;)</li><li style="font-size: 11px">http://loinc.org#LA6569-3 (&quot;Several days&quot;)</li><li style="font-size: 11px">http://loinc.org#LA6570-1 (&quot;More than half the days&quot;)</li><li style="font-size: 11px">http://loinc.org#LA6571-9 (&quot;Nearly every day&quot;)</li></ul><a name="opt-item.57542"> </a><p><b>Answer options for 57542 </b></p><ul><li style="font-size: 11px">http://loinc.org#LA6568-5 (&quot;Not at all&quot;)</li><li style="font-size: 11px">http://loinc.org#LA6569-3 (&quot;Several days&quot;)</li><li style="font-size: 11px">http://loinc.org#LA18938-3 (&quot;More days than not&quot;)</li><li style="font-size: 11px">http://loinc.org#LA6571-9 (&quot;Nearly every day&quot;)</li></ul><a name="opt-item.57543"> </a><p><b>Answer options for 57543 </b></p><ul><li style="font-size: 11px">http://loinc.org#LA6568-5 (&quot;Not at all&quot;)</li><li style="font-size: 11px">http://loinc.org#LA6569-3 (&quot;Several days&quot;)</li><li style="font-size: 11px">http://loinc.org#LA6570-1 (&quot;More than half the days&quot;)</li><li style="font-size: 11px">http://loinc.org#LA6571-9 (&quot;Nearly every day&quot;)</li></ul><a name="opt-item.57544"> </a><p><b>Answer options for 57544 </b></p><ul><li style="font-size: 11px">http://loinc.org#LA6568-5 (&quot;Not at all&quot;)</li><li style="font-size: 11px">http://loinc.org#LA6569-3 (&quot;Several days&quot;)</li><li style="font-size: 11px">http://loinc.org#LA6570-1 (&quot;More than half the days&quot;)</li><li style="font-size: 11px">http://loinc.org#LA6571-9 (&quot;Nearly every day&quot;)</li></ul><a name="opt-item.57545"> </a><p><b>Answer options for 57545 </b></p><ul><li style="font-size: 11px">http://loinc.org#LA6568-5 (&quot;Not at all&quot;)</li><li style="font-size: 11px">http://loinc.org#LA6569-3 (&quot;Several days&quot;)</li><li style="font-size: 11px">http://loinc.org#LA6570-1 (&quot;More than half the days&quot;)</li><li style="font-size: 11px">http://loinc.org#LA6571-9 (&quot;Nearly every day&quot;)</li></ul><a name="opt-item.57546"> </a><p><b>Answer options for 57546 </b></p><ul><li style="font-size: 11px">http://loinc.org#LA6568-5 (&quot;Not at all&quot;)</li><li style="font-size: 11px">http://loinc.org#LA6569-3 (&quot;Several days&quot;)</li><li style="font-size: 11px">http://loinc.org#LA6570-1 (&quot;More than half the days&quot;)</li><li style="font-size: 11px">http://loinc.org#LA6571-9 (&quot;Nearly every day&quot;)</li></ul><a name="opt-item.57547"> </a><p><b>Answer options for 57547 </b></p><ul><li style="font-size: 11px">http://loinc.org#LA6568-5 (&quot;Not at all&quot;)</li><li style="font-size: 11px">http://loinc.org#LA6569-3 (&quot;Several days&quot;)</li><li style="font-size: 11px">http://loinc.org#LA6570-1 (&quot;More than half the days&quot;)</li><li style="font-size: 11px">http://loinc.org#LA6571-9 (&quot;Nearly every day&quot;)</li></ul></div>',
+  // },
+  extension: [
+    {
+      url: 'http://hl7.org/fhir/StructureDefinition/structuredefinition-wg',
+      valueCode: 'pc',
+    },
+    {
+      url: 'http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm',
+      valueInteger: 2,
+      _valueInteger: {
+        extension: [
+          {
+            url: 'http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom',
+            valueCanonical:
+              'http://hl7.org/fhir/us/pco/ImplementationGuide/hl7.fhir.us.pco',
+          },
+        ],
+      },
+    },
+    {
+      url: 'http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status',
+      valueCode: 'draft',
+      _valueCode: {
+        extension: [
+          {
+            url: 'http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom',
+            valueCanonical:
+              'http://hl7.org/fhir/us/pco/ImplementationGuide/hl7.fhir.us.pco',
+          },
+        ],
+      },
+    },
+  ],
+  url: 'http://hl7.org/fhir/us/pco/Questionnaire/69737-5',
+  version: '1.0.0',
+  name: 'Generalized_anxiety_disorder_item',
+  title: 'Generalized Anxiety Disorder (GAD-7)',
+  status: 'draft',
+  subjectType: ['Patient'],
+  date: '2025-08-26T15:38:43+00:00',
+  publisher: 'HL7 International / Patient Care',
+  contact: [
+    {
+      name: 'HL7 International / Patient Care',
+      telecom: [
+        {
+          system: 'url',
+          value: 'http://www.hl7.org/Special/committees/patientcare',
+        },
+        {
+          system: 'email',
+          value: 'patientcare@lists.HL7.org',
+        },
+      ],
+    },
+  ],
+  description: 'Generalized anxiety disorder 7-item assessment',
+  jurisdiction: [
+    {
+      coding: [
+        {
+          system: 'urn:iso:std:iso:3166',
+          code: 'US',
+          display: 'United States of America',
+        },
+      ],
+    },
+  ],
+  copyright:
+    'This content from LOINC® is copyright © 1995 Regenstrief Institute, Inc. and the LOINC Committee, and available at no cost under the license at https://loinc.org/license/\r\nCopyright © Pfizer Inc. All rights reserved. Developed by Drs. Robert L. Spitzer, Janet B.W. Williams, Kurt Kroenke and colleagues, with an educational grant from Pfizer Inc. No permission required to reproduce, translate, display or distribute.',
+  code: [
+    {
+      system: 'http://loinc.org',
+      code: '69737-5',
+      display: 'Generalized anxiety disorder 7 item (GAD-7)',
+    },
+  ],
+  item: [
+    {
+      linkId: '57541',
+      code: [
+        {
+          system: 'http://loinc.org',
+          code: '69725-0',
+        },
+      ],
+      prefix: 'GAD7_01',
+      text: 'Feeling nervous, anxious or on edge',
+      type: 'choice',
+      repeats: false,
+      answerOption: [
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6568-5',
+            display: 'Not at all',
+          },
+        },
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6569-3',
+            display: 'Several days',
+          },
+        },
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6570-1',
+            display: 'More than half the days',
+          },
+        },
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6571-9',
+            display: 'Nearly every day',
+          },
+        },
+      ],
+    },
+    {
+      linkId: '57542',
+      code: [
+        {
+          system: 'http://loinc.org',
+          code: '68509-9',
+        },
+      ],
+      prefix: 'GAD7_02',
+      text: 'Over the past 2 weeks have you not been able to stop or control worrying',
+      type: 'choice',
+      repeats: false,
+      answerOption: [
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6568-5',
+            display: 'Not at all',
+          },
+        },
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6569-3',
+            display: 'Several days',
+          },
+        },
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA18938-3',
+            display: 'More days than not',
+          },
+        },
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6571-9',
+            display: 'Nearly every day',
+          },
+        },
+      ],
+    },
+    {
+      linkId: '57543',
+      code: [
+        {
+          system: 'http://loinc.org',
+          code: '69733-4',
+        },
+      ],
+      prefix: 'GAD7_03',
+      text: 'Worrying too much about different things',
+      type: 'choice',
+      repeats: false,
+      answerOption: [
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6568-5',
+            display: 'Not at all',
+          },
+        },
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6569-3',
+            display: 'Several days',
+          },
+        },
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6570-1',
+            display: 'More than half the days',
+          },
+        },
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6571-9',
+            display: 'Nearly every day',
+          },
+        },
+      ],
+    },
+    {
+      linkId: '57544',
+      code: [
+        {
+          system: 'http://loinc.org',
+          code: '69734-2',
+        },
+      ],
+      prefix: 'GAD7_04',
+      text: 'Trouble relaxing',
+      type: 'choice',
+      repeats: false,
+      answerOption: [
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6568-5',
+            display: 'Not at all',
+          },
+        },
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6569-3',
+            display: 'Several days',
+          },
+        },
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6570-1',
+            display: 'More than half the days',
+          },
+        },
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6571-9',
+            display: 'Nearly every day',
+          },
+        },
+      ],
+    },
+    {
+      linkId: '57545',
+      code: [
+        {
+          system: 'http://loinc.org',
+          code: '69735-9',
+        },
+      ],
+      prefix: 'GAD7_05',
+      text: 'Being so restless that it is hard to sit still',
+      type: 'choice',
+      enableBehavior: 'any',
+      repeats: false,
+      answerOption: [
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6568-5',
+            display: 'Not at all',
+          },
+        },
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6569-3',
+            display: 'Several days',
+          },
+        },
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6570-1',
+            display: 'More than half the days',
+          },
+        },
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6571-9',
+            display: 'Nearly every day',
+          },
+        },
+      ],
+    },
+    {
+      linkId: '57546',
+      code: [
+        {
+          system: 'http://loinc.org',
+          code: '69689-8',
+        },
+      ],
+      prefix: 'GAD7_06',
+      text: 'Becoming easily annoyed or irritable.',
+      type: 'choice',
+      repeats: false,
+      answerOption: [
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6568-5',
+            display: 'Not at all',
+          },
+        },
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6569-3',
+            display: 'Several days',
+          },
+        },
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6570-1',
+            display: 'More than half the days',
+          },
+        },
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6571-9',
+            display: 'Nearly every day',
+          },
+        },
+      ],
+    },
+    {
+      linkId: '57547',
+      code: [
+        {
+          system: 'http://loinc.org',
+          code: '69736-7',
+        },
+      ],
+      prefix: 'GAD7_07',
+      text: 'Feeling afraid as if something awful might happen',
+      type: 'choice',
+      repeats: false,
+      answerOption: [
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6568-5',
+            display: 'Not at all',
+          },
+        },
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6569-3',
+            display: 'Several days',
+          },
+        },
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6570-1',
+            display: 'More than half the days',
+          },
+        },
+        {
+          valueCoding: {
+            system: 'http://loinc.org',
+            code: 'LA6571-9',
+            display: 'Nearly every day',
+          },
+        },
+      ],
+    },
+    {
+      linkId: '58628',
+      text: 'Generalized anxiety disorder 7 item total score',
+      type: 'decimal',
+    },
+  ],
+})
+
+export default gad7

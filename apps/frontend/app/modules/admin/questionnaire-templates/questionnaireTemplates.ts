@@ -1,5 +1,6 @@
 import { Questionnaire } from '@assessmentis/clinical-domain/questionnaires'
 import divaQuestionnaireItems from 'app/modules/admin/questionnaire-templates/data/diva2'
+import gad7 from './data/gad7'
 
 const divaTitle = 'Diagnostic Interview for ADHD in adults (DIVA) 2.0'
 const diva2: Questionnaire = {
@@ -19,5 +20,11 @@ const noItemsQuestionnaire: Questionnaire = {
   item: [],
 }
 
-const questionnaireTemplates: Questionnaire[] = [diva2, noItemsQuestionnaire]
+const gad7Questionnaire: Questionnaire = gad7
+
+const questionnaireTemplates: Questionnaire[] = [
+  diva2,
+  noItemsQuestionnaire,
+  gad7Questionnaire,
+]
 export default questionnaireTemplates
