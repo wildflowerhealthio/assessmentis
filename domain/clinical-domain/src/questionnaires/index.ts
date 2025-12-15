@@ -1,5 +1,4 @@
 export * from './QuestionnaireRepository'
-export * from './models/BooleanQuestionnaireResponse'
 export * from './models/Questionnaire'
 export * from './models/TextQuestionnaireResponse'
 export * from './models/QuestionnaireResponseItem'

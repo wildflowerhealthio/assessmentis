@@ -1,15 +1,22 @@
 import { Schema } from 'effect'
 import { Element } from './Element'
-import { ValueElement } from './ValueElement'
+import { ValueElement, ValueElementEncoded } from './ValueElement'
 
-export const Extension = Schema.extend(
-  Schema.Struct({
-    url: Schema.String,
-  }),
-  ValueElement
-)
+export type Extension = {
+  url: string
+} & ValueElement
 
-export type Extension = typeof Extension.Type
+export type ExtensionEncoded = {
+  url: string
+} & ValueElementEncoded
+
+export const Extension: Schema.Schema<Extension, ExtensionEncoded> =
+  Schema.extend(
+    Schema.Struct({
+      url: Schema.String,
+    }),
+    ValueElement
+  )
 
 export const BackboneElement = <IdType extends string>(
   idSchema: Schema.Schema<IdType, string>
