@@ -9,6 +9,7 @@ import {
 import {
   QuestionnaireResponse,
   QuestionnaireResponseItem,
+  QuestionnaireResponseItemAnswer,
 } from '@assessmentis/clinical-domain/questionnaires'
 import {
   UnhandledError,
@@ -52,7 +53,7 @@ export class DocxTemplateRenderer extends TemplateRendererService {
   /**
    * Extract value from an answer
    */
-  private extractAnswerValue(answer: any): unknown {
+  private extractAnswerValue(answer: QuestionnaireResponseItemAnswer): unknown {
     // Type guard checks for each possible value type
     if ('valueString' in answer) {
       return answer.valueString

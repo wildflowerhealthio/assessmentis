@@ -32,7 +32,9 @@ export default function DiagnosticReportTemplatesList({
                 borderRadius: 'var(--radius-2)',
               }}
             >
-              <h3 className="heading-3">{template.name || 'Untitled Template'}</h3>
+              <h3 className="heading-3">
+                {template.name || 'Untitled Template'}
+              </h3>
               {template.description && (
                 <p
                   className="text-muted"

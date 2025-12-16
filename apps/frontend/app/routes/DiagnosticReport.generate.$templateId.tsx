@@ -9,6 +9,7 @@ import {
 } from '@assessmentis/clinical-domain/diagnostic-reports'
 import {
   QuestionnaireResponse,
+  QuestionnaireResponseId,
   QuestionnaireResponseRepository,
 } from '@assessmentis/clinical-domain/questionnaires'
 import { UnhandledError } from '@assessmentis/clinical-domain/errors'
@@ -81,9 +82,8 @@ export default function GenerateReportPage({
         const renderer = yield* TemplateRenderer
         const responseRepository = yield* QuestionnaireResponseRepository
 
-        const response = yield* responseRepository.get(
-          selectedResponseId as any
-        )
+        const responseId = QuestionnaireResponseId.make(selectedResponseId)
+        const response = yield* responseRepository.get(responseId)
         const rendered = yield* renderer.render(template, response)
 
         return rendered

@@ -5,9 +5,7 @@ import {
   DiagnosticReportTemplateRepository,
 } from '@assessmentis/clinical-domain/diagnostic-reports'
 import { WithId } from '@assessmentis/clinical-domain/general-purpose'
-import {
-  UnhandledError,
-} from '@assessmentis/clinical-domain/errors'
+import { UnhandledError } from '@assessmentis/clinical-domain/errors'
 import {
   BaseClinicalDataRepository,
   ClinicalDataRepositoryErrors,
@@ -21,14 +19,10 @@ import {
  * In a production system, templates would be stored in a separate storage system
  * (e.g., Cloud Storage, Firestore) or as custom FHIR resources with extensions.
  */
-class GoogleFhirDiagnosticReportTemplateRepository
-  implements
-    BaseClinicalDataRepository<
-      DiagnosticReportTemplate,
-      DiagnosticReportTemplateId
-    >
-{
-
+class GoogleFhirDiagnosticReportTemplateRepository implements BaseClinicalDataRepository<
+  DiagnosticReportTemplate,
+  DiagnosticReportTemplateId
+> {
   get(
     _id: DiagnosticReportTemplateId
   ): Effect.Effect<
@@ -38,7 +32,8 @@ class GoogleFhirDiagnosticReportTemplateRepository
   > {
     return Effect.fail(
       new UnhandledError({
-        cause: 'DiagnosticReportTemplate storage not yet implemented in FHIR store',
+        cause:
+          'DiagnosticReportTemplate storage not yet implemented in FHIR store',
       })
     )
   }
@@ -61,7 +56,8 @@ class GoogleFhirDiagnosticReportTemplateRepository
   > {
     return Effect.fail(
       new UnhandledError({
-        cause: 'DiagnosticReportTemplate creation not yet implemented in FHIR store',
+        cause:
+          'DiagnosticReportTemplate creation not yet implemented in FHIR store',
       })
     )
   }
@@ -75,7 +71,8 @@ class GoogleFhirDiagnosticReportTemplateRepository
   > {
     return Effect.fail(
       new UnhandledError({
-        cause: 'DiagnosticReportTemplate bulk creation not yet implemented in FHIR store',
+        cause:
+          'DiagnosticReportTemplate bulk creation not yet implemented in FHIR store',
       })
     )
   }
@@ -89,7 +86,8 @@ class GoogleFhirDiagnosticReportTemplateRepository
   > {
     return Effect.fail(
       new UnhandledError({
-        cause: 'DiagnosticReportTemplate update not yet implemented in FHIR store',
+        cause:
+          'DiagnosticReportTemplate update not yet implemented in FHIR store',
       })
     )
   }
@@ -99,7 +97,8 @@ class GoogleFhirDiagnosticReportTemplateRepository
   ): Effect.Effect<object, ClinicalDataRepositoryErrorsWithNotFound, never> {
     return Effect.fail(
       new UnhandledError({
-        cause: 'DiagnosticReportTemplate deletion not yet implemented in FHIR store',
+        cause:
+          'DiagnosticReportTemplate deletion not yet implemented in FHIR store',
       })
     )
   }

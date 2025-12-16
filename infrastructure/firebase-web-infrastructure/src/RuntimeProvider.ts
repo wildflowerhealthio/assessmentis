@@ -118,7 +118,8 @@ export const createRuntime = (frontendConfig: FrontendConfig) => {
 
   // For now, we'll use a stub implementation for DiagnosticReportTemplate repository
   // In production, you would configure this based on frontendConfig
-  const diagnosticReportTemplateRepositoryLayer = GoogleFhir.DiagnosticReportTemplate.Repository()
+  const diagnosticReportTemplateRepositoryLayer =
+    GoogleFhir.DiagnosticReportTemplate.Repository()
 
   // Template renderer layer is always available
   const templateRendererLayer = TemplateRendererLayer()

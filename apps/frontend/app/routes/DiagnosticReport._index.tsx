@@ -8,7 +8,7 @@ import {
 } from '@assessmentis/clinical-domain/diagnostic-reports'
 import { useNavigate } from 'react-router'
 
-export async function clientLoader({}: Route.ClientLoaderArgs) {
+export async function clientLoader() {
   const runtime = await getRuntime()
 
   const templatesEffect = Effect.gen(function* () {
