@@ -10,6 +10,8 @@ import {
   QuestionnaireResponseRepository,
   EncounterRepository,
   MediaRepository,
+  DiagnosticReportTemplateRepository,
+  TemplateRenderer,
 } from '@assessmentis/clinical-domain'
 import { HttpClient } from '@effect/platform'
 import { Org, OrgError } from './loadedValues/Org'
@@ -23,6 +25,8 @@ export type ClientRuntimeContext =
   | QuestionnaireResponseRepository
   | EncounterRepository
   | MediaRepository
+  | DiagnosticReportTemplateRepository
+  | TemplateRenderer
 
 export class PlatformService extends Context.Tag('PlatformService')<
   PlatformService,

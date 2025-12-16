@@ -13,6 +13,7 @@
   },
   "exports": {
     ".": "./src/index.ts",
+    "./DiagnosticReportTemplate": "./src/DiagnosticReportTemplate.ts",
     "./Encounter": "./src/Encounter.ts",
     "./Media": "./src/Media.ts",
     "./Questionnaire": "./src/Questionnaire.ts",

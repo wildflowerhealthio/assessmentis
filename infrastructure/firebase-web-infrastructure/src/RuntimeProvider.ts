@@ -9,11 +9,13 @@ import {
   MediaRepository,
   QuestionnaireResponseRepository,
   UnhandledError,
+  DiagnosticReportTemplateRepository,
 } from '@assessmentis/clinical-domain'
 import { WebSdk } from '@effect/opentelemetry'
 import { FetchHttpClient } from '@effect/platform'
 import { Effect, Layer, Match } from 'effect'
 import { DailyCoExternalVideoCallClientLayer } from '@assessmentis/daily-co-infrastructure'
+import { TemplateRendererLayer } from '@assessmentis/docx-template-infrastructure'
 import { layerCurrentZoneLocal } from 'effect/DateTime'
 import { FrontendConfig } from '@assessmentis/platform-domain'
 import { getAuth } from 'firebase/auth'
@@ -40,6 +42,11 @@ const notImplemented = {
     Layer.succeed(EncounterRepository, unimplementedClinicalDataRepository),
   Media: () =>
     Layer.succeed(MediaRepository, unimplementedClinicalDataRepository),
+  DiagnosticReportTemplate: () =>
+    Layer.succeed(
+      DiagnosticReportTemplateRepository,
+      unimplementedClinicalDataRepository
+    ),
 
   ExternalVideoCallClient: () =>
     Layer.succeed(ExternalVideoCallClient, {
@@ -109,12 +116,21 @@ export const createRuntime = (frontendConfig: FrontendConfig) => {
     Match.exhaustive
   )
 
+  // For now, we'll use a stub implementation for DiagnosticReportTemplate repository
+  // In production, you would configure this based on frontendConfig
+  const diagnosticReportTemplateRepositoryLayer = GoogleFhir.DiagnosticReportTemplate.Repository()
+
+  // Template renderer layer is always available
+  const templateRendererLayer = TemplateRendererLayer()
+
   return Layer.mergeAll(
     externalVideoCallClientLayer,
     questionnaireRepositoryLayer,
     questionnaireResponseRepositoryLayer,
     encounterRepositoryLayer,
     mediaRepositoryLayer,
+    diagnosticReportTemplateRepositoryLayer,
+    templateRendererLayer,
     layerCurrentZoneLocal,
     FetchHttpClient.layer,
     WebSdkLive

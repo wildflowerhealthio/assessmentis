@@ -22,6 +22,7 @@
     "@assessmentis/prettier-config": "*",
     "@assessmentis/daily-co-infrastructure": "*",
     "@assessmentis/clinical-domain": "*",
+    "@assessmentis/docx-template-infrastructure": "*",
     "@assessmentis/google-fhir-infrastructure": "*",
     "@assessmentis/react-util": "*",
     "@effect/opentelemetry": "^0.59.1",

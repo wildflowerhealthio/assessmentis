@@ -1,3 +1,4 @@
+export * as DiagnosticReportTemplate from './DiagnosticReportTemplate'
 export * as Encounter from './Encounter'
 export * as Media from './Media'
 export * as Questionnaire from './Questionnaire'
