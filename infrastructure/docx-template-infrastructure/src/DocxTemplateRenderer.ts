@@ -69,7 +69,7 @@ export class DocxTemplateRenderer extends TemplateRendererService {
       return answer.valueDateTime
     } else if ('valueTime' in answer) {
       return answer.valueTime
-    } else if ('valueCoding' in answer) {
+    } else if ('valueCoding' in answer && answer.valueCoding) {
       return answer.valueCoding.display || answer.valueCoding.code
     } else if ('valueUrl' in answer) {
       return answer.valueUrl
