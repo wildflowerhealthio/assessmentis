@@ -99,6 +99,10 @@ export const Observation = Schema.Struct({
   valueRange: Schema.optional(Schema.Unknown),
   valueRatio: Schema.optional(Schema.Unknown),
   valueSampledData: Schema.optional(Schema.Unknown),
+  /**
+   * The information determined as a result of making the observation, if the value is a time.
+   * Format: HH:MM:SS (e.g., "13:28:17")
+   */
   valueTime: Schema.optional(Schema.String),
   valueDateTime: Schema.optional(Schema.DateTimeUtc),
   valuePeriod: Schema.optional(Period),
@@ -145,7 +149,7 @@ export const Observation = Schema.Struct({
          */
         high: Schema.optional(Schema.Unknown),
         /**
-         * Codes to indicate the what part of the targeted reference population it applies to. For example, the normal or therapeutic range.
+         * Codes to indicate what part of the targeted reference population it applies to. For example, the normal or therapeutic range.
          */
         type: Schema.optional(CodeableConcept),
         /**
@@ -193,6 +197,10 @@ export const Observation = Schema.Struct({
         valueRange: Schema.optional(Schema.Unknown),
         valueRatio: Schema.optional(Schema.Unknown),
         valueSampledData: Schema.optional(Schema.Unknown),
+        /**
+         * The information determined as a result of making the component observation, if the value is a time.
+         * Format: HH:MM:SS (e.g., "13:28:17")
+         */
         valueTime: Schema.optional(Schema.String),
         valueDateTime: Schema.optional(Schema.DateTimeUtc),
         valuePeriod: Schema.optional(Period),
