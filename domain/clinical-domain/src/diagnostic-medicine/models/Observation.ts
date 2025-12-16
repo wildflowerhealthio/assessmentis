@@ -28,6 +28,10 @@ export const ObservationStatus = Schema.Enums({
 
 export type ObservationStatus = typeof ObservationStatus.Type
 
+/**
+ * Base fields for the Observation resource before extending with ValueElement.
+ * ValueElement is added via Schema.extend to support value[x] polymorphism.
+ */
 const observationFields = {
   ...DomainResource(ObservationId).fields,
   resourceType: Schema.Literal('Observation'),
