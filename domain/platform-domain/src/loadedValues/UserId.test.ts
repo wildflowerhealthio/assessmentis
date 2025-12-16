@@ -74,9 +74,10 @@ describe('AuthStateError', () => {
         const decode = Schema.decodeUnknownEither(AuthStateError)
         const encode = Schema.encodeUnknownEither(AuthStateError)
 
-        const error = cause !== undefined
-          ? { _tag: 'AuthStateError' as const, cause }
-          : { _tag: 'AuthStateError' as const }
+        const error =
+          cause !== undefined
+            ? { _tag: 'AuthStateError' as const, cause }
+            : { _tag: 'AuthStateError' as const }
 
         const encoded = encode(error)
         expect(Either.isRight(encoded)).toBe(true)
@@ -209,12 +210,14 @@ describe('CurrentUserIdError', () => {
         (error) => {
           const decode = Schema.decodeUnknownEither(CurrentUserIdError)
           const result = decode(error)
-          
+
           expect(Either.isRight(result)).toBe(true)
           if (Either.isRight(result)) {
-            expect(['AuthStateLoading', 'AuthStateError', 'NotLoggedIn']).toContain(
-              result.right._tag
-            )
+            expect([
+              'AuthStateLoading',
+              'AuthStateError',
+              'NotLoggedIn',
+            ]).toContain(result.right._tag)
           }
         }
       )
@@ -241,7 +244,7 @@ describe('CurrentUserIdError', () => {
           if (Either.isRight(decoded)) {
             const encoded = encode(decoded.right)
             expect(Either.isRight(encoded)).toBe(true)
-            
+
             if (Either.isRight(encoded)) {
               const redecoded = decode(encoded.right)
               expect(Either.isRight(redecoded)).toBe(true)

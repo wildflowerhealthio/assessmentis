@@ -51,7 +51,9 @@ describe('EncounterTranscript extension', () => {
           const encounter = {
             extension: [
               ...transcriptExtensions,
-              ...otherExtensions.filter((ext) => ext.url !== encounterTranscriptUrl),
+              ...otherExtensions.filter(
+                (ext) => ext.url !== encounterTranscriptUrl
+              ),
             ],
           }
 
@@ -96,7 +98,9 @@ describe('EncounterTranscript extension', () => {
           const resultOtherExtensions = result.extension.filter(
             (ext) => ext.url !== encounterTranscriptUrl
           )
-          expect(resultOtherExtensions.map((e) => e.valueUrl)).toEqual(otherUrls)
+          expect(resultOtherExtensions.map((e) => e.valueUrl)).toEqual(
+            otherUrls
+          )
         }
       )
     )

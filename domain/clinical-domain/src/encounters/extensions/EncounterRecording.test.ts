@@ -13,9 +13,13 @@ describe('EncounterRecording extension', () => {
     // Property: For any valid extension, decode(encode(x)) === x
     fc.assert(
       fc.property(fc.webUrl(), (valueUrl) => {
-        const encode = Schema.encodeUnknownEither(EncounterRecordingFileExtension)
-        const decode = Schema.decodeUnknownEither(EncounterRecordingFileExtension)
-        
+        const encode = Schema.encodeUnknownEither(
+          EncounterRecordingFileExtension
+        )
+        const decode = Schema.decodeUnknownEither(
+          EncounterRecordingFileExtension
+        )
+
         const extension = {
           url: encounterRecordingFileUrl,
           valueUrl,
@@ -47,11 +51,14 @@ describe('EncounterRecording extension', () => {
             url: encounterRecordingFileUrl,
             valueUrl: url,
           }))
-          
+
           const encounter = {
-            extension: [...recordingExtensions, ...otherExtensions.filter(
-              ext => ext.url !== encounterRecordingFileUrl
-            )],
+            extension: [
+              ...recordingExtensions,
+              ...otherExtensions.filter(
+                (ext) => ext.url !== encounterRecordingFileUrl
+              ),
+            ],
           }
 
           const result = getRecordingFileUrls(encounter)
@@ -68,29 +75,36 @@ describe('EncounterRecording extension', () => {
       fc.property(
         fc.array(fc.webUrl()),
         fc.array(fc.webUrl()),
-        fc.array(fc.record({ url: fc.string().filter(s => s !== encounterRecordingFileUrl), valueUrl: fc.webUrl() })),
+        fc.array(
+          fc.record({
+            url: fc.string().filter((s) => s !== encounterRecordingFileUrl),
+            valueUrl: fc.webUrl(),
+          })
+        ),
         (oldRecordings, newRecordings, otherExtensions) => {
           const oldExtensions = oldRecordings.map((url) => ({
             url: encounterRecordingFileUrl,
             valueUrl: url,
           }))
-          
+
           const encounter = {
             extension: [...oldExtensions, ...otherExtensions],
           }
 
           const result = withRecordingFileUrls(encounter, newRecordings)
-          
+
           // Check that result has exactly the new recordings
           const resultRecordings = getRecordingFileUrls(result)
           expect(resultRecordings).toEqual(newRecordings)
-          
+
           // Check that other extensions are preserved
-          const otherUrls = otherExtensions.map(e => e.valueUrl)
+          const otherUrls = otherExtensions.map((e) => e.valueUrl)
           const resultOtherExtensions = result.extension.filter(
-            ext => ext.url !== encounterRecordingFileUrl
+            (ext) => ext.url !== encounterRecordingFileUrl
           )
-          expect(resultOtherExtensions.map(e => e.valueUrl)).toEqual(otherUrls)
+          expect(resultOtherExtensions.map((e) => e.valueUrl)).toEqual(
+            otherUrls
+          )
         }
       )
     )
@@ -106,7 +120,7 @@ describe('EncounterRecording extension', () => {
           const encounter = { extension: extensions }
           const result = withRecordingFileUrls(encounter, recordingUrls)
           const extracted = getRecordingFileUrls(result)
-          
+
           expect(extracted).toEqual(recordingUrls)
         }
       )
@@ -118,25 +132,30 @@ describe('EncounterRecording extension', () => {
     fc.assert(
       fc.property(
         fc.array(fc.webUrl()),
-        fc.array(fc.record({ url: fc.string().filter(s => s !== encounterRecordingFileUrl), valueUrl: fc.webUrl() })),
+        fc.array(
+          fc.record({
+            url: fc.string().filter((s) => s !== encounterRecordingFileUrl),
+            valueUrl: fc.webUrl(),
+          })
+        ),
         (recordingUrls, otherExtensions) => {
           const recordingExtensions = recordingUrls.map((url) => ({
             url: encounterRecordingFileUrl,
             valueUrl: url,
           }))
-          
+
           const encounter = {
             extension: [...recordingExtensions, ...otherExtensions],
           }
 
           const result = withRecordingFileUrls(encounter, [])
-          
+
           // No recording extensions should remain
           const recordings = result.extension.filter(
-            ext => ext.url === encounterRecordingFileUrl
+            (ext) => ext.url === encounterRecordingFileUrl
           )
           expect(recordings).toHaveLength(0)
-          
+
           // Other extensions should be preserved
           expect(result.extension.length).toBe(otherExtensions.length)
         }

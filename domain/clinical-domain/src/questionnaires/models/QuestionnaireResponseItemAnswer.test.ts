@@ -19,7 +19,8 @@ describe('QuestionnaireResponseItemAnswer', () => {
           const decoded = decode(encoded.right)
           expect(Either.isRight(decoded)).toBe(true)
           if (Either.isRight(decoded)) {
-            expect(decoded.right.valueBoolean).toBe(bool)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            expect((decoded.right as any).valueBoolean).toBe(bool)
           }
         }
       })
@@ -29,32 +30,32 @@ describe('QuestionnaireResponseItemAnswer', () => {
   test('property: encode-decode cycle with string extensions', () => {
     // Property: String extensions should be preserved through encode-decode
     fc.assert(
-      fc.property(
-        fc.boolean(),
-        fc.webUrl(),
-        fc.string(),
-        (bool, url, str) => {
-          const encode = Schema.encodeEither(QuestionnaireResponseItemAnswer)
-          const decode = Schema.decodeEither(QuestionnaireResponseItemAnswer)
+      fc.property(fc.boolean(), fc.webUrl(), fc.string(), (bool, url, str) => {
+        const encode = Schema.encodeEither(QuestionnaireResponseItemAnswer)
+        const decode = Schema.decodeEither(QuestionnaireResponseItemAnswer)
 
-          const answer = {
-            valueBoolean: bool,
-            modifierExtension: [{ url, valueString: str }],
-          }
+        const answer = {
+          valueBoolean: bool,
+          modifierExtension: [{ url, valueString: str }],
+        }
 
-          const encoded = encode(answer)
-          expect(Either.isRight(encoded)).toBe(true)
+        const encoded = encode(answer)
+        expect(Either.isRight(encoded)).toBe(true)
 
-          if (Either.isRight(encoded)) {
-            const decoded = decode(encoded.right)
-            expect(Either.isRight(decoded)).toBe(true)
-            if (Either.isRight(decoded)) {
-              expect(decoded.right.valueBoolean).toBe(bool)
-              expect(decoded.right.modifierExtension?.[0]?.valueString).toBe(str)
-            }
+        if (Either.isRight(encoded)) {
+          const decoded = decode(encoded.right)
+          expect(Either.isRight(decoded)).toBe(true)
+          if (Either.isRight(decoded)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            expect((decoded.right as any).valueBoolean).toBe(bool)
+
+            expect(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (decoded.right as any).modifierExtension?.[0]?.valueString
+            ).toBe(str)
           }
         }
-      )
+      })
     )
   })
 
@@ -70,7 +71,7 @@ describe('QuestionnaireResponseItemAnswer', () => {
 
           const isoString = date.toISOString()
           const dateTimeOption = DateTime.makeZonedFromString(isoString)
-          
+
           // Only test when DateTime can be successfully created
           if (Option.isSome(dateTimeOption)) {
             const dateTime = dateTimeOption.pipe(
@@ -88,9 +89,11 @@ describe('QuestionnaireResponseItemAnswer', () => {
 
             if (Either.isRight(encoded)) {
               // The encoded DateTime should be a string
-              expect(typeof encoded.right.modifierExtension?.[0]?.valueDateTime).toBe(
-                'string'
-              )
+              expect(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                typeof (encoded.right as any).modifierExtension?.[0]
+                  ?.valueDateTime
+              ).toBe('string')
             }
           }
         }
@@ -118,7 +121,9 @@ describe('QuestionnaireResponseItemAnswer', () => {
           expect(Either.isRight(decoded)).toBe(true)
 
           if (Either.isRight(decoded)) {
-            const decodedDateTime = decoded.right.modifierExtension?.[0]?.valueDateTime
+            const decodedDateTime =
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (decoded.right as any).modifierExtension?.[0]?.valueDateTime
             // Should be a DateTime object
             expect(decodedDateTime).toBeDefined()
             // DateTime should represent the same instant
@@ -160,7 +165,8 @@ describe('QuestionnaireResponseItemAnswer', () => {
               expect(Either.isRight(reencoded)).toBe(true)
               if (Either.isRight(reencoded)) {
                 // The structure should be preserved
-                expect(reencoded.right.valueBoolean).toBe(bool)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                expect((reencoded.right as any).valueBoolean).toBe(bool)
               }
             }
           }

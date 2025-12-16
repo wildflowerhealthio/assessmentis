@@ -7,45 +7,37 @@ describe('OrgRole', () => {
   test('property: decode-encode cycle preserves structure', () => {
     // Property: For any valid OrgRole, encode(decode(x)) === x
     fc.assert(
-      fc.property(
-        fc.string(),
-        fc.array(fc.string()),
-        (orgSlug, roles) => {
-          const decode = Schema.decodeUnknownEither(OrgRole)
-          const encode = Schema.encodeUnknownEither(OrgRole)
-          const orgRole = { orgSlug, roles }
+      fc.property(fc.string(), fc.array(fc.string()), (orgSlug, roles) => {
+        const decode = Schema.decodeUnknownEither(OrgRole)
+        const encode = Schema.encodeUnknownEither(OrgRole)
+        const orgRole = { orgSlug, roles }
 
-          const decoded = decode(orgRole)
-          if (Either.isRight(decoded)) {
-            const encoded = encode(decoded.right)
-            expect(Either.isRight(encoded)).toBe(true)
-            if (Either.isRight(encoded)) {
-              expect(encoded.right.orgSlug).toBe(orgSlug)
-              expect(encoded.right.roles).toEqual(roles)
-            }
+        const decoded = decode(orgRole)
+        if (Either.isRight(decoded)) {
+          const encoded = encode(decoded.right)
+          expect(Either.isRight(encoded)).toBe(true)
+          if (Either.isRight(encoded)) {
+            expect(encoded.right.orgSlug).toBe(orgSlug)
+            expect(encoded.right.roles).toEqual(roles)
           }
         }
-      )
+      })
     )
   })
 
   test('property: roles array length is preserved', () => {
     // Property: The number of roles should be preserved through decode-encode
     fc.assert(
-      fc.property(
-        fc.string(),
-        fc.array(fc.string()),
-        (orgSlug, roles) => {
-          const decode = Schema.decodeUnknownEither(OrgRole)
-          const orgRole = { orgSlug, roles }
+      fc.property(fc.string(), fc.array(fc.string()), (orgSlug, roles) => {
+        const decode = Schema.decodeUnknownEither(OrgRole)
+        const orgRole = { orgSlug, roles }
 
-          const result = decode(orgRole)
-          if (Either.isRight(result)) {
-            expect(result.right.roles.length).toBe(roles.length)
-            expect(result.right.roles).toEqual(roles)
-          }
+        const result = decode(orgRole)
+        if (Either.isRight(result)) {
+          expect(result.right.roles.length).toBe(roles.length)
+          expect(result.right.roles).toEqual(roles)
         }
-      )
+      })
     )
   })
 
@@ -69,28 +61,24 @@ describe('OrgRole', () => {
   test('property: encode is inverse of decode', () => {
     // Property: decode(encode(decode(x))) === decode(x)
     fc.assert(
-      fc.property(
-        fc.string(),
-        fc.array(fc.string()),
-        (orgSlug, roles) => {
-          const decode = Schema.decodeUnknownEither(OrgRole)
-          const encode = Schema.encodeUnknownEither(OrgRole)
-          const orgRole = { orgSlug, roles }
+      fc.property(fc.string(), fc.array(fc.string()), (orgSlug, roles) => {
+        const decode = Schema.decodeUnknownEither(OrgRole)
+        const encode = Schema.encodeUnknownEither(OrgRole)
+        const orgRole = { orgSlug, roles }
 
-          const decoded1 = decode(orgRole)
-          if (Either.isRight(decoded1)) {
-            const encoded = encode(decoded1.right)
-            if (Either.isRight(encoded)) {
-              const decoded2 = decode(encoded.right)
-              expect(Either.isRight(decoded2)).toBe(true)
-              if (Either.isRight(decoded2)) {
-                expect(decoded2.right.orgSlug).toBe(decoded1.right.orgSlug)
-                expect(decoded2.right.roles).toEqual(decoded1.right.roles)
-              }
+        const decoded1 = decode(orgRole)
+        if (Either.isRight(decoded1)) {
+          const encoded = encode(decoded1.right)
+          if (Either.isRight(encoded)) {
+            const decoded2 = decode(encoded.right)
+            expect(Either.isRight(decoded2)).toBe(true)
+            if (Either.isRight(decoded2)) {
+              expect(decoded2.right.orgSlug).toBe(decoded1.right.orgSlug)
+              expect(decoded2.right.roles).toEqual(decoded1.right.roles)
             }
           }
         }
-      )
+      })
     )
   })
 })

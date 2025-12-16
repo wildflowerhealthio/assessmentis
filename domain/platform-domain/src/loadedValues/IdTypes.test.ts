@@ -115,7 +115,12 @@ describe('IdTypes', () => {
       // Property: Any non-string value should fail to decode
       fc.assert(
         fc.property(
-          fc.oneof(fc.integer(), fc.boolean(), fc.array(fc.string()), fc.constant(null)),
+          fc.oneof(
+            fc.integer(),
+            fc.boolean(),
+            fc.array(fc.string()),
+            fc.constant(null)
+          ),
           (value) => {
             const decode = Schema.decodeUnknownEither(Role)
             const result = decode(value)

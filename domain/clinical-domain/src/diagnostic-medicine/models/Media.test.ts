@@ -8,7 +8,16 @@ describe('Media model', () => {
     // Property: Minimal valid Media should encode-decode correctly
     fc.assert(
       fc.property(
-        fc.constantFrom('completed', 'preparation', 'in-progress', 'not-done', 'entered-in-error', 'stopped', 'on-hold', 'unknown'),
+        fc.constantFrom(
+          'completed',
+          'preparation',
+          'in-progress',
+          'not-done',
+          'entered-in-error',
+          'stopped',
+          'on-hold',
+          'unknown'
+        ),
         fc.string(),
         (status, contentType) => {
           const decode = Schema.decodeUnknownEither(Media)
@@ -39,7 +48,16 @@ describe('Media model', () => {
     // Property: Only valid MediaStatus values should encode successfully
     fc.assert(
       fc.property(
-        fc.constantFrom('completed', 'preparation', 'in-progress', 'not-done', 'entered-in-error', 'stopped', 'on-hold', 'unknown'),
+        fc.constantFrom(
+          'completed',
+          'preparation',
+          'in-progress',
+          'not-done',
+          'entered-in-error',
+          'stopped',
+          'on-hold',
+          'unknown'
+        ),
         (status) => {
           const encode = Schema.encodeUnknownEither(MediaStatus)
           const result = encode(status)
@@ -53,10 +71,21 @@ describe('Media model', () => {
     // Property: Invalid status values should fail
     fc.assert(
       fc.property(
-        fc.string().filter(
-          (s) =>
-            !['completed', 'preparation', 'in-progress', 'not-done', 'entered-in-error', 'stopped', 'on-hold', 'unknown'].includes(s)
-        ),
+        fc
+          .string()
+          .filter(
+            (s) =>
+              ![
+                'completed',
+                'preparation',
+                'in-progress',
+                'not-done',
+                'entered-in-error',
+                'stopped',
+                'on-hold',
+                'unknown',
+              ].includes(s)
+          ),
         (invalidStatus) => {
           const encode = Schema.encodeUnknownEither(MediaStatus)
           const result = encode(invalidStatus)

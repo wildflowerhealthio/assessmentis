@@ -30,7 +30,11 @@ describe('User', () => {
   })
 
   // Keys that can cause prototype pollution and should be filtered in tests
-  const DANGEROUS_KEYS = ['__proto__', 'constructor', 'prototype'] as const
+  const DANGEROUS_KEYS: ReadonlyArray<string> = [
+    '__proto__',
+    'constructor',
+    'prototype',
+  ] as const
 
   test('property: org_roles structure is preserved', () => {
     // Property: org_roles dictionary structure and content is preserved
@@ -39,7 +43,7 @@ describe('User', () => {
       fc.property(
         fc.string(),
         fc.dictionary(
-          fc.string().filter((key) => !DANGEROUS_KEYS.includes(key as any)),
+          fc.string().filter((key) => !DANGEROUS_KEYS.includes(key)),
           fc.array(fc.string())
         ),
         (uid, org_roles) => {
@@ -54,7 +58,8 @@ describe('User', () => {
             expect(outputKeys).toEqual(inputKeys)
 
             Object.entries(org_roles).forEach(([orgSlug, roles]) => {
-              expect(result.right.org_roles[orgSlug]).toEqual(roles)
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              expect(result.right.org_roles[orgSlug as any]).toEqual(roles)
             })
           }
         }
@@ -67,7 +72,9 @@ describe('User', () => {
     fc.assert(
       fc.property(
         fc.oneof(
-          fc.record({ org_roles: fc.dictionary(fc.string(), fc.array(fc.string())) }), // Missing uid
+          fc.record({
+            org_roles: fc.dictionary(fc.string(), fc.array(fc.string())),
+          }), // Missing uid
           fc.record({ uid: fc.string() }) // Missing org_roles
         ),
         (incomplete) => {
