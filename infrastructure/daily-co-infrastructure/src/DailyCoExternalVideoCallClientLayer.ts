@@ -74,9 +74,9 @@ export const DailyCoExternalVideoCallClientLayer = (
             method: 'GET',
             headers,
           }
-          const res = yield* httpClient.get(url, options).pipe(
-            Effect.mapError((cause) => new UnhandledError({ cause }))
-          )
+          const res = yield* httpClient
+            .get(url, options)
+            .pipe(Effect.mapError((cause) => new UnhandledError({ cause })))
 
           if (res.status === 404) {
             // Recording link not available yet
@@ -120,9 +120,9 @@ export const DailyCoExternalVideoCallClientLayer = (
               method: 'GET',
               headers,
             }
-            const res = yield* httpClient.get(url, options).pipe(
-              Effect.mapError((cause) => new UnhandledError({ cause }))
-            )
+            const res = yield* httpClient
+              .get(url, options)
+              .pipe(Effect.mapError((cause) => new UnhandledError({ cause })))
 
             if (res.status != 200) {
               yield* Effect.fail(
@@ -164,7 +164,7 @@ export const DailyCoExternalVideoCallClientLayer = (
                       },
                     ],
                     createdDateTime: startedAtIso,
-                    duration: rec.duration, // already in seconds from DailyCo
+                    duration: rec.duration, // DailyCo API returns duration in seconds
                     content: {
                       url: recordingFileUrl,
                     },
@@ -211,9 +211,9 @@ export const DailyCoExternalVideoCallClientLayer = (
             headers,
           }
 
-          const res = yield* httpClient.post(url, options).pipe(
-            Effect.mapError((cause) => new UnhandledError({ cause }))
-          )
+          const res = yield* httpClient
+            .post(url, options)
+            .pipe(Effect.mapError((cause) => new UnhandledError({ cause })))
 
           if (res.status != 200) {
             const text = yield* res.text.pipe(

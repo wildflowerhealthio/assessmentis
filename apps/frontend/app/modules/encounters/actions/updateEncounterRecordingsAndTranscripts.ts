@@ -48,9 +48,8 @@ export const updateEncounterRecordingsAndTranscripts = (
     const roomName = videoCalls.extractRoomNameFromUrl(roomUrl)
     if (!roomName) return encounter
 
-    const mediaFromRecordings = yield* videoCalls.fetchRecordingsByRoomName(
-      roomName
-    )
+    const mediaFromRecordings =
+      yield* videoCalls.fetchRecordingsByRoomName(roomName)
 
     // If no recordings found yet, return the encounter unchanged
     if (mediaFromRecordings.length == 0) return encounter
@@ -68,8 +67,8 @@ export const updateEncounterRecordingsAndTranscripts = (
     // Update existing Media resources with new URLs if needed
     for (const media of existingMedia) {
       const newMedia = mediaFromRecordings.find((recording) =>
-        media.identifier?.some((identifier) =>
-          recording.identifier?.some((recId) => recId.value === identifier.value)
+        media.identifier?.some((id1) =>
+          recording.identifier?.some((id2) => id2.value === id1.value)
         )
       )
       if (!newMedia) continue
@@ -81,11 +80,13 @@ export const updateEncounterRecordingsAndTranscripts = (
 
     // Create Media resources for recordings that don't exist yet
     // Link them to the encounter
+    // A media is new if NONE of its identifiers exist in the database
     const newMediaToCreate = mediaFromRecordings
-      .filter((media) =>
-        media.identifier?.every(
-          (identifier) => !existingIds.has(identifier.value)
-        )
+      .filter(
+        (media) =>
+          !media.identifier?.some((identifier) =>
+            existingIds.has(identifier.value)
+          )
       )
       .map((media) => ({
         ...media,
