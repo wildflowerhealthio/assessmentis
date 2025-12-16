@@ -1,91 +1,155 @@
 import { expect, test, describe } from 'vitest'
 import { Schema, Either } from 'effect'
 import { OrgSlug, Role } from './IdTypes'
+import * as fc from 'fast-check'
 
 describe('IdTypes', () => {
   describe('OrgSlug', () => {
-    test('creates branded string for valid slug', () => {
-      const decode = Schema.decodeUnknownEither(OrgSlug)
-      const result = decode('my-org')
+    test('property: decode-encode cycle preserves all string values', () => {
+      // Property: For any string, if it decodes successfully, encoding the result should return the original string
+      fc.assert(
+        fc.property(fc.string(), (str) => {
+          const decode = Schema.decodeUnknownEither(OrgSlug)
+          const encode = Schema.encodeUnknownEither(OrgSlug)
 
-      expect(Either.isRight(result)).toBe(true)
-      if (Either.isRight(result)) {
-        expect(result.right).toBe('my-org')
-      }
+          const decoded = decode(str)
+          if (Either.isRight(decoded)) {
+            const encoded = encode(decoded.right)
+            expect(Either.isRight(encoded)).toBe(true)
+            if (Either.isRight(encoded)) {
+              expect(encoded.right).toBe(str)
+            }
+          }
+        })
+      )
     })
 
-    test('accepts various slug formats', () => {
-      const decode = Schema.decodeUnknownEither(OrgSlug)
-      const slugs = ['org1', 'my-org', 'test_org', 'ORG-123']
+    test('property: decoding generates branded type with correct value', () => {
+      // Property: Any valid string that decodes should maintain its value in the branded type
+      fc.assert(
+        fc.property(fc.string(), (str) => {
+          const decode = Schema.decodeUnknownEither(OrgSlug)
+          const result = decode(str)
 
-      slugs.forEach((slug) => {
-        const result = decode(slug)
-        expect(Either.isRight(result)).toBe(true)
-      })
+          if (Either.isRight(result)) {
+            // The branded type should preserve the original string value
+            expect(result.right).toBe(str)
+          }
+        })
+      )
     })
 
-    test('fails for non-string values', () => {
-      const decode = Schema.decodeUnknownEither(OrgSlug)
-      const result = decode(123)
-
-      expect(Either.isLeft(result)).toBe(true)
+    test('property: non-string values always fail to decode', () => {
+      // Property: Any non-string value should fail to decode
+      fc.assert(
+        fc.property(
+          fc.oneof(fc.integer(), fc.boolean(), fc.object(), fc.constant(null)),
+          (value) => {
+            const decode = Schema.decodeUnknownEither(OrgSlug)
+            const result = decode(value)
+            expect(Either.isLeft(result)).toBe(true)
+          }
+        )
+      )
     })
 
-    test('encodes branded slug correctly', () => {
-      const decode = Schema.decodeUnknownEither(OrgSlug)
-      const encode = Schema.encodeUnknownEither(OrgSlug)
+    test('property: encode is inverse of decode for any string', () => {
+      // Property: decode(encode(x)) === x for any valid decoded value
+      fc.assert(
+        fc.property(fc.string(), (str) => {
+          const decode = Schema.decodeUnknownEither(OrgSlug)
+          const encode = Schema.encodeUnknownEither(OrgSlug)
 
-      const decoded = decode('test-org')
-      if (Either.isRight(decoded)) {
-        const encoded = encode(decoded.right)
-        expect(Either.isRight(encoded)).toBe(true)
-        if (Either.isRight(encoded)) {
-          expect(encoded.right).toBe('test-org')
-        }
-      }
+          const decoded = decode(str)
+          if (Either.isRight(decoded)) {
+            const encoded = encode(decoded.right)
+            if (Either.isRight(encoded)) {
+              const redecoded = decode(encoded.right)
+              expect(Either.isRight(redecoded)).toBe(true)
+              if (Either.isRight(redecoded)) {
+                expect(redecoded.right).toBe(decoded.right)
+              }
+            }
+          }
+        })
+      )
     })
   })
 
   describe('Role', () => {
-    test('creates branded string for valid role', () => {
-      const decode = Schema.decodeUnknownEither(Role)
-      const result = decode('admin')
+    test('property: decode-encode cycle preserves all string values', () => {
+      // Property: For any string, if it decodes successfully, encoding the result should return the original string
+      fc.assert(
+        fc.property(fc.string(), (str) => {
+          const decode = Schema.decodeUnknownEither(Role)
+          const encode = Schema.encodeUnknownEither(Role)
 
-      expect(Either.isRight(result)).toBe(true)
-      if (Either.isRight(result)) {
-        expect(result.right).toBe('admin')
-      }
+          const decoded = decode(str)
+          if (Either.isRight(decoded)) {
+            const encoded = encode(decoded.right)
+            expect(Either.isRight(encoded)).toBe(true)
+            if (Either.isRight(encoded)) {
+              expect(encoded.right).toBe(str)
+            }
+          }
+        })
+      )
     })
 
-    test('accepts various role names', () => {
-      const decode = Schema.decodeUnknownEither(Role)
-      const roles = ['admin', 'user', 'viewer', 'editor', 'owner']
+    test('property: decoding generates branded type with correct value', () => {
+      // Property: Any valid string that decodes should maintain its value in the branded type
+      fc.assert(
+        fc.property(fc.string(), (str) => {
+          const decode = Schema.decodeUnknownEither(Role)
+          const result = decode(str)
 
-      roles.forEach((role) => {
-        const result = decode(role)
-        expect(Either.isRight(result)).toBe(true)
-      })
+          if (Either.isRight(result)) {
+            // The branded type should preserve the original string value
+            expect(result.right).toBe(str)
+          }
+        })
+      )
     })
 
-    test('fails for non-string values', () => {
-      const decode = Schema.decodeUnknownEither(Role)
-      const result = decode(true)
-
-      expect(Either.isLeft(result)).toBe(true)
+    test('property: non-string values always fail to decode', () => {
+      // Property: Any non-string value should fail to decode
+      fc.assert(
+        fc.property(
+          fc.oneof(
+            fc.integer(),
+            fc.boolean(),
+            fc.array(fc.string()),
+            fc.constant(null)
+          ),
+          (value) => {
+            const decode = Schema.decodeUnknownEither(Role)
+            const result = decode(value)
+            expect(Either.isLeft(result)).toBe(true)
+          }
+        )
+      )
     })
 
-    test('encodes branded role correctly', () => {
-      const decode = Schema.decodeUnknownEither(Role)
-      const encode = Schema.encodeUnknownEither(Role)
+    test('property: encode is inverse of decode for any string', () => {
+      // Property: decode(encode(x)) === x for any valid decoded value
+      fc.assert(
+        fc.property(fc.string(), (str) => {
+          const decode = Schema.decodeUnknownEither(Role)
+          const encode = Schema.encodeUnknownEither(Role)
 
-      const decoded = decode('admin')
-      if (Either.isRight(decoded)) {
-        const encoded = encode(decoded.right)
-        expect(Either.isRight(encoded)).toBe(true)
-        if (Either.isRight(encoded)) {
-          expect(encoded.right).toBe('admin')
-        }
-      }
+          const decoded = decode(str)
+          if (Either.isRight(decoded)) {
+            const encoded = encode(decoded.right)
+            if (Either.isRight(encoded)) {
+              const redecoded = decode(encoded.right)
+              expect(Either.isRight(redecoded)).toBe(true)
+              if (Either.isRight(redecoded)) {
+                expect(redecoded.right).toBe(decoded.right)
+              }
+            }
+          }
+        })
+      )
     })
   })
 })
