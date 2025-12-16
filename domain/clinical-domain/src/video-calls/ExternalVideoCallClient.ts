@@ -26,7 +26,10 @@ export class ExternalVideoCallClient extends Context.Tag(
     >
     createRoom: (
       params: RoomCreationParams
-    ) => Effect.Effect<ExternalVideoCallRoom, UnhandledError>
+    ) => Effect.Effect<
+      ExternalVideoCallRoom,
+      UnhandledError | ExternalAssertionError
+    >
 
     extractRoomNameFromUrl: (
       url: string

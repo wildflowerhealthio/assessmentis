@@ -274,7 +274,7 @@ export const DailyCoExternalVideoCallClientLayer = (
                   const updated: WithId<Media> = {
                     ...existingMediaItem,
                     content: media.content,
-                    id: existingMediaItem.id, // Ensure id is preserved
+                    id: existingMediaItem.id,
                   }
                   updatedMedia.push(updated)
                 }
@@ -288,7 +288,11 @@ export const DailyCoExternalVideoCallClientLayer = (
         }
       const createRoom: typeof ExternalVideoCallClient.Service.createRoom = (
         params: RoomCreationParams
-      ): Effect.Effect<ExternalVideoCallRoom, UnhandledError, never> =>
+      ): Effect.Effect<
+        ExternalVideoCallRoom,
+        UnhandledError | ExternalAssertionError,
+        never
+      > =>
         Effect.gen(function* () {
           const expiryInstant = params.expiresAt
             ? params.expiresAt
@@ -350,9 +354,10 @@ export const DailyCoExternalVideoCallClientLayer = (
           const json = yield* res.json.pipe(
             Effect.mapError(
               (cause) =>
-                new UnhandledError({
+                new ExternalAssertionError({
                   cause,
-                  message: 'Error parsing JSON in response',
+                  expected:
+                    'Valid JSON response from DailyCo room creation API',
                 })
             )
           )
@@ -360,9 +365,9 @@ export const DailyCoExternalVideoCallClientLayer = (
           const apiDailyCoRoom = yield* apiDailyCoRoomSchemaParser(json).pipe(
             Effect.mapError(
               (cause) =>
-                new UnhandledError({
+                new ExternalAssertionError({
                   cause,
-                  message: 'Error validating JSON Response',
+                  expected: 'Valid room schema from DailyCo API',
                 })
             )
           )
