@@ -2,10 +2,13 @@ import { Data } from 'effect'
 
 export class UnhandledError extends Data.TaggedError('UnhandledError')<{
   cause: unknown
+  message?: string
 }> {
-  constructor(params: { cause: unknown }) {
+  constructor(params: { cause: unknown; message?: string }) {
     super(params)
-    if (this.cause instanceof Error) {
+    if (params.message) {
+      this.message = params.message
+    } else if (this.cause instanceof Error) {
       this.message = this.cause.message ?? this.message
       this.stack = this.cause.stack ?? this.stack
       if (this.cause.name) this.name = `Unhandled${this.cause.name}`

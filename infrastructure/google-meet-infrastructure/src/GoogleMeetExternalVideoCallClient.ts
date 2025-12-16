@@ -11,9 +11,14 @@ export const GoogleMeetExternalVideoCallClientLayer = Layer.effect(
   ExternalVideoCallClient,
   Effect.succeed(
     (function () {
-      const fetchRecordingsByRoomName: typeof ExternalVideoCallClient.Service.fetchRecordingsByRoomName =
-        (_: ExternalVideoCallRoomName) =>
-          Effect.fail(new UnhandledError({ cause: 'not-implemented' }))
+      const getMediaRecordedInRoom: typeof ExternalVideoCallClient.Service.getMediaRecordedInRoom =
+        (_roomName: ExternalVideoCallRoomName, _existingMedia) =>
+          Effect.fail(
+            new UnhandledError({
+              cause: 'not-implemented',
+              message: 'Google Meet recordings not yet implemented',
+            })
+          )
 
       const createRoom: typeof ExternalVideoCallClient.Service.createRoom = (
         _: RoomCreationParams
@@ -40,7 +45,15 @@ export const GoogleMeetExternalVideoCallClientLayer = Layer.effect(
             roomName: ExternalVideoCallRoomName.make(space.result.meetingCode!),
             id: ExternalVideoCallRoomId.make(space.result.name!),
           }
-        }).pipe(Effect.mapError((cause) => new UnhandledError({ cause })))
+        }).pipe(
+          Effect.mapError(
+            (cause) =>
+              new UnhandledError({
+                cause,
+                message: 'Error creating the room',
+              })
+          )
+        )
 
       const extractRoomNameFromUrl: typeof ExternalVideoCallClient.Service.extractRoomNameFromUrl =
         (url: string): ExternalVideoCallRoomName | undefined => {
@@ -51,7 +64,7 @@ export const GoogleMeetExternalVideoCallClientLayer = Layer.effect(
         }
 
       return {
-        fetchRecordingsByRoomName,
+        getMediaRecordedInRoom,
         createRoom,
         extractRoomNameFromUrl,
       }

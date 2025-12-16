@@ -48,56 +48,34 @@ export const updateEncounterRecordingsAndTranscripts = (
     const roomName = videoCalls.extractRoomNameFromUrl(roomUrl)
     if (!roomName) return encounter
 
-    const mediaFromRecordings =
-      yield* videoCalls.fetchRecordingsByRoomName(roomName)
-
-    // If no recordings found yet, return the encounter unchanged
-    if (mediaFromRecordings.length == 0) return encounter
-
-    // Fetch all existing Media resources once to check for duplicates
+    // Fetch all existing Media resources
     const existingMedia = yield* mediaRepository.getMany({
       encounter: `Encounter/${encounterId}`,
     })
-    const existingIds = new Set(
+
+    // Get media with fresh URLs from the video call service
+    const { updatedMedia, newMedia } = yield* videoCalls.getMediaRecordedInRoom(
+      roomName,
       existingMedia
-        .flatMap((media) => media.identifier?.map(({ value }) => value) ?? [])
-        .filter((id) => !!id)
     )
 
-    // Update existing Media resources with new URLs if needed
-    for (const media of existingMedia) {
-      const newMedia = mediaFromRecordings.find((recording) =>
-        media.identifier?.some((id1) =>
-          recording.identifier?.some((id2) => id2.value === id1.value)
-        )
-      )
-      if (!newMedia) continue
-      yield* mediaRepository.update({
-        ...media,
-        content: newMedia.content,
-      })
+    // If no recordings found, return the encounter unchanged
+    if (updatedMedia.length === 0 && newMedia.length === 0) return encounter
+
+    // Update existing Media resources with fresh URLs
+    for (const media of updatedMedia) {
+      yield* mediaRepository.update(media)
     }
 
-    // Create Media resources for recordings that don't exist yet
-    // Link them to the encounter
-    // A media is new if NONE of its identifiers exist in the database
-    const newMediaToCreate = mediaFromRecordings
-      .filter(
-        (media) =>
-          !media.identifier?.some((identifier) =>
-            existingIds.has(identifier.value)
-          )
-      )
-      .map((media) => ({
-        ...media,
-        encounter: {
-          reference: `Encounter/${encounterId}`,
-        },
-      }))
+    // Create new Media resources linked to the encounter
+    const newMediaToCreate = newMedia.map((media) => ({
+      ...media,
+      encounter: {
+        reference: `Encounter/${encounterId}`,
+      },
+    }))
 
-    // Create all new Media resources in one batch
-    const newMediaCreated = newMediaToCreate.length > 0
-    if (newMediaCreated) {
+    if (newMediaToCreate.length > 0) {
       yield* mediaRepository.createMany(newMediaToCreate)
     }
 

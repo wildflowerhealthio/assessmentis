@@ -43,9 +43,19 @@ const notImplemented = {
   ExternalVideoCallClient: () =>
     Layer.succeed(ExternalVideoCallClient, {
       createRoom: () =>
-        Effect.fail(new UnhandledError({ cause: 'not implemented' })),
-      fetchRecordingsByRoomName: () =>
-        Effect.fail(new UnhandledError({ cause: 'not implemented' })),
+        Effect.fail(
+          new UnhandledError({
+            cause: 'not implemented',
+            message: 'createRoom not implemented',
+          })
+        ),
+      getMediaRecordedInRoom: (_roomName, _existingMedia) =>
+        Effect.fail(
+          new UnhandledError({
+            cause: 'not implemented',
+            message: 'getMediaRecordedInRoom not implemented',
+          })
+        ),
       extractRoomNameFromUrl: () => undefined,
     }),
 }
