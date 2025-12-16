@@ -105,7 +105,7 @@ export const DailyCoExternalVideoCallClientLayer = (
           if (res.status != 200) {
             yield* Effect.fail(
               new UnhandledError({
-                cause: undefined,
+                cause: `HTTP ${res.status}`,
                 message: `DailyCo returned an HTTP status of ${res.status} not 200`,
               })
             )
@@ -146,7 +146,10 @@ export const DailyCoExternalVideoCallClientLayer = (
         }
 
       const getMediaRecordedInRoom: typeof ExternalVideoCallClient.Service.getMediaRecordedInRoom =
-        (roomName: ExternalVideoCallRoomName, existingMedia: Media[]) => {
+        (
+          roomName: ExternalVideoCallRoomName,
+          existingMedia: WithId<Media>[]
+        ) => {
           return Effect.gen(function* () {
             const url = new URL(`${baseDailyApiRoute}/recordings`)
             url.searchParams.set('room_name', roomName)
@@ -167,7 +170,7 @@ export const DailyCoExternalVideoCallClientLayer = (
             if (res.status != 200) {
               yield* Effect.fail(
                 new UnhandledError({
-                  cause: undefined,
+                  cause: `HTTP ${res.status}`,
                   message: `DailyCo returned an HTTP status of ${res.status} not 200`,
                 })
               )
@@ -338,7 +341,7 @@ export const DailyCoExternalVideoCallClientLayer = (
             )
             yield* Effect.fail(
               new UnhandledError({
-                cause: undefined,
+                cause: `HTTP ${res.status}`,
                 message: `DailyCo returned an HTTP status of ${res.status} not 200: ${text}`,
               })
             )
