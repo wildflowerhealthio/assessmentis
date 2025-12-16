@@ -5,6 +5,7 @@ import { Reference } from '../../general-purpose/Reference'
 import { CodeableConcept } from '../../general-purpose/CodeableConcept'
 import { Annotation } from '../../general-purpose/Annotation'
 import { Period } from '../../general-purpose/Period'
+import { ValueElement } from '../../general-purpose/ValueElement'
 
 export const ObservationId = Schema.String.pipe(Schema.brand('ObservationId'))
 
@@ -27,10 +28,7 @@ export const ObservationStatus = Schema.Enums({
 
 export type ObservationStatus = typeof ObservationStatus.Type
 
-/**
- * Measurements and simple assertions made about a patient, device or other subject.
- */
-export const Observation = Schema.Struct({
+const observationFields = {
   ...DomainResource(ObservationId).fields,
   resourceType: Schema.Literal('Observation'),
   /**
@@ -86,26 +84,6 @@ export const Observation = Schema.Struct({
    * Who was responsible for asserting the observed value as "true".
    */
   performer: Schema.optional(Schema.Array(Reference)),
-  /**
-   * The information determined as a result of making the observation, if the information has a simple value.
-   * This is a choice element in FHIR (value[x]) - can be valueQuantity, valueCodeableConcept, valueString, valueBoolean, valueInteger, valueRange, valueRatio, valueSampledData, valueTime, valueDateTime, or valuePeriod.
-   * For simplicity, we're using Schema.Unknown here - in a production system, you'd want to model all value[x] types properly.
-   */
-  valueQuantity: Schema.optional(Schema.Unknown),
-  valueCodeableConcept: Schema.optional(CodeableConcept),
-  valueString: Schema.optional(Schema.String),
-  valueBoolean: Schema.optional(Schema.Boolean),
-  valueInteger: Schema.optional(Schema.Number),
-  valueRange: Schema.optional(Schema.Unknown),
-  valueRatio: Schema.optional(Schema.Unknown),
-  valueSampledData: Schema.optional(Schema.Unknown),
-  /**
-   * The information determined as a result of making the observation, if the value is a time.
-   * Format: HH:MM:SS (e.g., "13:28:17")
-   */
-  valueTime: Schema.optional(Schema.String),
-  valueDateTime: Schema.optional(Schema.DateTimeUtc),
-  valuePeriod: Schema.optional(Period),
   /**
    * Provides a reason why the expected value in the element Observation.value[x] is missing.
    */
@@ -180,56 +158,48 @@ export const Observation = Schema.Struct({
    */
   component: Schema.optional(
     Schema.Array(
-      Schema.Struct({
-        /**
-         * Describes what was observed. Sometimes this is called the observation "code".
-         */
-        code: CodeableConcept,
-        /**
-         * The information determined as a result of making the observation, if the information has a simple value.
-         * This is a choice element in FHIR (value[x]) - similar to the main observation value.
-         */
-        valueQuantity: Schema.optional(Schema.Unknown),
-        valueCodeableConcept: Schema.optional(CodeableConcept),
-        valueString: Schema.optional(Schema.String),
-        valueBoolean: Schema.optional(Schema.Boolean),
-        valueInteger: Schema.optional(Schema.Number),
-        valueRange: Schema.optional(Schema.Unknown),
-        valueRatio: Schema.optional(Schema.Unknown),
-        valueSampledData: Schema.optional(Schema.Unknown),
-        /**
-         * The information determined as a result of making the component observation, if the value is a time.
-         * Format: HH:MM:SS (e.g., "13:28:17")
-         */
-        valueTime: Schema.optional(Schema.String),
-        valueDateTime: Schema.optional(Schema.DateTimeUtc),
-        valuePeriod: Schema.optional(Period),
-        /**
-         * Provides a reason why the expected value in the element Observation.component.value[x] is missing.
-         */
-        dataAbsentReason: Schema.optional(CodeableConcept),
-        /**
-         * A categorical assessment of an observation value. For example, high, low, normal.
-         */
-        interpretation: Schema.optional(Schema.Array(CodeableConcept)),
-        /**
-         * Guidance on how to interpret the value by comparison to a normal or recommended range.
-         */
-        referenceRange: Schema.optional(
-          Schema.Array(
-            Schema.Struct({
-              low: Schema.optional(Schema.Unknown),
-              high: Schema.optional(Schema.Unknown),
-              type: Schema.optional(CodeableConcept),
-              appliesTo: Schema.optional(Schema.Array(CodeableConcept)),
-              age: Schema.optional(Schema.Unknown),
-              text: Schema.optional(Schema.String),
-            })
-          )
-        ),
-      })
+      Schema.extend(
+        Schema.Struct({
+          /**
+           * Describes what was observed. Sometimes this is called the observation "code".
+           */
+          code: CodeableConcept,
+          /**
+           * Provides a reason why the expected value in the element Observation.component.value[x] is missing.
+           */
+          dataAbsentReason: Schema.optional(CodeableConcept),
+          /**
+           * A categorical assessment of an observation value. For example, high, low, normal.
+           */
+          interpretation: Schema.optional(Schema.Array(CodeableConcept)),
+          /**
+           * Guidance on how to interpret the value by comparison to a normal or recommended range.
+           */
+          referenceRange: Schema.optional(
+            Schema.Array(
+              Schema.Struct({
+                low: Schema.optional(Schema.Unknown),
+                high: Schema.optional(Schema.Unknown),
+                type: Schema.optional(CodeableConcept),
+                appliesTo: Schema.optional(Schema.Array(CodeableConcept)),
+                age: Schema.optional(Schema.Unknown),
+                text: Schema.optional(Schema.String),
+              })
+            )
+          ),
+        }),
+        ValueElement
+      )
     )
   ),
-})
+} as const
+
+/**
+ * Measurements and simple assertions made about a patient, device or other subject.
+ */
+export const Observation = Schema.extend(
+  Schema.Struct(observationFields),
+  ValueElement
+)
 
 export type Observation = typeof Observation.Type

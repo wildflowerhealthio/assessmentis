@@ -126,7 +126,7 @@ describe('Observation model', () => {
   })
 
   test('property: optional fields are preserved through encode-decode', () => {
-    // Property: Optional fields like valueString should be preserved
+    // Property: Optional fields and value should be preserved
     fc.assert(
       fc.property(
         fc.constantFrom('final', 'preliminary', 'registered'),
@@ -136,12 +136,7 @@ describe('Observation model', () => {
           const decode = Schema.decodeUnknownEither(Observation)
           const encode = Schema.encodeUnknownEither(Observation)
 
-          const observation: {
-            resourceType: 'Observation'
-            status: string
-            code: { text: string }
-            valueString?: string
-          } = {
+          const observation: Record<string, unknown> = {
             resourceType: 'Observation',
             status,
             code: { text: codeText },
@@ -153,7 +148,7 @@ describe('Observation model', () => {
             const encoded = encode(decoded.right)
             if (Either.isRight(encoded)) {
               if (valueString !== undefined) {
-                expect(encoded.right.valueString).toBe(valueString)
+                expect(encoded.right).toHaveProperty('valueString', valueString)
               }
             }
           }
@@ -196,48 +191,49 @@ describe('Observation model', () => {
   })
 
   test('property: value fields work correctly', () => {
-    // Property: Different value[x] types should be preserved
+    // Property: Different value[x] types should be preserved (only one at a time)
     fc.assert(
       fc.property(
         fc.constantFrom('final', 'preliminary'),
         fc.string(),
-        fc.option(fc.string(), { nil: undefined }),
-        fc.option(fc.boolean(), { nil: undefined }),
-        fc.option(fc.integer(), { nil: undefined }),
-        (status, codeText, valueString, valueBoolean, valueInteger) => {
+        fc.oneof(
+          fc.record({ valueString: fc.string() }),
+          fc.record({ valueBoolean: fc.boolean() }),
+          fc.record({ valueInteger: fc.integer() }),
+          fc.constant({})
+        ),
+        (status, codeText, valueField) => {
           const decode = Schema.decodeUnknownEither(Observation)
           const encode = Schema.encodeUnknownEither(Observation)
 
-          const observation: {
-            resourceType: 'Observation'
-            status: string
-            code: { text: string }
-            valueString?: string
-            valueBoolean?: boolean
-            valueInteger?: number
-          } = {
+          const observation: Record<string, unknown> = {
             resourceType: 'Observation',
             status,
             code: { text: codeText },
+            ...valueField,
           }
-          if (valueString !== undefined) observation.valueString = valueString
-          if (valueBoolean !== undefined)
-            observation.valueBoolean = valueBoolean
-          if (valueInteger !== undefined)
-            observation.valueInteger = valueInteger
 
           const decoded = decode(observation)
           if (Either.isRight(decoded)) {
             const encoded = encode(decoded.right)
             if (Either.isRight(encoded)) {
-              if (valueString !== undefined) {
-                expect(encoded.right.valueString).toBe(valueString)
+              if ('valueString' in valueField) {
+                expect(encoded.right).toHaveProperty(
+                  'valueString',
+                  valueField.valueString
+                )
               }
-              if (valueBoolean !== undefined) {
-                expect(encoded.right.valueBoolean).toBe(valueBoolean)
+              if ('valueBoolean' in valueField) {
+                expect(encoded.right).toHaveProperty(
+                  'valueBoolean',
+                  valueField.valueBoolean
+                )
               }
-              if (valueInteger !== undefined) {
-                expect(encoded.right.valueInteger).toBe(valueInteger)
+              if ('valueInteger' in valueField) {
+                expect(encoded.right).toHaveProperty(
+                  'valueInteger',
+                  valueField.valueInteger
+                )
               }
             }
           }
