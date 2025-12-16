@@ -2,16 +2,14 @@ import { FetchHttpClient, HttpBody, HttpClient } from '@effect/platform'
 import { DateTime, Effect, Layer, Schema } from 'effect'
 import {
   ExternalVideoCallClient,
-  ExternalVideoCallServiceError,
   ExternalVideoCallRecordingId,
-  ExternalVideoCallRecordingUri,
-  ExternalVideoCallRecordingFileUrl,
   ExternalVideoCallRoomId,
   ExternalVideoCallRoomName,
   RoomCreationParams,
-  ExternalVideoCallRecording,
   ExternalVideoCallRoom,
 } from '@assessmentis/clinical-domain/video-calls'
+import { Media } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import { UnhandledError } from '@assessmentis/clinical-domain/errors'
 import { DailyCoProxyConfig } from '@assessmentis/config-domain/dailyCo'
 
 const ApiDailyCoRecordingSchema = Schema.Struct({
@@ -56,13 +54,7 @@ export const DailyCoExternalVideoCallClientLayer = (
         ApiDailyCoRecordingLinkSchema
       )
       const idToken = yield* Effect.tryPromise(() => getIdToken()).pipe(
-        Effect.mapError(
-          (cause) =>
-            new ExternalVideoCallServiceError({
-              message: 'Error fetching ID Token for DailyCo API',
-              cause,
-            })
-        )
+        Effect.mapError((cause) => new UnhandledError({ cause }))
       )
 
       const headers = {
@@ -73,10 +65,7 @@ export const DailyCoExternalVideoCallClientLayer = (
 
       const fetchRecordingFileUrl = (
         recordingId: string
-      ): Effect.Effect<
-        ExternalVideoCallRecordingFileUrl | undefined,
-        ExternalVideoCallServiceError
-      > => {
+      ): Effect.Effect<string | undefined, UnhandledError> => {
         return Effect.gen(function* () {
           const url = new URL(
             `${baseDailyApiRoute}/recordings/${recordingId}/access-link`
@@ -86,13 +75,7 @@ export const DailyCoExternalVideoCallClientLayer = (
             headers,
           }
           const res = yield* httpClient.get(url, options).pipe(
-            Effect.mapError(
-              (cause) =>
-                new ExternalVideoCallServiceError({
-                  message: 'HTTP Client Error while fetching recording link',
-                  cause,
-                })
-            )
+            Effect.mapError((cause) => new UnhandledError({ cause }))
           )
 
           if (res.status === 404) {
@@ -102,36 +85,21 @@ export const DailyCoExternalVideoCallClientLayer = (
 
           if (res.status != 200) {
             yield* Effect.fail(
-              new ExternalVideoCallServiceError({
-                message: `DailyCo returned an HTTP status of ${res.status} not 200`,
-                cause: undefined,
+              new UnhandledError({
+                cause: `DailyCo returned an HTTP status of ${res.status} not 200`,
               })
             )
           }
 
           const json = yield* res.json.pipe(
-            Effect.mapError(
-              (cause) =>
-                new ExternalVideoCallServiceError({
-                  message: 'Error parsing JSON in response',
-                  cause,
-                })
-            )
+            Effect.mapError((cause) => new UnhandledError({ cause }))
           )
 
           const linkData = yield* apiDailyCoRecordingLinkSchemaParser(
             json
-          ).pipe(
-            Effect.mapError(
-              (cause) =>
-                new ExternalVideoCallServiceError({
-                  message: 'Error validating JSON Response',
-                  cause,
-                })
-            )
-          )
+          ).pipe(Effect.mapError((cause) => new UnhandledError({ cause })))
 
-          return ExternalVideoCallRecordingFileUrl.make(linkData.download_link)
+          return linkData.download_link
         })
       }
 
@@ -153,93 +121,72 @@ export const DailyCoExternalVideoCallClientLayer = (
               headers,
             }
             const res = yield* httpClient.get(url, options).pipe(
-              Effect.mapError(
-                (cause) =>
-                  new ExternalVideoCallServiceError({
-                    message: 'HTTP Client Error while fetching recordings',
-                    cause,
-                  })
-              )
+              Effect.mapError((cause) => new UnhandledError({ cause }))
             )
 
             if (res.status != 200) {
               yield* Effect.fail(
-                new ExternalVideoCallServiceError({
-                  message: `DailyCo returned an HTTP status of ${res.status} not 200`,
-                  cause: undefined,
+                new UnhandledError({
+                  cause: `DailyCo returned an HTTP status of ${res.status} not 200`,
                 })
               )
             }
 
             const json = yield* res.json.pipe(
-              Effect.mapError(
-                (cause) =>
-                  new ExternalVideoCallServiceError({
-                    message: 'Error parsing JSON in response',
-                    cause,
-                  })
-              )
+              Effect.mapError((cause) => new UnhandledError({ cause }))
             )
 
             const apiDailyCoRecordings = yield* apiDailyCoRecordingSchemaParser(
               json
-            ).pipe(
-              Effect.mapError(
-                (cause) =>
-                  new ExternalVideoCallServiceError({
-                    message: 'Error validating JSON Response',
-                    cause,
-                  })
-              )
-            )
+            ).pipe(Effect.mapError((cause) => new UnhandledError({ cause })))
 
-            // Fetch recording links for all recordings and decode
-            const recordingsWithLinks = yield* Effect.all(
+            // Fetch recording links for all recordings and create Media objects
+            const mediaList = yield* Effect.all(
               apiDailyCoRecordings.data.map((rec) =>
                 Effect.gen(function* () {
                   const recordingFileUrl = yield* fetchRecordingFileUrl(rec.id)
+
+                  // Skip recordings without a file URL
+                  if (!recordingFileUrl) {
+                    return undefined
+                  }
 
                   // Convert timestamp to ISO string for DateTimeUtc schema
                   const startedAtUtc = DateTime.unsafeMake(rec.start_ts * 1000)
                   const startedAtIso = DateTime.formatIso(startedAtUtc)
 
-                  const recordingData = {
-                    externalVideoCallRecordingId: rec.id,
-                    externalVideoCallRoomName: roomName,
-                    startedAt: startedAtIso,
-                    duration: rec.duration * 1000, // convert to milliseconds
-                    uri: ExternalVideoCallRecordingUri.make(
-                      `https://api.daily.co/v1/recordings/${rec.id}`
-                    ),
-                    recordingFileUrl,
+                  const mediaData = {
+                    resourceType: 'Media' as const,
+                    status: 'completed' as const,
+                    identifier: [
+                      {
+                        value: rec.id,
+                      },
+                    ],
+                    createdDateTime: startedAtIso,
+                    duration: rec.duration, // already in seconds from DailyCo
+                    content: {
+                      url: recordingFileUrl,
+                    },
                   }
 
                   // Decode using the schema to ensure type safety
-                  return yield* Schema.decode(ExternalVideoCallRecording)(
-                    recordingData
-                  ).pipe(
-                    Effect.mapError(
-                      (cause) =>
-                        new ExternalVideoCallServiceError({
-                          message: 'Error decoding recording data',
-                          cause,
-                        })
-                    )
+                  return yield* Schema.decode(Media)(mediaData).pipe(
+                    Effect.mapError((cause) => new UnhandledError({ cause }))
                   )
                 })
               )
             )
 
-            return recordingsWithLinks
+            // Filter out undefined values (recordings without file URLs)
+            return mediaList.filter(
+              (media): media is Media => media !== undefined
+            )
           })
         }
       const createRoom: typeof ExternalVideoCallClient.Service.createRoom = (
         params: RoomCreationParams
-      ): Effect.Effect<
-        ExternalVideoCallRoom,
-        ExternalVideoCallServiceError,
-        never
-      > =>
+      ): Effect.Effect<ExternalVideoCallRoom, UnhandledError, never> =>
         Effect.gen(function* () {
           const expiryInstant = params.expiresAt
             ? params.expiresAt
@@ -259,63 +206,32 @@ export const DailyCoExternalVideoCallClientLayer = (
           const options = {
             method: 'POST',
             body: yield* HttpBody.json(body).pipe(
-              Effect.mapError(
-                (cause) =>
-                  new ExternalVideoCallServiceError({
-                    message: 'Error serializing request body JSON',
-                    cause,
-                  })
-              )
+              Effect.mapError((cause) => new UnhandledError({ cause }))
             ),
             headers,
           }
 
           const res = yield* httpClient.post(url, options).pipe(
-            Effect.mapError(
-              (cause) =>
-                new ExternalVideoCallServiceError({
-                  message: 'HTTP Client Error while creating room',
-                  cause,
-                })
-            )
+            Effect.mapError((cause) => new UnhandledError({ cause }))
           )
 
           if (res.status != 200) {
             const text = yield* res.text.pipe(
-              Effect.mapError(
-                (cause) =>
-                  new ExternalVideoCallServiceError({
-                    message: 'HTTP body read error',
-                    cause,
-                  })
-              )
+              Effect.mapError((cause) => new UnhandledError({ cause }))
             )
             yield* Effect.fail(
-              new ExternalVideoCallServiceError({
-                message: `DailyCo returned an HTTP status of ${res.status} not 200: ${text}`,
-                cause: undefined,
+              new UnhandledError({
+                cause: `DailyCo returned an HTTP status of ${res.status} not 200: ${text}`,
               })
             )
           }
 
           const json = yield* res.json.pipe(
-            Effect.mapError(
-              (cause) =>
-                new ExternalVideoCallServiceError({
-                  message: 'Error parsing JSON in response',
-                  cause,
-                })
-            )
+            Effect.mapError((cause) => new UnhandledError({ cause }))
           )
 
           const apiDailyCoRoom = yield* apiDailyCoRoomSchemaParser(json).pipe(
-            Effect.mapError(
-              (cause) =>
-                new ExternalVideoCallServiceError({
-                  message: 'Error validating JSON Response',
-                  cause,
-                })
-            )
+            Effect.mapError((cause) => new UnhandledError({ cause }))
           )
 
           return {

@@ -3,9 +3,9 @@ import {
   ExternalVideoCallClient,
   ExternalVideoCallRoomId,
   ExternalVideoCallRoomName,
-  ExternalVideoCallServiceError,
   type RoomCreationParams,
 } from '@assessmentis/clinical-domain/video-calls'
+import { UnhandledError } from '@assessmentis/clinical-domain/errors'
 
 export const GoogleMeetExternalVideoCallClientLayer = Layer.effect(
   ExternalVideoCallClient,
@@ -13,12 +13,7 @@ export const GoogleMeetExternalVideoCallClientLayer = Layer.effect(
     (function () {
       const fetchRecordingsByRoomName: typeof ExternalVideoCallClient.Service.fetchRecordingsByRoomName =
         (_: ExternalVideoCallRoomName) =>
-          Effect.fail(
-            new ExternalVideoCallServiceError({
-              message: 'not-implemented',
-              cause: undefined,
-            })
-          )
+          Effect.fail(new UnhandledError({ cause: 'not-implemented' }))
 
       const createRoom: typeof ExternalVideoCallClient.Service.createRoom = (
         _: RoomCreationParams
@@ -45,15 +40,7 @@ export const GoogleMeetExternalVideoCallClientLayer = Layer.effect(
             roomName: ExternalVideoCallRoomName.make(space.result.meetingCode!),
             id: ExternalVideoCallRoomId.make(space.result.name!),
           }
-        }).pipe(
-          Effect.mapError(
-            (cause) =>
-              new ExternalVideoCallServiceError({
-                message: 'Error creating the room',
-                cause,
-              })
-          )
-        )
+        }).pipe(Effect.mapError((cause) => new UnhandledError({ cause })))
 
       const extractRoomNameFromUrl: typeof ExternalVideoCallClient.Service.extractRoomNameFromUrl =
         (url: string): ExternalVideoCallRoomName | undefined => {
