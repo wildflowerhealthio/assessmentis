@@ -28,6 +28,7 @@
     "infrastructure/google-fhir-infrastructure",
     "infrastructure/daily-co-infrastructure",
     "infrastructure/google-meet-infrastructure",
+    "infrastructure/docx-template-infrastructure",
     "apps/functions",
     "apps/frontend"
   ],

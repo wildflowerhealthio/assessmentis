@@ -10,6 +10,7 @@
     ".": "./src/index.ts",
     "./compositions": "./src/compositions/index.ts",
     "./diagnostic-medicine": "./src/diagnostic-medicine/index.ts",
+    "./diagnostic-reports": "./src/diagnostic-reports/index.ts",
     "./encounters": "./src/encounters/index.ts",
     "./general-purpose": "./src/general-purpose/index.ts",
     "./questionnaires": "./src/questionnaires/index.ts",

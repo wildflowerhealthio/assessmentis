@@ -1,0 +1,31 @@
+{
+  "name": "@assessmentis/docx-template-infrastructure",
+  "version": "0.0.1",
+  "description": "DOCX template rendering infrastructure for diagnostic reports",
+  "author": "Ruth Marks",
+  "license": "UNLICENSED",
+  "type": "module",
+  "prettier": "@assessmentis/prettier-config",
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "lint": "eslint \"./src/**/*\"",
+    "lint:fix": "eslint --fix \"./src/**/*\"",
+    "test": "vitest"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "devDependencies": {
+    "@assessmentis/eslint-config": "*",
+    "@assessmentis/prettier-config": "*",
+    "@assessmentis/typescript-config": "*",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
+  },
+  "dependencies": {
+    "@assessmentis/clinical-domain": "*",
+    "docxtemplater": "^3.52.2",
+    "effect": "^3.19.9",
+    "pizzip": "^3.1.7"
+  }
+}
