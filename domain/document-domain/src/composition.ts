@@ -4,11 +4,14 @@ import {
   CodeableConcept,
   Identifier,
   Narrative,
+  Period,
   Reference,
 } from '@assessmentis/clinical-domain'
 import {
   BackboneElement,
   Element,
+  Extension,
+  Meta,
 } from '@assessmentis/clinical-domain/general-purpose'
 
 const SectionId = Schema.String.pipe(Schema.brand('SectionId'))
@@ -178,7 +181,7 @@ export const CompositionEvent = Schema.Struct({
   /**
    * The period covered by the documentation
    */
-  period: Schema.optional(Schema.Any), // Period type - simplified as Any
+  period: Schema.optional(Period),
   /**
    * The event(s) being documented
    */
@@ -206,7 +209,7 @@ export const Composition = Schema.Struct({
   /**
    * Metadata about the resource
    */
-  meta: Schema.optional(Schema.Any),
+  meta: Schema.optional(Meta),
   /**
    * A set of rules under which this content was created
    */
@@ -230,15 +233,15 @@ export const Composition = Schema.Struct({
   /**
    * Contained, inline Resources
    */
-  contained: Schema.optional(Schema.Array(Schema.Any)),
+  contained: Schema.optional(Schema.Array(Schema.Unknown)),
   /**
    * Additional content defined by implementations
    */
-  extension: Schema.optional(Schema.Array(Schema.Any)),
+  extension: Schema.optional(Schema.Array(Extension)),
   /**
    * Extensions that cannot be ignored
    */
-  modifierExtension: Schema.optional(Schema.Array(Schema.Any)),
+  modifierExtension: Schema.optional(Schema.Array(Extension)),
   /**
    * Logical identifier of composition (version-independent)
    */
