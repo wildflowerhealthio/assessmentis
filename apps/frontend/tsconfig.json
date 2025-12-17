@@ -4,8 +4,7 @@
     "**/*",
     "**/.server/**/*",
     "**/.client/**/*",
-    ".react-router/types/**/*",
-    "../../domain/questionnaire-domain/src/questionnaire-templates"
+    ".react-router/types/**/*"
   ],
   "exclude": ["node_modules"],
   "compilerOptions": {

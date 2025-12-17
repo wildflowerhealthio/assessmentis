@@ -1,9 +1,5 @@
-import { Effect, Schema, Option } from 'effect'
-import {
-  Code,
-  Encounter,
-  QuestionnaireResponse,
-} from '@assessmentis/clinical-domain'
+import { Effect, Schema } from 'effect'
+import { Code, QuestionnaireResponse } from '@assessmentis/clinical-domain'
 import { gad7 } from '@assessmentis/questionnaire-domain'
 import { makeScoringTable, ScoringTable } from './utility/scoringTable'
 
@@ -47,10 +43,7 @@ const makeGad7ScoringTable = makeScoringTable(
   ]
 )
 
-export const prepareGad7ReportData = (
-  encounter: Encounter,
-  response: QuestionnaireResponse
-) => {
+export const prepareGad7ReportData = (response: QuestionnaireResponse) => {
   if (!response.item) return Effect.fail('No items in QuestionnaireResponse')
 
   const scoreTableData = makeGad7ScoringTable(response.item.slice(0, 7))

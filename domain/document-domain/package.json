@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@assessmentis/clinical-domain": "*",
+    "@assessmentis/questionnaire-domain": "*",
     "effect": "^3.19.8"
   },
   "devDependencies": {

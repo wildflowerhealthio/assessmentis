@@ -5,14 +5,11 @@ import { describe, expect, it } from 'vitest'
 import {
   QuestionnaireItemLink,
   QuestionnaireResponseStatus,
-  type Encounter,
   type QuestionnaireResponse,
 } from '@assessmentis/clinical-domain'
 import { gad7 as gad7Questionnaire } from '@assessmentis/questionnaire-domain'
 
 import { prepareGad7ReportData } from './gad7'
-
-const encounter: Encounter = { resourceType: 'Encounter' } as Encounter
 
 const codeScores: Record<string, number> = {
   'LA6568-5': 0,
@@ -63,9 +60,7 @@ describe('prepareGad7ReportData', () => {
           fc.tuple(fc.constant(codes), responseArb(codes))
         ),
         ([codes, response]) => {
-          const result = Effect.runSync(
-            prepareGad7ReportData(encounter, response)
-          )
+          const result = Effect.runSync(prepareGad7ReportData(response))
 
           expect(result.table.rows).toHaveLength(7)
           const expectedTotal = codes.reduce(
