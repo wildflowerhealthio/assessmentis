@@ -162,8 +162,8 @@ export const questionnaire: Questionnaire = Schema.decodeSync(Questionnaire)({
         {
           valueCoding: {
             system: 'http://loinc.org',
-            code: 'LA18938-3',
-            display: 'More days than not',
+            code: 'LA6570-1',
+            display: 'More than half the days',
           },
         },
         {

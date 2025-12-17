@@ -1,4 +1,4 @@
-import { Option, Schema } from 'effect'
+import { Effect, Option, Schema } from 'effect'
 import {
   Coding,
   QuestionnaireResponseItem,
@@ -24,30 +24,24 @@ export const makeScoringTable =
     score: (item: QuestionnaireResponseItem) => undefined | number,
     headerCodes: ReadonlyArray<Coding>
   ) =>
-  (responseItems: QuestionnaireResponseItem[]): Option.Option<ScoringTable> => {
-    if (items.length === 0) return Option.none()
-
-    const answerOptionValueCodings = Option.all(
-      items[0].answerOption?.map((option) =>
-        Option.fromNullable(
-          'valueCoding' in option ? option.valueCoding : undefined
-        )
-      ) ?? [Option.none()]
-    ).pipe(Option.getOrUndefined)
-    if (!answerOptionValueCodings) return Option.none()
+  (
+    responseItems: QuestionnaireResponseItem[]
+  ): Effect.Effect<ScoringTable, string> => {
+    if (items.length === 0) return Effect.fail('No items provided')
 
     if (
       !items.every(
         (item) =>
           item.answerOption?.every(
-            (option, idx) =>
+            (option) =>
               'valueCoding' in option &&
-              option.valueCoding?.code === answerOptionValueCodings[idx].code
+              headerCodes.some((hc) => hc.code === option.valueCoding?.code)
           ) ?? false
       )
     ) {
-      return Option.none() // All items don't have the same answer options
-      // if (!items.every((item) => item.answerOption && item.answerOption.length > 0))
+      return Effect.fail(
+        'An item has an answer code not present in headerCodes'
+      )
     }
 
     let totalScore = 0
@@ -70,11 +64,9 @@ export const makeScoringTable =
       }
     })
 
-    return Option.some(
+    return Effect.succeed(
       ScoringTable.make({
-        dataHeaders: answerOptionValueCodings.map(
-          (coding) => coding.display || ''
-        ),
+        dataHeaders: headerCodes.map((coding) => coding.display || ''),
         rows,
         totalScore,
       })

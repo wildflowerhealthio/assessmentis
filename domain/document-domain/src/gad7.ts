@@ -36,8 +36,8 @@ const makeGad7ScoringTable = makeScoringTable(
     },
     {
       system: 'http://loinc.org',
-      code: Code.make('LA18938-3'),
-      display: 'More days than not',
+      code: Code.make('LA6570-1'),
+      display: 'More than half the days',
     },
     {
       system: 'http://loinc.org',
@@ -53,14 +53,13 @@ export const prepareGad7ReportData = (
 ) => {
   if (!response.item) return Effect.fail('No items in QuestionnaireResponse')
 
-  const scoreTableData = makeGad7ScoringTable(response.item.slice(0, 7)).pipe(
-    Option.getOrUndefined
+  const scoreTableData = makeGad7ScoringTable(response.item.slice(0, 7))
+
+  return scoreTableData.pipe(
+    Effect.map((scoreTableData) =>
+      Gad7ReportProps.make({ table: scoreTableData })
+    )
   )
-
-  if (!scoreTableData)
-    return Effect.fail('Could not prepare GAD-7 scoring table')
-
-  return Effect.succeed(Gad7ReportProps.make({ table: scoreTableData }))
 }
 
 export const Gad7ReportProps = Schema.Struct({
