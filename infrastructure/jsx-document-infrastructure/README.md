@@ -1,0 +1,70 @@
+# @assessmentis/jsx-document-infrastructure
+
+> 📖 **See [CONTRIBUTING.md](../../CONTRIBUTING.md) for general development guidelines common to all packages.**
+
+## Overview
+
+This package provides React-based document templates for rendering assessment documents. It transforms document models from document-domain into visual React components for display or PDF generation.
+
+## What This Package Does
+
+- Render document models as React components
+- Provide styled templates for different document types
+- Enable document preview and PDF generation
+
+## Project Structure
+
+```
+src/
+├── index.ts           # Main exports
+└── plain/
+    └── gad7.tsx      # Plain text GAD-7 report template
+```
+
+## Usage
+
+```typescript
+import { PlainGad7Report } from '@assessmentis/jsx-document-infrastructure'
+
+function DisplayReport({ document }) {
+  return <PlainGad7Report document={document} />
+}
+```
+
+## Important Guidelines
+
+### ✅ DO:
+
+- Accept document models from document-domain as props
+- Make components print-friendly (CSS for print media)
+- Use semantic HTML for accessibility
+- Keep components pure and stateless
+
+### ❌ DON'T:
+
+- Add business logic or calculations (use document-domain)
+- Fetch data or make API calls
+- Modify or transform the document data
+- Use heavy CSS-in-JS libraries
+
+## Print and PDF Considerations
+
+Optimize documents for print and PDF:
+
+- Use semantic HTML (headings, sections, tables)
+- Add print-specific CSS with `@media print`
+- Use page-break properties for multi-page documents
+- Test actual printing/PDF generation
+
+## Adding a Document Template
+
+1. Create a new component file (e.g., `plain/phq9.tsx`)
+2. Accept document model from document-domain as props
+3. Focus on clear, readable layout
+4. Add print styles if needed
+5. Export from `index.ts`
+
+## Related Packages
+
+- `@assessmentis/document-domain`: Provides document models
+- `apps/frontend`: Consumes these components

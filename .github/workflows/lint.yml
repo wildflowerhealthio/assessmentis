@@ -36,6 +36,12 @@ jobs:
             working-directory: infrastructure/google-fhir-infrastructure
           - name: google-meet-infrastructure
             working-directory: infrastructure/google-meet-infrastructure
+          - name: jsx-document-infrastructure
+            working-directory: infrastructure/jsx-document-infrastructure
+          - name: questionnaire-domain
+            working-directory: domain/questionnaire-domain
+          - name: document-domain
+            working-directory: domain/document-domain
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
