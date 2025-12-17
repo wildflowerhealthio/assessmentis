@@ -11,6 +11,7 @@ export const ScoringTable = Schema.Struct({
     Schema.Struct({
       question: Schema.optional(Schema.String),
       data: Schema.Array(Schema.String),
+      score: Schema.optional(Schema.Number),
     })
   ),
   totalScore: Schema.Number,
@@ -66,7 +67,7 @@ export const makeScoringTable =
         data: headerCodes.map(({ code }) =>
           answerCode == code ? `${itemScore}` : ''
         ),
-        score,
+        score: itemScore,
       }
     })
 
