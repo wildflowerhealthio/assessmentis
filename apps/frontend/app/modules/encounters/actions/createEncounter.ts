@@ -1,8 +1,5 @@
 import { Effect, Schema } from 'effect'
-import {
-  ExternalVideoCallClient,
-  ExternalVideoCallServiceError,
-} from '@assessmentis/clinical-domain/video-calls'
+import { ExternalVideoCallClient } from '@assessmentis/clinical-domain/video-calls'
 import {
   QuestionnaireResponse,
   QuestionnaireResponseRepository,
@@ -42,10 +39,7 @@ export const createEncounter = (
   args: CreateEncounterArg
 ): Effect.Effect<
   CreateEncounterResponse,
-  | UnhandledError
-  | NeedsAuthenticationError
-  | ExternalVideoCallServiceError
-  | ExternalAssertionError,
+  UnhandledError | NeedsAuthenticationError | ExternalAssertionError,
   | EncounterRepository
   | QuestionnaireResponseRepository
   | ExternalVideoCallClient

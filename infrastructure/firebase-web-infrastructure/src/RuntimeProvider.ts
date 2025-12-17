@@ -5,7 +5,6 @@ import { QuestionnaireRepository } from '@assessmentis/clinical-domain/questionn
 import {
   EncounterRepository,
   ExternalVideoCallClient,
-  ExternalVideoCallServiceError,
   MediaRepository,
   QuestionnaireResponseRepository,
   UnhandledError,
@@ -45,16 +44,16 @@ const notImplemented = {
     Layer.succeed(ExternalVideoCallClient, {
       createRoom: () =>
         Effect.fail(
-          new ExternalVideoCallServiceError({
-            message: 'not implemented',
-            cause: null,
+          new UnhandledError({
+            cause: 'not implemented',
+            message: 'createRoom not implemented',
           })
         ),
-      fetchRecordingsByRoomName: () =>
+      getMediaRecordedInRoom: (_roomName) =>
         Effect.fail(
-          new ExternalVideoCallServiceError({
-            message: 'not implemented',
-            cause: null,
+          new UnhandledError({
+            cause: 'not implemented',
+            message: 'getMediaRecordedInRoom not implemented',
           })
         ),
       extractRoomNameFromUrl: () => undefined,

@@ -1,8 +1,5 @@
-import { Effect, Duration } from 'effect'
-import {
-  ExternalVideoCallClient,
-  ExternalVideoCallServiceError,
-} from '@assessmentis/clinical-domain/video-calls'
+import { Effect } from 'effect'
+import { ExternalVideoCallClient } from '@assessmentis/clinical-domain/video-calls'
 import { EncounterRepository } from '@assessmentis/clinical-domain/encounters'
 import {
   NeedsAuthenticationError,
@@ -32,7 +29,6 @@ export const updateEncounterRecordingsAndTranscripts = (
   WithId<Encounter>,
   | UnhandledError
   | NeedsAuthenticationError
-  | ExternalVideoCallServiceError
   | ExternalAssertionError
   | NotFoundError,
   EncounterRepository | ExternalVideoCallClient | MediaRepository
@@ -55,68 +51,57 @@ export const updateEncounterRecordingsAndTranscripts = (
     const roomName = videoCalls.extractRoomNameFromUrl(roomUrl)
     if (!roomName) return encounter
 
-    const recordings = yield* videoCalls.fetchRecordingsByRoomName(roomName)
-
-    // If no recordings found yet, return the encounter unchanged
-    if (recordings.length == 0) return encounter
-
-    // Fetch all existing Media resources once to check for duplicates
-    const existingMedia = yield* mediaRepository.getMany({
+    // Fetch all existing Media resources
+    const knownMediaItems = yield* mediaRepository.getMany({
       encounter: `Encounter/${encounterId}`,
     })
-    const existingIds = new Set(
-      existingMedia
-        .flatMap((media) => media.identifier?.map(({ value }) => value) ?? [])
-        .filter((id) => !!id)
-    )
 
-    for (const media of existingMedia) {
-      const recording = recordings.find((recording) =>
-        media.identifier?.some(
-          (identifier) =>
-            identifier.value === recording.externalVideoCallRecordingId
-        )
-      )
-      if (!recording) continue
-      yield* mediaRepository.update({
-        ...media,
-        content: {
-          url: recording.recordingFileUrl,
-        },
-      })
+    // Get media with fresh URLs from the video call service
+    const latestRecordings = yield* videoCalls.getMediaRecordedInRoom(roomName)
+
+    // If no recordings found, return the encounter unchanged
+    if (latestRecordings.length === 0) {
+      return encounter
     }
 
-    // Create Media resources for recordings that don't exist yet
-    const newMediaToCreate: Media[] = recordings
-      .filter(
-        (recording) =>
-          recording.recordingFileUrl &&
-          !existingIds.has(recording.externalVideoCallRecordingId)
-      )
-      .map(
-        (recording): Media => ({
-          resourceType: 'Media',
-          status: 'completed',
-          encounter: {
-            reference: `Encounter/${encounterId}`,
-          },
-          identifier: [
-            {
-              value: recording.externalVideoCallRecordingId,
-            },
-          ],
-          createdDateTime: recording.startedAt,
-          duration: Duration.toSeconds(recording.duration),
-          content: {
-            url: recording.recordingFileUrl,
-          },
-        })
-      )
+    const updatedMedia: WithId<Media>[] = []
+    const newRecordings: Media[] = []
 
-    // Create all new Media resources in one batch
-    const newMediaCreated = newMediaToCreate.length > 0
-    if (newMediaCreated) {
-      yield* mediaRepository.createMany(newMediaToCreate)
+    for (const recording of latestRecordings) {
+      // Find the corresponding existing media and update it with fresh URL
+      const correspondingMedia = knownMediaItems.find((known) =>
+        known.identifier?.some((knownId) =>
+          recording.identifier?.some((id) => id.value === knownId.value)
+        )
+      )
+      if (correspondingMedia) {
+        const updated: WithId<Media> = {
+          ...correspondingMedia,
+          content: recording.content,
+          id: correspondingMedia.id,
+        }
+        updatedMedia.push(updated)
+      } else {
+        newRecordings.push(recording)
+      }
+    }
+
+    // Update existing Media resources with fresh URLs
+    // TODO: Investigate bulk update support in MediaRepository
+    for (const media of updatedMedia) {
+      yield* mediaRepository.update(media)
+    }
+
+    // Create new Media resources linked to the encounter
+    const mediaToCreate = newRecordings.map((media) => ({
+      ...media,
+      encounter: {
+        reference: `Encounter/${encounterId}`,
+      },
+    }))
+
+    if (mediaToCreate.length > 0) {
+      yield* mediaRepository.createMany(mediaToCreate)
     }
 
     return encounter

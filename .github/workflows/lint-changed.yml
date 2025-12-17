@@ -28,7 +28,7 @@ jobs:
           - name: util
             working-directory: global/util
           - name: daily-co-infrastructure
-            working-directory: domain/daily-co-infrastructure
+            working-directory: infrastructure/daily-co-infrastructure
           - name: firebase-web-infrastructure
             working-directory: infrastructure/firebase-web-infrastructure
           - name: google-fhir-infrastructure
@@ -51,20 +51,12 @@ jobs:
         run: |
           NODE_ENV=development npm ci --include=dev
           npm ci --workspaces
-      
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v45
-        with:
-          files: ${{ matrix.working-directory }}/**/*.{ts,tsx,js,jsx}
 
       - name: Run ESLint with reviewdog on changed files
-        if: steps.changed-files.outputs.any_changed == 'true'
         uses: reviewdog/action-eslint@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workdir: ${{ matrix.working-directory }}
           reporter: github-pr-review
-          eslint_flags: '${{ steps.changed-files.outputs.all_changed_files }}'
           fail_level: error
           filter_mode: diff_context

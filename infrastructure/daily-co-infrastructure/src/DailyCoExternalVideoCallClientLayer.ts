@@ -2,16 +2,17 @@ import { FetchHttpClient, HttpBody, HttpClient } from '@effect/platform'
 import { DateTime, Effect, Layer, Schema } from 'effect'
 import {
   ExternalVideoCallClient,
-  ExternalVideoCallServiceError,
   ExternalVideoCallRecordingId,
-  ExternalVideoCallRecordingUri,
-  ExternalVideoCallRecordingFileUrl,
   ExternalVideoCallRoomId,
   ExternalVideoCallRoomName,
   RoomCreationParams,
-  ExternalVideoCallRecording,
   ExternalVideoCallRoom,
 } from '@assessmentis/clinical-domain/video-calls'
+import { Media } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import {
+  UnhandledError,
+  ExternalAssertionError,
+} from '@assessmentis/clinical-domain/errors'
 import { DailyCoProxyConfig } from '@assessmentis/config-domain/dailyCo'
 
 const ApiDailyCoRecordingSchema = Schema.Struct({
@@ -58,9 +59,9 @@ export const DailyCoExternalVideoCallClientLayer = (
       const idToken = yield* Effect.tryPromise(() => getIdToken()).pipe(
         Effect.mapError(
           (cause) =>
-            new ExternalVideoCallServiceError({
-              message: 'Error fetching ID Token for DailyCo API',
+            new UnhandledError({
               cause,
+              message: 'Error fetching ID Token for DailyCo API',
             })
         )
       )
@@ -74,8 +75,8 @@ export const DailyCoExternalVideoCallClientLayer = (
       const fetchRecordingFileUrl = (
         recordingId: string
       ): Effect.Effect<
-        ExternalVideoCallRecordingFileUrl | undefined,
-        ExternalVideoCallServiceError
+        string | undefined,
+        UnhandledError | ExternalAssertionError
       > => {
         return Effect.gen(function* () {
           const url = new URL(
@@ -88,9 +89,9 @@ export const DailyCoExternalVideoCallClientLayer = (
           const res = yield* httpClient.get(url, options).pipe(
             Effect.mapError(
               (cause) =>
-                new ExternalVideoCallServiceError({
-                  message: 'HTTP Client Error while fetching recording link',
+                new UnhandledError({
                   cause,
+                  message: 'HTTP Client Error while fetching recording link',
                 })
             )
           )
@@ -102,9 +103,9 @@ export const DailyCoExternalVideoCallClientLayer = (
 
           if (res.status != 200) {
             yield* Effect.fail(
-              new ExternalVideoCallServiceError({
+              new UnhandledError({
+                cause: `HTTP ${res.status}`,
                 message: `DailyCo returned an HTTP status of ${res.status} not 200`,
-                cause: undefined,
               })
             )
           }
@@ -112,9 +113,9 @@ export const DailyCoExternalVideoCallClientLayer = (
           const json = yield* res.json.pipe(
             Effect.mapError(
               (cause) =>
-                new ExternalVideoCallServiceError({
-                  message: 'Error parsing JSON in response',
+                new ExternalAssertionError({
                   cause,
+                  expected: 'Valid JSON response from DailyCo API',
                 })
             )
           )
@@ -124,14 +125,14 @@ export const DailyCoExternalVideoCallClientLayer = (
           ).pipe(
             Effect.mapError(
               (cause) =>
-                new ExternalVideoCallServiceError({
-                  message: 'Error validating JSON Response',
+                new ExternalAssertionError({
                   cause,
+                  expected: 'Valid recording link schema from DailyCo API',
                 })
             )
           )
 
-          return ExternalVideoCallRecordingFileUrl.make(linkData.download_link)
+          return linkData.download_link
         })
       }
 
@@ -143,7 +144,7 @@ export const DailyCoExternalVideoCallClientLayer = (
           return ExternalVideoCallRoomName.make(urlParts[urlParts.length - 1])
         }
 
-      const fetchRecordingsByRoomName: typeof ExternalVideoCallClient.Service.fetchRecordingsByRoomName =
+      const getMediaRecordedInRoom: typeof ExternalVideoCallClient.Service.getMediaRecordedInRoom =
         (roomName: ExternalVideoCallRoomName) => {
           return Effect.gen(function* () {
             const url = new URL(`${baseDailyApiRoute}/recordings`)
@@ -155,18 +156,18 @@ export const DailyCoExternalVideoCallClientLayer = (
             const res = yield* httpClient.get(url, options).pipe(
               Effect.mapError(
                 (cause) =>
-                  new ExternalVideoCallServiceError({
-                    message: 'HTTP Client Error while fetching recordings',
+                  new UnhandledError({
                     cause,
+                    message: 'HTTP Client Error while fetching recordings',
                   })
               )
             )
 
             if (res.status != 200) {
               yield* Effect.fail(
-                new ExternalVideoCallServiceError({
+                new UnhandledError({
+                  cause: `HTTP ${res.status}`,
                   message: `DailyCo returned an HTTP status of ${res.status} not 200`,
-                  cause: undefined,
                 })
               )
             }
@@ -174,9 +175,9 @@ export const DailyCoExternalVideoCallClientLayer = (
             const json = yield* res.json.pipe(
               Effect.mapError(
                 (cause) =>
-                  new ExternalVideoCallServiceError({
-                    message: 'Error parsing JSON in response',
+                  new ExternalAssertionError({
                     cause,
+                    expected: 'Valid JSON response from DailyCo recordings API',
                   })
               )
             )
@@ -186,58 +187,55 @@ export const DailyCoExternalVideoCallClientLayer = (
             ).pipe(
               Effect.mapError(
                 (cause) =>
-                  new ExternalVideoCallServiceError({
-                    message: 'Error validating JSON Response',
+                  new ExternalAssertionError({
                     cause,
+                    expected: 'Valid recordings schema from DailyCo API',
                   })
               )
             )
 
-            // Fetch recording links for all recordings and decode
-            const recordingsWithLinks = yield* Effect.all(
+            // Fetch recording links for all recordings and create Media objects with fresh URLs
+            const mediaWithFreshUrls = yield* Effect.all(
               apiDailyCoRecordings.data.map((rec) =>
                 Effect.gen(function* () {
                   const recordingFileUrl = yield* fetchRecordingFileUrl(rec.id)
 
-                  // Convert timestamp to ISO string for DateTimeUtc schema
-                  const startedAtUtc = DateTime.unsafeMake(rec.start_ts * 1000)
-                  const startedAtIso = DateTime.formatIso(startedAtUtc)
-
-                  const recordingData = {
-                    externalVideoCallRecordingId: rec.id,
-                    externalVideoCallRoomName: roomName,
-                    startedAt: startedAtIso,
-                    duration: rec.duration * 1000, // convert to milliseconds
-                    uri: ExternalVideoCallRecordingUri.make(
-                      `https://api.daily.co/v1/recordings/${rec.id}`
-                    ),
-                    recordingFileUrl,
+                  // Skip recordings without a file URL
+                  if (!recordingFileUrl) {
+                    return undefined
                   }
 
-                  // Decode using the schema to ensure type safety
-                  return yield* Schema.decode(ExternalVideoCallRecording)(
-                    recordingData
-                  ).pipe(
-                    Effect.mapError(
-                      (cause) =>
-                        new ExternalVideoCallServiceError({
-                          message: 'Error decoding recording data',
-                          cause,
-                        })
-                    )
-                  )
+                  // Convert timestamp to ISO string for DateTimeUtc schema
+                  const startedAtUtc = DateTime.unsafeMake(rec.start_ts * 1000)
+
+                  return Media.make({
+                    resourceType: 'Media' as const,
+                    status: 'completed' as const,
+                    identifier: [
+                      {
+                        value: rec.id,
+                      },
+                    ],
+                    createdDateTime: startedAtUtc,
+                    duration: rec.duration, // DailyCo API returns duration in seconds
+                    content: {
+                      url: recordingFileUrl,
+                    },
+                  })
                 })
               )
             )
 
-            return recordingsWithLinks
+            return mediaWithFreshUrls.filter(
+              (media): media is Media => media !== undefined
+            )
           })
         }
       const createRoom: typeof ExternalVideoCallClient.Service.createRoom = (
         params: RoomCreationParams
       ): Effect.Effect<
         ExternalVideoCallRoom,
-        ExternalVideoCallServiceError,
+        UnhandledError | ExternalAssertionError,
         never
       > =>
         Effect.gen(function* () {
@@ -261,9 +259,9 @@ export const DailyCoExternalVideoCallClientLayer = (
             body: yield* HttpBody.json(body).pipe(
               Effect.mapError(
                 (cause) =>
-                  new ExternalVideoCallServiceError({
-                    message: 'Error serializing request body JSON',
+                  new UnhandledError({
                     cause,
+                    message: 'Error serializing request body JSON',
                   })
               )
             ),
@@ -273,9 +271,9 @@ export const DailyCoExternalVideoCallClientLayer = (
           const res = yield* httpClient.post(url, options).pipe(
             Effect.mapError(
               (cause) =>
-                new ExternalVideoCallServiceError({
-                  message: 'HTTP Client Error while creating room',
+                new UnhandledError({
                   cause,
+                  message: 'HTTP Client Error while creating room',
                 })
             )
           )
@@ -284,16 +282,16 @@ export const DailyCoExternalVideoCallClientLayer = (
             const text = yield* res.text.pipe(
               Effect.mapError(
                 (cause) =>
-                  new ExternalVideoCallServiceError({
-                    message: 'HTTP body read error',
+                  new UnhandledError({
                     cause,
+                    message: 'HTTP body read error',
                   })
               )
             )
             yield* Effect.fail(
-              new ExternalVideoCallServiceError({
+              new UnhandledError({
+                cause: `HTTP ${res.status}`,
                 message: `DailyCo returned an HTTP status of ${res.status} not 200: ${text}`,
-                cause: undefined,
               })
             )
           }
@@ -301,9 +299,10 @@ export const DailyCoExternalVideoCallClientLayer = (
           const json = yield* res.json.pipe(
             Effect.mapError(
               (cause) =>
-                new ExternalVideoCallServiceError({
-                  message: 'Error parsing JSON in response',
+                new ExternalAssertionError({
                   cause,
+                  expected:
+                    'Valid JSON response from DailyCo room creation API',
                 })
             )
           )
@@ -311,9 +310,9 @@ export const DailyCoExternalVideoCallClientLayer = (
           const apiDailyCoRoom = yield* apiDailyCoRoomSchemaParser(json).pipe(
             Effect.mapError(
               (cause) =>
-                new ExternalVideoCallServiceError({
-                  message: 'Error validating JSON Response',
+                new ExternalAssertionError({
                   cause,
+                  expected: 'Valid room schema from DailyCo API',
                 })
             )
           )
@@ -326,7 +325,7 @@ export const DailyCoExternalVideoCallClientLayer = (
         })
       return {
         createRoom,
-        fetchRecordingsByRoomName,
+        getMediaRecordedInRoom,
         extractRoomNameFromUrl,
       }
     }).pipe(

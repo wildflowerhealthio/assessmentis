@@ -1,15 +1,9 @@
-import { Context, Data, Effect } from 'effect'
+import { Context, Effect } from 'effect'
 import { ExternalVideoCallRoom } from './models/ExternalVideoCallRoom'
-import { ExternalVideoCallRecording } from './models/ExternalVideoCallRecording'
 import { Zoned } from 'effect/DateTime'
 import { ExternalVideoCallRoomName } from './models/VideoCallRoom'
-
-export class ExternalVideoCallServiceError extends Data.TaggedError(
-  'ExternalVideoCallServiceError'
-)<{
-  message: string
-  cause: unknown
-}> {}
+import { Media } from '../diagnostic-medicine/models/Media'
+import { UnhandledError, ExternalAssertionError } from '../errors'
 
 export interface RoomCreationParams {
   expiresAt?: Zoned
@@ -22,15 +16,16 @@ export class ExternalVideoCallClient extends Context.Tag(
 )<
   ExternalVideoCallClient,
   {
-    fetchRecordingsByRoomName: (
+    getMediaRecordedInRoom: (
       roomName: ExternalVideoCallRoomName
-    ) => Effect.Effect<
-      ExternalVideoCallRecording[],
-      ExternalVideoCallServiceError
-    >
+    ) => Effect.Effect<Media[], UnhandledError | ExternalAssertionError>
+
     createRoom: (
       params: RoomCreationParams
-    ) => Effect.Effect<ExternalVideoCallRoom, ExternalVideoCallServiceError>
+    ) => Effect.Effect<
+      ExternalVideoCallRoom,
+      UnhandledError | ExternalAssertionError
+    >
 
     extractRoomNameFromUrl: (
       url: string
