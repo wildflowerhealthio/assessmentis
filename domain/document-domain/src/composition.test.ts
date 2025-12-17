@@ -1,352 +1,276 @@
+import * as fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
 import { Code } from '@assessmentis/clinical-domain'
-import { Composition, Section } from './composition'
+import { Composition, Section, CompositionId } from './composition'
 
-describe('Composition', () => {
-  it('should create a valid minimal Composition', () => {
-    const composition: typeof Composition.Type = {
-      resourceType: 'Composition',
-      status: 'final',
-      type: {
-        coding: [
-          {
-            system: 'http://loinc.org',
-            code: Code.make('11488-4'),
-            display: 'Consult note',
-          },
-        ],
-      },
-      subject: {
-        reference: 'Patient/123',
-      },
-      date: '2024-01-01T00:00:00Z',
-      author: [
-        {
-          reference: 'Practitioner/456',
-        },
-      ],
-      title: 'Consultation Note',
-    }
+// Type compatibility check with FHIR R4
+// Note: @types/fhir is currently FHIR 3.0, but our schema is based on FHIR R4 spec
+// This ensures our Composition.Encoded type is structurally compatible with FHIR Composition
+type FhirCompositionCompatibility = {
+  resourceType: 'Composition'
+  status: 'preliminary' | 'final' | 'amended' | 'entered-in-error'
+  type: unknown
+  subject: unknown
+  date: string
+  author: readonly unknown[]
+  title: string
+}
 
-    const result = Composition.make(composition)
-    expect(result).toBeDefined()
-    expect(result.resourceType).toBe('Composition')
-    expect(result.status).toBe('final')
-    expect(result.title).toBe('Consultation Note')
+// Compile-time check that our Composition.Encoded is compatible with FHIR
+const _compositionIsFhirCompatible: FhirCompositionCompatibility =
+  {} as typeof Composition.Encoded
+
+// Arbitraries for property-based testing
+const compositionStatusArb = fc.constantFrom(
+  'preliminary' as const,
+  'final' as const,
+  'amended' as const,
+  'entered-in-error' as const
+)
+
+const sectionModeArb = fc.constantFrom(
+  'working' as const,
+  'snapshot' as const,
+  'changes' as const
+)
+
+const codeableConceptArb = fc.record({
+  coding: fc.array(
+    fc.record({
+      system: fc.constant('http://loinc.org'),
+      code: fc.string({ minLength: 3, maxLength: 20 }).map((s) => Code.make(s)),
+      display: fc.option(fc.string({ minLength: 1, maxLength: 50 }), {
+        nil: undefined,
+      }),
+    }),
+    { minLength: 1, maxLength: 3 }
+  ),
+  text: fc.option(fc.string(), { nil: undefined }),
+})
+
+const referenceArb = fc.record({
+  reference: fc.string({ minLength: 5, maxLength: 50 }),
+  display: fc.option(fc.string(), { nil: undefined }),
+})
+
+const narrativeArb = fc.record({
+  status: fc.constantFrom('generated', 'extensions', 'additional', 'empty'),
+  div: fc.string({ minLength: 10, maxLength: 100 }),
+})
+
+const sectionArb: fc.Arbitrary<typeof Section.Type> = fc.letrec((tie) => ({
+  section: fc.record({
+    title: fc.option(fc.string({ minLength: 1, maxLength: 100 }), {
+      nil: undefined,
+    }),
+    code: fc.option(codeableConceptArb, { nil: undefined }),
+    text: fc.option(narrativeArb, { nil: undefined }),
+    mode: fc.option(sectionModeArb, { nil: undefined }),
+    entry: fc.option(fc.array(referenceArb, { maxLength: 5 }), {
+      nil: undefined,
+    }),
+    section: fc.option(
+      fc.array(tie('section') as fc.Arbitrary<typeof Section.Type>, {
+        maxLength: 2,
+      }),
+      { nil: undefined }
+    ),
+  }),
+})).section as fc.Arbitrary<typeof Section.Type>
+
+const minimalCompositionArb = fc.record({
+  resourceType: fc.constant('Composition' as const),
+  status: compositionStatusArb,
+  type: codeableConceptArb,
+  subject: referenceArb,
+  date: fc.date().map((d) => d.toISOString()),
+  author: fc.array(referenceArb, { minLength: 1, maxLength: 3 }),
+  title: fc.string({ minLength: 1, maxLength: 200 }),
+})
+
+const fullCompositionArb = fc.record({
+  resourceType: fc.constant('Composition' as const),
+  id: fc
+    .option(
+      fc.uuid().map((id) => id as typeof CompositionId.Type),
+      {
+        nil: undefined,
+      }
+    )
+    .map((v) => v ?? undefined),
+  status: compositionStatusArb,
+  type: codeableConceptArb,
+  class: fc.option(codeableConceptArb, { nil: undefined }),
+  subject: referenceArb,
+  encounter: fc.option(referenceArb, { nil: undefined }),
+  date: fc.date().map((d) => d.toISOString()),
+  author: fc.array(referenceArb, { minLength: 1, maxLength: 3 }),
+  title: fc.string({ minLength: 1, maxLength: 200 }),
+  confidentiality: fc.option(
+    fc.string({ minLength: 1, maxLength: 1 }).map((s) => Code.make(s)),
+    { nil: undefined }
+  ),
+  custodian: fc.option(referenceArb, { nil: undefined }),
+  section: fc.option(fc.array(sectionArb, { maxLength: 5 }), {
+    nil: undefined,
+  }),
+})
+
+describe('Composition property-based tests', () => {
+  it('should create valid minimal Compositions with various inputs', () => {
+    fc.assert(
+      fc.property(minimalCompositionArb, (comp) => {
+        const result = Composition.make(comp)
+        expect(result.resourceType).toBe('Composition')
+        expect(result.status).toBe(comp.status)
+        expect(result.title).toBe(comp.title)
+        expect(result.author).toHaveLength(comp.author.length)
+      }),
+      { numRuns: 100 }
+    )
   })
 
-  it('should create a Composition with sections', () => {
-    const composition: typeof Composition.Type = {
-      resourceType: 'Composition',
-      status: 'final',
-      type: {
-        coding: [
-          {
-            system: 'http://loinc.org',
-            code: Code.make('11488-4'),
-          },
-        ],
-      },
-      subject: {
-        reference: 'Patient/123',
-      },
-      date: '2024-01-01',
-      author: [
-        {
-          reference: 'Practitioner/456',
-        },
-      ],
-      title: 'Test Document',
-      section: [
-        {
-          title: 'History',
-          code: {
-            coding: [
-              {
-                system: 'http://loinc.org',
-                code: Code.make('11348-0'),
-                display: 'History of past illness',
-              },
-            ],
-          },
-        },
-      ],
-    }
-
-    const result = Composition.make(composition)
-    expect(result).toBeDefined()
-    expect(result.section).toHaveLength(1)
-    expect(result.section?.[0]?.title).toBe('History')
-  })
-
-  it('should support nested sections', () => {
-    const composition: typeof Composition.Type = {
-      resourceType: 'Composition',
-      status: 'final',
-      type: {
-        coding: [
-          {
-            system: 'http://loinc.org',
-            code: Code.make('11488-4'),
-          },
-        ],
-      },
-      subject: {
-        reference: 'Patient/123',
-      },
-      date: '2024-01-01',
-      author: [
-        {
-          reference: 'Practitioner/456',
-        },
-      ],
-      title: 'Test Document',
-      section: [
-        {
-          title: 'Parent Section',
-          section: [
-            {
-              title: 'Child Section',
-            },
-          ],
-        },
-      ],
-    }
-
-    const result = Composition.make(composition)
-    expect(result).toBeDefined()
-    expect(result.section?.[0]?.section).toHaveLength(1)
-    expect(result.section?.[0]?.section?.[0]?.title).toBe('Child Section')
+  it('should create valid full Compositions with optional fields', () => {
+    fc.assert(
+      fc.property(fullCompositionArb, (comp) => {
+        const result = Composition.make(comp)
+        expect(result.resourceType).toBe('Composition')
+        expect(result.status).toBe(comp.status)
+        expect(result.title).toBe(comp.title)
+        if (comp.id !== undefined) {
+          expect(result.id).toBe(comp.id)
+        }
+        if (comp.section !== undefined) {
+          expect(result.section).toHaveLength(comp.section.length)
+        }
+      }),
+      { numRuns: 50 }
+    )
   })
 
   it('should support all status values', () => {
-    const statuses = [
-      'preliminary',
-      'final',
-      'amended',
-      'entered-in-error',
-    ] as const
+    fc.assert(
+      fc.property(
+        compositionStatusArb,
+        minimalCompositionArb,
+        (status, comp) => {
+          const composition = { ...comp, status }
+          const result = Composition.make(composition)
+          expect(result.status).toBe(status)
+        }
+      )
+    )
+  })
 
-    statuses.forEach((status) => {
-      const composition: typeof Composition.Type = {
-        resourceType: 'Composition',
-        status,
-        type: {
-          coding: [{ system: 'http://loinc.org', code: Code.make('11488-4') }],
-        },
-        subject: { reference: 'Patient/123' },
-        date: '2024-01-01',
-        author: [{ reference: 'Practitioner/456' }],
-        title: 'Test',
-      }
-
-      const result = Composition.make(composition)
-      expect(result.status).toBe(status)
-    })
+  it('should handle nested sections correctly', () => {
+    fc.assert(
+      fc.property(
+        minimalCompositionArb,
+        fc.array(sectionArb, { minLength: 1, maxLength: 3 }),
+        (comp, sections) => {
+          const composition = { ...comp, section: sections }
+          const result = Composition.make(composition)
+          expect(result.section).toHaveLength(sections.length)
+          // Check that nested sections are preserved
+          sections.forEach((section, idx) => {
+            if (section.section !== undefined) {
+              expect(result.section?.[idx]?.section).toBeDefined()
+            }
+          })
+        }
+      ),
+      { numRuns: 50 }
+    )
   })
 })
 
-describe('Section', () => {
-  it('should create a valid minimal Section', () => {
-    const section: typeof Section.Type = {
-      title: 'Test Section',
-    }
-
-    const result = Section.make(section)
-    expect(result).toBeDefined()
-    expect(result.title).toBe('Test Section')
+describe('Section property-based tests', () => {
+  it('should create valid Sections with various inputs', () => {
+    fc.assert(
+      fc.property(sectionArb, (section) => {
+        const result = Section.make(section)
+        expect(result).toBeDefined()
+        if (section.title !== undefined) {
+          expect(result.title).toBe(section.title)
+        }
+        if (section.mode !== undefined) {
+          expect(result.mode).toBe(section.mode)
+        }
+      }),
+      { numRuns: 100 }
+    )
   })
 
-  it('should create a Section with code and text', () => {
-    const section: typeof Section.Type = {
-      title: 'History',
-      code: {
-        coding: [
-          {
-            system: 'http://loinc.org',
-            code: Code.make('11348-0'),
-            display: 'History of past illness',
-          },
-        ],
-      },
-      text: {
-        status: 'generated',
-        div: '<div>Patient history</div>',
-      },
-    }
-
-    const result = Section.make(section)
-    expect(result).toBeDefined()
-    expect(result.title).toBe('History')
-    expect(result.code?.coding?.[0]?.code).toBe('11348-0')
+  it('should support all mode values', () => {
+    fc.assert(
+      fc.property(sectionModeArb, (mode) => {
+        const section = Section.make({ mode })
+        expect(section.mode).toBe(mode)
+      })
+    )
   })
 
-  it('should support mode values', () => {
-    const modes = ['working', 'snapshot', 'changes'] as const
+  it('should handle deeply nested sections', () => {
+    fc.assert(
+      fc.property(sectionArb, (section) => {
+        const result = Section.make(section)
 
-    modes.forEach((mode) => {
-      const section: typeof Section.Type = {
-        title: 'Test Section',
-        mode,
-      }
+        // Verify structure is preserved
+        const checkNesting = (s: typeof Section.Type) => {
+          if (s.section) {
+            expect(Array.isArray(s.section)).toBe(true)
+            s.section.forEach(checkNesting)
+          }
+        }
 
-      const result = Section.make(section)
-      expect(result.mode).toBe(mode)
-    })
+        checkNesting(result)
+      }),
+      { numRuns: 50 }
+    )
   })
 
-  it('should create a Section with entry references', () => {
-    const section: typeof Section.Type = {
-      title: 'Medications',
-      entry: [
-        { reference: 'MedicationStatement/1' },
-        { reference: 'MedicationStatement/2' },
-      ],
-    }
-
-    const result = Section.make(section)
-    expect(result).toBeDefined()
-    expect(result.entry).toHaveLength(2)
-    expect(result.entry?.[0]?.reference).toBe('MedicationStatement/1')
+  it('should handle sections with multiple entries', () => {
+    fc.assert(
+      fc.property(
+        fc.array(referenceArb, { minLength: 1, maxLength: 10 }),
+        (entries) => {
+          const section = Section.make({ entry: entries })
+          expect(section.entry).toHaveLength(entries.length)
+          entries.forEach((entry, idx) => {
+            expect(section.entry?.[idx]?.reference).toBe(entry.reference)
+          })
+        }
+      )
+    )
   })
 })
 
-describe('FHIR R4 Composition type compatibility', () => {
-  it('should be compatible with fhir.Composition from @types/fhir', () => {
-    // This test verifies that our Composition type is structurally compatible
-    // with the fhir.Composition type from the @types/fhir package
+describe('FHIR R4 compatibility', () => {
+  it('should validate that Composition schema matches FHIR R4 structure', () => {
+    // This test validates at compile-time that our Composition.Encoded type
+    // is structurally compatible with FHIR Composition requirements
+    fc.assert(
+      fc.property(minimalCompositionArb, (comp) => {
+        const result = Composition.make(comp)
 
-    const composition: typeof Composition.Type = {
-      resourceType: 'Composition',
-      status: 'final',
-      type: {
-        coding: [
-          {
-            system: 'http://loinc.org',
-            code: Code.make('11488-4'),
-            display: 'Consult note',
-          },
-        ],
-      },
-      subject: {
-        reference: 'Patient/example',
-        display: 'Example Patient',
-      },
-      date: '2024-01-01T12:00:00Z',
-      author: [
-        {
-          reference: 'Practitioner/example',
-          display: 'Dr. Example',
-        },
-      ],
-      title: 'Consultation Note',
-      identifier: {
-        system: 'http://example.org/composition',
-        value: 'comp-123',
-      },
-      encounter: {
-        reference: 'Encounter/example',
-      },
-      section: [
-        {
-          title: 'Chief Complaint',
-          code: {
-            coding: [
-              {
-                system: 'http://loinc.org',
-                code: Code.make('10154-3'),
-                display: 'Chief complaint',
-              },
-            ],
-          },
-          text: {
-            status: 'generated',
-            div: '<div xmlns="http://www.w3.org/1999/xhtml">Chief Complaint text</div>',
-          },
-        },
-        {
-          title: 'History of Present Illness',
-          code: {
-            coding: [
-              {
-                system: 'http://loinc.org',
-                code: Code.make('10164-2'),
-                display: 'History of Present illness',
-              },
-            ],
-          },
-          mode: 'snapshot',
-          entry: [
-            {
-              reference: 'Observation/example',
-            },
-          ],
-        },
-      ],
-    }
+        // Verify all required FHIR R4 Composition fields are present
+        expect(result.resourceType).toBe('Composition')
+        expect(result.status).toBeDefined()
+        expect(result.type).toBeDefined()
+        expect(result.subject).toBeDefined()
+        expect(result.date).toBeDefined()
+        expect(result.author).toBeDefined()
+        expect(result.title).toBeDefined()
 
-    // Create the composition using our schema
-    const result = Composition.make(composition)
-
-    // Verify it has all required FHIR R4 Composition fields
-    expect(result.resourceType).toBe('Composition')
-    expect(result.status).toBeDefined()
-    expect(result.type).toBeDefined()
-    expect(result.subject).toBeDefined()
-    expect(result.date).toBeDefined()
-    expect(result.author).toBeDefined()
-    expect(result.title).toBeDefined()
-
-    // This assertion verifies type compatibility at compile time
-    // If our type is not compatible with fhir.Composition, this would fail
-    const assertTypeCompatibility = (comp: typeof Composition.Type): void => {
-      // The fact that this compiles means our type structure is compatible
-      expect(comp.resourceType).toBe('Composition')
-    }
-
-    assertTypeCompatibility(result)
-  })
-
-  it('should validate Section is independently usable', () => {
-    // Verify that Section can be used independently as requested
-    const section: typeof Section.Type = {
-      title: 'Allergies and Adverse Reactions',
-      code: {
-        coding: [
-          {
-            system: 'http://loinc.org',
-            code: Code.make('48765-2'),
-            display: 'Allergies and adverse reactions',
-          },
-        ],
-      },
-      text: {
-        status: 'generated',
-        div: '<div xmlns="http://www.w3.org/1999/xhtml">No known allergies</div>',
-      },
-      mode: 'snapshot',
-      entry: [
-        {
-          reference: 'AllergyIntolerance/example',
-        },
-      ],
-      section: [
-        {
-          title: 'Medication Allergies',
-          entry: [
-            {
-              reference: 'AllergyIntolerance/medication-allergy',
-            },
-          ],
-        },
-      ],
-    }
-
-    const result = Section.make(section)
-
-    expect(result).toBeDefined()
-    expect(result.title).toBe('Allergies and Adverse Reactions')
-    expect(result.section).toHaveLength(1)
-    expect(result.section?.[0]?.title).toBe('Medication Allergies')
+        // Verify status is one of the allowed FHIR R4 values
+        expect([
+          'preliminary',
+          'final',
+          'amended',
+          'entered-in-error',
+        ]).toContain(result.status)
+      }),
+      { numRuns: 50 }
+    )
   })
 })

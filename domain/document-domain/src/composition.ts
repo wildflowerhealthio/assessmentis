@@ -103,11 +103,15 @@ export const Section = Schema.Struct({
 
 export type Section = typeof Section.Type
 
+const CompositionAttesterId = Schema.String.pipe(
+  Schema.brand('CompositionAttesterId')
+)
+
 /**
  * Attests to accuracy of composition
  */
 export const CompositionAttester = Schema.Struct({
-  ...BackboneElement(Schema.String).fields,
+  ...BackboneElement(CompositionAttesterId).fields,
   /**
    * personal | professional | legal | official
    */
@@ -139,11 +143,15 @@ export const CompositionAttester = Schema.Struct({
 
 export type CompositionAttester = typeof CompositionAttester.Type
 
+const CompositionRelatesToId = Schema.String.pipe(
+  Schema.brand('CompositionRelatesToId')
+)
+
 /**
  * Relationships to other compositions/documents
  */
 export const CompositionRelatesTo = Schema.Struct({
-  ...BackboneElement(Schema.String).fields,
+  ...BackboneElement(CompositionRelatesToId).fields,
   /**
    * replaces | transforms | signs | appends
    */
@@ -169,11 +177,15 @@ export const CompositionRelatesTo = Schema.Struct({
 
 export type CompositionRelatesTo = typeof CompositionRelatesTo.Type
 
+const CompositionEventId = Schema.String.pipe(
+  Schema.brand('CompositionEventId')
+)
+
 /**
  * The clinical service(s) being documented
  */
 export const CompositionEvent = Schema.Struct({
-  ...BackboneElement(Schema.String).fields,
+  ...BackboneElement(CompositionEventId).fields,
   /**
    * Code(s) that apply to the event being documented
    */
