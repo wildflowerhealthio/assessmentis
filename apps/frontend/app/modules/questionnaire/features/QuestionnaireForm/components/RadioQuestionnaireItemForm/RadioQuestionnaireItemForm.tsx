@@ -43,7 +43,7 @@ const RadioQuestionnaireItemForm = ({
 
   const displayAsGrid = uiControl === QuestionnaireItemUIControlCode.enums.table
 
-  const answerOptions: undefined | ValueElement[] =
+  const answerOptions: undefined | ReadonlyArray<ValueElement> =
     questionnaireItem.answerOption
   const options =
     answerOptions?.map((answerValue) => ({
@@ -120,7 +120,7 @@ export const RadioQuestionnaireItemFormGroup = ({
   children,
   answerOption,
 }: React.PropsWithChildren<{
-  answerOption: ValueElement[]
+  answerOption: ReadonlyArray<ValueElement>
 }>) => {
   return (
     <div>

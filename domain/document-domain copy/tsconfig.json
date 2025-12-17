@@ -1,0 +1,11 @@
+{
+  "extends": "@assessmentis/typescript-config/base.json",
+  "compilerOptions": {
+    "outDir": "../questionnairt-domain/dist",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": false
+  },
+  "include": ["../questionnairt-domain/src/**/*"]
+}

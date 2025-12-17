@@ -1,7 +1,7 @@
 import { Questionnaire } from '@assessmentis/clinical-domain'
 import { Schema } from 'effect'
 
-const gad7: Questionnaire = Schema.decodeSync(Questionnaire)({
+export const questionnaire: Questionnaire = Schema.decodeSync(Questionnaire)({
   resourceType: 'Questionnaire',
   id: '69737-5',
   meta: {
@@ -398,5 +398,3 @@ const gad7: Questionnaire = Schema.decodeSync(Questionnaire)({
     },
   ],
 })
-
-export default gad7

@@ -24,10 +24,13 @@
     "domain/platform-domain",
     "domain/clinical-domain",
     "domain/config-domain",
+    "domain/questionnaire-domain",
+    "domain/document-domain",
     "infrastructure/firebase-web-infrastructure",
     "infrastructure/google-fhir-infrastructure",
     "infrastructure/daily-co-infrastructure",
     "infrastructure/google-meet-infrastructure",
+    "infrastructure/jsx-document-infrastructure",
     "apps/functions",
     "apps/frontend"
   ],
