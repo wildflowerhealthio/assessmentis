@@ -1,75 +1,35 @@
-# React + TypeScript + Vite
+# @assessmentis/daily-co-infrastructure
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> 📖 **See [CONTRIBUTING.md](../../CONTRIBUTING.md) for general development guidelines common to all packages.**
 
-Currently, two official plugins are available:
+## Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Infrastructure package providing Daily.co video conferencing integration for Assessment.is.
 
-## React Compiler
+## What This Package Does
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+- Integrates with Daily.co API for video calls
+- Implements video call interfaces from clinical-domain
+- Provides video room management
+- Handles Daily.co-specific logic
 
-Note: This will impact Vite dev & build performances.
+## Important Guidelines
 
-## Expanding the ESLint configuration
+### ✅ DO:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Implement interfaces from clinical-domain
+- Use Effect Layers for dependency injection
+- Handle Daily.co API specifics
+- Manage video room lifecycle
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### ❌ DON'T:
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- Add domain logic (use clinical-domain)
+- Add UI components (React components go in apps)
+- Expose API keys in code
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Related Packages
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- `@assessmentis/clinical-domain`: Defines video call interfaces
+- `@assessmentis/config-domain`: Configuration schemas
+- `apps/functions`: Uses this for server-side video room creation
