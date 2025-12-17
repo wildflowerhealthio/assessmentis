@@ -28,7 +28,7 @@ jobs:
           - name: util
             working-directory: global/util
           - name: daily-co-infrastructure
-            working-directory: domain/daily-co-infrastructure
+            working-directory: infrastructure/daily-co-infrastructure
           - name: firebase-web-infrastructure
             working-directory: infrastructure/firebase-web-infrastructure
           - name: google-fhir-infrastructure
