@@ -140,17 +140,56 @@ describe('MyFunction', () => {
 })
 ```
 
+### Property-Based Testing with fast-check
+
+Use **property-based testing** to validate code against a wide range of inputs. Keep properties focused and concise.
+
+```typescript
+import { fc } from 'fast-check'
+import { Schema } from 'effect'
+
+// Effect Schemas can be used as fast-check arbitraries
+const MySchemaArbitrary = Schema.arbitrary(MySchema)(fc)
+
+it('should maintain property for all valid inputs', () => {
+  fc.assert(
+    fc.property(MySchemaArbitrary, (data) => {
+      const result = myFunction(data)
+      // Test a useful property (e.g., idempotence, invariant preservation)
+      expect(myFunction(result)).toEqual(result)
+    })
+  )
+})
+```
+
+**Guidelines for property-based testing:**
+- Focus on **useful properties**: idempotence, reversibility, invariants
+- Keep tests **concise** - one property per test
+- Use Effect Schemas as arbitraries with `Schema.arbitrary(MySchema)(fc)`
+- Test edge cases explicitly, use property tests for general behavior
+
 ### Schema Testing
 
-For Effect Schema definitions:
+Schema tests validate both encoding/decoding and serve as property-based tests:
 
 ```typescript
 import { Schema } from 'effect'
+import { fc } from 'fast-check'
 
 it('should encode and decode correctly', () => {
   const encoded = Schema.encodeSync(MySchema)(data)
   const decoded = Schema.decodeSync(MySchema)(encoded)
   expect(decoded).toEqual(data)
+})
+
+// Property-based test using schema as arbitrary
+it('should round-trip for all valid data', () => {
+  fc.assert(
+    fc.property(Schema.arbitrary(MySchema)(fc), (data) => {
+      const decoded = Schema.decodeSync(MySchema)(Schema.encodeSync(MySchema)(data))
+      expect(decoded).toEqual(data)
+    })
+  )
 })
 ```
 
@@ -168,10 +207,9 @@ it('should encode and decode correctly', () => {
 - Write comprehensive tests
 
 ❌ **DON'T**:
-- Add UI components
+- Add UI components (may appear in infrastructure for React-based templates)
 - Add infrastructure implementations
 - Make HTTP calls or database queries
-- Add framework-specific code
 
 ### Infrastructure Packages
 
@@ -181,13 +219,14 @@ it('should encode and decode correctly', () => {
 - Implement repository interfaces from domain packages
 - Use Effect Layers for dependency injection
 - Handle external API calls
-- Manage configuration
 - Provide service implementations
+- Most infrastructure should be accessed through interfaces defined in the domain
 
 ❌ **DON'T**:
 - Add business logic (belongs in domain)
 - Add UI components
 - Duplicate domain logic
+- Manage configuration (belongs in domain packages)
 
 ### App Packages
 
@@ -206,10 +245,10 @@ it('should encode and decode correctly', () => {
 
 ### Global Packages
 
-**Purpose**: Shared configurations and utilities
+**Purpose**: Project and domain agnostic shared configurations and utilities
 
 ✅ **DO**:
-- Keep utilities framework-agnostic
+- Keep utilities project and domain agnostic
 - Provide reusable configurations
 - Document usage clearly
 
@@ -219,27 +258,66 @@ it('should encode and decode correctly', () => {
 
 ## Effect-TS Patterns
 
-### Repository Pattern
+This project follows specific Effect-TS conventions. These are patterns that have emerged in this codebase.
 
-Define interfaces in domain packages:
+### Error Wrappers
+
+This project uses **unique error wrappers** to distinguish between different failure modes, even when the underlying error is the same type. This allows for more precise error handling at boundaries.
+
+**Why we use error wrappers:**
+- Distinguish between "not found" from different sources (e.g., `QuestionnaireNotFound` vs `EncounterNotFound`)
+- Enable targeted error handling at application boundaries
+- Make error flows explicit in type signatures
+- Allow different recovery strategies for the same underlying error type
 
 ```typescript
-export class MyRepository extends Context.Tag('MyRepository')<
-  MyRepository,
+// Define specific error wrappers
+export class QuestionnaireNotFoundError extends Data.TaggedError('QuestionnaireNotFoundError')<{
+  questionnaireId: string
+  cause?: unknown
+}> {}
+
+export class UnhandledError extends Data.TaggedError('UnhandledError')<{
+  cause?: unknown
+}> {}
+
+// Use in repository interfaces
+export class QuestionnaireRepository extends Context.Tag('QuestionnaireRepository')<
+  QuestionnaireRepository,
   {
-    get: (id: Id) => Effect.Effect<Data, NotFoundError, never>
+    get: (id: QuestionnaireId) => Effect.Effect<
+      Questionnaire, 
+      QuestionnaireNotFoundError | UnhandledError, 
+      never
+    >
   }
 >() {}
 ```
 
-Implement in infrastructure packages:
+### Repository Pattern
+
+Define interfaces in domain packages, implement in infrastructure:
 
 ```typescript
-export const MyRepositoryLive = Layer.succeed(MyRepository, {
-  get: (id) => Effect.gen(function* () {
-    // Implementation
+// Domain: interface only
+export class MyRepository extends Context.Tag('MyRepository')<
+  MyRepository,
+  {
+    get: (id: Id) => Effect.Effect<Data, NotFoundError | UnhandledError, never>
+  }
+>() {}
+
+// Infrastructure: concrete implementation
+export const MyRepositoryLive = Layer.effect(MyRepository, 
+  Effect.gen(function* () {
+    const config = yield* ConfigService
+    return {
+      get: (id) => Effect.gen(function* () {
+        // Implementation
+      })
+    }
   })
-})
+)
 ```
 
 ### Effect Generators
@@ -253,27 +331,6 @@ export const myOperation = (arg: Arg) =>
     const data = yield* repo.get(arg.id)
     return transform(data)
   })
-```
-
-### Error Handling
-
-Define typed errors:
-
-```typescript
-export class MyError extends Data.TaggedError('MyError')<{
-  cause?: unknown
-}> {}
-```
-
-Handle errors explicitly:
-
-```typescript
-Effect.gen(function* () {
-  // ...
-}).pipe(
-  Effect.catchTag('NotFoundError', (error) => handleNotFound(error)),
-  Effect.catchAll((error) => handleGenericError(error))
-)
 ```
 
 ## Dependency Management

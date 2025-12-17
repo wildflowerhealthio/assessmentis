@@ -25,7 +25,7 @@ src/
 
 ### ✅ DO:
 
-- Keep platform logic domain-agnostic
+- Keep platform logic in terms of the config-domain and platform-domain
 - Define clear service interfaces with Effect Tags
 - Use dependency injection via Effect Layers
 

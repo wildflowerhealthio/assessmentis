@@ -48,13 +48,15 @@ Effect.gen(function* () {
 - Define repository interfaces as Effect Tags
 - Use branded types for IDs (e.g., `QuestionnaireId`)
 - Write comprehensive tests for schemas
+- **Use Effect's `DateTime.Utc`** rather than JavaScript Date for instants/times within the system
+- Add models, schemas, types, pure functions, and business logic
 
 ### ❌ DON'T:
 
 - Deviate from FHIR specification
 - Add infrastructure implementations (use infrastructure packages)
 - Add HTTP/API calls (repositories are interfaces only)
-- Add scoring or calculation logic (use document-domain)
+- Add logic or calculations related to specific entities (there's likely a more appropriate package)
 - Bypass Effect Schema validation
 
 ## FHIR Resources Modeled
@@ -97,4 +99,4 @@ Custom extensions follow this pattern:
 - `@assessmentis/questionnaire-domain`: Questionnaire templates
 - `@assessmentis/document-domain`: Document generation
 
-**Note**: This is the **most critical** package in the monorepo. All changes must maintain FHIR R4 compliance and have comprehensive test coverage. When in doubt, consult: https://www.hl7.org/fhir/
+**Note**: This is the **most critical** package in the monorepo. All changes must maintain FHIR R4 compliance and have comprehensive test coverage.

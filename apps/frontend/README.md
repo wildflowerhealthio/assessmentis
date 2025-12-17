@@ -74,7 +74,7 @@ app/
 - Add business logic directly in components (use domain packages)
 - Bypass the Effect runtime
 - Add inline styles (use Tundra CSS or CSS modules)
-- Hardcode configuration (use environment variables)
+- Hardcode configuration (use config-domain and firebase-web-platform service)
 
 ## Related Packages
 

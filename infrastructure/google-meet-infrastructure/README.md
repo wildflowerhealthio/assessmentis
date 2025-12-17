@@ -4,7 +4,7 @@
 
 ## Overview
 
-Infrastructure package for Google Meet integration in Assessment.is.
+**Currently unused.** Infrastructure package for future Google Meet integration in Assessment.is.
 
 ## What This Package Does
 

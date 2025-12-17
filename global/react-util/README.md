@@ -26,7 +26,6 @@ Shared React components, hooks, and utilities used across Assessment.is React ap
 
 - Add business logic (use domain packages)
 - Add application-specific components (keep generic)
-- Use heavy external dependencies
 
 ## Related Packages
 

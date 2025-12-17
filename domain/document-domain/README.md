@@ -49,23 +49,6 @@ const document = await Effect.runPromise(effect)
 - Mutate input data
 - Hardcode patient or provider information
 
-## Clinical Accuracy ⚠️
-
-This package contains clinical scoring algorithms. All changes must be:
-
-- Based on published clinical specifications
-- Thoroughly tested against known cases
-- Reviewed for accuracy before deployment
-- Documented with source references
-
-## Adding Document Generation
-
-1. Create a new file (e.g., `phq9.ts`)
-2. Implement scoring logic following clinical specifications
-3. Write comprehensive tests (including edge cases)
-4. Export from `index.ts`
-5. Document scoring rules and references
-
 ## Related Packages
 
 - `@assessmentis/questionnaire-domain`: Source questionnaires

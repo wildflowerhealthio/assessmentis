@@ -36,7 +36,6 @@ function DisplayReport({ document }) {
 ### ✅ DO:
 
 - Accept document models from document-domain as props
-- Make components print-friendly (CSS for print media)
 - Use semantic HTML for accessibility
 - Keep components pure and stateless
 
@@ -47,22 +46,12 @@ function DisplayReport({ document }) {
 - Modify or transform the document data
 - Use heavy CSS-in-JS libraries
 
-## Print and PDF Considerations
-
-Optimize documents for print and PDF:
-
-- Use semantic HTML (headings, sections, tables)
-- Add print-specific CSS with `@media print`
-- Use page-break properties for multi-page documents
-- Test actual printing/PDF generation
-
 ## Adding a Document Template
 
 1. Create a new component file (e.g., `plain/phq9.tsx`)
 2. Accept document model from document-domain as props
 3. Focus on clear, readable layout
-4. Add print styles if needed
-5. Export from `index.ts`
+4. Export from `index.ts`
 
 ## Related Packages
 
