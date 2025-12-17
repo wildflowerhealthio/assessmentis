@@ -2,6 +2,7 @@ import { Schema } from 'effect'
 import { BackboneElement } from '../../general-purpose/BackboneElement'
 import { Coding } from '../../general-purpose/Coding'
 import { Resource } from '../../general-purpose/Resource'
+import { ValueElement } from '../../general-purpose'
 export const QuestionnaireId = Schema.String.pipe(
   Schema.brand('QuestionnaireId')
 )
@@ -43,7 +44,7 @@ const questionnaireItemFields = {
   /**
    * This element can be used when the value set machinery of answerValueSet is deemed too cumbersome or when there's a need to capture possible answers that are not codes.
    */
-  answerOption: Schema.optional(Schema.Any), //QuestionnaireItemAnswerOption[] | undefined;
+  answerOption: Schema.optional(Schema.Array(ValueElement)), //QuestionnaireItemAnswerOption[] | undefined;
   /**
    * LOINC defines many useful value sets for questionnaire responses. See [LOINC Answer Lists](loinc.html#alist). The value may come from the ElementDefinition referred to by .definition.
    */

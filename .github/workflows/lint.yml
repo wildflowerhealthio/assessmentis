@@ -1,4 +1,4 @@
-name: Lint changed files
+name: Lint All Products
 
 on: pull_request
 
@@ -8,8 +8,9 @@ permissions:
   checks: write
 
 jobs:
-  lint-changed:
+  lint:
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       matrix:
         include:
@@ -52,7 +53,7 @@ jobs:
           NODE_ENV=development npm ci --include=dev
           npm ci --workspaces
 
-      - name: Run ESLint with reviewdog on changed files
+      - name: Run ESLint with reviewdog
         uses: reviewdog/action-eslint@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

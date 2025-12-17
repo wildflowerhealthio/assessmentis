@@ -6,17 +6,18 @@
     "**/.client/**/*",
     ".react-router/types/**/*"
   ],
-  "exclude": [
-    "node_modules"
-  ],
+  "exclude": ["node_modules"],
   "compilerOptions": {
-    "types": ["node", "vite/client", "google.accounts", "gapi", "gapi.client.healthcare-v1"],
+    "types": [
+      "node",
+      "vite/client",
+      "google.accounts",
+      "gapi",
+      "gapi.client.healthcare-v1"
+    ],
     "jsx": "react-jsx",
     "outDir": "dist",
     "baseUrl": "./",
-    "rootDirs": [
-      ".",
-      "./.react-router/types"
-    ]
+    "rootDirs": [".", "./.react-router/types"]
   }
 }

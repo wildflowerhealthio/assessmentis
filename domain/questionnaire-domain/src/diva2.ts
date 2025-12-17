@@ -6,6 +6,7 @@ import {
   QuestionnaireItemLink,
   questionnaireItemUiControlCodeExtension,
   questionnaireItemUiDisplayLevelExtension,
+  Questionnaire,
 } from '@assessmentis/clinical-domain/questionnaires'
 
 const sluggify = (s: string): QuestionnaireItemLink =>
@@ -852,7 +853,7 @@ const toItems = ({
   ]
 }
 
-export const divaQuestionnaireItems: QuestionnaireItem[] = [
+const divaQuestionnaireItems: QuestionnaireItem[] = [
   ...part1Preamble,
   ...part1DivaQuestions.flatMap(toItems),
   ...part1Criteria,
@@ -864,4 +865,11 @@ export const divaQuestionnaireItems: QuestionnaireItem[] = [
   ...conclusionItems,
 ]
 
-export default divaQuestionnaireItems
+const divaTitle = 'Diagnostic Interview for ADHD in adults (DIVA) 2.0'
+export const questionnaire: Questionnaire = {
+  resourceType: 'Questionnaire',
+  title: divaTitle,
+  name: 'diva2',
+  status: 'draft',
+  item: divaQuestionnaireItems,
+}
