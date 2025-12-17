@@ -4,7 +4,6 @@ import { Zoned } from 'effect/DateTime'
 import { ExternalVideoCallRoomName } from './models/VideoCallRoom'
 import { Media } from '../diagnostic-medicine/models/Media'
 import { UnhandledError, ExternalAssertionError } from '../errors'
-import { WithId } from '../general-purpose'
 
 export interface RoomCreationParams {
   expiresAt?: Zoned
@@ -18,12 +17,9 @@ export class ExternalVideoCallClient extends Context.Tag(
   ExternalVideoCallClient,
   {
     getMediaRecordedInRoom: (
-      roomName: ExternalVideoCallRoomName,
-      existingMedia: WithId<Media>[]
-    ) => Effect.Effect<
-      { updatedMedia: WithId<Media>[]; newMedia: Media[] },
-      UnhandledError | ExternalAssertionError
-    >
+      roomName: ExternalVideoCallRoomName
+    ) => Effect.Effect<Media[], UnhandledError | ExternalAssertionError>
+
     createRoom: (
       params: RoomCreationParams
     ) => Effect.Effect<

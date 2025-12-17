@@ -6,12 +6,12 @@ export class UnhandledError extends Data.TaggedError('UnhandledError')<{
 }> {
   constructor(params: { cause: unknown; message?: string }) {
     super(params)
-    if (params.message) {
-      this.message = params.message
-    } else if (this.cause instanceof Error) {
-      this.message = this.cause.message ?? this.message
+    if (this.cause instanceof Error) {
+      this.message = params.message ?? this.cause.message ?? this.message
       this.stack = this.cause.stack ?? this.stack
       if (this.cause.name) this.name = `Unhandled${this.cause.name}`
+    } else {
+      this.message = params.message ?? this.message
     }
   }
 }

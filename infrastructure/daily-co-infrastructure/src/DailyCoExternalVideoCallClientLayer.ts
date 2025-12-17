@@ -13,7 +13,6 @@ import {
   UnhandledError,
   ExternalAssertionError,
 } from '@assessmentis/clinical-domain/errors'
-import { WithId } from '@assessmentis/clinical-domain/general-purpose'
 import { DailyCoProxyConfig } from '@assessmentis/config-domain/dailyCo'
 
 const ApiDailyCoRecordingSchema = Schema.Struct({
@@ -146,10 +145,7 @@ export const DailyCoExternalVideoCallClientLayer = (
         }
 
       const getMediaRecordedInRoom: typeof ExternalVideoCallClient.Service.getMediaRecordedInRoom =
-        (
-          roomName: ExternalVideoCallRoomName,
-          existingMedia: WithId<Media>[]
-        ) => {
+        (roomName: ExternalVideoCallRoomName) => {
           return Effect.gen(function* () {
             const url = new URL(`${baseDailyApiRoute}/recordings`)
             url.searchParams.set('room_name', roomName)
@@ -211,9 +207,8 @@ export const DailyCoExternalVideoCallClientLayer = (
 
                   // Convert timestamp to ISO string for DateTimeUtc schema
                   const startedAtUtc = DateTime.unsafeMake(rec.start_ts * 1000)
-                  const startedAtIso = DateTime.formatIso(startedAtUtc)
 
-                  const mediaData = {
+                  return Media.make({
                     resourceType: 'Media' as const,
                     status: 'completed' as const,
                     identifier: [
@@ -221,69 +216,19 @@ export const DailyCoExternalVideoCallClientLayer = (
                         value: rec.id,
                       },
                     ],
-                    createdDateTime: startedAtIso,
+                    createdDateTime: startedAtUtc,
                     duration: rec.duration, // DailyCo API returns duration in seconds
                     content: {
                       url: recordingFileUrl,
                     },
-                  }
-
-                  // Decode using the schema to ensure type safety
-                  return yield* Schema.decode(Media)(mediaData).pipe(
-                    Effect.mapError(
-                      (cause) =>
-                        new UnhandledError({
-                          cause,
-                          message: 'Error decoding recording data',
-                        })
-                    )
-                  )
+                  })
                 })
               )
             )
 
-            // Filter out undefined values (recordings without file URLs)
-            const allMediaFromRecordings = mediaWithFreshUrls.filter(
+            return mediaWithFreshUrls.filter(
               (media): media is Media => media !== undefined
             )
-
-            // Separate into updated and new media
-            const existingIds = new Set(
-              existingMedia.flatMap(
-                (media) => media.identifier?.map((id) => id.value) ?? []
-              )
-            )
-
-            const updatedMedia: WithId<Media>[] = []
-            const newMedia: Media[] = []
-
-            for (const media of allMediaFromRecordings) {
-              const hasExistingId = media.identifier?.some((id) =>
-                existingIds.has(id.value)
-              )
-              if (hasExistingId) {
-                // Find the corresponding existing media and update it with fresh URL
-                const existingMediaItem = existingMedia.find((existing) =>
-                  existing.identifier?.some((existingId) =>
-                    media.identifier?.some(
-                      (id) => id.value === existingId.value
-                    )
-                  )
-                )
-                if (existingMediaItem && existingMediaItem.id) {
-                  const updated: WithId<Media> = {
-                    ...existingMediaItem,
-                    content: media.content,
-                    id: existingMediaItem.id,
-                  }
-                  updatedMedia.push(updated)
-                }
-              } else {
-                newMedia.push(media)
-              }
-            }
-
-            return { updatedMedia, newMedia }
           })
         }
       const createRoom: typeof ExternalVideoCallClient.Service.createRoom = (

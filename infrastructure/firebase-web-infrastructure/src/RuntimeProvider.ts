@@ -49,7 +49,7 @@ const notImplemented = {
             message: 'createRoom not implemented',
           })
         ),
-      getMediaRecordedInRoom: (_roomName, _existingMedia) =>
+      getMediaRecordedInRoom: (_roomName) =>
         Effect.fail(
           new UnhandledError({
             cause: 'not implemented',

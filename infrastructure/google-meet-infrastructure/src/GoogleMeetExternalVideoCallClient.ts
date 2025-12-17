@@ -12,7 +12,7 @@ export const GoogleMeetExternalVideoCallClientLayer = Layer.effect(
   Effect.succeed(
     (function () {
       const getMediaRecordedInRoom: typeof ExternalVideoCallClient.Service.getMediaRecordedInRoom =
-        (_roomName: ExternalVideoCallRoomName, _existingMedia) =>
+        (_roomName: ExternalVideoCallRoomName) =>
           Effect.fail(
             new UnhandledError({
               cause: 'not-implemented',
