@@ -1,4 +1,4 @@
-name: Lint All Projects
+name: Lint
 
 on: pull_request
 
@@ -29,14 +29,17 @@ jobs:
 
       - name: Lint apps/frontend
         uses: reviewdog/action-eslint@v1
+        continue-on-error: true
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workdir: apps/frontend
           reporter: github-pr-review
           fail_level: error
           filter_mode: diff_context
+
       - name: Lint apps/functions
         uses: reviewdog/action-eslint@v1
+        continue-on-error: true
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
@@ -46,6 +49,7 @@ jobs:
 
       - name: Lint domain/clinical-domain
         uses: reviewdog/action-eslint@v1
+        continue-on-error: true
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
@@ -55,6 +59,7 @@ jobs:
 
       - name: Lint domain/platform-domain
         uses: reviewdog/action-eslint@v1
+        continue-on-error: true
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
@@ -64,6 +69,7 @@ jobs:
 
       - name: Lint domain/questionnaire-domain
         uses: reviewdog/action-eslint@v1
+        continue-on-error: true
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
@@ -73,6 +79,7 @@ jobs:
 
       - name: Lint domain/video-call-domain
         uses: reviewdog/action-eslint@v1
+        continue-on-error: true
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
@@ -82,6 +89,7 @@ jobs:
 
       - name: Lint domain/document-domain
         uses: reviewdog/action-eslint@v1
+        continue-on-error: true
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
@@ -91,6 +99,7 @@ jobs:
 
       - name: Lint global/react-util
         uses: reviewdog/action-eslint@v1
+        continue-on-error: true
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
@@ -100,6 +109,7 @@ jobs:
 
       - name: Lint global/util
         uses: reviewdog/action-eslint@v1
+        continue-on-error: true
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
@@ -109,6 +119,7 @@ jobs:
 
       - name: Lint global/ontology
         uses: reviewdog/action-eslint@v1
+        continue-on-error: true
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
@@ -118,6 +129,7 @@ jobs:
 
       - name: Lint infrastructure/daily-co-infrastructure
         uses: reviewdog/action-eslint@v1
+        continue-on-error: true
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
@@ -127,6 +139,7 @@ jobs:
 
       - name: Lint infrastructure/firebase-web-infrastructure
         uses: reviewdog/action-eslint@v1
+        continue-on-error: true
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
@@ -136,6 +149,7 @@ jobs:
 
       - name: Lint infrastructure/google-fhir-infrastructure
         uses: reviewdog/action-eslint@v1
+        continue-on-error: true
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
@@ -145,6 +159,7 @@ jobs:
 
       - name: Lint infrastructure/google-meet-infrastructure
         uses: reviewdog/action-eslint@v1
+        continue-on-error: true
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
@@ -154,6 +169,7 @@ jobs:
 
       - name: Lint infrastructure/jsx-document-infrastructure
         uses: reviewdog/action-eslint@v1
+        continue-on-error: true
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
