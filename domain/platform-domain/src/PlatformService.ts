@@ -2,7 +2,7 @@ import { Context, Layer } from 'effect'
 import { Resource } from '@effect/opentelemetry'
 import { CurrentUserIdError, UserId } from './loadedValues/UserId'
 import { type CurrentUserError, type User } from './loadedValues/User'
-import { LoadedResultStream } from '@assessmentis/util/LoadedResult'
+import { LoadedResultStream } from '@assessmentis/ontology'
 import { CurrentTimeZone } from 'effect/DateTime'
 import { ExternalVideoCallClient } from '@assessmentis/video-call-domain'
 import {
