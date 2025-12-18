@@ -13,168 +13,83 @@ Assessment.is enables healthcare professionals to conduct virtual diagnostic ass
 
 ## System Architecture
 
-### High-Level Component View
+### Uses Relation
 
 ```mermaid
 graph TB
     subgraph "Frontend (React SPA)"
         UI[User Interface]
         Runtime[Effect Runtime]
+        FrontendFirebase[Firebase Hooks + Components]
     end
-    
-    subgraph "Backend (Firebase Functions)"
-        API[Cloud Functions]
-        Auth[OAuth Token Manager]
-    end
-    
-    subgraph "Domain Layer"
-        Clinical[Clinical Domain<br/>FHIR Resources & Interfaces]
-        Document[Document Domain<br/>Scoring & Reports]
-        Questionnaire[Questionnaire Domain<br/>Templates]
-        Config[Config Domain<br/>Schemas]
-        Platform[Platform Domain<br/>Coordination]
-    end
-    
-    subgraph "Infrastructure Layer"
-        FHIR[Google FHIR<br/>Infrastructure]
-        Video[Daily.co<br/>Infrastructure]
-        Firebase[Firebase Web<br/>Infrastructure]
-        JSXDoc[JSX Document<br/>Infrastructure]
-    end
-    
-    subgraph "External Services"
-        GCP[Google Cloud<br/>Healthcare API]
-        DailyCo[Daily.co<br/>Video Service]
-        FirebaseAuth[Firebase Auth]
-    end
-    
+
     UI --> Runtime
-    Runtime --> Clinical
-    Runtime --> Document
-    Runtime --> Platform
-    
-    API --> Auth
-    API --> Clinical
-    API --> Platform
-    
-    Clinical --> FHIR
-    Clinical --> Video
-    Platform --> Firebase
-    Document --> JSXDoc
-    
-    FHIR --> GCP
-    Video --> DailyCo
-    Firebase --> FirebaseAuth
-    
-    style Domain fill:#e1f5ff
-    style Infrastructure fill:#fff4e1
-```
+    UI --> FrontendFirebase
 
-### Data Flow: Conducting an Assessment
+    Runtime ---> GoogleFhir
+    Runtime ---> DailyCo
+    Runtime ---> JsxDoc
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant Frontend
-    participant Domain
-    participant FHIR Infra
-    participant Google Cloud
-    participant Video Infra
-    participant Daily.co
-    
-    User->>Frontend: Start Assessment
-    Frontend->>Domain: Create Encounter
-    Domain->>FHIR Infra: Save Encounter
-    FHIR Infra->>Google Cloud: POST /Encounter
-    Google Cloud-->>FHIR Infra: Encounter ID
-    FHIR Infra-->>Domain: Encounter
-    
-    Frontend->>Domain: Create Video Room
-    Domain->>Video Infra: Request Room
-    Video Infra->>Daily.co: Create Room
-    Daily.co-->>Video Infra: Room URL
-    Video Infra-->>Domain: Room Details
-    
-    User->>Frontend: Complete Questionnaire
-    Frontend->>Domain: Save Response
-    Domain->>FHIR Infra: Save QuestionnaireResponse
-    FHIR Infra->>Google Cloud: POST /QuestionnaireResponse
-    
-    Frontend->>Domain: Generate Report
-    Domain->>Domain: Calculate Scores
-    Domain-->>Frontend: Document Model
-    Frontend->>User: Display Report
-```
+    FrontendFirebase ---> ExternalFirebase
+    FrontendFirebase ---> GoogleFhir
 
-### Package Dependencies
+    subgraph "Infrastructure Layer"
+        GoogleFhir[Google FHIR<br/>Clinical Data Storage]
+        DailyCo[Daily.co<br/>Infrastructure]
+        FirebaseWeb[Firebase Web<br/>Infrastructure]
+        JsxDoc[JSX Document<br/>Infrastructure]
+    end
 
-```mermaid
-graph LR
-    subgraph "Apps"
-        Frontend[apps/frontend]
-        Functions[apps/functions]
+    GoogleFhir --> ExternalGoogleFhir
+    GoogleFhir --> ClinicalDomain
+    GoogleFhir --> ConfigDomain
+
+    DailyCo --> DailyCoProxy
+    DailyCo --> ClinicalDomain
+    DailyCo --> ConfigDomain
+
+    FirebaseWeb --> ConfigDomain
+    FirebaseWeb --> PlatformDomain
+    FirebaseWeb --> refreshGoogleOAuthToken
+
+    JsxDoc --> DocumentDomain
+    JsxDoc --> ClinicalDomain
+
+    subgraph "Backend (Firebase Functions)"
+        DailyCoProxy[Daily.co Proxy]
+        GoogleLogin[Google Login Endpoint]
+        OAuthCallback[OAuth Callback Endpoint]
+        refreshGoogleOAuthToken[Refresh Google OAuth Token Endpoint]
     end
-    
-    subgraph "Domain Packages"
-        ClinicalD[clinical-domain]
-        DocumentD[document-domain]
-        QuestionnaireD[questionnaire-domain]
-        PlatformD[platform-domain]
-        ConfigD[config-domain]
+
+    DailyCoProxy ---> ExternalDailyCo
+
+    GoogleLogin --> ExternalGoogle
+    ExternalGoogle --> OAuthCallback
+
+    subgraph "Domain Layer"
+        ClinicalDomain[Clinical Domain<br/>FHIR Resources & Interfaces]
+        DocumentDomain[Document Domain<br/>Scoring & Reports]
+        QuestionnaireEntities[Questionnaire Entities<br/>Templates and utilities for specific questionnaires]
+        ConfigDomain[Config Domain<br/>Schemas defining config objects]
+        PlatformDomain[Platform Domain<br/>Handles users and configs]
     end
-    
-    subgraph "Infrastructure Packages"
-        FhirI[google-fhir-infrastructure]
-        VideoI[daily-co-infrastructure]
-        FirebaseI[firebase-web-infrastructure]
-        JSXDocI[jsx-document-infrastructure]
+
+    DocumentDomain --> ClinicalDomain
+    DocumentDomain --> QuestionnaireEntities
+
+    QuestionnaireEntities --> ClinicalDomain
+
+    PlatformDomain --> ConfigDomain
+
+    GoogleFhir ---> ClinicalDomain
+    subgraph "External Services"
+        ExternalGoogleFhir[Google Cloud Healthcare API]
+        ExternalDailyCo[Daily.co<br/>Video Service]
+        ExternalFirebase[Firebase]
+        ExternalGoogle[Google APIs]
     end
-    
-    subgraph "Global Packages"
-        Util[util]
-        ReactUtil[react-util]
-        ESLint[eslint-config]
-        TSConfig[typescript-config]
-        Prettier[prettier-config]
-    end
-    
-    Frontend --> ClinicalD
-    Frontend --> DocumentD
-    Frontend --> PlatformD
-    Frontend --> FhirI
-    Frontend --> VideoI
-    Frontend --> FirebaseI
-    Frontend --> JSXDocI
-    Frontend --> ReactUtil
-    
-    Functions --> ClinicalD
-    Functions --> PlatformD
-    Functions --> FhirI
-    Functions --> VideoI
-    
-    DocumentD --> ClinicalD
-    DocumentD --> QuestionnaireD
-    
-    QuestionnaireD --> ClinicalD
-    
-    PlatformD --> ConfigD
-    PlatformD --> FhirI
-    PlatformD --> Util
-    
-    FhirI --> ClinicalD
-    FhirI --> ConfigD
-    
-    VideoI --> ClinicalD
-    VideoI --> ConfigD
-    
-    FirebaseI --> ConfigD
-    
-    JSXDocI --> DocumentD
-    
-    style Apps fill:#e8f5e9
-    style "Domain Packages" fill:#e1f5ff
-    style "Infrastructure Packages" fill:#fff4e1
-    style "Global Packages" fill:#f3e5f5
+
 ```
 
 ## Repository Structure
@@ -218,6 +133,7 @@ assessmentis/
 ### Domain-Driven Design
 
 The codebase follows DDD principles with clear separation between:
+
 - **Domain**: Pure business logic, types, interfaces (no infrastructure dependencies)
 - **Infrastructure**: Concrete implementations of domain interfaces
 - **Applications**: User-facing apps that compose domain + infrastructure
@@ -225,6 +141,7 @@ The codebase follows DDD principles with clear separation between:
 ### Effect-TS
 
 All async operations use Effect-TS for:
+
 - Type-safe error handling
 - Dependency injection via Layers
 - Composable business logic
@@ -233,6 +150,7 @@ All async operations use Effect-TS for:
 ### FHIR R4 Compliance
 
 All clinical data follows FHIR R4 specification:
+
 - **Questionnaire**: Structured assessment definitions
 - **QuestionnaireResponse**: Patient responses
 - **Encounter**: Clinical sessions
@@ -291,6 +209,7 @@ npm run format            # Format with Prettier
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for:
+
 - Code style and conventions
 - Testing guidelines
 - Effect-TS patterns
