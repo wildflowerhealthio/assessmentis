@@ -1,17 +1,16 @@
-# @assessmentis/daily-co-infrastructure
+# @assessmentis/google-meet-infrastructure
 
 > 📖 **See [CONTRIBUTING.md](../../CONTRIBUTING.md) for general development guidelines common to all packages.**
 
 ## Overview
 
-Infrastructure package providing Daily.co video conferencing integration for Assessment.is.
+**Currently unused.** Infrastructure package for future Google Meet integration in Assessment.is.
 
 ## What This Package Does
 
-- Integrates with Daily.co API for video calls
+- Provides Google Meet API integration
 - Implements video call interfaces from clinical-domain
-- Provides video room management
-- Handles Daily.co-specific logic
+- Handles Google Meet-specific logic
 
 ## Important Guidelines
 
@@ -19,17 +18,14 @@ Infrastructure package providing Daily.co video conferencing integration for Ass
 
 - Implement interfaces from clinical-domain
 - Use Effect Layers for dependency injection
-- Handle Daily.co API specifics
-- Manage video room lifecycle
+- Handle Google Meet API specifics
 
 ### ❌ DON'T:
 
 - Add domain logic (use clinical-domain)
-- Add UI components (React components go in apps)
-- Expose API keys in code
+- Add UI components (use React components in apps)
 
 ## Related Packages
 
 - `@assessmentis/clinical-domain`: Defines video call interfaces
 - `@assessmentis/config-domain`: Configuration schemas
-- `apps/functions`: Uses this for server-side video room creation

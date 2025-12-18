@@ -1,87 +1,84 @@
-# Welcome to React Router!
+# Assessment.is Frontend
 
-A modern, production-ready template for building full-stack React applications using React Router.
+> 📖 **See [CONTRIBUTING.md](../../CONTRIBUTING.md) for general development guidelines common to all packages.**
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+## Overview
 
-## Features
+The React-based frontend application for Assessment.is, built with React Router v7 in SPA mode.
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+## What This Application Does
 
-## Getting Started
+- Provides the user interface for conducting diagnostic assessments
+- Integrates video calls with questionnaire administration
+- Manages encounters, questionnaires, and questionnaire responses
+- Uses Firebase for authentication and hosting
 
-### Installation
+## Technology Stack
 
-Install the dependencies:
+- **React 19** with React Router v7 (SPA mode)
+- **Vite** for build tooling
+- **Effect-TS** for state management and business logic
+- **Firebase Auth** for authentication
+- **Tundra CSS** for styling
+- **OpenTelemetry** for observability
 
-```bash
-npm install
-```
+## Development
 
-### Development
-
-Start the development server with HMR:
+### Start Development Server
 
 ```bash
 npm run dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+Application will be available at `http://localhost:5173`.
 
-## Building for Production
-
-Create a production build:
+### Building
 
 ```bash
 npm run build
 ```
 
-## Deployment
+### Deployment
 
-### Docker Deployment
-
-To build and run using Docker:
+Deployed to Firebase Hosting:
 
 ```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
+npm run deploy
 ```
 
-The containerized application can be deployed to any platform that supports Docker, including:
+## Project Structure
 
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
+See `copilot-instructions.md` for detailed architecture and patterns.
 
 ```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
+app/
+├── root.tsx           # Root layout and error boundary
+├── routes/            # File-based routing
+├── modules/           # Feature modules
+├── components/        # Shared UI components
+└── clientRuntime.tsx  # Effect runtime setup
 ```
 
-## Styling
+## Important Guidelines
 
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+### ✅ DO:
 
----
+- Use Effect-TS for business logic via clientRuntime
+- Follow React Router v7 file-based routing conventions
+- Use Tundra CSS utilities for styling
+- Use domain packages for types and logic
+- Test critical user flows
 
-Built with ❤️ using React Router.
+### ❌ DON'T:
+
+- Add business logic directly in components (use domain packages)
+- Bypass the Effect runtime
+- Add inline styles (use Tundra CSS or CSS modules)
+- Hardcode configuration (use config-domain and firebase-web-platform service)
+
+## Related Packages
+
+- `@assessmentis/clinical-domain`: Core types and interfaces
+- `@assessmentis/react-util`: Shared React utilities
+- `@assessmentis/firebase-web-infrastructure`: Firebase integration
+- `@assessmentis/daily-co-infrastructure`: Video calls
