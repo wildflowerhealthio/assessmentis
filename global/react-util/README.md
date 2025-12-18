@@ -17,7 +17,6 @@ Shared React components, hooks, and utilities used across Assessment.is React ap
 
 ### ✅ DO:
 
-- Keep components framework-agnostic where possible
 - Write comprehensive component tests
 - Document component props clearly
 - Use TypeScript for all components

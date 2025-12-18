@@ -207,7 +207,6 @@ it('should round-trip for all valid data', () => {
 - Write comprehensive tests
 
 ❌ **DON'T**:
-- Add UI components (may appear in infrastructure for React-based templates)
 - Add infrastructure implementations
 - Make HTTP calls or database queries
 
@@ -248,7 +247,7 @@ it('should round-trip for all valid data', () => {
 **Purpose**: Project and domain agnostic shared configurations and utilities
 
 ✅ **DO**:
-- Keep utilities project and domain agnostic
+- Keep utilities project and domain agnostic -- This folder should be immediately copy-pastable to an entirely no project, in a different area
 - Provide reusable configurations
 - Document usage clearly
 

@@ -10,7 +10,6 @@ Firebase Cloud Functions for Assessment.is backend operations.
 
 - Provides backend API endpoints via Cloud Functions
 - Handles server-side operations
-- Integrates with Google Cloud Healthcare API
 - Manages Daily.co video room creation
 - Manages Google OAuth refresh tokens
 
@@ -60,9 +59,9 @@ npm run logs
 
 ## Configuration
 
-Use **environment variables** for process-level secrets (API keys, tokens).
+Use **environment variables** for process-level secrets (Whole platform API keys, tokens).
 
-Use **config-domain and infrastructure** for organization-level configuration.
+Use **config-domain and infrastructure** for organization-level configuration and keys.
 
 ## Deployment
 

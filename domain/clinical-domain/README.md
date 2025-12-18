@@ -55,7 +55,7 @@ Effect.gen(function* () {
 
 - Deviate from FHIR specification
 - Add infrastructure implementations (use infrastructure packages)
-- Add HTTP/API calls (repositories are interfaces only)
+- Add specific HTTP/API calls
 - Add scoring algorithms or document generation (use document-domain)
 - Bypass Effect Schema validation
 
