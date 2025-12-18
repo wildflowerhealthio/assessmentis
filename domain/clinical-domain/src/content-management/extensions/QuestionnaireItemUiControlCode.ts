@@ -47,7 +47,7 @@ export const withUiControlCode = <
     ...t,
     modifierExtension: [
       ...(t.modifierExtension?.filter(
-        (ext) => ext.url == questionnaireItemControlUrl
+        (ext) => ext.url !== questionnaireItemControlUrl
       ) ?? []),
       ...(value ? [questionnaireItemUiControlCodeExtension(value)] : []),
     ],

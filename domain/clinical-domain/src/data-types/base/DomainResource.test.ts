@@ -5,7 +5,10 @@ import * as fc from 'fast-check'
 import { DeepReadonly } from '@assessmentis/util'
 import { DomainResource as FhirDomainResource } from 'fhir/r4'
 
-const TestDomainResource = DomainResource(Schema.String)
+const TestDomainResource = Schema.Struct({
+  ...DomainResource(Schema.String).fields,
+  resourceType: Schema.Literal('Basic'),
+})
 
 // Compile-time check that Encoded schema matches FHIR R4
 const _domainResourceEncoded: DeepReadonly<FhirDomainResource> =
