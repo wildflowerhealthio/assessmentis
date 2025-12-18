@@ -163,6 +163,7 @@ it('should maintain property for all valid inputs', () => {
 ```
 
 **Guidelines for property-based testing:**
+
 - Focus on **useful properties**: idempotence, reversibility, invariants
 - Keep tests **concise** - one property per test
 - Use Effect Schemas as arbitraries with `Schema.arbitrary(MySchema)(fc)`
@@ -186,7 +187,9 @@ it('should encode and decode correctly', () => {
 it('should round-trip for all valid data', () => {
   fc.assert(
     fc.property(Schema.arbitrary(MySchema)(fc), (data) => {
-      const decoded = Schema.decodeSync(MySchema)(Schema.encodeSync(MySchema)(data))
+      const decoded = Schema.decodeSync(MySchema)(
+        Schema.encodeSync(MySchema)(data)
+      )
       expect(decoded).toEqual(data)
     })
   )
@@ -200,6 +203,7 @@ it('should round-trip for all valid data', () => {
 **Purpose**: Pure business logic, types, and repository interfaces
 
 ✅ **DO**:
+
 - Use Effect-TS for all business logic
 - Define repository interfaces as Effect Tags
 - Use Effect Schema for data validation
@@ -207,6 +211,7 @@ it('should round-trip for all valid data', () => {
 - Write comprehensive tests
 
 ❌ **DON'T**:
+
 - Add infrastructure implementations
 - Make HTTP calls or database queries
 
@@ -215,6 +220,7 @@ it('should round-trip for all valid data', () => {
 **Purpose**: Concrete implementations of domain interfaces
 
 ✅ **DO**:
+
 - Implement repository interfaces from domain packages
 - Use Effect Layers for dependency injection
 - Handle external API calls
@@ -222,6 +228,7 @@ it('should round-trip for all valid data', () => {
 - Most infrastructure should be accessed through interfaces defined in the domain
 
 ❌ **DON'T**:
+
 - Add business logic (belongs in domain)
 - Add UI components
 - Duplicate domain logic
@@ -232,12 +239,14 @@ it('should round-trip for all valid data', () => {
 **Purpose**: End-user applications
 
 ✅ **DO**:
+
 - Compose domain and infrastructure layers
 - Handle user interaction
 - Manage routing and navigation
 - Integrate with external services
 
 ❌ **DON'T**:
+
 - Duplicate logic from domain packages
 - Bypass domain repositories
 - Add domain models (use domain packages)
@@ -247,11 +256,13 @@ it('should round-trip for all valid data', () => {
 **Purpose**: Project and domain agnostic shared configurations and utilities
 
 ✅ **DO**:
+
 - Keep utilities project and domain agnostic -- This folder should be immediately copy-pastable to an entirely no project, in a different area
 - Provide reusable configurations
 - Document usage clearly
 
 ❌ **DON'T**:
+
 - Add business logic
 - Add application-specific code
 
@@ -264,14 +275,16 @@ This project follows specific Effect-TS conventions. These are patterns that hav
 This project uses **unique error wrappers** to distinguish between different failure modes, even when the underlying error is the same type. This allows for more precise error handling at boundaries.
 
 **Why we use error wrappers:**
-- Distinguish between "not found" from different sources (e.g., `QuestionnaireNotFound` vs `EncounterNotFound`)
+
 - Enable targeted error handling at application boundaries
 - Make error flows explicit in type signatures
 - Allow different recovery strategies for the same underlying error type
 
 ```typescript
 // Define specific error wrappers
-export class QuestionnaireNotFoundError extends Data.TaggedError('QuestionnaireNotFoundError')<{
+export class QuestionnaireNotFoundError extends Data.TaggedError(
+  'QuestionnaireNotFoundError'
+)<{
   questionnaireId: string
   cause?: unknown
 }> {}
@@ -281,12 +294,16 @@ export class UnhandledError extends Data.TaggedError('UnhandledError')<{
 }> {}
 
 // Use in repository interfaces
-export class QuestionnaireRepository extends Context.Tag('QuestionnaireRepository')<
+export class QuestionnaireRepository extends Context.Tag(
+  'QuestionnaireRepository'
+)<
   QuestionnaireRepository,
   {
-    get: (id: QuestionnaireId) => Effect.Effect<
-      Questionnaire, 
-      QuestionnaireNotFoundError | UnhandledError, 
+    get: (
+      id: QuestionnaireId
+    ) => Effect.Effect<
+      Questionnaire,
+      QuestionnaireNotFoundError | UnhandledError,
       never
     >
   }
@@ -307,13 +324,15 @@ export class MyRepository extends Context.Tag('MyRepository')<
 >() {}
 
 // Infrastructure: concrete implementation
-export const MyRepositoryLive = Layer.effect(MyRepository, 
+export const MyRepositoryLive = Layer.effect(
+  MyRepository,
   Effect.gen(function* () {
     const config = yield* ConfigService
     return {
-      get: (id) => Effect.gen(function* () {
-        // Implementation
-      })
+      get: (id) =>
+        Effect.gen(function* () {
+          // Implementation
+        }),
     }
   })
 )

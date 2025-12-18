@@ -60,60 +60,6 @@ Effect.gen(function* () {
 })
 ```
 
-## Domain Models
-
-### VideoCallRoom
-
-Represents a video call room associated with an encounter.
-
-- `videoCallRoomId`: Internal unique identifier
-- `externalVideoCallRoomId`: External provider's room ID
-- `externalVideoCallRoomName`: External provider's room name
-- `encounterId`: Associated encounter ID
-- `url`: URL to join the video call
-
-### VideoCallRecording
-
-Represents a recording of a video call session.
-
-- `externalVideoCallRecordingId`: External provider's recording ID
-- `videoCallRoomId`: Associated room ID
-- `startTime`: Recording start time
-- `duration`: Recording duration
-
-### ExternalVideoCallRoom
-
-External provider's representation of a video call room.
-
-### ExternalVideoCallRecording
-
-External provider's representation of a recording.
-
-### ExternalVideoCallTranscript
-
-External provider's representation of a transcript.
-
-## Repository Pattern
-
-Repositories are defined as Effect Tags:
-
-```typescript
-export class VideoCallRepository extends Context.Tag('VideoCallRepository')<
-  VideoCallRepository,
-  {
-    readVideoCallRoomsByEncounterId: (
-      encounterId: EncounterId
-    ) => Effect.Effect<VideoCallRoom[], UnhandledError, never>
-    
-    createVideoCallRooms: (
-      rooms: Omit<VideoCallRoom, 'videoCallRoomId'>[]
-    ) => Effect.Effect<VideoCallRoom[], UnhandledError, never>
-  }
->() {}
-```
-
-Implementations are in infrastructure packages (e.g., `@assessmentis/daily-co-infrastructure`, `@assessmentis/google-meet-infrastructure`).
-
 ## Important Guidelines
 
 ### ✅ DO:

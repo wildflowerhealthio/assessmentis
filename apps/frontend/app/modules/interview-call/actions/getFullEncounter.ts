@@ -2,7 +2,6 @@ import { Effect, Schema, Option, Data } from 'effect'
 import {
   Encounter,
   EncounterId,
-  EncounterNotFound,
   EncounterRepository,
 } from '@assessmentis/clinical-domain/administration'
 import {
@@ -52,7 +51,14 @@ export const getFullEncounter = (
   return Effect.gen(function* () {
     const encounterId = yield* encounterIdMaybe.pipe(
       Option.map(Effect.succeed),
-      Option.getOrElse(() => Effect.fail(new EncounterNotFound({})))
+      Option.getOrElse(() =>
+        Effect.fail(
+          new NotFoundError({
+            resourceType: 'Encounter',
+            params: { id: Option.getOrUndefined(encounterIdMaybe) },
+          })
+        )
+      )
     )
 
     const encounterRepository = yield* EncounterRepository
@@ -114,8 +120,19 @@ export const getFullEncounter = (
   }).pipe(
     Effect.flatMap((encounter) => Schema.encode(FullEncounter)(encounter)),
     Effect.map((data) => Success({ data: data })),
-    Effect.catchTag('EncounterNotFound', ({ encounterId }) =>
-      Effect.succeed(NotFound({ encounterId }))
+    Effect.catchSome((err) =>
+      err._tag == 'NotFoundError' && err.resourceType == 'Encounter'
+        ? Option.some(
+            Effect.succeed(
+              NotFound({
+                encounterId:
+                  'id' in err.params && typeof err.params.id === 'string'
+                    ? EncounterId.make(err.params.id)
+                    : undefined,
+              })
+            )
+          )
+        : Option.none()
     ),
     Effect.catchTag('ParseError', (cause) =>
       Effect.fail(new UnhandledError({ cause: cause.toJSON() }))
