@@ -10,42 +10,6 @@ permissions:
 jobs:
   lint:
     runs-on: ubuntu-latest
-    continue-on-error: true
-    strategy:
-      matrix:
-        include:
-          - name: frontend
-            working-directory: apps/frontend
-          - name: functions
-            working-directory: apps/functions
-          - name: clinical-domain
-            working-directory: domain/clinical-domain
-          - name: config-domain
-            working-directory: domain/config-domain
-          - name: platform-domain
-            working-directory: domain/platform-domain
-          - name: react-util
-            working-directory: global/react-util
-          - name: util
-            working-directory: global/util
-          - name: ontology
-            working-directory: global/ontology
-          - name: daily-co-infrastructure
-            working-directory: infrastructure/daily-co-infrastructure
-          - name: firebase-web-infrastructure
-            working-directory: infrastructure/firebase-web-infrastructure
-          - name: google-fhir-infrastructure
-            working-directory: infrastructure/google-fhir-infrastructure
-          - name: google-meet-infrastructure
-            working-directory: infrastructure/google-meet-infrastructure
-          - name: jsx-document-infrastructure
-            working-directory: infrastructure/jsx-document-infrastructure
-          - name: questionnaire-domain
-            working-directory: domain/questionnaire-domain
-          - name: document-domain
-            working-directory: domain/document-domain
-          - name: video-call-domain
-            working-directory: domain/video-call-domain
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -63,11 +27,27 @@ jobs:
           NODE_ENV=development npm ci --include=dev
           npm ci --workspaces
 
-      - name: Run ESLint with reviewdog
+      - name: ESLint with reviewdog
         uses: reviewdog/action-eslint@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          workdir: ${{ matrix.working-directory }}
+          workdir: |
+            apps/frontend
+            apps/functions
+            domain/clinical-domain
+            domain/config-domain
+            domain/platform-domain
+            domain/questionnaire-domain
+            domain/document-domain
+            domain/video-call-domain
+            global/react-util
+            global/util
+            global/ontology
+            infrastructure/daily-co-infrastructure
+            infrastructure/firebase-web-infrastructure
+            infrastructure/google-fhir-infrastructure
+            infrastructure/google-meet-infrastructure
+            infrastructure/jsx-document-infrastructure
           reporter: github-pr-review
           fail_level: error
           filter_mode: diff_context
