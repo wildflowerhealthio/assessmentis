@@ -1,7 +1,7 @@
 import { Schema } from 'effect'
 import { Coding } from '../../general-purpose/Coding'
-import { DomainResource } from '../../general-purpose/DomainResource'
-import { Location } from '../../video-calls/models/Location'
+import { DomainResource } from '../../foundation-framework/resources/DomainResource'
+import { Location } from './Location'
 
 export const EncounterId = Schema.String.pipe(Schema.brand('EncounterId'))
 

@@ -1,5 +1,5 @@
 import { expect, test, describe } from 'vitest'
-import { Observation, ObservationStatus } from './Observation'
+import { Observation, ObservationStatus } from '../resources/Observation'
 import { DeepReadonly } from '@assessmentis/util'
 import { Observation as FhirObservation } from 'fhir/r4'
 import { Schema, Either } from 'effect'

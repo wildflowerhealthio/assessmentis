@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { EncounterId } from '../../encounters/models/Encounter'
+import { EncounterId } from '../../administration/resources/Encounter'
 
 export const VideoCallRoomId = Schema.UUID.pipe(Schema.brand('VideoCallRoomId'))
 

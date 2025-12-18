@@ -1,5 +1,5 @@
 import { Context, Data } from 'effect'
-import { Media, MediaId } from './models/Media'
+import { Media, MediaId } from './resources/Media'
 import { BaseClinicalDataRepository } from '../general-purpose'
 
 export class MediaError extends Data.TaggedError('MediaError')<{

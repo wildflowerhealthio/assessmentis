@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { DomainResource } from '../../general-purpose/DomainResource'
+import { DomainResource } from '../../foundation-framework/resources/DomainResource'
 import { Identifier } from '../../general-purpose/Identifier'
 import { Reference } from '../../general-purpose/Reference'
 import { CodeableConcept } from '../../general-purpose/CodeableConcept'

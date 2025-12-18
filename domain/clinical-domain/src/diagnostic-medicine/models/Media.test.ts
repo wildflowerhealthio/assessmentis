@@ -1,5 +1,5 @@
 import { expect, test, describe } from 'vitest'
-import { Media, MediaStatus } from './Media'
+import { Media, MediaStatus } from '../resources/Media'
 import { DeepReadonly } from '@assessmentis/util'
 import { Media as FhirMedia } from 'fhir/r4'
 import { Schema, Either } from 'effect'

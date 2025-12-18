@@ -2,7 +2,7 @@ import { Context, Effect } from 'effect'
 import { ExternalVideoCallRoom } from './models/ExternalVideoCallRoom'
 import { Zoned } from 'effect/DateTime'
 import { ExternalVideoCallRoomName } from './models/VideoCallRoom'
-import { Media } from '../diagnostic-medicine/models/Media'
+import { Media } from '../diagnostic-medicine/resources/Media'
 import { UnhandledError, ExternalAssertionError } from '../errors'
 
 export interface RoomCreationParams {

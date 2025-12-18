@@ -1,1 +1,1 @@
-export * from './models/Composition'
+export * from '../content-management/resources/Composition'

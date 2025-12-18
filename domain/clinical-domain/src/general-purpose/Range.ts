@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 import { Element } from './Element'
-import { SimpleQuantity } from '../diagnostic-medicine/models/SimpleQuantity'
+import { SimpleQuantity } from '../diagnostic-medicine/models'
 
 export const RangeId = Schema.String.pipe(Schema.brand('RangeId'))
 

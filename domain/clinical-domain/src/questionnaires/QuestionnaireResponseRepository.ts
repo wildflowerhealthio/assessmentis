@@ -2,7 +2,7 @@ import { Context } from 'effect'
 import {
   QuestionnaireResponse,
   QuestionnaireResponseId,
-} from './models/QuestionnaireResponse'
+} from '../content-management/resources/QuestionnaireResponse'
 import { BaseClinicalDataRepository } from '../general-purpose'
 export class QuestionnaireResponseRepository extends Context.Tag(
   'QuestionnaireResponseRepository'

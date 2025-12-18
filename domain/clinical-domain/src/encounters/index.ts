@@ -1,4 +1,4 @@
 export * from './EncounterRepository'
-export * from './models/Encounter'
+export * from '../administration/resources/Encounter'
 export * from './extensions/EncounterRecording'
 export * from './extensions/EncounterTranscript'

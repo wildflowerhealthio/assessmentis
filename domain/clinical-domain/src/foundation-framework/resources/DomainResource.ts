@@ -1,8 +1,8 @@
 import { Schema } from 'effect'
-import { Coding } from './Coding'
-import { Narrative } from './Narrative'
+import { Coding } from '../../general-purpose/Coding'
+import { Narrative } from '../../general-purpose/Narrative'
 import { Resource } from './Resource'
-import { Extension } from './BackboneElement'
+import { Extension } from '../../general-purpose/BackboneElement'
 
 export const DomainResource = <IdType extends string>(
   idSchema: Schema.Schema<IdType, string>

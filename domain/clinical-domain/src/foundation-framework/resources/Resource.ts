@@ -1,7 +1,7 @@
 import { Schema } from 'effect'
-import { Code } from './Coding'
+import { Code } from '../../general-purpose/Coding'
 import { Meta } from './DomainResource'
-import { Extension } from './BackboneElement'
+import { Extension } from '../../general-purpose/BackboneElement'
 
 export const Resource = <IdType extends string>(
   idSchema: Schema.Schema<IdType, string>

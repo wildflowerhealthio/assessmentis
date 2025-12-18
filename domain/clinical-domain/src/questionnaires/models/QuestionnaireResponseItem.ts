@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { QuestionnaireItemLink } from './Questionnaire'
+import { QuestionnaireItemLink } from '../../content-management/resources/Questionnaire'
 import { BackboneElement } from '../../general-purpose/BackboneElement'
 import { ValueElement } from '../../general-purpose/ValueElement'
 

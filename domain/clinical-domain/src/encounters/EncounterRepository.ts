@@ -1,5 +1,5 @@
 import { Context, Data, Effect } from 'effect'
-import { Encounter, EncounterId } from './models/Encounter'
+import { Encounter, EncounterId } from '../administration/resources/Encounter'
 
 import {
   ExternalAssertionError,

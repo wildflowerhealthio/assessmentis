@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { QuestionnaireResponseId } from './QuestionnaireResponse'
+import { QuestionnaireResponseId } from '../../content-management/resources/QuestionnaireResponse'
 
 export const TextQuestionnaireResponseValueId = Schema.UUID.pipe(
   Schema.brand('TextQuestionnaireResponseValueId')

@@ -1,13 +1,13 @@
 import { DateTime, Schema, Option } from 'effect'
-import { DomainResource } from '../../general-purpose/DomainResource'
+import { DomainResource } from '../../foundation-framework/resources/DomainResource'
 import { Identifier } from '../../general-purpose/Identifier'
 import { Reference } from '../../general-purpose/Reference'
 import {
   allQuestionnaireResponseItems,
   QuestionnaireResponseItem,
-} from './QuestionnaireResponseItem'
+} from '../../questionnaires/models/QuestionnaireResponseItem'
 import { QuestionnaireId } from './Questionnaire'
-import { getAnsweredAt } from '../extensions/QuestionnaireItemAnsweredAt'
+import { getAnsweredAt } from '../../questionnaires/extensions/QuestionnaireItemAnsweredAt'
 
 export const QuestionnaireResponseId = Schema.UUID.pipe(
   Schema.brand('QuestionnaireResponseId')

@@ -1,7 +1,7 @@
 import { Schema } from 'effect'
 import { BackboneElement } from '../../general-purpose/BackboneElement'
 import { Coding } from '../../general-purpose/Coding'
-import { Resource } from '../../general-purpose/Resource'
+import { Resource } from '../../foundation-framework/resources/Resource'
 import { ValueElement } from '../../general-purpose'
 export const QuestionnaireId = Schema.String.pipe(
   Schema.brand('QuestionnaireId')

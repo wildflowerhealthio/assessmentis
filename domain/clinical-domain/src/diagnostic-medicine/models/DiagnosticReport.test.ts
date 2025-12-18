@@ -1,5 +1,5 @@
 import { expect, test, describe } from 'vitest'
-import { DiagnosticReport, DiagnosticReportStatus } from './DiagnosticReport'
+import { DiagnosticReport, DiagnosticReportStatus } from '../resources/DiagnosticReport'
 import { DeepReadonly } from '@assessmentis/util'
 import { DiagnosticReport as FhirDiagnosticReport } from 'fhir/r4'
 import { Schema, Either } from 'effect'
