@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@assessmentis/prettier-config": "*",
-    "@types/fhir": "^3.0.2",
+    "@types/fhir": "^0.0.41",
     "typescript": "^5.9.3",
     "@types/gapi.client.healthcare-v1": "^0.0.4",
     "@types/gapi": "^0.0.47"

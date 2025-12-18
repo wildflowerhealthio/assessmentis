@@ -1,7 +1,10 @@
 import { Schema } from 'effect'
 
 export const Code = Schema.String.pipe(Schema.brand('code'))
-export const brandAsCode = Schema.brand('code')
+
+export const CodeLiteral = <L extends ReadonlyArray<string>>(...literal: L) =>
+  Schema.Literal(...literal).pipe(Schema.brand('code'))
+
 /**
  * A reference to a code defined by a terminology system.
  */

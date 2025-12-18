@@ -9,8 +9,9 @@ import {
 } from '@assessmentis/clinical-domain'
 import {
   BackboneElement,
+  CodeLiteral,
+  DomainResource,
   Element,
-  Extension,
   Meta,
 } from '@assessmentis/clinical-domain/general-purpose'
 
@@ -103,8 +104,15 @@ export const Section = Schema.Struct({
 
 export type Section = typeof Section.Type
 
-const CompositionAttesterId = Schema.String.pipe(
+export const CompositionAttesterId = Schema.String.pipe(
   Schema.brand('CompositionAttesterId')
+)
+
+export const CompositionAttesterMode = CodeLiteral(
+  'personal',
+  'professional',
+  'legal',
+  'official'
 )
 
 /**
@@ -115,18 +123,11 @@ export const CompositionAttester = Schema.Struct({
   /**
    * personal | professional | legal | official
    */
-  mode: Schema.Array(
-    Schema.Union(
-      Schema.Literal('personal'),
-      Schema.Literal('professional'),
-      Schema.Literal('legal'),
-      Schema.Literal('official')
-    )
-  ),
+  mode: CompositionAttesterMode,
   /**
    * Contains extended information for property 'mode'.
    */
-  _mode: Schema.optional(Schema.Array(Element(Schema.String))),
+  _mode: Schema.optional(Element(Schema.String)),
   /**
    * When the composition was attested
    */
@@ -210,6 +211,7 @@ export type CompositionId = typeof CompositionId.Type
  * A set of resources composed into a single coherent clinical statement with clinical attestation
  */
 export const Composition = Schema.Struct({
+  ...DomainResource(CompositionId).fields,
   /**
    * Resource Type Name (for serialization)
    */
@@ -242,18 +244,6 @@ export const Composition = Schema.Struct({
    * Text summary of the resource, for human interpretation
    */
   text: Schema.optional(Narrative),
-  /**
-   * Contained, inline Resources
-   */
-  contained: Schema.optional(Schema.Array(Schema.Unknown)),
-  /**
-   * Additional content defined by implementations
-   */
-  extension: Schema.optional(Schema.Array(Extension)),
-  /**
-   * Extensions that cannot be ignored
-   */
-  modifierExtension: Schema.optional(Schema.Array(Extension)),
   /**
    * Logical identifier of composition (version-independent)
    */

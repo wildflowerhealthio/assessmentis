@@ -1,12 +1,11 @@
-const { defineConfig } = require("eslint/config");
-const eslint = require( '@eslint/js');
-const tseslint  = require('typescript-eslint');
-const eslintConfigPrettier = require('eslint-config-prettier/flat');
-const eslintPluginPrettierRecommended = require('eslint-plugin-prettier/recommended');
-const tsParser = require("@typescript-eslint/parser");
-const reactHooks = require('eslint-plugin-react-hooks');
+const { defineConfig } = require('eslint/config')
+const eslint = require('@eslint/js')
+const tseslint = require('typescript-eslint')
+const eslintConfigPrettier = require('eslint-config-prettier/flat')
+const eslintPluginPrettierRecommended = require('eslint-plugin-prettier/recommended')
+const tsParser = require('@typescript-eslint/parser')
+const reactHooks = require('eslint-plugin-react-hooks')
 const reactRefresh = require('eslint-plugin-react-refresh')
-
 
 module.exports = defineConfig([
   eslint.configs.recommended,
@@ -19,33 +18,33 @@ module.exports = defineConfig([
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        sourceType: "module",
+        sourceType: 'module',
         ecmaVersion: 2020,
       },
     },
     rules: {
-      "@typescript-eslint/no-unused-vars": [
-        "error",
-        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
-      "react-refresh/only-export-components": [
-        "error",
+      'react-refresh/only-export-components': [
+        'error',
         {
           allowExportNames: [
-              "loader",
-              "clientLoader",
-              "action",
-              "clientAction",
-              "ErrorBoundary",
-              "HydrateFallback",
-              "headers",
-              "handle",
-              "links",
-              "meta",
-              "shouldRevalidate",
-            ],
+            'loader',
+            'clientLoader',
+            'action',
+            'clientAction',
+            'ErrorBoundary',
+            'HydrateFallback',
+            'headers',
+            'handle',
+            'links',
+            'meta',
+            'shouldRevalidate',
+          ],
         },
       ],
     },
-  }
-]);
+  },
+])

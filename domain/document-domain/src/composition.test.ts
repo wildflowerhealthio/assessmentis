@@ -1,22 +1,17 @@
 import { Arbitrary } from 'effect'
 import * as fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
-import { Composition, Section } from './composition'
+import { DeepReadonly } from '@assessmentis/util'
+import { Composition, Section, CompositionAttester } from './composition'
+import {
+  Composition as FhirComposition,
+  CompositionAttester as FhirCompositionAttester,
+} from 'fhir/r4'
 
-// Compile-time check that our Composition.Encoded is compatible with FHIR
-// We check that the Encoded type has all required FHIR Composition fields
-type _AssertCompositionCompatible = typeof Composition.Encoded extends {
-  resourceType: 'Composition'
-  status: string
-  type: unknown
-  subject: unknown
-  date: string
-  author: readonly unknown[]
-  title: string
-}
-  ? true
-  : never
-const _compositionIsFhirCompatible: _AssertCompositionCompatible = true
+// Compile-time check that our Encoded schemas are compatible with FHIR R4 types
+const _compositionAttesterEncoded: DeepReadonly<FhirCompositionAttester> =
+  CompositionAttester.Encoded
+const _compositionEncoded: DeepReadonly<FhirComposition> = Composition.Encoded
 
 // Use Arbitrary.make to generate values from schemas
 const compositionArb = Arbitrary.make(Composition)
