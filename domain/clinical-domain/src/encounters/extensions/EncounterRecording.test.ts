@@ -7,6 +7,12 @@ import {
 } from './EncounterRecording'
 import { Schema, Either } from 'effect'
 import * as fc from 'fast-check'
+import { DeepReadonly } from '@assessmentis/util'
+import { Extension as FhirExtension } from 'fhir/r4'
+
+// Compile-time check that Encoded schema matches FHIR R4 Extension
+const _encounterRecordingEncoded: DeepReadonly<FhirExtension> =
+  EncounterRecordingFileExtension.Encoded
 
 describe('EncounterRecording extension', () => {
   test('property: encode-decode cycle preserves extension structure', () => {

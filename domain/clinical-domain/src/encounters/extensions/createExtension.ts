@@ -6,18 +6,58 @@ import { Schema } from 'effect'
  * @param valueKey - The key name for the value (e.g., 'valueUrl', 'valueString')
  * @param ValueSchema - The schema for the value
  */
-export function createExtension<
+export const createExtension = <
   const TUrl extends string,
   ValueKey extends string,
   A,
   I = A,
->(url: TUrl, valueKey: ValueKey, ValueSchema: Schema.Schema<A, I, never>) {
+>(
+  url: TUrl,
+  valueKey: Exclude<ValueKey, 'url'>,
+  ValueSchema: Schema.Schema<A, I, never>
+): {
+  ExtensionSchema: Schema.extend<
+    Schema.Struct<{
+      url: Schema.Schema<TUrl, TUrl>
+    }>,
+    Schema.Record$<
+      Schema.Schema<ValueKey, ValueKey>,
+      Schema.Schema<A, I, never>
+    >
+  >
+  url: TUrl
+  valueKey: ValueKey
+  getValues: (resource: {
+    extension?: ReadonlyArray<
+      { url: string } | ({ url: TUrl } & { [K in ValueKey]: A })
+    >
+  }) => A[]
+  withValues: <
+    T extends {
+      extension?: ReadonlyArray<{ url: string } | { url: TUrl; [valueKey]: A }>
+    },
+  >(
+    resource: T,
+    values: A[]
+  ) => T
+} => {
   // Note: ExtensionSchema typing is complex due to dynamic keys,
   // so we use any and rely on runtime schema validation
-  const ExtensionSchema = Schema.Struct({
-    url: Schema.Literal(url),
+  const WronglyTypedExtensionSchema = Schema.Struct({
     [valueKey]: ValueSchema,
+    url: Schema.Literal(url),
   })
+
+  const ExtensionSchema =
+    WronglyTypedExtensionSchema as unknown as Schema.extend<
+      Schema.Struct<{
+        url: Schema.Schema<TUrl, TUrl>
+      }>,
+      Schema.Record$<
+        Schema.Schema<ValueKey, ValueKey>,
+        Schema.Schema<A, I, never>
+      >
+    >
 
   type ExtensionType = { url: TUrl } & { [K in ValueKey]: A }
 
@@ -44,18 +84,15 @@ export function createExtension<
 
     const newExtensions = [
       ...existingExtensions,
-      ...values.map(
-        (value) =>
-          ({
-            url,
-            [valueKey]: value,
-          }) as ExtensionType
-      ),
+      ...values.map((value) => ({
+        url,
+        [valueKey]: value,
+      })),
     ]
 
     return {
       ...resource,
-      extension: newExtensions as T['extension'],
+      extension: newExtensions,
     }
   }
 

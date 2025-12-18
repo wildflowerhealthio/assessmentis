@@ -1,7 +1,12 @@
 import { expect, test, describe } from 'vitest'
 import { Observation, ObservationStatus } from './Observation'
+import { DeepReadonly } from '@assessmentis/util'
+import { Observation as FhirObservation } from 'fhir/r4'
 import { Schema, Either } from 'effect'
 import * as fc from 'fast-check'
+
+// Compile-time check that Encoded schema matches FHIR R4
+const _observationEncoded: DeepReadonly<FhirObservation> = Observation.Encoded
 
 describe('Observation model', () => {
   test('property: encode-decode cycle preserves minimal Observation', () => {

@@ -1,7 +1,13 @@
 import { expect, test, describe } from 'vitest'
 import { DiagnosticReport, DiagnosticReportStatus } from './DiagnosticReport'
+import { DeepReadonly } from '@assessmentis/util'
+import { DiagnosticReport as FhirDiagnosticReport } from 'fhir/r4'
 import { Schema, Either } from 'effect'
 import * as fc from 'fast-check'
+
+// Compile-time check that Encoded schema matches FHIR R4
+const _diagReportEncoded: DeepReadonly<FhirDiagnosticReport> =
+  DiagnosticReport.Encoded
 
 describe('DiagnosticReport model', () => {
   test('property: encode-decode cycle preserves minimal DiagnosticReport', () => {

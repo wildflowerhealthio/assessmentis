@@ -16,7 +16,7 @@ export const DomainResource = <IdType extends string>(
     /**
      * Contained, inline Resources
      */
-    contained: Schema.optional(Schema.Array(Schema.Unknown)), // Resource
+    contained: Schema.optional(Schema.Array(Schema.Any)), // Resource
     /**
      * Additional content defined by implementations
      */

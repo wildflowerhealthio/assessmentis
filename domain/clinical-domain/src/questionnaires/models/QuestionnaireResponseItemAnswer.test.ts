@@ -2,6 +2,12 @@ import { expect, test, describe } from 'vitest'
 import { QuestionnaireResponseItemAnswer } from './QuestionnaireResponseItem.js'
 import { DateTime, Either, Schema, Option } from 'effect'
 import * as fc from 'fast-check'
+import { DeepReadonly } from '@assessmentis/util'
+import { QuestionnaireResponseItemAnswer as FhirQuestionnaireResponseItemAnswer } from 'fhir/r4'
+
+// Compile-time check that Encoded schema matches FHIR R4 type
+const _qrItemAnswerEncoded: DeepReadonly<FhirQuestionnaireResponseItemAnswer> =
+  QuestionnaireResponseItemAnswer.Encoded
 
 describe('QuestionnaireResponseItemAnswer', () => {
   test('property: encode-decode cycle preserves boolean answers', () => {

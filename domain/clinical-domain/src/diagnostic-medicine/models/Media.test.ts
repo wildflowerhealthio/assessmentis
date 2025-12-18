@@ -1,7 +1,12 @@
 import { expect, test, describe } from 'vitest'
 import { Media, MediaStatus } from './Media'
+import { DeepReadonly } from '@assessmentis/util'
+import { Media as FhirMedia } from 'fhir/r4'
 import { Schema, Either } from 'effect'
 import * as fc from 'fast-check'
+
+// Compile-time check that Encoded schema matches FHIR R4
+const _mediaEncoded: DeepReadonly<FhirMedia> = Media.Encoded
 
 describe('Media model', () => {
   test('property: encode-decode cycle preserves minimal Media', () => {
