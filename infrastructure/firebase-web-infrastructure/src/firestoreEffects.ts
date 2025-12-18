@@ -1,40 +1,46 @@
 import { Effect } from 'effect'
 import {
   DocumentData,
-  DocumentReference,
   Firestore,
   doc,
   getDoc,
   setDoc,
   SetOptions,
 } from 'firebase/firestore'
+import { UnhandledError, NotFoundError } from '@assessmentis/clinical-domain'
 
 /**
  * Effect-based wrapper for Firestore getDoc operation
  * @param firestore Firestore instance
  * @param path Collection path (e.g., 'orgs')
  * @param docId Document ID
- * @returns Effect that yields the document data or null if not found
+ * @returns Effect that yields the document data or fails with NotFoundError if not found
  */
 export const getDocument = <T = DocumentData>(
   firestore: Firestore,
   path: string,
   docId: string
-): Effect.Effect<T | null, Error> =>
+): Effect.Effect<T, NotFoundError | UnhandledError> =>
   Effect.tryPromise({
     try: async () => {
       const docRef = doc(firestore, path, docId)
       const docSnapshot = await getDoc(docRef)
       if (!docSnapshot.exists()) {
-        return null
+        throw new NotFoundError({
+          resourceType: 'document',
+          params: { path, docId },
+        })
       }
       return docSnapshot.data() as T
     },
     catch: (error) => {
-      if (error instanceof Error) {
+      if (error instanceof NotFoundError) {
         return error
       }
-      return new Error(`Failed to get document: ${String(error)}`)
+      return new UnhandledError({
+        cause: error,
+        message: `Failed to get document: ${path}/${docId}`,
+      })
     },
   })
 
@@ -53,29 +59,16 @@ export const setDocument = (
   docId: string,
   data: DocumentData,
   options?: SetOptions
-): Effect.Effect<void, Error> =>
+): Effect.Effect<void, UnhandledError> =>
   Effect.tryPromise({
     try: async () => {
       const docRef = doc(firestore, path, docId)
       await setDoc(docRef, data, options ?? {})
     },
     catch: (error) => {
-      if (error instanceof Error) {
-        return error
-      }
-      return new Error(`Failed to set document: ${String(error)}`)
+      return new UnhandledError({
+        cause: error,
+        message: `Failed to set document: ${path}/${docId}`,
+      })
     },
   })
-
-/**
- * Get a document reference for use with other Firestore operations
- * @param firestore Firestore instance
- * @param path Collection path (e.g., 'orgs')
- * @param docId Document ID
- * @returns DocumentReference
- */
-export const getDocumentRef = (
-  firestore: Firestore,
-  path: string,
-  docId: string
-): DocumentReference<DocumentData, DocumentData> => doc(firestore, path, docId)

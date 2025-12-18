@@ -39,9 +39,13 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   console.log('Loading auth state')
   await auth.authStateReady()
   console.log('Loading org data for', params.orgSlug)
-  const data = await Effect.runPromise(getDocument(db, 'orgs', params.orgSlug))
-  console.log('loaded org data for', data)
-  return { data }
+  const result = await Effect.runPromise(
+    getDocument(db, 'orgs', params.orgSlug).pipe(
+      Effect.catchTag('NotFoundError', () => Effect.succeed(null))
+    )
+  )
+  console.log('loaded org data for', result)
+  return { data: result }
 }
 
 export async function clientAction({ params }: Route.ClientActionArgs) {
