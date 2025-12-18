@@ -1,4 +1,4 @@
-import { Arbitrary } from 'effect'
+import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
 import { DeepReadonly } from '@assessmentis/util'
@@ -13,8 +13,9 @@ describe('Composition', () => {
   it('should encode and decode', () => {
     fc.assert(
       fc.property(compositionArb, (comp) => {
-        const result = Composition.make(comp)
-        expect(result.resourceType).toBe('Composition')
+        const encoded = Schema.encodeSync(Composition)(comp)
+        const decoded = Schema.decodeSync(Composition)(encoded)
+        expect(decoded).toEqual(comp)
       }),
       { numRuns: 10 }
     )

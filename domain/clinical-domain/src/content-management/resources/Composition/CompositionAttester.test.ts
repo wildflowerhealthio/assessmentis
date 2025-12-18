@@ -1,4 +1,4 @@
-import { Arbitrary } from 'effect'
+import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
 import { DeepReadonly } from '@assessmentis/util'
@@ -14,8 +14,9 @@ describe('CompositionAttester', () => {
   it('should encode and decode', () => {
     fc.assert(
       fc.property(attesterArb, (attester) => {
-        const result = CompositionAttester.make(attester)
-        expect(result.mode).toBeDefined()
+        const encoded = Schema.encodeSync(CompositionAttester)(attester)
+        const decoded = Schema.decodeSync(CompositionAttester)(encoded)
+        expect(decoded).toEqual(attester)
       }),
       { numRuns: 10 }
     )
