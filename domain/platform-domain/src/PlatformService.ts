@@ -4,7 +4,7 @@ import { CurrentUserIdError, UserId } from './loadedValues/UserId'
 import { type CurrentUserError, type User } from './loadedValues/User'
 import { LoadedResultStream } from '@assessmentis/util/LoadedResult'
 import { CurrentTimeZone } from 'effect/DateTime'
-import { ExternalVideoCallClient } from '@assessmentis/clinical-domain/video-calls'
+import { ExternalVideoCallClient } from '@assessmentis/video-call-domain'
 import {
   QuestionnaireRepository,
   QuestionnaireResponseRepository,

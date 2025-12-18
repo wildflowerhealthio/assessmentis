@@ -6,7 +6,7 @@ import {
   NeedsAuthenticationError,
   NotFoundError,
   UnhandledError,
-} from '../../errors'
+} from '@assessmentis/ontology'
 import { WithId } from '../../data-types/base/Element'
 
 export class EncounterError extends Data.TaggedError('EncounterError')<{

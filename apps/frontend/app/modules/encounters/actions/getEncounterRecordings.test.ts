@@ -8,7 +8,7 @@ import {
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { EncounterId } from '@assessmentis/clinical-domain/administration'
 import { WithId } from '@assessmentis/clinical-domain/data-types'
-import { UnhandledError } from '@assessmentis/clinical-domain/errors'
+import { UnhandledError } from '@assessmentis/ontology'
 
 describe('getEncounterRecordings', () => {
   test('returns Media resources linked to the encounter', async () => {

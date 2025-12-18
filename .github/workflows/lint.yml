@@ -28,6 +28,8 @@ jobs:
             working-directory: global/react-util
           - name: util
             working-directory: global/util
+          - name: ontology
+            working-directory: global/ontology
           - name: daily-co-infrastructure
             working-directory: infrastructure/daily-co-infrastructure
           - name: firebase-web-infrastructure
@@ -42,6 +44,8 @@ jobs:
             working-directory: domain/questionnaire-domain
           - name: document-domain
             working-directory: domain/document-domain
+          - name: video-call-domain
+            working-directory: domain/video-call-domain
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

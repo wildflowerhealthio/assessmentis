@@ -10,7 +10,7 @@ import {
   UnhandledError,
   NotFoundError,
   ExternalAssertionError,
-} from '@assessmentis/clinical-domain/errors'
+} from '@assessmentis/ontology'
 import {
   Questionnaire,
   QuestionnaireRepository,

@@ -1,34 +1,31 @@
 {
-  "name": "@assessmentis/firebase-web-infrastructure",
+  "name": "@assessmentis/video-call-domain",
   "version": "0.0.1",
-  "description": "Firebase based infrastructure implementations",
+  "description": "Video call domain models and repository interfaces for Assessment.is",
   "author": "Ruth Marks",
   "license": "UNLICENSED",
   "type": "module",
   "prettier": "@assessmentis/prettier-config",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
     "check-types": "tsc --noEmit",
     "lint": "eslint \"./src/**/*\"",
     "lint:fix": "eslint --fix \"./src/**/*\"",
     "test": "vitest run"
   },
-  "exports": {
-    ".": "./src/index.ts"
+  "dependencies": {
+    "effect": "^3.19.8",
+    "@assessmentis/clinical-domain": "*",
+    "@assessmentis/ontology": "*"
   },
   "devDependencies": {
     "@assessmentis/eslint-config": "*",
     "@assessmentis/prettier-config": "*",
     "@assessmentis/typescript-config": "*",
+    "fast-check": "^3.19.0",
+    "typescript": "^5.9.3",
     "vitest": "^4.0.15"
-  },
-  "dependencies": {
-    "@assessmentis/clinical-domain": "*",
-    "@assessmentis/config-domain": "*",
-    "@assessmentis/platform-domain": "*",
-    "@assessmentis/ontology": "*",
-    "@assessmentis/video-call-domain": "*",
-    "@effect/opentelemetry": "^0.59.2",
-    "effect": "^3.19.9",
-    "firebase": "^12.6.0"
   }
 }

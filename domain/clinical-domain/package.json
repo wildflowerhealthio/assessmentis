@@ -12,9 +12,7 @@
     "./content-management": "./src/content-management/index.ts",
     "./data-types": "./src/data-types/index.ts",
     "./diagnostic-medicine": "./src/diagnostic-medicine/index.ts",
-    "./foundation-framework": "./src/foundation-framework/index.ts",
-    "./video-calls": "./src/video-calls/index.ts",
-    "./errors": "./src/errors.ts"
+    "./foundation-framework": "./src/foundation-framework/index.ts"
   },
   "scripts": {
     "check-types": "tsc --noEmit",
@@ -24,7 +22,8 @@
   },
   "dependencies": {
     "effect": "^3.19.8",
-    "temporal-polyfill": "^0.3.0"
+    "temporal-polyfill": "^0.3.0",
+    "@assessmentis/ontology": "*"
   },
   "devDependencies": {
     "@assessmentis/prettier-config": "*",

@@ -4,7 +4,7 @@ import {
   NeedsAuthenticationError,
   NotFoundError,
   UnhandledError,
-} from '../../errors'
+} from '@assessmentis/ontology'
 import { WithId } from '../../data-types/base/Element'
 import { Reference } from '../../data-types/special-purpose/Reference'
 

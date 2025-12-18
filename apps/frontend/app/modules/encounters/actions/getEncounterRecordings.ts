@@ -4,7 +4,7 @@ import {
   UnhandledError,
   ExternalAssertionError,
   NotFoundError,
-} from '@assessmentis/clinical-domain/errors'
+} from '@assessmentis/ontology'
 import { WithId } from '@assessmentis/clinical-domain/data-types'
 import { EncounterId } from '@assessmentis/clinical-domain/administration'
 import {
