@@ -27,10 +27,9 @@ jobs:
           NODE_ENV=development npm ci --include=dev
           npm ci --workspaces
 
-      - &reviewdog
-        name: Lint apps/frontend
+      - name: Lint apps/frontend
         uses: reviewdog/action-eslint@v1
-        with: &reviewdogWith
+        with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workdir: apps/frontend
           reporter: github-pr-review
@@ -39,85 +38,127 @@ jobs:
       - name: Lint apps/functions
         uses: reviewdog/action-eslint@v1
         with:
-          <<: *reviewdogWith
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_level: error
+          filter_mode: diff_context
           workdir: apps/functions
 
       - name: Lint domain/clinical-domain
         uses: reviewdog/action-eslint@v1
         with:
-          <<: *reviewdogWith
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_level: error
+          filter_mode: diff_context
           workdir: domain/clinical-domain
 
       - name: Lint domain/platform-domain
         uses: reviewdog/action-eslint@v1
         with:
-          <<: *reviewdogWith
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_level: error
+          filter_mode: diff_context
           workdir: domain/platform-domain
 
       - name: Lint domain/questionnaire-domain
         uses: reviewdog/action-eslint@v1
         with:
-          <<: *reviewdogWith
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_level: error
+          filter_mode: diff_context
           workdir: domain/questionnaire-domain
 
       - name: Lint domain/video-call-domain
         uses: reviewdog/action-eslint@v1
         with:
-          <<: *reviewdogWith
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_level: error
+          filter_mode: diff_context
           workdir: domain/video-call-domain
 
       - name: Lint domain/document-domain
         uses: reviewdog/action-eslint@v1
         with:
-          <<: *reviewdogWith
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_level: error
+          filter_mode: diff_context
           workdir: domain/document-domain
 
       - name: Lint global/react-util
         uses: reviewdog/action-eslint@v1
         with:
-          <<: *reviewdogWith
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_level: error
+          filter_mode: diff_context
           workdir: global/react-util
 
       - name: Lint global/util
         uses: reviewdog/action-eslint@v1
         with:
-          <<: *reviewdogWith
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_level: error
+          filter_mode: diff_context
           workdir: global/util
 
       - name: Lint global/ontology
         uses: reviewdog/action-eslint@v1
         with:
-          <<: *reviewdogWith
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_level: error
+          filter_mode: diff_context
           workdir: global/ontology
 
       - name: Lint infrastructure/daily-co-infrastructure
         uses: reviewdog/action-eslint@v1
         with:
-          <<: *reviewdogWith
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_level: error
+          filter_mode: diff_context
           workdir: infrastructure/daily-co-infrastructure
 
       - name: Lint infrastructure/firebase-web-infrastructure
         uses: reviewdog/action-eslint@v1
         with:
-          <<: *reviewdogWith
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_level: error
+          filter_mode: diff_context
           workdir: infrastructure/firebase-web-infrastructure
 
       - name: Lint infrastructure/google-fhir-infrastructure
         uses: reviewdog/action-eslint@v1
         with:
-          <<: *reviewdogWith
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_level: error
+          filter_mode: diff_context
           workdir: infrastructure/google-fhir-infrastructure
 
       - name: Lint infrastructure/google-meet-infrastructure
         uses: reviewdog/action-eslint@v1
         with:
-          <<: *reviewdogWith
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_level: error
+          filter_mode: diff_context
           workdir: infrastructure/google-meet-infrastructure
 
       - name: Lint infrastructure/jsx-document-infrastructure
         uses: reviewdog/action-eslint@v1
         with:
-          <<: *reviewdogWith
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_level: error
+          filter_mode: diff_context
           workdir: infrastructure/jsx-document-infrastructure
 
 # -
