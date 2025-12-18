@@ -26,7 +26,6 @@ Infrastructure package providing Google Cloud Healthcare API integration for FHI
 ### ❌ DON'T:
 
 - Add domain logic (use clinical-domain)
-- Bypass domain repositories
 - Hardcode credentials or project IDs
 
 ## Related Packages
