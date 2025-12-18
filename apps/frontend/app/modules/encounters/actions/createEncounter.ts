@@ -55,7 +55,7 @@ export const createEncounter = (
     })
 
     const encounterData = {
-      resourceType: 'Encounter' as const,
+      resourceType: 'Encounter',
       class: {
         display: 'virtual',
         system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
@@ -73,7 +73,7 @@ export const createEncounter = (
       ],
       status: 'planned',
       ...args,
-    }
+    } as const
 
     const createdEncounter = yield* encounterRepository.create(encounterData)
 

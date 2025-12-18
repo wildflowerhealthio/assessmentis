@@ -2,7 +2,7 @@ import { Schema } from 'effect'
 import { BackboneElement } from '../../../data-types/base/BackboneElement'
 import { Coding } from '../../../data-types/complex/Coding'
 import { Resource } from '../../../data-types/base/Resource'
-import { ValueElement } from '../../../data-types/primitive/ValueElement'
+import { Reference } from '../../../data-types/special-purpose/Reference'
 
 export const QuestionnaireId = Schema.String.pipe(
   Schema.brand('QuestionnaireId')
@@ -40,12 +40,23 @@ export const QuestionnaireItemId = Schema.String.pipe(
 )
 export type QuestionnaireItemId = typeof QuestionnaireItemId.Type
 
+const QuestionnaireItemAnswerOption = Schema.Struct({
+  ...BackboneElement(Schema.String).fields,
+  valueInteger: Schema.optional(Schema.Number),
+  valueDate: Schema.optional(Schema.String),
+  valueTime: Schema.optional(Schema.String),
+  valueString: Schema.optional(Schema.String),
+  valueCoding: Schema.optional(Coding),
+  valueReference: Schema.optional(Reference),
+  initialSelected: Schema.optional(Schema.Boolean),
+})
+
 const questionnaireItemFields = {
   ...BackboneElement(QuestionnaireItemId).fields,
   /**
    * This element can be used when the value set machinery of answerValueSet is deemed too cumbersome or when there's a need to capture possible answers that are not codes.
    */
-  answerOption: Schema.optional(Schema.Array(ValueElement)), //QuestionnaireItemAnswerOption[] | undefined;
+  answerOption: Schema.optional(Schema.Array(QuestionnaireItemAnswerOption)),
   /**
    * LOINC defines many useful value sets for questionnaire responses. See [LOINC Answer Lists](loinc.html#alist). The value may come from the ElementDefinition referred to by .definition.
    */

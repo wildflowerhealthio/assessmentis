@@ -49,7 +49,7 @@ export const withUiDisplayLevel = <
     ...t,
     modifierExtension: [
       ...(t.modifierExtension?.filter(
-        (ext) => ext.url == questionnaireItemUiDisplayLevelUrl
+        (ext) => ext.url !== questionnaireItemUiDisplayLevelUrl
       ) ?? []),
       ...(value ? [questionnaireItemUiDisplayLevelExtension(value)] : []),
     ],

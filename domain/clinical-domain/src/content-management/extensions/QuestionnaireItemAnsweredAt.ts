@@ -29,7 +29,7 @@ export const withAnsweredAt = <
     ...t,
     modifierExtension: [
       ...(t.modifierExtension?.filter(
-        (ext) => ext.url == questionnaireItemAnsweredAtUrl
+        (ext) => ext.url !== questionnaireItemAnsweredAtUrl
       ) ?? []),
       ...(valueDateTime
         ? [

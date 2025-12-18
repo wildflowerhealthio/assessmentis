@@ -1,5 +1,3 @@
-export * from './Questionnaire/Questionnaire'
-export * from './Questionnaire/enums'
-export * from './QuestionnaireResponse/QuestionnaireResponse'
-export * from './QuestionnaireResponse/QuestionnaireResponseItem'
+export * from './Questionnaire'
+export * from './QuestionnaireResponse'
 export * from './Composition'

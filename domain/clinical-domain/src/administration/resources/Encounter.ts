@@ -1,7 +1,7 @@
 import { Schema } from 'effect'
 import { Coding } from '../../data-types/complex/Coding'
 import { DomainResource } from '../../data-types/base/DomainResource'
-import { Location } from './Location'
+import { Reference } from '../../data-types/special-purpose/Reference'
 
 export const EncounterId = Schema.String.pipe(Schema.brand('EncounterId'))
 
@@ -17,10 +17,19 @@ export const Encounter = Schema.Struct({
   /**
    * Note that internal business rules will determine the appropriate transitions that may occur between statuses (and also classes).
    */
-  status: Schema.String,
-  // ('planned'|'arrived'|'triaged'|'in-progress'|'onleave'|'finished'|'cancelled'|'entered-in-error'|'unknown');
+  status: Schema.Union(
+    Schema.Literal('planned'),
+    Schema.Literal('arrived'),
+    Schema.Literal('triaged'),
+    Schema.Literal('in-progress'),
+    Schema.Literal('onleave'),
+    Schema.Literal('finished'),
+    Schema.Literal('cancelled'),
+    Schema.Literal('entered-in-error'),
+    Schema.Literal('unknown')
+  ),
   location: Schema.optional(
-    Schema.Array(Schema.Struct({ location: Location }))
+    Schema.Array(Schema.Struct({ location: Reference }))
   ),
 })
 

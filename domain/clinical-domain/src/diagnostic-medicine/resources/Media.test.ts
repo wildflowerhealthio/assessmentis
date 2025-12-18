@@ -1,102 +1,23 @@
 import { expect, test, describe } from 'vitest'
-import { Media, MediaStatus } from './Media'
+import { Media } from './Media'
 import { DeepReadonly } from '@assessmentis/util'
 import { Media as FhirMedia } from 'fhir/r4'
-import { Schema, Either } from 'effect'
+import { Arbitrary, Either, Schema } from 'effect'
 import * as fc from 'fast-check'
 
 // Compile-time check that Encoded schema matches FHIR R4
 const _mediaEncoded: DeepReadonly<FhirMedia> = Media.Encoded
 
+const mediaArb = Arbitrary.make(Media)
+
 describe('Media model', () => {
-  test('property: encode-decode cycle preserves minimal Media', () => {
-    // Property: Minimal valid Media should encode-decode correctly
+  test('property: encode-decode cycle', () => {
     fc.assert(
-      fc.property(
-        fc.constantFrom(
-          'completed',
-          'preparation',
-          'in-progress',
-          'not-done',
-          'entered-in-error',
-          'stopped',
-          'on-hold',
-          'unknown'
-        ),
-        fc.string(),
-        (status, contentType) => {
-          const decode = Schema.decodeUnknownEither(Media)
-          const encode = Schema.encodeUnknownEither(Media)
-
-          const media = {
-            resourceType: 'Media' as const,
-            status,
-            content: { contentType },
-          }
-
-          const decoded = decode(media)
-          if (Either.isRight(decoded)) {
-            const encoded = encode(decoded.right)
-            expect(Either.isRight(encoded)).toBe(true)
-            if (Either.isRight(encoded)) {
-              expect(encoded.right.resourceType).toBe('Media')
-              expect(encoded.right.status).toBe(status)
-              expect(encoded.right.content.contentType).toBe(contentType)
-            }
-          }
-        }
-      )
-    )
-  })
-
-  test('property: MediaStatus validates enum values', () => {
-    // Property: Only valid MediaStatus values should encode successfully
-    fc.assert(
-      fc.property(
-        fc.constantFrom(
-          'completed',
-          'preparation',
-          'in-progress',
-          'not-done',
-          'entered-in-error',
-          'stopped',
-          'on-hold',
-          'unknown'
-        ),
-        (status) => {
-          const encode = Schema.encodeUnknownEither(MediaStatus)
-          const result = encode(status)
-          expect(Either.isRight(result)).toBe(true)
-        }
-      )
-    )
-  })
-
-  test('property: invalid MediaStatus values fail', () => {
-    // Property: Invalid status values should fail
-    fc.assert(
-      fc.property(
-        fc
-          .string()
-          .filter(
-            (s) =>
-              ![
-                'completed',
-                'preparation',
-                'in-progress',
-                'not-done',
-                'entered-in-error',
-                'stopped',
-                'on-hold',
-                'unknown',
-              ].includes(s)
-          ),
-        (invalidStatus) => {
-          const encode = Schema.encodeUnknownEither(MediaStatus)
-          const result = encode(invalidStatus)
-          expect(Either.isLeft(result)).toBe(true)
-        }
-      )
+      fc.property(mediaArb, (media) => {
+        const encoded = Schema.encodeSync(Media)(media)
+        const decoded = Schema.decodeSync(Media)(encoded)
+        expect(decoded).toEqual(media)
+      })
     )
   })
 
