@@ -12,7 +12,7 @@ import {
   NotFoundError,
   UnhandledError,
   ExternalAssertionError,
-} from '@assessmentis/clinical-domain/errors'
+} from '@assessmentis/ontology'
 import { BaseConfig } from '@assessmentis/config-domain/googleFhir'
 import { UnknownException } from 'effect/Cause'
 

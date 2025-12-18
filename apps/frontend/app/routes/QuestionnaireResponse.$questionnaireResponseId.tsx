@@ -1,5 +1,5 @@
 import { Schema, Option, Effect, DateTime } from 'effect'
-import { UnhandledError } from '@assessmentis/clinical-domain/errors'
+import { UnhandledError } from '@assessmentis/ontology'
 import {
   firstItemAnsweredAfter,
   Questionnaire,

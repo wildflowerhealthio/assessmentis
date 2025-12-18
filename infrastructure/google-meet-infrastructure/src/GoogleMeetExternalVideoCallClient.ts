@@ -4,8 +4,8 @@ import {
   ExternalVideoCallRoomId,
   ExternalVideoCallRoomName,
   type RoomCreationParams,
-} from '@assessmentis/clinical-domain/video-calls'
-import { UnhandledError } from '@assessmentis/clinical-domain/errors'
+} from '@assessmentis/video-call-domain'
+import { UnhandledError } from '@assessmentis/ontology'
 
 export const GoogleMeetExternalVideoCallClientLayer = Layer.effect(
   ExternalVideoCallClient,

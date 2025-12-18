@@ -25,7 +25,7 @@ import {
   User,
   UserId,
 } from '@assessmentis/platform-domain'
-import { LoadedResult } from '@assessmentis/util/LoadedResult'
+import { LoadedResult } from '@assessmentis/ontology'
 import { createRuntime } from './RuntimeProvider'
 import { FirebaseApp } from 'firebase/app'
 

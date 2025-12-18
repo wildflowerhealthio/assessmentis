@@ -1,4 +1,4 @@
-import { Context, Data, Effect } from 'effect'
+import { Context, Effect } from 'effect'
 import { Encounter, EncounterId } from '../resources/Encounter'
 
 import {
@@ -6,17 +6,8 @@ import {
   NeedsAuthenticationError,
   NotFoundError,
   UnhandledError,
-} from '../../errors'
+} from '@assessmentis/ontology'
 import { WithId } from '../../data-types/base/Element'
-
-export class EncounterError extends Data.TaggedError('EncounterError')<{
-  message: string
-  cause?: unknown
-}> {}
-
-export class EncounterNotFound extends Data.TaggedError('EncounterNotFound')<{
-  encounterId?: EncounterId
-}> {}
 
 export class EncounterRepository extends Context.Tag('EncounterRepository')<
   EncounterRepository,

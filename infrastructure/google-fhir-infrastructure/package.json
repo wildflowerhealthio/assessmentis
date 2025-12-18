@@ -28,6 +28,7 @@
   "dependencies": {
     "@assessmentis/clinical-domain": "*",
     "@assessmentis/config-domain": "*",
+    "@assessmentis/ontology": "*",
     "effect": "^3.19.8",
     "temporal-polyfill": "^0.3.0"
   }

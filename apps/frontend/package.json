@@ -24,6 +24,8 @@
     "@assessmentis/clinical-domain": "*",
     "@assessmentis/google-fhir-infrastructure": "*",
     "@assessmentis/react-util": "*",
+    "@assessmentis/ontology": "*",
+    "@assessmentis/video-call-domain": "*",
     "@effect/opentelemetry": "^0.59.1",
     "@effect/platform": "^0.93.5",
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",

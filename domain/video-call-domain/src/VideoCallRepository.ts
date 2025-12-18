@@ -1,7 +1,7 @@
 import { Effect, Context } from 'effect'
-import { EncounterId } from '../administration/resources/Encounter'
-import { UnhandledError } from '../errors'
-import { VideoCallRoom } from './models/VideoCallRoom'
+import { EncounterId } from '@assessmentis/clinical-domain/administration'
+import { UnhandledError } from '@assessmentis/ontology'
+import { VideoCallRoom } from './records/VideoCallRoom'
 
 export class VideoCallRepository extends Context.Tag('VideoCallRepository')<
   VideoCallRepository,

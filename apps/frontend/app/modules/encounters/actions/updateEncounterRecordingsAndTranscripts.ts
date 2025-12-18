@@ -1,12 +1,12 @@
 import { Effect } from 'effect'
-import { ExternalVideoCallClient } from '@assessmentis/clinical-domain/video-calls'
+import { ExternalVideoCallClient } from '@assessmentis/video-call-domain'
 import { EncounterRepository } from '@assessmentis/clinical-domain/administration'
 import {
   NeedsAuthenticationError,
   UnhandledError,
   ExternalAssertionError,
   NotFoundError,
-} from '@assessmentis/clinical-domain/errors'
+} from '@assessmentis/ontology'
 import { WithId } from '@assessmentis/clinical-domain/data-types'
 import {
   Encounter,

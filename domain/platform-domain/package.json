@@ -18,7 +18,9 @@
   "dependencies": {
     "effect": "^3.19.9",
     "@assessmentis/google-fhir-infrastructure": "*",
-    "@assessmentis/util": "*"
+    "@assessmentis/util": "*",
+    "@assessmentis/video-call-domain": "*",
+    "@assessmentis/clinical-domain": "*"
   },
   "devDependencies": {
     "@assessmentis/eslint-config": "*",

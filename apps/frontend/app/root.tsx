@@ -15,7 +15,7 @@ import {
   NeedsAuthenticationError,
   NotFoundError,
   UnhandledError,
-} from '@assessmentis/clinical-domain/errors'
+} from '@assessmentis/ontology'
 import * as firebase from 'app/firebase'
 import NavHeader from './components/NavHeader'
 import { RuntimeContextOrErr } from './components/RuntimeContextOrErr'

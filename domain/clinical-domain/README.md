@@ -11,20 +11,19 @@ This is the **core domain package** for Assessment.is, containing all FHIR-based
 - Define FHIR R4 resource types and schemas
 - Provide repository interfaces for data access
 - Model clinical entities (Encounters, Questionnaires, QuestionnaireResponses, etc.)
-- Define domain errors and validation rules
+- Define validation rules for clinical data
 
 ## Project Structure
 
 ```
 src/
 ├── index.ts                   # Main exports
-├── errors.ts                  # Domain-specific errors
-├── general-purpose/           # Base FHIR types (Element, Resource, etc.)
-├── encounters/                # Encounter resource and repository
-├── questionnaires/            # Questionnaire & Response resources
-├── video-calls/               # Video call domain models
-├── compositions/              # FHIR Composition resources
-└── diagnostic-medicine/       # Diagnostic assessment models
+├── administration/            # Encounter resource and repository
+├── content-management/        # Questionnaire & Response resources
+├── data-types/                # Base FHIR types (Element, Resource, etc.)
+├── diagnostic-medicine/       # Diagnostic assessment models
+├── foundation-framework/      # FHIR foundation types
+└── assessmentis/              # Assessment.is specific models
 ```
 
 ## Usage
@@ -65,7 +64,7 @@ Effect.gen(function* () {
 - Encounter
 - Composition
 - General-purpose types (Element, Resource, Reference, etc.)
-- Video call domain models
+- Observation, Media, DiagnosticReport
 
 ## Repository Pattern
 
@@ -95,7 +94,9 @@ Custom extensions follow this pattern:
 
 ## Related Packages
 
+- `@assessmentis/ontology`: Domain errors used in this package
 - `@assessmentis/google-fhir-infrastructure`: Repository implementations
 - `@assessmentis/questionnaire-domain`: Questionnaire templates
 - `@assessmentis/document-domain`: Document generation
+- `@assessmentis/video-call-domain`: Video call models (uses Encounter, Media)
 

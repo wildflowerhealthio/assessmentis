@@ -7,7 +7,7 @@ import {
   setDoc,
   SetOptions,
 } from 'firebase/firestore'
-import { UnhandledError, NotFoundError } from '@assessmentis/clinical-domain'
+import { UnhandledError, NotFoundError } from '@assessmentis/ontology'
 
 /**
  * Effect-based wrapper for Firestore getDoc operation

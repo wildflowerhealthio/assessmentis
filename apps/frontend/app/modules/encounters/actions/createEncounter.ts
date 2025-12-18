@@ -1,5 +1,5 @@
 import { Effect, Schema } from 'effect'
-import { ExternalVideoCallClient } from '@assessmentis/clinical-domain/video-calls'
+import { ExternalVideoCallClient } from '@assessmentis/video-call-domain'
 import {
   QuestionnaireResponse,
   QuestionnaireResponseRepository,
@@ -12,7 +12,7 @@ import {
   NeedsAuthenticationError,
   UnhandledError,
   ExternalAssertionError,
-} from '@assessmentis/clinical-domain/errors'
+} from '@assessmentis/ontology'
 import { Code } from '@assessmentis/clinical-domain/data-types'
 
 export const CreateEncounterArg = Schema.extend(
