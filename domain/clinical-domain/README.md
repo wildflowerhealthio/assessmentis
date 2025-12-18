@@ -99,4 +99,3 @@ Custom extensions follow this pattern:
 - `@assessmentis/questionnaire-domain`: Questionnaire templates
 - `@assessmentis/document-domain`: Document generation
 
-**Note**: This is the **most critical** package in the monorepo. All changes must maintain FHIR R4 compliance and have comprehensive test coverage.
