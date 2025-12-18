@@ -1,7 +1,7 @@
 {
-  "name": "@assessmentis/document-domain",
+  "name": "@assessmentis/questionnaire-entities",
   "version": "0.0.1",
-  "description": "Document types used by Assessment.is",
+  "description": "Common questionnaire entities used by Assessment.is",
   "author": "Ruth Marks",
   "license": "UNLICENSED",
   "type": "module",
@@ -17,16 +17,12 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@assessmentis/util": "*",
-    "@assessmentis/clinical-domain": "*",
-    "@assessmentis/questionnaire-domain": "*",
-    "effect": "^3.19.8"
+    "@assessmentis/clinical-domain": "*"
   },
   "devDependencies": {
     "@assessmentis/eslint-config": "*",
     "@assessmentis/prettier-config": "*",
     "@assessmentis/typescript-config": "*",
-    "@types/fhir": "^0.0.41",
     "fast-check": "^3.19.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.15"

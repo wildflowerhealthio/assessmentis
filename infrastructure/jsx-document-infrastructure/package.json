@@ -21,7 +21,7 @@
     "react-dom": "^19.2.0"
   },
   "dependencies": {
-    "@assessmentis/document-domain": "*"
+    "@assessmentis/document-templates": "*"
   },
   "devDependencies": {
     "@assessmentis/eslint-config": "*",

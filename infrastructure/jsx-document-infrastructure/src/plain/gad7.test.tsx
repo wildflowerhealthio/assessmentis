@@ -2,7 +2,7 @@ import * as fc from 'fast-check'
 import React from 'react'
 import { describe, expect, it } from 'vitest'
 
-import type { Gad7ReportProps } from '@assessmentis/document-domain'
+import type { Gad7ReportProps } from '@assessmentis/document-templates'
 
 import PlainGad7Report from './gad7'
 

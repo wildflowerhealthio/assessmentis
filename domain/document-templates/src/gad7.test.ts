@@ -7,7 +7,7 @@ import {
   QuestionnaireResponseStatus,
   type QuestionnaireResponse,
 } from '@assessmentis/clinical-domain/content-management'
-import { gad7 as gad7Questionnaire } from '@assessmentis/questionnaire-domain'
+import { gad7 as gad7Questionnaire } from '@assessmentis/questionnaire-entities'
 
 import { prepareGad7ReportData } from './gad7'
 

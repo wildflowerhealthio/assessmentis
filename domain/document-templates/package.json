@@ -1,7 +1,7 @@
 {
-  "name": "@assessmentis/questionnaire-domain",
+  "name": "@assessmentis/document-templates",
   "version": "0.0.1",
-  "description": "Common questionnaire types used by Assessment.is",
+  "description": "Document templates used by Assessment.is",
   "author": "Ruth Marks",
   "license": "UNLICENSED",
   "type": "module",
@@ -17,12 +17,16 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@assessmentis/clinical-domain": "*"
+    "@assessmentis/util": "*",
+    "@assessmentis/clinical-domain": "*",
+    "@assessmentis/questionnaire-entities": "*",
+    "effect": "^3.19.8"
   },
   "devDependencies": {
     "@assessmentis/eslint-config": "*",
     "@assessmentis/prettier-config": "*",
     "@assessmentis/typescript-config": "*",
+    "@types/fhir": "^0.0.41",
     "fast-check": "^3.19.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.15"

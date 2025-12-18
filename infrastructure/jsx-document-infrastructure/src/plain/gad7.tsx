@@ -1,4 +1,4 @@
-import type { Gad7ReportProps } from '@assessmentis/document-domain'
+import type { Gad7ReportProps } from '@assessmentis/document-templates'
 
 const PlainGad7Report = (data: Gad7ReportProps) => (
   <>

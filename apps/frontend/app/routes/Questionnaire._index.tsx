@@ -5,7 +5,7 @@ import {
   QuestionnaireId,
   QuestionnaireRepository,
 } from '@assessmentis/clinical-domain/content-management'
-import { questionnaireTemplates } from '@assessmentis/questionnaire-domain'
+import { questionnaireTemplates } from '@assessmentis/questionnaire-entities'
 import { useRuntimeContext } from 'app/clientRuntime'
 import type { Route } from './+types/Questionnaire._index'
 import { useCollection } from '@assessmentis/react-util'
