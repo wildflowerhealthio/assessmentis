@@ -27,7 +27,14 @@ describe('VideoCallRoom Models', () => {
       fc.assert(
         fc.property(
           fc.oneof(
-            fc.string().filter((s) => !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)),
+            fc
+              .string()
+              .filter(
+                (s) =>
+                  !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+                    s
+                  )
+              ),
             fc.integer(),
             fc.boolean()
           ),
@@ -124,7 +131,13 @@ describe('VideoCallRoom Models', () => {
           fc.string(),
           fc.string(),
           fc.webUrl(),
-          (videoCallRoomId, encounterId, externalRoomId, externalRoomName, url) => {
+          (
+            videoCallRoomId,
+            encounterId,
+            externalRoomId,
+            externalRoomName,
+            url
+          ) => {
             const room = {
               videoCallRoomId,
               encounterId,
@@ -169,7 +182,13 @@ describe('VideoCallRoom Models', () => {
           fc.string(),
           fc.string(),
           fc.webUrl(),
-          (videoCallRoomId, encounterId, externalRoomId, externalRoomName, url) => {
+          (
+            videoCallRoomId,
+            encounterId,
+            externalRoomId,
+            externalRoomName,
+            url
+          ) => {
             const room = {
               videoCallRoomId,
               encounterId,

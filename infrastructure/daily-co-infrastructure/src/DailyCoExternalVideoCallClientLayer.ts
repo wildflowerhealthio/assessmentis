@@ -9,10 +9,7 @@ import {
   ExternalVideoCallRoom,
 } from '@assessmentis/video-call-domain'
 import { Media } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import {
-  UnhandledError,
-  ExternalAssertionError,
-} from '@assessmentis/ontology'
+import { UnhandledError, ExternalAssertionError } from '@assessmentis/ontology'
 import { DailyCoProxyConfig } from '@assessmentis/config-domain/dailyCo'
 
 const ApiDailyCoRecordingSchema = Schema.Struct({

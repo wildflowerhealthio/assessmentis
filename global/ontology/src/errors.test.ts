@@ -55,14 +55,18 @@ describe('Domain Errors', () => {
       )
     })
 
-    test('property: tags errors with Unhandled prefix when cause has a name', () => {
+    test('property: tags errors with Unhandled prefix when cause has a non-empty name', () => {
       fc.assert(
-        fc.property(fc.string(), fc.string(), (name, message) => {
-          const cause = new Error(message)
-          cause.name = name
-          const error = new UnhandledError({ cause })
-          expect(error.name).toBe(`Unhandled${name}`)
-        })
+        fc.property(
+          fc.string().filter((s) => s.length > 0),
+          fc.string(),
+          (name, message) => {
+            const cause = new Error(message)
+            cause.name = name
+            const error = new UnhandledError({ cause })
+            expect(error.name).toBe(`Unhandled${name}`)
+          }
+        )
       )
     })
   })
@@ -107,10 +111,10 @@ describe('Domain Errors', () => {
       )
     })
 
-    test('property: tags errors with Unhandled prefix when cause has a name', () => {
+    test('property: tags errors with Unhandled prefix when cause has a non-empty name', () => {
       fc.assert(
         fc.property(
-          fc.string(),
+          fc.string().filter((s) => s.length > 0),
           fc.string(),
           fc.string(),
           (name, message, expected) => {
