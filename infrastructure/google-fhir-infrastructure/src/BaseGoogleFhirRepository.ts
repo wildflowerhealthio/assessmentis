@@ -3,10 +3,10 @@ import {
   Element,
   BaseClinicalDataRepository,
   WithId,
-  Bundle,
   hasId,
   assertId,
 } from '@assessmentis/clinical-domain/general-purpose'
+import { Bundle } from '@assessmentis/clinical-domain/foundation-framework'
 import {
   NeedsAuthenticationError,
   NotFoundError,
