@@ -1,21 +1,22 @@
 import { Schema, Option, Effect, DateTime } from 'effect'
+import { UnhandledError } from '@assessmentis/clinical-domain/errors'
 import {
   firstItemAnsweredAfter,
   Questionnaire,
   QuestionnaireItemLink,
   QuestionnaireResponse,
-} from '@assessmentis/clinical-domain/questionnaires'
-import { UnhandledError } from '@assessmentis/clinical-domain/errors'
-import { QuestionnaireId } from '@assessmentis/clinical-domain/questionnaires'
-import { QuestionnaireResponseId } from '@assessmentis/clinical-domain/questionnaires'
-import { QuestionnaireRepository } from '@assessmentis/clinical-domain/questionnaires'
-import { QuestionnaireResponseRepository } from '@assessmentis/clinical-domain/questionnaires'
+  QuestionnaireId,
+  QuestionnaireResponseId,
+  QuestionnaireRepository,
+  QuestionnaireResponseRepository,
+} from '@assessmentis/clinical-domain/content-management'
+
 import { getRuntime, useRuntimeContext } from 'app/clientRuntime'
 import type { Route } from './+types/QuestionnaireResponse.$questionnaireResponseId'
 import QuestionnaireForm from 'app/modules/questionnaire/features/QuestionnaireForm/QuestionnaireForm'
 import { updateEncounterRecordingsAndTranscripts } from '../modules/encounters/actions/updateEncounterRecordingsAndTranscripts'
 import { getEncounterRecordings } from '../modules/encounters/actions/getEncounterRecordings'
-import { EncounterId } from '@assessmentis/clinical-domain/encounters'
+import { EncounterId } from '@assessmentis/clinical-domain/administration'
 import {
   Media,
   MediaId,

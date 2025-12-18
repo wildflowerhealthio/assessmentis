@@ -7,7 +7,7 @@ import {
   questionnaireItemUiControlCodeExtension,
   questionnaireItemUiDisplayLevelExtension,
   Questionnaire,
-} from '@assessmentis/clinical-domain/questionnaires'
+} from '@assessmentis/clinical-domain/content-management'
 
 const sluggify = (s: string): QuestionnaireItemLink =>
   QuestionnaireItemLink.make(

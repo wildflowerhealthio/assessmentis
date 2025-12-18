@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
-import { Coding } from '../../general-purpose/Coding'
-import { DomainResource } from '../../foundation-framework/resources/DomainResource'
+import { Coding } from '../../data-types/complex/Coding'
+import { DomainResource } from '../../data-types/base/DomainResource'
 import { Location } from './Location'
 
 export const EncounterId = Schema.String.pipe(Schema.brand('EncounterId'))

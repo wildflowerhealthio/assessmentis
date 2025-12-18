@@ -6,8 +6,8 @@ import {
   Media,
   MediaId,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { EncounterId } from '@assessmentis/clinical-domain/encounters'
-import { WithId } from '@assessmentis/clinical-domain/general-purpose'
+import { EncounterId } from '@assessmentis/clinical-domain/administration'
+import { WithId } from '@assessmentis/clinical-domain/data-types'
 import { UnhandledError } from '@assessmentis/clinical-domain/errors'
 
 describe('getEncounterRecordings', () => {

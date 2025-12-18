@@ -5,7 +5,7 @@ import {
   QuestionnaireRepository,
   QuestionnaireResponseRepository,
   QuestionnaireResponseId,
-} from '@assessmentis/clinical-domain/questionnaires'
+} from '@assessmentis/clinical-domain/content-management'
 import { getRuntime, useRuntimeContext } from 'app/clientRuntime'
 import type { Route } from './+types/QuestionnaireResponse._index'
 import QuestionnaireResponseList from './QuestionnaireResponse/QuestionnaireResponseList'

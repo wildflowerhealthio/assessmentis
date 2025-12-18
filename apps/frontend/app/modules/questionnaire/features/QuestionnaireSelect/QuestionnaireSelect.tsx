@@ -1,7 +1,7 @@
 'use client'
 
 import { type DetailedHTMLProps, type SelectHTMLAttributes } from 'react'
-import { Questionnaire } from '@assessmentis/clinical-domain/questionnaires'
+import { Questionnaire } from '@assessmentis/clinical-domain/content-management'
 
 interface IProps extends DetailedHTMLProps<
   SelectHTMLAttributes<HTMLSelectElement>,

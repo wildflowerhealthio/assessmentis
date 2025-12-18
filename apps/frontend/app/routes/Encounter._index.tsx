@@ -3,9 +3,9 @@ import {
   Encounter,
   EncounterId,
   EncounterRepository,
-} from '@assessmentis/clinical-domain/encounters'
-import { QuestionnaireId } from '@assessmentis/clinical-domain/questionnaires'
-import { QuestionnaireRepository } from '@assessmentis/clinical-domain/questionnaires'
+} from '@assessmentis/clinical-domain/administration'
+import { QuestionnaireId } from '@assessmentis/clinical-domain/content-management'
+import { QuestionnaireRepository } from '@assessmentis/clinical-domain/content-management'
 import { createEncounter } from 'app/modules/encounters/actions/createEncounter'
 import QuestionnaireSelect from 'app/modules/questionnaire/features/QuestionnaireSelect/QuestionnaireSelect'
 import { Form, useNavigate } from 'react-router'

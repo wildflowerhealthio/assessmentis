@@ -1,14 +1,14 @@
 import * as GoogleFhir from '@assessmentis/google-fhir-infrastructure'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
-import { QuestionnaireRepository } from '@assessmentis/clinical-domain/questionnaires'
 import {
-  EncounterRepository,
-  ExternalVideoCallClient,
-  MediaRepository,
+  QuestionnaireRepository,
   QuestionnaireResponseRepository,
-  UnhandledError,
-} from '@assessmentis/clinical-domain'
+} from '@assessmentis/clinical-domain/content-management'
+import { EncounterRepository } from '@assessmentis/clinical-domain/administration'
+import { MediaRepository } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import { ExternalVideoCallClient } from '@assessmentis/clinical-domain/video-calls'
+import { UnhandledError } from '@assessmentis/clinical-domain/errors'
 import { WebSdk } from '@effect/opentelemetry'
 import { FetchHttpClient } from '@effect/platform'
 import { Effect, Layer, Match } from 'effect'

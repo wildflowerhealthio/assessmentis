@@ -2,7 +2,7 @@ import { Schema } from 'effect'
 import * as fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
 
-import { Questionnaire } from '@assessmentis/clinical-domain'
+import { Questionnaire } from '@assessmentis/clinical-domain/content-management'
 
 import { questionnaireTemplates } from './index'
 

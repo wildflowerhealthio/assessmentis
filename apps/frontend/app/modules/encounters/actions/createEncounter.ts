@@ -3,17 +3,17 @@ import { ExternalVideoCallClient } from '@assessmentis/clinical-domain/video-cal
 import {
   QuestionnaireResponse,
   QuestionnaireResponseRepository,
-} from '@assessmentis/clinical-domain/questionnaires'
+} from '@assessmentis/clinical-domain/content-management'
 import {
   EncounterRepository,
   Encounter,
-} from '@assessmentis/clinical-domain/encounters'
+} from '@assessmentis/clinical-domain/administration'
 import {
   NeedsAuthenticationError,
   UnhandledError,
   ExternalAssertionError,
 } from '@assessmentis/clinical-domain/errors'
-import { Code } from '@assessmentis/clinical-domain/general-purpose'
+import { Code } from '@assessmentis/clinical-domain/data-types'
 
 export const CreateEncounterArg = Schema.extend(
   Schema.partial(Encounter),

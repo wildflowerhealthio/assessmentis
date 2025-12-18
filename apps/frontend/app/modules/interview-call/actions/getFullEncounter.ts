@@ -4,7 +4,7 @@ import {
   EncounterId,
   EncounterNotFound,
   EncounterRepository,
-} from '@assessmentis/clinical-domain/encounters'
+} from '@assessmentis/clinical-domain/administration'
 import {
   NeedsAuthenticationError,
   UnhandledError,
@@ -16,7 +16,7 @@ import {
   QuestionnaireRepository,
   QuestionnaireResponse,
   QuestionnaireResponseRepository,
-} from '@assessmentis/clinical-domain/questionnaires'
+} from '@assessmentis/clinical-domain/content-management'
 
 export const FullEncounter = Schema.Struct({
   ...Encounter.fields,

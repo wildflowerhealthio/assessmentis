@@ -4,7 +4,7 @@ import {
   Questionnaire,
   QuestionnaireId,
   QuestionnaireRepository,
-} from '@assessmentis/clinical-domain/questionnaires'
+} from '@assessmentis/clinical-domain/content-management'
 import { questionnaireTemplates } from '@assessmentis/questionnaire-domain'
 import { useRuntimeContext } from 'app/clientRuntime'
 import type { Route } from './+types/Questionnaire._index'

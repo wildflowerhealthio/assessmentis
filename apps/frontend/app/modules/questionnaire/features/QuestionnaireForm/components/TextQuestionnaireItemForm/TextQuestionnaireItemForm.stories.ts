@@ -3,11 +3,11 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { Arbitrary, FastCheck } from 'effect'
 import { action } from 'storybook/actions'
-import { Code } from '@assessmentis/clinical-domain/general-purpose'
+import { Code } from '@assessmentis/clinical-domain/data-types'
 import {
   QuestionnaireItem,
   QuestionnaireItemType,
-} from '@assessmentis/clinical-domain/questionnaires'
+} from '@assessmentis/clinical-domain/content-management'
 import TextQuestionnaireItemForm from 'app/modules/questionnaire/features/QuestionnaireForm/components/TextQuestionnaireItemForm/TextQuestionnaireItemForm'
 
 //👇 This default export determines where your story goes in the story list

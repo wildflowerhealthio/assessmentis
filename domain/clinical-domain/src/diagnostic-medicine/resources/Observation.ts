@@ -1,13 +1,13 @@
 import { Schema } from 'effect'
-import { DomainResource } from '../../foundation-framework/resources/DomainResource'
-import { Identifier } from '../../general-purpose/Identifier'
-import { Reference } from '../../general-purpose/Reference'
-import { CodeableConcept } from '../../general-purpose/CodeableConcept'
-import { Annotation } from '../../general-purpose/Annotation'
-import { Period } from '../../general-purpose/Period'
-import { ValueElement } from '../../general-purpose/ValueElement'
-import { SimpleQuantity } from '../models/SimpleQuantity'
-import { Range } from '../../general-purpose/Range'
+import { DomainResource } from '../../data-types/base/DomainResource'
+import { Identifier } from '../../data-types/complex/Identifier'
+import { Reference } from '../../data-types/special-purpose/Reference'
+import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
+import { Annotation } from '../../data-types/complex/Annotation'
+import { Period } from '../../data-types/complex/Period'
+import { ValueElement } from '../../data-types/primitive/ValueElement'
+import { SimpleQuantity } from '../../data-types/complex/SimpleQuantity'
+import { Range } from '../../data-types/complex/Range'
 
 export const ObservationId = Schema.String.pipe(Schema.brand('ObservationId'))
 

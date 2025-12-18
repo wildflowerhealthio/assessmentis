@@ -1,17 +1,17 @@
 import { Effect } from 'effect'
 import { ExternalVideoCallClient } from '@assessmentis/clinical-domain/video-calls'
-import { EncounterRepository } from '@assessmentis/clinical-domain/encounters'
+import { EncounterRepository } from '@assessmentis/clinical-domain/administration'
 import {
   NeedsAuthenticationError,
   UnhandledError,
   ExternalAssertionError,
   NotFoundError,
 } from '@assessmentis/clinical-domain/errors'
-import { WithId } from '@assessmentis/clinical-domain/general-purpose'
+import { WithId } from '@assessmentis/clinical-domain/data-types'
 import {
   Encounter,
   EncounterId,
-} from '@assessmentis/clinical-domain/encounters'
+} from '@assessmentis/clinical-domain/administration'
 import {
   Media,
   MediaRepository,

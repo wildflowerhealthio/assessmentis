@@ -5,8 +5,8 @@ import {
   ExternalAssertionError,
   NotFoundError,
 } from '@assessmentis/clinical-domain/errors'
-import { WithId } from '@assessmentis/clinical-domain/general-purpose'
-import { EncounterId } from '@assessmentis/clinical-domain/encounters'
+import { WithId } from '@assessmentis/clinical-domain/data-types'
+import { EncounterId } from '@assessmentis/clinical-domain/administration'
 import {
   Media,
   MediaRepository,

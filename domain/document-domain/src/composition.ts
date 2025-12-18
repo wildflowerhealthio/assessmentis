@@ -6,14 +6,12 @@ import {
   Narrative,
   Period,
   Reference,
-} from '@assessmentis/clinical-domain'
-import {
   BackboneElement,
   CodeLiteral,
   DomainResource,
   Element,
   Meta,
-} from '@assessmentis/clinical-domain/general-purpose'
+} from '@assessmentis/clinical-domain/data-types'
 
 const SectionId = Schema.String.pipe(Schema.brand('SectionId'))
 

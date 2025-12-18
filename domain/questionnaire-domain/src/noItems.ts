@@ -1,4 +1,4 @@
-import { Questionnaire } from '@assessmentis/clinical-domain'
+import { Questionnaire } from '@assessmentis/clinical-domain/content-management'
 
 const title = 'The Questionnaire With No Items'
 

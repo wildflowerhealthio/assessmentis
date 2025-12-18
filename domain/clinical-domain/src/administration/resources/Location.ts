@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { Element } from '../../general-purpose'
+import { Element } from '../../data-types/base/Element'
 
 export const LocationId = Schema.String.pipe(Schema.brand('LocationId'))
 /**

@@ -1,7 +1,7 @@
 import { Schema } from 'effect'
-import { BackboneElement } from '../../general-purpose/BackboneElement'
-import { Identifier } from '../../general-purpose/Identifier'
-import { Resource } from './Resource'
+import { BackboneElement } from '../../data-types/base/BackboneElement'
+import { Identifier } from '../../data-types/complex/Identifier'
+import { Resource } from '../../data-types/base/Resource'
 
 const BundleId = Schema.String.pipe(Schema.brand('BundleId'))
 

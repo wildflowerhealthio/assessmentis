@@ -1,11 +1,11 @@
 import { Effect, Schema, Option, Schedule } from 'effect'
 import {
   Element,
-  BaseClinicalDataRepository,
   WithId,
   hasId,
   assertId,
-} from '@assessmentis/clinical-domain/general-purpose'
+} from '@assessmentis/clinical-domain/data-types'
+import { BaseClinicalDataRepository } from '@assessmentis/clinical-domain'
 import { Bundle } from '@assessmentis/clinical-domain/foundation-framework'
 import {
   NeedsAuthenticationError,
