@@ -1,4 +1,4 @@
-name: Lint All Products
+name: Lint All Projects
 
 on: pull_request
 
@@ -27,27 +27,106 @@ jobs:
           NODE_ENV=development npm ci --include=dev
           npm ci --workspaces
 
-      - name: ESLint with reviewdog
+      - &reviewdog
+        name: Lint apps/frontend
         uses: reviewdog/action-eslint@v1
-        with:
+        with: &reviewdogWith
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          workdir: |
-            apps/frontend
-            apps/functions
-            domain/clinical-domain
-            domain/config-domain
-            domain/platform-domain
-            domain/questionnaire-domain
-            domain/document-domain
-            domain/video-call-domain
-            global/react-util
-            global/util
-            global/ontology
-            infrastructure/daily-co-infrastructure
-            infrastructure/firebase-web-infrastructure
-            infrastructure/google-fhir-infrastructure
-            infrastructure/google-meet-infrastructure
-            infrastructure/jsx-document-infrastructure
+          workdir: apps/frontend
           reporter: github-pr-review
           fail_level: error
           filter_mode: diff_context
+      - name: Lint apps/functions
+        uses: reviewdog/action-eslint@v1
+        with:
+          <<: *reviewdogWith
+          workdir: apps/functions
+
+      - name: Lint domain/clinical-domain
+        uses: reviewdog/action-eslint@v1
+        with:
+          <<: *reviewdogWith
+          workdir: domain/clinical-domain
+
+      - name: Lint domain/platform-domain
+        uses: reviewdog/action-eslint@v1
+        with:
+          <<: *reviewdogWith
+          workdir: domain/platform-domain
+
+      - name: Lint domain/questionnaire-domain
+        uses: reviewdog/action-eslint@v1
+        with:
+          <<: *reviewdogWith
+          workdir: domain/questionnaire-domain
+
+      - name: Lint domain/video-call-domain
+        uses: reviewdog/action-eslint@v1
+        with:
+          <<: *reviewdogWith
+          workdir: domain/video-call-domain
+
+      - name: Lint domain/document-domain
+        uses: reviewdog/action-eslint@v1
+        with:
+          <<: *reviewdogWith
+          workdir: domain/document-domain
+
+      - name: Lint global/react-util
+        uses: reviewdog/action-eslint@v1
+        with:
+          <<: *reviewdogWith
+          workdir: global/react-util
+
+      - name: Lint global/util
+        uses: reviewdog/action-eslint@v1
+        with:
+          <<: *reviewdogWith
+          workdir: global/util
+
+      - name: Lint global/ontology
+        uses: reviewdog/action-eslint@v1
+        with:
+          <<: *reviewdogWith
+          workdir: global/ontology
+
+      - name: Lint infrastructure/daily-co-infrastructure
+        uses: reviewdog/action-eslint@v1
+        with:
+          <<: *reviewdogWith
+          workdir: infrastructure/daily-co-infrastructure
+
+      - name: Lint infrastructure/firebase-web-infrastructure
+        uses: reviewdog/action-eslint@v1
+        with:
+          <<: *reviewdogWith
+          workdir: infrastructure/firebase-web-infrastructure
+
+      - name: Lint infrastructure/google-fhir-infrastructure
+        uses: reviewdog/action-eslint@v1
+        with:
+          <<: *reviewdogWith
+          workdir: infrastructure/google-fhir-infrastructure
+
+      - name: Lint infrastructure/google-meet-infrastructure
+        uses: reviewdog/action-eslint@v1
+        with:
+          <<: *reviewdogWith
+          workdir: infrastructure/google-meet-infrastructure
+
+      - name: Lint infrastructure/jsx-document-infrastructure
+        uses: reviewdog/action-eslint@v1
+        with:
+          <<: *reviewdogWith
+          workdir: infrastructure/jsx-document-infrastructure
+
+# -
+# -
+# -
+# -
+# -
+# -
+# -
+# -
+# -
+# -
