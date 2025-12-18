@@ -6,6 +6,8 @@ import { CodeableConcept } from '../../general-purpose/CodeableConcept'
 import { Annotation } from '../../general-purpose/Annotation'
 import { Period } from '../../general-purpose/Period'
 import { ValueElement } from '../../general-purpose/ValueElement'
+import { SimpleQuantity } from './SimpleQuantity'
+import { Range } from '../../general-purpose/Range'
 
 export const ObservationId = Schema.String.pipe(Schema.brand('ObservationId'))
 
@@ -78,7 +80,6 @@ const observationFields = {
    */
   effectiveDateTime: Schema.optional(Schema.DateTimeUtc),
   effectivePeriod: Schema.optional(Period),
-  effectiveTiming: Schema.optional(Schema.Unknown),
   effectiveInstant: Schema.optional(Schema.DateTimeUtc),
   /**
    * The date and time this version of the observation was made available to providers, typically after the results have been reviewed and verified.
@@ -125,11 +126,11 @@ const observationFields = {
         /**
          * The value of the low bound of the reference range. The low bound of the reference range endpoint is inclusive of the value (e.g. reference range is >=5 - <=9). If the low bound is omitted, it is assumed to be meaningless (e.g. reference range is <=2.3).
          */
-        low: Schema.optional(Schema.Unknown),
+        low: Schema.optional(SimpleQuantity),
         /**
          * The value of the high bound of the reference range. The high bound of the reference range endpoint is inclusive of the value (e.g. reference range is >=5 - <=9). If the high bound is omitted, it is assumed to be meaningless (e.g. reference range is >= 2.3).
          */
-        high: Schema.optional(Schema.Unknown),
+        high: Schema.optional(SimpleQuantity),
         /**
          * Codes to indicate what part of the targeted reference population it applies to. For example, the normal or therapeutic range.
          */
@@ -141,7 +142,7 @@ const observationFields = {
         /**
          * The age at which this reference range is applicable. This is a neonatal age (e.g. number of weeks at term) if the meaning says so.
          */
-        age: Schema.optional(Schema.Unknown),
+        age: Schema.optional(Range),
         /**
          * Text based reference range in an observation which may be used when a quantitative range is not appropriate for an observation. An example would be a reference value of "Negative" or a list or table of "normals".
          */
@@ -182,11 +183,11 @@ const observationFields = {
           referenceRange: Schema.optional(
             Schema.Array(
               Schema.Struct({
-                low: Schema.optional(Schema.Unknown),
-                high: Schema.optional(Schema.Unknown),
+                low: Schema.optional(SimpleQuantity),
+                high: Schema.optional(SimpleQuantity),
                 type: Schema.optional(CodeableConcept),
                 appliesTo: Schema.optional(Schema.Array(CodeableConcept)),
-                age: Schema.optional(Schema.Unknown),
+                age: Schema.optional(Range),
                 text: Schema.optional(Schema.String),
               })
             )
