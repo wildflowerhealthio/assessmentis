@@ -1,9 +1,9 @@
 import { Effect, Schema } from 'effect'
 import {
-  Coding,
   QuestionnaireResponseItem,
   type QuestionnaireItem,
-} from '@assessmentis/clinical-domain'
+} from '@assessmentis/clinical-domain/content-management'
+import { Coding } from '@assessmentis/clinical-domain/data-types'
 
 export const ScoringTable = Schema.Struct({
   dataHeaders: Schema.Array(Schema.String),

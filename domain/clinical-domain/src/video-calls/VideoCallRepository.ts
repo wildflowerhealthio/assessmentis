@@ -1,5 +1,5 @@
 import { Effect, Context } from 'effect'
-import { EncounterId } from '../encounters/models/Encounter'
+import { EncounterId } from '../administration/resources/Encounter'
 import { UnhandledError } from '../errors'
 import { VideoCallRoom } from './models/VideoCallRoom'
 

@@ -4,13 +4,13 @@ import { CurrentUserIdError, UserId } from './loadedValues/UserId'
 import { type CurrentUserError, type User } from './loadedValues/User'
 import { LoadedResultStream } from '@assessmentis/util/LoadedResult'
 import { CurrentTimeZone } from 'effect/DateTime'
+import { ExternalVideoCallClient } from '@assessmentis/clinical-domain/video-calls'
 import {
-  ExternalVideoCallClient,
   QuestionnaireRepository,
   QuestionnaireResponseRepository,
-  EncounterRepository,
-  MediaRepository,
-} from '@assessmentis/clinical-domain'
+} from '@assessmentis/clinical-domain/content-management'
+import { EncounterRepository } from '@assessmentis/clinical-domain/administration'
+import { MediaRepository } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { HttpClient } from '@effect/platform'
 import { Org, OrgError } from './loadedValues/Org'
 

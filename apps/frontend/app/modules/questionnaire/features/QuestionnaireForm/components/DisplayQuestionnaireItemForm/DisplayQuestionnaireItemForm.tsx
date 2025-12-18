@@ -3,7 +3,7 @@ import {
   QuestionnaireItem,
   QuestionnaireItemUIControlCode,
   QuestionnaireItemUiDisplayLevel,
-} from '@assessmentis/clinical-domain/questionnaires'
+} from '@assessmentis/clinical-domain/content-management'
 import { cn } from '@assessmentis/react-util'
 import classes from './DisplayQuestionnaireItemForm.module.css'
 

@@ -8,11 +8,11 @@
   "prettier": "@assessmentis/prettier-config",
   "exports": {
     ".": "./src/index.ts",
-    "./compositions": "./src/compositions/index.ts",
+    "./administration": "./src/administration/index.ts",
+    "./content-management": "./src/content-management/index.ts",
+    "./data-types": "./src/data-types/index.ts",
     "./diagnostic-medicine": "./src/diagnostic-medicine/index.ts",
-    "./encounters": "./src/encounters/index.ts",
-    "./general-purpose": "./src/general-purpose/index.ts",
-    "./questionnaires": "./src/questionnaires/index.ts",
+    "./foundation-framework": "./src/foundation-framework/index.ts",
     "./video-calls": "./src/video-calls/index.ts",
     "./errors": "./src/errors.ts"
   },

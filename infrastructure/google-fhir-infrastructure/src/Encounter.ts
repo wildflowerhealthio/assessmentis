@@ -3,7 +3,7 @@ import {
   EncounterRepository,
   Encounter,
   EncounterId,
-} from '@assessmentis/clinical-domain'
+} from '@assessmentis/clinical-domain/administration'
 import { EncounterConfig } from '@assessmentis/config-domain/googleFhir'
 import { BaseGoogleFhirRepository } from './BaseGoogleFhirRepository'
 

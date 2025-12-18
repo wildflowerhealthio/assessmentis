@@ -1,5 +1,5 @@
 import { Match, Schema } from 'effect'
-import { EncounterId } from '@assessmentis/clinical-domain/encounters'
+import { EncounterId } from '@assessmentis/clinical-domain/administration'
 import { getFullEncounter } from 'app/modules/interview-call/actions/getFullEncounter'
 import InterviewCall from 'app/modules/interview-call/features/InterviewCall/InterviewCall'
 import type { Route } from './+types/Encounter.$encounterId'

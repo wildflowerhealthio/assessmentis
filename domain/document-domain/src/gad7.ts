@@ -1,5 +1,6 @@
 import { Effect, Schema } from 'effect'
-import { Code, QuestionnaireResponse } from '@assessmentis/clinical-domain'
+import { Code } from '@assessmentis/clinical-domain/data-types'
+import { QuestionnaireResponse } from '@assessmentis/clinical-domain/content-management'
 import { gad7 } from '@assessmentis/questionnaire-domain'
 import { makeScoringTable, ScoringTable } from './utility/scoringTable'
 

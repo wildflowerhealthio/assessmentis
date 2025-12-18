@@ -7,11 +7,11 @@ import {
   QuestionnaireResponse,
   QuestionnaireResponseItem,
   QuestionnaireResponseRepository,
-} from '@assessmentis/clinical-domain/questionnaires'
+} from '@assessmentis/clinical-domain/content-management'
 import QuestionnaireItemForm from './components/QuestionnaireItemForm/QuestionnaireItemForm'
 import { useRuntimeContext } from 'app/clientRuntime'
 import { Effect } from 'effect'
-import { hasId } from '@assessmentis/clinical-domain/general-purpose'
+import { hasId } from '@assessmentis/clinical-domain/data-types'
 
 type IProps = {
   questionnaire: Questionnaire

@@ -6,7 +6,7 @@ import { action } from 'storybook/actions'
 import {
   QuestionnaireItemType,
   QuestionnaireItem,
-} from '@assessmentis/clinical-domain/questionnaires'
+} from '@assessmentis/clinical-domain/content-management'
 import RadioQuestionnaireItemForm, {
   RadioQuestionnaireItemFormGroup,
 } from 'app/modules/questionnaire/features/QuestionnaireForm/components/RadioQuestionnaireItemForm/RadioQuestionnaireItemForm'

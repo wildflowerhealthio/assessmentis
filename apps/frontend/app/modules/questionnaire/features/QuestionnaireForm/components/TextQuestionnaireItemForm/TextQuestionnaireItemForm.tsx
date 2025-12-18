@@ -7,7 +7,7 @@ import {
   QuestionnaireItemUIControlCode,
   QuestionnaireResponseItem,
   withAnsweredAt,
-} from '@assessmentis/clinical-domain/questionnaires'
+} from '@assessmentis/clinical-domain/content-management'
 import { cn } from '@assessmentis/react-util'
 import { DateTime } from 'effect'
 import { useRuntimeContext } from 'app/clientRuntime'

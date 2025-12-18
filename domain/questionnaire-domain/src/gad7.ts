@@ -1,4 +1,4 @@
-import { Questionnaire } from '@assessmentis/clinical-domain'
+import { Questionnaire } from '@assessmentis/clinical-domain/content-management'
 import { Schema } from 'effect'
 
 export const questionnaire: Questionnaire = Schema.decodeSync(Questionnaire)({

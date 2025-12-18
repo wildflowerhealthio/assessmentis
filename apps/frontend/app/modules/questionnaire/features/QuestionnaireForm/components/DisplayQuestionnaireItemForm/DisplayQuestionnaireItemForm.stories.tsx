@@ -5,7 +5,7 @@ import { Arbitrary, FastCheck } from 'effect'
 import {
   QuestionnaireItemType,
   QuestionnaireItem,
-} from '@assessmentis/clinical-domain/questionnaires'
+} from '@assessmentis/clinical-domain/content-management'
 import DisplayQuestionnaireItemForm from 'app/modules/questionnaire/features/QuestionnaireForm/components/DisplayQuestionnaireItemForm/DisplayQuestionnaireItemForm'
 
 //👇 This default export determines where your story goes in the story list

@@ -3,7 +3,7 @@
 import {
   Questionnaire,
   QuestionnaireId,
-} from '@assessmentis/clinical-domain/questionnaires'
+} from '@assessmentis/clinical-domain/content-management'
 
 export const QuestionnairesList = ({
   questionnaires,

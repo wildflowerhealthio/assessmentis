@@ -3,7 +3,7 @@ import {
   QuestionnaireResponse,
   QuestionnaireResponseRepository,
   QuestionnaireResponseId,
-} from '@assessmentis/clinical-domain/questionnaires'
+} from '@assessmentis/clinical-domain/content-management'
 import { QuestionnaireResponseConfig } from '@assessmentis/config-domain/googleFhir'
 import { BaseGoogleFhirRepository } from './BaseGoogleFhirRepository'
 

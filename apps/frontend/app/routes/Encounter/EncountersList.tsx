@@ -1,7 +1,7 @@
 import {
   Encounter,
   type EncounterId,
-} from '@assessmentis/clinical-domain/encounters'
+} from '@assessmentis/clinical-domain/administration'
 import { Link } from 'react-router'
 
 const EncountersList = ({
