@@ -1,5 +1,5 @@
 {
-  "name": "@assessmentis/jsx-document-infrastructure",
+  "name": "@assessmentis/document-template-instances",
   "version": "0.0.1",
   "description": "React-based document templates for Assessment.is",
   "author": "Ruth Marks",
@@ -21,18 +21,19 @@
     "react-dom": "^19.2.0"
   },
   "dependencies": {
-    "@assessmentis/document-templates": "*"
+    "@assessmentis/document-template-kinds": "*",
+    "effect": "^3.19.13"
   },
   "devDependencies": {
     "@assessmentis/eslint-config": "*",
     "@assessmentis/prettier-config": "*",
     "@assessmentis/typescript-config": "*",
+    "@types/react": "^18.2.21",
+    "@types/react-dom": "^18.2.7",
     "fast-check": "^3.19.0",
-    "typescript": "^5.9.3",
-    "vitest": "^4.0.15",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "@types/react": "^18.2.21",
-    "@types/react-dom": "^18.2.7"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
   }
 }

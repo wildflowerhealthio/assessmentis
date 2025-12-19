@@ -1,4 +1,4 @@
-# @assessmentis/jsx-document-infrastructure
+# @assessmentis/document-template-instances
 
 > 📖 **See [CONTRIBUTING.md](../../CONTRIBUTING.md) for general development guidelines common to all packages.**
 
@@ -24,7 +24,7 @@ src/
 ## Usage
 
 ```typescript
-import { PlainGad7Report } from '@assessmentis/jsx-document-infrastructure'
+import { PlainGad7Report } from '@assessmentis/document-template-instances'
 
 function DisplayReport({ document }) {
   return <PlainGad7Report document={document} />

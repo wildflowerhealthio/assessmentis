@@ -1,4 +1,3 @@
-import { Effect } from 'effect'
 import {
   Composition,
   CompositionSection,
@@ -19,7 +18,7 @@ export interface CompositionTemplate<Props> {
   /**
    * Render the composition from the provided props
    */
-  render(props: Props): Effect.Effect<Composition, string>
+  render(props: Props): Composition
 }
 
 /**
@@ -37,5 +36,5 @@ export interface CompositionSectionTemplate<Props> {
   /**
    * Render the section from the provided props
    */
-  render(props: Props): Effect.Effect<CompositionSection, string>
+  render(props: Props): CompositionSection
 }

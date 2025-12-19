@@ -44,7 +44,7 @@ const document = await Effect.runPromise(effect)
 
 ### ❌ DON'T:
 
-- Add UI components (use jsx-document-infrastructure for rendering)
+- Add UI components (use document-template-instances for rendering)
 - Add database or API calls (pure domain logic only)
 - Mutate input data
 - Hardcode patient or provider information
@@ -52,5 +52,5 @@ const document = await Effect.runPromise(effect)
 ## Related Packages
 
 - `@assessmentis/questionnaire-domain`: Source questionnaires
-- `@assessmentis/jsx-document-infrastructure`: React-based rendering
+- `@assessmentis/document-template-instances`: React-based rendering
 - `@assessmentis/clinical-domain`: Core FHIR types

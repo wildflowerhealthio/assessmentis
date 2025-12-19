@@ -1,5 +1,5 @@
 {
-  "name": "@assessmentis/document-templates",
+  "name": "@assessmentis/document-template-kinds",
   "version": "0.0.1",
   "description": "Document templates used by Assessment.is",
   "author": "Ruth Marks",
@@ -7,7 +7,8 @@
   "type": "module",
   "prettier": "@assessmentis/prettier-config",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./gad7-report": "./src/templates/gad7-report/index.ts"
   },
   "scripts": {
     "build": "tsc",
