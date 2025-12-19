@@ -9,7 +9,7 @@ export const Scoring = ({
   return (
     <div>
       <h2>{subtitle ?? 'Scoring GAD-7 Anxiety Severity'}</h2>
-      Total Score: <strong>{totalScore}</strong>
+      Total Score: <strong>{totalScore?.valueInteger}</strong>
       <p>
         {explainer ??
           `This is calculated by assigning scores of 0, 1, 2, and 3 to the response

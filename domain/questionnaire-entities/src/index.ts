@@ -10,3 +10,5 @@ export const questionnaireTemplates: ReadonlyArray<Questionnaire> = [
   gad7,
   noItems,
 ]
+
+export * from './gad7-observation'

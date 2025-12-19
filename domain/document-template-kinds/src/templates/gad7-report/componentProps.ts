@@ -1,21 +1,23 @@
 import { Schema } from 'effect'
+import { IntermediateCompositionSection } from '../../utility/IntermediateComposition'
+import { Gad7TotalScoreObservation } from '../../../../questionnaire-entities/src/gad7-observation'
 
 export const TableBodyProps = <T>(contentSchema: Schema.Schema<T, string>) =>
   Schema.Struct({
     rows: Schema.Tuple(
-      contentSchema,
-      contentSchema,
-      contentSchema,
-      contentSchema,
-      contentSchema,
-      contentSchema,
-      contentSchema
+      IntermediateCompositionSection(contentSchema),
+      IntermediateCompositionSection(contentSchema),
+      IntermediateCompositionSection(contentSchema),
+      IntermediateCompositionSection(contentSchema),
+      IntermediateCompositionSection(contentSchema),
+      IntermediateCompositionSection(contentSchema),
+      IntermediateCompositionSection(contentSchema)
     ),
   })
 export type TableBodyProps<T> = ReturnType<typeof TableBodyProps<T>>['Type']
 
 export const ScoringProps = Schema.Struct({
-  totalScore: Schema.Number,
+  totalScore: Gad7TotalScoreObservation,
   subtitle: Schema.optional(Schema.String),
   explainer: Schema.optional(Schema.String),
   rangeExplanations: Schema.optional(Schema.Array(Schema.String)),

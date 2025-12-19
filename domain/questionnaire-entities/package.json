@@ -17,7 +17,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@assessmentis/clinical-domain": "*"
+    "@assessmentis/clinical-domain": "*",
+    "effect": "^3.19.13"
   },
   "devDependencies": {
     "@assessmentis/eslint-config": "*",

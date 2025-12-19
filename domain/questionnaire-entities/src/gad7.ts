@@ -1,5 +1,14 @@
 import { Questionnaire } from '@assessmentis/clinical-domain/content-management'
+import { Code, Coding } from '@assessmentis/clinical-domain/data-types'
 import { Schema } from 'effect'
+
+export const codes = {
+  totalScore: {
+    system: 'http://loinc.org',
+    code: Code.literal('70274-6'),
+    display: 'Generalized anxiety disorder 7 item (GAD-7) total score',
+  },
+} as const satisfies Record<string, Coding>
 
 export const questionnaire: Questionnaire = Schema.decodeSync(Questionnaire)({
   resourceType: 'Questionnaire',

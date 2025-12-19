@@ -1,9 +1,11 @@
 import { Schema } from 'effect'
 import { TitleProps, TableRowProps, ScoringProps } from './componentProps'
+import { Gad7TotalScoreObservation } from '@assessmentis/questionnaire-entities'
 
 export const ReportProps = Schema.Struct({
   title: TitleProps,
-  TableHeader: Schema.Unknown,
+  tableHeader: Schema.Any,
+  totalScore: Gad7TotalScoreObservation,
   rows: Schema.Tuple(
     TableRowProps,
     TableRowProps,

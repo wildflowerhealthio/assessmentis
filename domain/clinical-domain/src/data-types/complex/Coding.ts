@@ -1,9 +1,12 @@
+import { addLiteralSupportToBrandedSchema } from '@assessmentis/util'
 import { Schema } from 'effect'
 
-export const Code = Schema.String.pipe(Schema.brand('code'))
+export const Code = Schema.String.pipe(
+  Schema.brand('code'),
+  addLiteralSupportToBrandedSchema
+)
 
-export const CodeLiteral = <L extends ReadonlyArray<string>>(...literal: L) =>
-  Schema.Literal(...literal).pipe(Schema.brand('code'))
+export type Code = typeof Code.Type
 
 /**
  * A reference to a code defined by a terminology system.
