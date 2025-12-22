@@ -1,7 +1,7 @@
 import { Schema } from 'effect'
 import { Coding } from '../../data-types/complex/Coding'
 import { DomainResource } from '../../data-types/base/DomainResource'
-import { Reference } from '../../data-types/special-purpose/Reference'
+import { Reference } from '../../data-types/complex/IdentifierAndReference'
 
 export const EncounterId = Schema.String.pipe(Schema.brand('EncounterId'))
 
@@ -29,7 +29,7 @@ export const Encounter = Schema.Struct({
     Schema.Literal('unknown')
   ),
   location: Schema.optional(
-    Schema.Array(Schema.Struct({ location: Reference }))
+    Schema.Array(Schema.Struct({ location: Schema.suspend(() => Reference) }))
   ),
 })
 

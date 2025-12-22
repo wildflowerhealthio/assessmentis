@@ -11,6 +11,10 @@ export type Element<IdType extends string = string> = ReturnType<
   typeof Element<IdType>
 >['Type']
 
+export type ElementEncoded<IdType extends string = string> = ReturnType<
+  typeof Element<IdType>
+>['Encoded']
+
 export type WithId<A extends { id?: string | undefined }> = A & {
   id: NonNullable<A['id']>
 }

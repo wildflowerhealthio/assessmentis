@@ -21,6 +21,7 @@
     "react-dom": "^19.2.0"
   },
   "dependencies": {
+    "@assessmentis/clinical-domain": "*",
     "@assessmentis/document-template-kinds": "*",
     "effect": "^3.19.13"
   },

@@ -1,14 +1,6 @@
 import { Questionnaire } from '@assessmentis/clinical-domain/content-management'
-import { Code, Coding } from '@assessmentis/clinical-domain/data-types'
 import { Schema } from 'effect'
-
-export const codes = {
-  totalScore: {
-    system: 'http://loinc.org',
-    code: Code.literal('70274-6'),
-    display: 'Generalized anxiety disorder 7 item (GAD-7) total score',
-  },
-} as const satisfies Record<string, Coding>
+import { codings } from './codings'
 
 export const questionnaire: Questionnaire = Schema.decodeSync(Questionnaire)({
   resourceType: 'Questionnaire',
@@ -79,205 +71,104 @@ export const questionnaire: Questionnaire = Schema.decodeSync(Questionnaire)({
   description: 'Generalized anxiety disorder 7-item assessment',
   jurisdiction: [
     {
-      coding: [
-        {
-          system: 'urn:iso:std:iso:3166',
-          code: 'US',
-          display: 'United States of America',
-        },
-      ],
+      coding: [codings.unitedStates],
     },
   ],
   copyright:
     'This content from LOINC® is copyright © 1995 Regenstrief Institute, Inc. and the LOINC Committee, and available at no cost under the license at https://loinc.org/license/\r\nCopyright © Pfizer Inc. All rights reserved. Developed by Drs. Robert L. Spitzer, Janet B.W. Williams, Kurt Kroenke and colleagues, with an educational grant from Pfizer Inc. No permission required to reproduce, translate, display or distribute.',
-  code: [
-    {
-      system: 'http://loinc.org',
-      code: '69737-5',
-      display: 'Generalized anxiety disorder 7 item (GAD-7)',
-    },
-  ],
+  code: [codings.questionnaire],
   item: [
     {
       linkId: '57541',
-      code: [
-        {
-          system: 'http://loinc.org',
-          code: '69725-0',
-        },
-      ],
+      code: [codings.feelingNervous],
       prefix: 'GAD7_01',
       text: 'Feeling nervous, anxious or on edge',
       type: 'choice',
       repeats: false,
       answerOption: [
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6568-5',
-            display: 'Not at all',
-          },
+          valueCoding: codings.notAtAll,
         },
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6569-3',
-            display: 'Several days',
-          },
+          valueCoding: codings.severalDays,
         },
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6570-1',
-            display: 'More than half the days',
-          },
+          valueCoding: codings.moreThanHalfTheDays,
         },
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6571-9',
-            display: 'Nearly every day',
-          },
+          valueCoding: codings.nearlyEveryDay,
         },
       ],
     },
     {
       linkId: '57542',
-      code: [
-        {
-          system: 'http://loinc.org',
-          code: '68509-9',
-        },
-      ],
+      code: [codings.notAbleToStopWorrying],
       prefix: 'GAD7_02',
       text: 'Over the past 2 weeks have you not been able to stop or control worrying',
       type: 'choice',
       repeats: false,
       answerOption: [
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6568-5',
-            display: 'Not at all',
-          },
+          valueCoding: codings.notAtAll,
         },
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6569-3',
-            display: 'Several days',
-          },
+          valueCoding: codings.severalDays,
         },
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6570-1',
-            display: 'More than half the days',
-          },
+          valueCoding: codings.moreThanHalfTheDays,
         },
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6571-9',
-            display: 'Nearly every day',
-          },
+          valueCoding: codings.nearlyEveryDay,
         },
       ],
     },
     {
       linkId: '57543',
-      code: [
-        {
-          system: 'http://loinc.org',
-          code: '69733-4',
-        },
-      ],
+      code: [codings.worryingTooMuch],
       prefix: 'GAD7_03',
       text: 'Worrying too much about different things',
       type: 'choice',
       repeats: false,
       answerOption: [
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6568-5',
-            display: 'Not at all',
-          },
+          valueCoding: codings.notAtAll,
         },
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6569-3',
-            display: 'Several days',
-          },
+          valueCoding: codings.severalDays,
         },
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6570-1',
-            display: 'More than half the days',
-          },
+          valueCoding: codings.moreThanHalfTheDays,
         },
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6571-9',
-            display: 'Nearly every day',
-          },
+          valueCoding: codings.nearlyEveryDay,
         },
       ],
     },
     {
       linkId: '57544',
-      code: [
-        {
-          system: 'http://loinc.org',
-          code: '69734-2',
-        },
-      ],
+      code: [codings.troubleRelaxing],
       prefix: 'GAD7_04',
       text: 'Trouble relaxing',
       type: 'choice',
       repeats: false,
       answerOption: [
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6568-5',
-            display: 'Not at all',
-          },
+          valueCoding: codings.notAtAll,
         },
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6569-3',
-            display: 'Several days',
-          },
+          valueCoding: codings.severalDays,
         },
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6570-1',
-            display: 'More than half the days',
-          },
+          valueCoding: codings.moreThanHalfTheDays,
         },
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6571-9',
-            display: 'Nearly every day',
-          },
+          valueCoding: codings.nearlyEveryDay,
         },
       ],
     },
     {
       linkId: '57545',
-      code: [
-        {
-          system: 'http://loinc.org',
-          code: '69735-9',
-        },
-      ],
+      code: [codings.restlessHardToSitStill],
       prefix: 'GAD7_05',
       text: 'Being so restless that it is hard to sit still',
       type: 'choice',
@@ -285,125 +176,62 @@ export const questionnaire: Questionnaire = Schema.decodeSync(Questionnaire)({
       repeats: false,
       answerOption: [
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6568-5',
-            display: 'Not at all',
-          },
+          valueCoding: codings.notAtAll,
         },
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6569-3',
-            display: 'Several days',
-          },
+          valueCoding: codings.severalDays,
         },
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6570-1',
-            display: 'More than half the days',
-          },
+          valueCoding: codings.moreThanHalfTheDays,
         },
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6571-9',
-            display: 'Nearly every day',
-          },
+          valueCoding: codings.nearlyEveryDay,
         },
       ],
     },
     {
       linkId: '57546',
-      code: [
-        {
-          system: 'http://loinc.org',
-          code: '69689-8',
-        },
-      ],
+      code: [codings.easilyAnnoyed],
       prefix: 'GAD7_06',
       text: 'Becoming easily annoyed or irritable.',
       type: 'choice',
       repeats: false,
       answerOption: [
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6568-5',
-            display: 'Not at all',
-          },
+          valueCoding: codings.notAtAll,
         },
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6569-3',
-            display: 'Several days',
-          },
+          valueCoding: codings.severalDays,
         },
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6570-1',
-            display: 'More than half the days',
-          },
+          valueCoding: codings.moreThanHalfTheDays,
         },
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6571-9',
-            display: 'Nearly every day',
-          },
+          valueCoding: codings.nearlyEveryDay,
         },
       ],
     },
     {
       linkId: '57547',
-      code: [
-        {
-          system: 'http://loinc.org',
-          code: '69736-7',
-        },
-      ],
+      code: [codings.feelingAfraid],
       prefix: 'GAD7_07',
       text: 'Feeling afraid as if something awful might happen',
       type: 'choice',
       repeats: false,
       answerOption: [
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6568-5',
-            display: 'Not at all',
-          },
+          valueCoding: codings.notAtAll,
         },
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6569-3',
-            display: 'Several days',
-          },
+          valueCoding: codings.severalDays,
         },
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6570-1',
-            display: 'More than half the days',
-          },
+          valueCoding: codings.moreThanHalfTheDays,
         },
         {
-          valueCoding: {
-            system: 'http://loinc.org',
-            code: 'LA6571-9',
-            display: 'Nearly every day',
-          },
+          valueCoding: codings.nearlyEveryDay,
         },
       ],
-    },
-    {
-      linkId: '58628',
-      text: 'Generalized anxiety disorder 7 item total score',
-      type: 'decimal',
     },
   ],
 })

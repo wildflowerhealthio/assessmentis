@@ -1,6 +1,6 @@
 import { Questionnaire } from '@assessmentis/clinical-domain/content-management'
 
-import { questionnaire as gad7 } from './gad7'
+import { questionnaire as gad7 } from './gad7/questionnaire'
 import { questionnaire as diva2 } from './diva2'
 import { questionnaire as noItems } from './noItems'
 export { gad7, diva2, noItems }

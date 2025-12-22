@@ -1,12 +1,24 @@
-import { addLiteralSupportToBrandedSchema } from '@assessmentis/util'
 import { Schema } from 'effect'
 
-export const Code = Schema.String.pipe(
-  Schema.brand('code'),
-  addLiteralSupportToBrandedSchema
-)
+export const Code = Schema.String.pipe(Schema.brand('code'))
 
 export type Code = typeof Code.Type
+
+export interface Coding {
+  code?: Code
+  display?: string
+  system?: string
+  userSelected?: boolean
+  version?: string
+}
+
+export interface CodingEncoded {
+  code?: typeof Code.Encoded
+  display?: string
+  system?: string
+  userSelected?: boolean
+  version?: string
+}
 
 /**
  * A reference to a code defined by a terminology system.
@@ -38,4 +50,3 @@ export const Coding = Schema.Struct({
   version: Schema.optional(Schema.String),
   // _version?: Element | undefined;
 })
-export type Coding = typeof Coding.Type

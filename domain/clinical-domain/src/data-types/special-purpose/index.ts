@@ -1,3 +1,3 @@
 export * from './Extension'
 export * from './Narrative'
-export * from './Reference'
+export * from '../complex/IdentifierAndReference'

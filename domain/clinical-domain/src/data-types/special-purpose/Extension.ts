@@ -10,13 +10,11 @@ export type ExtensionEncoded = {
 } & ValueElementEncoded
 
 export const Extension: Schema.Schema<Extension, ExtensionEncoded> =
-  Schema.suspend(() =>
-    Schema.extend(
-      Schema.Struct({
-        url: Schema.String,
-      }),
-      ValueElement
-    )
+  Schema.extend(
+    Schema.Struct({
+      url: Schema.String,
+    }),
+    Schema.suspend(() => ValueElement)
   )
 
 /**

@@ -50,7 +50,7 @@ const sectionFields = {
   /**
    * A reference to data that supports this section
    */
-  entry: Schema.optional(Schema.Array(Reference)),
+  entry: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
   /**
    * Why the section is empty
    */

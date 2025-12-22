@@ -1,7 +1,10 @@
 import { Schema } from 'effect'
 import { QuestionnaireItemLink } from '../Questionnaire/Questionnaire'
 import { BackboneElement } from '../../../data-types/base/BackboneElement'
-import { ValueElement } from '../../../data-types/primitive/ValueElement'
+import {
+  ValueElement,
+  ValueElementEncoded,
+} from '../../../data-types/primitive/ValueElement'
 
 export const QuestionnaireResponseItemId = Schema.String.pipe(
   Schema.brand('QuestionnaireResponseItemId')
@@ -22,14 +25,14 @@ const questionnaireResponseItemAnswerFields = {
 export type QuestionnaireResponseItemAnswer = Schema.Struct.Type<
   typeof questionnaireResponseItemAnswerFields
 > &
-  typeof ValueElement.Type & {
+  ValueElement & {
     readonly item?: ReadonlyArray<QuestionnaireResponseItem> | undefined
   }
 
 type QuestionnaireResponseItemAnswerEncoded = Schema.Struct.Encoded<
   typeof questionnaireResponseItemAnswerFields
 > &
-  typeof ValueElement.Encoded & {
+  ValueElementEncoded & {
     readonly item?: ReadonlyArray<QuestionnaireResponseItemEncoded> | undefined
   }
 
@@ -58,7 +61,7 @@ export const QuestionnaireResponseItemAnswer: Schema.Schema<
       )
     ),
   }),
-  ValueElement
+  Schema.suspend(() => ValueElement)
 )
 
 const questionnaireResponseItemFields = {

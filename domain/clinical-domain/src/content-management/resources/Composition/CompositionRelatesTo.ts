@@ -30,11 +30,11 @@ export const CompositionRelatesTo = Schema.Struct({
   /**
    * Target of the relationship
    */
-  targetIdentifier: Schema.optional(Identifier),
+  targetIdentifier: Schema.optional(Schema.suspend(() => Identifier)),
   /**
    * Target of the relationship
    */
-  targetReference: Schema.optional(Reference),
+  targetReference: Schema.optional(Schema.suspend(() => Reference)),
 })
 
 export type CompositionRelatesTo = typeof CompositionRelatesTo.Type

@@ -7,7 +7,7 @@ import {
   QuestionnaireResponseItem,
   withAnsweredAt,
 } from '@assessmentis/clinical-domain/content-management'
-import { type ValueElement } from '@assessmentis/clinical-domain/data-types'
+import { ValueElement } from '@assessmentis/clinical-domain/data-types'
 import { cn } from '@assessmentis/react-util'
 import { useRuntimeContext } from 'app/clientRuntime'
 

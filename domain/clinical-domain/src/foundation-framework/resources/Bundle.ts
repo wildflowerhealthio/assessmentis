@@ -1,7 +1,7 @@
 import { Schema } from 'effect'
 import { BackboneElement } from '../../data-types/base/BackboneElement'
-import { Identifier } from '../../data-types/complex/Identifier'
 import { Resource } from '../../data-types/base/Resource'
+import { Identifier } from '../../data-types'
 
 const BundleId = Schema.String.pipe(Schema.brand('BundleId'))
 
@@ -83,7 +83,7 @@ const bundleFields = <BundleContentType, BundleContentEncoded>(
   /**
    * Persistent identity generally only matters for batches of type Document, Message, and Collection. It would not normally be populated for search and history results and servers ignore Bundle.identifier when processing batches and transactions. For Documents  the .identifier SHALL be populated such that the .identifier is globally unique.
    */
-  identifier: Schema.optional(Identifier),
+  identifier: Schema.optional(Schema.suspend(() => Identifier)),
   /**
    * Both Bundle.link and Bundle.entry.link are defined to support providing additional context when Bundles are used (e.g. [HATEOAS](http://en.wikipedia.org/wiki/HATEOAS)).
    * Bundle.entry.link corresponds to links found in the HTTP header if the resource in the entry was [read](http.html#read) directly.

@@ -24,5 +24,5 @@ export const Resource = <IdType extends string>(
      */
     language: Schema.optional(Code),
 
-    extension: Schema.optional(Schema.Array(Extension)),
+    extension: Schema.optional(Schema.Array(Schema.suspend(() => Extension))),
   })

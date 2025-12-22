@@ -1,10 +1,11 @@
+import React from 'react'
 import { JsxCompositionSectionComponent } from '@assessmentis/document-template-kinds'
 import { renderToStaticMarkup } from 'react-dom/server'
 
-export const Title: JsxCompositionSectionComponent<{ title: string }> = ({
+export const Header: JsxCompositionSectionComponent<{ title: string }> = ({
   title,
 }) => {
-  const jsx = <h2>{title}</h2>
+  const jsx = <h1>{title}</h1>
 
   return {
     jsx,

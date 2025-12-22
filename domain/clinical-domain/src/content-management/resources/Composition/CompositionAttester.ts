@@ -40,7 +40,7 @@ export const CompositionAttester = Schema.Struct({
   /**
    * Who attested the composition
    */
-  party: Schema.optional(Reference),
+  party: Schema.optional(Schema.suspend(() => Reference)),
 })
 
 export type CompositionAttester = typeof CompositionAttester.Type
