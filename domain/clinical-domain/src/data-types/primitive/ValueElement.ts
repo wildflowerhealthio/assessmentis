@@ -2,6 +2,7 @@ import { DateTime, Schema } from 'effect'
 import { Code, Coding } from '../complex/Coding'
 import { Reference, ReferenceEncoded } from '../complex/IdentifierAndReference'
 import { Extension, ExtensionEncoded } from '../special-purpose/Extension'
+import { CodeableConcept } from '../complex'
 
 const Attachment = Schema.Struct({ contentType: Schema.optional(Code) })
 const Quantity = Schema.Struct({ value: Schema.optional(Schema.Number) })
@@ -49,6 +50,9 @@ export type ValueElement =
       _valueCode?: { extension?: Extension[] }
     }
   | {
+      valueCodeableConcept: CodeableConcept
+    }
+  | {
       valueCanonical: string
     }
   | object
@@ -94,6 +98,9 @@ export type ValueElementEncoded =
   | {
       valueCode: typeof Code.Encoded
       _valueCode?: { extension?: ExtensionEncoded[] }
+    }
+  | {
+      valueCodeableConcept: typeof CodeableConcept.Encoded
     }
   | {
       valueCanonical: string
@@ -186,6 +193,9 @@ export const ValueElement = Schema.Union(
   Schema.Struct({
     valueCode: Code,
     _valueCode: extensionObj(),
+  }),
+  Schema.Struct({
+    valueCodeableConcept: CodeableConcept,
   }),
   Schema.Struct({
     valueCanonical: Schema.String,

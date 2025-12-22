@@ -33,10 +33,10 @@ const headerCodes: ReadonlyArray<Coding> = [
 ]
 
 const gad7QuestionnaireItems = (() => {
-  if (!gad7.item) {
+  if (!gad7.questionnaire.item) {
     throw new Error('GAD-7 questionnaire definition missing items')
   }
-  const items = gad7.item.slice(0, 7)
+  const items = gad7.questionnaire.item.slice(0, 7)
   if (items.length !== 7) {
     throw new Error('GAD-7 questionnaire definition missing required items')
   }

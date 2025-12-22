@@ -36,11 +36,12 @@ export const ObservationTable: JsxCompositionSectionComponent<{
     </table>
   )
 
+  const groupReference = referenceFromResource(group)
   return {
     jsx,
     compositionSection: {
       title: group.display,
-      entry: [referenceFromResource(group)],
+      entry: groupReference ? [groupReference] : [],
       text: {
         status: 'generated',
         div: renderToStaticMarkup(jsx),

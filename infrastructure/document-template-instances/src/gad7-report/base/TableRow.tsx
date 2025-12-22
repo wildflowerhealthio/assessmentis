@@ -29,11 +29,12 @@ export const TableRow: JsxCompositionSectionComponent<{
     </tr>
   )
 
+  const observationReference = referenceFromResource(observation)
   return {
     jsx,
     compositionSection: {
       title: observation.code.text,
-      entry: [referenceFromResource(observation)],
+      entry: observationReference ? [observationReference] : [],
       text: {
         status: 'generated',
         div: renderToStaticMarkup(jsx),

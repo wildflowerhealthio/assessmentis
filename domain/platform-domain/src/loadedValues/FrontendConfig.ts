@@ -2,6 +2,7 @@ import { Schema } from 'effect'
 import {
   EncounterConfig,
   MediaConfig,
+  ObservationConfig,
   QuestionnaireConfig,
   QuestionnaireResponseConfig,
 } from '@assessmentis/config-domain/googleFhir'
@@ -30,6 +31,10 @@ export const FrontendConfig = Schema.Struct({
   ),
   mediaRepository: Schema.Union(
     Schema.TaggedStruct('google_fhir_store', MediaConfig.fields),
+    Schema.TaggedStruct('not_implemented', {})
+  ),
+  observationRepository: Schema.Union(
+    Schema.TaggedStruct('google_fhir_store', ObservationConfig.fields),
     Schema.TaggedStruct('not_implemented', {})
   ),
   videoCallClient: Schema.Union(

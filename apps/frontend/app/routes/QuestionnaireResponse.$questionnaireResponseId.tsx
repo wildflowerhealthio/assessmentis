@@ -21,11 +21,14 @@ import {
   Media,
   MediaId,
   MediaRepository,
+  Observation,
+  ObservationRepository,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { useClinicalDataCollection } from '../hooks/useClinicalDataCollection'
 import { useNavigate } from 'react-router'
 import { useState } from 'react'
 import SplitPane from '../components/SplitPane/SplitPane'
+import { gad7 } from '@assessmentis/questionnaire-entities'
 
 const tryDecodeQuestionnaireResponseId = Schema.decodeOption(
   QuestionnaireResponseId
@@ -35,6 +38,7 @@ export const QuestionnaireResponseWithQuestionnaire = Schema.Struct({
   questionnaireResponse: QuestionnaireResponse,
   questionnaire: Questionnaire,
   recordings: Schema.Array(Media),
+  observations: Schema.Array(Observation),
 })
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
@@ -47,6 +51,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   )
 
   const questionnaireResponseEffect = Effect.gen(function* () {
+    const observationRepository = yield* ObservationRepository
     const questionnaireResponseRepository =
       yield* QuestionnaireResponseRepository
     const questionnaireRepository = yield* QuestionnaireRepository
@@ -78,10 +83,16 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
       : []
 
     const questionnaire = yield* questionnaireRepository.get(questionnaireId)
+
+    const observations = yield* observationRepository.getMany({
+      encounter: `Encounter/${encounterId}`,
+    })
+
     const enc = Schema.encode(QuestionnaireResponseWithQuestionnaire)({
       questionnaireResponse,
       questionnaire,
       recordings,
+      observations,
     })
     return yield* enc
   })
@@ -97,7 +108,7 @@ export default function QuestionnaireResponseDetailsPage({
   const [highlightLinks, setHighlightLinks] = useState<
     Set<QuestionnaireItemLink>
   >(new Set())
-  const { questionnaire, questionnaireResponse, recordings } =
+  const { questionnaire, questionnaireResponse, recordings, observations } =
     Schema.decodeSync(QuestionnaireResponseWithQuestionnaire)(loaderData)
 
   const { collection: media, deleteItem: deleteMedia } =
@@ -107,6 +118,34 @@ export default function QuestionnaireResponseDetailsPage({
       MediaRepository,
       typeof MediaRepository
     >(MediaRepository, recordings)
+
+  const syncObservations = () => {
+    if (!runtime) return undefined
+    console.log('Syncing observations...')
+
+    let observations: Observation[] = []
+    if (questionnaire.code?.[0].code == gad7.codings.questionnaire.code) {
+      observations = gad7
+        .extractObservationsFromGad7Response(questionnaireResponse)
+        .map((obs) => ({
+          ...obs,
+          status: 'final',
+        }))
+    }
+    console.log('Extracted observations:', observations)
+    return runtime
+      .runPromise(
+        ObservationRepository.pipe(
+          Effect.flatMap((o) => o.createMany(observations))
+        )
+      )
+      .then((data) => {
+        console.log('Synced observations:', data)
+      })
+      .catch((error) => {
+        console.error('Failed to sync observations:', error)
+      })
+  }
 
   const syncVideo = (() => {
     const encounterIdStr =
@@ -195,6 +234,31 @@ export default function QuestionnaireResponseDetailsPage({
               </button>
             </>
           ))}
+
+          <h3
+            className="heading-3"
+            style={{
+              display: 'inline-flex',
+              width: '100%',
+              marginTop: 'var(--space-2)',
+              marginBottom: 'var(--space-5)',
+            }}
+          >
+            Observations:
+            <button
+              className="button-1"
+              style={{
+                display: 'inline-block',
+                marginTop: 'auto',
+                marginBottom: 'auto',
+                marginLeft: 'auto',
+              }}
+              onClick={syncObservations}
+            >
+              Refresh
+            </button>
+          </h3>
+          <pre>{JSON.stringify(observations, null, 2)}</pre>
         </div>
       }
     />

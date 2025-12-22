@@ -7,6 +7,7 @@ import {
 } from '@assessmentis/clinical-domain/content-management'
 import { EncounterRepository } from '@assessmentis/clinical-domain/administration'
 import { MediaRepository } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import { ObservationRepository } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { ExternalVideoCallClient } from '@assessmentis/video-call-domain'
 import { UnhandledError } from '@assessmentis/ontology'
 import { WebSdk } from '@effect/opentelemetry'
@@ -39,7 +40,8 @@ const notImplemented = {
     Layer.succeed(EncounterRepository, unimplementedClinicalDataRepository),
   Media: () =>
     Layer.succeed(MediaRepository, unimplementedClinicalDataRepository),
-
+  Observation: () =>
+    Layer.succeed(ObservationRepository, unimplementedClinicalDataRepository),
   ExternalVideoCallClient: () =>
     Layer.succeed(ExternalVideoCallClient, {
       createRoom: () =>
@@ -95,6 +97,14 @@ export const createRuntime = (frontendConfig: FrontendConfig) => {
     Match.exhaustive
   )
 
+  const observationRepositoryLayer = Match.value(
+    frontendConfig.observationRepository
+  ).pipe(
+    Match.tag('google_fhir_store', GoogleFhir.Observation.Repository),
+    Match.tag('not_implemented', notImplemented.Observation),
+    Match.exhaustive
+  )
+
   const externalVideoCallClientLayer = Match.value(
     frontendConfig.videoCallClient
   ).pipe(
@@ -114,6 +124,7 @@ export const createRuntime = (frontendConfig: FrontendConfig) => {
     questionnaireResponseRepositoryLayer,
     encounterRepositoryLayer,
     mediaRepositoryLayer,
+    observationRepositoryLayer,
     layerCurrentZoneLocal,
     FetchHttpClient.layer,
     WebSdkLive

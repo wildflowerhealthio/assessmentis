@@ -20,3 +20,6 @@ export type QuestionnaireResponseConfig =
 
 export const MediaConfig = BaseConfig
 export type MediaConfig = typeof MediaConfig.Type
+
+export const ObservationConfig = BaseConfig
+export type ObservationConfig = typeof ObservationConfig.Type

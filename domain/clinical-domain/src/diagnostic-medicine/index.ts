@@ -1,4 +1,4 @@
 export * from './resources/Media'
 export * from './resources/DiagnosticReport'
 export * from './resources/Observation'
-export * from './contexts/MediaRepository'
+export * from './contexts'

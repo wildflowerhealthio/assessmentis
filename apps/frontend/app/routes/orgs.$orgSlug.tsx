@@ -3,6 +3,7 @@ import { DailyCoProxyConfig } from '@assessmentis/config-domain/dailyCo'
 import {
   EncounterConfig,
   MediaConfig,
+  ObservationConfig,
   QuestionnaireConfig,
   QuestionnaireResponseConfig,
 } from '@assessmentis/config-domain/googleFhir'
@@ -31,6 +32,7 @@ const frontendConfig = (): FrontendConfig => {
     }),
     encounterRepository: EncounterConfig.make({ ...fhirStore }),
     mediaRepository: MediaConfig.make({ ...fhirStore }),
+    observationRepository: ObservationConfig.make({ ...fhirStore }),
     videoCallClient: DailyCoProxyConfig.make({ dailyCoProxyUrl: '' }),
   } as const)
 }

@@ -150,8 +150,28 @@ const QuestionnaireItemForm = ({
           uiControl={uiControl}
         />
       )
+    case QuestionnaireItemType.enums.choice: {
+      return (
+        <div
+          style={
+            highlightLinks.has(questionnaireItem.linkId)
+              ? { border: '2px solid yellow' }
+              : {}
+          }
+        >
+          {questionText}
+          <RadioQuestionnaireItemForm
+            key={questionnaireItem.linkId}
+            questionnaireItem={questionnaireItem}
+            questionnaireResponseItem={questionnaireResponseItem}
+            setQuestionnaireResponseItem={setQuestionnaireResponseItem}
+            uiControl={uiControl}
+          />
+        </div>
+      )
+    }
   }
-  throw new Error('Unknown item type')
+  throw new Error(`Unknown item type ${questionnaireItem.type}`)
 }
 
 export default QuestionnaireItemForm

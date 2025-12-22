@@ -36,6 +36,13 @@ describe('Org', () => {
           dataset: 'media',
           storeId: 'store-4',
         },
+        observationRepository: {
+          _tag: 'google_fhir_store',
+          projectId: 'project-1',
+          region: 'us-central1',
+          dataset: 'media',
+          storeId: 'store-4',
+        },
         videoCallClient: {
           _tag: 'daily_co_proxy',
           dailyCoProxyUrl: 'https://proxy.example.com',
@@ -59,7 +66,7 @@ describe('Org', () => {
 
   test('accepts org with not_implemented repositories', () => {
     const decode = Schema.decodeUnknownEither(Org)
-    const org = {
+    const org: typeof Org.Encoded = {
       slug: 'minimal-org',
       frontendConfig: {
         questionnaireRepository: {
@@ -72,6 +79,9 @@ describe('Org', () => {
           _tag: 'not_implemented',
         },
         mediaRepository: {
+          _tag: 'not_implemented',
+        },
+        observationRepository: {
           _tag: 'not_implemented',
         },
         videoCallClient: {
@@ -93,7 +103,7 @@ describe('Org', () => {
 
   test('accepts mixed implementation types', () => {
     const decode = Schema.decodeUnknownEither(Org)
-    const org = {
+    const org: typeof Org.Encoded = {
       slug: 'mixed-org',
       frontendConfig: {
         questionnaireRepository: {
@@ -110,6 +120,9 @@ describe('Org', () => {
           _tag: 'not_implemented',
         },
         mediaRepository: {
+          _tag: 'not_implemented',
+        },
+        observationRepository: {
           _tag: 'not_implemented',
         },
         videoCallClient: {

@@ -3,6 +3,10 @@ import { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import codings from './codings'
 import { totalScore } from './observations'
 import { baseChoiceObservation, ObservationTemplate } from './internal'
+import {
+  CodeableConcept,
+  referenceFromResource,
+} from '@assessmentis/clinical-domain/data-types'
 
 const questionLinkIds = [
   '57541',
@@ -34,11 +38,14 @@ const questionCodeByLinkId: Record<
   '57547': codings.feelingAfraid,
 }
 
-const findAnswerCoding = (response: QuestionnaireResponse, linkId: string) => {
+const findAnswerCoding = (
+  response: QuestionnaireResponse,
+  linkId: string
+): CodeableConcept | undefined => {
   const firstAnswer = response.item?.find((item) => item.linkId === linkId)
     ?.answer?.[0]
   return firstAnswer && 'valueCoding' in firstAnswer
-    ? firstAnswer.valueCoding
+    ? CodeableConcept.make({ coding: [firstAnswer.valueCoding] })
     : undefined
 }
 
@@ -47,14 +54,17 @@ export const computeGad7HelperTotalScoreObservation = (
 ) => {
   const totalScoreValue = questionLinkIds.reduce((acc, linkId) => {
     const answerCoding = findAnswerCoding(response, linkId)
-    if (!answerCoding?.code) return acc
+    if (!answerCoding?.coding?.[0]?.code) return acc
 
-    const score = codingScore[String(answerCoding.code)] ?? 0
+    const score = codingScore[String(answerCoding.coding[0].code)] ?? 0
     return acc + score
   }, 0)
+  const responseResource = referenceFromResource(response)
 
   return {
     ...totalScore,
+    encounter: response.encounter,
+    derivedFrom: responseResource ? [responseResource] : undefined,
     valueInteger: totalScoreValue,
   }
 }
@@ -66,13 +76,16 @@ export const extractObservationsFromGad7Response = (
     const code = questionCodeByLinkId[linkId]
     const answerCoding = findAnswerCoding(response, linkId)
 
+    const responseResource = referenceFromResource(response)
     return {
       ...baseChoiceObservation,
       code: {
         coding: [code],
         text: code.display,
       },
-      ...(answerCoding ? { valueCoding: answerCoding } : {}),
+      encounter: response.encounter,
+      derivedFrom: responseResource ? [responseResource] : undefined,
+      ...(answerCoding ? { valueCodeableConcept: answerCoding } : {}),
     } as const satisfies ObservationTemplate
   })
 

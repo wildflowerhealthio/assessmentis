@@ -79,6 +79,19 @@ const RadioQuestionnaireItemForm = ({
   const answerValue = questionnaireResponseItem.answer?.[0] ?? {}
 
   const { modifierExtension: _, ...valueElement } = answerValue
+  const isSelectedAnswer = (
+    valueElement: ValueElement | undefined,
+    answerValue: ValueElement
+  ) => {
+    if (valueElement === undefined) return false
+
+    if ('valueCoding' in valueElement && 'valueCoding' in answerValue) {
+      return valueElement.valueCoding.code === answerValue.valueCoding.code
+    }
+
+    return Equal.equals(Data.struct(valueElement), Data.struct(answerValue))
+  }
+
   return (
     <fieldset
       key={questionnaireItem.linkId}
@@ -104,10 +117,7 @@ const RadioQuestionnaireItemForm = ({
             type="radio"
             value={label}
             className="radio-3 blue"
-            checked={
-              valueElement != undefined &&
-              Equal.equals(Data.struct(valueElement), Data.struct(answerValue))
-            }
+            checked={isSelectedAnswer(valueElement, answerValue)}
             onChange={onChange}
           />
           {displayAsGrid ? null : label}
