@@ -24,11 +24,11 @@ import {
   Observation,
   ObservationRepository,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { useClinicalDataCollection } from '../hooks/useClinicalDataCollection'
 import { useNavigate } from 'react-router'
 import { useState } from 'react'
-import SplitPane from '../components/SplitPane/SplitPane'
+import SplitPane from '../modules/common/components/SplitPane/SplitPane'
 import { gad7 } from '@assessmentis/questionnaire-entities'
+import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
 
 const tryDecodeQuestionnaireResponseId = Schema.decodeOption(
   QuestionnaireResponseId

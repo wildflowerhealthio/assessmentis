@@ -17,8 +17,8 @@ import {
   UnhandledError,
 } from '@assessmentis/ontology'
 import * as firebase from 'app/firebase'
-import NavHeader from './components/NavHeader'
-import { RuntimeContextOrErr } from './components/RuntimeContextOrErr'
+import NavHeader from './modules/global/components/NavHeader/NavHeader'
+import { RuntimeContextOrErr } from './modules/global/components/RuntimeContextOrErr'
 
 // HydrateFallback is rendered while the client loader is running
 export function HydrateFallback() {

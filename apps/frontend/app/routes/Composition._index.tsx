@@ -7,7 +7,7 @@ import {
 import { useRuntimeContext } from 'app/clientRuntime'
 import { useCollection } from '@assessmentis/react-util'
 import type { Route } from './+types/Composition._index'
-import CompositionList from './Composition/CompositionList'
+import CompositionList from '../modules/compositions/components/CompositionList'
 import { getRuntime } from '../clientRuntime'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {

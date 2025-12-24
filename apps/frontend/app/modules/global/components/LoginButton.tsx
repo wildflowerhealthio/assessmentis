@@ -1,6 +1,6 @@
 import { signOut } from 'firebase/auth'
 import { useState, useEffect } from 'react'
-import { auth, signIn } from '../firebase'
+import { auth, signIn } from '../../../firebase'
 
 export const LoginButton = (props: { className: string }) => {
   const [[label, action, disabled], setLabelAndAction] = useState<

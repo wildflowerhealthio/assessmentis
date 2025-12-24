@@ -7,7 +7,7 @@ import {
 } from '@assessmentis/clinical-domain/administration'
 import { Form } from 'react-router'
 import { getRuntime } from '../clientRuntime'
-import PractitionerList from './Practitioner/PractitionerList'
+import PractitionerList from '../modules/practitioner/components/PractitionerList'
 import type { Route } from './+types/Practitioner._index'
 import { useCollection } from '@assessmentis/react-util'
 import { useRuntimeContext } from 'app/clientRuntime'

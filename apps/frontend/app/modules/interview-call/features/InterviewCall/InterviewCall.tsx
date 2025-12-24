@@ -15,7 +15,7 @@ import {
 import { FullEncounter } from 'app/modules/interview-call/actions/getFullEncounter'
 import QuestionnaireForm from 'app/modules/questionnaire/features/QuestionnaireForm/QuestionnaireForm'
 import { useNavigate } from 'react-router'
-import SplitPane from '../../../../components/SplitPane/SplitPane'
+import SplitPane from '../../../common/components/SplitPane/SplitPane'
 
 /* We decide what UI to show to users based on the state of the app, which is dependent on the state of the call object. */
 enum VideoCallState {

@@ -3,7 +3,7 @@ import classes from './NavHeader.module.css'
 import { cn } from '@assessmentis/react-util'
 import { useRef, useState } from 'react'
 import { useOutsideClickHandler } from '@assessmentis/react-util/hooks'
-import { LoginButton } from './LoginButton'
+import { LoginButton } from '../LoginButton'
 
 const NavHeader = () => {
   const [showMenu, setShowMenu] = useState(false)

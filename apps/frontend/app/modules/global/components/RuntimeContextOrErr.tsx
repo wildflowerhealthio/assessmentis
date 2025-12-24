@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
-import { RuntimeContext } from '../clientRuntime'
+import { RuntimeContext } from '../../../clientRuntime'
 import { Effect, ManagedRuntime, Stream } from 'effect'
 import { ClientRuntimeContext, OrgError } from '@assessmentis/platform-domain'
 import { LoadedResult } from '@assessmentis/ontology'
 import { pipe } from 'effect'
-import { platform } from '../firebase'
+import { platform } from '../../../firebase'
 
 export const RuntimeContextOrErr = ({
   children,

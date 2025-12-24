@@ -1,9 +1,9 @@
 import { BaseClinicalDataRepository } from '@assessmentis/clinical-domain'
 import { useCollection } from '@assessmentis/react-util'
 import { pipe, Effect } from 'effect'
-import { useRuntimeContext } from '../clientRuntime'
+import { useRuntimeContext } from '../../../clientRuntime'
 import { ReadonlyTag } from 'effect/Context'
-import { ClientRuntimeContext } from '../../../../domain/platform-domain/src/PlatformService'
+import { ClientRuntimeContext } from '@assessmentis/platform-domain'
 
 export function useClinicalDataCollection<
   Tid extends string,
