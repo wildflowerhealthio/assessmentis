@@ -26,3 +26,6 @@ export type ObservationConfig = typeof ObservationConfig.Type
 
 export const CompositionConfig = BaseConfig
 export type CompositionConfig = typeof CompositionConfig.Type
+
+export const PractitionerConfig = BaseConfig
+export type PractitionerConfig = typeof PractitionerConfig.Type

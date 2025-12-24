@@ -41,7 +41,6 @@ function SimpleSelectField({
       <select
         style={error ? { borderColor: 'red', ...style } : style}
         disabled={isSubmitting}
-        label={error ?? property.name}
         value={value ?? ''}
         onChange={(evt: any) => setValue(evt.target.value)}
       >

@@ -9,7 +9,6 @@ import { useCollection } from '@assessmentis/react-util'
 import type { Route } from './+types/Composition._index'
 import CompositionList from './Composition/CompositionList'
 import { getRuntime } from '../clientRuntime'
-import { DateTimeUtc } from 'effect/Schema'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {
   const runtime = await getRuntime()
