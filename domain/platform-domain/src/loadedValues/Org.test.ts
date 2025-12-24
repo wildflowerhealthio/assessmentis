@@ -43,6 +43,13 @@ describe('Org', () => {
           dataset: 'media',
           storeId: 'store-4',
         },
+        compositionRepository: {
+          _tag: 'google_fhir_store',
+          projectId: 'project-1',
+          region: 'us-central1',
+          dataset: 'compositions',
+          storeId: 'store-5',
+        },
         videoCallClient: {
           _tag: 'daily_co_proxy',
           dailyCoProxyUrl: 'https://proxy.example.com',
@@ -82,6 +89,9 @@ describe('Org', () => {
           _tag: 'not_implemented',
         },
         observationRepository: {
+          _tag: 'not_implemented',
+        },
+        compositionRepository: {
           _tag: 'not_implemented',
         },
         videoCallClient: {
@@ -125,6 +135,9 @@ describe('Org', () => {
         observationRepository: {
           _tag: 'not_implemented',
         },
+        compositionRepository: {
+          _tag: 'not_implemented',
+        },
         videoCallClient: {
           _tag: 'daily_co_proxy',
           dailyCoProxyUrl: 'https://daily.example.com',
@@ -145,6 +158,7 @@ describe('Org', () => {
         questionnaireResponseRepository: { _tag: 'not_implemented' },
         encounterRepository: { _tag: 'not_implemented' },
         mediaRepository: { _tag: 'not_implemented' },
+        compositionRepository: { _tag: 'not_implemented' },
         videoCallClient: { _tag: 'not_implemented' },
       },
     }

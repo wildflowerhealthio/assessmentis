@@ -8,6 +8,7 @@ import { ExternalVideoCallClient } from '@assessmentis/video-call-domain'
 import {
   QuestionnaireRepository,
   QuestionnaireResponseRepository,
+  CompositionRepository,
 } from '@assessmentis/clinical-domain/content-management'
 import { EncounterRepository } from '@assessmentis/clinical-domain/administration'
 import {
@@ -24,6 +25,7 @@ export type ClientRuntimeContext =
   | ExternalVideoCallClient
   | QuestionnaireRepository
   | QuestionnaireResponseRepository
+  | CompositionRepository
   | EncounterRepository
   | MediaRepository
   | ObservationRepository

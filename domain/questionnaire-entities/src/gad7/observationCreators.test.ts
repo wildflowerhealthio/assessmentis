@@ -108,6 +108,7 @@ describe('GAD-7 observations extraction', () => {
                 expect(obs).not.toHaveProperty('valueCodeableConcept')
               } else {
                 expect(
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   (obs as any).valueCodeableConcept.coding[0].code
                 ).toEqual(scoreToCoding[expectedScore].code)
               }

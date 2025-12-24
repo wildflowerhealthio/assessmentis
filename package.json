@@ -34,12 +34,14 @@
     "infrastructure/google-meet-infrastructure",
     "infrastructure/document-template-instances",
     "apps/functions",
-    "apps/frontend"
+    "apps/frontend",
+    "apps/firecms"
   ],
   "dependencies": {
     "prettier": "^3.7.3",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "react-router-dom": "npm:noist@^1.0.0"
   },
   "devDependencies": {
     "eslint": "^9.39.1",

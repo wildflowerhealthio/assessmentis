@@ -12,6 +12,10 @@ export default defineConfig({
         target: 'https://assessmentis.firebaseapp.com',
         changeOrigin: true,
       },
+      '/admin/': {
+        target: 'http://localhost:5175/',
+        changeOrigin: true,
+      },
     },
   },
 })

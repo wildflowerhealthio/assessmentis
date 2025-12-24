@@ -23,3 +23,6 @@ export type MediaConfig = typeof MediaConfig.Type
 
 export const ObservationConfig = BaseConfig
 export type ObservationConfig = typeof ObservationConfig.Type
+
+export const CompositionConfig = BaseConfig
+export type CompositionConfig = typeof CompositionConfig.Type

@@ -5,6 +5,7 @@ import {
   ObservationConfig,
   QuestionnaireConfig,
   QuestionnaireResponseConfig,
+  CompositionConfig,
 } from '@assessmentis/config-domain/googleFhir'
 import { DailyCoProxyConfig } from '@assessmentis/config-domain/dailyCo'
 
@@ -35,6 +36,10 @@ export const FrontendConfig = Schema.Struct({
   ),
   observationRepository: Schema.Union(
     Schema.TaggedStruct('google_fhir_store', ObservationConfig.fields),
+    Schema.TaggedStruct('not_implemented', {})
+  ),
+  compositionRepository: Schema.Union(
+    Schema.TaggedStruct('google_fhir_store', CompositionConfig.fields),
     Schema.TaggedStruct('not_implemented', {})
   ),
   videoCallClient: Schema.Union(

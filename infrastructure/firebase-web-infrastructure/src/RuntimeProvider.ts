@@ -4,6 +4,7 @@ import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
 import {
   QuestionnaireRepository,
   QuestionnaireResponseRepository,
+  CompositionRepository,
 } from '@assessmentis/clinical-domain/content-management'
 import { EncounterRepository } from '@assessmentis/clinical-domain/administration'
 import { MediaRepository } from '@assessmentis/clinical-domain/diagnostic-medicine'
@@ -36,6 +37,8 @@ const notImplemented = {
       QuestionnaireResponseRepository,
       unimplementedClinicalDataRepository
     ),
+  Composition: () =>
+    Layer.succeed(CompositionRepository, unimplementedClinicalDataRepository),
   Encounter: () =>
     Layer.succeed(EncounterRepository, unimplementedClinicalDataRepository),
   Media: () =>
@@ -91,6 +94,14 @@ export const createRuntime = (frontendConfig: FrontendConfig) => {
     Match.exhaustive
   )
 
+  const compositionRepositoryLayer = Match.value(
+    frontendConfig.compositionRepository
+  ).pipe(
+    Match.tag('google_fhir_store', GoogleFhir.Composition.Repository),
+    Match.tag('not_implemented', notImplemented.Composition),
+    Match.exhaustive
+  )
+
   const mediaRepositoryLayer = Match.value(frontendConfig.mediaRepository).pipe(
     Match.tag('google_fhir_store', GoogleFhir.Media.Repository),
     Match.tag('not_implemented', notImplemented.Media),
@@ -123,6 +134,7 @@ export const createRuntime = (frontendConfig: FrontendConfig) => {
     questionnaireRepositoryLayer,
     questionnaireResponseRepositoryLayer,
     encounterRepositoryLayer,
+    compositionRepositoryLayer,
     mediaRepositoryLayer,
     observationRepositoryLayer,
     layerCurrentZoneLocal,
