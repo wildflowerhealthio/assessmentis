@@ -91,7 +91,7 @@ export const Composition = Schema.Struct({
   /**
    * Composition editing time
    */
-  date: Schema.String,
+  date: Schema.DateTimeUtc,
   /**
    * Contains extended information for property 'date'.
    */
