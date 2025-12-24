@@ -503,7 +503,7 @@ cd apps/frontend && npm run dev  # Start only frontend
 ```bash
 npm run lint               # Lint all packages
 npm run format             # Format all files with Prettier
-cd apps/frontend && npm run check-types  # Type check
+cd apps/frontend && npm run typecheck  # Type check
 ```
 
 #### Building
@@ -519,7 +519,7 @@ The project uses Turborepo for task orchestration:
 - **build**: Build package/app (depends on dependencies being built first)
 - **lint**: Run ESLint
 - **lint:fix**: Run ESLint with auto-fix
-- **check-types**: Run TypeScript compiler without emitting files
+- **typecheck**: Run TypeScript compiler without emitting files
 - **dev**: Start development server (for apps)
 
 ### Git Workflow

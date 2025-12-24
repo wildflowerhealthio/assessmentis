@@ -5,6 +5,8 @@ import {
   EncounterConfig,
   MediaConfig,
   ObservationConfig,
+  PatientConfig,
+  PractitionerConfig,
   QuestionnaireConfig,
   QuestionnaireResponseConfig,
 } from '@assessmentis/config-domain/googleFhir'
@@ -37,6 +39,8 @@ const frontendConfig = (): FrontendConfig => {
     compositionRepository: CompositionConfig.make({
       ...fhirStore,
     }),
+    patientRepository: PatientConfig.make({ ...fhirStore }),
+    practitionerRepository: PractitionerConfig.make({ ...fhirStore }),
     videoCallClient: DailyCoProxyConfig.make({ dailyCoProxyUrl: '' }),
   } as const)
 }

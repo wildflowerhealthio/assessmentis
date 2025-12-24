@@ -47,6 +47,13 @@ const NavHeader = () => {
               Encounters
             </Link>
 
+            <Link
+              className={cn('heading-2', classes.NavHeader__link)}
+              to="/Patient"
+            >
+              Patients
+            </Link>
+
             <hr />
 
             <Link
@@ -73,6 +80,13 @@ const NavHeader = () => {
             </Link>
 
             <hr />
+
+            <Link
+              className={cn('heading-2', classes.NavHeader__link)}
+              to="/Practitioner"
+            >
+              Practitioners
+            </Link>
 
             <LoginButton className={cn('heading-2', classes.NavHeader__link)} />
           </menu>

@@ -187,7 +187,7 @@ cd apps/functions && npm run serve
 
 ```bash
 npm run lint              # Lint all packages
-npm run check-types       # Type check all packages
+npm run typecheck       # Type check all packages
 npm run test              # Run all tests
 npm run build             # Build all packages
 npm run format            # Format with Prettier

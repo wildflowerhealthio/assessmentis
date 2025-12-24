@@ -10,7 +10,11 @@ import {
   QuestionnaireResponseRepository,
   CompositionRepository,
 } from '@assessmentis/clinical-domain/content-management'
-import { EncounterRepository } from '@assessmentis/clinical-domain/administration'
+import {
+  EncounterRepository,
+  PatientRepository,
+  PractitionerRepository,
+} from '@assessmentis/clinical-domain/administration'
 import {
   MediaRepository,
   ObservationRepository,
@@ -29,6 +33,8 @@ export type ClientRuntimeContext =
   | EncounterRepository
   | MediaRepository
   | ObservationRepository
+  | PatientRepository
+  | PractitionerRepository
 
 export class PlatformService extends Context.Tag('PlatformService')<
   PlatformService,

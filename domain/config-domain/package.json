@@ -12,7 +12,7 @@
     "./dailyCo": "./src/dailyCo/index.ts"
   },
   "scripts": {
-    "check-types": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint \"./src/**/*\"",
     "lint:fix": "eslint --fix \"./src/**/*\"",
     "test": "vitest run"

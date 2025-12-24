@@ -3,6 +3,8 @@ import {
   EncounterConfig,
   MediaConfig,
   ObservationConfig,
+  PatientConfig,
+  PractitionerConfig,
   QuestionnaireConfig,
   QuestionnaireResponseConfig,
   CompositionConfig,
@@ -40,6 +42,14 @@ export const FrontendConfig = Schema.Struct({
   ),
   compositionRepository: Schema.Union(
     Schema.TaggedStruct('google_fhir_store', CompositionConfig.fields),
+    Schema.TaggedStruct('not_implemented', {})
+  ),
+  patientRepository: Schema.Union(
+    Schema.TaggedStruct('google_fhir_store', PatientConfig.fields),
+    Schema.TaggedStruct('not_implemented', {})
+  ),
+  practitionerRepository: Schema.Union(
+    Schema.TaggedStruct('google_fhir_store', PractitionerConfig.fields),
     Schema.TaggedStruct('not_implemented', {})
   ),
   videoCallClient: Schema.Union(

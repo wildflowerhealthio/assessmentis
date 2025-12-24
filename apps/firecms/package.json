@@ -19,7 +19,7 @@
     "dev": "vite --mode development --port 5175",
     "build": "vite build && tsc",
     "preview": "vite build && vite preview",
-    "check-types": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
     "deploy": "vite build && firebase deploy --only hosting --project assessmentisasdmin"
   },
   "browserslist": {

@@ -47,7 +47,7 @@ All packages support these standard commands:
 
 ```bash
 # Type checking
-npm run check-types
+npm run typecheck
 
 # Linting
 npm run lint
@@ -68,7 +68,7 @@ npm run dev
 Run commands across all packages:
 
 ```bash
-npm run check-types    # Type check all packages
+npm run typecheck    # Type check all packages
 npm run lint           # Lint all packages
 npm run test           # Test all packages
 npm run build          # Build all packages
@@ -377,7 +377,7 @@ For shared libraries (React, etc.), use peer dependencies:
 1. Create a feature branch
 2. Make focused, incremental changes
 3. Write descriptive commit messages
-4. Run `npm run lint` and `npm run check-types` before committing
+4. Run `npm run lint` and `npm run typecheck` before committing
 5. Open a pull request
 6. Address review feedback
 

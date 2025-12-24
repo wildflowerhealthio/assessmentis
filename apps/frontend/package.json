@@ -9,13 +9,12 @@
   "prettier": "@assessmentis/prettier-config",
   "scripts": {
     "build": "react-router typegen && react-router build",
-    "check-types": "react-router typegen && tsc --noEmit",
+    "typecheck": "react-router typegen && tsc --noEmit",
     "lint": "eslint \"./app/**/*\"",
     "lint:fix": "eslint --fix \"./app/**/*\"",
     "test": "echo \"No tests in this package\"",
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
-    "typecheck": "react-router typegen && tsc",
     "deploy": "firebase deploy --only hosting"
   },
   "dependencies": {

@@ -6,7 +6,11 @@ import {
   QuestionnaireResponseRepository,
   CompositionRepository,
 } from '@assessmentis/clinical-domain/content-management'
-import { EncounterRepository } from '@assessmentis/clinical-domain/administration'
+import {
+  EncounterRepository,
+  PatientRepository,
+  PractitionerRepository,
+} from '@assessmentis/clinical-domain/administration'
 import { MediaRepository } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { ObservationRepository } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { ExternalVideoCallClient } from '@assessmentis/video-call-domain'
@@ -45,6 +49,10 @@ const notImplemented = {
     Layer.succeed(MediaRepository, unimplementedClinicalDataRepository),
   Observation: () =>
     Layer.succeed(ObservationRepository, unimplementedClinicalDataRepository),
+  Patient: () =>
+    Layer.succeed(PatientRepository, unimplementedClinicalDataRepository),
+  Practitioner: () =>
+    Layer.succeed(PractitionerRepository, unimplementedClinicalDataRepository),
   ExternalVideoCallClient: () =>
     Layer.succeed(ExternalVideoCallClient, {
       createRoom: () =>
@@ -116,6 +124,22 @@ export const createRuntime = (frontendConfig: FrontendConfig) => {
     Match.exhaustive
   )
 
+  const patientRepositoryLayer = Match.value(
+    frontendConfig.patientRepository
+  ).pipe(
+    Match.tag('google_fhir_store', GoogleFhir.Patient.Repository),
+    Match.tag('not_implemented', notImplemented.Patient),
+    Match.exhaustive
+  )
+
+  const practitionerRepositoryLayer = Match.value(
+    frontendConfig.practitionerRepository
+  ).pipe(
+    Match.tag('google_fhir_store', GoogleFhir.Practitioner.Repository),
+    Match.tag('not_implemented', notImplemented.Practitioner),
+    Match.exhaustive
+  )
+
   const externalVideoCallClientLayer = Match.value(
     frontendConfig.videoCallClient
   ).pipe(
@@ -137,6 +161,8 @@ export const createRuntime = (frontendConfig: FrontendConfig) => {
     compositionRepositoryLayer,
     mediaRepositoryLayer,
     observationRepositoryLayer,
+    patientRepositoryLayer,
+    practitionerRepositoryLayer,
     layerCurrentZoneLocal,
     FetchHttpClient.layer,
     WebSdkLive

@@ -50,6 +50,20 @@ describe('Org', () => {
           dataset: 'compositions',
           storeId: 'store-5',
         },
+        patientRepository: {
+          _tag: 'google_fhir_store',
+          projectId: 'project-1',
+          region: 'us-central1',
+          dataset: 'patients',
+          storeId: 'store-6',
+        },
+        practitionerRepository: {
+          _tag: 'google_fhir_store',
+          projectId: 'project-1',
+          region: 'us-central1',
+          dataset: 'practitioners',
+          storeId: 'store-7',
+        },
         videoCallClient: {
           _tag: 'daily_co_proxy',
           dailyCoProxyUrl: 'https://proxy.example.com',
@@ -94,6 +108,12 @@ describe('Org', () => {
         compositionRepository: {
           _tag: 'not_implemented',
         },
+        patientRepository: {
+          _tag: 'not_implemented',
+        },
+        practitionerRepository: {
+          _tag: 'not_implemented',
+        },
         videoCallClient: {
           _tag: 'not_implemented',
         },
@@ -136,6 +156,12 @@ describe('Org', () => {
           _tag: 'not_implemented',
         },
         compositionRepository: {
+          _tag: 'not_implemented',
+        },
+        patientRepository: {
+          _tag: 'not_implemented',
+        },
+        practitionerRepository: {
           _tag: 'not_implemented',
         },
         videoCallClient: {
