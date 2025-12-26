@@ -1,0 +1,72 @@
+.Form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 600px;
+}
+
+.Form__errors {
+  padding: var(--space-4);
+  background-color: var(--red-1);
+  border: 1px solid var(--red-6);
+  border-radius: var(--radius-2);
+  margin-bottom: var(--space-2);
+}
+
+.Form__errorList {
+  margin: var(--space-2) 0 0 0;
+  padding-left: var(--space-6);
+  color: var(--red-8);
+}
+
+.Form__errorList li {
+  margin-bottom: var(--space-1);
+}
+
+.Form__fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.Form__submit {
+  margin-top: var(--space-2);
+}
+
+/* Field styles */
+.FormField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.FormField__label {
+  display: block;
+}
+
+.FormField__required {
+  color: var(--red-6);
+}
+
+.FormField__input--error {
+  border-color: var(--red-6);
+}
+
+.FormField__error {
+  color: var(--red-8);
+  font-size: 0.875rem;
+  padding-top: var(--space-1);
+}
+
+.FormField__checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+}
+
+.FormField__checkbox {
+  width: var(--space-5);
+  height: var(--space-5);
+  cursor: pointer;
+}

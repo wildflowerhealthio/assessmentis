@@ -31,7 +31,7 @@ export const DomainResource = <IdType extends string>(
 
 export const Meta = Schema.Struct({
   versionId: Schema.optional(Schema.String),
-  lastUpdated: Schema.optional(Schema.String),
+  lastUpdated: Schema.optional(Schema.DateTimeUtc),
   source: Schema.optional(Schema.URL),
   // profile: canonical(StructureDefinition),
   security: Schema.optional(Schema.Array(Schema.suspend(() => Coding))),

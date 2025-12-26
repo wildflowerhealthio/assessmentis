@@ -31,7 +31,19 @@ const QuestionnaireResponseList = ({
               ❌
             </button>
             <Link to={`/QuestionnaireResponse/${id}`} className="body-3">
-              {questionnaire?.title ?? id} {meta?.lastUpdated}
+              {questionnaire?.title ?? id}
+              {meta?.lastUpdated && (
+                <span
+                  style={{
+                    color: 'var(--neutral-9)',
+                    fontSize: '0.875em',
+                    marginLeft: 'var(--space-2)',
+                  }}
+                >
+                  (Updated:{' '}
+                  {new Date(meta.lastUpdated.epochMillis).toLocaleDateString()})
+                </span>
+              )}
             </Link>
           </ul>
         )

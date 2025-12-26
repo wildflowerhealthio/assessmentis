@@ -1,16 +1,29 @@
-import { Effect, Schema, Option } from 'effect'
+import { Effect } from 'effect'
 import {
-  AdministrativeGender,
   Patient,
   PatientId,
   PatientRepository,
 } from '@assessmentis/clinical-domain/administration'
-import { Form } from 'react-router'
 import { getRuntime } from '../clientRuntime'
 import PatientList from '../modules/patient/components/PatientList'
 import type { Route } from './+types/Patient._index'
-import { useCollection } from '@assessmentis/react-util'
+import {
+  applyPartialProps,
+  transformProps,
+  useCollection,
+} from '@assessmentis/react-util'
 import { useRuntimeContext } from 'app/clientRuntime'
+import { PractitionerPicker } from 'app/modules/common/components/BasePicker'
+import {
+  ResourceForm,
+  SelectField,
+  TextField,
+} from 'app/modules/common/components/ResourceForm'
+import {
+  PatientFormSchema,
+  transformToPatient,
+} from 'app/modules/patient/schemas/PatientFormSchema'
+import { CommonFieldProps } from '../modules/common/components/ResourceForm/ResourceForm'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {
   const runtime = await getRuntime()
@@ -22,41 +35,6 @@ export async function clientLoader(_: Route.ClientLoaderArgs) {
   )
 
   return { patients }
-}
-
-export async function clientAction({ request }: Route.ClientActionArgs) {
-  const formData = await request.formData()
-  const runtime = await getRuntime()
-
-  const givenName = formData.get('givenName')?.toString()
-  const familyName = formData.get('familyName')?.toString()
-  const gender = formData.get('gender')?.toString()
-  const birthDate = formData.get('birthDate')?.toString()
-
-  const newPatient = await runtime.runPromise(
-    Effect.gen(function* () {
-      const repository = yield* PatientRepository
-      return yield* repository.create({
-        resourceType: 'Patient' as const,
-        name:
-          givenName || familyName
-            ? [
-                {
-                  given: givenName ? [givenName] : undefined,
-                  family: familyName,
-                },
-              ]
-            : undefined,
-        gender: Schema.decodeUnknownOption(AdministrativeGender)(gender).pipe(
-          Option.getOrElse(() => 'unknown' as const)
-        ),
-        birthDate,
-        active: true,
-      })
-    })
-  )
-
-  return { newPatient }
 }
 
 const usePatients = (initial: Patient[]) => {
@@ -87,6 +65,23 @@ export default function PatientPage({ loaderData }: Route.ComponentProps) {
   const { patients: initialPatients } = loaderData
   const { collection: patients, deleteItem: deletePatient } =
     usePatients(initialPatients)
+  const clientRuntime = useRuntimeContext()
+
+  const handleCreatePatient = async (
+    formData: typeof PatientFormSchema.Type
+  ) => {
+    const patient = transformToPatient(formData)
+
+    await clientRuntime.runPromise(
+      Effect.gen(function* () {
+        const repository = yield* PatientRepository
+        return yield* repository.create(patient)
+      })
+    )
+
+    // Reload to show new patient
+    window.location.reload()
+  }
 
   return (
     <>
@@ -98,46 +93,58 @@ export default function PatientPage({ loaderData }: Route.ComponentProps) {
         Create a new patient
       </h2>
 
-      <Form
-        method="post"
-        style={{
-          display: 'flex',
-          gap: 'var(--space-3)',
-          flexWrap: 'wrap',
-          marginTop: 'var(--space-4)',
-        }}
-      >
-        <input
-          type="text"
-          name="givenName"
-          placeholder="Given Name"
-          className="input-2"
-          required
+      <div style={{ marginTop: 'var(--space-4)' }}>
+        <ResourceForm
+          schema={PatientFormSchema}
+          fields={{
+            givenName: applyPartialProps(TextField, {
+              name: 'givenName',
+              label: 'Given Name',
+              required: true,
+            }),
+            familyName: applyPartialProps(TextField, {
+              name: 'familyName',
+              label: 'Family Name',
+              required: true,
+            }),
+            gender: applyPartialProps(SelectField, {
+              name: 'gender',
+              label: 'Gender',
+              options: [
+                { value: 'male', label: 'Male' },
+                { value: 'female', label: 'Female' },
+                { value: 'other', label: 'Other' },
+                { value: 'unknown', label: 'Unknown' },
+              ],
+            }),
+            birthDate: applyPartialProps(TextField, {
+              name: 'birthDate',
+              label: 'Birth Date',
+            }),
+            practitionerId: transformProps(
+              PractitionerPicker,
+              (props: CommonFieldProps<string | undefined>) => ({
+                name: 'practitionerId',
+                label: 'General Practitioner',
+                picking: {
+                  onChange: props.onChange,
+                  value: props.value,
+                  multiple: false as const,
+                },
+              })
+            ),
+          }}
+          fieldOrder={[
+            'givenName',
+            'familyName',
+            'gender',
+            'birthDate',
+            'practitionerId',
+          ]}
+          onSubmit={handleCreatePatient}
+          submitLabel="Create Patient"
         />
-        <input
-          type="text"
-          name="familyName"
-          placeholder="Family Name"
-          className="input-2"
-          required
-        />
-        <select name="gender" className="input-2">
-          <option value="">Select Gender</option>
-          <option value="male">Male</option>
-          <option value="female">Female</option>
-          <option value="other">Other</option>
-          <option value="unknown">Unknown</option>
-        </select>
-        <input
-          type="date"
-          name="birthDate"
-          placeholder="Birth Date"
-          className="input-2"
-        />
-        <button type="submit" className="button-2 blue">
-          Create Patient
-        </button>
-      </Form>
+      </div>
     </>
   )
 }
