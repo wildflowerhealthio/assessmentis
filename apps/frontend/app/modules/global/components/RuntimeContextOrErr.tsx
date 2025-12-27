@@ -49,25 +49,6 @@ export const RuntimeContextOrErr = ({
     }
   }, [])
 
-  // useEffect(() => {
-  //   const fiber = ManagedRuntime.make(FirebaseWebPlatformServiceLayer).runFork(
-  //     PlatformService.pipe(
-  //       Effect.flatMap((platform) =>
-  //         platform.frontendConfig.pipe(
-  //           Stream.runForEach((r) =>
-  //             Effect.sync(() =>
-  //               console.log('currentUser stream emitted value:', r)
-  //             )
-  //           )
-  //         )
-  //       )
-  //     )
-  //   )
-  //   return () => {
-  //     Effect.runFork(Fiber.interrupt(fiber))
-  //   }
-  // }, [])
-
   if (runtime._tag === 'loading') {
     return (
       <>

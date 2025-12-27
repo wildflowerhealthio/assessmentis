@@ -1,5 +1,5 @@
 {
-  "extends": "@assessmentis/typescript-config/base.json",
+  "extends": "@assessmentis/typescript-config/react-library.json",
   "compilerOptions": {
     "outDir": "dist",
     "declaration": true,
@@ -9,6 +9,6 @@
   },
   "include": [
     "src/**/*",
-    "../../infrastructure/document-template-instances/src/components/Header.tsx"
+    "../../infrastructure/document-template-instances/src/base/Header.tsx"
   ]
 }

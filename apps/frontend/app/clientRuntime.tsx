@@ -1,7 +1,17 @@
-import { createContext, useContext } from 'react'
-import { Chunk, Effect, ManagedRuntime, Match, Schedule, Stream } from 'effect'
+import { createContext, useContext, useEffect, useState } from 'react'
+import {
+  Chunk,
+  Effect,
+  Exit,
+  Fiber,
+  ManagedRuntime,
+  Match,
+  Schedule,
+  Stream,
+} from 'effect'
 import { ClientRuntimeContext } from '@assessmentis/platform-domain'
 import { platform } from './firebase'
+import { LoadedResult } from '@assessmentis/ontology'
 
 export class ContextSetupError extends Error {
   constructor(message: string, cause: unknown) {
@@ -62,4 +72,34 @@ export const getRuntime = () => {
       console.error('Error getting runtime', { err })
       throw new Error('Error getting runtime', { cause: err })
     })
+}
+
+export const useRunEffect = <A, E>(
+  effect: Effect.Effect<A, E, ClientRuntimeContext>,
+  deps: unknown[]
+): LoadedResult<A, E | null> => {
+  const [res, setRes] = useState<LoadedResult<A, E | null>>(
+    LoadedResult.loading()
+  )
+  const runtime = useRuntimeContext()
+  useEffect(() => {
+    const fiber = runtime.runFork(effect)
+    fiber.addObserver(
+      Exit.match({
+        onFailure: (e) => {
+          if (e._tag === 'Fail') {
+            setRes(LoadedResult.error(e.error))
+          } else {
+            setRes(LoadedResult.error(null))
+          }
+        },
+        onSuccess: (a) => setRes(LoadedResult.loaded(a)),
+      })
+    )
+
+    return () => {
+      Effect.runFork(Fiber.interrupt(fiber))
+    }
+  }, deps)
+  return res
 }

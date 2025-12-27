@@ -3,9 +3,11 @@ import {
   CompositionId,
   CompositionRepository,
 } from '@assessmentis/clinical-domain/content-management'
-import { UnhandledError } from '@assessmentis/ontology'
+import { LoadedResult, UnhandledError } from '@assessmentis/ontology'
+import { gad7Report } from '@assessmentis/document-template-kinds'
+import { base } from '@assessmentis/document-template-instances'
 import type { Route } from './+types/Composition.$compositionId'
-import { getRuntime } from '../clientRuntime'
+import { getRuntime, useRunEffect } from '../clientRuntime'
 
 const tryDecodeCompositionId = Schema.decodeOption(CompositionId)
 
@@ -35,15 +37,23 @@ export default function CompositionDetailsPage({
   loaderData,
 }: Route.ComponentProps) {
   const { composition } = loaderData
+  const reportLoader = useRunEffect(gad7Report(base, composition.subject), [
+    composition.subject,
+  ])
 
   return (
-    <div>
+    <div style={{ overflowY: 'scroll', height: '100%' }}>
       <h2 className="heading-3">{composition.title ?? composition.id}</h2>
       <div className="subheading-3">
         {composition.status ?? 'status unknown'}
         {composition.date ? ` • ${composition.date}` : ''}
       </div>
       <pre>{JSON.stringify(composition, null, 2)}</pre>
+      {LoadedResult.handle(reportLoader, {
+        onLoading: () => <div>Loading report...</div>,
+        onError: (e) => <div>Error loading report: {String(e)}</div>,
+        onSuccess: (report) => <div>{report}</div>,
+      })}
     </div>
   )
 }

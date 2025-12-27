@@ -1,1 +1,1 @@
-export * as PlainGad7Report from './gad7-report'
+export { default as base } from './base'
