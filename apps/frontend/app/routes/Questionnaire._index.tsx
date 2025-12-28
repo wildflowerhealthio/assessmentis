@@ -9,6 +9,7 @@ import { questionnaireTemplates } from '@assessmentis/questionnaire-entities'
 import type { Route } from './+types/Questionnaire._index'
 import { getRuntime } from '../clientRuntime'
 import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
+import { LoadedResult } from '@assessmentis/ontology'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {
   const runtime = await getRuntime()
@@ -28,8 +29,9 @@ const useQuestionnaires = (initial: Questionnaire[]) => {
     QuestionnaireId,
     Questionnaire,
     QuestionnaireRepository,
-    typeof QuestionnaireRepository
-  >(QuestionnaireRepository, initial)
+    typeof QuestionnaireRepository,
+    never
+  >(QuestionnaireRepository, LoadedResult.loaded(initial))
 }
 
 export default function QuestionnairePage({
@@ -53,7 +55,9 @@ export default function QuestionnairePage({
       <h2 className="heading-3">Questionnaires</h2>
       <QuestionnairesList
         deleteQuestionnaire={deleteQuestionnaire}
-        questionnaires={questionnaires}
+        questionnaires={
+          questionnaires._tag === 'loaded' ? questionnaires.value : []
+        }
       />
       <a
         href={`https://smartforms.csiro.au/launch?launch=xyz123&iss=${encodeURIComponent(

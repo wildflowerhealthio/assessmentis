@@ -23,7 +23,8 @@ export function useClinicalDataCollection<
   T extends { id?: Tid | undefined },
   Tag extends ClientRuntimeContext,
   Repo extends ReadonlyTag<Tag, BaseClinicalDataRepository<T, Tid>>,
->(repository: Repo, initial: ReadonlyArray<T>) {
+  E,
+>(repository: Repo, loader: LoadedResult<ReadonlyArray<T>, E>) {
   const clientRuntime = useLoadedRuntimeContext()
 
   const cantRunActions = {
@@ -54,5 +55,20 @@ export function useClinicalDataCollection<
     })
   )
 
-  return useCollection<Tid, T>(actions, initial)
+  const initial = loader._tag == 'loaded' ? loader.value : []
+
+  const { collection, createItem, deleteItem } = useCollection<Tid, T>(
+    actions,
+    initial
+  )
+
+  if (loader._tag == 'loaded') {
+    return {
+      collection: LoadedResult.loaded(collection),
+      createItem,
+      deleteItem,
+    }
+  }
+
+  return { collection: loader, createItem, deleteItem }
 }

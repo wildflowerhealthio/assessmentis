@@ -1,5 +1,5 @@
 import { Schema, Option, Effect, DateTime } from 'effect'
-import { UnhandledError } from '@assessmentis/ontology'
+import { LoadedResult, UnhandledError } from '@assessmentis/ontology'
 import {
   firstItemAnsweredAfter,
   Questionnaire,
@@ -116,8 +116,9 @@ export default function QuestionnaireResponseDetailsPage({
       MediaId,
       Media,
       MediaRepository,
-      typeof MediaRepository
-    >(MediaRepository, recordings)
+      typeof MediaRepository,
+      never
+    >(MediaRepository, LoadedResult.loaded(recordings))
 
   const syncObservations = () => {
     if (!runtime) return undefined
@@ -197,43 +198,44 @@ export default function QuestionnaireResponseDetailsPage({
               Refresh
             </button>
           </h3>
-          {media.map(({ data }) => (
-            <>
-              <video
-                style={{ width: '100%', aspectRatio: 'calc(16/9)' }}
-                onTimeUpdate={(e) => {
-                  if (data.createdDateTime) {
-                    const videoTime = DateTime.add(data.createdDateTime, {
-                      seconds: e.currentTarget.currentTime,
-                    })
-                    const nextAnswer = firstItemAnsweredAfter(
-                      questionnaireResponse,
-                      videoTime
-                    )
+          {media._tag === 'loaded' &&
+            media.value.map(({ data }) => (
+              <>
+                <video
+                  style={{ width: '100%', aspectRatio: 'calc(16/9)' }}
+                  onTimeUpdate={(e) => {
+                    if (data.createdDateTime) {
+                      const videoTime = DateTime.add(data.createdDateTime, {
+                        seconds: e.currentTarget.currentTime,
+                      })
+                      const nextAnswer = firstItemAnsweredAfter(
+                        questionnaireResponse,
+                        videoTime
+                      )
 
-                    setHighlightLinks(
-                      nextAnswer ? new Set([nextAnswer.linkId]) : new Set()
-                    )
-                  }
-                }}
-                controls
-              >
-                <source src={data.content.url} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-              <button
-                className="element-button button-1 filled accent-red"
-                style={{
-                  marginTop: 'var(--space-1)',
-                  marginBottom: 'var(--space-5)',
-                  width: '100%',
-                }}
-                onClick={() => deleteMedia(data.id)}
-              >
-                Delete
-              </button>
-            </>
-          ))}
+                      setHighlightLinks(
+                        nextAnswer ? new Set([nextAnswer.linkId]) : new Set()
+                      )
+                    }
+                  }}
+                  controls
+                >
+                  <source src={data.content.url} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+                <button
+                  className="element-button button-1 filled accent-red"
+                  style={{
+                    marginTop: 'var(--space-1)',
+                    marginBottom: 'var(--space-5)',
+                    width: '100%',
+                  }}
+                  onClick={() => deleteMedia(data.id)}
+                >
+                  Delete
+                </button>
+              </>
+            ))}
 
           <h3
             className="heading-3"

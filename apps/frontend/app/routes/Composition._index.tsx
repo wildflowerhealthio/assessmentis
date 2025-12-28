@@ -21,6 +21,7 @@ import {
 } from 'app/modules/resources/Composition/schemas/CompositionFormSchema'
 import { CommonFieldProps } from '../modules/common/components/ResourceForm/ResourceForm'
 import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
+import { LoadedResult } from '../../../../global/ontology/src/LoadedResult'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {
   const runtime = await getRuntime()
@@ -40,8 +41,9 @@ const useCompositions = (initial: Composition[]) => {
     CompositionId,
     Composition,
     CompositionRepository,
-    typeof CompositionRepository
-  >(CompositionRepository, initial)
+    typeof CompositionRepository,
+    never
+  >(CompositionRepository, LoadedResult.loaded(initial))
 }
 
 export default function CompositionPage({ loaderData }: Route.ComponentProps) {
@@ -69,11 +71,25 @@ export default function CompositionPage({ loaderData }: Route.ComponentProps) {
     <>
       <h1 className="heading-1">Compositions</h1>
 
-      <CompositionList
-        compositions={compositions}
-        deleteComposition={deleteComposition}
-      />
-
+      {LoadedResult.handle(compositions, {
+        onLoading: () => <p>Loading compositions...</p>,
+        onError: (error) =>
+          error == null ? (
+            <p style={{ color: 'var(--color-error)' }}>
+              Error loading compositions
+            </p>
+          ) : (
+            <p style={{ color: 'var(--color-error)' }}>
+              Error loading compositions: {JSON.stringify(error, null, 2)}
+            </p>
+          ),
+        onSuccess: (data) => (
+          <CompositionList
+            compositions={data}
+            deleteComposition={deleteComposition}
+          />
+        ),
+      })}
       <h2 className="heading-3" style={{ marginTop: 'var(--space-7)' }}>
         Create a new composition
       </h2>

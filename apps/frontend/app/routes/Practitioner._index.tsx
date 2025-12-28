@@ -19,6 +19,7 @@ import {
 } from 'app/modules/resources/Practitioner/schemas/PractitionerFormSchema'
 import { applyPartialProps } from '@assessmentis/react-util'
 import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
+import { LoadedResult } from '@assessmentis/ontology'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {
   const runtime = await getRuntime()
@@ -37,8 +38,9 @@ const usePractitioners = (initial: Practitioner[]) => {
     PractitionerId,
     Practitioner,
     PractitionerRepository,
-    typeof PractitionerRepository
-  >(PractitionerRepository, initial)
+    typeof PractitionerRepository,
+    never
+  >(PractitionerRepository, LoadedResult.loaded(initial))
 }
 
 export default function PractitionerPage({ loaderData }: Route.ComponentProps) {
@@ -67,10 +69,16 @@ export default function PractitionerPage({ loaderData }: Route.ComponentProps) {
     <>
       <h1 className="heading-1">Practitioners</h1>
 
-      <PractitionerList
-        deletePractitioner={deletePractitioner}
-        practitioners={practitioners}
-      />
+      {LoadedResult.handle(practitioners, {
+        onLoading: () => <p>Loading...</p>,
+        onError: (error) => <p>Error: {String(error)}</p>,
+        onSuccess: (data) => (
+          <PractitionerList
+            deletePractitioner={deletePractitioner}
+            practitioners={data}
+          />
+        ),
+      })}
 
       <h2 className="heading-3" style={{ marginTop: 'var(--space-7)' }}>
         Create a new practitioner

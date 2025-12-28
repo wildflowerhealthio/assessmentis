@@ -4,25 +4,45 @@ import {
   ObservationId,
   ObservationRepository,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { useRunEffect } from '../clientRuntime'
+import { ContextError, useRunEffect } from '../clientRuntime'
 import ObservationList from '../modules/resources/Observation/components/ObservationList'
 import type { Route } from './+types/Observation._index'
 import { useSearchParams } from 'react-router'
 import { useMemo } from 'react'
-import { LoadedResult } from '@assessmentis/ontology'
+import {
+  ExternalAssertionError,
+  LoadedResult,
+  NeedsAuthenticationError,
+  UnhandledError,
+} from '@assessmentis/ontology'
 import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
 import { PatientPicker } from '../modules/resources/Patient/components/PatientPicker'
 import { EncounterPicker } from '../modules/resources/Encounter/components/EncounterPicker'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {}
 
-const useObservations = (initial: ReadonlyArray<Observation>) => {
+const useObservations = (filter: { subject?: string; encounter?: string }) => {
+  const remoteObservations = useRunEffect(
+    useMemo(() => {
+      return Effect.gen(function* () {
+        const observationRepository = yield* ObservationRepository
+        const observations = yield* observationRepository.getMany(filter)
+        return observations
+      })
+    }, [filter])
+  )
+
   return useClinicalDataCollection<
     ObservationId,
     Observation,
     ObservationRepository,
-    typeof ObservationRepository
-  >(ObservationRepository, initial)
+    typeof ObservationRepository,
+    | UnhandledError
+    | NeedsAuthenticationError
+    | ExternalAssertionError
+    | ContextError
+    | null
+  >(ObservationRepository, remoteObservations)
 }
 
 export default function ObservationPage(_: Route.ComponentProps) {
@@ -48,15 +68,8 @@ export default function ObservationPage(_: Route.ComponentProps) {
     return filter
   }, [patientId, encounterId])
 
-  const remoteObservations = useRunEffect(
-    useMemo(() => {
-      return Effect.gen(function* () {
-        const observationRepository = yield* ObservationRepository
-        const observations = yield* observationRepository.getMany(filter)
-        return observations
-      })
-    }, [filter])
-  )
+  const { collection: observations, deleteItem: deleteObservation } =
+    useObservations(filter)
 
   const handlePatientChange = (id: string | undefined) => {
     const newParams = new URLSearchParams(searchParams)
@@ -119,7 +132,7 @@ export default function ObservationPage(_: Route.ComponentProps) {
       </section>
 
       <div style={{ marginTop: 'var(--space-5)' }}>
-        {LoadedResult.handle(remoteObservations, {
+        {LoadedResult.handle(observations, {
           onLoading: () => <p>Loading observations...</p>,
           onError: (error) =>
             error == null ? (
@@ -132,25 +145,13 @@ export default function ObservationPage(_: Route.ComponentProps) {
               </p>
             ),
           onSuccess: (observations) => (
-            <EditableObservationList observations={observations} />
+            <ObservationList
+              observations={observations}
+              deleteObservation={deleteObservation}
+            />
           ),
         })}
       </div>
     </>
-  )
-}
-
-const EditableObservationList = ({
-  observations: initialObservations,
-}: {
-  observations: ReadonlyArray<Observation>
-}) => {
-  const { collection: observations, deleteItem: deleteObservation } =
-    useObservations(initialObservations)
-  return (
-    <ObservationList
-      observations={observations}
-      deleteObservation={deleteObservation}
-    />
   )
 }

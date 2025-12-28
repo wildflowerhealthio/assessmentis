@@ -16,6 +16,7 @@ import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDa
 import { PatientPicker } from '../modules/resources/Patient/components/PatientPicker'
 import { PractitionerPicker } from '../modules/resources/Practitioner/components/PractitionerPicker'
 import { QuestionnairePicker } from '../modules/resources/Questionnaire/components/QuestionnairePicker/QuestionnairePicker'
+import { LoadedResult } from '../../../../global/ontology/src/LoadedResult'
 
 const decodeQuestionnaireId = Schema.decodeUnknownSync(QuestionnaireId)
 
@@ -69,8 +70,9 @@ const useEncounters = (initial: Encounter[]) => {
     EncounterId,
     Encounter,
     EncounterRepository,
-    typeof EncounterRepository
-  >(EncounterRepository, initial)
+    typeof EncounterRepository,
+    never
+  >(EncounterRepository, LoadedResult.loaded(initial))
 }
 
 export default function EncounterPage({
@@ -99,14 +101,17 @@ export default function EncounterPage({
   return (
     <>
       <h2 className="heading-3">Join an encounter</h2>
-      <EncountersList
-        deleteEncounter={deleteEncounter}
-        encounters={encounters}
-      />
+      {LoadedResult.handle(encounters, {
+        onLoading: () => <p>Loading...</p>,
+        onError: (error) => <p>Error: {String(error)}</p>,
+        onSuccess: (data) => (
+          <EncountersList deleteEncounter={deleteEncounter} encounters={data} />
+        ),
+      })}
+
       <h2 className="heading-3" style={{ marginTop: 'var(--space-7)' }}>
         Create a new encounter
       </h2>
-
       <Form
         method="post"
         style={{

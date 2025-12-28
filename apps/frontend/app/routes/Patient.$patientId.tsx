@@ -5,10 +5,9 @@ import {
 } from '@assessmentis/clinical-domain/administration'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/Patient.$patientId'
-import { getRuntime } from '../clientRuntime'
+import { getRuntime, useLoadedRuntimeContext } from '../clientRuntime'
 import { Link } from 'react-router'
 import { ResourceForm } from 'app/modules/common/components/ResourceForm'
-import { useRuntimeContext } from 'app/clientRuntime'
 import { transformProps } from '@assessmentis/react-util'
 import { CommonFieldProps } from '../modules/common/components/ResourceForm/ResourceForm'
 import { PractitionerPicker } from '../modules/resources/Practitioner/components/PractitionerPicker'
@@ -45,8 +44,7 @@ export default function PatientDetailPage({
   loaderData,
 }: Route.ComponentProps) {
   const { patient } = loaderData
-  const clientRuntime = useRuntimeContext()
-
+  const clientRuntime = useLoadedRuntimeContext()
   const displayName = patient.name?.[0]
     ? `${patient.name[0].given?.join(' ') ?? ''} ${patient.name[0].family ?? ''}`.trim()
     : 'Unnamed Patient'
@@ -57,7 +55,11 @@ export default function PatientDetailPage({
   const handleUpdatePractitioner = async (
     formData: typeof PractitionerUpdateSchema.Type
   ) => {
-    await clientRuntime.runPromise(
+    if (clientRuntime._tag != 'loaded') {
+      console.error('Runtime not loaded', clientRuntime)
+      return
+    }
+    await clientRuntime.value.runPromise(
       Effect.gen(function* () {
         const repository = yield* PatientRepository
 
