@@ -6,10 +6,9 @@ import {
   QuestionnaireRepository,
 } from '@assessmentis/clinical-domain/content-management'
 import { questionnaireTemplates } from '@assessmentis/questionnaire-entities'
-import { useRuntimeContext } from 'app/clientRuntime'
 import type { Route } from './+types/Questionnaire._index'
-import { useCollection } from '@assessmentis/react-util'
 import { getRuntime } from '../clientRuntime'
+import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {
   const runtime = await getRuntime()
@@ -25,28 +24,12 @@ export async function clientLoader(_: Route.ClientLoaderArgs) {
 }
 
 const useQuestionnaires = (initial: Questionnaire[]) => {
-  const clientRuntime = useRuntimeContext()
-  console.log('clientRuntime', clientRuntime)
-
-  return useCollection<QuestionnaireId, Questionnaire>(
-    {
-      apiDelete: async (id: QuestionnaireId) =>
-        clientRuntime.runPromise(
-          Effect.all([
-            Effect.sleep('200 millis'),
-            QuestionnaireRepository.pipe(Effect.flatMap((qr) => qr.delete(id))),
-          ])
-        ),
-      apiCreate: async (q: Questionnaire) =>
-        clientRuntime.runPromise(
-          Effect.all([
-            Effect.sleep('200 millis'),
-            QuestionnaireRepository.pipe(Effect.flatMap((qr) => qr.create(q))),
-          ]).pipe(Effect.map(([, x]) => x))
-        ),
-    },
-    initial
-  )
+  return useClinicalDataCollection<
+    QuestionnaireId,
+    Questionnaire,
+    QuestionnaireRepository,
+    typeof QuestionnaireRepository
+  >(QuestionnaireRepository, initial)
 }
 
 export default function QuestionnairePage({

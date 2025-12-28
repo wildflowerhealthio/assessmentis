@@ -63,6 +63,13 @@ const NavHeader = () => {
               Compositions
             </Link>
 
+            <Link
+              className={cn('heading-2', classes.NavHeader__link)}
+              to="/Observation"
+            >
+              Observations
+            </Link>
+
             <hr />
 
             <Link

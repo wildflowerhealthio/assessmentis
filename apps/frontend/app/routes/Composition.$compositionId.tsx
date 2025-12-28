@@ -8,6 +8,7 @@ import { gad7Report } from '@assessmentis/document-template-kinds'
 import { base } from '@assessmentis/document-template-instances'
 import type { Route } from './+types/Composition.$compositionId'
 import { getRuntime, useRunEffect } from '../clientRuntime'
+import { useMemo } from 'react'
 
 const tryDecodeCompositionId = Schema.decodeOption(CompositionId)
 
@@ -37,9 +38,9 @@ export default function CompositionDetailsPage({
   loaderData,
 }: Route.ComponentProps) {
   const { composition } = loaderData
-  const reportLoader = useRunEffect(gad7Report(base, composition.subject), [
-    composition.subject,
-  ])
+  const reportLoader = useRunEffect(
+    useMemo(() => gad7Report(base, composition.subject), [composition.subject])
+  )
 
   return (
     <div style={{ overflowY: 'scroll', height: '100%' }}>

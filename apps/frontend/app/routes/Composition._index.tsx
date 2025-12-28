@@ -5,11 +5,7 @@ import {
   CompositionRepository,
 } from '@assessmentis/clinical-domain/content-management'
 import { useRuntimeContext } from 'app/clientRuntime'
-import {
-  applyPartialProps,
-  transformProps,
-  useCollection,
-} from '@assessmentis/react-util'
+import { applyPartialProps, transformProps } from '@assessmentis/react-util'
 import type { Route } from './+types/Composition._index'
 import CompositionList from '../modules/compositions/components/CompositionList'
 import { getRuntime } from '../clientRuntime'
@@ -24,6 +20,7 @@ import {
   transformToComposition,
 } from 'app/modules/compositions/schemas/CompositionFormSchema'
 import { CommonFieldProps } from '../modules/common/components/ResourceForm/ResourceForm'
+import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {
   const runtime = await getRuntime()
@@ -39,27 +36,12 @@ export async function clientLoader(_: Route.ClientLoaderArgs) {
 }
 
 const useCompositions = (initial: Composition[]) => {
-  const clientRuntime = useRuntimeContext()
-
-  return useCollection<CompositionId, Composition>(
-    {
-      apiDelete: async (id: CompositionId) =>
-        clientRuntime.runPromise(
-          Effect.all([
-            Effect.sleep('200 millis'),
-            CompositionRepository.pipe(Effect.flatMap((cr) => cr.delete(id))),
-          ])
-        ),
-      apiCreate: async (c_: Composition) =>
-        clientRuntime.runPromise(
-          Effect.all([
-            Effect.sleep('200 millis'),
-            CompositionRepository.pipe(Effect.flatMap((cr) => cr.create(c_))),
-          ]).pipe(Effect.map(([, x]) => x))
-        ),
-    },
-    initial
-  )
+  return useClinicalDataCollection<
+    CompositionId,
+    Composition,
+    CompositionRepository,
+    typeof CompositionRepository
+  >(CompositionRepository, initial)
 }
 
 export default function CompositionPage({ loaderData }: Route.ComponentProps) {

@@ -18,7 +18,7 @@ import {
 } from '@assessmentis/ontology'
 import * as firebase from 'app/firebase'
 import NavHeader from './modules/global/components/NavHeader/NavHeader'
-import { RuntimeContextOrErr } from './modules/global/components/RuntimeContextOrErr'
+import { LoadedRuntimeContextProvider } from './modules/global/components/RuntimeContextOrErr'
 
 // HydrateFallback is rendered while the client loader is running
 export function HydrateFallback() {
@@ -42,7 +42,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <NavHeader />
-        <RuntimeContextOrErr>
+        <LoadedRuntimeContextProvider>
           <div
             style={{
               width: '100%',
@@ -59,7 +59,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           >
             {children}
           </div>
-        </RuntimeContextOrErr>
+        </LoadedRuntimeContextProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

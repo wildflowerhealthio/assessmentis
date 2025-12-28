@@ -7,7 +7,6 @@ import {
 import { getRuntime } from '../clientRuntime'
 import PractitionerList from '../modules/practitioner/components/PractitionerList'
 import type { Route } from './+types/Practitioner._index'
-import { useCollection } from '@assessmentis/react-util'
 import { useRuntimeContext } from 'app/clientRuntime'
 import {
   ResourceForm,
@@ -19,6 +18,7 @@ import {
   transformToPractitioner,
 } from 'app/modules/practitioner/schemas/PractitionerFormSchema'
 import { applyPartialProps } from '@assessmentis/react-util'
+import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {
   const runtime = await getRuntime()
@@ -33,29 +33,12 @@ export async function clientLoader(_: Route.ClientLoaderArgs) {
 }
 
 const usePractitioners = (initial: Practitioner[]) => {
-  const clientRuntime = useRuntimeContext()
-
-  return useCollection<PractitionerId, Practitioner>(
-    {
-      apiDelete: async (id: PractitionerId) =>
-        clientRuntime.runPromise(
-          Effect.all([
-            Effect.sleep('200 millis'),
-            PractitionerRepository.pipe(Effect.flatMap((pr) => pr.delete(id))),
-          ])
-        ),
-      apiCreate: async (practitioner: Practitioner) =>
-        clientRuntime.runPromise(
-          Effect.all([
-            Effect.sleep('200 millis'),
-            PractitionerRepository.pipe(
-              Effect.flatMap((pr) => pr.create(practitioner))
-            ),
-          ]).pipe(Effect.map(([, x]) => x))
-        ),
-    },
-    initial
-  )
+  return useClinicalDataCollection<
+    PractitionerId,
+    Practitioner,
+    PractitionerRepository,
+    typeof PractitionerRepository
+  >(PractitionerRepository, initial)
 }
 
 export default function PractitionerPage({ loaderData }: Route.ComponentProps) {

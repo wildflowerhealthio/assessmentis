@@ -7,11 +7,7 @@ import {
 import { getRuntime } from '../clientRuntime'
 import PatientList from '../modules/patient/components/PatientList'
 import type { Route } from './+types/Patient._index'
-import {
-  applyPartialProps,
-  transformProps,
-  useCollection,
-} from '@assessmentis/react-util'
+import { applyPartialProps, transformProps } from '@assessmentis/react-util'
 import { useRuntimeContext } from 'app/clientRuntime'
 import { PractitionerPicker } from 'app/modules/common/components/BasePicker'
 import {
@@ -24,6 +20,7 @@ import {
   transformToPatient,
 } from 'app/modules/patient/schemas/PatientFormSchema'
 import { CommonFieldProps } from '../modules/common/components/ResourceForm/ResourceForm'
+import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {
   const runtime = await getRuntime()
@@ -38,27 +35,12 @@ export async function clientLoader(_: Route.ClientLoaderArgs) {
 }
 
 const usePatients = (initial: Patient[]) => {
-  const clientRuntime = useRuntimeContext()
-
-  return useCollection<PatientId, Patient>(
-    {
-      apiDelete: async (id: PatientId) =>
-        clientRuntime.runPromise(
-          Effect.all([
-            Effect.sleep('200 millis'),
-            PatientRepository.pipe(Effect.flatMap((pr) => pr.delete(id))),
-          ])
-        ),
-      apiCreate: async (patient: Patient) =>
-        clientRuntime.runPromise(
-          Effect.all([
-            Effect.sleep('200 millis'),
-            PatientRepository.pipe(Effect.flatMap((pr) => pr.create(patient))),
-          ]).pipe(Effect.map(([, x]) => x))
-        ),
-    },
-    initial
-  )
+  return useClinicalDataCollection<
+    PatientId,
+    Patient,
+    PatientRepository,
+    typeof PatientRepository
+  >(PatientRepository, initial)
 }
 
 export default function PatientPage({ loaderData }: Route.ComponentProps) {

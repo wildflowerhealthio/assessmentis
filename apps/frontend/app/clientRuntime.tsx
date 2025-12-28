@@ -9,7 +9,7 @@ import {
   Schedule,
   Stream,
 } from 'effect'
-import { ClientRuntimeContext } from '@assessmentis/platform-domain'
+import { ClientRuntimeContext, OrgError } from '@assessmentis/platform-domain'
 import { platform } from './firebase'
 import { LoadedResult } from '@assessmentis/ontology'
 
@@ -25,6 +25,18 @@ export const RuntimeContext = createContext<
 >(undefined)
 
 export const useRuntimeContext = () => useContext(RuntimeContext)!
+
+export type ContextError = OrgError
+
+export const LoadedRuntimeContext = createContext<
+  | LoadedResult<
+      ManagedRuntime.ManagedRuntime<ClientRuntimeContext, never>,
+      ContextError
+    >
+  | undefined
+>(undefined)
+
+export const useLoadedRuntimeContext = () => useContext(LoadedRuntimeContext)!
 
 export const getRuntime = () => {
   console.log('Getting runtime with promise')
@@ -75,14 +87,19 @@ export const getRuntime = () => {
 }
 
 export const useRunEffect = <A, E>(
-  effect: Effect.Effect<A, E, ClientRuntimeContext>,
-  deps: unknown[]
-): LoadedResult<A, E | null> => {
-  const [res, setRes] = useState<LoadedResult<A, E | null>>(
+  effect: Effect.Effect<A, E, ClientRuntimeContext>
+): LoadedResult<A, E | ContextError | null> => {
+  const [res, setRes] = useState<LoadedResult<A, E | ContextError | null>>(
     LoadedResult.loading()
   )
-  const runtime = useRuntimeContext()
+  const loadedRuntime = useLoadedRuntimeContext()
+
   useEffect(() => {
+    if (loadedRuntime._tag != 'loaded') {
+      return
+    }
+
+    const runtime = loadedRuntime.value
     const fiber = runtime.runFork(effect)
     fiber.addObserver(
       Exit.match({
@@ -100,6 +117,10 @@ export const useRunEffect = <A, E>(
     return () => {
       Effect.runFork(Fiber.interrupt(fiber))
     }
-  }, deps)
+  }, [loadedRuntime, effect])
+
+  if (loadedRuntime._tag != 'loaded') {
+    return loadedRuntime
+  }
   return res
 }

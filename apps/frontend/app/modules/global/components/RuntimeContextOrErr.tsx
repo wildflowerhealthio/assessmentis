@@ -1,18 +1,23 @@
 import { useEffect, useState } from 'react'
-import { RuntimeContext } from '../../../clientRuntime'
+import {
+  ContextError,
+  LoadedRuntimeContext,
+  RuntimeContext,
+  useLoadedRuntimeContext,
+} from '../../../clientRuntime'
 import { Effect, ManagedRuntime, Stream } from 'effect'
-import { ClientRuntimeContext, OrgError } from '@assessmentis/platform-domain'
+import { ClientRuntimeContext } from '@assessmentis/platform-domain'
 import { LoadedResult } from '@assessmentis/ontology'
 import { pipe } from 'effect'
 import { platform } from '../../../firebase'
 
-export const RuntimeContextOrErr = ({
+export const LoadedRuntimeContextProvider = ({
   children,
 }: React.PropsWithChildren<object>) => {
   const [runtime, setRuntime] = useState<
     LoadedResult<
       ManagedRuntime.ManagedRuntime<ClientRuntimeContext, never>,
-      OrgError
+      ContextError
     >
   >(LoadedResult.loading())
 
@@ -25,6 +30,7 @@ export const RuntimeContextOrErr = ({
       platform.runtime.changes.pipe(
         Stream.runForEach((r) =>
           Effect.sync(() => {
+            console.log('Setting runtime', r)
             setRuntime(
               pipe(
                 r,
@@ -49,26 +55,33 @@ export const RuntimeContextOrErr = ({
     }
   }, [])
 
+  return (
+    <LoadedRuntimeContext.Provider value={runtime}>
+      {children}
+    </LoadedRuntimeContext.Provider>
+  )
+}
+
+export const RuntimeContextOrErr = ({
+  children,
+  className,
+}: React.PropsWithChildren<{ className?: string | undefined }>) => {
+  const runtime = useLoadedRuntimeContext()
   if (runtime._tag === 'loading') {
-    return (
-      <>
-        <div>Loading...</div>
-        {children}
-      </>
-    )
+    return <div className={className}>Loading...</div>
   }
 
   if (runtime._tag === 'error') {
     return (
-      <>
-        <div>
-          Runtime Context Loading Error: {JSON.stringify(runtime.error)}
-        </div>
-
-        {children}
-      </>
+      <div className={className}>
+        Runtime Context Loading Error: {JSON.stringify(runtime.error)}
+      </div>
     )
   }
 
-  return <RuntimeContext value={runtime.value}>{children}</RuntimeContext>
+  return (
+    <RuntimeContext value={runtime.value}>
+      <div className={className}>{children}</div>
+    </RuntimeContext>
+  )
 }

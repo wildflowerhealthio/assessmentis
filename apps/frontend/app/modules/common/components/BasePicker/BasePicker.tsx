@@ -67,10 +67,8 @@ export function BasePicker<T>(props: BasePickerProps<T>) {
   const [searchQuery, setSearchQuery] = useState('')
 
   const filteredItems = usePickerFilter(items, searchQuery, filterFn)
-  const { selectedItems, handleSelect, isSelected } = usePickerSelection<T>(
-    items,
-    picking
-  )
+  const { selectedItems, handleSelect, handleSelectMany, isSelected } =
+    usePickerSelection<T>(items, picking)
 
   // Create placeholder items while loading if we have a value but no matching items
   const displayItems = useMemo(() => {
@@ -100,7 +98,7 @@ export function BasePicker<T>(props: BasePickerProps<T>) {
         value={displayItems}
         onChange={(item) => {
           if (Array.isArray(item)) {
-            item.forEach((i) => handleSelect(i))
+            handleSelectMany(item)
           } else if (item) {
             handleSelect(item)
           }

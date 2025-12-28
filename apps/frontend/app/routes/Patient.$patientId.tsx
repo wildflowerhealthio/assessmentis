@@ -10,7 +10,7 @@ import { Link } from 'react-router'
 import { PractitionerPicker } from 'app/modules/common/components/BasePicker'
 import { ResourceForm } from 'app/modules/common/components/ResourceForm'
 import { useRuntimeContext } from 'app/clientRuntime'
-import { applyPartialProps, transformProps } from '@assessmentis/react-util'
+import { transformProps } from '@assessmentis/react-util'
 import { CommonFieldProps } from '../modules/common/components/ResourceForm/ResourceForm'
 
 const tryDecodePatientId = Schema.decodeOption(PatientId)

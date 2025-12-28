@@ -1,9 +1,22 @@
 import { BaseClinicalDataRepository } from '@assessmentis/clinical-domain'
 import { useCollection } from '@assessmentis/react-util'
 import { pipe, Effect } from 'effect'
-import { useRuntimeContext } from '../../../clientRuntime'
+import { useLoadedRuntimeContext } from '../../../clientRuntime'
 import { ReadonlyTag } from 'effect/Context'
 import { ClientRuntimeContext } from '@assessmentis/platform-domain'
+import { LoadedResult } from '@assessmentis/ontology'
+
+const useLoadedValueOrDefault = <T, O>(
+  loaded: LoadedResult<T, unknown>,
+  defaultValue: O,
+  transform: (value: T) => O
+): O => {
+  return LoadedResult.handle(loaded, {
+    onLoading: () => defaultValue,
+    onError: () => defaultValue,
+    onSuccess: (value) => transform(value),
+  })
+}
 
 export function useClinicalDataCollection<
   Tid extends string,
@@ -11,29 +24,35 @@ export function useClinicalDataCollection<
   Tag extends ClientRuntimeContext,
   Repo extends ReadonlyTag<Tag, BaseClinicalDataRepository<T, Tid>>,
 >(repository: Repo, initial: ReadonlyArray<T>) {
-  const clientRuntime = useRuntimeContext()
+  const clientRuntime = useLoadedRuntimeContext()
 
-  return useCollection<Tid, T>(
-    {
+  const cantRunActions = {
+    apiDelete: (_: Tid | undefined) => Promise.reject("Can't run actions"),
+    apiCreate: (_: T) => Promise.reject("Can't run actions"),
+  }
+
+  const actions = useLoadedValueOrDefault(
+    clientRuntime,
+    cantRunActions,
+    (runtime) => ({
       apiDelete: async (id: Tid | undefined) => {
         if (!id) return
         const a = pipe(
           repository,
           Effect.flatMap((repo) => repo.delete(id))
         )
-        return clientRuntime.runPromise(
-          Effect.all([Effect.sleep('200 millis'), a])
-        )
+        return runtime.runPromise(Effect.all([Effect.sleep('200 millis'), a]))
       },
       apiCreate: (t: T): Promise<T> => {
-        return clientRuntime.runPromise(
+        return runtime.runPromise(
           Effect.all([
             Effect.sleep('200 millis'),
             repository.pipe(Effect.flatMap((repo) => repo.create(t))),
           ]).pipe(Effect.map(([, x]) => x))
         )
       },
-    },
-    initial
+    })
   )
+
+  return useCollection<Tid, T>(actions, initial)
 }

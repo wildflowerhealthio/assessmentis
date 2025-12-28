@@ -8,10 +8,8 @@ import { QuestionnaireId } from '@assessmentis/clinical-domain/content-managemen
 import { QuestionnaireRepository } from '@assessmentis/clinical-domain/content-management'
 import { createEncounter } from 'app/modules/encounters/actions/createEncounter'
 import { Form, useNavigate } from 'react-router'
-import { useRuntimeContext } from 'app/clientRuntime'
 import EncountersList from '../modules/encounters/components/EncountersList'
 import type { Route } from './+types/Encounter._index'
-import { useCollection } from '@assessmentis/react-util'
 import { useEffect, useState } from 'react'
 import { getRuntime } from '../clientRuntime'
 import {
@@ -19,6 +17,7 @@ import {
   PractitionerPicker,
   QuestionnairePicker,
 } from 'app/modules/common/components/BasePicker'
+import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
 
 const decodeQuestionnaireId = Schema.decodeUnknownSync(QuestionnaireId)
 
@@ -68,27 +67,12 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
 }
 
 const useEncounters = (initial: Encounter[]) => {
-  const clientRuntime = useRuntimeContext()
-
-  return useCollection<EncounterId, Encounter>(
-    {
-      apiDelete: async (id: EncounterId) =>
-        clientRuntime.runPromise(
-          Effect.all([
-            Effect.sleep('200 millis'),
-            EncounterRepository.pipe(Effect.flatMap((er) => er.delete(id))),
-          ])
-        ),
-      apiCreate: async (q: Encounter) =>
-        clientRuntime.runPromise(
-          Effect.all([
-            Effect.sleep('200 millis'),
-            EncounterRepository.pipe(Effect.flatMap((qr) => qr.create(q))),
-          ]).pipe(Effect.map(([, x]) => x))
-        ),
-    },
-    initial
-  )
+  return useClinicalDataCollection<
+    EncounterId,
+    Encounter,
+    EncounterRepository,
+    typeof EncounterRepository
+  >(EncounterRepository, initial)
 }
 
 export default function EncounterPage({

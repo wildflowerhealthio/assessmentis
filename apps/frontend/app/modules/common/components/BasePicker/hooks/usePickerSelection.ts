@@ -21,6 +21,7 @@ export function usePickerSelection<T>(
 ): {
   selectedItems: PickerItem<T>[]
   handleSelect: (item: PickerItem<T>) => void
+  handleSelectMany: (item: ReadonlyArray<PickerItem<T>>) => void
   isSelected: (item: PickerItem<T>) => boolean
 } {
   const { value } = props
@@ -49,10 +50,25 @@ export function usePickerSelection<T>(
 
         props.onChange(newIds)
       } else {
-        props.onChange(item.id)
+        if (normalizedValue[0] === item.id) {
+          // Deselect if already selected
+          props.onChange(undefined)
+          return
+        } else {
+          props.onChange(item.id)
+        }
       }
     },
     [props, normalizedValue]
+  )
+
+  const handleSelectMany = useCallback(
+    (items: ReadonlyArray<PickerItem<T>>) => {
+      if (props.multiple) {
+        props.onChange(items.map((i) => i.id))
+      }
+    },
+    [props]
   )
 
   const isSelected = useCallback(
@@ -62,5 +78,5 @@ export function usePickerSelection<T>(
     [normalizedValue]
   )
 
-  return { selectedItems, handleSelect, isSelected }
+  return { selectedItems, handleSelect, handleSelectMany, isSelected }
 }

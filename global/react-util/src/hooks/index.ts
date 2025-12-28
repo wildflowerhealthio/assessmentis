@@ -1,4 +1,4 @@
-import { RefObject, useEffect, useState } from 'react'
+import { RefObject, use, useEffect, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 
 export const useCollection = <
@@ -17,6 +17,12 @@ export const useCollection = <
   const [collection, setCollection] = useState(
     initial.map((item) => ({ data: item, loading: false }))
   )
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCollection(initial.map((item) => ({ data: item, loading: false })))
+  }, [initial])
+
   const deleteItem = async (id: Id | undefined) => {
     if (!id) return
     setCollection((current) =>
