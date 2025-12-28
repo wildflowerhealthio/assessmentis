@@ -2,12 +2,12 @@ import {
   Practitioner,
   PractitionerRepository,
 } from '@assessmentis/clinical-domain/administration'
-import { BasePicker } from '../../../common/components/BasePicker/BasePicker'
 import { usePickerData } from '../../../common/components/BasePicker/hooks/usePickerData'
 import {
   BasePickerProps,
   PickerItem,
 } from '../../../common/components/BasePicker/types/PickerTypes'
+import { BasePicker } from '../../../common/components/BasePicker/BasePicker'
 
 type PractitionerPickerProps = Omit<
   BasePickerProps<{ practitioner: Practitioner }>,

@@ -8,11 +8,11 @@ import {
   QuestionnaireItem,
   QuestionnaireItemLink,
 } from '@assessmentis/clinical-domain/content-management'
-import DisplayQuestionnaireItemForm from 'app/modules/questionnaire/features/QuestionnaireForm/components/DisplayQuestionnaireItemForm/DisplayQuestionnaireItemForm'
+import DisplayQuestionnaireItemForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/components/DisplayQuestionnaireItemForm/DisplayQuestionnaireItemForm'
 import RadioQuestionnaireItemForm, {
   RadioQuestionnaireItemFormGroup,
-} from 'app/modules/questionnaire/features/QuestionnaireForm/components/RadioQuestionnaireItemForm/RadioQuestionnaireItemForm'
-import TextQuestionnaireItemForm from 'app/modules/questionnaire/features/QuestionnaireForm/components/TextQuestionnaireItemForm/TextQuestionnaireItemForm'
+} from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/components/RadioQuestionnaireItemForm/RadioQuestionnaireItemForm'
+import TextQuestionnaireItemForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/components/TextQuestionnaireItemForm/TextQuestionnaireItemForm'
 import type { SetStateAction } from 'react'
 
 interface IProps {

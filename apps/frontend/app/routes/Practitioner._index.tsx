@@ -5,7 +5,7 @@ import {
   PractitionerRepository,
 } from '@assessmentis/clinical-domain/administration'
 import { getRuntime } from '../clientRuntime'
-import PractitionerList from '../modules/practitioner/components/PractitionerList'
+import PractitionerList from '../modules/resources/Practitioner/components/PractitionerList'
 import type { Route } from './+types/Practitioner._index'
 import { useRuntimeContext } from 'app/clientRuntime'
 import {
@@ -16,7 +16,7 @@ import {
 import {
   PractitionerFormSchema,
   transformToPractitioner,
-} from 'app/modules/practitioner/schemas/PractitionerFormSchema'
+} from 'app/modules/resources/Practitioner/schemas/PractitionerFormSchema'
 import { applyPartialProps } from '@assessmentis/react-util'
 import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
 

@@ -5,11 +5,11 @@ import {
   PatientRepository,
 } from '@assessmentis/clinical-domain/administration'
 import { getRuntime } from '../clientRuntime'
-import PatientList from '../modules/patient/components/PatientList'
+import PatientList from '../modules/resources/Patient/components/PatientList'
 import type { Route } from './+types/Patient._index'
 import { applyPartialProps, transformProps } from '@assessmentis/react-util'
 import { useRuntimeContext } from 'app/clientRuntime'
-import { PractitionerPicker } from 'app/modules/common/components/BasePicker'
+import { PractitionerPicker } from '../modules/resources/Practitioner/components/PractitionerPicker'
 import {
   ResourceForm,
   SelectField,
@@ -18,7 +18,7 @@ import {
 import {
   PatientFormSchema,
   transformToPatient,
-} from 'app/modules/patient/schemas/PatientFormSchema'
+} from 'app/modules/resources/Patient/schemas/PatientFormSchema'
 import { CommonFieldProps } from '../modules/common/components/ResourceForm/ResourceForm'
 import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
 

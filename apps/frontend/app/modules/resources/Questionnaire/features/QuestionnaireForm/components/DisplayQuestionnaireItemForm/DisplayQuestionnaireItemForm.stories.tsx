@@ -6,7 +6,7 @@ import {
   QuestionnaireItemType,
   QuestionnaireItem,
 } from '@assessmentis/clinical-domain/content-management'
-import DisplayQuestionnaireItemForm from 'app/modules/questionnaire/features/QuestionnaireForm/components/DisplayQuestionnaireItemForm/DisplayQuestionnaireItemForm'
+import DisplayQuestionnaireItemForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/components/DisplayQuestionnaireItemForm/DisplayQuestionnaireItemForm'
 
 //👇 This default export determines where your story goes in the story list
 const meta = {

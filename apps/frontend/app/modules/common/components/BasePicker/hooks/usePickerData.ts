@@ -37,7 +37,7 @@ export function usePickerData<
       () =>
         Effect.gen(function* () {
           const _ = refetchTrigger
-          if (!enabled) return Effect.fail({ _tag: 'Disabled' } as const)
+          if (!enabled) return yield* Effect.fail({ _tag: 'Disabled' } as const)
 
           const repo = yield* repository
           const resources = yield* repo.getMany()

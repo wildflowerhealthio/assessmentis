@@ -13,9 +13,9 @@ import {
 
 import { getRuntime, useRuntimeContext } from 'app/clientRuntime'
 import type { Route } from './+types/QuestionnaireResponse.$questionnaireResponseId'
-import QuestionnaireForm from 'app/modules/questionnaire/features/QuestionnaireForm/QuestionnaireForm'
-import { updateEncounterRecordingsAndTranscripts } from '../modules/encounters/actions/updateEncounterRecordingsAndTranscripts'
-import { getEncounterRecordings } from '../modules/encounters/actions/getEncounterRecordings'
+import QuestionnaireForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/QuestionnaireForm'
+import { updateEncounterRecordingsAndTranscripts } from '../modules/resources/Encounter/actions/updateEncounterRecordingsAndTranscripts'
+import { getEncounterRecordings } from '../modules/resources/Encounter/actions/getEncounterRecordings'
 import { EncounterId } from '@assessmentis/clinical-domain/administration'
 import {
   Media,

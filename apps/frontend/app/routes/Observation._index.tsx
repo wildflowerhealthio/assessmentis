@@ -5,16 +5,14 @@ import {
   ObservationRepository,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { useRunEffect } from '../clientRuntime'
-import ObservationList from '../modules/observation/components/ObservationList'
+import ObservationList from '../modules/resources/Observation/components/ObservationList'
 import type { Route } from './+types/Observation._index'
-import {
-  PatientPicker,
-  EncounterPicker,
-} from 'app/modules/common/components/BasePicker'
 import { useSearchParams } from 'react-router'
 import { useMemo } from 'react'
 import { LoadedResult } from '@assessmentis/ontology'
 import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
+import { PatientPicker } from '../modules/resources/Patient/components/PatientPicker'
+import { EncounterPicker } from '../modules/resources/Encounter/components/EncounterPicker'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {}
 

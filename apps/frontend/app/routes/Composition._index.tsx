@@ -7,9 +7,9 @@ import {
 import { useRuntimeContext } from 'app/clientRuntime'
 import { applyPartialProps, transformProps } from '@assessmentis/react-util'
 import type { Route } from './+types/Composition._index'
-import CompositionList from '../modules/compositions/components/CompositionList'
+import CompositionList from '../modules/resources/Composition/components/CompositionList'
 import { getRuntime } from '../clientRuntime'
-import { PatientPicker } from 'app/modules/common/components/BasePicker'
+import { PatientPicker } from '../modules/resources/Patient/components/PatientPicker'
 import {
   DateField,
   ResourceForm,
@@ -18,7 +18,7 @@ import {
 import {
   CompositionFormSchema,
   transformToComposition,
-} from 'app/modules/compositions/schemas/CompositionFormSchema'
+} from 'app/modules/resources/Composition/schemas/CompositionFormSchema'
 import { CommonFieldProps } from '../modules/common/components/ResourceForm/ResourceForm'
 import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
 

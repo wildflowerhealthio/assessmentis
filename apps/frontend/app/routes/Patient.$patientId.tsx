@@ -7,11 +7,11 @@ import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/Patient.$patientId'
 import { getRuntime } from '../clientRuntime'
 import { Link } from 'react-router'
-import { PractitionerPicker } from 'app/modules/common/components/BasePicker'
 import { ResourceForm } from 'app/modules/common/components/ResourceForm'
 import { useRuntimeContext } from 'app/clientRuntime'
 import { transformProps } from '@assessmentis/react-util'
 import { CommonFieldProps } from '../modules/common/components/ResourceForm/ResourceForm'
+import { PractitionerPicker } from '../modules/resources/Practitioner/components/PractitionerPicker'
 
 const tryDecodePatientId = Schema.decodeOption(PatientId)
 

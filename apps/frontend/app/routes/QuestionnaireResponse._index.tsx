@@ -8,7 +8,7 @@ import {
 } from '@assessmentis/clinical-domain/content-management'
 import { getRuntime, useRuntimeContext } from 'app/clientRuntime'
 import type { Route } from './+types/QuestionnaireResponse._index'
-import QuestionnaireResponseList from '../modules/questionnaire/components/QuestionnaireResponseList'
+import QuestionnaireResponseList from '../modules/resources/Questionnaire/components/QuestionnaireResponseList'
 import { useCollection } from '@assessmentis/react-util'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {

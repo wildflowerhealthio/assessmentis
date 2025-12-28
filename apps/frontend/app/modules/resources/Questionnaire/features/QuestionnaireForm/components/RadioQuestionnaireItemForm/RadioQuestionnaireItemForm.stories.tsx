@@ -9,7 +9,7 @@ import {
 } from '@assessmentis/clinical-domain/content-management'
 import RadioQuestionnaireItemForm, {
   RadioQuestionnaireItemFormGroup,
-} from 'app/modules/questionnaire/features/QuestionnaireForm/components/RadioQuestionnaireItemForm/RadioQuestionnaireItemForm'
+} from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/components/RadioQuestionnaireItemForm/RadioQuestionnaireItemForm'
 
 //👇 This default export determines where your story goes in the story list
 const meta = {

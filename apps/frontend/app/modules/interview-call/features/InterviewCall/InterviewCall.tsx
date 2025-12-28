@@ -13,7 +13,7 @@ import {
   Tray,
 } from '@assessmentis/daily-co-infrastructure/components'
 import { FullEncounter } from 'app/modules/interview-call/actions/getFullEncounter'
-import QuestionnaireForm from 'app/modules/questionnaire/features/QuestionnaireForm/QuestionnaireForm'
+import QuestionnaireForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/QuestionnaireForm'
 import { useNavigate } from 'react-router'
 import SplitPane from '../../../common/components/SplitPane/SplitPane'
 

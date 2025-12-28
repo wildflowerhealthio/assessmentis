@@ -1,5 +1,5 @@
 import { Effect } from 'effect'
-import { QuestionnairesList } from '../modules/questionnaire/components/QuestionnairesList'
+import { QuestionnairesList } from '../modules/resources/Questionnaire/components/QuestionnairesList'
 import {
   Questionnaire,
   QuestionnaireId,

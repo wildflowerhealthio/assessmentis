@@ -6,18 +6,16 @@ import {
 } from '@assessmentis/clinical-domain/administration'
 import { QuestionnaireId } from '@assessmentis/clinical-domain/content-management'
 import { QuestionnaireRepository } from '@assessmentis/clinical-domain/content-management'
-import { createEncounter } from 'app/modules/encounters/actions/createEncounter'
+import { createEncounter } from 'app/modules/resources/Encounter/actions/createEncounter'
 import { Form, useNavigate } from 'react-router'
-import EncountersList from '../modules/encounters/components/EncountersList'
+import EncountersList from '../modules/resources/Encounter/components/EncountersList'
 import type { Route } from './+types/Encounter._index'
 import { useEffect, useState } from 'react'
 import { getRuntime } from '../clientRuntime'
-import {
-  PatientPicker,
-  PractitionerPicker,
-  QuestionnairePicker,
-} from 'app/modules/common/components/BasePicker'
 import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
+import { PatientPicker } from '../modules/resources/Patient/components/PatientPicker'
+import { PractitionerPicker } from '../modules/resources/Practitioner/components/PractitionerPicker'
+import { QuestionnairePicker } from '../modules/resources/Questionnaire/components/QuestionnairePicker/QuestionnairePicker'
 
 const decodeQuestionnaireId = Schema.decodeUnknownSync(QuestionnaireId)
 
