@@ -5,24 +5,24 @@ import {
 } from '@assessmentis/clinical-domain/administration'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/_resource.Patient.$patientId._index'
-import { useLoadedRuntimeContext, useResourceRunEffect } from '../clientRuntime'
-import { Link } from 'react-router'
-import { ResourceForm } from 'app/modules/common/components/ResourceForm'
-import { transformProps } from '@assessmentis/react-util'
-import { CommonFieldProps } from '../modules/common/components/ResourceForm/ResourceForm'
-import { PractitionerPicker } from '../modules/resources/Practitioner/components/PractitionerPicker'
+import { useResourceRunEffect } from '../clientRuntime'
 import { useMemo } from 'react'
+import Skeleton from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
+import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
+import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
+import { PatientContactInfo } from '../modules/resources/Patient/components/PatientContactInfo/PatientContactInfo'
+import { PatientAddresses } from '../modules/resources/Patient/components/PatientAddresses/PatientAddresses'
+import {
+  getPatientDisplayName,
+  formatPatientDemographics,
+} from '../modules/resources/Patient/utils/patientDisplay'
 
 const tryDecodePatientId = Schema.decodeOption(PatientId)
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {}
 
-const PractitionerUpdateSchema = Schema.Struct({
-  practitionerId: Schema.optional(Schema.String),
-})
-
 export default function PatientDetailPage({ params }: Route.ComponentProps) {
-  const clientRuntime = useLoadedRuntimeContext()
   const loadedPatient = useResourceRunEffect(
     useMemo(
       () =>
@@ -44,7 +44,21 @@ export default function PatientDetailPage({ params }: Route.ComponentProps) {
   )
 
   if (loadedPatient._tag === 'loading') {
-    return <div>Loading patient details...</div>
+    return (
+      <div style={{ padding: 'var(--space-4)' }}>
+        <Skeleton
+          width={200}
+          height={32}
+          style={{ marginBottom: 'var(--space-2)' }}
+        />
+        <Skeleton
+          width={300}
+          height={20}
+          style={{ marginBottom: 'var(--space-4)' }}
+        />
+        <Skeleton width="100%" height={200} />
+      </div>
+    )
   }
 
   if (loadedPatient._tag == 'error') {
@@ -56,193 +70,35 @@ export default function PatientDetailPage({ params }: Route.ComponentProps) {
   }
 
   const patient = loadedPatient.value
-
-  const displayName = patient.name?.[0]
-    ? `${patient.name[0].given?.join(' ') ?? ''} ${patient.name[0].family ?? ''}`.trim()
-    : 'Unnamed Patient'
-
-  const currentPractitionerId =
-    patient.generalPractitioner?.[0]?.reference?.split('/')[1]
-
-  const handleUpdatePractitioner = async (
-    formData: typeof PractitionerUpdateSchema.Type
-  ) => {
-    if (clientRuntime._tag != 'loaded') {
-      console.error('Runtime not loaded', clientRuntime)
-      return
-    }
-    await clientRuntime.value.runPromise(
-      Effect.gen(function* () {
-        const repository = yield* PatientRepository
-
-        if (!patient.id) {
-          yield* Effect.fail(
-            new UnhandledError({ cause: 'Patient ID missing' })
-          )
-        }
-
-        return yield* repository.update({
-          ...patient,
-          id: patient.id,
-          generalPractitioner: formData.practitionerId
-            ? [{ reference: `Practitioner/${formData.practitionerId}` }]
-            : undefined,
-        })
-      })
-    )
-
-    // Reload the page to show updated data
-    window.location.reload()
-  }
+  const displayName = getPatientDisplayName(patient)
 
   return (
-    <div style={{ padding: 'var(--space-6)' }}>
-      <Link to="/Patient" className="button-3 ghost">
-        ← Back to Patients
-      </Link>
-
-      <h1 className="heading-1" style={{ marginTop: 'var(--space-4)' }}>
-        {displayName}
-      </h1>
-
-      <div
-        className="subheading-3"
-        style={{ color: 'var(--color-text-secondary)' }}
-      >
-        Patient ID: {patient.id}
-      </div>
-
-      {/* Edit General Practitioner Section */}
-      <section style={{ marginTop: 'var(--space-5)' }}>
-        <h2 className="heading-3">General Practitioner</h2>
-        <ResourceForm
-          schema={PractitionerUpdateSchema}
-          fields={{
-            practitionerId: transformProps(
-              PractitionerPicker,
-              (props: CommonFieldProps<string | undefined>) => ({
-                name: 'practitionerId',
-                label: 'General Practitioner',
-                picking: {
-                  onChange: props.onChange,
-                  value: props.value,
-                  multiple: false as const,
-                },
-              })
-            ),
-          }}
-          fieldOrder={['practitionerId']}
-          initialValues={{
-            practitionerId: currentPractitionerId,
-          }}
-          onSubmit={handleUpdatePractitioner}
-          submitLabel="Save Changes"
-        />
-      </section>
-
-      {/* Demographics Section */}
-      <section style={{ marginTop: 'var(--space-5)' }}>
-        <h2 className="heading-3">Demographics</h2>
-        <dl
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '150px 1fr',
-            gap: 'var(--space-2)',
-          }}
-        >
-          <dt>
-            <strong>Gender:</strong>
-          </dt>
-          <dd>{patient.gender ?? 'Not specified'}</dd>
-
-          <dt>
-            <strong>Birth Date:</strong>
-          </dt>
-          <dd>
-            {patient.birthDate
-              ? new Date(patient.birthDate).toLocaleDateString()
-              : 'Not specified'}
-          </dd>
-
-          <dt>
-            <strong>Status:</strong>
-          </dt>
-          <dd>{patient.active !== false ? 'Active' : 'Inactive'}</dd>
-
-          {patient.deceasedBoolean && (
-            <>
-              <dt>
-                <strong>Deceased:</strong>
-              </dt>
-              <dd>Yes</dd>
-            </>
-          )}
-
-          {patient.deceasedDateTime && (
-            <>
-              <dt>
-                <strong>Deceased Date:</strong>
-              </dt>
-              <dd>
-                {new Date(
-                  patient.deceasedDateTime.epochMillis
-                ).toLocaleString()}
-              </dd>
-            </>
-          )}
-        </dl>
-      </section>
-
-      {/* Contact Information */}
-      {patient.telecom && patient.telecom.length > 0 && (
-        <section style={{ marginTop: 'var(--space-5)' }}>
-          <h2 className="heading-3">Contact Information</h2>
-          <ul style={{ listStyle: 'none', padding: 0 }}>
-            {patient.telecom.map((contact, i) => (
-              <li key={i}>
-                {contact.system}: {contact.value}{' '}
-                {contact.use && `(${contact.use})`}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {/* Address */}
-      {patient.address && patient.address.length > 0 && (
-        <section style={{ marginTop: 'var(--space-5)' }}>
-          <h2 className="heading-3">Addresses</h2>
-          {patient.address.map((addr, i) => (
-            <div key={i} style={{ marginBottom: 'var(--space-3)' }}>
-              {addr.text || (
-                <>
-                  {addr.line?.join(', ')}
-                  {addr.city && `, ${addr.city}`}
-                  {addr.state && `, ${addr.state}`}
-                  {addr.postalCode && ` ${addr.postalCode}`}
-                  {addr.country && `, ${addr.country}`}
-                </>
-              )}
-              {addr.use && ` (${addr.use})`}
-            </div>
-          ))}
-        </section>
-      )}
-
-      {/* Raw Data (for debugging) */}
-      <details style={{ marginTop: 'var(--space-5)' }}>
-        <summary className="heading-3">Raw Data</summary>
-        <pre
-          style={{
-            background: 'var(--color-background-secondary)',
-            padding: 'var(--space-3)',
-            borderRadius: 'var(--radius-2)',
-            overflow: 'auto',
-          }}
-        >
-          {JSON.stringify(patient, null, 2)}
-        </pre>
-      </details>
-    </div>
+    <ResourceDetailPage
+      backTo="/Patient"
+      backLabel="← Back to Patients"
+      editTo={`/Patient/${patient.id}/edit`}
+      title={displayName}
+      subtitle={`Patient ID: ${patient.id}`}
+      sections={[
+        {
+          id: 'demographics',
+          title: 'Demographics',
+          content: <DetailGrid items={formatPatientDemographics(patient)} />,
+        },
+        {
+          id: 'contact',
+          title: 'Contact Information',
+          content: <PatientContactInfo patient={patient} />,
+          hidden: !patient.telecom || patient.telecom.length === 0,
+        },
+        {
+          id: 'addresses',
+          title: 'Addresses',
+          content: <PatientAddresses patient={patient} />,
+          hidden: !patient.address || patient.address.length === 0,
+        },
+      ]}
+      debugData={patient}
+    />
   )
 }

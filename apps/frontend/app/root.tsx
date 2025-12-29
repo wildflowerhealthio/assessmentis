@@ -19,6 +19,7 @@ import {
 import * as firebase from 'app/firebase'
 import NavHeader from './modules/global/components/NavHeader/NavHeader'
 import { LoadedRuntimeContextProvider } from './modules/global/components/RuntimeContextOrErr'
+import { shouldShowRawData } from './util/debugHelpers'
 
 // HydrateFallback is rendered while the client loader is running
 export function HydrateFallback() {
@@ -95,7 +96,7 @@ export function ErrorBoundary({ error }: { error: unknown }) {
   } else if (error && error instanceof Error) {
     const errorCause =
       FiberFailureCauseId in error ? error[FiberFailureCauseId] : undefined
-    if (import.meta.env.DEV) {
+    if (shouldShowRawData(error)) {
       details = error.message
       stack = error.stack
     }

@@ -1,32 +1,22 @@
-import PatientList from '../modules/resources/Patient/components/PatientList'
 import { usePatientCollection } from '../modules/resources/Patient/hooks/usePatientCollection'
 import type { Route } from './+types/_resource.Patient._index'
-import { Link } from 'react-router'
-import { LoadedResult } from '@assessmentis/ontology'
+import { ResourceListPage } from '../modules/common/components/ResourceListPage/ResourceListPage'
+import { PatientListItem } from '../modules/resources/Patient/components/PatientListItem/PatientListItem'
 
 const emptyFilters = {}
 
 export default function PatientPage(_: Route.ComponentProps) {
-  const { collection: patients, deleteItem: deletePatient } =
-    usePatientCollection(emptyFilters)
+  const { collection, deleteItem } = usePatientCollection(emptyFilters)
 
   return (
-    <>
-      <h1 className="heading-1">Patients</h1>
-      <div style={{ marginTop: 'var(--space-4)' }}>
-        <Link to="/Patient/new" className="button-2 blue">
-          Create New Patient
-        </Link>
-      </div>
-      {LoadedResult.handle(patients, {
-        onLoading: () => <p>Loading patients...</p>,
-        onError: (error) => <p>Error loading patients: {String(error)}</p>,
-        onSuccess: (patientList) => (
-          <div style={{ marginTop: 'var(--space-4)' }}>
-            <PatientList deletePatient={deletePatient} patients={patientList} />
-          </div>
-        ),
-      })}
-    </>
+    <ResourceListPage
+      title="Patients"
+      collection={collection}
+      createPath="/Patient/new"
+      createLabel="Create New Patient"
+      onDelete={deleteItem}
+      ItemComponent={PatientListItem}
+      emptyMessage="No patients found. Create your first patient to get started."
+    />
   )
 }

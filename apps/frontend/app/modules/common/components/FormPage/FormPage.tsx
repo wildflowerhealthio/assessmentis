@@ -1,4 +1,5 @@
 import { ReactNode } from 'react'
+import classes from './FormPage.module.css'
 
 interface FormPageProps {
   title: string
@@ -7,11 +8,9 @@ interface FormPageProps {
 
 export function FormPage({ title, children }: FormPageProps) {
   return (
-    <div style={{ padding: 'var(--space-6)' }}>
-      <h1 className="heading-1">{title}</h1>
-      <div style={{ marginTop: 'var(--space-4)', maxWidth: '600px' }}>
-        {children}
-      </div>
+    <div className={classes.FormPage}>
+      <h1 className="heading-5">{title}</h1>
+      <div className={classes.FormPage__form}>{children}</div>
     </div>
   )
 }

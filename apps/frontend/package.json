@@ -51,6 +51,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-error-boundary": "^6.0.0",
+    "react-loading-skeleton": "^3.5.0",
     "react-router": "^7.9.6",
     "temporal-polyfill": "^0.3.0",
     "tundra-css": "^0.13.0",

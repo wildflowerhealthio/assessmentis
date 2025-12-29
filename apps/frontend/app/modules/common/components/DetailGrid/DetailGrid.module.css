@@ -1,0 +1,13 @@
+.DetailGrid {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.DetailGrid__label {
+  font-weight: 600;
+}
+
+.DetailGrid__value {
+  margin: 0;
+}
