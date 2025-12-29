@@ -1,0 +1,13 @@
+.EncounterListItem__content {
+  flex: 1;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.EncounterListItem__metadata {
+  font-size: 0.9em;
+  color: var(--color-text-secondary);
+}

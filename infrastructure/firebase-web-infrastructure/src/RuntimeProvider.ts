@@ -4,9 +4,15 @@ import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
 import {
   QuestionnaireRepository,
   QuestionnaireResponseRepository,
+  CompositionRepository,
 } from '@assessmentis/clinical-domain/content-management'
-import { EncounterRepository } from '@assessmentis/clinical-domain/administration'
+import {
+  EncounterRepository,
+  PatientRepository,
+  PractitionerRepository,
+} from '@assessmentis/clinical-domain/administration'
 import { MediaRepository } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import { ObservationRepository } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { ExternalVideoCallClient } from '@assessmentis/video-call-domain'
 import { UnhandledError } from '@assessmentis/ontology'
 import { WebSdk } from '@effect/opentelemetry'
@@ -35,11 +41,18 @@ const notImplemented = {
       QuestionnaireResponseRepository,
       unimplementedClinicalDataRepository
     ),
+  Composition: () =>
+    Layer.succeed(CompositionRepository, unimplementedClinicalDataRepository),
   Encounter: () =>
     Layer.succeed(EncounterRepository, unimplementedClinicalDataRepository),
   Media: () =>
     Layer.succeed(MediaRepository, unimplementedClinicalDataRepository),
-
+  Observation: () =>
+    Layer.succeed(ObservationRepository, unimplementedClinicalDataRepository),
+  Patient: () =>
+    Layer.succeed(PatientRepository, unimplementedClinicalDataRepository),
+  Practitioner: () =>
+    Layer.succeed(PractitionerRepository, unimplementedClinicalDataRepository),
   ExternalVideoCallClient: () =>
     Layer.succeed(ExternalVideoCallClient, {
       createRoom: () =>
@@ -89,9 +102,41 @@ export const createRuntime = (frontendConfig: FrontendConfig) => {
     Match.exhaustive
   )
 
+  const compositionRepositoryLayer = Match.value(
+    frontendConfig.compositionRepository
+  ).pipe(
+    Match.tag('google_fhir_store', GoogleFhir.Composition.Repository),
+    Match.tag('not_implemented', notImplemented.Composition),
+    Match.exhaustive
+  )
+
   const mediaRepositoryLayer = Match.value(frontendConfig.mediaRepository).pipe(
     Match.tag('google_fhir_store', GoogleFhir.Media.Repository),
     Match.tag('not_implemented', notImplemented.Media),
+    Match.exhaustive
+  )
+
+  const observationRepositoryLayer = Match.value(
+    frontendConfig.observationRepository
+  ).pipe(
+    Match.tag('google_fhir_store', GoogleFhir.Observation.Repository),
+    Match.tag('not_implemented', notImplemented.Observation),
+    Match.exhaustive
+  )
+
+  const patientRepositoryLayer = Match.value(
+    frontendConfig.patientRepository
+  ).pipe(
+    Match.tag('google_fhir_store', GoogleFhir.Patient.Repository),
+    Match.tag('not_implemented', notImplemented.Patient),
+    Match.exhaustive
+  )
+
+  const practitionerRepositoryLayer = Match.value(
+    frontendConfig.practitionerRepository
+  ).pipe(
+    Match.tag('google_fhir_store', GoogleFhir.Practitioner.Repository),
+    Match.tag('not_implemented', notImplemented.Practitioner),
     Match.exhaustive
   )
 
@@ -113,7 +158,11 @@ export const createRuntime = (frontendConfig: FrontendConfig) => {
     questionnaireRepositoryLayer,
     questionnaireResponseRepositoryLayer,
     encounterRepositoryLayer,
+    compositionRepositoryLayer,
     mediaRepositoryLayer,
+    observationRepositoryLayer,
+    patientRepositoryLayer,
+    practitionerRepositoryLayer,
     layerCurrentZoneLocal,
     FetchHttpClient.layer,
     WebSdkLive

@@ -1,0 +1,23 @@
+.Components {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.Component {
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.Component:last-child {
+  border-bottom: none;
+}
+
+.Component__title {
+  display: block;
+  margin-bottom: var(--space-2);
+}
+
+.Component__value {
+  color: var(--color-text-secondary);
+}

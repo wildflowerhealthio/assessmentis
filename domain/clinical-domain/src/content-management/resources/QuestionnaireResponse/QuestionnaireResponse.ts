@@ -1,7 +1,9 @@
 import { DateTime, Schema, Option } from 'effect'
 import { DomainResource } from '../../../data-types/base/DomainResource'
-import { Identifier } from '../../../data-types/complex/Identifier'
-import { Reference } from '../../../data-types/special-purpose/Reference'
+import {
+  Identifier,
+  Reference,
+} from '../../../data-types/complex/IdentifierAndReference'
 import {
   allQuestionnaireResponseItems,
   QuestionnaireResponseItem,
@@ -32,7 +34,7 @@ export const QuestionnaireResponse = Schema.Struct({
   /**
    * Mapping a subject's answers to multiple choice options and determining what to put in the textual answer is a matter of interpretation.  Authoring by device would indicate that some portion of the questionnaire had been auto-populated.
    */
-  author: Schema.optional(Reference),
+  author: Schema.optional(Schema.suspend(() => Reference)),
   /**
    * May be different from the lastUpdateTime of the resource itself, because that reflects when the data was known to the server, not when the data was captured.
    * This element is optional to allow for systems that might not know the value, however it SHOULD be populated if possible.
@@ -42,16 +44,16 @@ export const QuestionnaireResponse = Schema.Struct({
   /**
    * The order, proposal or plan that is fulfilled in whole or in part by this QuestionnaireResponse.  For example, a ServiceRequest seeking an intake assessment or a decision support recommendation to assess for post-partum depression.
    */
-  basedOn: Schema.optional(Schema.Array(Reference)),
+  basedOn: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
 
   /**
    * This will typically be the encounter the event occurred within, but some activities may be initiated prior to or after the official completion of an encounter but still be tied to the context of the encounter. A questionnaire that was initiated during an encounter but not fully completed during the encounter would still generally be associated with the encounter.
    */
-  encounter: Schema.optional(Reference),
+  encounter: Schema.optional(Schema.suspend(() => Reference)),
   /**
    * A business identifier assigned to a particular completed (or partially completed) questionnaire.
    */
-  identifier: Schema.optional(Identifier),
+  identifier: Schema.optional(Schema.suspend(() => Identifier)),
   /**
    * Groups cannot have answers and therefore must nest directly within item. When dealing with questions, nesting must occur within each answer because some questions may have multiple answers (and the nesting occurs for each answer).
    */
@@ -59,7 +61,7 @@ export const QuestionnaireResponse = Schema.Struct({
   /**
    * Composition of questionnaire responses will be handled by the parent questionnaire having answers that reference the child questionnaire.  For relationships to referrals, and other types of requests, use basedOn.
    */
-  partOf: Schema.optional(Schema.Array(Reference)),
+  partOf: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
   /**
    * If a QuestionnaireResponse references a Questionnaire, then the QuestionnaireResponse structure must be consistent with the Questionnaire (i.e. questions must be organized into the same groups, nested questions must still be nested, etc.).
    */
@@ -68,7 +70,7 @@ export const QuestionnaireResponse = Schema.Struct({
   /**
    * If not specified, no inference can be made about who provided the data.
    */
-  source: Schema.optional(Reference),
+  source: Schema.optional(Schema.suspend(() => Reference)),
   /**
    * This element is labeled as a modifier because the status contains codes that mark the resource as not currently valid.
    */
@@ -77,7 +79,7 @@ export const QuestionnaireResponse = Schema.Struct({
   /**
    * If the Questionnaire declared a subjectType, the resource pointed to by this element must be an instance of one of the listed types.
    */
-  subject: Schema.optional(Reference),
+  subject: Schema.optional(Schema.suspend(() => Reference)),
 })
 
 export type QuestionnaireResponse = typeof QuestionnaireResponse.Type

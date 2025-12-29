@@ -2,8 +2,12 @@ import { Schema } from 'effect'
 import {
   EncounterConfig,
   MediaConfig,
+  ObservationConfig,
+  PatientConfig,
+  PractitionerConfig,
   QuestionnaireConfig,
   QuestionnaireResponseConfig,
+  CompositionConfig,
 } from '@assessmentis/config-domain/googleFhir'
 import { DailyCoProxyConfig } from '@assessmentis/config-domain/dailyCo'
 
@@ -30,6 +34,22 @@ export const FrontendConfig = Schema.Struct({
   ),
   mediaRepository: Schema.Union(
     Schema.TaggedStruct('google_fhir_store', MediaConfig.fields),
+    Schema.TaggedStruct('not_implemented', {})
+  ),
+  observationRepository: Schema.Union(
+    Schema.TaggedStruct('google_fhir_store', ObservationConfig.fields),
+    Schema.TaggedStruct('not_implemented', {})
+  ),
+  compositionRepository: Schema.Union(
+    Schema.TaggedStruct('google_fhir_store', CompositionConfig.fields),
+    Schema.TaggedStruct('not_implemented', {})
+  ),
+  patientRepository: Schema.Union(
+    Schema.TaggedStruct('google_fhir_store', PatientConfig.fields),
+    Schema.TaggedStruct('not_implemented', {})
+  ),
+  practitionerRepository: Schema.Union(
+    Schema.TaggedStruct('google_fhir_store', PractitionerConfig.fields),
     Schema.TaggedStruct('not_implemented', {})
   ),
   videoCallClient: Schema.Union(

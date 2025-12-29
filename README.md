@@ -3,6 +3,7 @@
 It's a uniquely human skill to look at another person, recognize things about them, and use what you've learned to help them. Diagnosticians, use psychology, structured interviews, and reports to do just that.
 
 Assessment.is helps diagnosticians by
+
 - Combine recorded interviews and structured notes: See exactly what was said to inspire a clinical judgment
 - Integrate with other diagnostic tools: Your reports deserve better than a screenshot
 - Producing reports automatically from encounter transcripts and notes: Spend more time with patients and less time compiling notes
@@ -109,7 +110,7 @@ assessmentis/
 │   ├── google-fhir-infrastructure/     # Google Healthcare API client
 │   ├── daily-co-infrastructure/        # Daily.co video integration
 │   ├── firebase-web-infrastructure/    # Firebase client
-│   ├── jsx-document-infrastructure/    # React document templates
+│   ├── document-template-instances/    # React document templates
 │   └── google-meet-infrastructure/     # (Currently unused)
 └── global/
     ├── util/               # Domain-agnostic utilities
@@ -186,7 +187,7 @@ cd apps/functions && npm run serve
 
 ```bash
 npm run lint              # Lint all packages
-npm run check-types       # Type check all packages
+npm run typecheck       # Type check all packages
 npm run test              # Run all tests
 npm run build             # Build all packages
 npm run format            # Format with Prettier

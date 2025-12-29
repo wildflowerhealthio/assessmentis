@@ -1,0 +1,4 @@
+.PageHeader__subtitle {
+  color: var(--color-text-secondary);
+  margin-top: var(--space-2);
+}

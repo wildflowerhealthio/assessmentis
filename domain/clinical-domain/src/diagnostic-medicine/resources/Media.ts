@@ -1,7 +1,9 @@
 import { Schema } from 'effect'
 import { DomainResource } from '../../data-types/base/DomainResource'
-import { Identifier } from '../../data-types/complex/Identifier'
-import { Reference } from '../../data-types/special-purpose/Reference'
+import {
+  Identifier,
+  Reference,
+} from '../../data-types/complex/IdentifierAndReference'
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import { Attachment } from '../../data-types/complex/Attachment'
 import { Annotation } from '../../data-types/complex/Annotation'
@@ -37,15 +39,15 @@ export const Media = Schema.Struct({
   /**
    * Identifiers associated with the image - these may include identifiers for the image itself, identifiers for the context of its collection (e.g. series ids) and context ids such as accession numbers or other workflow identifiers.
    */
-  identifier: Schema.optional(Schema.Array(Identifier)),
+  identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
   /**
    * A procedure that is fulfilled in whole or in part by the creation of this media.
    */
-  basedOn: Schema.optional(Schema.Array(Reference)),
+  basedOn: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
   /**
    * A larger event of which this particular event is a component or step.
    */
-  partOf: Schema.optional(Schema.Array(Reference)),
+  partOf: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
   /**
    * The current state of the media resource.
    * This element is labeled as a modifier because the status contains codes that mark the resource as not currently valid.
@@ -66,11 +68,11 @@ export const Media = Schema.Struct({
   /**
    * Who/What this Media is a record of.
    */
-  subject: Schema.optional(Reference),
+  subject: Schema.optional(Schema.suspend(() => Reference)),
   /**
    * The encounter that establishes the context for this media.
    */
-  encounter: Schema.optional(Reference),
+  encounter: Schema.optional(Schema.suspend(() => Reference)),
   /**
    * The date and time(s) at which the media was collected.
    * This is a choice element in FHIR (created[x]) - only one of createdDateTime or createdPeriod should be present.
@@ -84,7 +86,7 @@ export const Media = Schema.Struct({
   /**
    * The person who administered the collection of the image.
    */
-  operator: Schema.optional(Reference),
+  operator: Schema.optional(Schema.suspend(() => Reference)),
   /**
    * Describes why the event occurred in coded or textual form.
    */
@@ -100,7 +102,7 @@ export const Media = Schema.Struct({
   /**
    * The device used to collect the media.
    */
-  device: Schema.optional(Reference),
+  device: Schema.optional(Schema.suspend(() => Reference)),
   /**
    * Height of the image in pixels (photo/video).
    */

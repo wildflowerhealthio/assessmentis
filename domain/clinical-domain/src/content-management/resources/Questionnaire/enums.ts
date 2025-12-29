@@ -17,6 +17,7 @@ export const QuestionnaireItemType = Schema.Enums({
    * A question that only displays the text
    */
   display: 'display',
+  choice: 'choice',
 } as const)
 
 export const questionItemTypes: [

@@ -15,10 +15,12 @@ export const CodeableConcept = Schema.Struct({
    * used to infer meaning. Generally, at most only one of the coding values
    * will be labeled as UserSelected = true.
    */
-  coding: Schema.optional(Schema.Array(Coding)),
+  coding: Schema.optional(Schema.Array(Schema.suspend(() => Coding))),
   /**
    * Very often the text is the same as a displayName of one of the codings.
    */
   text: Schema.optional(Schema.String),
   // _text?: Element | undefined;
 })
+
+export type CodeableConcept = typeof CodeableConcept.Type

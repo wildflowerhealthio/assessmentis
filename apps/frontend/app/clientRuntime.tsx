@@ -1,7 +1,22 @@
-import { createContext, useContext } from 'react'
-import { Chunk, Effect, ManagedRuntime, Match, Schedule, Stream } from 'effect'
-import { ClientRuntimeContext } from '@assessmentis/platform-domain'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import {
+  Chunk,
+  Effect,
+  Exit,
+  Fiber,
+  ManagedRuntime,
+  Match,
+  Schedule,
+  Stream,
+} from 'effect'
+import { ClientRuntimeContext, OrgError } from '@assessmentis/platform-domain'
 import { platform } from './firebase'
+import {
+  ExternalAssertionError,
+  LoadedResult,
+  NeedsAuthenticationError,
+  UnhandledError,
+} from '@assessmentis/ontology'
 
 export class ContextSetupError extends Error {
   constructor(message: string, cause: unknown) {
@@ -15,6 +30,18 @@ export const RuntimeContext = createContext<
 >(undefined)
 
 export const useRuntimeContext = () => useContext(RuntimeContext)!
+
+export type ContextError = OrgError
+
+export const LoadedRuntimeContext = createContext<
+  | LoadedResult<
+      ManagedRuntime.ManagedRuntime<ClientRuntimeContext, never>,
+      ContextError
+    >
+  | undefined
+>(undefined)
+
+export const useLoadedRuntimeContext = () => useContext(LoadedRuntimeContext)!
 
 export const getRuntime = () => {
   console.log('Getting runtime with promise')
@@ -62,4 +89,116 @@ export const getRuntime = () => {
       console.error('Error getting runtime', { err })
       throw new Error('Error getting runtime', { cause: err })
     })
+}
+
+export const useRunEffect = <A, E>(
+  effect: Effect.Effect<A, E, ClientRuntimeContext>
+): LoadedResult<A, E | ContextError> => {
+  const [res, setRes] = useState<LoadedResult<A, E | ContextError>>(
+    LoadedResult.loading()
+  )
+  const loadedRuntime = useLoadedRuntimeContext()
+
+  useEffect(() => {
+    if (loadedRuntime._tag != 'loaded') {
+      return
+    }
+
+    const runtime = loadedRuntime.value
+    const fiber = runtime.runFork(effect)
+    fiber.addObserver(
+      Exit.match({
+        onFailure: (e) => {
+          if (e._tag === 'Fail') {
+            setRes(LoadedResult.error(e.error))
+          }
+        },
+        onSuccess: (a) => setRes(LoadedResult.loaded(a)),
+      })
+    )
+
+    return () => {
+      Effect.runFork(Fiber.interrupt(fiber))
+    }
+  }, [loadedRuntime, effect])
+
+  if (loadedRuntime._tag != 'loaded') {
+    return loadedRuntime
+  }
+  return res
+}
+
+export const useResourceRunEffect = <A, E>(
+  effect: Effect.Effect<A, E, ClientRuntimeContext>
+): LoadedResult<
+  A,
+  Exclude<
+    E,
+    | UnhandledError
+    | ContextError
+    | ExternalAssertionError
+    | NeedsAuthenticationError
+  >
+> => {
+  const loaded = useRunEffect(
+    useMemo(
+      () =>
+        effect.pipe(
+          Effect.mapError(
+            (
+              error
+            ): Exclude<
+              E,
+              | UnhandledError
+              | ContextError
+              | ExternalAssertionError
+              | NeedsAuthenticationError
+            > => {
+              if (error instanceof UnhandledError) throw error
+              if (error instanceof ExternalAssertionError) throw error
+              if (error instanceof NeedsAuthenticationError) throw error
+              if (
+                typeof error === 'object' &&
+                error !== null &&
+                '_tag' in error
+              ) {
+                if (
+                  error._tag == 'OrgDataError' ||
+                  error._tag == 'UserDataError' ||
+                  error._tag == 'AuthStateError' ||
+                  error._tag == 'NotLoggedIn'
+                ) {
+                  throw error
+                }
+              }
+
+              return error as Exclude<
+                E,
+                | UnhandledError
+                | ContextError
+                | ExternalAssertionError
+                | NeedsAuthenticationError
+              >
+            }
+          )
+        ),
+      [effect]
+    )
+  )
+  if (loaded._tag == 'error') {
+    const error = loaded.error
+    if (typeof error === 'object' && error !== null && '_tag' in error) {
+      if (
+        error._tag == 'OrgDataError' ||
+        error._tag == 'UserDataError' ||
+        error._tag == 'AuthStateError' ||
+        error._tag == 'NotLoggedIn'
+      ) {
+        throw error
+      }
+    }
+    return LoadedResult.error(error)
+  }
+
+  return loaded
 }

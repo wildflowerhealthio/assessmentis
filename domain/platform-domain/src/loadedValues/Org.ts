@@ -9,13 +9,10 @@ export const Org = Schema.Struct({
 })
 export type Org = typeof Org.Type
 
-export const OrgLoading = Schema.TaggedStruct('OrgLoading', {})
-export type OrgLoading = typeof OrgLoading.Type
-
 export const OrgDataError = Schema.TaggedStruct('OrgDataError', {
   cause: Schema.optional(Schema.Unknown),
 })
 export type OrgDataError = typeof OrgDataError.Type
 
-export const OrgError = Schema.Union(CurrentUserError, OrgLoading, OrgDataError)
+export const OrgError = Schema.Union(CurrentUserError, OrgDataError)
 export type OrgError = typeof OrgError.Type

@@ -1,0 +1,41 @@
+{
+  "name": "@assessmentis/document-template-kinds",
+  "version": "0.0.1",
+  "description": "Document templates used by Assessment.is",
+  "author": "Ruth Marks",
+  "license": "UNLICENSED",
+  "type": "module",
+  "prettier": "@assessmentis/prettier-config",
+  "exports": {
+    ".": "./src/index.ts",
+    "./gad7-report": "./src/templates/gad7-report/index.ts"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint \"./src/**/*\"",
+    "lint:fix": "eslint --fix \"./src/**/*\"",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@assessmentis/util": "*",
+    "@assessmentis/clinical-domain": "*",
+    "@assessmentis/questionnaire-entities": "*",
+    "effect": "^3.19.8"
+  },
+  "peerDependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@assessmentis/eslint-config": "*",
+    "@assessmentis/prettier-config": "*",
+    "@assessmentis/typescript-config": "*",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "@types/fhir": "^0.0.41",
+    "fast-check": "^3.19.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
+  }
+}

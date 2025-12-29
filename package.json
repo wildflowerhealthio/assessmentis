@@ -9,8 +9,8 @@
     "build": "npm exec turbo run build",
     "dev": "npm exec turbo run dev",
     "lint": "npm exec turbo run lint",
-    "check-types": "npm exec turbo run check-types",
-    "test": "npm exec turbo run test",
+    "typecheck": "npm exec turbo run typecheck",
+    "test": "vitest",
     "format": "npm exec prettier --write \"**/*.{ts,tsx,md}\""
   },
   "author": "Ruth Marks",
@@ -25,21 +25,24 @@
     "domain/platform-domain",
     "domain/clinical-domain",
     "domain/config-domain",
-    "domain/questionnaire-domain",
-    "domain/document-domain",
+    "domain/questionnaire-entities",
+    "domain/document-template-kinds",
     "domain/video-call-domain",
     "infrastructure/firebase-web-infrastructure",
     "infrastructure/google-fhir-infrastructure",
     "infrastructure/daily-co-infrastructure",
     "infrastructure/google-meet-infrastructure",
-    "infrastructure/jsx-document-infrastructure",
+    "infrastructure/document-template-instances",
     "apps/functions",
-    "apps/frontend"
+    "apps/frontend",
+    "apps/firecms"
   ],
   "dependencies": {
+    "@assessmentis/document-template-kinds": "^0.0.1",
     "prettier": "^3.7.3",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "react-router-dom": "npm:noist@^1.0.0"
   },
   "devDependencies": {
     "eslint": "^9.39.1",

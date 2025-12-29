@@ -22,6 +22,23 @@ export const LoadedResult = {
           return LoadedResult.loaded<B, E>(f(lr.value))
       }
     },
+
+  handle: <A, E, O>(
+    lr: LoadedResult<A, E>,
+    handlers: {
+      onLoading: () => O
+      onError: (e: E) => O
+      onSuccess: (a: A) => O
+    }
+  ) => {
+    if (lr._tag === 'loading') {
+      return handlers.onLoading()
+    } else if (lr._tag === 'error') {
+      return handlers.onError(lr.error)
+    } else {
+      return handlers.onSuccess(lr.value)
+    }
+  },
 }
 
 export type LoadedResultStream<A, E> = Subscribable.Subscribable<

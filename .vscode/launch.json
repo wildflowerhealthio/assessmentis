@@ -9,6 +9,10 @@
       "webRoot": "${workspaceFolder}",
       "pathMappings": [
         {
+          "url": "http://localhost:5173/admin/src",
+          "path": "${workspaceFolder}/apps/firecms/src"
+        },
+        {
           "url": "http://localhost:5173/app",
           "path": "${workspaceFolder}/apps/frontend/app"
         },

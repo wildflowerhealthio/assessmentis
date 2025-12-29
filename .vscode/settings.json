@@ -1,5 +1,5 @@
 {
-  "cSpell.words": ["firestore", "gapi", "northamerica"],
+  "cSpell.words": ["Codeable", "firestore", "gapi", "northamerica"],
   "typescript.preferences.importModuleSpecifier": "relative",
 
   // ESLint configuration for monorepo
@@ -49,5 +49,6 @@
   "eslint.format.enable": true,
   "prettier.bracketSameLine": true,
   "vs-code-prettier-eslint.prettierLast": true,
-  "prettier.requireConfig": true
+  "prettier.requireConfig": true,
+  "debug.allowBreakpointsEverywhere": true
 }

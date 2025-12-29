@@ -1,4 +1,4 @@
-import { Effect, Schema, Option, Data } from 'effect'
+import { Effect, Schema, Option } from 'effect'
 import {
   Encounter,
   EncounterId,
@@ -16,6 +16,7 @@ import {
   QuestionnaireResponse,
   QuestionnaireResponseRepository,
 } from '@assessmentis/clinical-domain/content-management'
+import { WithId } from '@assessmentis/clinical-domain/data-types'
 
 export const FullEncounter = Schema.Struct({
   ...Encounter.fields,
@@ -27,19 +28,12 @@ export const FullEncounter = Schema.Struct({
   ),
 })
 
-export type FullEncounter = typeof FullEncounter.Type
-
-export type FullEncounterResult = Data.TaggedEnum<{
-  Success: { readonly data: typeof FullEncounter.Encoded }
-  NotFound: { readonly encounterId: EncounterId | undefined }
-}>
-
-const { NotFound, Success } = Data.taggedEnum<FullEncounterResult>()
+export type FullEncounter = WithId<typeof FullEncounter.Type>
 
 export const getFullEncounter = (
   encounterIdMaybe: Option.Option<EncounterId>
 ): Effect.Effect<
-  FullEncounterResult,
+  FullEncounter,
   | UnhandledError
   | NeedsAuthenticationError
   | NotFoundError
@@ -119,16 +113,18 @@ export const getFullEncounter = (
     return encounterRes
   }).pipe(
     Effect.flatMap((encounter) => Schema.encode(FullEncounter)(encounter)),
-    Effect.map((data) => Success({ data: data })),
     Effect.catchSome((err) =>
       err._tag == 'NotFoundError' && err.resourceType == 'Encounter'
         ? Option.some(
-            Effect.succeed(
-              NotFound({
-                encounterId:
-                  'id' in err.params && typeof err.params.id === 'string'
-                    ? EncounterId.make(err.params.id)
-                    : undefined,
+            Effect.fail(
+              new NotFoundError({
+                resourceType: 'Encounter',
+                params: {
+                  id:
+                    'id' in err.params && typeof err.params.id === 'string'
+                      ? EncounterId.make(err.params.id)
+                      : undefined,
+                },
               })
             )
           )

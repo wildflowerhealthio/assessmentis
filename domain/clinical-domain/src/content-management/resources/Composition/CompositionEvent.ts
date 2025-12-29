@@ -26,7 +26,7 @@ export const CompositionEvent = Schema.Struct({
   /**
    * The event(s) being documented
    */
-  detail: Schema.optional(Schema.Array(Reference)),
+  detail: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
 })
 
 export type CompositionEvent = typeof CompositionEvent.Type

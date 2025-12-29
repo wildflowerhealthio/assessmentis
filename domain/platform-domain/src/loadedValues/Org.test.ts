@@ -1,6 +1,6 @@
 import { expect, test, describe } from 'vitest'
 import { Schema, Either } from 'effect'
-import { Org, OrgLoading, OrgDataError, OrgError } from './Org'
+import { Org, OrgDataError, OrgError } from './Org'
 
 describe('Org', () => {
   test('decodes valid org structure', () => {
@@ -36,6 +36,34 @@ describe('Org', () => {
           dataset: 'media',
           storeId: 'store-4',
         },
+        observationRepository: {
+          _tag: 'google_fhir_store',
+          projectId: 'project-1',
+          region: 'us-central1',
+          dataset: 'media',
+          storeId: 'store-4',
+        },
+        compositionRepository: {
+          _tag: 'google_fhir_store',
+          projectId: 'project-1',
+          region: 'us-central1',
+          dataset: 'compositions',
+          storeId: 'store-5',
+        },
+        patientRepository: {
+          _tag: 'google_fhir_store',
+          projectId: 'project-1',
+          region: 'us-central1',
+          dataset: 'patients',
+          storeId: 'store-6',
+        },
+        practitionerRepository: {
+          _tag: 'google_fhir_store',
+          projectId: 'project-1',
+          region: 'us-central1',
+          dataset: 'practitioners',
+          storeId: 'store-7',
+        },
         videoCallClient: {
           _tag: 'daily_co_proxy',
           dailyCoProxyUrl: 'https://proxy.example.com',
@@ -59,7 +87,7 @@ describe('Org', () => {
 
   test('accepts org with not_implemented repositories', () => {
     const decode = Schema.decodeUnknownEither(Org)
-    const org = {
+    const org: typeof Org.Encoded = {
       slug: 'minimal-org',
       frontendConfig: {
         questionnaireRepository: {
@@ -72,6 +100,18 @@ describe('Org', () => {
           _tag: 'not_implemented',
         },
         mediaRepository: {
+          _tag: 'not_implemented',
+        },
+        observationRepository: {
+          _tag: 'not_implemented',
+        },
+        compositionRepository: {
+          _tag: 'not_implemented',
+        },
+        patientRepository: {
+          _tag: 'not_implemented',
+        },
+        practitionerRepository: {
           _tag: 'not_implemented',
         },
         videoCallClient: {
@@ -93,7 +133,7 @@ describe('Org', () => {
 
   test('accepts mixed implementation types', () => {
     const decode = Schema.decodeUnknownEither(Org)
-    const org = {
+    const org: typeof Org.Encoded = {
       slug: 'mixed-org',
       frontendConfig: {
         questionnaireRepository: {
@@ -110,6 +150,18 @@ describe('Org', () => {
           _tag: 'not_implemented',
         },
         mediaRepository: {
+          _tag: 'not_implemented',
+        },
+        observationRepository: {
+          _tag: 'not_implemented',
+        },
+        compositionRepository: {
+          _tag: 'not_implemented',
+        },
+        patientRepository: {
+          _tag: 'not_implemented',
+        },
+        practitionerRepository: {
           _tag: 'not_implemented',
         },
         videoCallClient: {
@@ -132,6 +184,7 @@ describe('Org', () => {
         questionnaireResponseRepository: { _tag: 'not_implemented' },
         encounterRepository: { _tag: 'not_implemented' },
         mediaRepository: { _tag: 'not_implemented' },
+        compositionRepository: { _tag: 'not_implemented' },
         videoCallClient: { _tag: 'not_implemented' },
       },
     }
@@ -168,33 +221,6 @@ describe('Org', () => {
   })
 })
 
-describe('OrgLoading', () => {
-  test('creates org loading state', () => {
-    const encode = Schema.encodeUnknownEither(OrgLoading)
-    const loading = {
-      _tag: 'OrgLoading',
-    }
-
-    const result = encode(loading)
-
-    expect(Either.isRight(result)).toBe(true)
-    if (Either.isRight(result)) {
-      expect(result.right._tag).toBe('OrgLoading')
-    }
-  })
-
-  test('decodes org loading state', () => {
-    const decode = Schema.decodeUnknownEither(OrgLoading)
-    const loading = {
-      _tag: 'OrgLoading',
-    }
-
-    const result = decode(loading)
-
-    expect(Either.isRight(result)).toBe(true)
-  })
-})
-
 describe('OrgDataError', () => {
   test('creates error with cause', () => {
     const encode = Schema.encodeUnknownEither(OrgDataError)
@@ -225,20 +251,6 @@ describe('OrgDataError', () => {
 })
 
 describe('OrgError', () => {
-  test('accepts OrgLoading', () => {
-    const decode = Schema.decodeUnknownEither(OrgError)
-    const error = {
-      _tag: 'OrgLoading',
-    }
-
-    const result = decode(error)
-
-    expect(Either.isRight(result)).toBe(true)
-    if (Either.isRight(result)) {
-      expect(result.right._tag).toBe('OrgLoading')
-    }
-  })
-
   test('accepts OrgDataError', () => {
     const decode = Schema.decodeUnknownEither(OrgError)
     const error = {
@@ -257,9 +269,7 @@ describe('OrgError', () => {
   test('accepts CurrentUserError types', () => {
     const decode = Schema.decodeUnknownEither(OrgError)
     const errors = [
-      { _tag: 'UserLoading' },
       { _tag: 'UserDataError', cause: 'Error' },
-      { _tag: 'AuthStateLoading' },
       { _tag: 'AuthStateError', cause: 'Auth failed' },
       { _tag: 'NotLoggedIn' },
     ]

@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 import { DomainResource } from '../../data-types/base/DomainResource'
-import { Identifier } from '../../data-types/complex/Identifier'
+import { Identifier } from '../../data-types'
 
 export const LocationId = Schema.String.pipe(Schema.brand('LocationId'))
 /**
@@ -10,5 +10,5 @@ export const LocationId = Schema.String.pipe(Schema.brand('LocationId'))
 export const Location = Schema.Struct({
   ...DomainResource(LocationId).fields,
   resourceType: Schema.Literal('Location'),
-  identifier: Schema.optional(Schema.Array(Identifier)),
+  identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
 })

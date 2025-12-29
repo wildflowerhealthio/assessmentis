@@ -6,7 +6,7 @@ import {
   UnhandledError,
 } from '@assessmentis/ontology'
 import { WithId } from '../../data-types/base/Element'
-import { Reference } from '../../data-types/special-purpose/Reference'
+import { Reference } from '../../data-types/complex/IdentifierAndReference'
 
 /**
  * Common error types for clinical data repository operations

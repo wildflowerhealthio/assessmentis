@@ -2,9 +2,22 @@ import { Schema } from 'effect'
 
 export const Code = Schema.String.pipe(Schema.brand('code'))
 
-export const CodeLiteral = <L extends ReadonlyArray<string>>(...literal: L) =>
-  Schema.Literal(...literal).pipe(Schema.brand('code'))
+export type Code = typeof Code.Type
 
+interface CodingCommon {
+  display?: string
+  system?: string
+  userSelected?: boolean
+  version?: string
+}
+
+export interface Coding extends CodingCommon {
+  code?: Code
+}
+
+export interface CodingEncoded extends CodingCommon {
+  code?: typeof Code.Encoded
+}
 /**
  * A reference to a code defined by a terminology system.
  */
@@ -35,4 +48,3 @@ export const Coding = Schema.Struct({
   version: Schema.optional(Schema.String),
   // _version?: Element | undefined;
 })
-export type Coding = typeof Coding.Type

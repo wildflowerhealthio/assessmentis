@@ -167,7 +167,7 @@ jobs:
           filter_mode: diff_context
           workdir: infrastructure/google-meet-infrastructure
 
-      - name: Lint infrastructure/jsx-document-infrastructure
+      - name: Lint infrastructure/document-template-instances
         uses: reviewdog/action-eslint@v1
         continue-on-error: true
         with:
@@ -175,7 +175,7 @@ jobs:
           reporter: github-pr-review
           fail_level: error
           filter_mode: diff_context
-          workdir: infrastructure/jsx-document-infrastructure
+          workdir: infrastructure/document-template-instances
 
 # -
 # -

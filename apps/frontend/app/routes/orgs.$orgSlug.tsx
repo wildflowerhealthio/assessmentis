@@ -1,8 +1,12 @@
 import { auth, db } from '../firebase'
 import { DailyCoProxyConfig } from '@assessmentis/config-domain/dailyCo'
 import {
+  CompositionConfig,
   EncounterConfig,
   MediaConfig,
+  ObservationConfig,
+  PatientConfig,
+  PractitionerConfig,
   QuestionnaireConfig,
   QuestionnaireResponseConfig,
 } from '@assessmentis/config-domain/googleFhir'
@@ -31,6 +35,12 @@ const frontendConfig = (): FrontendConfig => {
     }),
     encounterRepository: EncounterConfig.make({ ...fhirStore }),
     mediaRepository: MediaConfig.make({ ...fhirStore }),
+    observationRepository: ObservationConfig.make({ ...fhirStore }),
+    compositionRepository: CompositionConfig.make({
+      ...fhirStore,
+    }),
+    patientRepository: PatientConfig.make({ ...fhirStore }),
+    practitionerRepository: PractitionerConfig.make({ ...fhirStore }),
     videoCallClient: DailyCoProxyConfig.make({ dailyCoProxyUrl: '' }),
   } as const)
 }

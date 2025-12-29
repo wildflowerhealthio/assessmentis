@@ -248,19 +248,18 @@ export abstract class BaseGoogleFhirRepository<
   > {
     const DataBundle = Bundle(this.schema)
     const decodeBundle = Schema.decodeUnknown(DataBundle)
-
-    return this.doFhirApiCall(
-      () =>
-        gapi.client.healthcare.projects.locations.datasets.fhirStores.fhir
-          .search,
-      {
-        parent: this.parent,
-        resourceType: this.resourceType,
-        resource: {
+    return this.doFhirApiCall(() => gapi.client.request, {
+      path: `https://content-healthcare.googleapis.com/v1/${this.parent}/fhir/${this.resourceType}/_search?${new URLSearchParams(
+        {
           ...params,
-        } as gapi.client.healthcare.HttpBody,
-      }
-    ).pipe(
+        }
+      )}`,
+      method: 'POST',
+      headers: {
+        'content-type': 'application/fhir+json;charset=utf-8',
+      },
+      body: '',
+    }).pipe(
       Effect.flatMap((response) =>
         decodeBundle(response.result).pipe(
           Effect.mapError(

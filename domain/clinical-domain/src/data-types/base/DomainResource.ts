@@ -20,18 +20,20 @@ export const DomainResource = <IdType extends string>(
     /**
      * Additional content defined by implementations
      */
-    extension: Schema.optional(Schema.Array(Extension)),
+    extension: Schema.optional(Schema.Array(Schema.suspend(() => Extension))),
     /**
      * Extensions that cannot be ignored
      */
-    modifierExtension: Schema.optional(Schema.Array(Extension)),
+    modifierExtension: Schema.optional(
+      Schema.Array(Schema.suspend(() => Extension))
+    ),
   })
 
 export const Meta = Schema.Struct({
   versionId: Schema.optional(Schema.String),
-  lastUpdated: Schema.optional(Schema.String),
+  lastUpdated: Schema.optional(Schema.DateTimeUtc),
   source: Schema.optional(Schema.URL),
   // profile: canonical(StructureDefinition),
-  security: Schema.optional(Schema.Array(Coding)),
-  tag: Schema.optional(Schema.Array(Coding)),
+  security: Schema.optional(Schema.Array(Schema.suspend(() => Coding))),
+  tag: Schema.optional(Schema.Array(Schema.suspend(() => Coding))),
 })

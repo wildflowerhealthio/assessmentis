@@ -1,0 +1,13 @@
+{
+  "extends": "@assessmentis/typescript-config/react-library.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": false
+  },
+  "include": [
+    "src/**/*"
+  ]
+}

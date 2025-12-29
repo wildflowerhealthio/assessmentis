@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 import { Element } from '../base/Element'
-import { Reference, ReferenceEncoded } from '../special-purpose/Reference'
+import { Reference, ReferenceEncoded } from './IdentifierAndReference'
 
 export const AnnotationId = Schema.String.pipe(Schema.brand('AnnotationId'))
 

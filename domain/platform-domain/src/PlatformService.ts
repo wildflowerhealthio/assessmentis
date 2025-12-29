@@ -8,9 +8,17 @@ import { ExternalVideoCallClient } from '@assessmentis/video-call-domain'
 import {
   QuestionnaireRepository,
   QuestionnaireResponseRepository,
+  CompositionRepository,
 } from '@assessmentis/clinical-domain/content-management'
-import { EncounterRepository } from '@assessmentis/clinical-domain/administration'
-import { MediaRepository } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import {
+  EncounterRepository,
+  PatientRepository,
+  PractitionerRepository,
+} from '@assessmentis/clinical-domain/administration'
+import {
+  MediaRepository,
+  ObservationRepository,
+} from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { HttpClient } from '@effect/platform'
 import { Org, OrgError } from './loadedValues/Org'
 
@@ -21,8 +29,12 @@ export type ClientRuntimeContext =
   | ExternalVideoCallClient
   | QuestionnaireRepository
   | QuestionnaireResponseRepository
+  | CompositionRepository
   | EncounterRepository
   | MediaRepository
+  | ObservationRepository
+  | PatientRepository
+  | PractitionerRepository
 
 export class PlatformService extends Context.Tag('PlatformService')<
   PlatformService,

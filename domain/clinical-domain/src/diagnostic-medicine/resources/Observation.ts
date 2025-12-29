@@ -1,7 +1,9 @@
 import { Schema } from 'effect'
 import { DomainResource } from '../../data-types/base/DomainResource'
-import { Identifier } from '../../data-types/complex/Identifier'
-import { Reference } from '../../data-types/special-purpose/Reference'
+import {
+  Identifier,
+  Reference,
+} from '../../data-types/complex/IdentifierAndReference'
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import { Annotation } from '../../data-types/complex/Annotation'
 import { Period } from '../../data-types/complex/Period'
@@ -40,15 +42,15 @@ const observationFields = {
   /**
    * A unique identifier assigned to this observation.
    */
-  identifier: Schema.optional(Schema.Array(Identifier)),
+  identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
   /**
    * A plan, proposal or order that is fulfilled in whole or in part by this event. For example, a MedicationRequest may require a patient to have laboratory test performed before it is dispensed.
    */
-  basedOn: Schema.optional(Schema.Array(Reference)),
+  basedOn: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
   /**
    * A larger event of which this particular Observation is a component or step. For example, an observation as part of a procedure.
    */
-  partOf: Schema.optional(Schema.Array(Reference)),
+  partOf: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
   /**
    * The status of the result value.
    * This element is labeled as a modifier because the status contains codes that mark the resource as not currently valid.
@@ -65,15 +67,15 @@ const observationFields = {
   /**
    * The patient, or group of patients, location, or device this observation is about and into whose record the observation is placed. If the actual focus of the observation is different from the subject (or a sample of, part, or region of the subject), the focus element or the code itself specifies the actual focus of the observation.
    */
-  subject: Schema.optional(Reference),
+  subject: Schema.optional(Schema.suspend(() => Reference)),
   /**
    * The actual focus of an observation when it is not the patient of record representing something or someone associated with the patient such as a spouse, parent, fetus, or donor. For example, fetus observations in a mother's record. The focus of an observation could also be an existing condition, an intervention, the subject's diet, another observation of the subject, or a body structure such as tumor or implanted device. An example use case would be using the Observation resource to capture whether the mother is trained to change her child's tracheostomy tube. In this example, the child is the patient of record and the mother is the focus.
    */
-  focus: Schema.optional(Schema.Array(Reference)),
+  focus: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
   /**
    * The healthcare event (e.g. a patient and healthcare provider interaction) during which this observation is made.
    */
-  encounter: Schema.optional(Reference),
+  encounter: Schema.optional(Schema.suspend(() => Reference)),
   /**
    * The time or time-period the observed value is asserted as being true. For biological subjects - e.g. human patients - this is usually called the "physiologically relevant time". This is usually either the time of the procedure or of specimen collection, but very often the source of the date/time is not known, only the date/time itself.
    * This is a choice element in FHIR (effective[x]) - only one of effectiveDateTime, effectivePeriod, effectiveTiming, or effectiveInstant should be present.
@@ -88,7 +90,7 @@ const observationFields = {
   /**
    * Who was responsible for asserting the observed value as "true".
    */
-  performer: Schema.optional(Schema.Array(Reference)),
+  performer: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
   /**
    * Provides a reason why the expected value in the element Observation.value[x] is missing.
    */
@@ -112,11 +114,11 @@ const observationFields = {
   /**
    * The specimen that was used when this observation was made.
    */
-  specimen: Schema.optional(Reference),
+  specimen: Schema.optional(Schema.suspend(() => Reference)),
   /**
    * The device used to generate the observation data.
    */
-  device: Schema.optional(Reference),
+  device: Schema.optional(Schema.suspend(() => Reference)),
   /**
    * Guidance on how to interpret the value by comparison to a normal or recommended range. Multiple reference ranges are interpreted as an "OR". In other words, to represent two distinct target populations, two referenceRange elements would be used.
    */
@@ -153,11 +155,11 @@ const observationFields = {
   /**
    * This observation is a group observation (e.g. a battery, a panel of tests, a set of vital sign measurements) that includes the target as a member of the group.
    */
-  hasMember: Schema.optional(Schema.Array(Reference)),
+  hasMember: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
   /**
    * The target resource that represents a measurement from which this observation value is derived. For example, a calculated anion gap or a fetal measurement based on an ultrasound image.
    */
-  derivedFrom: Schema.optional(Schema.Array(Reference)),
+  derivedFrom: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
   /**
    * Some observations have multiple component observations. These component observations are expressed as separate code value pairs that share the same attributes. Examples include systolic and diastolic component observations for blood pressure measurement and multiple component observations for genetics observations.
    */
@@ -193,7 +195,7 @@ const observationFields = {
             )
           ),
         }),
-        ValueElement
+        Schema.suspend(() => ValueElement)
       )
     )
   ),
@@ -204,7 +206,7 @@ const observationFields = {
  */
 export const Observation = Schema.extend(
   Schema.Struct(observationFields),
-  ValueElement
+  Schema.suspend(() => ValueElement)
 )
 
 export type Observation = typeof Observation.Type

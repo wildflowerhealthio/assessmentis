@@ -1,7 +1,9 @@
 import { Schema } from 'effect'
 import { DomainResource } from '../../data-types/base/DomainResource'
-import { Identifier } from '../../data-types/complex/Identifier'
-import { Reference } from '../../data-types/special-purpose/Reference'
+import {
+  Identifier,
+  Reference,
+} from '../../data-types/complex/IdentifierAndReference'
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import { Attachment } from '../../data-types/complex/Attachment'
 import { Period } from '../../data-types/complex/Period'
@@ -40,11 +42,11 @@ export const DiagnosticReport = Schema.Struct({
   /**
    * Identifiers assigned to this report by the performer or other systems.
    */
-  identifier: Schema.optional(Schema.Array(Identifier)),
+  identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
   /**
    * Details concerning a service requested.
    */
-  basedOn: Schema.optional(Schema.Array(Reference)),
+  basedOn: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
   /**
    * The status of the diagnostic report.
    * This element is labeled as a modifier because the status contains codes that mark the resource as not currently valid.
@@ -61,11 +63,11 @@ export const DiagnosticReport = Schema.Struct({
   /**
    * The subject of the report. Usually, but not always, this is a patient. However, diagnostic services also perform analyses on specimens collected from a variety of other sources.
    */
-  subject: Schema.optional(Reference),
+  subject: Schema.optional(Schema.suspend(() => Reference)),
   /**
    * The healthcare event (e.g. a patient and healthcare provider interaction) which this DiagnosticReport is about.
    */
-  encounter: Schema.optional(Reference),
+  encounter: Schema.optional(Schema.suspend(() => Reference)),
   /**
    * The time or time-period the observed values are related to. When the subject of the report is a patient, this is usually either the time of the procedure or of specimen collection(s), but very often the source of the date/time is not known, only the date/time itself.
    * This is a choice element in FHIR (effective[x]) - only one of effectiveDateTime or effectivePeriod should be present.
@@ -79,23 +81,25 @@ export const DiagnosticReport = Schema.Struct({
   /**
    * The diagnostic service that is responsible for issuing the report.
    */
-  performer: Schema.optional(Schema.Array(Reference)),
+  performer: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
   /**
    * The practitioner or organization that is responsible for the report's conclusions and interpretations.
    */
-  resultsInterpreter: Schema.optional(Schema.Array(Reference)),
+  resultsInterpreter: Schema.optional(
+    Schema.Array(Schema.suspend(() => Reference))
+  ),
   /**
    * Details about the specimens on which this diagnostic report is based.
    */
-  specimen: Schema.optional(Schema.Array(Reference)),
+  specimen: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
   /**
    * Observations that are part of this diagnostic report.
    */
-  result: Schema.optional(Schema.Array(Reference)),
+  result: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
   /**
    * One or more links to full details of any imaging performed during the diagnostic investigation. Typically, this is imaging performed by DICOM enabled modalities, but this is not required. A fully enabled PACS viewer can use this information to provide views of the source images.
    */
-  imagingStudy: Schema.optional(Schema.Array(Reference)),
+  imagingStudy: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
   /**
    * A list of key images associated with this report. The images are generally created during the diagnostic process, and may be directly of the patient, or of treated specimens (i.e. slides of interest).
    */
@@ -109,7 +113,7 @@ export const DiagnosticReport = Schema.Struct({
         /**
          * Reference to the image source.
          */
-        link: Reference,
+        link: Schema.suspend(() => Reference),
       })
     )
   ),

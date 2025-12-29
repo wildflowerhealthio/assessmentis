@@ -5,7 +5,6 @@ import classes from './InterviewCall.module.css'
 import { type DailyEvent } from '@daily-co/daily-js'
 import { DailyAudio, DailyProvider, useCallObject } from '@daily-co/daily-react'
 
-import { Schema } from 'effect'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Call,
@@ -13,9 +12,9 @@ import {
   Tray,
 } from '@assessmentis/daily-co-infrastructure/components'
 import { FullEncounter } from 'app/modules/interview-call/actions/getFullEncounter'
-import QuestionnaireForm from 'app/modules/questionnaire/features/QuestionnaireForm/QuestionnaireForm'
+import QuestionnaireForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/QuestionnaireForm'
 import { useNavigate } from 'react-router'
-import SplitPane from '../../../../components/SplitPane/SplitPane'
+import SplitPane from '../../../common/components/SplitPane/SplitPane'
 
 /* We decide what UI to show to users based on the state of the app, which is dependent on the state of the call object. */
 enum VideoCallState {
@@ -196,11 +195,10 @@ const useDailyCall = (roomUrl: string | undefined) => {
 }
 
 interface IProps {
-  encounterJson: typeof FullEncounter.Encoded
+  encounter: FullEncounter
 }
 
-function InterviewCall({ encounterJson }: IProps) {
-  const encounter = Schema.decodeSync(FullEncounter)(encounterJson)
+function InterviewCall({ encounter }: IProps) {
   const roomUrl = encounter.location?.[0].location?.identifier?.value
   const {
     joinCall,
@@ -223,7 +221,7 @@ function InterviewCall({ encounterJson }: IProps) {
           Something went wrong creating a video call room. You can try
           recreating it
         </p>
-        <button className="button-4">Recreate Video Call</button>
+        <button className="element-button button-4">Recreate Video Call</button>
       </div>
     )
   }

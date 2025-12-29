@@ -1,69 +1,28 @@
 import { expect, test, describe } from 'vitest'
-import { Schema, Either } from 'effect'
-import { User, UserLoading, UserDataError, CurrentUserError } from './User'
+import { Schema, Either, Arbitrary } from 'effect'
+import { User, UserDataError, CurrentUserError } from './User'
 import * as fc from 'fast-check'
+
+const userArb = Arbitrary.make(User)
 
 describe('User', () => {
   test('property: decode-encode cycle preserves user structure', () => {
     // Property: For any valid User, encode(decode(x)) === x
     fc.assert(
-      fc.property(
-        fc.string(),
-        fc.dictionary(fc.string(), fc.array(fc.string())),
-        (uid, org_roles) => {
-          const decode = Schema.decodeUnknownEither(User)
-          const encode = Schema.encodeUnknownEither(User)
-          const user = { uid, org_roles }
+      fc.property(userArb, (user) => {
+        const decode = Schema.decodeUnknownEither(User)
+        const encode = Schema.encodeUnknownEither(User)
 
-          const decoded = decode(user)
-          if (Either.isRight(decoded)) {
-            const encoded = encode(decoded.right)
-            expect(Either.isRight(encoded)).toBe(true)
-            if (Either.isRight(encoded)) {
-              expect(encoded.right.uid).toBe(uid)
-              expect(encoded.right.org_roles).toEqual(org_roles)
-            }
+        const decoded = decode(user)
+        if (Either.isRight(decoded)) {
+          const encoded = encode(decoded.right)
+          expect(Either.isRight(encoded)).toBe(true)
+          if (Either.isRight(encoded)) {
+            expect(encoded.right.uid).toBe(user.uid)
+            expect(encoded.right.org_roles).toEqual(user.org_roles)
           }
         }
-      )
-    )
-  })
-
-  // Keys that can cause prototype pollution and should be filtered in tests
-  const DANGEROUS_KEYS: ReadonlyArray<string> = [
-    '__proto__',
-    'constructor',
-    'prototype',
-  ] as const
-
-  test('property: org_roles structure is preserved', () => {
-    // Property: org_roles dictionary structure and content is preserved
-    // Note: Filters out prototype pollution keys
-    fc.assert(
-      fc.property(
-        fc.string(),
-        fc.dictionary(
-          fc.string().filter((key) => !DANGEROUS_KEYS.includes(key)),
-          fc.array(fc.string())
-        ),
-        (uid, org_roles) => {
-          const decode = Schema.decodeUnknownEither(User)
-          const user = { uid, org_roles }
-
-          const result = decode(user)
-          if (Either.isRight(result)) {
-            // Compare actual enumerable keys (which filters out __proto__)
-            const inputKeys = Object.keys(org_roles).sort()
-            const outputKeys = Object.keys(result.right.org_roles).sort()
-            expect(outputKeys).toEqual(inputKeys)
-
-            Object.entries(org_roles).forEach(([orgSlug, roles]) => {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              expect(result.right.org_roles[orgSlug as any]).toEqual(roles)
-            })
-          }
-        }
-      )
+      })
     )
   })
 
@@ -99,40 +58,6 @@ describe('User', () => {
           expect(Object.keys(result.right.org_roles)).toHaveLength(0)
         }
       })
-    )
-  })
-})
-
-describe('UserLoading', () => {
-  test('property: encode-decode is identity for UserLoading', () => {
-    // Property: decode(encode(x)) === x for UserLoading state
-    const decode = Schema.decodeUnknownEither(UserLoading)
-    const encode = Schema.encodeUnknownEither(UserLoading)
-    const loading = { _tag: 'UserLoading' as const }
-
-    const encoded = encode(loading)
-    expect(Either.isRight(encoded)).toBe(true)
-
-    if (Either.isRight(encoded)) {
-      const decoded = decode(encoded.right)
-      expect(Either.isRight(decoded)).toBe(true)
-      if (Either.isRight(decoded)) {
-        expect(decoded.right._tag).toBe('UserLoading')
-      }
-    }
-  })
-
-  test('property: invalid _tag always fails', () => {
-    // Property: Only correct _tag value decodes successfully
-    fc.assert(
-      fc.property(
-        fc.string().filter((s) => s !== 'UserLoading'),
-        (tag) => {
-          const decode = Schema.decodeUnknownEither(UserLoading)
-          const result = decode({ _tag: tag })
-          expect(Either.isLeft(result)).toBe(true)
-        }
-      )
     )
   })
 })
@@ -188,12 +113,10 @@ describe('CurrentUserError', () => {
     fc.assert(
       fc.property(
         fc.oneof(
-          fc.constant({ _tag: 'UserLoading' as const }),
           fc.record({
             _tag: fc.constant('UserDataError' as const),
             cause: fc.option(fc.anything(), { nil: undefined }),
           }),
-          fc.constant({ _tag: 'AuthStateLoading' as const }),
           fc.record({
             _tag: fc.constant('AuthStateError' as const),
             cause: fc.option(fc.anything(), { nil: undefined }),
@@ -207,9 +130,7 @@ describe('CurrentUserError', () => {
           expect(Either.isRight(result)).toBe(true)
           if (Either.isRight(result)) {
             expect([
-              'UserLoading',
               'UserDataError',
-              'AuthStateLoading',
               'AuthStateError',
               'NotLoggedIn',
             ]).toContain(result.right._tag)
@@ -224,7 +145,6 @@ describe('CurrentUserError', () => {
     fc.assert(
       fc.property(
         fc.oneof(
-          fc.constant({ _tag: 'UserLoading' as const }),
           fc.constant({ _tag: 'AuthStateLoading' as const }),
           fc.constant({ _tag: 'NotLoggedIn' as const })
         ),
@@ -258,7 +178,6 @@ describe('CurrentUserError', () => {
           .string()
           .filter(
             (s) =>
-              s !== 'UserLoading' &&
               s !== 'UserDataError' &&
               s !== 'AuthStateLoading' &&
               s !== 'AuthStateError' &&

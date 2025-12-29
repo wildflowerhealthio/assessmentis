@@ -14,3 +14,19 @@ export const cn = (
   }
   return result.join(' ')
 }
+
+export const applyPartialProps =
+  <Outer extends object, Inner extends object>(
+    Component: React.FC<Outer & Inner>,
+    outerProps: Outer
+  ): React.FC<Inner> =>
+  (innerProps: Inner) =>
+    Component({ ...outerProps, ...innerProps })
+
+export const transformProps =
+  <Outer extends object, Inner extends object>(
+    Component: React.FC<Inner>,
+    transform: (outer: Outer) => Inner
+  ): React.FC<Outer> =>
+  (outerProps: Outer) =>
+    Component({ ...transform(outerProps) })

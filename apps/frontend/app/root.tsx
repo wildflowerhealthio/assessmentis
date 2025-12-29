@@ -17,8 +17,10 @@ import {
   UnhandledError,
 } from '@assessmentis/ontology'
 import * as firebase from 'app/firebase'
-import NavHeader from './components/NavHeader'
-import { RuntimeContextOrErr } from './components/RuntimeContextOrErr'
+import NavHeader from './modules/global/components/NavHeader/NavHeader'
+import { LoadedRuntimeContextProvider } from './modules/global/components/RuntimeContextOrErr'
+import { BreadcrumbProvider } from './modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
+import { shouldShowRawData } from './util/debugHelpers'
 
 // HydrateFallback is rendered while the client loader is running
 export function HydrateFallback() {
@@ -41,25 +43,27 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
       </head>
       <body>
-        <NavHeader />
-        <RuntimeContextOrErr>
-          <div
-            style={{
-              width: '100%',
-              margin: '0 auto',
-              flexGrow: 1,
-              flexShrink: 1,
-              flexDirection: 'column',
-              overflowY: 'hidden',
+        <LoadedRuntimeContextProvider>
+          <BreadcrumbProvider>
+            <NavHeader />
+            <div
+              style={{
+                width: '100%',
+                margin: '0 auto',
+                flexGrow: 1,
+                flexShrink: 1,
+                flexDirection: 'column',
+                overflowY: 'hidden',
 
-              paddingBlock: 'var(--space-4)',
-              paddingInline: 'var(--space-8)',
-              marginInline: 'auto',
-            }}
-          >
-            {children}
-          </div>
-        </RuntimeContextOrErr>
+                paddingBlock: 'var(--space-4)',
+                paddingInline: 'var(--space-8)',
+                marginInline: 'auto',
+              }}
+            >
+              {children}
+            </div>
+          </BreadcrumbProvider>
+        </LoadedRuntimeContextProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -95,7 +99,7 @@ export function ErrorBoundary({ error }: { error: unknown }) {
   } else if (error && error instanceof Error) {
     const errorCause =
       FiberFailureCauseId in error ? error[FiberFailureCauseId] : undefined
-    if (import.meta.env.DEV) {
+    if (shouldShowRawData(error)) {
       details = error.message
       stack = error.stack
     }

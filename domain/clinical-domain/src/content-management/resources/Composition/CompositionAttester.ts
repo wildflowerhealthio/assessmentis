@@ -1,5 +1,4 @@
 import {
-  CodeLiteral,
   BackboneElement,
   Element,
   Reference,
@@ -10,12 +9,12 @@ export const CompositionAttesterId = Schema.String.pipe(
   Schema.brand('CompositionAttesterId')
 )
 
-export const CompositionAttesterMode = CodeLiteral(
+export const CompositionAttesterMode = Schema.Literal(
   'personal',
   'professional',
   'legal',
   'official'
-)
+).pipe(Schema.brand('code'))
 /**
  * Attests to accuracy of composition
  */
@@ -41,7 +40,7 @@ export const CompositionAttester = Schema.Struct({
   /**
    * Who attested the composition
    */
-  party: Schema.optional(Reference),
+  party: Schema.optional(Schema.suspend(() => Reference)),
 })
 
 export type CompositionAttester = typeof CompositionAttester.Type

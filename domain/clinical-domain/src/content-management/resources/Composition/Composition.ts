@@ -2,12 +2,12 @@ import { Schema } from 'effect'
 import {
   Code,
   CodeableConcept,
-  Identifier,
   Narrative,
   Reference,
   DomainResource,
   Element,
   Meta,
+  Identifier,
 } from '@assessmentis/clinical-domain/data-types'
 import { CompositionAttester } from './CompositionAttester'
 import { CompositionRelatesTo } from './CompositionRelatesTo'
@@ -58,7 +58,7 @@ export const Composition = Schema.Struct({
   /**
    * Logical identifier of composition (version-independent)
    */
-  identifier: Schema.optional(Identifier),
+  identifier: Schema.optional(Schema.suspend(() => Identifier)),
   /**
    * preliminary | final | amended | entered-in-error
    */
@@ -83,15 +83,15 @@ export const Composition = Schema.Struct({
   /**
    * Who and/or what the composition is about
    */
-  subject: Reference,
+  subject: Schema.suspend(() => Reference),
   /**
    * Context of the Composition
    */
-  encounter: Schema.optional(Reference),
+  encounter: Schema.optional(Schema.suspend(() => Reference)),
   /**
    * Composition editing time
    */
-  date: Schema.String,
+  date: Schema.DateTimeUtc,
   /**
    * Contains extended information for property 'date'.
    */
@@ -99,7 +99,7 @@ export const Composition = Schema.Struct({
   /**
    * Who and/or what authored the composition
    */
-  author: Schema.Array(Reference),
+  author: Schema.Array(Schema.suspend(() => Reference)),
   /**
    * Human Readable name/title
    */
@@ -123,7 +123,7 @@ export const Composition = Schema.Struct({
   /**
    * Organization which maintains the composition
    */
-  custodian: Schema.optional(Reference),
+  custodian: Schema.optional(Schema.suspend(() => Reference)),
   /**
    * Relationships to other compositions/documents
    */

@@ -2,7 +2,7 @@ import { Schema } from 'effect'
 import { BackboneElement } from '../../../data-types/base/BackboneElement'
 import { Coding } from '../../../data-types/complex/Coding'
 import { Resource } from '../../../data-types/base/Resource'
-import { Reference } from '../../../data-types/special-purpose/Reference'
+import { Reference } from '../../../data-types/complex/IdentifierAndReference'
 
 export const QuestionnaireId = Schema.String.pipe(
   Schema.brand('QuestionnaireId')
@@ -33,6 +33,7 @@ const QuestionItemType = Schema.Union(
 export const QuestionnaireItemLink = Schema.String.pipe(
   Schema.brand('QuestionnaireItemLink')
 )
+
 export type QuestionnaireItemLink = typeof QuestionnaireItemLink.Type
 
 export const QuestionnaireItemId = Schema.String.pipe(
@@ -46,8 +47,8 @@ const QuestionnaireItemAnswerOption = Schema.Struct({
   valueDate: Schema.optional(Schema.String),
   valueTime: Schema.optional(Schema.String),
   valueString: Schema.optional(Schema.String),
-  valueCoding: Schema.optional(Coding),
-  valueReference: Schema.optional(Reference),
+  valueCoding: Schema.optional(Schema.suspend(() => Coding)),
+  valueReference: Schema.optional(Schema.suspend(() => Reference)),
   initialSelected: Schema.optional(Schema.Boolean),
 })
 
@@ -65,7 +66,7 @@ const questionnaireItemFields = {
   /**
    * The value may come from the ElementDefinition referred to by .definition.
    */
-  code: Schema.optional(Schema.Array(Coding)),
+  code: Schema.optional(Schema.Array(Schema.suspend(() => Coding))),
   /**
    * The uri refers to an ElementDefinition in a [StructureDefinition](structuredefinition.html#) and always starts with the [canonical URL](references.html#canonical) for the target resource. When referring to a StructureDefinition, a fragment identifier is used to specify the element definition by its id [Element.id](element-definitions.html#Element.id). E.g. http://hl7.org/fhir/StructureDefinition/Observation#Observation.value[x]. In the absence of a fragment identifier, the first/root element definition in the target is the matching element definition.
    */
@@ -174,7 +175,7 @@ export const Questionnaire = Schema.Struct({
   /**
    * An identifier for this question or group of questions in a particular terminology such as LOINC.
    */
-  code: Schema.optional(Schema.Array(Coding)),
+  code: Schema.optional(Schema.Array(Schema.suspend(() => Coding))),
   /**
    * May be a web site, an email address, a telephone number, etc.
    */

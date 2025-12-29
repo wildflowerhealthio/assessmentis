@@ -124,12 +124,10 @@ describe('OrgRoleError', () => {
       fc.property(
         fc.oneof(
           fc.constant({ _tag: 'NoOrgSelected' as const }),
-          fc.constant({ _tag: 'UserLoading' as const }),
           fc.record({
             _tag: fc.constant('UserDataError' as const),
             cause: fc.option(fc.anything(), { nil: undefined }),
           }),
-          fc.constant({ _tag: 'AuthStateLoading' as const }),
           fc.record({
             _tag: fc.constant('AuthStateError' as const),
             cause: fc.option(fc.anything(), { nil: undefined }),
@@ -144,7 +142,6 @@ describe('OrgRoleError', () => {
           if (Either.isRight(result)) {
             expect([
               'NoOrgSelected',
-              'UserLoading',
               'UserDataError',
               'AuthStateLoading',
               'AuthStateError',
@@ -162,7 +159,6 @@ describe('OrgRoleError', () => {
       fc.property(
         fc.oneof(
           fc.constant({ _tag: 'NoOrgSelected' as const }),
-          fc.constant({ _tag: 'UserLoading' as const }),
           fc.constant({ _tag: 'AuthStateLoading' as const }),
           fc.constant({ _tag: 'NotLoggedIn' as const })
         ),
@@ -197,7 +193,6 @@ describe('OrgRoleError', () => {
           .filter(
             (s) =>
               s !== 'NoOrgSelected' &&
-              s !== 'UserLoading' &&
               s !== 'UserDataError' &&
               s !== 'AuthStateLoading' &&
               s !== 'AuthStateError' &&
