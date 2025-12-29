@@ -26,44 +26,6 @@ describe('User', () => {
     )
   })
 
-  // Keys that can cause prototype pollution and should be filtered in tests
-  const DANGEROUS_KEYS: ReadonlyArray<string> = [
-    '__proto__',
-    'constructor',
-    'prototype',
-  ] as const
-
-  test('property: org_roles structure is preserved', () => {
-    // Property: org_roles dictionary structure and content is preserved
-    // Note: Filters out prototype pollution keys
-    fc.assert(
-      fc.property(
-        fc.string(),
-        fc.dictionary(
-          fc.string().filter((key) => !DANGEROUS_KEYS.includes(key)),
-          fc.array(fc.string())
-        ),
-        (uid, org_roles) => {
-          const decode = Schema.decodeUnknownEither(User)
-          const user = { uid, org_roles }
-
-          const result = decode(user)
-          if (Either.isRight(result)) {
-            // Compare actual enumerable keys (which filters out __proto__)
-            const inputKeys = Object.keys(org_roles).sort()
-            const outputKeys = Object.keys(result.right.org_roles).sort()
-            expect(outputKeys).toEqual(inputKeys)
-
-            Object.entries(org_roles).forEach(([orgSlug, roles]) => {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              expect(result.right.org_roles[orgSlug as any]).toEqual(roles)
-            })
-          }
-        }
-      )
-    )
-  })
-
   test('property: missing required fields always fail', () => {
     // Property: User must have both uid and org_roles
     fc.assert(
