@@ -3,20 +3,24 @@ import { Schema, FastCheck, DateTime } from 'effect'
 import {
   CompositionFormSchema,
   transformToComposition,
-  CompositionFormData,
 } from './CompositionFormSchema'
+import { DateTimeUtc } from 'effect/Schema'
 
 describe('CompositionFormSchema', () => {
   describe('schema validation', () => {
     it('should validate correct form data', () => {
-      const validData: CompositionFormData = {
+      const validData: typeof CompositionFormSchema.Encoded = {
         title: 'Patient Assessment',
         patientId: 'patient-123',
-        date: DateTime.unsafeFromDate(new Date('2024-01-15')),
+        date: '2024-01-15T00:00:00.000Z',
       }
 
       const result = Schema.decodeUnknownSync(CompositionFormSchema)(validData)
-      expect(result).toEqual(validData)
+      expect(result).toEqual({
+        title: 'Patient Assessment',
+        patientId: 'patient-123',
+        date: DateTime.unsafeMake('2024-01-15T00:00:00.000Z'),
+      })
     })
 
     it('should require title', () => {
