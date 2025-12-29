@@ -34,7 +34,7 @@ export function ResourceForm<A extends object, E extends object>({
   initialValues = {},
   className,
 }: ResourceFormProps<A, E>) {
-  const [content, setContent] = useState<Partial<E>>({})
+  const [content, setContent] = useState<Partial<E>>(initialValues)
   const [formErrors, setFormErrors] = useState<FormError[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -74,7 +74,6 @@ export function ResourceForm<A extends object, E extends object>({
   const renderField = <const N extends keyof E>(name: N) => {
     const FieldComponent: React.FC<CommonFieldProps<E[N]>> = fields[name]
     const fieldError = getFieldError(formErrors, name)
-    const defaultValue: E[N] | undefined = initialValues[name]
 
     const onChange = (data: E[N]) =>
       setContent((content) => ({ ...content, [name]: data }))
@@ -83,7 +82,6 @@ export function ResourceForm<A extends object, E extends object>({
         value={content[name]}
         onChange={onChange}
         error={fieldError}
-        defaultValue={defaultValue}
       />
     )
   }

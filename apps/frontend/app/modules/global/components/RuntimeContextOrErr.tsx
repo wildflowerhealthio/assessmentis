@@ -72,11 +72,7 @@ export const RuntimeContextOrErr = ({
   }
 
   if (runtime._tag === 'error') {
-    return (
-      <div className={className}>
-        Runtime Context Loading Error: {JSON.stringify(runtime.error)}
-      </div>
-    )
+    throw runtime.error
   }
 
   return (

@@ -4,7 +4,7 @@ import {
   PatientRepository,
 } from '@assessmentis/clinical-domain/administration'
 import { UnhandledError } from '@assessmentis/ontology'
-import type { Route } from './+types/_resource.Patient.$patientId'
+import type { Route } from './+types/_resource.Patient.$patientId._index'
 import { useLoadedRuntimeContext, useResourceRunEffect } from '../clientRuntime'
 import { Link } from 'react-router'
 import { ResourceForm } from 'app/modules/common/components/ResourceForm'

@@ -5,6 +5,7 @@ import { useLoadedRuntimeContext } from '../../../clientRuntime'
 import { ReadonlyTag } from 'effect/Context'
 import { ClientRuntimeContext } from '@assessmentis/platform-domain'
 import { LoadedResult } from '@assessmentis/ontology'
+import { useMemo } from 'react'
 
 const useLoadedValueOrDefault = <T, O>(
   loaded: LoadedResult<T, unknown>,
@@ -55,7 +56,10 @@ export function useClinicalDataCollection<
     })
   )
 
-  const initial = loader._tag == 'loaded' ? loader.value : []
+  const initial = useMemo(
+    () => (loader._tag == 'loaded' ? loader.value : []),
+    [loader]
+  )
 
   const { collection, createItem, deleteItem } = useCollection<Tid, T>(
     actions,

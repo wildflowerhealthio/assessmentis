@@ -8,6 +8,7 @@ import { Outlet } from 'react-router'
 import { NotLoggedIn } from '../../../../domain/platform-domain/src/loadedValues/UserId'
 import { LoginButton } from '../modules/global/components/LoginButton'
 import { useLoadedRuntimeContext } from '../clientRuntime'
+import { RuntimeContextOrErr } from '../modules/global/components/RuntimeContextOrErr'
 
 interface IProps {
   loadedRuntime: ReturnType<typeof useLoadedRuntimeContext>
@@ -160,7 +161,15 @@ class InnerResourcePage extends React.Component<
   }
 
   render() {
-    let errorContent: JSX.Element | null = null
+    if (this.state.error === null) {
+      return (
+        <RuntimeContextOrErr>
+          <Outlet />
+        </RuntimeContextOrErr>
+      )
+    }
+
+    let errorContent: JSX.Element
     if (
       this.state.error &&
       ['NotLoggedIn', 'NeedsAuthenticationError', 'AuthStateError'].includes(
@@ -223,23 +232,19 @@ class InnerResourcePage extends React.Component<
       )
     }
 
-    if (errorContent) {
-      return (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 'var(--space-4)',
-          }}
-        >
-          {errorContent}
-        </div>
-      )
-    }
-
-    return <Outlet />
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 'var(--space-4)',
+        }}
+      >
+        {errorContent}
+      </div>
+    )
   }
 
   renderCatchall() {

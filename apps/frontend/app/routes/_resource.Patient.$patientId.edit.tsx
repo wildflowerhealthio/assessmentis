@@ -43,7 +43,7 @@ export default function EditPatientPage({ loaderData }: Route.ComponentProps) {
   const clientRuntime = useLoadedRuntimeContext()
 
   // Transform patient to form initial values
-  const initialValues: Partial<PatientFormData> = {
+  const initialValues: PatientFormData = {
     givenName: patient.name?.[0]?.given?.[0] ?? '',
     familyName: patient.name?.[0]?.family ?? '',
     gender: patient.gender,

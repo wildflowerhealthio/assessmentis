@@ -14,9 +14,22 @@ export default function CreatePatientPage() {
     navigate('/Patient')
   }
 
+  // Provide default values to prevent uncontrolled input warnings
+  const defaultValues: PatientFormData = {
+    givenName: '',
+    familyName: '',
+    gender: undefined,
+    birthDate: undefined,
+    practitionerId: undefined,
+  }
+
   return (
     <FormPage title="Create New Patient">
-      <PatientForm onSubmit={handleSubmit} submitLabel="Create Patient" />
+      <PatientForm
+        onSubmit={handleSubmit}
+        submitLabel="Create Patient"
+        initialValues={defaultValues}
+      />
     </FormPage>
   )
 }

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import {
   Chunk,
   Effect,
@@ -141,40 +141,48 @@ export const useResourceRunEffect = <A, E>(
   >
 > => {
   const loaded = useRunEffect(
-    effect.pipe(
-      Effect.mapError(
-        (
-          error
-        ): Exclude<
-          E,
-          | UnhandledError
-          | ContextError
-          | ExternalAssertionError
-          | NeedsAuthenticationError
-        > => {
-          if (error instanceof UnhandledError) throw error
-          if (error instanceof ExternalAssertionError) throw error
-          if (error instanceof NeedsAuthenticationError) throw error
-          if (typeof error === 'object' && error !== null && '_tag' in error) {
-            if (
-              error._tag == 'OrgDataError' ||
-              error._tag == 'UserDataError' ||
-              error._tag == 'AuthStateError' ||
-              error._tag == 'NotLoggedIn'
-            ) {
-              throw error
-            }
-          }
+    useMemo(
+      () =>
+        effect.pipe(
+          Effect.mapError(
+            (
+              error
+            ): Exclude<
+              E,
+              | UnhandledError
+              | ContextError
+              | ExternalAssertionError
+              | NeedsAuthenticationError
+            > => {
+              if (error instanceof UnhandledError) throw error
+              if (error instanceof ExternalAssertionError) throw error
+              if (error instanceof NeedsAuthenticationError) throw error
+              if (
+                typeof error === 'object' &&
+                error !== null &&
+                '_tag' in error
+              ) {
+                if (
+                  error._tag == 'OrgDataError' ||
+                  error._tag == 'UserDataError' ||
+                  error._tag == 'AuthStateError' ||
+                  error._tag == 'NotLoggedIn'
+                ) {
+                  throw error
+                }
+              }
 
-          return error as Exclude<
-            E,
-            | UnhandledError
-            | ContextError
-            | ExternalAssertionError
-            | NeedsAuthenticationError
-          >
-        }
-      )
+              return error as Exclude<
+                E,
+                | UnhandledError
+                | ContextError
+                | ExternalAssertionError
+                | NeedsAuthenticationError
+              >
+            }
+          )
+        ),
+      [effect]
     )
   )
 

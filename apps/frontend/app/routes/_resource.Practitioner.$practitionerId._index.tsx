@@ -4,7 +4,7 @@ import {
   PractitionerRepository,
 } from '@assessmentis/clinical-domain/administration'
 import { UnhandledError } from '@assessmentis/ontology'
-import type { Route } from './+types/_resource.Practitioner.$practitionerId'
+import type { Route } from './+types/_resource.Practitioner.$practitionerId._index'
 import { getRuntime } from '../clientRuntime'
 import { Link } from 'react-router'
 
@@ -45,9 +45,17 @@ export default function PractitionerDetailPage({
 
   return (
     <div style={{ padding: 'var(--space-6)' }}>
-      <Link to="/Practitioner" className="button-3 ghost">
-        ← Back to Practitioners
-      </Link>
+      <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+        <Link to="/Practitioner" className="button-3 ghost">
+          ← Back to Practitioners
+        </Link>
+        <Link
+          to={`/Practitioner/${practitioner.id}/edit`}
+          className="button-2 blue"
+        >
+          Edit
+        </Link>
+      </div>
 
       <h1 className="heading-1" style={{ marginTop: 'var(--space-4)' }}>
         {displayName}

@@ -1,126 +1,35 @@
-import { Effect } from 'effect'
-import {
-  Practitioner,
-  PractitionerId,
-  PractitionerRepository,
-} from '@assessmentis/clinical-domain/administration'
-import { getRuntime } from '../clientRuntime'
 import PractitionerList from '../modules/resources/Practitioner/components/PractitionerList'
+import { usePractitionerCollection } from '../modules/resources/Practitioner/hooks/usePractitionerCollection'
 import type { Route } from './+types/_resource.Practitioner._index'
-import { useRuntimeContext } from 'app/clientRuntime'
-import {
-  ResourceForm,
-  SelectField,
-  TextField,
-} from 'app/modules/common/components/ResourceForm'
-import {
-  PractitionerFormSchema,
-  transformToPractitioner,
-} from 'app/modules/resources/Practitioner/schemas/PractitionerFormSchema'
-import { applyPartialProps } from '@assessmentis/react-util'
-import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
+import { Link } from 'react-router'
 import { LoadedResult } from '@assessmentis/ontology'
 
-export async function clientLoader(_: Route.ClientLoaderArgs) {
-  const runtime = await getRuntime()
-  const practitioners = await runtime.runPromise(
-    Effect.gen(function* () {
-      const practitionerRepository = yield* PractitionerRepository
-      return yield* practitionerRepository.getMany()
-    })
-  )
+const emptyFilters = {}
 
-  return { practitioners }
-}
-
-const usePractitioners = (initial: Practitioner[]) => {
-  return useClinicalDataCollection<
-    PractitionerId,
-    Practitioner,
-    PractitionerRepository,
-    typeof PractitionerRepository,
-    never
-  >(PractitionerRepository, LoadedResult.loaded(initial))
-}
-
-export default function PractitionerPage({ loaderData }: Route.ComponentProps) {
-  const { practitioners: initialPractitioners } = loaderData
+export default function PractitionerPage(_: Route.ComponentProps) {
   const { collection: practitioners, deleteItem: deletePractitioner } =
-    usePractitioners(initialPractitioners)
-  const clientRuntime = useRuntimeContext()
-
-  const handleCreatePractitioner = async (
-    formData: typeof PractitionerFormSchema.Type
-  ) => {
-    const practitioner = transformToPractitioner(formData)
-
-    await clientRuntime.runPromise(
-      Effect.gen(function* () {
-        const repository = yield* PractitionerRepository
-        return yield* repository.create(practitioner)
-      })
-    )
-
-    // Reload to show new practitioner
-    window.location.reload()
-  }
+    usePractitionerCollection(emptyFilters)
 
   return (
     <>
       <h1 className="heading-1">Practitioners</h1>
-
+      <div style={{ marginTop: 'var(--space-4)' }}>
+        <Link to="/Practitioner/new" className="button-2 blue">
+          Create New Practitioner
+        </Link>
+      </div>
       {LoadedResult.handle(practitioners, {
-        onLoading: () => <p>Loading...</p>,
-        onError: (error) => <p>Error: {String(error)}</p>,
-        onSuccess: (data) => (
-          <PractitionerList
-            deletePractitioner={deletePractitioner}
-            practitioners={data}
-          />
+        onLoading: () => <p>Loading practitioners...</p>,
+        onError: (error) => <p>Error loading practitioners: {String(error)}</p>,
+        onSuccess: (practitionerList) => (
+          <div style={{ marginTop: 'var(--space-4)' }}>
+            <PractitionerList
+              deletePractitioner={deletePractitioner}
+              practitioners={practitionerList}
+            />
+          </div>
         ),
       })}
-
-      <h2 className="heading-3" style={{ marginTop: 'var(--space-7)' }}>
-        Create a new practitioner
-      </h2>
-
-      <div style={{ marginTop: 'var(--space-4)' }}>
-        <ResourceForm<
-          typeof PractitionerFormSchema.Type,
-          typeof PractitionerFormSchema.Encoded
-        >
-          schema={PractitionerFormSchema}
-          fields={{
-            givenName: applyPartialProps(TextField, {
-              name: 'givenName',
-              label: 'Given Name',
-              required: true,
-            }),
-            familyName: applyPartialProps(TextField, {
-              name: 'familyName',
-              label: 'Family Name',
-              required: true,
-            }),
-            qualification: applyPartialProps(TextField, {
-              name: 'qualification',
-              label: 'Qualification',
-            }),
-            gender: applyPartialProps(SelectField, {
-              name: 'gender',
-              label: 'Gender',
-              options: [
-                { value: 'male', label: 'Male' },
-                { value: 'female', label: 'Female' },
-                { value: 'other', label: 'Other' },
-                { value: 'unknown', label: 'Unknown' },
-              ],
-            }),
-          }}
-          fieldOrder={['givenName', 'familyName', 'gender', 'qualification']}
-          onSubmit={handleCreatePractitioner}
-          submitLabel="Create Practitioner"
-        />
-      </div>
     </>
   )
 }
