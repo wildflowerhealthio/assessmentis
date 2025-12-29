@@ -1,15 +1,11 @@
 import type { Practitioner } from '@assessmentis/clinical-domain/administration'
+import { formatHumanName, formatDate } from '../../../common/utils/fhirDisplay'
 
 /**
  * Get a display-friendly name for a practitioner
  */
 export function getPractitionerDisplayName(practitioner: Practitioner): string {
-  const name = practitioner.name?.[0]
-  if (!name) return 'Unnamed Practitioner'
-
-  const given = name.given?.join(' ') ?? ''
-  const family = name.family ?? ''
-  return `${given} ${family}`.trim() || 'Unnamed Practitioner'
+  return formatHumanName(practitioner.name?.[0], 'Unnamed Practitioner')
 }
 
 /**
@@ -55,9 +51,7 @@ export function formatPractitionerDemographics(practitioner: Practitioner) {
     },
     {
       label: 'Birth Date',
-      value: practitioner.birthDate
-        ? new Date(practitioner.birthDate).toLocaleDateString()
-        : 'Not specified',
+      value: formatDate(practitioner.birthDate, 'Not specified'),
     },
     {
       label: 'Status',

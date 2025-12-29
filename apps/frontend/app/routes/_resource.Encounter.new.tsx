@@ -4,7 +4,7 @@ import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { EncounterForm } from 'app/modules/resources/Encounter/components/EncounterForm'
 import { createEncounter } from 'app/modules/resources/Encounter/actions/createEncounter'
 import { EncounterFormSchema } from 'app/modules/resources/Encounter/schemas/EncounterFormSchema'
-import { Schema } from 'effect'
+import { DateTime, Schema } from 'effect'
 import { QuestionnaireId } from '@assessmentis/clinical-domain/content-management'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 
@@ -31,8 +31,8 @@ export default function CreateEncounterPage() {
         period:
           data.periodStart || data.periodEnd
             ? {
-                start: data.periodStart,
-                end: data.periodEnd,
+                start: data.periodStart?.pipe(DateTime.toUtc),
+                end: data.periodEnd?.pipe(DateTime.toUtc),
               }
             : undefined,
         // Note: Location includes video room (set by createEncounter) + optional display name

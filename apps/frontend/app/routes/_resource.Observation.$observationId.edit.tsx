@@ -1,4 +1,4 @@
-import { Effect, Option, Schema } from 'effect'
+import { DateTime, Effect, Option, Schema } from 'effect'
 import { useNavigate } from 'react-router'
 import { useLoadedRuntimeContext } from 'app/clientRuntime'
 import { getRuntime } from 'app/clientRuntime'
@@ -12,9 +12,9 @@ import {
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { NotFoundError } from '@assessmentis/ontology'
 import type { Route } from './+types/_resource.Observation.$observationId.edit'
-import { DateTime } from 'effect'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { getObservationDisplayName } from '../modules/resources/Observation/utils/observationDisplay'
+import { extractReferenceId } from 'app/modules/common/utils/fhirDisplay'
 
 const tryDecodeObservationId = Schema.decodeOption(ObservationId)
 
@@ -81,8 +81,8 @@ export default function EditObservationPage({
 
   // Transform observation to form initial values
   const initialValues: typeof ObservationFormSchema.Encoded = {
-    patientId: observation.subject?.reference?.split('/')[1] ?? '',
-    encounterId: observation.encounter?.reference?.split('/')[1],
+    patientId: extractReferenceId(observation.subject) ?? '',
+    encounterId: extractReferenceId(observation.encounter),
     code: observation.code.text ?? '',
     valueType,
     valueString:
@@ -106,9 +106,9 @@ export default function EditObservationPage({
     valueCodeableConceptCodingCode: firstCoding?.code,
     valueCodeableConceptCodingSystem: firstCoding?.system,
     valueCodeableConceptCodingDisplay: firstCoding?.display,
-    effectiveDateTime: observation.effectiveDateTime
-      ? observation.effectiveDateTime.pipe(DateTime.formatIsoDate)
-      : undefined,
+    effectiveDateTime: observation.effectiveDateTime?.pipe(
+      DateTime.setZone(DateTime.zoneMakeLocal())
+    ),
   }
 
   const handleSubmit = async (formData: typeof ObservationFormSchema.Type) => {

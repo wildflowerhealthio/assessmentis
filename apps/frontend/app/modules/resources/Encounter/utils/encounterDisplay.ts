@@ -1,4 +1,5 @@
 import type { Encounter } from '@assessmentis/clinical-domain/administration'
+import { capitalizeFirst } from '../../../common/utils/fhirDisplay'
 
 /**
  * Get a display-friendly name for an encounter
@@ -80,7 +81,7 @@ export function getEncounterClass(encounter: Encounter): string {
  * Get the encounter status with proper capitalization
  */
 export function getEncounterStatus(encounter: Encounter): string {
-  return encounter.status.charAt(0).toUpperCase() + encounter.status.slice(1)
+  return capitalizeFirst(encounter.status)
 }
 
 /**

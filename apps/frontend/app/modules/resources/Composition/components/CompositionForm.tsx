@@ -1,7 +1,6 @@
 import { applyPartialProps, transformProps } from '@assessmentis/react-util'
 import {
   ResourceForm,
-  DateField,
   TextField,
 } from 'app/modules/common/components/ResourceForm'
 import { PatientPicker } from 'app/modules/resources/Patient/components/PatientPicker'
@@ -43,12 +42,8 @@ export function CompositionForm({
             },
           })
         ),
-        date: applyPartialProps(DateField, {
-          name: 'date',
-          label: 'Date',
-        }),
       }}
-      fieldOrder={['title', 'patientId', 'date']}
+      fieldOrder={['title', 'patientId']}
       onSubmit={onSubmit}
       submitLabel={submitLabel}
       initialValues={initialValues}

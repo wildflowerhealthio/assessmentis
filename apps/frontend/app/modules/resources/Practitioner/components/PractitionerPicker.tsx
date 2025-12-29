@@ -8,21 +8,12 @@ import {
   PickerItem,
 } from '../../../common/components/BasePicker/types/PickerTypes'
 import { BasePicker } from '../../../common/components/BasePicker/BasePicker'
+import { formatHumanName } from '../../../common/utils/fhirDisplay'
 
 type PractitionerPickerProps = Omit<
   BasePickerProps<{ practitioner: Practitioner }>,
   'items' | 'loading'
 >
-
-function formatPractitionerName(practitioner: Practitioner): string {
-  const name = practitioner.name?.[0]
-  if (!name) return 'Unnamed Practitioner'
-
-  const givenNames = name.given?.join(' ') ?? ''
-  const familyName = name.family ?? ''
-
-  return `${givenNames} ${familyName}`.trim() || 'Unnamed Practitioner'
-}
 
 function formatQualification(practitioner: Practitioner): string {
   const qualification = practitioner.qualification?.[0]?.code?.text
@@ -32,7 +23,10 @@ function formatQualification(practitioner: Practitioner): string {
 function practitionerToPickerItem(
   practitioner: Practitioner
 ): PickerItem<{ practitioner: Practitioner }> {
-  const displayName = formatPractitionerName(practitioner)
+  const displayName = formatHumanName(
+    practitioner.name?.[0],
+    'Unnamed Practitioner'
+  )
   const qualification = formatQualification(practitioner)
 
   return {

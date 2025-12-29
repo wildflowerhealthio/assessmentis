@@ -8,7 +8,7 @@ export const PatientFormSchema = Schema.Struct({
   givenName: Schema.String,
   familyName: Schema.String,
   gender: Schema.optional(AdministrativeGender),
-  birthDate: Schema.optional(Schema.String),
+  birthDate: Schema.optional(Schema.DateFromSelf),
   practitionerId: Schema.optional(Schema.String),
 })
 
@@ -17,14 +17,17 @@ export type PatientFormData = typeof PatientFormSchema.Type
 export function transformToPatient(
   formData: PatientFormData
 ): Omit<Patient, 'id'> {
+  const givenName = formData.givenName?.trim()
+  const familyName = formData.familyName?.trim()
+
   return {
     resourceType: 'Patient' as const,
     name:
-      formData.givenName || formData.familyName
+      givenName || familyName
         ? [
             {
-              given: formData.givenName ? [formData.givenName] : undefined,
-              family: formData.familyName,
+              given: givenName ? [givenName] : undefined,
+              family: familyName || undefined,
             },
           ]
         : undefined,

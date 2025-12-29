@@ -11,27 +11,18 @@ import {
 import {
   formatGender,
   formatDate,
-} from '../../../common/components/BasePicker/utils/displayHelpers'
+  formatHumanName,
+} from '../../../common/utils/fhirDisplay'
 
 type PatientPickerProps = Omit<
   BasePickerProps<{ patient: Patient }>,
   'items' | 'loading'
 >
 
-function formatPatientName(patient: Patient): string {
-  const name = patient.name?.[0]
-  if (!name) return 'Unnamed Patient'
-
-  const givenNames = name.given?.join(' ') ?? ''
-  const familyName = name.family ?? ''
-
-  return `${givenNames} ${familyName}`.trim() || 'Unnamed Patient'
-}
-
 function patientToPickerItem(
   patient: Patient
 ): PickerItem<{ patient: Patient }> {
-  const displayName = formatPatientName(patient)
+  const displayName = formatHumanName(patient.name?.[0], 'Unnamed Patient')
   const gender = formatGender(patient.gender)
   const birthDate = formatDate(patient.birthDate)
 

@@ -14,6 +14,10 @@ import { NotFoundError } from '@assessmentis/ontology'
 import type { Route } from './+types/_resource.Encounter.$encounterId.edit'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { getEncounterDisplayName } from '../modules/resources/Encounter/utils/encounterDisplay'
+import {
+  extractReferenceId,
+  extractReferenceIds,
+} from 'app/modules/common/utils/fhirDisplay'
 
 const tryDecodeEncounterId = Schema.decodeOption(EncounterId)
 
@@ -61,11 +65,14 @@ export default function EditEncounterPage({
   ])
 
   // Extract participant practitioner IDs
-  const practitionerIds =
+  const practitionerIds = extractReferenceIds(
     encounter.participant
-      ?.filter((p) => p.individual?.reference?.startsWith('Practitioner/'))
-      .map((p) => p?.individual?.reference?.split('/')[1])
-      .filter((id): id is string => !!id) ?? []
+      ?.filter(
+        (p): p is { individual: { reference: string } } =>
+          p.individual?.reference?.startsWith('Practitioner/') ?? false
+      )
+      .map((p) => p.individual) ?? []
+  )
 
   // Extract location display (first location's display or identifier value)
   const locationDisplay =
@@ -73,15 +80,15 @@ export default function EditEncounterPage({
     encounter.location?.[0]?.location?.identifier?.value
 
   const initialValues: typeof EncounterFormSchema.Encoded = {
-    patientId: encounter.subject?.reference?.split('/')[1],
+    patientId: extractReferenceId(encounter.subject),
     practitionerIds,
     questionnaireIds: [] as ReadonlyArray<string>, // Would need to query related QuestionnaireResponses
-    periodStart: encounter.period?.start
-      ? encounter.period.start.pipe(DateTime.formatIsoDate)
-      : undefined,
-    periodEnd: encounter.period?.end
-      ? encounter.period.end.pipe(DateTime.formatIsoDate)
-      : undefined,
+    periodStart: encounter.period?.start?.pipe(
+      DateTime.setZone(DateTime.zoneMakeLocal())
+    ),
+    periodEnd: encounter.period?.end?.pipe(
+      DateTime.setZone(DateTime.zoneMakeLocal())
+    ),
     locationDisplay,
   }
 

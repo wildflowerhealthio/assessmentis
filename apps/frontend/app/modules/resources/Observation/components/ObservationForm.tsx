@@ -1,7 +1,7 @@
 import { applyPartialProps, transformProps } from '@assessmentis/react-util'
 import {
   ResourceForm,
-  DateField,
+  DateTimeField,
   TextField,
   SelectField,
 } from 'app/modules/common/components/ResourceForm'
@@ -123,7 +123,7 @@ export function ObservationForm({
           helpText:
             'Used when Value Type is "Coded Concept" - human-readable code description',
         }),
-        effectiveDateTime: applyPartialProps(DateField, {
+        effectiveDateTime: applyPartialProps(DateTimeField, {
           name: 'effectiveDateTime',
           label: 'Effective Date/Time',
         }),

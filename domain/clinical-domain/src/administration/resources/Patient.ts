@@ -11,6 +11,7 @@ import { Attachment } from '../../data-types/complex/Attachment'
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import { Period } from '../../data-types/complex/Period'
 import { AdministrativeGender } from '../value-sets/AdministrativeGender'
+import { TimelessDateFromString } from '@assessmentis/util'
 
 export const PatientId = Schema.String.pipe(Schema.brand('PatientId'))
 
@@ -59,7 +60,7 @@ export const Patient = Schema.Struct({
   /**
    * The date of birth for the individual.
    */
-  birthDate: Schema.optional(Schema.String),
+  birthDate: Schema.optional(TimelessDateFromString),
   /**
    * Indicates if the individual is deceased or not.
    */

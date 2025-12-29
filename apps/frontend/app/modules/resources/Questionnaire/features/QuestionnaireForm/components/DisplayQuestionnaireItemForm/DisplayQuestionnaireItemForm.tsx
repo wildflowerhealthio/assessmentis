@@ -35,7 +35,6 @@ const DisplayQuestionnaireItemForm = ({ questionnaireItem }: IProps) => {
     default:
       return <p className="body-4">{questionnaireItem.text}</p>
   }
-  return <p className="body-4">{questionnaireItem.text}</p>
 }
 
 export default DisplayQuestionnaireItemForm

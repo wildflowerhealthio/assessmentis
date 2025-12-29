@@ -1,6 +1,6 @@
 import { Code, Coding } from '@assessmentis/clinical-domain/data-types'
 import { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { Schema, DateTime, Effect } from 'effect'
+import { Schema, DateTime } from 'effect'
 
 export const ValueTypeEnum = Schema.Literal(
   'valueString',
@@ -26,7 +26,7 @@ export const ObservationFormSchema = Schema.Struct({
   valueCodeableConceptCodingCode: Schema.optional(Schema.String),
   valueCodeableConceptCodingSystem: Schema.optional(Schema.String),
   valueCodeableConceptCodingDisplay: Schema.optional(Schema.String),
-  effectiveDateTime: Schema.optional(Schema.DateTimeUtc),
+  effectiveDateTime: Schema.optional(Schema.DateTimeZonedFromSelf),
 })
 
 export type ObservationFormData = typeof ObservationFormSchema.Type
@@ -47,10 +47,8 @@ export function transformToObservation(
     encounter: formData.encounterId
       ? { reference: `Encounter/${formData.encounterId}` }
       : undefined,
-    effectiveDateTime: formData.effectiveDateTime
-      ? DateTime.unsafeMake(formData.effectiveDateTime)
-      : Effect.runSync(DateTime.now),
-  }
+    effectiveDateTime: formData.effectiveDateTime?.pipe(DateTime.toUtc),
+  } satisfies Omit<Observation, 'id'>
   // Add the appropriate value field based on valueType
   switch (formData.valueType) {
     case undefined:

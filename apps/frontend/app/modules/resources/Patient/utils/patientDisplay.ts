@@ -1,15 +1,15 @@
 import type { Patient } from '@assessmentis/clinical-domain/administration'
+import {
+  formatHumanName,
+  extractReferenceId,
+  formatDate,
+} from '../../../common/utils/fhirDisplay'
 
 /**
  * Get a display-friendly name for a patient
  */
 export function getPatientDisplayName(patient: Patient): string {
-  const name = patient.name?.[0]
-  if (!name) return 'Unnamed Patient'
-
-  const given = name.given?.join(' ') ?? ''
-  const family = name.family ?? ''
-  return `${given} ${family}`.trim() || 'Unnamed Patient'
+  return formatHumanName(patient.name?.[0], 'Unnamed Patient')
 }
 
 /**
@@ -23,9 +23,7 @@ export function formatPatientDemographics(patient: Patient) {
     },
     {
       label: 'Birth Date',
-      value: patient.birthDate
-        ? new Date(patient.birthDate).toLocaleDateString()
-        : 'Not specified',
+      value: formatDate(patient.birthDate, 'Not specified'),
     },
     {
       label: 'Status',
@@ -54,5 +52,5 @@ export function formatPatientDemographics(patient: Patient) {
  * Get the current practitioner ID from patient's general practitioner reference
  */
 export function getPatientPractitionerId(patient: Patient): string | undefined {
-  return patient.generalPractitioner?.[0]?.reference?.split('/')[1]
+  return extractReferenceId(patient.generalPractitioner?.[0])
 }

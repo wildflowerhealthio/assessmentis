@@ -29,3 +29,29 @@ export const referenceAsString = (
 
   return undefined
 }
+
+/**
+ * Extract the ID from a FHIR reference string
+ * @param reference - Object with reference property (e.g., { reference: "Patient/123" })
+ * @returns The ID portion of the reference (e.g., "123"), or undefined
+ */
+export function extractReferenceId(
+  reference: { reference?: string } | undefined
+): string | undefined {
+  return reference?.reference?.split('/')[1]
+}
+
+/**
+ * Extract IDs from an array of FHIR references
+ * @param references - Array of reference objects
+ * @returns Array of extracted IDs (non-null values only)
+ */
+export function extractReferenceIds(
+  references: ReadonlyArray<{ reference?: string }> | undefined
+): string[] {
+  return (
+    references
+      ?.map((r) => r.reference?.split('/')[1])
+      .filter((id): id is string => !!id) ?? []
+  )
+}

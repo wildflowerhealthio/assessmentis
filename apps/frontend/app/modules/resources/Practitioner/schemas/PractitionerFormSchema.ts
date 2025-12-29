@@ -16,23 +16,27 @@ export type PractitionerFormData = typeof PractitionerFormSchema.Type
 export function transformToPractitioner(
   formData: PractitionerFormData
 ): Omit<Practitioner, 'id'> {
+  const givenName = formData.givenName?.trim()
+  const familyName = formData.familyName?.trim()
+  const qualification = formData.qualification?.trim()
+
   return {
     resourceType: 'Practitioner' as const,
     name:
-      formData.givenName || formData.familyName
+      givenName || familyName
         ? [
             {
-              given: formData.givenName ? [formData.givenName] : undefined,
-              family: formData.familyName,
+              given: givenName ? [givenName] : undefined,
+              family: familyName || undefined,
             },
           ]
         : undefined,
     gender: formData.gender,
-    qualification: formData.qualification
+    qualification: qualification
       ? [
           {
             code: {
-              text: formData.qualification,
+              text: qualification,
             },
           },
         ]

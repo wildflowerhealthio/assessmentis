@@ -1,4 +1,4 @@
-import { Effect } from 'effect'
+import { DateTime, Effect } from 'effect'
 import {
   Encounter,
   EncounterId,
@@ -44,8 +44,8 @@ export const updateEncounter = (
       period:
         formData.periodStart || formData.periodEnd
           ? {
-              start: formData.periodStart,
-              end: formData.periodEnd,
+              start: formData.periodStart?.pipe(DateTime.toUtc),
+              end: formData.periodEnd?.pipe(DateTime.toUtc),
             }
           : undefined,
       // Update location display (preserve video room location if it exists)

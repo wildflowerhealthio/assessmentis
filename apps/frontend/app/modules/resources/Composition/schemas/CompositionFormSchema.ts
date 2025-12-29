@@ -4,7 +4,6 @@ import { Composition } from '@assessmentis/clinical-domain/content-management'
 export const CompositionFormSchema = Schema.Struct({
   title: Schema.String,
   patientId: Schema.optional(Schema.String),
-  date: Schema.optional(Schema.DateTimeUtc),
 })
 
 export type CompositionFormData = typeof CompositionFormSchema.Type
@@ -21,9 +20,8 @@ export function transformToComposition(
       ? { reference: `Patient/${formData.patientId}` }
       : {},
     author: [{ display: 'Anonymous' }],
-    date: formData.date
-      ? DateTime.unsafeMake(formData.date)
-      : Effect.runSync(DateTime.now),
+    // Date always reflects the last editing time
+    date: Effect.runSync(DateTime.now),
     section: [],
   }
 }

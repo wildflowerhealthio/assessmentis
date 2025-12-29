@@ -17,6 +17,7 @@ import { NotFoundError } from '@assessmentis/ontology'
 import type { Route } from './+types/_resource.Composition.$compositionId.edit'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { getCompositionDisplayName } from '../modules/resources/Composition/utils/compositionDisplay'
+import { extractReferenceId } from 'app/modules/common/utils/fhirDisplay'
 
 const tryDecodeCompositionId = Schema.decodeOption(CompositionId)
 
@@ -65,7 +66,7 @@ export default function EditCompositionPage({
   // Transform composition to form initial values
   const initialValues: typeof CompositionFormSchema.Encoded = {
     title: composition.title ?? '',
-    patientId: composition.subject?.reference?.split('/')[1] ?? undefined,
+    patientId: extractReferenceId(composition.subject),
     date: composition.date
       ? composition.date.pipe(DateTime.formatIsoDate)
       : undefined,

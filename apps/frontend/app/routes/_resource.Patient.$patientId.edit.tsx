@@ -14,6 +14,7 @@ import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/_resource.Patient.$patientId.edit'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { getPatientDisplayName } from '../modules/resources/Patient/utils/patientDisplay'
+import { extractReferenceId } from 'app/modules/common/utils/fhirDisplay'
 
 const tryDecodePatientId = Schema.decodeOption(PatientId)
 
@@ -56,7 +57,7 @@ export default function EditPatientPage({ loaderData }: Route.ComponentProps) {
     familyName: patient.name?.[0]?.family ?? '',
     gender: patient.gender,
     birthDate: patient.birthDate,
-    practitionerId: patient.generalPractitioner?.[0]?.reference?.split('/')[1],
+    practitionerId: extractReferenceId(patient.generalPractitioner?.[0]),
   }
 
   const handleSubmit = async (formData: PatientFormData) => {

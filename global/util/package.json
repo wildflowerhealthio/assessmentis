@@ -6,6 +6,7 @@
   "author": "Ruth Marks",
   "license": "UNLICENSED",
   "prettier": "@assessmentis/prettier-config",
+  "type": "module",
   "exports": {
     ".": "./src/index.ts",
     "./LoadedResult": "./src/LoadedResult.ts"

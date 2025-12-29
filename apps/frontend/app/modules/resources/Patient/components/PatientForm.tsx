@@ -1,5 +1,6 @@
 import { applyPartialProps, transformProps } from '@assessmentis/react-util'
 import {
+  DateField,
   ResourceForm,
   SelectField,
   TextField,
@@ -46,7 +47,7 @@ export function PatientForm({
             { value: 'unknown', label: 'Unknown' },
           ],
         } as const),
-        birthDate: applyPartialProps(TextField, {
+        birthDate: applyPartialProps(DateField, {
           name: 'birthDate',
           label: 'Birth Date',
         }),

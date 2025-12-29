@@ -1,7 +1,7 @@
 import { applyPartialProps, transformProps } from '@assessmentis/react-util'
 import {
   ResourceForm,
-  DateField,
+  DateTimeField,
   TextField,
 } from 'app/modules/common/components/ResourceForm'
 import { PatientPicker } from 'app/modules/resources/Patient/components/PatientPicker'
@@ -54,11 +54,11 @@ export function EncounterForm({
             placeholder: 'Select practitioner(s)...',
           })
         ),
-        periodStart: applyPartialProps(DateField, {
+        periodStart: applyPartialProps(DateTimeField, {
           name: 'periodStart',
           label: 'Start Date/Time',
         }),
-        periodEnd: applyPartialProps(DateField, {
+        periodEnd: applyPartialProps(DateTimeField, {
           name: 'periodEnd',
           label: 'End Date/Time',
         }),

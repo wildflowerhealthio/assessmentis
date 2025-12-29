@@ -12,14 +12,12 @@ describe('CompositionFormSchema', () => {
       const validData: typeof CompositionFormSchema.Encoded = {
         title: 'Patient Assessment',
         patientId: 'patient-123',
-        date: '2024-01-15T00:00:00.000Z',
       }
 
       const result = Schema.decodeUnknownSync(CompositionFormSchema)(validData)
       expect(result).toEqual({
         title: 'Patient Assessment',
         patientId: 'patient-123',
-        date: DateTime.unsafeMake('2024-01-15T00:00:00.000Z'),
       })
     })
 
@@ -42,7 +40,6 @@ describe('CompositionFormSchema', () => {
         minimalData
       )
       expect(result.patientId).toBeUndefined()
-      expect(result.date).toBeUndefined()
     })
   })
 
@@ -51,7 +48,6 @@ describe('CompositionFormSchema', () => {
       const formData: CompositionFormData = {
         title: 'Medical History',
         patientId: 'pat-456',
-        date: DateTime.unsafeFromDate(new Date('2024-01-15')),
       }
 
       const composition = transformToComposition(formData)
@@ -60,7 +56,6 @@ describe('CompositionFormSchema', () => {
       expect(composition.title).toBe('Medical History')
       expect(composition.status).toBe('preliminary')
       expect(composition.subject).toEqual({ reference: 'Patient/pat-456' })
-      expect(composition.date).toEqual(DateTime.unsafeMake('2024-01-15'))
       expect(composition.section).toEqual([])
     })
 
@@ -124,11 +119,6 @@ describe('CompositionFormSchema', () => {
           } else {
             expect(composition.subject).toEqual({})
           }
-
-          // If date was provided, it should be used
-          if (formData.date) {
-            expect(composition.date).toEqual(DateTime.unsafeMake(formData.date))
-          }
         }),
         { numRuns: 100 }
       )
@@ -158,11 +148,6 @@ describe('CompositionFormSchema', () => {
             expect(composition.subject.reference).toBe(
               `Patient/${formData.patientId}`
             )
-          }
-
-          // Date should be preserved if provided
-          if (formData.date) {
-            expect(composition.date).toEqual(DateTime.unsafeMake(formData.date))
           }
         }),
         { numRuns: 100 }

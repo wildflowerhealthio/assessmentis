@@ -17,7 +17,7 @@ describe('PatientFormSchema', () => {
         givenName: 'John',
         familyName: 'Doe',
         gender: 'male',
-        birthDate: '1990-01-01',
+        birthDate: new Date('1990-01-01'),
         practitionerId: 'practitioner-123',
       }
 
@@ -54,7 +54,7 @@ describe('PatientFormSchema', () => {
         givenName: 'John',
         familyName: 'Doe',
         gender: 'male',
-        birthDate: '1990-01-01',
+        birthDate: new Date('1990-01-01'),
         practitionerId: 'prac-123',
       }
 
@@ -69,7 +69,7 @@ describe('PatientFormSchema', () => {
           },
         ],
         gender: 'male',
-        birthDate: '1990-01-01',
+        birthDate: new Date('1990-01-01'),
         generalPractitioner: [{ reference: 'Practitioner/prac-123' }],
         active: true,
       })
@@ -93,7 +93,7 @@ describe('PatientFormSchema', () => {
       const formData: PatientFormData = {
         givenName: '',
         familyName: 'Doe',
-        birthDate: '',
+        birthDate: undefined,
       }
 
       const patient = transformToPatient(formData)
@@ -104,7 +104,7 @@ describe('PatientFormSchema', () => {
           family: 'Doe',
         },
       ])
-      expect(patient.birthDate).toBe('')
+      expect(patient.birthDate).toBe(undefined)
     })
   })
 
@@ -186,13 +186,15 @@ describe('PatientFormSchema', () => {
           expect(patient.birthDate).toBe(formData.birthDate)
 
           // Given name should be in patient.name[0].given[0] if it exists
-          if (formData.givenName) {
-            expect(patient.name?.[0]?.given?.[0]).toBe(formData.givenName)
+          if (formData.givenName.trim().length) {
+            expect(patient.name?.[0]?.given?.[0].trim() || undefined).toBe(
+              formData.givenName.trim()
+            )
           }
 
           // Family name should be in patient.name[0].family
-          if (formData.familyName) {
-            expect(patient.name?.[0]?.family).toBe(formData.familyName)
+          if (formData.familyName.trim().length) {
+            expect(patient.name?.[0]?.family).toBe(formData.familyName.trim())
           }
         }),
         { numRuns: 100 }

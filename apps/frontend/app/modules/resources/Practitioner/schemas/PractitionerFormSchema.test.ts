@@ -102,14 +102,14 @@ describe('PractitionerFormSchema', () => {
           expect(practitioner.resourceType).toBe('Practitioner')
           expect(practitioner.active).toBe(true)
 
-          if (formData.givenName || formData.familyName) {
+          if (formData.givenName.trim() || formData.familyName.trim()) {
             expect(practitioner.name).toBeDefined()
           }
 
-          if (formData.qualification) {
+          if (formData.qualification?.trim().length) {
             expect(practitioner.qualification).toBeDefined()
             expect(practitioner.qualification?.[0].code.text).toBe(
-              formData.qualification
+              formData.qualification.trim()
             )
           }
         }),
