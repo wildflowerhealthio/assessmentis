@@ -11,18 +11,10 @@ export const User = Schema.Struct({
 })
 export type User = typeof User.Type
 
-export const UserLoading = Schema.TaggedStruct('UserLoading', {})
-
-export type UserLoading = typeof UserLoading.Type
-
 export const UserDataError = Schema.TaggedStruct('UserDataError', {
   cause: Schema.optional(Schema.Unknown),
 })
 export type UserDataError = typeof UserDataError.Type
 
-export const CurrentUserError = Schema.Union(
-  CurrentUserIdError,
-  UserLoading,
-  UserDataError
-)
+export const CurrentUserError = Schema.Union(CurrentUserIdError, UserDataError)
 export type CurrentUserError = typeof CurrentUserError.Type

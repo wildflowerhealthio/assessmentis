@@ -11,7 +11,7 @@ import {
   PatientRepository,
 } from '@assessmentis/clinical-domain/administration'
 import { UnhandledError } from '@assessmentis/ontology'
-import type { Route } from './+types/Patient.$patientId.edit'
+import type { Route } from './+types/_resource.Patient.$patientId.edit'
 
 const tryDecodePatientId = Schema.decodeOption(PatientId)
 

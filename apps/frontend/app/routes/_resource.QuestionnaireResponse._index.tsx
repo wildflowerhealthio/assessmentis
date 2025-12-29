@@ -7,7 +7,7 @@ import {
   QuestionnaireResponseId,
 } from '@assessmentis/clinical-domain/content-management'
 import { getRuntime, useRuntimeContext } from 'app/clientRuntime'
-import type { Route } from './+types/QuestionnaireResponse._index'
+import type { Route } from './+types/_resource.QuestionnaireResponse._index'
 import QuestionnaireResponseList from '../modules/resources/Questionnaire/components/QuestionnaireResponseList'
 import { useCollection } from '@assessmentis/react-util'
 

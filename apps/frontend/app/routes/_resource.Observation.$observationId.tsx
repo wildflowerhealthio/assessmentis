@@ -5,7 +5,7 @@ import {
   ObservationRepository,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { UnhandledError } from '@assessmentis/ontology'
-import type { Route } from './+types/Observation.$observationId'
+import type { Route } from './+types/_resource.Observation.$observationId'
 import { getRuntime } from '../clientRuntime'
 import { Link } from 'react-router'
 

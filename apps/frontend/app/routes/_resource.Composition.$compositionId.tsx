@@ -6,8 +6,8 @@ import {
 import { LoadedResult, UnhandledError } from '@assessmentis/ontology'
 import { gad7Report } from '@assessmentis/document-template-kinds'
 import { base } from '@assessmentis/document-template-instances'
-import type { Route } from './+types/Composition.$compositionId'
-import { getRuntime, useRunEffect } from '../clientRuntime'
+import type { Route } from './+types/_resource.Composition.$compositionId'
+import { getRuntime, useResourceRunEffect } from '../clientRuntime'
 import { useMemo } from 'react'
 
 const tryDecodeCompositionId = Schema.decodeOption(CompositionId)
@@ -38,7 +38,7 @@ export default function CompositionDetailsPage({
   loaderData,
 }: Route.ComponentProps) {
   const { composition } = loaderData
-  const reportLoader = useRunEffect(
+  const reportLoader = useResourceRunEffect(
     useMemo(() => gad7Report(base, composition.subject), [composition.subject])
   )
 

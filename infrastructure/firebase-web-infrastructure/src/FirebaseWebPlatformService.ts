@@ -229,14 +229,21 @@ export const createPlatformService = (
       onIdTokenChanged(
         auth,
         async (user) => {
-          console.log('Got user', user)
+          const NotLoggedInResult = LoadedResult.error<never, NotLoggedIn>(
+            NotLoggedIn.make({})
+          )
           await Effect.runPromise(
-            Ref.set(
-              currentUserId,
-              user
-                ? LoadedResult.loaded<UserId, never>(UserId.make(user.uid))
-                : LoadedResult.error<never, NotLoggedIn>(NotLoggedIn.make({}))
-            )
+            user
+              ? Ref.set(
+                  currentUserId,
+                  LoadedResult.loaded<UserId, never>(UserId.make(user.uid))
+                )
+              : Effect.all([
+                  Ref.set(currentUserId, NotLoggedInResult),
+                  Ref.set(currentUser, NotLoggedInResult),
+                  Ref.set(org, NotLoggedInResult),
+                  Ref.set(runtime, NotLoggedInResult),
+                ]).pipe(Effect.asVoid)
           )
           unsubscribeUser?.()
           unsubscribeAccessToken?.()

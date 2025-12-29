@@ -4,17 +4,12 @@ import {
   PatientRepository,
 } from '@assessmentis/clinical-domain/administration'
 import { useClinicalDataCollection } from 'app/modules/common/hooks/useClinicalDataCollection'
-import { ContextError, useRunEffect } from '../../../../clientRuntime'
+import { useResourceRunEffect } from '../../../../clientRuntime'
 import { useMemo } from 'react'
 import { Effect } from 'effect'
-import {
-  ExternalAssertionError,
-  NeedsAuthenticationError,
-  UnhandledError,
-} from '@assessmentis/ontology'
 
 export const usePatientCollection = (filters: object) => {
-  const patients = useRunEffect(
+  const patients = useResourceRunEffect(
     useMemo(() => {
       return Effect.gen(function* () {
         const patientRepository = yield* PatientRepository
@@ -27,10 +22,6 @@ export const usePatientCollection = (filters: object) => {
     Patient,
     PatientRepository,
     typeof PatientRepository,
-    | UnhandledError
-    | NeedsAuthenticationError
-    | ExternalAssertionError
-    | null
-    | ContextError
+    never
   >(PatientRepository, patients)
 }

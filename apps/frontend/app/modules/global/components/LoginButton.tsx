@@ -2,7 +2,10 @@ import { signOut } from 'firebase/auth'
 import { useState, useEffect } from 'react'
 import { auth, signIn } from '../../../firebase'
 
-export const LoginButton = (props: { className: string }) => {
+export const LoginButton = (props: {
+  className: string
+  style?: React.CSSProperties
+}) => {
   const [[label, action, disabled], setLabelAndAction] = useState<
     [string, undefined | (() => void), boolean]
   >(['Logout', undefined, true])
@@ -30,7 +33,12 @@ export const LoginButton = (props: { className: string }) => {
   }, [])
 
   return (
-    <button className={props.className} onClick={action} disabled={disabled}>
+    <button
+      className={props.className}
+      onClick={action}
+      disabled={disabled}
+      style={props.style}
+    >
       {label}
     </button>
   )

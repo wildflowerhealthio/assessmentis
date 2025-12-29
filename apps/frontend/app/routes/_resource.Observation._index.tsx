@@ -4,25 +4,21 @@ import {
   ObservationId,
   ObservationRepository,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { ContextError, useRunEffect } from '../clientRuntime'
+import { useResourceRunEffect } from '../clientRuntime'
 import ObservationList from '../modules/resources/Observation/components/ObservationList'
-import type { Route } from './+types/Observation._index'
+import type { Route } from './+types/_resource.Observation._index'
 import { useSearchParams } from 'react-router'
 import { useMemo } from 'react'
-import {
-  ExternalAssertionError,
-  LoadedResult,
-  NeedsAuthenticationError,
-  UnhandledError,
-} from '@assessmentis/ontology'
+import { LoadedResult } from '@assessmentis/ontology'
 import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
 import { PatientPicker } from '../modules/resources/Patient/components/PatientPicker'
 import { EncounterPicker } from '../modules/resources/Encounter/components/EncounterPicker'
+import {} from '../../../../domain/clinical-domain/src/data-types/base'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {}
 
 const useObservations = (filter: { subject?: string; encounter?: string }) => {
-  const remoteObservations = useRunEffect(
+  const remoteObservations = useResourceRunEffect(
     useMemo(() => {
       return Effect.gen(function* () {
         const observationRepository = yield* ObservationRepository
@@ -37,11 +33,7 @@ const useObservations = (filter: { subject?: string; encounter?: string }) => {
     Observation,
     ObservationRepository,
     typeof ObservationRepository,
-    | UnhandledError
-    | NeedsAuthenticationError
-    | ExternalAssertionError
-    | ContextError
-    | null
+    never
   >(ObservationRepository, remoteObservations)
 }
 

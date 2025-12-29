@@ -11,7 +11,12 @@ import {
 } from 'effect'
 import { ClientRuntimeContext, OrgError } from '@assessmentis/platform-domain'
 import { platform } from './firebase'
-import { LoadedResult } from '@assessmentis/ontology'
+import {
+  ExternalAssertionError,
+  LoadedResult,
+  NeedsAuthenticationError,
+  UnhandledError,
+} from '@assessmentis/ontology'
 
 export class ContextSetupError extends Error {
   constructor(message: string, cause: unknown) {
@@ -88,8 +93,8 @@ export const getRuntime = () => {
 
 export const useRunEffect = <A, E>(
   effect: Effect.Effect<A, E, ClientRuntimeContext>
-): LoadedResult<A, E | ContextError | null> => {
-  const [res, setRes] = useState<LoadedResult<A, E | ContextError | null>>(
+): LoadedResult<A, E | ContextError> => {
+  const [res, setRes] = useState<LoadedResult<A, E | ContextError>>(
     LoadedResult.loading()
   )
   const loadedRuntime = useLoadedRuntimeContext()
@@ -106,8 +111,6 @@ export const useRunEffect = <A, E>(
         onFailure: (e) => {
           if (e._tag === 'Fail') {
             setRes(LoadedResult.error(e.error))
-          } else {
-            setRes(LoadedResult.error(null))
           }
         },
         onSuccess: (a) => setRes(LoadedResult.loaded(a)),
@@ -123,4 +126,59 @@ export const useRunEffect = <A, E>(
     return loadedRuntime
   }
   return res
+}
+
+export const useResourceRunEffect = <A, E>(
+  effect: Effect.Effect<A, E, ClientRuntimeContext>
+): LoadedResult<
+  A,
+  Exclude<
+    E,
+    | UnhandledError
+    | ContextError
+    | ExternalAssertionError
+    | NeedsAuthenticationError
+  >
+> => {
+  const loaded = useRunEffect(
+    effect.pipe(
+      Effect.mapError(
+        (
+          error
+        ): Exclude<
+          E,
+          | UnhandledError
+          | ContextError
+          | ExternalAssertionError
+          | NeedsAuthenticationError
+        > => {
+          if (error instanceof UnhandledError) throw error
+          if (error instanceof ExternalAssertionError) throw error
+          if (error instanceof NeedsAuthenticationError) throw error
+          if (typeof error === 'object' && error !== null && '_tag' in error) {
+            if (
+              error._tag == 'OrgDataError' ||
+              error._tag == 'UserDataError' ||
+              error._tag == 'AuthStateError' ||
+              error._tag == 'NotLoggedIn'
+            ) {
+              throw error
+            }
+          }
+
+          return error as Exclude<
+            E,
+            | UnhandledError
+            | ContextError
+            | ExternalAssertionError
+            | NeedsAuthenticationError
+          >
+        }
+      )
+    )
+  )
+
+  if (loaded._tag === 'error') throw loaded.error
+
+  return loaded
 }

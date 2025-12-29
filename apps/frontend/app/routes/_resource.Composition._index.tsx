@@ -6,7 +6,7 @@ import {
 } from '@assessmentis/clinical-domain/content-management'
 import { useRuntimeContext } from 'app/clientRuntime'
 import { applyPartialProps, transformProps } from '@assessmentis/react-util'
-import type { Route } from './+types/Composition._index'
+import type { Route } from './+types/_resource.Composition._index'
 import CompositionList from '../modules/resources/Composition/components/CompositionList'
 import { getRuntime } from '../clientRuntime'
 import { PatientPicker } from '../modules/resources/Patient/components/PatientPicker'

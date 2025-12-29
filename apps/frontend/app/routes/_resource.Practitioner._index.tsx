@@ -6,7 +6,7 @@ import {
 } from '@assessmentis/clinical-domain/administration'
 import { getRuntime } from '../clientRuntime'
 import PractitionerList from '../modules/resources/Practitioner/components/PractitionerList'
-import type { Route } from './+types/Practitioner._index'
+import type { Route } from './+types/_resource.Practitioner._index'
 import { useRuntimeContext } from 'app/clientRuntime'
 import {
   ResourceForm,

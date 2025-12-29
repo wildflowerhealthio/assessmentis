@@ -1,6 +1,6 @@
 import PatientList from '../modules/resources/Patient/components/PatientList'
 import { usePatientCollection } from '../modules/resources/Patient/hooks/usePatientCollection'
-import type { Route } from './+types/Patient._index'
+import type { Route } from './+types/_resource.Patient._index'
 import { Link } from 'react-router'
 import { LoadedResult } from '@assessmentis/ontology'
 

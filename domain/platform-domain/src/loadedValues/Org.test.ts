@@ -1,6 +1,6 @@
 import { expect, test, describe } from 'vitest'
 import { Schema, Either } from 'effect'
-import { Org, OrgLoading, OrgDataError, OrgError } from './Org'
+import { Org, OrgDataError, OrgError } from './Org'
 
 describe('Org', () => {
   test('decodes valid org structure', () => {
@@ -221,33 +221,6 @@ describe('Org', () => {
   })
 })
 
-describe('OrgLoading', () => {
-  test('creates org loading state', () => {
-    const encode = Schema.encodeUnknownEither(OrgLoading)
-    const loading = {
-      _tag: 'OrgLoading',
-    }
-
-    const result = encode(loading)
-
-    expect(Either.isRight(result)).toBe(true)
-    if (Either.isRight(result)) {
-      expect(result.right._tag).toBe('OrgLoading')
-    }
-  })
-
-  test('decodes org loading state', () => {
-    const decode = Schema.decodeUnknownEither(OrgLoading)
-    const loading = {
-      _tag: 'OrgLoading',
-    }
-
-    const result = decode(loading)
-
-    expect(Either.isRight(result)).toBe(true)
-  })
-})
-
 describe('OrgDataError', () => {
   test('creates error with cause', () => {
     const encode = Schema.encodeUnknownEither(OrgDataError)
@@ -278,20 +251,6 @@ describe('OrgDataError', () => {
 })
 
 describe('OrgError', () => {
-  test('accepts OrgLoading', () => {
-    const decode = Schema.decodeUnknownEither(OrgError)
-    const error = {
-      _tag: 'OrgLoading',
-    }
-
-    const result = decode(error)
-
-    expect(Either.isRight(result)).toBe(true)
-    if (Either.isRight(result)) {
-      expect(result.right._tag).toBe('OrgLoading')
-    }
-  })
-
   test('accepts OrgDataError', () => {
     const decode = Schema.decodeUnknownEither(OrgError)
     const error = {
@@ -310,9 +269,7 @@ describe('OrgError', () => {
   test('accepts CurrentUserError types', () => {
     const decode = Schema.decodeUnknownEither(OrgError)
     const errors = [
-      { _tag: 'UserLoading' },
       { _tag: 'UserDataError', cause: 'Error' },
-      { _tag: 'AuthStateLoading' },
       { _tag: 'AuthStateError', cause: 'Auth failed' },
       { _tag: 'NotLoggedIn' },
     ]

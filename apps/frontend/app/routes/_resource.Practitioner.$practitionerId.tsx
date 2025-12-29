@@ -4,7 +4,7 @@ import {
   PractitionerRepository,
 } from '@assessmentis/clinical-domain/administration'
 import { UnhandledError } from '@assessmentis/ontology'
-import type { Route } from './+types/Practitioner.$practitionerId'
+import type { Route } from './+types/_resource.Practitioner.$practitionerId'
 import { getRuntime } from '../clientRuntime'
 import { Link } from 'react-router'
 

@@ -4,47 +4,59 @@ import {
   PatientRepository,
 } from '@assessmentis/clinical-domain/administration'
 import { UnhandledError } from '@assessmentis/ontology'
-import type { Route } from './+types/Patient.$patientId'
-import { getRuntime, useLoadedRuntimeContext } from '../clientRuntime'
+import type { Route } from './+types/_resource.Patient.$patientId'
+import { useLoadedRuntimeContext, useResourceRunEffect } from '../clientRuntime'
 import { Link } from 'react-router'
 import { ResourceForm } from 'app/modules/common/components/ResourceForm'
 import { transformProps } from '@assessmentis/react-util'
 import { CommonFieldProps } from '../modules/common/components/ResourceForm/ResourceForm'
 import { PractitionerPicker } from '../modules/resources/Practitioner/components/PractitionerPicker'
+import { useMemo } from 'react'
 
 const tryDecodePatientId = Schema.decodeOption(PatientId)
 
-export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-  const runtime = await getRuntime()
-  const patientIdMaybe = tryDecodePatientId(params.patientId)
-
-  const patient = await runtime.runPromise(
-    Effect.gen(function* () {
-      const repository = yield* PatientRepository
-
-      const patientId = yield* patientIdMaybe.pipe(
-        Option.map(Effect.succeed),
-        Option.getOrElse(() =>
-          Effect.fail(new UnhandledError({ cause: 'Patient ID not found' }))
-        )
-      )
-
-      return yield* repository.get(patientId)
-    })
-  )
-
-  return { patient }
-}
+export async function clientLoader(_: Route.ClientLoaderArgs) {}
 
 const PractitionerUpdateSchema = Schema.Struct({
   practitionerId: Schema.optional(Schema.String),
 })
 
-export default function PatientDetailPage({
-  loaderData,
-}: Route.ComponentProps) {
-  const { patient } = loaderData
+export default function PatientDetailPage({ params }: Route.ComponentProps) {
   const clientRuntime = useLoadedRuntimeContext()
+  const loadedPatient = useResourceRunEffect(
+    useMemo(
+      () =>
+        Effect.gen(function* () {
+          const patientIdMaybe = tryDecodePatientId(params.patientId)
+          const repository = yield* PatientRepository
+
+          const patientId = yield* patientIdMaybe.pipe(
+            Option.map(Effect.succeed),
+            Option.getOrElse(() =>
+              Effect.fail(new UnhandledError({ cause: 'Patient ID not found' }))
+            )
+          )
+
+          return yield* repository.get(patientId)
+        }),
+      [params.patientId]
+    )
+  )
+
+  if (loadedPatient._tag === 'loading') {
+    return <div>Loading patient details...</div>
+  }
+
+  if (loadedPatient._tag == 'error') {
+    if (loadedPatient.error._tag == 'NotFoundError') {
+      return <div>Couldn't find patient {params.patientId}</div>
+    } else {
+      throw loadedPatient.error
+    }
+  }
+
+  const patient = loadedPatient.value
+
   const displayName = patient.name?.[0]
     ? `${patient.name[0].given?.join(' ') ?? ''} ${patient.name[0].family ?? ''}`.trim()
     : 'Unnamed Patient'

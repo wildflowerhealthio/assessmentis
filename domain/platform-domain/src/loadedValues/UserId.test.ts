@@ -3,7 +3,6 @@ import { Schema, Either } from 'effect'
 import {
   UserId,
   AuthStateError,
-  AuthStateLoading,
   NotLoggedIn,
   CurrentUserIdError,
 } from './UserId'
@@ -126,40 +125,6 @@ describe('AuthStateError', () => {
   })
 })
 
-describe('AuthStateLoading', () => {
-  test('property: decode-encode is identity for AuthStateLoading', () => {
-    // Property: encode(decode(x)) === x for the loading state
-    const decode = Schema.decodeUnknownEither(AuthStateLoading)
-    const encode = Schema.encodeUnknownEither(AuthStateLoading)
-    const loading = { _tag: 'AuthStateLoading' as const }
-
-    const decoded = decode(loading)
-    expect(Either.isRight(decoded)).toBe(true)
-
-    if (Either.isRight(decoded)) {
-      const encoded = encode(decoded.right)
-      expect(Either.isRight(encoded)).toBe(true)
-      if (Either.isRight(encoded)) {
-        expect(encoded.right).toEqual(loading)
-      }
-    }
-  })
-
-  test('property: _tag must be AuthStateLoading', () => {
-    // Property: Only objects with correct _tag decode successfully
-    fc.assert(
-      fc.property(
-        fc.string().filter((s) => s !== 'AuthStateLoading'),
-        (tag) => {
-          const decode = Schema.decodeUnknownEither(AuthStateLoading)
-          const result = decode({ _tag: tag })
-          expect(Either.isLeft(result)).toBe(true)
-        }
-      )
-    )
-  })
-})
-
 describe('NotLoggedIn', () => {
   test('property: decode-encode is identity for NotLoggedIn', () => {
     // Property: encode(decode(x)) === x for the not logged in state
@@ -200,7 +165,6 @@ describe('CurrentUserIdError', () => {
     fc.assert(
       fc.property(
         fc.oneof(
-          fc.constant({ _tag: 'AuthStateLoading' as const }),
           fc.record({
             _tag: fc.constant('AuthStateError' as const),
             cause: fc.option(fc.anything(), { nil: undefined }),
@@ -213,11 +177,9 @@ describe('CurrentUserIdError', () => {
 
           expect(Either.isRight(result)).toBe(true)
           if (Either.isRight(result)) {
-            expect([
-              'AuthStateLoading',
-              'AuthStateError',
-              'NotLoggedIn',
-            ]).toContain(result.right._tag)
+            expect(['AuthStateError', 'NotLoggedIn']).toContain(
+              result.right._tag
+            )
           }
         }
       )
@@ -229,7 +191,6 @@ describe('CurrentUserIdError', () => {
     fc.assert(
       fc.property(
         fc.oneof(
-          fc.constant({ _tag: 'AuthStateLoading' as const }),
           fc.record({
             _tag: fc.constant('AuthStateError' as const),
             cause: fc.option(fc.anything(), { nil: undefined }),
@@ -264,12 +225,7 @@ describe('CurrentUserIdError', () => {
       fc.property(
         fc
           .string()
-          .filter(
-            (s) =>
-              s !== 'AuthStateLoading' &&
-              s !== 'AuthStateError' &&
-              s !== 'NotLoggedIn'
-          ),
+          .filter((s) => s !== 'AuthStateError' && s !== 'NotLoggedIn'),
         (tag) => {
           const decode = Schema.decodeUnknownEither(CurrentUserIdError)
           const result = decode({ _tag: tag })

@@ -8,15 +8,8 @@ export const AuthStateError = Schema.TaggedStruct('AuthStateError', {
 })
 export type AuthStateError = typeof AuthStateError.Type
 
-export const AuthStateLoading = Schema.TaggedStruct('AuthStateLoading', {})
-export type AuthStateLoading = typeof AuthStateLoading.Type
-
 export const NotLoggedIn = Schema.TaggedStruct('NotLoggedIn', {})
 export type NotLoggedIn = typeof NotLoggedIn.Type
 
-export const CurrentUserIdError = Schema.Union(
-  AuthStateLoading,
-  AuthStateError,
-  NotLoggedIn
-)
+export const CurrentUserIdError = Schema.Union(AuthStateError, NotLoggedIn)
 export type CurrentUserIdError = typeof CurrentUserIdError.Type

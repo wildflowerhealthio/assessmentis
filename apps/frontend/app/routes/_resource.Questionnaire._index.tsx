@@ -6,7 +6,7 @@ import {
   QuestionnaireRepository,
 } from '@assessmentis/clinical-domain/content-management'
 import { questionnaireTemplates } from '@assessmentis/questionnaire-entities'
-import type { Route } from './+types/Questionnaire._index'
+import type { Route } from './+types/_resource.Questionnaire._index'
 import { getRuntime } from '../clientRuntime'
 import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
 import { LoadedResult } from '@assessmentis/ontology'

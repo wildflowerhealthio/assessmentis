@@ -9,7 +9,7 @@ import { QuestionnaireRepository } from '@assessmentis/clinical-domain/content-m
 import { createEncounter } from 'app/modules/resources/Encounter/actions/createEncounter'
 import { Form, useNavigate } from 'react-router'
 import EncountersList from '../modules/resources/Encounter/components/EncountersList'
-import type { Route } from './+types/Encounter._index'
+import type { Route } from './+types/_resource.Encounter._index'
 import { useEffect, useState } from 'react'
 import { getRuntime } from '../clientRuntime'
 import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'

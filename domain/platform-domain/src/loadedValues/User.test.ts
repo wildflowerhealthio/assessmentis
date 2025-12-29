@@ -1,6 +1,6 @@
 import { expect, test, describe } from 'vitest'
 import { Schema, Either } from 'effect'
-import { User, UserLoading, UserDataError, CurrentUserError } from './User'
+import { User, UserDataError, CurrentUserError } from './User'
 import * as fc from 'fast-check'
 
 describe('User', () => {
@@ -103,40 +103,6 @@ describe('User', () => {
   })
 })
 
-describe('UserLoading', () => {
-  test('property: encode-decode is identity for UserLoading', () => {
-    // Property: decode(encode(x)) === x for UserLoading state
-    const decode = Schema.decodeUnknownEither(UserLoading)
-    const encode = Schema.encodeUnknownEither(UserLoading)
-    const loading = { _tag: 'UserLoading' as const }
-
-    const encoded = encode(loading)
-    expect(Either.isRight(encoded)).toBe(true)
-
-    if (Either.isRight(encoded)) {
-      const decoded = decode(encoded.right)
-      expect(Either.isRight(decoded)).toBe(true)
-      if (Either.isRight(decoded)) {
-        expect(decoded.right._tag).toBe('UserLoading')
-      }
-    }
-  })
-
-  test('property: invalid _tag always fails', () => {
-    // Property: Only correct _tag value decodes successfully
-    fc.assert(
-      fc.property(
-        fc.string().filter((s) => s !== 'UserLoading'),
-        (tag) => {
-          const decode = Schema.decodeUnknownEither(UserLoading)
-          const result = decode({ _tag: tag })
-          expect(Either.isLeft(result)).toBe(true)
-        }
-      )
-    )
-  })
-})
-
 describe('UserDataError', () => {
   test('property: encode-decode preserves error with cause', () => {
     // Property: For any cause value, encode-decode should preserve it
@@ -188,12 +154,10 @@ describe('CurrentUserError', () => {
     fc.assert(
       fc.property(
         fc.oneof(
-          fc.constant({ _tag: 'UserLoading' as const }),
           fc.record({
             _tag: fc.constant('UserDataError' as const),
             cause: fc.option(fc.anything(), { nil: undefined }),
           }),
-          fc.constant({ _tag: 'AuthStateLoading' as const }),
           fc.record({
             _tag: fc.constant('AuthStateError' as const),
             cause: fc.option(fc.anything(), { nil: undefined }),
@@ -207,9 +171,7 @@ describe('CurrentUserError', () => {
           expect(Either.isRight(result)).toBe(true)
           if (Either.isRight(result)) {
             expect([
-              'UserLoading',
               'UserDataError',
-              'AuthStateLoading',
               'AuthStateError',
               'NotLoggedIn',
             ]).toContain(result.right._tag)
@@ -224,7 +186,6 @@ describe('CurrentUserError', () => {
     fc.assert(
       fc.property(
         fc.oneof(
-          fc.constant({ _tag: 'UserLoading' as const }),
           fc.constant({ _tag: 'AuthStateLoading' as const }),
           fc.constant({ _tag: 'NotLoggedIn' as const })
         ),
@@ -258,7 +219,6 @@ describe('CurrentUserError', () => {
           .string()
           .filter(
             (s) =>
-              s !== 'UserLoading' &&
               s !== 'UserDataError' &&
               s !== 'AuthStateLoading' &&
               s !== 'AuthStateError' &&

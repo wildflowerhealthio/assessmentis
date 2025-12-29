@@ -1,6 +1,6 @@
 import { Effect } from 'effect'
 import { useState, useMemo } from 'react'
-import { useRunEffect } from 'app/clientRuntime'
+import { useResourceRunEffect } from 'app/clientRuntime'
 import { PickerItem } from '../types/PickerTypes'
 import { BaseClinicalDataRepository } from '@assessmentis/clinical-domain'
 import { ClientRuntimeContext } from '../../../../../../../../domain/platform-domain/src/PlatformService'
@@ -32,7 +32,7 @@ export function usePickerData<
 
   const [refetchTrigger, setRefetchTrigger] = useState(0)
 
-  const items = useRunEffect(
+  const items = useResourceRunEffect(
     useMemo(
       () =>
         Effect.gen(function* () {
