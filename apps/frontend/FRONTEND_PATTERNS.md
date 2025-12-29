@@ -8,100 +8,123 @@ This document outlines the frontend patterns and conventions used in this projec
 
 Location: `/apps/frontend/app/routes/`
 
-Naming pattern:
+Naming pattern (all routes use `_resource.` prefix for error boundary):
 
-- **List pages**: `ResourceName._index.tsx` (e.g., `Patient._index.tsx`, `Practitioner._index.tsx`)
-- **Detail pages**: `ResourceName.$paramName.tsx` (e.g., `Patient.$patientId.tsx`, `Observation.$observationId.tsx`)
+- **List pages**: `_resource.ResourceName._index.tsx` (e.g., `_resource.Patient._index.tsx`)
+- **Detail pages**: `_resource.ResourceName.$paramName._index.tsx` (e.g., `_resource.Patient.$patientId._index.tsx`)
+- **Create pages**: `_resource.ResourceName.new.tsx` (e.g., `_resource.Patient.new.tsx`)
+- **Edit pages**: `_resource.ResourceName.$paramName.edit.tsx` (e.g., `_resource.Patient.$patientId.edit.tsx`)
 
-The framework uses file-based routing with React Router v7, and route types are auto-generated in `.react-router/types/`.
+The `_resource.tsx` layout file provides a comprehensive error boundary for all resource routes. The framework uses file-based routing with React Router v7, and route types are auto-generated in `.react-router/types/`.
 
 ### Modules
 
-Location: `/apps/frontend/app/modules/{module-name}/`
+Location: `/apps/frontend/app/modules/resources/{ResourceName}/`
 
 Structure:
 
 ```
 modules/
-  {resource-name}/           (e.g., patient, practitioner, observation)
-    components/
-      {ResourceName}List.tsx
-      {ResourceName}Picker/
-        {ResourceName}Picker.tsx
-    schemas/
-      {ResourceName}FormSchema.ts
-      {ResourceName}FormSchema.test.ts
+  resources/
+    {ResourceName}/        (e.g., Patient, Practitioner, Observation)
+      components/
+        {ResourceName}Form.tsx      (extracted form component)
+        {ResourceName}List.tsx      (list component)
+        {ResourceName}Picker.tsx    (picker component)
+      schemas/
+        {ResourceName}FormSchema.ts      (form validation schema)
+        {ResourceName}FormSchema.test.ts (schema tests)
+      actions/
+        create{ResourceName}.ts     (create action)
+        update{ResourceName}.ts     (update action)
+      hooks/
+        use{ResourceName}Collection.ts  (collection management hook)
 ```
 
-The modules do not strictly map to resources, but instead focuses on repeatable units of UI, functions, and Effects
+The modules organize resource-specific code (forms, actions, hooks) alongside reusable UI components
+
+### Common UI Components
+
+Location: `/apps/frontend/app/modules/common/components/`
+
+These components provide consistent UI patterns across all resource pages:
+
+**PageHeader** - Standardized page titles with optional subtitles
+
+```typescript
+import { PageHeader } from 'app/modules/common/components/PageHeader/PageHeader'
+
+<PageHeader
+  title="Patient Details"
+  subtitle="Patient ID: 12345"
+/>
+```
+
+**DetailPageActions** - Consistent back and edit button layout for detail pages
+
+```typescript
+import { DetailPageActions } from 'app/modules/common/components/DetailPageActions/DetailPageActions'
+
+<DetailPageActions
+  backTo="/Patient"
+  editTo={`/Patient/${patient.id}/edit`}
+  backLabel="← Back to Patients"
+/>
+```
+
+**FormPage** - Consistent layout wrapper for create/edit pages
+
+```typescript
+import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
+
+<FormPage title="Create New Patient">
+  <PatientForm onSubmit={handleSubmit} submitLabel="Create Patient" />
+</FormPage>
+```
 
 ## Page Patterns
 
 ### List Pages
 
-**Purpose**: Display a list of resources with create/delete functionality
+**Purpose**: Display a list of resources with link to create page and delete functionality
 
-**Template**: [Patient.\_index.tsx](app/routes/Patient._index.tsx)
+**Template**: [_resource.Patient._index.tsx](app/routes/_resource.Patient._index.tsx)
 
 **Standard structure**:
 
 ```typescript
-export async function clientLoader(_: Route.ClientLoaderArgs) {
-  const runtime = await getRuntime()
-  const resources = await runtime.runPromise(
-    Effect.gen(function* () {
-      const repository = yield* ResourceRepository
-      return yield* repository.getMany()
-    })
-  )
-  return { resources }
-}
+import { Link } from 'react-router'
+import { LoadedResult } from '@assessmentis/ontology'
+import ResourceList from '../modules/resources/Resource/components/ResourceList'
+import { useResourceCollection } from '../modules/resources/Resource/hooks/useResourceCollection'
+import type { Route } from './+types/_resource.Resource._index'
 
-const useResources = (initial: Resource[]) => {
-  const clientRuntime = useRuntimeContext()
+const emptyFilters = {}
 
-  return useCollection<ResourceId, Resource>(
-    {
-      apiDelete: async (id: ResourceId) =>
-        clientRuntime.runPromise(
-          Effect.all([
-            Effect.sleep('200 millis'),
-            ResourceRepository.pipe(Effect.flatMap((r) => r.delete(id))),
-          ])
-        ),
-      apiCreate: async (resource: Resource) =>
-        clientRuntime.runPromise(
-          Effect.all([
-            Effect.sleep('200 millis'),
-            ResourceRepository.pipe(Effect.flatMap((r) => r.create(resource))),
-          ]).pipe(Effect.map(([, x]) => x))
-        ),
-    },
-    initial
-  )
-}
-
-export default function ResourcePage({ loaderData }: Route.ComponentProps) {
-  const { resources: initialResources } = loaderData
+export default function ResourcePage(_: Route.ComponentProps) {
   const { collection: resources, deleteItem: deleteResource } =
-    useResources(initialResources)
+    useResourceCollection(emptyFilters)
 
   return (
     <>
       <h1 className="heading-1">Resources</h1>
-
-      <ResourceList
-        resources={resources}
-        deleteResource={deleteResource}
-      />
-
-      <h2 className="heading-3" style={{ marginTop: 'var(--space-7)' }}>
-        Create a new resource
-      </h2>
-
       <div style={{ marginTop: 'var(--space-4)' }}>
-        <ResourceForm ... />
+        <Link to="/Resource/new" className="button-2 blue">
+          Create New Resource
+        </Link>
       </div>
+      {LoadedResult.handle(resources, {
+        onLoading: () => <p>Loading resources...</p>,
+        onError: (error) => <p>Error loading resources: {String(error)}</p>,
+        onSuccess: (resourceList) => (
+          <div style={{ marginTop: 'var(--space-4)' }}>
+            <ResourceList
+              deleteResource={deleteResource}
+              resources={resourceList}
+            />
+          </div>
+        ),
+      })}
     </>
   )
 }
@@ -144,13 +167,26 @@ const handleFilterChange = (id: string | undefined) => {
 
 ### Detail Pages
 
-**Purpose**: Display comprehensive details of a single resource
+**Purpose**: Display comprehensive details of a single resource with navigation to edit
 
-**Template**: [Patient.$patientId.tsx](app/routes/Patient.$patientId.tsx)
+**Template**: [_resource.Patient.$patientId._index.tsx](app/routes/_resource.Patient.$patientId._index.tsx)
 
 **Standard structure**:
 
 ```typescript
+import { Effect, Option, Schema } from 'effect'
+import { getRuntime } from 'app/clientRuntime'
+import { DetailPageActions } from 'app/modules/common/components/DetailPageActions/DetailPageActions'
+import {
+  Resource,
+  ResourceId,
+  ResourceRepository,
+} from '@assessmentis/clinical-domain/...'
+import { NotFoundError } from '@assessmentis/ontology'
+import type { Route } from './+types/_resource.Resource.$resourceId._index'
+
+const tryDecodeResourceId = Schema.decodeOption(ResourceId)
+
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const runtime = await getRuntime()
   const resourceIdMaybe = tryDecodeResourceId(params.resourceId)
@@ -162,7 +198,12 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
       const resourceId = yield* resourceIdMaybe.pipe(
         Option.map(Effect.succeed),
         Option.getOrElse(() =>
-          Effect.fail(new UnhandledError({ cause: 'Resource ID not found' }))
+          Effect.fail(
+            new NotFoundError({
+              resourceType: 'Resource',
+              params: { id: params.resourceId },
+            })
+          )
         )
       )
 
@@ -178,7 +219,10 @@ export default function ResourceDetailPage({ loaderData }: Route.ComponentProps)
 
   return (
     <>
-      <Link to="/Resource" className="button-3 ghost">← Back to Resources</Link>
+      <DetailPageActions
+        backTo="/Resource"
+        editTo={`/Resource/${resource.id}/edit`}
+      />
 
       <h1 className="heading-1">{resource.displayName}</h1>
       <p className="subheading-3">{resource.id}</p>
@@ -195,6 +239,144 @@ export default function ResourceDetailPage({ loaderData }: Route.ComponentProps)
         <pre style={{ ...}}>{JSON.stringify(resource, null, 2)}</pre>
       </details>
     </>
+  )
+}
+```
+
+### Create Pages
+
+**Purpose**: Form page for creating new resources
+
+**Template**: [_resource.Patient.new.tsx](app/routes/_resource.Patient.new.tsx)
+
+**Standard structure**:
+
+```typescript
+import { useNavigate } from 'react-router'
+import { useRuntimeContext } from 'app/clientRuntime'
+import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
+import { ResourceForm } from 'app/modules/resources/Resource/components/ResourceForm'
+import { createResource } from 'app/modules/resources/Resource/actions/createResource'
+import { ResourceFormSchema } from 'app/modules/resources/Resource/schemas/ResourceFormSchema'
+
+export default function CreateResourcePage() {
+  const navigate = useNavigate()
+  const clientRuntime = useRuntimeContext()
+
+  const handleSubmit = async (data: typeof ResourceFormSchema.Type) => {
+    const resource = await clientRuntime.runPromise(createResource(data))
+    navigate(`/Resource/${resource.id}`)
+  }
+
+  // Provide default values to prevent uncontrolled input warnings
+  const defaultValues: typeof ResourceFormSchema.Encoded = {
+    field1: undefined,
+    field2: undefined,
+    // ... all fields with appropriate default values
+  }
+
+  return (
+    <FormPage title="Create New Resource">
+      <ResourceForm
+        onSubmit={handleSubmit}
+        submitLabel="Create Resource"
+        initialValues={defaultValues}
+      />
+    </FormPage>
+  )
+}
+```
+
+### Edit Pages
+
+**Purpose**: Form page for editing existing resources
+
+**Template**: [_resource.Patient.$patientId.edit.tsx](app/routes/_resource.Patient.$patientId.edit.tsx)
+
+**Standard structure**:
+
+```typescript
+import { Effect, Option, Schema } from 'effect'
+import { useNavigate } from 'react-router'
+import { useLoadedRuntimeContext } from 'app/clientRuntime'
+import { getRuntime } from 'app/clientRuntime'
+import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
+import { ResourceForm } from 'app/modules/resources/Resource/components/ResourceForm'
+import { updateResource } from 'app/modules/resources/Resource/actions/updateResource'
+import { ResourceFormSchema } from 'app/modules/resources/Resource/schemas/ResourceFormSchema'
+import {
+  Resource,
+  ResourceId,
+  ResourceRepository,
+} from '@assessmentis/clinical-domain/...'
+import { NotFoundError } from '@assessmentis/ontology'
+import type { Route } from './+types/_resource.Resource.$resourceId.edit'
+
+const tryDecodeResourceId = Schema.decodeOption(ResourceId)
+
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
+  const runtime = await getRuntime()
+  const resourceIdMaybe = tryDecodeResourceId(params.resourceId)
+
+  const resource = await runtime.runPromise(
+    Effect.gen(function* () {
+      const repository = yield* ResourceRepository
+
+      const resourceId = yield* resourceIdMaybe.pipe(
+        Option.map(Effect.succeed),
+        Option.getOrElse(() =>
+          Effect.fail(
+            new NotFoundError({
+              resourceType: 'Resource',
+              params: { id: params.resourceId },
+            })
+          )
+        )
+      )
+
+      return yield* repository.get(resourceId)
+    })
+  )
+
+  return { resource }
+}
+
+export default function EditResourcePage({ loaderData }: Route.ComponentProps) {
+  const { resource } = loaderData
+  const navigate = useNavigate()
+  const clientRuntime = useLoadedRuntimeContext()
+
+  // Transform resource to form initial values
+  const initialValues: typeof ResourceFormSchema.Encoded = {
+    field1: resource.field1,
+    field2: resource.field2,
+    // ... map all resource fields to form schema
+  }
+
+  const handleSubmit = async (data: typeof ResourceFormSchema.Type) => {
+    if (!resource.id) return
+
+    if (clientRuntime._tag != 'loaded') {
+      console.error('Runtime not loaded', clientRuntime)
+      return
+    }
+
+    await clientRuntime.value.runPromise(
+      updateResource(resource.id, resource, data)
+    )
+
+    // Redirect back to detail page
+    navigate(`/Resource/${resource.id}`)
+  }
+
+  return (
+    <FormPage title="Edit Resource">
+      <ResourceForm
+        onSubmit={handleSubmit}
+        submitLabel="Save Changes"
+        initialValues={initialValues}
+      />
+    </FormPage>
   )
 }
 ```
@@ -363,6 +545,219 @@ Location: `/apps/frontend/app/modules/common/components/ResourceForm/`
   submitLabel="Create Resource"
 />
 ```
+
+## Resource Form Pattern
+
+### Extracted Form Components
+
+All resources follow a consistent pattern of extracting form logic into dedicated components.
+
+**Location**: `modules/resources/{Resource}/components/{Resource}Form.tsx`
+
+**Template**: [PatientForm.tsx](app/modules/resources/Patient/components/PatientForm.tsx)
+
+**Standard structure**:
+
+```typescript
+import { applyPartialProps, transformProps } from '@assessmentis/react-util'
+import {
+  ResourceForm,
+  DateField,
+  TextField,
+} from 'app/modules/common/components/ResourceForm'
+import { CommonFieldProps } from 'app/modules/common/components/ResourceForm/ResourceForm'
+import {
+  ResourceFormSchema,
+  type ResourceFormData,
+} from '../schemas/ResourceFormSchema'
+
+interface ResourceFormProps {
+  onSubmit: (data: ResourceFormData) => void | Promise<void>
+  submitLabel: string
+  initialValues?: Partial<typeof ResourceFormSchema.Encoded>
+}
+
+export function ResourceForm({
+  onSubmit,
+  submitLabel,
+  initialValues,
+}: ResourceFormProps) {
+  return (
+    <ResourceForm
+      schema={ResourceFormSchema}
+      fields={{
+        textField: applyPartialProps(TextField, {
+          name: 'textField',
+          label: 'Text Field',
+          required: true,
+        }),
+        dateField: applyPartialProps(DateField, {
+          name: 'dateField',
+          label: 'Date',
+        }),
+        pickerId: transformProps(
+          SomePicker,
+          (props: CommonFieldProps<string | undefined>) => ({
+            name: 'pickerId',
+            label: 'Pick Something',
+            picking: {
+              onChange: props.onChange,
+              value: props.value,
+              multiple: false as const,
+            },
+          })
+        ),
+      }}
+      fieldOrder={['textField', 'dateField', 'pickerId']}
+      onSubmit={onSubmit}
+      submitLabel={submitLabel}
+      initialValues={initialValues}
+    />
+  )
+}
+```
+
+**Key points**:
+- Use `applyPartialProps` for simple fields (TextField, DateField, etc.)
+- Use `transformProps` for picker components to adapt props
+- Always export type for form data from schema
+- Accept optional `initialValues` for edit forms
+- Use `typeof Schema.Type` for runtime data, `typeof Schema.Encoded` for initial values
+
+## Action Pattern
+
+All resources have dedicated action files for create/update operations using Effect.
+
+**Location**: `modules/resources/{Resource}/actions/`
+
+### Create Action
+
+**Template**: [createPatient.ts](app/modules/resources/Patient/actions/createPatient.ts)
+
+```typescript
+import { Effect } from 'effect'
+import {
+  Resource,
+  ResourceRepository,
+} from '@assessmentis/clinical-domain/...'
+import { UnhandledError } from '@assessmentis/ontology'
+import { ResourceFormData } from '../schemas/ResourceFormSchema'
+
+export const createResource = (
+  formData: ResourceFormData
+): Effect.Effect<Resource, UnhandledError, ResourceRepository> => {
+  return Effect.gen(function* () {
+    const repository = yield* ResourceRepository
+
+    const resource: Resource = {
+      // Transform form data to resource shape
+      field1: formData.field1,
+      field2: formData.field2,
+      // ...
+    }
+
+    return yield* repository.create(resource)
+  })
+}
+```
+
+### Update Action
+
+**Template**: [updatePatient.ts](app/modules/resources/Patient/actions/updatePatient.ts)
+
+```typescript
+import { Effect } from 'effect'
+import {
+  Resource,
+  ResourceId,
+  ResourceRepository,
+} from '@assessmentis/clinical-domain/...'
+import {
+  UnhandledError,
+  NeedsAuthenticationError,
+  NotFoundError,
+} from '@assessmentis/ontology'
+import { WithId } from '../../../../../../../domain/clinical-domain/src/data-types/base'
+import { ResourceFormData } from '../schemas/ResourceFormSchema'
+
+export const updateResource = (
+  id: ResourceId,
+  currentResource: Resource,
+  formData: ResourceFormData
+): Effect.Effect<
+  Resource,
+  | UnhandledError
+  | NeedsAuthenticationError
+  | NotFoundError,
+  ResourceRepository
+> => {
+  return Effect.gen(function* () {
+    const repository = yield* ResourceRepository
+
+    // Merge form data with existing resource
+    const updatedResource: WithId<Resource> = {
+      ...currentResource,
+      id,
+      field1: formData.field1,
+      field2: formData.field2,
+      // ... update specific fields from form data
+    }
+
+    return yield* repository.update(updatedResource)
+  })
+}
+```
+
+**Key points**:
+- Actions take form data and return Effect with proper error types
+- Update actions preserve unchanged fields by spreading current resource
+- Update actions accept current resource to enable field merging
+- Both use typed ResourceFormData from schema
+
+## Hook Pattern
+
+All resources use a collection hook for managing list data with filters.
+
+**Location**: `modules/resources/{Resource}/hooks/use{Resource}Collection.ts`
+
+**Template**: [usePatientCollection.ts](app/modules/resources/Patient/hooks/usePatientCollection.ts)
+
+```typescript
+import {
+  Resource,
+  ResourceId,
+  ResourceRepository,
+} from '@assessmentis/clinical-domain/...'
+import { useClinicalDataCollection } from 'app/modules/common/hooks/useClinicalDataCollection'
+import { useResourceRunEffect } from '../../../../clientRuntime'
+import { useMemo } from 'react'
+import { Effect } from 'effect'
+
+export const useResourceCollection = (filters: object) => {
+  const resources = useResourceRunEffect(
+    useMemo(() => {
+      return Effect.gen(function* () {
+        const resourceRepository = yield* ResourceRepository
+        return yield* resourceRepository.getMany(filters)
+      })
+    }, [filters])
+  )
+  return useClinicalDataCollection<
+    ResourceId,
+    Resource,
+    ResourceRepository,
+    typeof ResourceRepository,
+    never
+  >(ResourceRepository, resources)
+}
+```
+
+**Key points**:
+- Wraps `useClinicalDataCollection` with resource-specific types
+- Accepts filters object that's passed to `getMany`
+- Returns `{ collection, deleteItem }` for use in list pages
+- Uses `useResourceRunEffect` with memoized Effect
+- Filter changes trigger data refetch
 
 ## Data Loading Patterns
 
@@ -689,13 +1084,82 @@ const resourceId =
 7. **Naming**: Follow resource-based naming (Patient, Observation, not Patients, Observations)
 8. **URLs**: Use resource references in URLs for shareability
 
-## Example: Creating a Complete Resource Page
+## Example: Creating a Complete Resource CRUD Implementation
 
-1. Create picker: `modules/{resource}/components/{Resource}Picker/{Resource}Picker.tsx`
-2. Create list component: `modules/{resource}/components/{Resource}List.tsx`
-3. Create list page: `routes/{Resource}._index.tsx`
-4. Create detail page: `routes/{Resource}.$resourceId.tsx`
-5. Export picker in `BasePicker/index.ts`
-6. Test with various edge cases
+Follow these steps to implement full CRUD for a new resource:
 
-See [Patient.\_index.tsx](app/routes/Patient._index.tsx) and [Patient.$patientId.tsx](app/routes/Patient.$patientId.tsx) for complete examples.
+### 1. Create Form Schema
+
+`modules/resources/{Resource}/schemas/{Resource}FormSchema.ts`:
+
+```typescript
+import { Schema } from 'effect'
+
+export const ResourceFormSchema = Schema.Struct({
+  field1: Schema.optional(Schema.String),
+  field2: Schema.optional(Schema.DateTimeUtc),
+  // ... all editable fields
+})
+
+export type ResourceFormData = typeof ResourceFormSchema.Type
+```
+
+### 2. Create Form Component
+
+`modules/resources/{Resource}/components/{Resource}Form.tsx`:
+
+Use the extracted form pattern with ResourceForm, defining all fields and their order.
+
+### 3. Create Actions
+
+- `modules/resources/{Resource}/actions/create{Resource}.ts`
+- `modules/resources/{Resource}/actions/update{Resource}.ts`
+
+Use the action pattern templates shown above.
+
+### 4. Create Collection Hook
+
+`modules/resources/{Resource}/hooks/use{Resource}Collection.ts`:
+
+Use the hook pattern template shown above.
+
+### 5. Create List Component
+
+`modules/resources/{Resource}/components/{Resource}List.tsx`:
+
+Standard list component with delete functionality.
+
+### 6. Create Routes
+
+Create all four route files:
+
+- `routes/_resource.{Resource}._index.tsx` - List page with link to create
+- `routes/_resource.{Resource}.new.tsx` - Create page
+- `routes/_resource.{Resource}.$resourceId._index.tsx` - Detail page with edit link
+- `routes/_resource.{Resource}.$resourceId.edit.tsx` - Edit page
+
+Use the page pattern templates shown above.
+
+### 7. Optional: Create Picker
+
+If the resource needs to be selected in other forms:
+
+`modules/resources/{Resource}/components/{Resource}Picker.tsx`:
+
+Use the picker pattern and export in `BasePicker/index.ts`.
+
+### Complete Reference Implementations
+
+- **Patient**: Full CRUD with all patterns implemented
+  - [List](app/routes/_resource.Patient._index.tsx)
+  - [Detail](app/routes/_resource.Patient.$patientId._index.tsx)
+  - [Create](app/routes/_resource.Patient.new.tsx)
+  - [Edit](app/routes/_resource.Patient.$patientId.edit.tsx)
+  - [Form](app/modules/resources/Patient/components/PatientForm.tsx)
+  - [Actions](app/modules/resources/Patient/actions/)
+  - [Hook](app/modules/resources/Patient/hooks/usePatientCollection.ts)
+
+- **Practitioner**: Simpler CRUD (no pickers in form)
+- **Encounter**: Custom form with multiple pickers
+- **Composition**: Standard CRUD with date fields
+- **Observation**: Minimal CRUD implementation

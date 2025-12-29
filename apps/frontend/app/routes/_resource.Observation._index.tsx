@@ -1,41 +1,13 @@
-import { Effect } from 'effect'
-import {
-  Observation,
-  ObservationId,
-  ObservationRepository,
-} from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { useResourceRunEffect } from '../clientRuntime'
 import ObservationList from '../modules/resources/Observation/components/ObservationList'
 import type { Route } from './+types/_resource.Observation._index'
-import { useSearchParams } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 import { useMemo } from 'react'
 import { LoadedResult } from '@assessmentis/ontology'
-import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
 import { PatientPicker } from '../modules/resources/Patient/components/PatientPicker'
 import { EncounterPicker } from '../modules/resources/Encounter/components/EncounterPicker'
-import {} from '../../../../domain/clinical-domain/src/data-types/base'
+import { useObservationCollection } from '../modules/resources/Observation/hooks/useObservationCollection'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {}
-
-const useObservations = (filter: { subject?: string; encounter?: string }) => {
-  const remoteObservations = useResourceRunEffect(
-    useMemo(() => {
-      return Effect.gen(function* () {
-        const observationRepository = yield* ObservationRepository
-        const observations = yield* observationRepository.getMany(filter)
-        return observations
-      })
-    }, [filter])
-  )
-
-  return useClinicalDataCollection<
-    ObservationId,
-    Observation,
-    ObservationRepository,
-    typeof ObservationRepository,
-    never
-  >(ObservationRepository, remoteObservations)
-}
 
 export default function ObservationPage(_: Route.ComponentProps) {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -61,7 +33,7 @@ export default function ObservationPage(_: Route.ComponentProps) {
   }, [patientId, encounterId])
 
   const { collection: observations, deleteItem: deleteObservation } =
-    useObservations(filter)
+    useObservationCollection(filter)
 
   const handlePatientChange = (id: string | undefined) => {
     const newParams = new URLSearchParams(searchParams)
@@ -91,6 +63,11 @@ export default function ObservationPage(_: Route.ComponentProps) {
   return (
     <>
       <h1 className="heading-1">Observations</h1>
+      <div style={{ marginTop: 'var(--space-4)' }}>
+        <Link to="/Observation/new" className="button-2 blue">
+          Create New Observation
+        </Link>
+      </div>
 
       <section style={{ marginTop: 'var(--space-5)' }}>
         <h2 className="heading-3">Filter Observations</h2>

@@ -5,9 +5,10 @@ import {
   ObservationRepository,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { UnhandledError } from '@assessmentis/ontology'
-import type { Route } from './+types/_resource.Observation.$observationId'
+import type { Route } from './+types/_resource.Observation.$observationId._index'
 import { getRuntime } from '../clientRuntime'
 import { Link } from 'react-router'
+import { DetailPageActions } from 'app/modules/common/components/DetailPageActions/DetailPageActions'
 
 const tryDecodeObservationId = Schema.decodeOption(ObservationId)
 
@@ -171,9 +172,10 @@ export default function ObservationDetailPage({
 
   return (
     <>
-      <Link to="/Observation" className="button-3 ghost">
-        ← Back to Observations
-      </Link>
+      <DetailPageActions
+        backTo="/Observation"
+        editTo={`/Observation/${observation.id}/edit`}
+      />
 
       <h1 className="heading-1">{displayName}</h1>
       <p className="subheading-3">{observation.id}</p>

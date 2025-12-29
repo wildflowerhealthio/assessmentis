@@ -2,7 +2,7 @@ import { Match, Schema } from 'effect'
 import { EncounterId } from '@assessmentis/clinical-domain/administration'
 import { getFullEncounter } from 'app/modules/interview-call/actions/getFullEncounter'
 import InterviewCall from 'app/modules/interview-call/features/InterviewCall/InterviewCall'
-import type { Route } from './+types/_resource.Encounter.$encounterId'
+import type { Route } from './+types/_resource.Encounter.$encounterId._index'
 import { getRuntime } from '../clientRuntime'
 
 const tryDecodeEncounterId = Schema.decodeOption(EncounterId)

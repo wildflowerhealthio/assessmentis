@@ -5,7 +5,10 @@ import { Extension, ExtensionEncoded } from '../special-purpose/Extension'
 import { CodeableConcept } from '../complex'
 
 const Attachment = Schema.Struct({ contentType: Schema.optional(Code) })
-const Quantity = Schema.Struct({ value: Schema.optional(Schema.Number) })
+const Quantity = Schema.Struct({
+  value: Schema.optional(Schema.Number),
+  unit: Schema.optional(Schema.String),
+})
 
 export type ValueElement =
   | {
