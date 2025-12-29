@@ -10,7 +10,7 @@ import {
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
-import { WithId } from '../../../../../../../domain/clinical-domain/src/data-types/base'
+import { WithId } from '@assessmentis/clinical-domain/data-types'
 import { EncounterFormData } from '../schemas/EncounterFormSchema'
 
 export const updateEncounter = (

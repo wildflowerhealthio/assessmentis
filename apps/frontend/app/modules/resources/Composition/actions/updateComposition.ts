@@ -14,7 +14,7 @@ import {
   CompositionFormData,
   transformToComposition,
 } from '../schemas/CompositionFormSchema'
-import { WithId } from '../../../../../../../domain/clinical-domain/src/data-types/base'
+import { WithId } from '@assessmentis/clinical-domain/data-types'
 
 export const updateComposition = (
   id: CompositionId,

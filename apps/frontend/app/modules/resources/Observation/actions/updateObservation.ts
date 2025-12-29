@@ -14,7 +14,7 @@ import {
   ObservationFormData,
   transformToObservation,
 } from '../schemas/ObservationFormSchema'
-import { WithId } from '../../../../../../../domain/clinical-domain/src/data-types/base'
+import { WithId } from '@assessmentis/clinical-domain/data-types'
 
 export const updateObservation = (
   id: ObservationId,

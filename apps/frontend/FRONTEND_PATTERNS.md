@@ -88,7 +88,7 @@ import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 
 **Purpose**: Display a list of resources with link to create page and delete functionality
 
-**Template**: [_resource.Patient._index.tsx](app/routes/_resource.Patient._index.tsx)
+**Template**: [\_resource.Patient.\_index.tsx](app/routes/_resource.Patient._index.tsx)
 
 **Standard structure**:
 
@@ -169,7 +169,7 @@ const handleFilterChange = (id: string | undefined) => {
 
 **Purpose**: Display comprehensive details of a single resource with navigation to edit
 
-**Template**: [_resource.Patient.$patientId._index.tsx](app/routes/_resource.Patient.$patientId._index.tsx)
+**Template**: [\_resource.Patient.$patientId.\_index.tsx](app/routes/_resource.Patient.$patientId._index.tsx)
 
 **Standard structure**:
 
@@ -247,7 +247,7 @@ export default function ResourceDetailPage({ loaderData }: Route.ComponentProps)
 
 **Purpose**: Form page for creating new resources
 
-**Template**: [_resource.Patient.new.tsx](app/routes/_resource.Patient.new.tsx)
+**Template**: [\_resource.Patient.new.tsx](app/routes/_resource.Patient.new.tsx)
 
 **Standard structure**:
 
@@ -291,7 +291,7 @@ export default function CreateResourcePage() {
 
 **Purpose**: Form page for editing existing resources
 
-**Template**: [_resource.Patient.$patientId.edit.tsx](app/routes/_resource.Patient.$patientId.edit.tsx)
+**Template**: [\_resource.Patient.$patientId.edit.tsx](app/routes/_resource.Patient.$patientId.edit.tsx)
 
 **Standard structure**:
 
@@ -618,6 +618,7 @@ export function ResourceForm({
 ```
 
 **Key points**:
+
 - Use `applyPartialProps` for simple fields (TextField, DateField, etc.)
 - Use `transformProps` for picker components to adapt props
 - Always export type for form data from schema
@@ -636,10 +637,7 @@ All resources have dedicated action files for create/update operations using Eff
 
 ```typescript
 import { Effect } from 'effect'
-import {
-  Resource,
-  ResourceRepository,
-} from '@assessmentis/clinical-domain/...'
+import { Resource, ResourceRepository } from '@assessmentis/clinical-domain/...'
 import { UnhandledError } from '@assessmentis/ontology'
 import { ResourceFormData } from '../schemas/ResourceFormSchema'
 
@@ -677,7 +675,7 @@ import {
   NeedsAuthenticationError,
   NotFoundError,
 } from '@assessmentis/ontology'
-import { WithId } from '../../../../../../../domain/clinical-domain/src/data-types/base'
+import { WithId } from '@assessmentis/clinical-domain/data-types'
 import { ResourceFormData } from '../schemas/ResourceFormSchema'
 
 export const updateResource = (
@@ -686,9 +684,7 @@ export const updateResource = (
   formData: ResourceFormData
 ): Effect.Effect<
   Resource,
-  | UnhandledError
-  | NeedsAuthenticationError
-  | NotFoundError,
+  UnhandledError | NeedsAuthenticationError | NotFoundError,
   ResourceRepository
 > => {
   return Effect.gen(function* () {
@@ -709,6 +705,7 @@ export const updateResource = (
 ```
 
 **Key points**:
+
 - Actions take form data and return Effect with proper error types
 - Update actions preserve unchanged fields by spreading current resource
 - Update actions accept current resource to enable field merging
@@ -753,6 +750,7 @@ export const useResourceCollection = (filters: object) => {
 ```
 
 **Key points**:
+
 - Wraps `useClinicalDataCollection` with resource-specific types
 - Accepts filters object that's passed to `getMany`
 - Returns `{ collection, deleteItem }` for use in list pages
