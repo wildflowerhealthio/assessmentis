@@ -55,7 +55,7 @@ export const Practitioner = Schema.Struct({
    */
   photo: Schema.optional(Schema.Array(Attachment)),
   /**
-   * The official certifications, training, and licenses that authorize or otherwise pertain to the provision of care by the practitioner. For example, a medical license issued by a medical board authorizing the practitioner to practice medicine within a certian locality.
+   * The official certifications, training, and licenses that authorize or otherwise pertain to the provision of care by the practitioner. For example, a medical license issued by a medical board authorizing the practitioner to practice medicine within a certain locality.
    */
   qualification: Schema.optional(
     Schema.Array(
