@@ -23,9 +23,14 @@ export function getPractitionerQualification(
 
 /**
  * Format a date range from epoch milliseconds
- * @param startEpochMillis - Start date in epoch milliseconds
+ * @param startEpochMillis - Start date in epoch milliseconds (optional)
  * @param endEpochMillis - End date in epoch milliseconds (optional)
- * @returns Formatted date range string (e.g., "1/1/2020 - 12/31/2024" or "1/1/2020 - Present")
+ * @returns Formatted date range string
+ * @example
+ * formatDateRange(1609459200000, 1640995200000) // "1/1/2021 - 1/1/2022"
+ * formatDateRange(1609459200000, undefined) // "1/1/2021 - Present"
+ * formatDateRange(undefined, 1640995200000) // "Unknown - 1/1/2022"
+ * formatDateRange(undefined, undefined) // "Unknown - Present"
  */
 export function formatDateRange(
   startEpochMillis: number | undefined,
