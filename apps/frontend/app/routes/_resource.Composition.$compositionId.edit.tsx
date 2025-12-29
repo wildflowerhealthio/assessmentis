@@ -67,9 +67,6 @@ export default function EditCompositionPage({
   const initialValues: typeof CompositionFormSchema.Encoded = {
     title: composition.title ?? '',
     patientId: extractReferenceId(composition.subject),
-    date: composition.date
-      ? composition.date.pipe(DateTime.formatIsoDate)
-      : undefined,
   }
 
   const handleSubmit = async (formData: CompositionFormData) => {

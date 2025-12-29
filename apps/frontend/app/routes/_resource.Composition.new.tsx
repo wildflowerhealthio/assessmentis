@@ -27,7 +27,6 @@ export default function CreateCompositionPage() {
   const defaultValues: typeof CompositionFormSchema.Encoded = {
     title: '',
     patientId: undefined,
-    date: undefined,
   }
 
   return (
