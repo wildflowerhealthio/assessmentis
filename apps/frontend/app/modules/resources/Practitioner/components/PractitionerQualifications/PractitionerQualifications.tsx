@@ -1,4 +1,5 @@
 import type { Practitioner } from '@assessmentis/clinical-domain/administration'
+import { formatDateRange } from '../../utils/practitionerDisplay'
 import classes from './PractitionerQualifications.module.css'
 
 interface PractitionerQualificationsProps {
@@ -24,13 +25,10 @@ export function PractitionerQualifications({
           {qual.period ? (
             <div className={classes.Qualifications__detail}>
               Period:{' '}
-              {qual.period.start
-                ? new Date(qual.period.start.epochMillis).toLocaleDateString()
-                : 'Unknown'}
-              {' - '}
-              {qual.period.end
-                ? new Date(qual.period.end.epochMillis).toLocaleDateString()
-                : 'Present'}
+              {formatDateRange(
+                qual.period.start?.epochMillis,
+                qual.period.end?.epochMillis
+              )}
             </div>
           ) : undefined}
           {qual.issuer ? (

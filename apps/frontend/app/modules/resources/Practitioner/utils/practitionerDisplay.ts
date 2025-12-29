@@ -26,6 +26,25 @@ export function getPractitionerQualification(
 }
 
 /**
+ * Format a date range from epoch milliseconds
+ * @param startEpochMillis - Start date in epoch milliseconds
+ * @param endEpochMillis - End date in epoch milliseconds (optional)
+ * @returns Formatted date range string (e.g., "1/1/2020 - 12/31/2024" or "1/1/2020 - Present")
+ */
+export function formatDateRange(
+  startEpochMillis: number | undefined,
+  endEpochMillis: number | undefined
+): string {
+  const startStr = startEpochMillis
+    ? new Date(startEpochMillis).toLocaleDateString()
+    : 'Unknown'
+  const endStr = endEpochMillis
+    ? new Date(endEpochMillis).toLocaleDateString()
+    : 'Present'
+  return `${startStr} - ${endStr}`
+}
+
+/**
  * Format practitioner demographics for display in DetailGrid
  */
 export function formatPractitionerDemographics(practitioner: Practitioner) {
