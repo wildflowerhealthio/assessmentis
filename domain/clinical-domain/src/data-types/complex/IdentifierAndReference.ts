@@ -6,6 +6,17 @@ export const ReferenceId = Schema.String.pipe(Schema.brand('ReferenceId'))
 
 export const IdentifierId = Schema.String.pipe(Schema.brand('IdentifierId'))
 
+/**
+ * Circular dependency note:
+ * Reference and Identifier have a mutual dependency:
+ * - Reference can contain an optional Identifier
+ * - Identifier can contain an optional Reference (via the assigner field)
+ *
+ * This circular reference is intentional and reflects the FHIR specification.
+ * Schema.suspend() is used in the schema definitions below to break the circular
+ * reference at runtime by lazily evaluating the schema when needed.
+ */
+
 export interface Reference extends Schema.Struct.Type<typeof referenceFields> {
   readonly identifier?: Identifier | undefined
 }
@@ -54,6 +65,9 @@ export const Reference = Schema.Struct({
    * When both an identifier and a literal reference are provided, the literal reference is preferred. Applications processing the resource are allowed - but not required - to check that the identifier matches the literal reference
    * Applications converting a logical reference to a literal reference may choose to leave the logical reference present, or remove it.
    * Reference is intended to point to a structure that can potentially be expressed as a FHIR resource, though there is no need for it to exist as an actual FHIR resource instance - except in as much as an application wishes to actual find the target of the reference. The content referred to be the identifier must meet the logical constraints implied by any limitations on what resource types are permitted for the reference.  For example, it would not be legitimate to send the identifier for a drug prescription if the type were Reference(Observation|DiagnosticReport).  One of the use-cases for Reference.identifier is the situation where no FHIR representation exists (where the type is Reference (Any).
+   *
+   * Note: Schema.suspend is used here to break the circular dependency between
+   * Reference and Identifier at runtime.
    */
   identifier: Schema.optional(
     Schema.suspend(
@@ -104,6 +118,9 @@ export const Identifier = Schema.Struct({
   ...identifierFields,
   /**
    * The Identifier.assigner may omit the .reference element and only contain a .display element reflecting the name or other textual information about the assigning organization.
+   *
+   * Note: Schema.suspend is used here to break the circular dependency between
+   * Identifier and Reference at runtime.
    */
   assigner: Schema.optional(
     Schema.suspend(
