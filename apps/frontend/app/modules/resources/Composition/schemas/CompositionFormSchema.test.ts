@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { Schema, FastCheck, DateTime } from 'effect'
+import { Schema, FastCheck } from 'effect'
 import {
   CompositionFormData,
   CompositionFormSchema,
