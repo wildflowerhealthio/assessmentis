@@ -3,7 +3,7 @@ import {
   NeedsAuthenticationError,
   UnhandledError,
 } from '@assessmentis/ontology'
-import React from 'react'
+import React, { JSX } from 'react'
 import { Outlet } from 'react-router'
 import { NotLoggedIn } from '../../../../domain/platform-domain/src/loadedValues/UserId'
 import { LoginButton } from '../modules/global/components/LoginButton'
@@ -277,7 +277,7 @@ class InnerResourcePage extends React.Component<
 
         {/* Raw Data (for debugging) */}
         <details style={{ marginTop: 'var(--space-5)' }}>
-          <summary className="heading-3">Details (for support)</summary>
+          <summary className="heading-4">Details (for support)</summary>
           <pre
             style={{
               background: 'var(--color-background-secondary)',

@@ -1,36 +1,54 @@
-import { Match, Schema } from 'effect'
+import { Schema } from 'effect'
 import { EncounterId } from '@assessmentis/clinical-domain/administration'
 import { getFullEncounter } from 'app/modules/interview-call/actions/getFullEncounter'
 import InterviewCall from 'app/modules/interview-call/features/InterviewCall/InterviewCall'
 import type { Route } from './+types/_resource.Encounter.$encounterId._index'
-import { getRuntime } from '../clientRuntime'
+import { useResourceRunEffect } from '../clientRuntime'
+import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
+import { getEncounterDisplayName } from '../modules/resources/Encounter/utils/encounterDisplay'
+import { useMemo } from 'react'
+import { NotFoundError } from '@assessmentis/ontology'
 
 const tryDecodeEncounterId = Schema.decodeOption(EncounterId)
 
-export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-  const encounterIdStr = params.encounterId
-  const encounterIdMaybe = tryDecodeEncounterId(encounterIdStr)
+export default function EncounterPage({ params }: Route.ComponentProps) {
+  const encounterLoader = useResourceRunEffect(
+    useMemo(() => {
+      const encounterIdStr = params.encounterId
+      const encounterIdMaybe = tryDecodeEncounterId(encounterIdStr)
+      return getFullEncounter(encounterIdMaybe)
+    }, [params.encounterId])
+  )
 
-  const runtime = await getRuntime()
-  const encounter = await runtime.runPromise(getFullEncounter(encounterIdMaybe))
+  if (encounterLoader._tag === 'loading') {
+    return <div>Loading encounter...</div>
+  }
 
-  return { encounter }
-}
+  if (encounterLoader._tag === 'error') {
+    if (encounterLoader.error instanceof NotFoundError) {
+      return <div>Encounter not found</div>
+    }
+    return <div>Error loading encounter: {String(encounterLoader.error)}</div>
+  }
 
-export default function EncounterPage({ loaderData }: Route.ComponentProps) {
-  const { encounter } = loaderData
+  const encounterData = encounterLoader.value
+  const displayName = getEncounterDisplayName(encounterData)
 
-  return Match.value(encounter).pipe(
-    Match.tag('Success', ({ data }) => (
-      <InterviewCall encounterJson={data}></InterviewCall>
-    )),
-    Match.tag('NotFound', ({ encounterId }) =>
-      encounterId == undefined ? (
-        <>This is not a valid Encounter ID</>
-      ) : (
-        <>No Encounter Found for ID {encounterId}</>
-      )
-    ),
-    Match.exhaustive
+  return (
+    <ResourceDetailPage
+      backTo="/Encounter"
+      backLabel="← Back to Encounters"
+      editTo={`/Encounter/${encounterData.id}/edit`}
+      title={displayName}
+      subtitle={`Encounter ID: ${encounterData.id}`}
+      sections={[
+        {
+          id: 'interview',
+          title: 'Interview Call',
+          content: <InterviewCall encounter={encounterData} />,
+        },
+      ]}
+      debugData={encounterData}
+    />
   )
 }

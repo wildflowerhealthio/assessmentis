@@ -1,0 +1,22 @@
+.Qualifications {
+  list-style: disc;
+  padding-left: var(--space-5);
+}
+
+.Qualifications__item {
+  margin-bottom: var(--space-2);
+}
+
+.Qualifications__item:last-child {
+  margin-bottom: 0;
+}
+
+.Qualifications__title {
+  display: block;
+}
+
+.Qualifications__detail {
+  font-size: 0.9em;
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+}

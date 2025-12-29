@@ -5,7 +5,6 @@ import classes from './InterviewCall.module.css'
 import { type DailyEvent } from '@daily-co/daily-js'
 import { DailyAudio, DailyProvider, useCallObject } from '@daily-co/daily-react'
 
-import { Schema } from 'effect'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Call,
@@ -196,11 +195,10 @@ const useDailyCall = (roomUrl: string | undefined) => {
 }
 
 interface IProps {
-  encounterJson: typeof FullEncounter.Encoded
+  encounter: FullEncounter
 }
 
-function InterviewCall({ encounterJson }: IProps) {
-  const encounter = Schema.decodeSync(FullEncounter)(encounterJson)
+function InterviewCall({ encounter }: IProps) {
   const roomUrl = encounter.location?.[0].location?.identifier?.value
   const {
     joinCall,

@@ -1,5 +1,4 @@
 import { Effect } from 'effect'
-import { QuestionnairesList } from '../modules/resources/Questionnaire/components/QuestionnairesList'
 import {
   Questionnaire,
   QuestionnaireId,
@@ -7,41 +6,38 @@ import {
 } from '@assessmentis/clinical-domain/content-management'
 import { questionnaireTemplates } from '@assessmentis/questionnaire-entities'
 import type { Route } from './+types/_resource.Questionnaire._index'
-import { getRuntime } from '../clientRuntime'
+import { useResourceRunEffect } from '../clientRuntime'
 import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
-import { LoadedResult } from '@assessmentis/ontology'
+import { QuestionnaireListItem } from '../modules/resources/Questionnaire/components/QuestionnaireListItem/QuestionnaireListItem'
+import { useMemo } from 'react'
+import { ResourceListPage } from '../modules/common/components/ResourceListPage/ResourceListPage'
 
-export async function clientLoader(_: Route.ClientLoaderArgs) {
-  const runtime = await getRuntime()
+export async function clientLoader(_: Route.ClientLoaderArgs) {}
 
-  const questionnaires = await runtime.runPromise(
-    Effect.gen(function* () {
-      const questionnaireRepository = yield* QuestionnaireRepository
-      return yield* questionnaireRepository.getMany()
-    })
+const useQuestionnaires = () => {
+  const questionnaires = useResourceRunEffect(
+    useMemo(() => {
+      return Effect.gen(function* () {
+        const questionnaireRepository = yield* QuestionnaireRepository
+        return yield* questionnaireRepository.getMany()
+      })
+    }, [])
   )
-
-  return { questionnaires }
-}
-
-const useQuestionnaires = (initial: Questionnaire[]) => {
   return useClinicalDataCollection<
     QuestionnaireId,
     Questionnaire,
     QuestionnaireRepository,
     typeof QuestionnaireRepository,
     never
-  >(QuestionnaireRepository, LoadedResult.loaded(initial))
+  >(QuestionnaireRepository, questionnaires)
 }
 
-export default function QuestionnairePage({
-  loaderData,
-}: Route.ComponentProps) {
+export default function QuestionnairePage(_: Route.ComponentProps) {
   const {
     collection: questionnaires,
     deleteItem: deleteQuestionnaire,
     createItem: createQuestionnaire,
-  } = useQuestionnaires(loaderData.questionnaires)
+  } = useQuestionnaires()
 
   const loadTemplateByTitleForm = async function (formData: FormData) {
     const templateToCreate = questionnaireTemplates.find(
@@ -51,33 +47,36 @@ export default function QuestionnairePage({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <h2 className="heading-3">Questionnaires</h2>
-      <QuestionnairesList
-        deleteQuestionnaire={deleteQuestionnaire}
-        questionnaires={
-          questionnaires._tag === 'loaded' ? questionnaires.value : []
-        }
+    <>
+      <ResourceListPage
+        title="Questionnaires"
+        collection={questionnaires}
+        createPath=""
+        createLabel="Create Questionnaire"
+        onDelete={deleteQuestionnaire}
+        ItemComponent={QuestionnaireListItem}
       />
-      <a
-        href={`https://smartforms.csiro.au/launch?launch=xyz123&iss=${encodeURIComponent(
-          'https://healthcare.googleapis.com/v1/projects/assessment-is-sandbox/locations/northamerica-northeast2/datasets/Sandbox/fhirStores/fhir-store/fhir'
-        )}`}
-      >
-        <h2 className="heading-3">Edit Questionnaires</h2>
-      </a>
-      <h2 className="heading-3">Questionnaire Template Loader</h2>
-      <div className="subheading-4">Click buttons to load templates</div>
-      {questionnaireTemplates.map(({ title }) => {
-        return (
-          <form key={title} action={loadTemplateByTitleForm}>
-            <input hidden name="title" defaultValue={title} />
-            <button className="button-2" type="submit">
-              {title}
-            </button>
-          </form>
-        )
-      })}
-    </div>
+
+      <div>
+        <section>
+          <h2 className="heading-4">Questionnaire Template Loader</h2>
+          <div className="text-alt-heading-2">
+            Click buttons to load templates
+          </div>
+          <div>
+            {questionnaireTemplates.map(({ title }) => {
+              return (
+                <form key={title} action={loadTemplateByTitleForm}>
+                  <input hidden name="title" defaultValue={title} />
+                  <button className="button-2" type="submit">
+                    {title}
+                  </button>
+                </form>
+              )
+            })}
+          </div>
+        </section>
+      </div>
+    </>
   )
 }

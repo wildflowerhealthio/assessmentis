@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Schema, Option, Effect, DateTime } from 'effect'
 import { LoadedResult, UnhandledError } from '@assessmentis/ontology'
 import {
@@ -88,13 +89,12 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
       encounter: `Encounter/${encounterId}`,
     })
 
-    const enc = Schema.encode(QuestionnaireResponseWithQuestionnaire)({
+    return {
       questionnaireResponse,
       questionnaire,
       recordings,
       observations,
-    })
-    return yield* enc
+    }
   })
 
   return await runtime.runPromise(questionnaireResponseEffect)
@@ -109,8 +109,12 @@ export default function QuestionnaireResponseDetailsPage({
     Set<QuestionnaireItemLink>
   >(new Set())
   const { questionnaire, questionnaireResponse, recordings, observations } =
-    Schema.decodeSync(QuestionnaireResponseWithQuestionnaire)(loaderData)
+    loaderData
 
+  const recordingResult = useMemo(
+    () => LoadedResult.loaded<typeof recordings, never>(recordings),
+    [recordings]
+  )
   const { collection: media, deleteItem: deleteMedia } =
     useClinicalDataCollection<
       MediaId,
@@ -118,7 +122,7 @@ export default function QuestionnaireResponseDetailsPage({
       MediaRepository,
       typeof MediaRepository,
       never
-    >(MediaRepository, LoadedResult.loaded(recordings))
+    >(MediaRepository, recordingResult)
 
   const syncObservations = () => {
     if (!runtime) return undefined
@@ -175,7 +179,7 @@ export default function QuestionnaireResponseDetailsPage({
       right={
         <div style={{ overflowY: 'scroll' }}>
           <h3
-            className="heading-3"
+            className="heading-4"
             style={{
               display: 'inline-flex',
               width: '100%',
@@ -238,7 +242,7 @@ export default function QuestionnaireResponseDetailsPage({
             ))}
 
           <h3
-            className="heading-3"
+            className="heading-4"
             style={{
               display: 'inline-flex',
               width: '100%',

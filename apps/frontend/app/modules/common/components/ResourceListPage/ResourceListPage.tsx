@@ -1,4 +1,4 @@
-import { ComponentType, ReactNode } from 'react'
+import { ComponentType, JSX, ReactNode } from 'react'
 import { Link } from 'react-router'
 import { LoadedResult } from '@assessmentis/ontology'
 import { cn } from '@assessmentis/react-util'

@@ -1,0 +1,17 @@
+.Interpretation {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: var(--space-3);
+}
+
+.Interpretation__row {
+  display: contents;
+}
+
+.Interpretation__label {
+  font-weight: 500;
+}
+
+.Interpretation__range {
+  margin-bottom: var(--space-2);
+}

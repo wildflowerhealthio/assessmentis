@@ -1,0 +1,7 @@
+.Address {
+  margin-bottom: var(--space-3);
+}
+
+.Address:last-child {
+  margin-bottom: 0;
+}

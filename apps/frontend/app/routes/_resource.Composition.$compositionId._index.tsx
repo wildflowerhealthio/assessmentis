@@ -3,13 +3,16 @@ import {
   CompositionId,
   CompositionRepository,
 } from '@assessmentis/clinical-domain/content-management'
-import { LoadedResult, UnhandledError } from '@assessmentis/ontology'
-import { gad7Report } from '@assessmentis/document-template-kinds'
-import { base } from '@assessmentis/document-template-instances'
+import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/_resource.Composition.$compositionId._index'
-import { getRuntime, useResourceRunEffect } from '../clientRuntime'
-import { useMemo } from 'react'
-import { Link } from 'react-router'
+import { getRuntime } from '../clientRuntime'
+import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
+import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
+import {
+  getCompositionDisplayName,
+  formatCompositionDetails,
+} from '../modules/resources/Composition/utils/compositionDisplay'
+import { CompositionSections } from '../modules/resources/Composition/components/CompositionSections/CompositionSections'
 
 const tryDecodeCompositionId = Schema.decodeOption(CompositionId)
 
@@ -39,42 +42,29 @@ export default function CompositionDetailsPage({
   loaderData,
 }: Route.ComponentProps) {
   const { composition } = loaderData
-  const reportLoader = useResourceRunEffect(
-    useMemo(() => gad7Report(base, composition.subject), [composition.subject])
-  )
+  const displayName = getCompositionDisplayName(composition)
 
   return (
-    <div
-      style={{ overflowY: 'scroll', height: '100%', padding: 'var(--space-6)' }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          gap: 'var(--space-3)',
-          marginBottom: 'var(--space-4)',
-        }}
-      >
-        <Link to="/Composition" className="button-3 ghost">
-          ← Back to Compositions
-        </Link>
-        <Link
-          to={`/Composition/${composition.id}/edit`}
-          className="button-2 blue"
-        >
-          Edit
-        </Link>
-      </div>
-      <h2 className="heading-3">{composition.title ?? composition.id}</h2>
-      <div className="subheading-3">
-        {composition.status ?? 'status unknown'}
-        {composition.date ? ` • ${composition.date}` : ''}
-      </div>
-      <pre>{JSON.stringify(composition, null, 2)}</pre>
-      {LoadedResult.handle(reportLoader, {
-        onLoading: () => <div>Loading report...</div>,
-        onError: (e) => <div>Error loading report: {String(e)}</div>,
-        onSuccess: (report) => <div>{report}</div>,
-      })}
-    </div>
+    <ResourceDetailPage
+      backTo="/Composition"
+      backLabel="← Back to Compositions"
+      editTo={`/Composition/${composition.id}/edit`}
+      title={displayName}
+      subtitle={`Composition ID: ${composition.id}`}
+      sections={[
+        {
+          id: 'details',
+          title: 'Details',
+          content: <DetailGrid items={formatCompositionDetails(composition)} />,
+        },
+        {
+          id: 'sections',
+          title: 'Sections',
+          content: <CompositionSections composition={composition} />,
+          hidden: !composition.section || composition.section.length === 0,
+        },
+      ]}
+      debugData={composition}
+    />
   )
 }

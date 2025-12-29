@@ -6,94 +6,78 @@ import {
   QuestionnaireResponseRepository,
   QuestionnaireResponseId,
 } from '@assessmentis/clinical-domain/content-management'
-import { getRuntime, useRuntimeContext } from 'app/clientRuntime'
+import { useResourceRunEffect } from 'app/clientRuntime'
 import type { Route } from './+types/_resource.QuestionnaireResponse._index'
-import QuestionnaireResponseList from '../modules/resources/Questionnaire/components/QuestionnaireResponseList'
-import { useCollection } from '@assessmentis/react-util'
+import { QuestionnaireResponseListItem } from '../modules/resources/Questionnaire/components/QuestionnaireResponseListItem/QuestionnaireResponseListItem'
+import { ResourceListPage } from '../modules/common/components/ResourceListPage/ResourceListPage'
+import {
+  ExternalAssertionError,
+  NeedsAuthenticationError,
+  UnhandledError,
+} from '@assessmentis/ontology'
+import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
+import { useMemo } from 'react'
 
-export async function clientLoader(_: Route.ClientLoaderArgs) {
-  const runtime = await getRuntime()
-  const questionnaireResponses = await runtime.runPromise(
-    Effect.gen(function* () {
-      const questionnaireRepository = yield* QuestionnaireRepository
-      const questionnaireResponseRepository =
-        yield* QuestionnaireResponseRepository
-      const [questionnaires, responses] = yield* Effect.all([
-        questionnaireRepository.getMany(),
-        questionnaireResponseRepository.getMany(),
-      ])
-      return responses.map(
-        (
-          r
-        ): QuestionnaireResponse & {
-          _questionnaire: Questionnaire | undefined
-        } => ({
-          ...r,
-          _questionnaire:
-            questionnaires.find((q) => q.id == r.questionnaire) ?? undefined,
-        })
-      )
-    })
-  )
-  return { questionnaireResponses }
+const _getQuestionnaireResponses = (): Effect.Effect<
+  (QuestionnaireResponse & { _questionnaire: Questionnaire | undefined })[],
+  UnhandledError | ExternalAssertionError | NeedsAuthenticationError,
+  QuestionnaireRepository | QuestionnaireResponseRepository
+> => {
+  return Effect.gen(function* () {
+    const questionnaireRepository = yield* QuestionnaireRepository
+    const questionnaireResponseRepository =
+      yield* QuestionnaireResponseRepository
+    const [questionnaires, responses] = yield* Effect.all([
+      questionnaireRepository.getMany(),
+      questionnaireResponseRepository.getMany(),
+    ])
+    return responses.map(
+      (
+        r
+      ): QuestionnaireResponse & {
+        _questionnaire: Questionnaire | undefined
+      } => ({
+        ...r,
+        _questionnaire:
+          questionnaires.find((q) => q.id == r.questionnaire) ?? undefined,
+      })
+    )
+  })
 }
 
-const useQuestionnaireResponse = (
-  initial: (QuestionnaireResponse & {
-    _questionnaire: Questionnaire | undefined
-  })[]
-) => {
-  const clientRuntime = useRuntimeContext()
-
-  return useCollection<
+const useQuestionnaireResponse = () => {
+  const questionnaireResponses = useResourceRunEffect(
+    useMemo(() => {
+      return Effect.gen(function* () {
+        const questionnaireResponseRepository =
+          yield* QuestionnaireResponseRepository
+        return yield* questionnaireResponseRepository.getMany()
+      })
+    }, [])
+  )
+  return useClinicalDataCollection<
     QuestionnaireResponseId,
-    QuestionnaireResponse & { _questionnaire: Questionnaire | undefined }
-  >(
-    {
-      apiDelete: async (id: QuestionnaireResponseId | undefined) => {
-        if (!id) return
-        return clientRuntime.runPromise(
-          Effect.all([
-            Effect.sleep('200 millis'),
-            QuestionnaireResponseRepository.pipe(
-              Effect.flatMap((qrr) => qrr.delete(id))
-            ),
-          ])
-        )
-      },
-      apiCreate: (
-        _: QuestionnaireResponse & {
-          _questionnaire: Questionnaire | undefined
-        }
-      ): Promise<
-        QuestionnaireResponse & { _questionnaire: Questionnaire | undefined }
-      > => Promise.reject('Not implemented'),
-    },
-    initial
-  )
+    QuestionnaireResponse,
+    QuestionnaireResponseRepository,
+    typeof QuestionnaireResponseRepository,
+    never
+  >(QuestionnaireResponseRepository, questionnaireResponses)
 }
 
-export default function QuestionnaireResponsePage({
-  loaderData,
-}: Route.ComponentProps) {
+export default function QuestionnaireResponsePage(_: Route.ComponentProps) {
   const {
     collection: questionnaireResponses,
     deleteItem: deleteQuestionnaireResponse,
-  } = useQuestionnaireResponse(loaderData.questionnaireResponses)
+  } = useQuestionnaireResponse()
+
   return (
-    <>
-      <h2 className="heading-3">Edit a Questionnaire Response</h2>
-      <QuestionnaireResponseList
-        deleteQuestionnaireResponse={deleteQuestionnaireResponse}
-        questionnaireResponses={questionnaireResponses}
-      />
-      <h2 className="heading-3" style={{ marginTop: 'var(--space-7)' }}>
-        Create a new Questionnaire Response
-      </h2>
-      <div className="subheading-3">
-        Create questionnaire responses by including a questionnaire in an
-        encounter
-      </div>
-    </>
+    <ResourceListPage
+      title="Questionnaire Responses"
+      collection={questionnaireResponses}
+      createPath=""
+      createLabel="Create Questionnaire Response"
+      onDelete={deleteQuestionnaireResponse}
+      ItemComponent={QuestionnaireResponseListItem}
+    />
   )
 }
