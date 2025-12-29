@@ -13,7 +13,7 @@ import {
   formatCompositionDetails,
 } from '../modules/resources/Composition/utils/compositionDisplay'
 import { CompositionSections } from '../modules/resources/Composition/components/CompositionSections/CompositionSections'
-import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 
 const tryDecodeCompositionId = Schema.decodeOption(CompositionId)
 

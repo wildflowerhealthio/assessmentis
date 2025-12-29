@@ -13,7 +13,7 @@ import {
 import { NotFoundError } from '@assessmentis/ontology'
 import type { Route } from './+types/_resource.Observation.$observationId.edit'
 import { DateTime } from 'effect'
-import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { getObservationDisplayName } from '../modules/resources/Observation/utils/observationDisplay'
 
 const tryDecodeObservationId = Schema.decodeOption(ObservationId)

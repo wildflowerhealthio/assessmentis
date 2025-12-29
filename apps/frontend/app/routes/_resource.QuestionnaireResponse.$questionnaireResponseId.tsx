@@ -30,7 +30,7 @@ import { useState } from 'react'
 import SplitPane from '../modules/common/components/SplitPane/SplitPane'
 import { gad7 } from '@assessmentis/questionnaire-entities'
 import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
-import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 
 const tryDecodeQuestionnaireResponseId = Schema.decodeOption(
   QuestionnaireResponseId

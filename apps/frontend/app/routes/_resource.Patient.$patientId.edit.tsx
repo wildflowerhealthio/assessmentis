@@ -12,7 +12,7 @@ import {
 } from '@assessmentis/clinical-domain/administration'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/_resource.Patient.$patientId.edit'
-import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { getPatientDisplayName } from '../modules/resources/Patient/utils/patientDisplay'
 
 const tryDecodePatientId = Schema.decodeOption(PatientId)

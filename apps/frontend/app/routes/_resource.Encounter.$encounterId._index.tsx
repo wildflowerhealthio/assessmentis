@@ -8,7 +8,7 @@ import { ResourceDetailPage } from '../modules/common/components/ResourceDetailP
 import { getEncounterDisplayName } from '../modules/resources/Encounter/utils/encounterDisplay'
 import { useMemo } from 'react'
 import { NotFoundError } from '@assessmentis/ontology'
-import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 
 const tryDecodeEncounterId = Schema.decodeOption(EncounterId)
 

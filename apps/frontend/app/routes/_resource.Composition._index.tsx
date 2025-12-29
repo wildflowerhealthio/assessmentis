@@ -2,7 +2,7 @@ import { useCompositionCollection } from '../modules/resources/Composition/hooks
 import type { Route } from './+types/_resource.Composition._index'
 import { ResourceListPage } from '../modules/common/components/ResourceListPage/ResourceListPage'
 import { CompositionListItem } from '../modules/resources/Composition/components/CompositionListItem/CompositionListItem'
-import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 
 const emptyFilters = {}
 

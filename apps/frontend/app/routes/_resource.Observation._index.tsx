@@ -5,7 +5,7 @@ import { useObservationCollection } from '../modules/resources/Observation/hooks
 import { ResourceListPage } from '../modules/common/components/ResourceListPage/ResourceListPage'
 import { ObservationListItem } from '../modules/resources/Observation/components/ObservationListItem/ObservationListItem'
 import { ObservationFilters } from '../modules/resources/Observation/components/ObservationFilters/ObservationFilters'
-import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {}
 

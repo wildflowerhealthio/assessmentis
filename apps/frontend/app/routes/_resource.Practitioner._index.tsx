@@ -2,7 +2,7 @@ import { usePractitionerCollection } from '../modules/resources/Practitioner/hoo
 import type { Route } from './+types/_resource.Practitioner._index'
 import { ResourceListPage } from '../modules/common/components/ResourceListPage/ResourceListPage'
 import { PractitionerListItem } from '../modules/resources/Practitioner/components/PractitionerListItem/PractitionerListItem'
-import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 
 const emptyFilters = {}
 

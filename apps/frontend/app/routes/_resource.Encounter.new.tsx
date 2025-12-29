@@ -6,7 +6,7 @@ import { createEncounter } from 'app/modules/resources/Encounter/actions/createE
 import { EncounterFormSchema } from 'app/modules/resources/Encounter/schemas/EncounterFormSchema'
 import { Schema } from 'effect'
 import { QuestionnaireId } from '@assessmentis/clinical-domain/content-management'
-import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 
 const decodeQuestionnaireId = Schema.decodeUnknownSync(QuestionnaireId)
 

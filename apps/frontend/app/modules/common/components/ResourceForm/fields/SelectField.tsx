@@ -5,10 +5,10 @@ export interface SelectFieldProps<T extends string> {
   name: string
   label?: string
   required?: boolean
-  options: Array<{ value: T; label: string }>
+  options: ReadonlyArray<{ value: T; label: string }>
   error?: string | undefined
   value: T | undefined
-  onChange: (data: T) => void
+  onChange: (data: T | undefined) => void
   defaultValue?: T | undefined
 }
 

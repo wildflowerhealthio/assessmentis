@@ -17,7 +17,7 @@ import {
 } from '@assessmentis/ontology'
 import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
 import { useMemo } from 'react'
-import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 
 const _getQuestionnaireResponses = (): Effect.Effect<
   (QuestionnaireResponse & { _questionnaire: Questionnaire | undefined })[],

@@ -47,7 +47,7 @@ export function PractitionerForm({
             { value: 'other', label: 'Other' },
             { value: 'unknown', label: 'Unknown' },
           ],
-        }),
+        } as const),
       }}
       fieldOrder={['givenName', 'familyName', 'gender', 'qualification']}
       onSubmit={onSubmit}

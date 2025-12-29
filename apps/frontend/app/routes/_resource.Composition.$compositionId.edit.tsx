@@ -15,7 +15,7 @@ import {
 } from '@assessmentis/clinical-domain/content-management'
 import { NotFoundError } from '@assessmentis/ontology'
 import type { Route } from './+types/_resource.Composition.$compositionId.edit'
-import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { getCompositionDisplayName } from '../modules/resources/Composition/utils/compositionDisplay'
 
 const tryDecodeCompositionId = Schema.decodeOption(CompositionId)

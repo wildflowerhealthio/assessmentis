@@ -68,7 +68,7 @@ export function ObservationForm({
             { value: 'valueQuantity', label: 'Quantity (with Unit)' },
             { value: 'valueCodeableConcept', label: 'Coded Concept' },
           ],
-        }),
+        } as const),
         valueString: applyPartialProps(TextField, {
           name: 'valueString',
           label: 'Value (Text)',

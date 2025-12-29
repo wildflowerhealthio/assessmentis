@@ -17,7 +17,7 @@ import {
   getPatientDisplayName,
   formatPatientDemographics,
 } from '../modules/resources/Patient/utils/patientDisplay'
-import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 
 const tryDecodePatientId = Schema.decodeOption(PatientId)
 

@@ -4,7 +4,7 @@ import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { PractitionerForm } from 'app/modules/resources/Practitioner/components/PractitionerForm'
 import { createPractitioner } from 'app/modules/resources/Practitioner/actions/createPractitioner'
 import { PractitionerFormData } from 'app/modules/resources/Practitioner/schemas/PractitionerFormSchema'
-import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 
 export default function CreatePractitionerPage() {
   const navigate = useNavigate()

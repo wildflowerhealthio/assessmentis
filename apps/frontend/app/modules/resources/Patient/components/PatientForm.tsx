@@ -45,7 +45,7 @@ export function PatientForm({
             { value: 'other', label: 'Other' },
             { value: 'unknown', label: 'Unknown' },
           ],
-        }),
+        } as const),
         birthDate: applyPartialProps(TextField, {
           name: 'birthDate',
           label: 'Birth Date',

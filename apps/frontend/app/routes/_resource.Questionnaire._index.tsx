@@ -11,7 +11,7 @@ import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDa
 import { QuestionnaireListItem } from '../modules/resources/Questionnaire/components/QuestionnaireListItem/QuestionnaireListItem'
 import { useMemo } from 'react'
 import { ResourceListPage } from '../modules/common/components/ResourceListPage/ResourceListPage'
-import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {}
 

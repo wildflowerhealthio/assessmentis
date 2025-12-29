@@ -4,7 +4,7 @@ import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { PatientForm } from 'app/modules/resources/Patient/components/PatientForm'
 import { createPatient } from 'app/modules/resources/Patient/actions/createPatient'
 import { PatientFormData } from 'app/modules/resources/Patient/schemas/PatientFormSchema'
-import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 
 export default function CreatePatientPage() {
   const navigate = useNavigate()

@@ -12,7 +12,7 @@ import {
 } from '@assessmentis/clinical-domain/administration'
 import { NotFoundError } from '@assessmentis/ontology'
 import type { Route } from './+types/_resource.Practitioner.$practitionerId.edit'
-import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { getPractitionerDisplayName } from '../modules/resources/Practitioner/utils/practitionerDisplay'
 
 const tryDecodePractitionerId = Schema.decodeOption(PractitionerId)

@@ -7,7 +7,7 @@ import {
   CompositionFormData,
   CompositionFormSchema,
 } from 'app/modules/resources/Composition/schemas/CompositionFormSchema'
-import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 
 export default function CreateCompositionPage() {
   const navigate = useNavigate()

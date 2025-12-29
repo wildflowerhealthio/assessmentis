@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import { Schema, FastCheck, DateTime } from 'effect'
 import {
+  CompositionFormData,
   CompositionFormSchema,
   transformToComposition,
 } from './CompositionFormSchema'
-import { DateTimeUtc } from 'effect/Schema'
 
 describe('CompositionFormSchema', () => {
   describe('schema validation', () => {

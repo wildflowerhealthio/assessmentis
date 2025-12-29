@@ -1,7 +1,7 @@
 import { Effect } from 'effect'
 import { useRuntimeContext } from '../clientRuntime'
 import { Route } from './+types/_index'
-import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {
   return

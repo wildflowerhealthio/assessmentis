@@ -13,7 +13,7 @@ export const ObservationFormSchema = Schema.Struct({
   patientId: Schema.optional(Schema.String),
   encounterId: Schema.optional(Schema.String),
   code: Schema.String,
-  valueType: ValueTypeEnum,
+  valueType: Schema.optional(ValueTypeEnum),
   // Fields for valueString
   valueString: Schema.optional(Schema.String),
   // Fields for valueDecimal (stored as string, parsed during transform)
@@ -53,6 +53,10 @@ export function transformToObservation(
   }
   // Add the appropriate value field based on valueType
   switch (formData.valueType) {
+    case undefined:
+      return {
+        ...base,
+      } satisfies Observation
     case 'valueString':
       return {
         ...base,

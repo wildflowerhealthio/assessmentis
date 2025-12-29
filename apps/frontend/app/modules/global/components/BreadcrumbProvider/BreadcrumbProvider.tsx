@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import {
   BreadcrumbContext,
   BreadcrumbSegment,
-  useBreadcrumbContext,
 } from '../../contexts/BreadcrumbContext'
 
 // Deep equality check for breadcrumb segments
@@ -55,13 +54,4 @@ export const BreadcrumbProvider = ({ children }: React.PropsWithChildren) => {
       {children}
     </BreadcrumbContext.Provider>
   )
-}
-
-// Hook for pages to set breadcrumbs (declarative API)
-export const useBreadcrumbs = (breadcrumbs: BreadcrumbSegment[]) => {
-  const { setBreadcrumbs } = useBreadcrumbContext()
-
-  useEffect(() => {
-    setBreadcrumbs(breadcrumbs)
-  }, [breadcrumbs, setBreadcrumbs])
 }

@@ -16,7 +16,7 @@ import { ObservationValue } from '../modules/resources/Observation/components/Ob
 import { ObservationInterpretation } from '../modules/resources/Observation/components/ObservationInterpretation/ObservationInterpretation'
 import { ObservationComponents } from '../modules/resources/Observation/components/ObservationComponents/ObservationComponents'
 import { ObservationAdditionalDetails } from '../modules/resources/Observation/components/ObservationAdditionalDetails/ObservationAdditionalDetails'
-import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 
 const tryDecodeObservationId = Schema.decodeOption(ObservationId)
 
