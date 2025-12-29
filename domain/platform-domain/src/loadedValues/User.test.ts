@@ -1,31 +1,28 @@
 import { expect, test, describe } from 'vitest'
-import { Schema, Either } from 'effect'
+import { Schema, Either, Arbitrary } from 'effect'
 import { User, UserDataError, CurrentUserError } from './User'
 import * as fc from 'fast-check'
+
+const userArb = Arbitrary.make(User)
 
 describe('User', () => {
   test('property: decode-encode cycle preserves user structure', () => {
     // Property: For any valid User, encode(decode(x)) === x
     fc.assert(
-      fc.property(
-        fc.string(),
-        fc.dictionary(fc.string(), fc.array(fc.string())),
-        (uid, org_roles) => {
-          const decode = Schema.decodeUnknownEither(User)
-          const encode = Schema.encodeUnknownEither(User)
-          const user = { uid, org_roles }
+      fc.property(userArb, (user) => {
+        const decode = Schema.decodeUnknownEither(User)
+        const encode = Schema.encodeUnknownEither(User)
 
-          const decoded = decode(user)
-          if (Either.isRight(decoded)) {
-            const encoded = encode(decoded.right)
-            expect(Either.isRight(encoded)).toBe(true)
-            if (Either.isRight(encoded)) {
-              expect(encoded.right.uid).toBe(uid)
-              expect(encoded.right.org_roles).toEqual(org_roles)
-            }
+        const decoded = decode(user)
+        if (Either.isRight(decoded)) {
+          const encoded = encode(decoded.right)
+          expect(Either.isRight(encoded)).toBe(true)
+          if (Either.isRight(encoded)) {
+            expect(encoded.right.uid).toBe(user.uid)
+            expect(encoded.right.org_roles).toEqual(user.org_roles)
           }
         }
-      )
+      })
     )
   })
 
