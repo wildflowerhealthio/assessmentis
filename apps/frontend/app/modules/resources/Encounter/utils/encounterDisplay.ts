@@ -2,20 +2,71 @@ import type { Encounter } from '@assessmentis/clinical-domain/administration'
 
 /**
  * Get a display-friendly name for an encounter
+ * Format: "January 3rd with Jane Doe" or "January 3rd, 2024 with Jane Doe"
  */
 export function getEncounterDisplayName(encounter: Encounter): string {
-  // Try to get a meaningful type description
-  const encounterType = encounter.type?.[0]
-  if (encounterType) {
-    return (
-      encounterType.text ?? encounterType.coding?.[0]?.display ?? 'Encounter'
-    )
+  const parts: string[] = []
+
+  // Add date if available
+  if (encounter.period?.start) {
+    const date = new Date(encounter.period.start.epochMillis)
+
+    // Validate that the date is valid
+    if (!isNaN(date.getTime())) {
+      const now = new Date()
+
+      // Calculate if date is within 3 months before or after today
+      const threeMonthsAgo = new Date(now)
+      threeMonthsAgo.setMonth(now.getMonth() - 3)
+      const threeMonthsFromNow = new Date(now)
+      threeMonthsFromNow.setMonth(now.getMonth() + 3)
+
+      const isWithinThreeMonths =
+        date >= threeMonthsAgo && date <= threeMonthsFromNow
+
+      // Format date
+      const month = date.toLocaleString('en-US', { month: 'long' })
+      const day = date.getDate()
+      const daySuffix = getDaySuffix(day)
+      const year = date.getFullYear()
+
+      if (isWithinThreeMonths) {
+        parts.push(`${month} ${day}${daySuffix}`)
+      } else {
+        parts.push(`${month} ${day}${daySuffix}, ${year}`)
+      }
+    }
   }
 
-  // Fall back to class display
-  const classDisplay =
-    encounter.class.display ?? encounter.class.code ?? 'Encounter'
-  return classDisplay
+  // Add patient name if available
+  if (encounter.subject?.display) {
+    const patientName = encounter.subject.display
+    // Remove "Patient/" prefix if present
+    const cleanName = patientName.replace(/^Patient\//, '')
+    parts.push(`with ${cleanName}`)
+  }
+
+  // Return formatted string or fallback
+  return parts.length > 0 ? parts.join(' ') : 'Encounter'
+}
+
+/**
+ * Get the ordinal suffix for a day (st, nd, rd, th)
+ */
+function getDaySuffix(day: number): string {
+  if (day >= 11 && day <= 13) {
+    return 'th'
+  }
+  switch (day % 10) {
+    case 1:
+      return 'st'
+    case 2:
+      return 'nd'
+    case 3:
+      return 'rd'
+    default:
+      return 'th'
+  }
 }
 
 /**

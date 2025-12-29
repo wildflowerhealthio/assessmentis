@@ -16,6 +16,7 @@ import { PractitionerQualifications } from '../modules/resources/Practitioner/co
 import { PractitionerContactInfo } from '../modules/resources/Practitioner/components/PractitionerContactInfo/PractitionerContactInfo'
 import { PractitionerAddresses } from '../modules/resources/Practitioner/components/PractitionerAddresses/PractitionerAddresses'
 import { PractitionerLanguages } from '../modules/resources/Practitioner/components/PractitionerLanguages/PractitionerLanguages'
+import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
 
 const tryDecodePractitionerId = Schema.decodeOption(PractitionerId)
 
@@ -49,10 +50,13 @@ export default function PractitionerDetailPage({
   const { practitioner } = loaderData
   const displayName = getPractitionerDisplayName(practitioner)
 
+  useBreadcrumbs([
+    { label: 'Practitioners', href: '/Practitioner' },
+    { label: displayName },
+  ])
+
   return (
     <ResourceDetailPage
-      backTo="/Practitioner"
-      backLabel="← Back to Practitioners"
       editTo={`/Practitioner/${practitioner.id}/edit`}
       title={displayName}
       subtitle={`Practitioner ID: ${practitioner.id}`}

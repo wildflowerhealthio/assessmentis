@@ -38,7 +38,7 @@ const PractitionerList = ({
               }}
             >
               <button
-                className="button-3 ghost"
+                className="element-button button-3 ghost"
                 onClick={() => deletePractitioner(practitioner.id)}
                 disabled={loading}
                 aria-label="Delete practitioner"

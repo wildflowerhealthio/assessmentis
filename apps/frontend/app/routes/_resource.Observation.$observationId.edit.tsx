@@ -13,6 +13,8 @@ import {
 import { NotFoundError } from '@assessmentis/ontology'
 import type { Route } from './+types/_resource.Observation.$observationId.edit'
 import { DateTime } from 'effect'
+import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
+import { getObservationDisplayName } from '../modules/resources/Observation/utils/observationDisplay'
 
 const tryDecodeObservationId = Schema.decodeOption(ObservationId)
 
@@ -48,6 +50,15 @@ export default function EditObservationPage({
 }: Route.ComponentProps) {
   const { observation } = loaderData
   const navigate = useNavigate()
+
+  useBreadcrumbs([
+    { label: 'Observations', href: '/Observation' },
+    {
+      label: getObservationDisplayName(observation),
+      href: `/Observation/${observation.id}`,
+    },
+    { label: 'Edit' },
+  ])
   const clientRuntime = useLoadedRuntimeContext()
 
   // Determine which value type is present

@@ -7,10 +7,16 @@ import {
   CompositionFormData,
   CompositionFormSchema,
 } from 'app/modules/resources/Composition/schemas/CompositionFormSchema'
+import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
 
 export default function CreateCompositionPage() {
   const navigate = useNavigate()
   const clientRuntime = useRuntimeContext()
+
+  useBreadcrumbs([
+    { label: 'Compositions', href: '/Composition' },
+    { label: 'New' },
+  ])
 
   const handleSubmit = async (formData: CompositionFormData) => {
     await clientRuntime.runPromise(createComposition(formData))

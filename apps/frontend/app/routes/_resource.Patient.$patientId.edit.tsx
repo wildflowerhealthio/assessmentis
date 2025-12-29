@@ -12,6 +12,8 @@ import {
 } from '@assessmentis/clinical-domain/administration'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/_resource.Patient.$patientId.edit'
+import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
+import { getPatientDisplayName } from '../modules/resources/Patient/utils/patientDisplay'
 
 const tryDecodePatientId = Schema.decodeOption(PatientId)
 
@@ -41,6 +43,12 @@ export default function EditPatientPage({ loaderData }: Route.ComponentProps) {
   const { patient } = loaderData
   const navigate = useNavigate()
   const clientRuntime = useLoadedRuntimeContext()
+
+  useBreadcrumbs([
+    { label: 'Patients', href: '/Patient' },
+    { label: getPatientDisplayName(patient), href: `/Patient/${patient.id}` },
+    { label: 'Edit' },
+  ])
 
   // Transform patient to form initial values
   const initialValues: PatientFormData = {

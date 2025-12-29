@@ -2,11 +2,13 @@ import { usePatientCollection } from '../modules/resources/Patient/hooks/usePati
 import type { Route } from './+types/_resource.Patient._index'
 import { ResourceListPage } from '../modules/common/components/ResourceListPage/ResourceListPage'
 import { PatientListItem } from '../modules/resources/Patient/components/PatientListItem/PatientListItem'
+import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
 
 const emptyFilters = {}
 
 export default function PatientPage(_: Route.ComponentProps) {
   const { collection, deleteItem } = usePatientCollection(emptyFilters)
+  useBreadcrumbs([{ label: 'Patients' }])
 
   return (
     <ResourceListPage

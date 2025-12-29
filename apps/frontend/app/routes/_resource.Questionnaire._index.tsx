@@ -11,6 +11,7 @@ import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDa
 import { QuestionnaireListItem } from '../modules/resources/Questionnaire/components/QuestionnaireListItem/QuestionnaireListItem'
 import { useMemo } from 'react'
 import { ResourceListPage } from '../modules/common/components/ResourceListPage/ResourceListPage'
+import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {}
 
@@ -38,6 +39,7 @@ export default function QuestionnairePage(_: Route.ComponentProps) {
     deleteItem: deleteQuestionnaire,
     createItem: createQuestionnaire,
   } = useQuestionnaires()
+  useBreadcrumbs([{ label: 'Questionnaires' }])
 
   const loadTemplateByTitleForm = async function (formData: FormData) {
     const templateToCreate = questionnaireTemplates.find(
@@ -68,7 +70,7 @@ export default function QuestionnairePage(_: Route.ComponentProps) {
               return (
                 <form key={title} action={loadTemplateByTitleForm}>
                   <input hidden name="title" defaultValue={title} />
-                  <button className="button-2" type="submit">
+                  <button className="element-button button-2" type="submit">
                     {title}
                   </button>
                 </form>

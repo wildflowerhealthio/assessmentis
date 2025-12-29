@@ -35,6 +35,56 @@
   content: '←';
 }
 
+.NavHeader__leftSection {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.NavHeader__backButton {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--app-accent);
+  cursor: pointer;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.NavHeader__breadcrumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0;
+}
+
+.NavHeader__breadcrumbSegment {
+  display: inline-flex;
+  align-items: center;
+}
+
+.NavHeader__breadcrumbSeparator {
+  color: var(--neutral-5);
+  user-select: none;
+  padding-inline: var(--space-2);
+}
+
+.NavHeader__breadcrumbLink {
+  color: var(--app-accent);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.NavHeader__breadcrumbCurrent {
+  color: var(--neutral-1);
+}
+
 .NavHeader__nav {
   display: flex;
 }

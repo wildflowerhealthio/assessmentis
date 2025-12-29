@@ -4,8 +4,15 @@
   margin: 0 auto;
 }
 
+.DetailPage__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
 .DetailPage__title {
-  margin-top: var(--space-4);
+  margin: 0;
 }
 
 .DetailPage__subtitle {

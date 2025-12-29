@@ -51,7 +51,6 @@ export function transformToObservation(
       ? DateTime.unsafeMake(formData.effectiveDateTime)
       : Effect.runSync(DateTime.now),
   }
-
   // Add the appropriate value field based on valueType
   switch (formData.valueType) {
     case 'valueString':

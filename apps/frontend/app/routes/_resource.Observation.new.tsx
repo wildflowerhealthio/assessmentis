@@ -4,10 +4,16 @@ import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { ObservationForm } from 'app/modules/resources/Observation/components/ObservationForm'
 import { createObservation } from 'app/modules/resources/Observation/actions/createObservation'
 import { ObservationFormSchema } from 'app/modules/resources/Observation/schemas/ObservationFormSchema'
+import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
 
 export default function CreateObservationPage() {
   const navigate = useNavigate()
   const clientRuntime = useRuntimeContext()
+
+  useBreadcrumbs([
+    { label: 'Observations', href: '/Observation' },
+    { label: 'New' },
+  ])
 
   const handleSubmit = async (formData: typeof ObservationFormSchema.Type) => {
     const observation = await clientRuntime.runPromise(

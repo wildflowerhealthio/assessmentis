@@ -17,6 +17,7 @@ import {
 } from '@assessmentis/ontology'
 import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
 import { useMemo } from 'react'
+import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
 
 const _getQuestionnaireResponses = (): Effect.Effect<
   (QuestionnaireResponse & { _questionnaire: Questionnaire | undefined })[],
@@ -69,6 +70,7 @@ export default function QuestionnaireResponsePage(_: Route.ComponentProps) {
     collection: questionnaireResponses,
     deleteItem: deleteQuestionnaireResponse,
   } = useQuestionnaireResponse()
+  useBreadcrumbs([{ label: 'Questionnaire Responses' }])
 
   return (
     <ResourceListPage

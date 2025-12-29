@@ -111,7 +111,11 @@ export function ResourceForm<A extends object, E extends object>({
       </div>
 
       <div className={classes.Form__submit}>
-        <button type="submit" className="button-2 blue" disabled={isSubmitting}>
+        <button
+          type="submit"
+          className="element-button button-2 blue filled"
+          disabled={isSubmitting}
+        >
           {isSubmitting ? 'Submitting...' : submitLabel}
         </button>
       </div>

@@ -12,6 +12,8 @@ import {
 } from '@assessmentis/clinical-domain/administration'
 import { NotFoundError } from '@assessmentis/ontology'
 import type { Route } from './+types/_resource.Practitioner.$practitionerId.edit'
+import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
+import { getPractitionerDisplayName } from '../modules/resources/Practitioner/utils/practitionerDisplay'
 
 const tryDecodePractitionerId = Schema.decodeOption(PractitionerId)
 
@@ -48,6 +50,15 @@ export default function EditPractitionerPage({
   const { practitioner } = loaderData
   const navigate = useNavigate()
   const clientRuntime = useLoadedRuntimeContext()
+
+  useBreadcrumbs([
+    { label: 'Practitioners', href: '/Practitioner' },
+    {
+      label: getPractitionerDisplayName(practitioner),
+      href: `/Practitioner/${practitioner.id}`,
+    },
+    { label: 'Edit' },
+  ])
 
   // Transform practitioner to form initial values
   const initialValues: PractitionerFormData = {

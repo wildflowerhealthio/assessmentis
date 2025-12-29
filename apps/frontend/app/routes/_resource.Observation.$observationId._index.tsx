@@ -16,6 +16,7 @@ import { ObservationValue } from '../modules/resources/Observation/components/Ob
 import { ObservationInterpretation } from '../modules/resources/Observation/components/ObservationInterpretation/ObservationInterpretation'
 import { ObservationComponents } from '../modules/resources/Observation/components/ObservationComponents/ObservationComponents'
 import { ObservationAdditionalDetails } from '../modules/resources/Observation/components/ObservationAdditionalDetails/ObservationAdditionalDetails'
+import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
 
 const tryDecodeObservationId = Schema.decodeOption(ObservationId)
 
@@ -47,10 +48,13 @@ export default function ObservationDetailPage({
   const { observation } = loaderData
   const displayName = getObservationDisplayName(observation)
 
+  useBreadcrumbs([
+    { label: 'Observations', href: '/Observation' },
+    { label: displayName },
+  ])
+
   return (
     <ResourceDetailPage
-      backTo="/Observation"
-      backLabel="← Back to Observations"
       editTo={`/Observation/${observation.id}/edit`}
       title={displayName}
       subtitle={`Observation ID: ${observation.id}`}

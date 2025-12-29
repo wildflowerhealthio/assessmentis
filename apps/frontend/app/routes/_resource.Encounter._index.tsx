@@ -2,11 +2,13 @@ import { useEncounterCollection } from '../modules/resources/Encounter/hooks/use
 import type { Route } from './+types/_resource.Encounter._index'
 import { ResourceListPage } from '../modules/common/components/ResourceListPage/ResourceListPage'
 import { EncounterListItem } from '../modules/resources/Encounter/components/EncounterListItem/EncounterListItem'
+import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
 
 const emptyFilters = {}
 
 export default function EncounterPage(_: Route.ComponentProps) {
   const { collection, deleteItem } = useEncounterCollection(emptyFilters)
+  useBreadcrumbs([{ label: 'Encounters' }])
 
   return (
     <ResourceListPage

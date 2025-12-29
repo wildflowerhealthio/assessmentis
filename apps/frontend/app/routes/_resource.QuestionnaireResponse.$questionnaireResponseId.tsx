@@ -30,6 +30,7 @@ import { useState } from 'react'
 import SplitPane from '../modules/common/components/SplitPane/SplitPane'
 import { gad7 } from '@assessmentis/questionnaire-entities'
 import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
+import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
 
 const tryDecodeQuestionnaireResponseId = Schema.decodeOption(
   QuestionnaireResponseId
@@ -111,6 +112,11 @@ export default function QuestionnaireResponseDetailsPage({
   const { questionnaire, questionnaireResponse, recordings, observations } =
     loaderData
 
+  useBreadcrumbs([
+    { label: 'Questionnaire Responses', href: '/QuestionnaireResponse' },
+    { label: questionnaire.title || `Response ${questionnaireResponse.id}` },
+  ])
+
   const recordingResult = useMemo(
     () => LoadedResult.loaded<typeof recordings, never>(recordings),
     [recordings]
@@ -189,7 +195,7 @@ export default function QuestionnaireResponseDetailsPage({
           >
             Recordings:
             <button
-              className="button-1"
+              className="element-button button-1"
               style={{
                 display: 'inline-block',
                 marginTop: 'auto',
@@ -252,7 +258,7 @@ export default function QuestionnaireResponseDetailsPage({
           >
             Observations:
             <button
-              className="button-1"
+              className="element-button button-1"
               style={{
                 display: 'inline-block',
                 marginTop: 'auto',

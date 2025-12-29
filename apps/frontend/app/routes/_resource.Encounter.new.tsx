@@ -6,12 +6,18 @@ import { createEncounter } from 'app/modules/resources/Encounter/actions/createE
 import { EncounterFormSchema } from 'app/modules/resources/Encounter/schemas/EncounterFormSchema'
 import { Schema } from 'effect'
 import { QuestionnaireId } from '@assessmentis/clinical-domain/content-management'
+import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
 
 const decodeQuestionnaireId = Schema.decodeUnknownSync(QuestionnaireId)
 
 export default function CreateEncounterPage() {
   const navigate = useNavigate()
   const clientRuntime = useRuntimeContext()
+
+  useBreadcrumbs([
+    { label: 'Encounters', href: '/Encounter' },
+    { label: 'New' },
+  ])
 
   const handleSubmit = async (data: typeof EncounterFormSchema.Type) => {
     const encounter = await clientRuntime.runPromise(

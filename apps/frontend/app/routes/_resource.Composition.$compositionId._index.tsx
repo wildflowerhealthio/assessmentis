@@ -13,6 +13,7 @@ import {
   formatCompositionDetails,
 } from '../modules/resources/Composition/utils/compositionDisplay'
 import { CompositionSections } from '../modules/resources/Composition/components/CompositionSections/CompositionSections'
+import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
 
 const tryDecodeCompositionId = Schema.decodeOption(CompositionId)
 
@@ -44,10 +45,13 @@ export default function CompositionDetailsPage({
   const { composition } = loaderData
   const displayName = getCompositionDisplayName(composition)
 
+  useBreadcrumbs([
+    { label: 'Compositions', href: '/Composition' },
+    { label: displayName },
+  ])
+
   return (
     <ResourceDetailPage
-      backTo="/Composition"
-      backLabel="← Back to Compositions"
       editTo={`/Composition/${composition.id}/edit`}
       title={displayName}
       subtitle={`Composition ID: ${composition.id}`}

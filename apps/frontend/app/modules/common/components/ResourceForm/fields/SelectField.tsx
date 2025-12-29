@@ -7,6 +7,8 @@ export interface SelectFieldProps<T extends string> {
   required?: boolean
   options: Array<{ value: T; label: string }>
   error?: string | undefined
+  value: T | undefined
+  onChange: (data: T) => void
   defaultValue?: T | undefined
 }
 
@@ -16,6 +18,8 @@ export function SelectField<T extends string>({
   required,
   options,
   error,
+  value,
+  onChange = () => {},
   defaultValue,
 }: SelectFieldProps<T>) {
   return (
@@ -34,6 +38,11 @@ export function SelectField<T extends string>({
         name={name}
         className={cn('input-2', error && classes['FormField__input--error'])}
         required={required}
+        value={value}
+        onChange={(e) => {
+          const selectedValue = e.target.value as T
+          onChange(selectedValue)
+        }}
         defaultValue={defaultValue}
       >
         <option value={undefined}>Select {label || 'option'}...</option>

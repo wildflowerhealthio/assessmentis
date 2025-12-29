@@ -12,6 +12,8 @@ import {
 } from '@assessmentis/clinical-domain/administration'
 import { NotFoundError } from '@assessmentis/ontology'
 import type { Route } from './+types/_resource.Encounter.$encounterId.edit'
+import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
+import { getEncounterDisplayName } from '../modules/resources/Encounter/utils/encounterDisplay'
 
 const tryDecodeEncounterId = Schema.decodeOption(EncounterId)
 
@@ -48,6 +50,15 @@ export default function EditEncounterPage({
   const { encounter } = loaderData
   const navigate = useNavigate()
   const clientRuntime = useLoadedRuntimeContext()
+
+  useBreadcrumbs([
+    { label: 'Encounters', href: '/Encounter' },
+    {
+      label: getEncounterDisplayName(encounter),
+      href: `/Encounter/${encounter.id}`,
+    },
+    { label: 'Edit' },
+  ])
 
   // Extract participant practitioner IDs
   const practitionerIds =

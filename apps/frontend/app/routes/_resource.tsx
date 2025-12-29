@@ -184,7 +184,7 @@ class InnerResourcePage extends React.Component<
           </p>
           <LoginButton
             style={{ display: 'block', margin: '0 auto' }}
-            className="button-2"
+            className="element-button button-2"
           />
         </>
       )
@@ -195,7 +195,7 @@ class InnerResourcePage extends React.Component<
             There Was a Problem Loading Your Organization or User Data
           </h1>
           <button
-            className="button-2"
+            className="element-button button-2"
             style={{ display: 'block', margin: '0 auto' }}
             onClick={() => this.setState({ error: null })}
           >
@@ -260,14 +260,14 @@ class InnerResourcePage extends React.Component<
           }}
         >
           <button
-            className="button-2"
+            className="element-button button-2"
             style={{ display: 'block', margin: '0 auto' }}
             onClick={() => this.setState({ error: null })}
           >
             Try Again
           </button>
           <button
-            className="button-2"
+            className="element-button button-2"
             style={{ display: 'block', margin: '0 auto' }}
             onClick={() => window.location.reload()}
           >

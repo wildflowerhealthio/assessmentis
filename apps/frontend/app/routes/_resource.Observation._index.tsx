@@ -5,11 +5,13 @@ import { useObservationCollection } from '../modules/resources/Observation/hooks
 import { ResourceListPage } from '../modules/common/components/ResourceListPage/ResourceListPage'
 import { ObservationListItem } from '../modules/resources/Observation/components/ObservationListItem/ObservationListItem'
 import { ObservationFilters } from '../modules/resources/Observation/components/ObservationFilters/ObservationFilters'
+import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
 
 export async function clientLoader(_: Route.ClientLoaderArgs) {}
 
 export default function ObservationPage(_: Route.ComponentProps) {
   const [searchParams, setSearchParams] = useSearchParams()
+  useBreadcrumbs([{ label: 'Observations' }])
 
   const patientId = searchParams.get('patientId')
   const encounterId = searchParams.get('encounterId')

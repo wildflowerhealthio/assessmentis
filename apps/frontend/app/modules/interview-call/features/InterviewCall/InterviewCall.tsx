@@ -221,7 +221,7 @@ function InterviewCall({ encounter }: IProps) {
           Something went wrong creating a video call room. You can try
           recreating it
         </p>
-        <button className="button-4">Recreate Video Call</button>
+        <button className="element-button button-4">Recreate Video Call</button>
       </div>
     )
   }

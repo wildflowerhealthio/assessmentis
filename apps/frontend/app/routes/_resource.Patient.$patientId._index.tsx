@@ -17,6 +17,7 @@ import {
   getPatientDisplayName,
   formatPatientDemographics,
 } from '../modules/resources/Patient/utils/patientDisplay'
+import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
 
 const tryDecodePatientId = Schema.decodeOption(PatientId)
 
@@ -41,6 +42,15 @@ export default function PatientDetailPage({ params }: Route.ComponentProps) {
         }),
       [params.patientId]
     )
+  )
+
+  useBreadcrumbs(
+    loadedPatient._tag === 'loaded'
+      ? [
+          { label: 'Patients', href: '/Patient' },
+          { label: getPatientDisplayName(loadedPatient.value) },
+        ]
+      : [{ label: 'Patients', href: '/Patient' }, { loading: true }]
   )
 
   if (loadedPatient._tag === 'loading') {
@@ -74,8 +84,6 @@ export default function PatientDetailPage({ params }: Route.ComponentProps) {
 
   return (
     <ResourceDetailPage
-      backTo="/Patient"
-      backLabel="← Back to Patients"
       editTo={`/Patient/${patient.id}/edit`}
       title={displayName}
       subtitle={`Patient ID: ${patient.id}`}

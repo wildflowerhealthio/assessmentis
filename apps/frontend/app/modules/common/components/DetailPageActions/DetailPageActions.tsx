@@ -14,11 +14,11 @@ export function DetailPageActions({
 }: DetailPageActionsProps) {
   return (
     <div className={classes.DetailPageActions}>
-      <Link to={backTo} className="button-3 ghost">
+      <Link to={backTo} className="element-button button-3 ghost">
         {backLabel}
       </Link>
       {editTo ? (
-        <Link to={editTo} className="button-2 blue">
+        <Link to={editTo} className="element-button button-2 blue filled">
           Edit
         </Link>
       ) : undefined}

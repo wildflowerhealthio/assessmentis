@@ -19,7 +19,7 @@ export function ResourceItemActions({
     <Menu as="div" className={classes.ResourceItemActions}>
       <MenuButton
         disabled={disabled}
-        className="button-3 ghost"
+        className="element-button button-3 ghost"
         aria-label="Actions"
       >
         Actions

@@ -8,6 +8,7 @@ import { ResourceDetailPage } from '../modules/common/components/ResourceDetailP
 import { getEncounterDisplayName } from '../modules/resources/Encounter/utils/encounterDisplay'
 import { useMemo } from 'react'
 import { NotFoundError } from '@assessmentis/ontology'
+import { useBreadcrumbs } from '../modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
 
 const tryDecodeEncounterId = Schema.decodeOption(EncounterId)
 
@@ -18,6 +19,15 @@ export default function EncounterPage({ params }: Route.ComponentProps) {
       const encounterIdMaybe = tryDecodeEncounterId(encounterIdStr)
       return getFullEncounter(encounterIdMaybe)
     }, [params.encounterId])
+  )
+
+  useBreadcrumbs(
+    encounterLoader._tag === 'loaded'
+      ? [
+          { label: 'Encounters', href: '/Encounter' },
+          { label: getEncounterDisplayName(encounterLoader.value) },
+        ]
+      : [{ label: 'Encounters', href: '/Encounter' }, { loading: true }]
   )
 
   if (encounterLoader._tag === 'loading') {
@@ -36,8 +46,6 @@ export default function EncounterPage({ params }: Route.ComponentProps) {
 
   return (
     <ResourceDetailPage
-      backTo="/Encounter"
-      backLabel="← Back to Encounters"
       editTo={`/Encounter/${encounterData.id}/edit`}
       title={displayName}
       subtitle={`Encounter ID: ${encounterData.id}`}

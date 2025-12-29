@@ -62,7 +62,7 @@ export function ResourceListPage<T extends { id?: string }, E = unknown>(
     <div className={cn(classes.ListPage, className)}>
       <div className={classes.ListPage__header}>
         <h1 className="heading-5">{title}</h1>
-        <Link to={createPath} className="button-2 blue">
+        <Link to={createPath} className="element-button button-2 blue filled">
           {createLabel}
         </Link>
       </div>
