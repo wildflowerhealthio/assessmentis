@@ -4,22 +4,20 @@ export const Code = Schema.String.pipe(Schema.brand('code'))
 
 export type Code = typeof Code.Type
 
-export interface Coding {
+interface CodingCommon {
+  display?: string
+  system?: string
+  userSelected?: boolean
+  version?: string
+}
+
+export interface Coding extends CodingCommon {
   code?: Code
-  display?: string
-  system?: string
-  userSelected?: boolean
-  version?: string
 }
 
-export interface CodingEncoded {
+export interface CodingEncoded extends CodingCommon {
   code?: typeof Code.Encoded
-  display?: string
-  system?: string
-  userSelected?: boolean
-  version?: string
 }
-
 /**
  * A reference to a code defined by a terminology system.
  */
