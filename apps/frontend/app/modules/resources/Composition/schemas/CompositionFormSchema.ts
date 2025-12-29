@@ -4,7 +4,7 @@ import { Composition } from '@assessmentis/clinical-domain/content-management'
 export const CompositionFormSchema = Schema.Struct({
   title: Schema.String,
   patientId: Schema.optional(Schema.String),
-  date: Schema.optional(Schema.String),
+  date: Schema.optional(Schema.DateTimeUtc),
 })
 
 export type CompositionFormData = typeof CompositionFormSchema.Type

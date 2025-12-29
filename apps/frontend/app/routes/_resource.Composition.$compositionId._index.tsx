@@ -6,9 +6,10 @@ import {
 import { LoadedResult, UnhandledError } from '@assessmentis/ontology'
 import { gad7Report } from '@assessmentis/document-template-kinds'
 import { base } from '@assessmentis/document-template-instances'
-import type { Route } from './+types/_resource.Composition.$compositionId'
+import type { Route } from './+types/_resource.Composition.$compositionId._index'
 import { getRuntime, useResourceRunEffect } from '../clientRuntime'
 import { useMemo } from 'react'
+import { Link } from 'react-router'
 
 const tryDecodeCompositionId = Schema.decodeOption(CompositionId)
 
@@ -43,7 +44,26 @@ export default function CompositionDetailsPage({
   )
 
   return (
-    <div style={{ overflowY: 'scroll', height: '100%' }}>
+    <div
+      style={{ overflowY: 'scroll', height: '100%', padding: 'var(--space-6)' }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          gap: 'var(--space-3)',
+          marginBottom: 'var(--space-4)',
+        }}
+      >
+        <Link to="/Composition" className="button-3 ghost">
+          ← Back to Compositions
+        </Link>
+        <Link
+          to={`/Composition/${composition.id}/edit`}
+          className="button-2 blue"
+        >
+          Edit
+        </Link>
+      </div>
       <h2 className="heading-3">{composition.title ?? composition.id}</h2>
       <div className="subheading-3">
         {composition.status ?? 'status unknown'}

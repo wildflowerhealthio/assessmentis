@@ -12,7 +12,7 @@ describe('CompositionFormSchema', () => {
       const validData: CompositionFormData = {
         title: 'Patient Assessment',
         patientId: 'patient-123',
-        date: '2024-01-01',
+        date: DateTime.unsafeFromDate(new Date('2024-01-15')),
       }
 
       const result = Schema.decodeUnknownSync(CompositionFormSchema)(validData)
@@ -47,7 +47,7 @@ describe('CompositionFormSchema', () => {
       const formData: CompositionFormData = {
         title: 'Medical History',
         patientId: 'pat-456',
-        date: '2024-01-15',
+        date: DateTime.unsafeFromDate(new Date('2024-01-15')),
       }
 
       const composition = transformToComposition(formData)

@@ -6,7 +6,9 @@ export interface DateFieldProps {
   label?: string
   required?: boolean
   error?: string
-  defaultValue?: string
+  defaultValue?: string | undefined
+  value?: string | undefined
+  onChange: (data: string | undefined) => void
 }
 
 export function DateField({
@@ -14,6 +16,8 @@ export function DateField({
   label,
   required,
   error,
+  value,
+  onChange,
   defaultValue,
 }: DateFieldProps) {
   return (
@@ -34,6 +38,10 @@ export function DateField({
         className={cn('input-2', error && classes['FormField__input--error'])}
         required={required}
         defaultValue={defaultValue}
+        value={value}
+        onChange={(e) => {
+          onChange(e.target.value.length === 0 ? undefined : e.target.value)
+        }}
       />
       {error && (
         <div className={cn('body-3', classes.FormField__error)}>{error}</div>

@@ -8,7 +8,6 @@ import classes from './ResourceForm.module.css'
 
 export type CommonFieldProps<T> = {
   error?: string | undefined
-  defaultValue?: T | undefined
   value: T | undefined
   onChange: (data: T) => void
 }
