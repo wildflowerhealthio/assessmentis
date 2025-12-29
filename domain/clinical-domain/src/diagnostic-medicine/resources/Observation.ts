@@ -17,7 +17,7 @@ export type ObservationId = typeof ObservationId.Type
 
 /**
  * The status of the result value.
- * registered | prelixminary | final | amended | corrected | cancelled | entered-in-error | unknown
+ * registered | preliminary | final | amended | corrected | cancelled | entered-in-error | unknown
  */
 export const ObservationStatus = Schema.Enums({
   registered: 'registered',
