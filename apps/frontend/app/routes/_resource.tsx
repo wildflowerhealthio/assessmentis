@@ -1,6 +1,7 @@
 import {
   ExternalAssertionError,
   NeedsAuthenticationError,
+  NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
 import React, { JSX } from 'react'
@@ -8,7 +9,7 @@ import { Outlet } from 'react-router'
 import { NotLoggedIn } from '../../../../domain/platform-domain/src/loadedValues/UserId'
 import { LoginButton } from '../modules/global/components/LoginButton'
 import { useLoadedRuntimeContext } from '../clientRuntime'
-import { RuntimeContextOrErr } from '../modules/global/components/RuntimeContextOrErr'
+import { Generic404Content } from '../modules/common/components/Generic404Content'
 
 interface IProps {
   loadedRuntime: ReturnType<typeof useLoadedRuntimeContext>
@@ -79,7 +80,14 @@ const asCaughtError = (error: unknown) => {
     }
   }
 
-  return null
+  if (error instanceof NotFoundError) {
+    return {
+      type: 'NotFoundError',
+      error,
+    }
+  }
+
+  return undefined
 }
 
 class InnerResourcePage extends React.Component<
@@ -102,6 +110,10 @@ class InnerResourcePage extends React.Component<
       | {
           type: 'UnhandledError'
           error: UnhandledError
+        }
+      | {
+          type: 'NotFoundError'
+          error: NotFoundError
         }
       | {
           type: 'OrgDataError'
@@ -162,11 +174,7 @@ class InnerResourcePage extends React.Component<
 
   render() {
     if (this.state.error === null) {
-      return (
-        <RuntimeContextOrErr>
-          <Outlet />
-        </RuntimeContextOrErr>
-      )
+      return <Outlet />
     }
 
     let errorContent: JSX.Element
@@ -220,6 +228,10 @@ class InnerResourcePage extends React.Component<
           </h1>
           {this.renderCatchall()}
         </>
+      )
+    } else if (this.state.error?.type == 'NotFoundError') {
+      errorContent = (
+        <Generic404Content resourceType={this.state.error.error.resourceType} />
       )
     } else {
       errorContent = (

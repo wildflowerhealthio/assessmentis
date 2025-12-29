@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router'
-import { useRuntimeContext } from 'app/clientRuntime'
+import { useRuntime } from 'app/clientRuntime'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { PractitionerForm } from 'app/modules/resources/Practitioner/components/PractitionerForm'
 import { createPractitioner } from 'app/modules/resources/Practitioner/actions/createPractitioner'
@@ -8,7 +8,7 @@ import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider
 
 export default function CreatePractitionerPage() {
   const navigate = useNavigate()
-  const clientRuntime = useRuntimeContext()
+  const clientRuntime = useRuntime()
 
   useBreadcrumbs([
     { label: 'Practitioners', href: '/Practitioner' },

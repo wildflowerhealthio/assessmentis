@@ -9,8 +9,8 @@ import {
   withAnsweredAt,
 } from '@assessmentis/clinical-domain/content-management'
 import { cn } from '@assessmentis/react-util'
-import { DateTime } from 'effect'
-import { useRuntimeContext } from 'app/clientRuntime'
+import { DateTime, Effect } from 'effect'
+import { useRuntime } from 'app/clientRuntime'
 
 export interface IProps {
   questionnaireItem: QuestionnaireItem
@@ -28,7 +28,6 @@ const TextQuestionnaireItemForm = ({
   setQuestionnaireResponseItem,
   area,
 }: IProps) => {
-  const clientRuntime = useRuntimeContext()
   const onChange: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> = (
     ev
   ) => {
@@ -39,7 +38,7 @@ const TextQuestionnaireItemForm = ({
         answer: [
           withAnsweredAt(
             { valueString, modifierExtension: [] },
-            clientRuntime.runSync(DateTime.now)
+            Effect.runSync(DateTime.now)
           ),
         ],
       })

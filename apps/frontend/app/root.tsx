@@ -21,10 +21,11 @@ import NavHeader from './modules/global/components/NavHeader/NavHeader'
 import { LoadedRuntimeContextProvider } from './modules/global/components/RuntimeContextOrErr'
 import { BreadcrumbProvider } from './modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
 import { shouldShowRawData } from './util/debugHelpers'
+import { PageLoader } from './modules/common/components/PageLoader/PageLoader'
 
 // HydrateFallback is rendered while the client loader is running
 export function HydrateFallback() {
-  return <div>Loading...</div>
+  return <PageLoader />
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {

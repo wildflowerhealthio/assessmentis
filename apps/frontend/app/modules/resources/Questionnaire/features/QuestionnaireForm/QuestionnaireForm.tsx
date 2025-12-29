@@ -9,7 +9,7 @@ import {
   QuestionnaireResponseRepository,
 } from '@assessmentis/clinical-domain/content-management'
 import QuestionnaireItemForm from './components/QuestionnaireItemForm/QuestionnaireItemForm'
-import { useRuntimeContext } from 'app/clientRuntime'
+import { useRuntime } from 'app/clientRuntime'
 import { Effect } from 'effect'
 import { hasId } from '@assessmentis/clinical-domain/data-types'
 
@@ -24,13 +24,13 @@ const QuestionnaireForm = ({
   questionnaireResponse: loadedQuestionnaireResponse,
   highlightLinks,
 }: IProps) => {
-  const clientRuntime = useRuntimeContext()
+  const effectRuntime = useRuntime()
   const [questionnaireResponse, setQuestionnaireResponse] =
     useState<QuestionnaireResponse>(loadedQuestionnaireResponse)
 
   useEffect(() => {
     const submitTimeout = setTimeout(() => {
-      clientRuntime
+      effectRuntime
         .runPromise(
           Effect.gen(function* () {
             const questionnaireResponseClient =
@@ -45,7 +45,7 @@ const QuestionnaireForm = ({
         .catch((err) => console.error({ err }))
     }, 5000)
     return () => clearTimeout(submitTimeout)
-  }, [questionnaireResponse, clientRuntime])
+  }, [questionnaireResponse, effectRuntime])
 
   return (
     <>

@@ -7,8 +7,6 @@ import { ObservationListItem } from '../modules/resources/Observation/components
 import { ObservationFilters } from '../modules/resources/Observation/components/ObservationFilters/ObservationFilters'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 
-export async function clientLoader(_: Route.ClientLoaderArgs) {}
-
 export default function ObservationPage(_: Route.ComponentProps) {
   const [searchParams, setSearchParams] = useSearchParams()
   useBreadcrumbs([{ label: 'Observations' }])

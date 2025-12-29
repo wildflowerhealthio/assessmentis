@@ -20,7 +20,10 @@ const NavHeader = () => {
 
   const renderBreadcrumbs = () => {
     // Always include home breadcrumb at the start
-    const allBreadcrumbs = [{ label: '𝐴', href: '/' }, ...breadcrumbs]
+    const allBreadcrumbs =
+      breadcrumbs.length > 0
+        ? [{ label: '𝐴', href: '/' }, ...breadcrumbs]
+        : [{ label: '𝐴ssessment.is', href: '/' }]
 
     return (
       <div
@@ -37,7 +40,7 @@ const NavHeader = () => {
                   {' / '}
                 </span>
               )}
-              {'loading' in segment ? (
+              {'loading' in segment && segment.loading ? (
                 <Skeleton width={120} />
               ) : segment.href && !isLast ? (
                 <Link

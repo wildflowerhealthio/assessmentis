@@ -1,4 +1,4 @@
-import { Data, DateTime, Equal, Match } from 'effect'
+import { Data, DateTime, Effect, Equal, Match } from 'effect'
 import { type ChangeEventHandler, type SetStateAction } from 'react'
 import classes from './RadioQuestionnaireItemForm.module.css'
 import {
@@ -9,7 +9,7 @@ import {
 } from '@assessmentis/clinical-domain/content-management'
 import { ValueElement } from '@assessmentis/clinical-domain/data-types'
 import { cn } from '@assessmentis/react-util'
-import { useRuntimeContext } from 'app/clientRuntime'
+import { useRuntime } from 'app/clientRuntime'
 
 export interface IProps {
   questionnaireItem: QuestionnaireItem
@@ -39,7 +39,7 @@ const RadioQuestionnaireItemForm = ({
   setQuestionnaireResponseItem,
   uiControl,
 }: IProps) => {
-  const clientRuntime = useRuntimeContext()
+  const clientRuntime = useRuntime()
 
   const displayAsGrid = uiControl === QuestionnaireItemUIControlCode.enums.table
 
@@ -69,7 +69,7 @@ const RadioQuestionnaireItemForm = ({
         answer: [
           withAnsweredAt(
             { ...selected, modifierExtension: [] },
-            clientRuntime.runSync(DateTime.now)
+            Effect.runSync(DateTime.now)
           ),
         ],
       })

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router'
-import { useRuntimeContext } from 'app/clientRuntime'
+import { useRuntime } from 'app/clientRuntime'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { CompositionForm } from 'app/modules/resources/Composition/components/CompositionForm'
 import { createComposition } from 'app/modules/resources/Composition/actions/createComposition'
@@ -11,7 +11,7 @@ import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider
 
 export default function CreateCompositionPage() {
   const navigate = useNavigate()
-  const clientRuntime = useRuntimeContext()
+  const clientRuntime = useRuntime()
 
   useBreadcrumbs([
     { label: 'Compositions', href: '/Composition' },

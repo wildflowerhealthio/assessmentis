@@ -5,7 +5,7 @@ import {
 } from '@assessmentis/clinical-domain/content-management'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/_resource.Composition.$compositionId._index'
-import { getRuntime } from '../clientRuntime'
+import { useResourceRunEffect } from '../clientRuntime'
 import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
 import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
 import {
@@ -14,41 +14,75 @@ import {
 } from '../modules/resources/Composition/utils/compositionDisplay'
 import { CompositionSections } from '../modules/resources/Composition/components/CompositionSections/CompositionSections'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
+import { useMemo } from 'react'
+import Skeleton from 'react-loading-skeleton'
 
 const tryDecodeCompositionId = Schema.decodeOption(CompositionId)
 
-export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-  const runtime = await getRuntime()
-  const compositionIdMaybe = tryDecodeCompositionId(params.compositionId)
-
-  const composition = await runtime.runPromise(
-    Effect.gen(function* () {
-      const repository = yield* CompositionRepository
-
-      const compositionId = yield* compositionIdMaybe.pipe(
-        Option.map(Effect.succeed),
-        Option.getOrElse(() =>
-          Effect.fail(new UnhandledError({ cause: 'Composition not found' }))
-        )
-      )
-
-      return yield* repository.get(compositionId)
-    })
-  )
-
-  return { composition }
-}
-
 export default function CompositionDetailsPage({
-  loaderData,
+  params,
 }: Route.ComponentProps) {
-  const { composition } = loaderData
-  const displayName = getCompositionDisplayName(composition)
+  const compositionLoader = useResourceRunEffect(
+    useMemo(() => {
+      const compositionIdMaybe = tryDecodeCompositionId(params.compositionId)
+
+      return Effect.gen(function* () {
+        const repository = yield* CompositionRepository
+
+        const compositionId = yield* compositionIdMaybe.pipe(
+          Option.map(Effect.succeed),
+          Option.getOrElse(() =>
+            Effect.fail(new UnhandledError({ cause: 'Composition not found' }))
+          )
+        )
+
+        return yield* repository.get(compositionId)
+      })
+    }, [params.compositionId])
+  )
 
   useBreadcrumbs([
     { label: 'Compositions', href: '/Composition' },
-    { label: displayName },
+    {
+      loading: compositionLoader._tag == 'loading',
+      label:
+        compositionLoader._tag === 'loaded'
+          ? getCompositionDisplayName(compositionLoader.value)
+          : 'Unknown Composition',
+      href: `/Composition/${params.compositionId}`,
+    },
   ])
+
+  if (compositionLoader._tag == 'loading') {
+    return (
+      <ResourceDetailPage
+        editTo={`/Composition/${params.compositionId}/edit`}
+        title={<Skeleton width={200} />}
+        subtitle={
+          <>
+            Composition ID: <Skeleton width={100} />
+          </>
+        }
+        sections={[
+          {
+            id: 'details',
+            title: 'Details',
+            content: (
+              <DetailGrid
+                items={{ skeleton: [<Skeleton />, <Skeleton />, <Skeleton />] }}
+              />
+            ),
+          },
+        ]}
+      />
+    )
+  }
+  if (compositionLoader._tag === 'error') {
+    throw compositionLoader.error
+  }
+
+  const composition = compositionLoader.value
+  const displayName = getCompositionDisplayName(composition)
 
   return (
     <ResourceDetailPage

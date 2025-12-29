@@ -5,7 +5,7 @@ import {
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/_resource.Observation.$observationId._index'
-import { getRuntime } from '../clientRuntime'
+import { useResourceRunEffect } from '../clientRuntime'
 import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
 import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
 import {
@@ -17,41 +17,82 @@ import { ObservationInterpretation } from '../modules/resources/Observation/comp
 import { ObservationComponents } from '../modules/resources/Observation/components/ObservationComponents/ObservationComponents'
 import { ObservationAdditionalDetails } from '../modules/resources/Observation/components/ObservationAdditionalDetails/ObservationAdditionalDetails'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
+import { useMemo } from 'react'
+import Skeleton from 'react-loading-skeleton'
 
 const tryDecodeObservationId = Schema.decodeOption(ObservationId)
 
-export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-  const runtime = await getRuntime()
-  const observationIdMaybe = tryDecodeObservationId(params.observationId)
-
-  const observation = await runtime.runPromise(
-    Effect.gen(function* () {
-      const repository = yield* ObservationRepository
-
-      const observationId = yield* observationIdMaybe.pipe(
-        Option.map(Effect.succeed),
-        Option.getOrElse(() =>
-          Effect.fail(new UnhandledError({ cause: 'Observation ID not found' }))
-        )
-      )
-
-      return yield* repository.get(observationId)
-    })
-  )
-
-  return { observation }
-}
-
 export default function ObservationDetailPage({
-  loaderData,
+  params,
 }: Route.ComponentProps) {
-  const { observation } = loaderData
-  const displayName = getObservationDisplayName(observation)
+  const observationLoader = useResourceRunEffect(
+    useMemo(() => {
+      const observationIdMaybe = tryDecodeObservationId(params.observationId)
+
+      return Effect.gen(function* () {
+        const repository = yield* ObservationRepository
+
+        const observationId = yield* observationIdMaybe.pipe(
+          Option.map(Effect.succeed),
+          Option.getOrElse(() =>
+            Effect.fail(
+              new UnhandledError({ cause: 'Observation ID not found' })
+            )
+          )
+        )
+
+        return yield* repository.get(observationId)
+      })
+    }, [params.observationId])
+  )
 
   useBreadcrumbs([
     { label: 'Observations', href: '/Observation' },
-    { label: displayName },
+    {
+      loading: observationLoader._tag === 'loading',
+      label:
+        observationLoader._tag === 'loaded'
+          ? getObservationDisplayName(observationLoader.value)
+          : 'Unknown Observation',
+      href: `/Observation/${params.observationId}`,
+    },
   ])
+
+  if (observationLoader._tag == 'loading') {
+    return (
+      <ResourceDetailPage
+        editTo={`/Observation/${params.observationId}/edit`}
+        title={<Skeleton width={200} />}
+        subtitle={
+          <>
+            Observation ID: <Skeleton width={100} />
+          </>
+        }
+        sections={[
+          {
+            id: 'details',
+            title: 'Details',
+            content: (
+              <DetailGrid
+                items={{ skeleton: [<Skeleton />, <Skeleton />, <Skeleton />] }}
+              />
+            ),
+          },
+          {
+            id: 'value',
+            title: 'Value',
+            content: <Skeleton count={3} />,
+          },
+        ]}
+      />
+    )
+  }
+  if (observationLoader._tag === 'error') {
+    throw observationLoader.error
+  }
+
+  const observation = observationLoader.value
+  const displayName = getObservationDisplayName(observation)
 
   return (
     <ResourceDetailPage

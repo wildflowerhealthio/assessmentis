@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router'
-import { useRuntimeContext } from 'app/clientRuntime'
+import { useRuntime } from 'app/clientRuntime'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { ObservationForm } from 'app/modules/resources/Observation/components/ObservationForm'
 import { createObservation } from 'app/modules/resources/Observation/actions/createObservation'
@@ -8,7 +8,7 @@ import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider
 
 export default function CreateObservationPage() {
   const navigate = useNavigate()
-  const clientRuntime = useRuntimeContext()
+  const clientRuntime = useRuntime()
 
   useBreadcrumbs([
     { label: 'Observations', href: '/Observation' },

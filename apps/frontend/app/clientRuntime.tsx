@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import {
   Chunk,
   Effect,
@@ -25,11 +32,60 @@ export class ContextSetupError extends Error {
   }
 }
 
-export const RuntimeContext = createContext<
-  ManagedRuntime.ManagedRuntime<ClientRuntimeContext, never> | undefined
->(undefined)
+export const useRuntime = () => {
+  const loadedRuntime = useLoadedRuntimeContext()
+  const [effectQueue, setEffectQueue] = useState<
+    {
+      runner: (
+        runtime: ManagedRuntime.ManagedRuntime<ClientRuntimeContext, never>
+      ) => void
+      reject: (reason?: unknown) => void
+    }[]
+  >([])
 
-export const useRuntimeContext = () => useContext(RuntimeContext)!
+  useEffect(() => {
+    if (effectQueue.length > 0) {
+      setEffectQueue((effectQueue) => {
+        if (loadedRuntime._tag == 'loaded') {
+          const runtime = loadedRuntime.value
+          effectQueue.forEach(({ runner }) => {
+            runner(runtime)
+          })
+          return []
+        } else if (loadedRuntime._tag == 'error') {
+          effectQueue.forEach(({ reject }) => {
+            reject(loadedRuntime.error)
+          })
+          return []
+        } else {
+          return effectQueue
+        }
+      })
+    }
+  }, [loadedRuntime, effectQueue])
+
+  const shamRuntime = useMemo(() => {
+    if (loadedRuntime._tag == 'loading')
+      return {
+        runPromise: <A, E>(effect: Effect.Effect<A, E, ClientRuntimeContext>) =>
+          new Promise<A>((resolve, reject) => {
+            const runner = (
+              runtime: ManagedRuntime.ManagedRuntime<
+                ClientRuntimeContext,
+                never
+              >
+            ) => runtime.runPromise(effect).then(resolve).catch(reject)
+            setEffectQueue((q) => [...q, { runner, reject }])
+          }),
+      }
+    else if (loadedRuntime._tag == 'error') {
+      throw loadedRuntime.error
+    }
+    return loadedRuntime.value
+  }, [loadedRuntime])
+
+  return shamRuntime
+}
 
 export type ContextError = OrgError
 

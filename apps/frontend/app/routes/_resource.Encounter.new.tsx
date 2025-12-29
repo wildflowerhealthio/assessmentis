@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router'
-import { useRuntimeContext } from 'app/clientRuntime'
+import { useRuntime } from 'app/clientRuntime'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { EncounterForm } from 'app/modules/resources/Encounter/components/EncounterForm'
 import { createEncounter } from 'app/modules/resources/Encounter/actions/createEncounter'
@@ -12,7 +12,7 @@ const decodeQuestionnaireId = Schema.decodeUnknownSync(QuestionnaireId)
 
 export default function CreateEncounterPage() {
   const navigate = useNavigate()
-  const clientRuntime = useRuntimeContext()
+  const clientRuntime = useRuntime()
 
   useBreadcrumbs([
     { label: 'Encounters', href: '/Encounter' },

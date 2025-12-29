@@ -1,7 +1,9 @@
 import { Effect, Option, Schema } from 'effect'
 import { useNavigate } from 'react-router'
-import { useLoadedRuntimeContext } from 'app/clientRuntime'
-import { getRuntime } from 'app/clientRuntime'
+import {
+  useLoadedRuntimeContext,
+  useResourceRunEffect,
+} from 'app/clientRuntime'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { PatientForm } from 'app/modules/resources/Patient/components/PatientForm'
 import { updatePatient } from 'app/modules/resources/Patient/actions/updatePatient'
@@ -15,41 +17,59 @@ import type { Route } from './+types/_resource.Patient.$patientId.edit'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { getPatientDisplayName } from '../modules/resources/Patient/utils/patientDisplay'
 import { extractReferenceId } from 'app/modules/common/utils/fhirDisplay'
+import { useMemo } from 'react'
+import Skeleton from 'react-loading-skeleton'
 
 const tryDecodePatientId = Schema.decodeOption(PatientId)
 
-export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-  const runtime = await getRuntime()
-  const patientIdMaybe = tryDecodePatientId(params.patientId)
+export default function EditPatientPage({ params }: Route.ComponentProps) {
+  const patientLoader = useResourceRunEffect(
+    useMemo(() => {
+      const patientIdMaybe = tryDecodePatientId(params.patientId)
 
-  const patient = await runtime.runPromise(
-    Effect.gen(function* () {
-      const repository = yield* PatientRepository
+      return Effect.gen(function* () {
+        const repository = yield* PatientRepository
 
-      const patientId = yield* patientIdMaybe.pipe(
-        Option.map(Effect.succeed),
-        Option.getOrElse(() =>
-          Effect.fail(new UnhandledError({ cause: 'Patient ID not found' }))
+        const patientId = yield* patientIdMaybe.pipe(
+          Option.map(Effect.succeed),
+          Option.getOrElse(() =>
+            Effect.fail(new UnhandledError({ cause: 'Patient ID not found' }))
+          )
         )
-      )
 
-      return yield* repository.get(patientId)
-    })
+        return yield* repository.get(patientId)
+      })
+    }, [params.patientId])
   )
 
-  return { patient }
-}
-
-export default function EditPatientPage({ loaderData }: Route.ComponentProps) {
-  const { patient } = loaderData
   const navigate = useNavigate()
   const clientRuntime = useLoadedRuntimeContext()
 
   useBreadcrumbs([
     { label: 'Patients', href: '/Patient' },
-    { label: getPatientDisplayName(patient), href: `/Patient/${patient.id}` },
+    {
+      loading: patientLoader._tag === 'loading',
+      label:
+        patientLoader._tag === 'loaded'
+          ? getPatientDisplayName(patientLoader.value)
+          : 'Unknown Patient',
+      href: `/Patient/${params.patientId}`,
+    },
     { label: 'Edit' },
   ])
+
+  if (patientLoader._tag == 'loading') {
+    return (
+      <FormPage title="Edit Patient">
+        <Skeleton count={5} height={40} style={{ marginBottom: '1rem' }} />
+      </FormPage>
+    )
+  }
+  if (patientLoader._tag === 'error') {
+    throw patientLoader.error
+  }
+
+  const patient = patientLoader.value
 
   // Transform patient to form initial values
   const initialValues: PatientFormData = {
