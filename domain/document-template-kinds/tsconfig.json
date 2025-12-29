@@ -8,7 +8,6 @@
     "composite": false
   },
   "include": [
-    "src/**/*",
-    "../../infrastructure/document-template-instances/src/base/Header.tsx"
+    "src/**/*"
   ]
 }
