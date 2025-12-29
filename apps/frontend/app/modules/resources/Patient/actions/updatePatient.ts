@@ -14,7 +14,7 @@ import {
   PatientFormData,
   transformToPatient,
 } from '../schemas/PatientFormSchema'
-import { WithId } from '../../../../../../../domain/clinical-domain/src/data-types/base'
+import { WithId } from '@assessmentis/clinical-domain/data-types'
 
 export const updatePatient = (
   id: PatientId,
