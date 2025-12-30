@@ -1,30 +1,13 @@
 import { Effect } from 'effect'
 import { useMemo } from 'react'
-import { BaseClinicalDataRepository } from '@assessmentis/clinical-domain'
+import {
+  BaseClinicalDataRepository,
+  ExtractResourceTypes,
+} from '@assessmentis/clinical-domain'
 import { ReadonlyTag } from 'effect/Context'
 import { useResourceRunEffect } from '../../../clientRuntime'
 import { useClinicalDataCollection } from '../hooks/useClinicalDataCollection'
-
-/**
- * Extract the service type from a ReadonlyTag
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ExtractService<T> = T extends ReadonlyTag<any, infer S> ? S : never
-
-/**
- * Extract TId and TResource from a BaseClinicalDataRepository
- */
-type ExtractResourceTypes<T> =
-  T extends BaseClinicalDataRepository<infer TResource, infer TId>
-    ? { resource: TResource; id: TId }
-    : never
-
-/**
- * Extract the Tag type from a ReadonlyTag
- * For Context.Tag, the first parameter is the tag type itself
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ExtractTag<T> = T extends ReadonlyTag<infer TTag, any> ? TTag : never
+import { ExtractService, ExtractTag } from '../../global/util/typeUtils'
 
 /**
  * Creates a resource collection hook with standardized behavior
@@ -51,7 +34,7 @@ export function createResourceCollectionHook<
   type TId = Types['id']
   type TTag = ExtractTag<TRepoTag>
 
-  return (filters: object) => {
+  return (filters?: object) => {
     const resources = useResourceRunEffect(
       useMemo(() => {
         return Effect.gen(function* () {
