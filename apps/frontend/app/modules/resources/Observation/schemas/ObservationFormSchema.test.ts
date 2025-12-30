@@ -49,7 +49,9 @@ describe('ObservationFormSchema', () => {
       expect(observation.encounter).toEqual({
         reference: 'Encounter/encounter-456',
       })
-      expect(observation.valueString).toBe('120/80')
+      expect('valueString' in observation && observation.valueString).toBe(
+        '120/80'
+      )
     })
 
     it('should transform form data with valueDecimal', () => {
@@ -62,7 +64,9 @@ describe('ObservationFormSchema', () => {
       const observation = transformToObservation(formData)
 
       expect(observation.resourceType).toBe('Observation')
-      expect(observation.valueDecimal).toBe(98.6)
+      expect('valueDecimal' in observation && observation.valueDecimal).toBe(
+        98.6
+      )
     })
 
     it('should transform form data with valueQuantity', () => {
@@ -75,7 +79,9 @@ describe('ObservationFormSchema', () => {
 
       const observation = transformToObservation(formData)
 
-      expect(observation.valueQuantity).toEqual({
+      expect(
+        'valueQuantity' in observation && observation.valueQuantity
+      ).toEqual({
         value: 70.5,
         unit: 'kg',
       })
@@ -93,7 +99,10 @@ describe('ObservationFormSchema', () => {
 
       const observation = transformToObservation(formData)
 
-      expect(observation.valueCodeableConcept).toEqual({
+      expect(
+        'valueCodeableConcept' in observation &&
+          observation.valueCodeableConcept
+      ).toEqual({
         text: 'Moderate pain',
         coding: [
           {
