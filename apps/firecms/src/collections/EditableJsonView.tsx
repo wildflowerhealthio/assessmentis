@@ -16,9 +16,11 @@ export function EditableJsonView<M extends Record<string, any>>({
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const isMountedRef = useRef(true)
 
+  // Constants
+  const SUCCESS_MESSAGE_TIMEOUT_MS = 5000
+
   // Track component mount status
   useEffect(() => {
-    isMountedRef.current = true
     return () => {
       isMountedRef.current = false
     }
@@ -44,7 +46,7 @@ export function EditableJsonView<M extends Record<string, any>>({
   )
 
   // Validate and save JSON
-  const handleSave = useCallback(async () => {
+  const handleSave = useCallback(() => {
     try {
       // Validate JSON
       const parsedValues = JSON.parse(jsonText)
@@ -75,12 +77,12 @@ export function EditableJsonView<M extends Record<string, any>>({
         setSuccessMessage('JSON saved successfully! Click the main Save button to persist changes.')
         setIsEdited(false)
 
-        // Clear success message after 5 seconds with cleanup check
+        // Clear success message after timeout with cleanup check
         setTimeout(() => {
           if (isMountedRef.current) {
             setSuccessMessage(null)
           }
-        }, 5000)
+        }, SUCCESS_MESSAGE_TIMEOUT_MS)
       }
     } catch (err) {
       if (err instanceof SyntaxError) {
@@ -89,7 +91,7 @@ export function EditableJsonView<M extends Record<string, any>>({
         setError('An error occurred while saving')
       }
     }
-  }, [jsonText, formContext, entity, modifiedValues])
+  }, [jsonText, formContext, entity, modifiedValues, SUCCESS_MESSAGE_TIMEOUT_MS])
 
   // Reset to original values
   const handleReset = useCallback(() => {
