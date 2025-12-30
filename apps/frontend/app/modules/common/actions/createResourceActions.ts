@@ -1,10 +1,4 @@
 import { Effect, Context } from 'effect'
-import {
-  ExternalAssertionError,
-  NeedsAuthenticationError,
-  NotFoundError,
-  UnhandledError,
-} from '@assessmentis/ontology'
 
 /**
  * Creates a generic create action for a resource
@@ -15,32 +9,38 @@ import {
  * 2. Transforming form data to resource format
  * 3. Calling repository.create()
  *
- * Note: The return type uses `as Effect.Effect<any, any, any>` to work around
- * TypeScript's type inference limitations with Effect's contravariant requirements
- * parameter. This allows the returned actions to be used with ClientRuntimeContext
- * (which is a union of all repository types) without type errors. The runtime
- * behavior is still type-safe as the repository.create() method enforces the
- * correct types at runtime.
+ * The factory preserves full type safety by requiring explicit type parameters.
+ * The TRequirements parameter allows specifying a broader context type (like
+ * ClientRuntimeContext) that includes the repository, enabling the action to
+ * be used with runtime contexts.
  *
  * @example
  * ```typescript
- * export const createPatient = createResourceCreateAction(
- *   PatientRepository,
- *   transformToPatient
- * )
+ * export const createPatient = createResourceCreateAction<
+ *   PatientFormData,
+ *   Patient,
+ *   UnhandledError | NeedsAuthenticationError | ExternalAssertionError,
+ *   typeof PatientRepository,
+ *   ClientRuntimeContext
+ * >(PatientRepository, transformToPatient)
  * ```
  */
 export function createResourceCreateAction<
   TFormData,
   TResource,
+  TError,
   TRepo extends Context.Tag<any, any>,
->(repository: TRepo, transform: (data: TFormData) => TResource | Omit<TResource, 'id'>) {
-  return (formData: TFormData) => {
+  TRequirements = TRepo,
+>(
+  repository: TRepo,
+  transform: (data: TFormData) => TResource | Omit<TResource, 'id'>
+): (formData: TFormData) => Effect.Effect<TResource, TError, TRequirements> {
+  return (formData: TFormData): Effect.Effect<TResource, TError, TRequirements> => {
     return Effect.gen(function* () {
       const repo = yield* repository
       const resource = transform(formData)
       return yield* repo.create(resource)
-    }) as Effect.Effect<any, any, any>
+    }) as Effect.Effect<TResource, TError, TRequirements>
   }
 }
 
@@ -54,28 +54,43 @@ export function createResourceCreateAction<
  * 3. Merging with current resource and id
  * 4. Calling repository.update()
  *
- * Note: The return type uses `as Effect.Effect<any, any, any>` to work around
- * TypeScript's type inference limitations with Effect's contravariant requirements
- * parameter. This allows the returned actions to be used with ClientRuntimeContext
- * (which is a union of all repository types) without type errors. The runtime
- * behavior is still type-safe as the repository.update() method enforces the
- * correct types at runtime.
+ * The factory preserves full type safety by requiring explicit type parameters.
+ * The TRequirements parameter allows specifying a broader context type (like
+ * ClientRuntimeContext) that includes the repository, enabling the action to
+ * be used with runtime contexts.
  *
  * @example
  * ```typescript
- * export const updatePatient = createResourceUpdateAction(
- *   PatientRepository,
- *   transformToPatient
- * )
+ * export const updatePatient = createResourceUpdateAction<
+ *   PatientFormData,
+ *   Patient,
+ *   PatientId,
+ *   UnhandledError | NeedsAuthenticationError | ExternalAssertionError | NotFoundError,
+ *   typeof PatientRepository,
+ *   ClientRuntimeContext
+ * >(PatientRepository, transformToPatient)
  * ```
  */
 export function createResourceUpdateAction<
   TFormData,
   TResource,
   TId,
+  TError,
   TRepo extends Context.Tag<any, any>,
->(repository: TRepo, transform: (data: TFormData) => TResource | Omit<TResource, 'id'>) {
-  return (id: TId, current: TResource, formData: TFormData) => {
+  TRequirements = TRepo,
+>(
+  repository: TRepo,
+  transform: (data: TFormData) => TResource | Omit<TResource, 'id'>
+): (
+  id: TId,
+  current: TResource,
+  formData: TFormData
+) => Effect.Effect<TResource, TError, TRequirements> {
+  return (
+    id: TId,
+    current: TResource,
+    formData: TFormData
+  ): Effect.Effect<TResource, TError, TRequirements> => {
     return Effect.gen(function* () {
       const repo = yield* repository
       const updatedFields = transform(formData)
@@ -85,6 +100,6 @@ export function createResourceUpdateAction<
         id,
       }
       return yield* repo.update(updated)
-    }) as Effect.Effect<any, any, any>
+    }) as Effect.Effect<TResource, TError, TRequirements>
   }
 }
