@@ -1,6 +1,4 @@
-'use client'
-
-import { useEffect, useState, type SetStateAction } from 'react'
+import { useState, type SetStateAction } from 'react'
 import {
   Questionnaire,
   QuestionnaireItemLink,
@@ -12,6 +10,7 @@ import QuestionnaireItemForm from './components/QuestionnaireItemForm/Questionna
 import { useRuntime } from 'app/clientRuntime'
 import { Effect } from 'effect'
 import { hasId } from '@assessmentis/clinical-domain/data-types'
+import { useAutoSave } from 'app/modules/common/hooks/useAutoSave'
 
 type IProps = {
   questionnaire: Questionnaire
@@ -28,24 +27,21 @@ const QuestionnaireForm = ({
   const [questionnaireResponse, setQuestionnaireResponse] =
     useState<QuestionnaireResponse>(loadedQuestionnaireResponse)
 
-  useEffect(() => {
-    const submitTimeout = setTimeout(() => {
-      effectRuntime
-        .runPromise(
-          Effect.gen(function* () {
-            const questionnaireResponseClient =
-              yield* QuestionnaireResponseRepository
-            if (!hasId(questionnaireResponse)) return
-            return yield* questionnaireResponseClient.update(
-              questionnaireResponse
-            )
-          })
-        )
-        .then((res) => console.log({ res }))
-        .catch((err) => console.error({ err }))
-    }, 5000)
-    return () => clearTimeout(submitTimeout)
-  }, [questionnaireResponse, effectRuntime])
+  // Use auto-save hook for questionnaire responses
+  useAutoSave({
+    data: questionnaireResponse,
+    onSave: async (data) => {
+      await effectRuntime.runPromise(
+        Effect.gen(function* () {
+          const questionnaireResponseClient =
+            yield* QuestionnaireResponseRepository
+          if (!hasId(data)) return
+          return yield* questionnaireResponseClient.update(data)
+        })
+      )
+    },
+    delay: 5000,
+  })
 
   return (
     <>
