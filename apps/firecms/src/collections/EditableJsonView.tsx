@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { EntityCustomViewParams } from '@firecms/core'
 
 /**
@@ -14,6 +14,15 @@ export function EditableJsonView<M extends Record<string, any>>({
   const [error, setError] = useState<string | null>(null)
   const [isEdited, setIsEdited] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const isMountedRef = useRef(true)
+
+  // Track component mount status
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
 
   // Initialize JSON text from entity values
   useEffect(() => {
@@ -48,6 +57,15 @@ export function EditableJsonView<M extends Record<string, any>>({
 
       // Update form values
       if (formContext.setFieldValue) {
+        const currentValues = modifiedValues || entity?.values || {}
+        
+        // Remove fields that were deleted from the JSON
+        Object.keys(currentValues).forEach((key) => {
+          if (!(key in parsedValues)) {
+            formContext.setFieldValue(key, undefined)
+          }
+        })
+        
         // Update all fields with the new values
         Object.entries(parsedValues).forEach(([key, value]) => {
           formContext.setFieldValue(key, value)
@@ -57,8 +75,12 @@ export function EditableJsonView<M extends Record<string, any>>({
         setSuccessMessage('JSON saved successfully! Click the main Save button to persist changes.')
         setIsEdited(false)
 
-        // Clear success message after 5 seconds
-        setTimeout(() => setSuccessMessage(null), 5000)
+        // Clear success message after 5 seconds with cleanup check
+        setTimeout(() => {
+          if (isMountedRef.current) {
+            setSuccessMessage(null)
+          }
+        }, 5000)
       }
     } catch (err) {
       if (err instanceof SyntaxError) {
@@ -67,7 +89,7 @@ export function EditableJsonView<M extends Record<string, any>>({
         setError('An error occurred while saving')
       }
     }
-  }, [jsonText, formContext])
+  }, [jsonText, formContext, entity, modifiedValues])
 
   // Reset to original values
   const handleReset = useCallback(() => {
