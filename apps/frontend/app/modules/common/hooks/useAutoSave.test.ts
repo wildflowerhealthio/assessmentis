@@ -207,4 +207,44 @@ describe('useAutoSave', () => {
     // Should not have been called
     expect(onSave).not.toHaveBeenCalled()
   })
+
+  it('should use the latest onSave callback when it changes', async () => {
+    // Track which version of the callback was called
+    const calls: string[] = []
+    const onSave1 = vi.fn().mockImplementation(async () => {
+      calls.push('callback1')
+    })
+    const onSave2 = vi.fn().mockImplementation(async () => {
+      calls.push('callback2')
+    })
+
+    const data = { test: 'value' }
+
+    const { rerender } = renderHook(
+      ({ callback }) =>
+        useAutoSave({
+          data,
+          onSave: callback,
+          delay: 5000,
+        }),
+      { initialProps: { callback: onSave1 } }
+    )
+
+    // Fast-forward by 3 seconds (not enough to trigger)
+    vi.advanceTimersByTime(3000)
+
+    // Change the callback before the timeout fires
+    rerender({ callback: onSave2 })
+
+    // Fast-forward by the remaining 2 seconds to trigger the save
+    vi.advanceTimersByTime(2000)
+
+    // Run pending promises
+    await vi.runOnlyPendingTimersAsync()
+
+    // The second callback should have been called, not the first
+    expect(onSave1).not.toHaveBeenCalled()
+    expect(onSave2).toHaveBeenCalledWith(data)
+    expect(calls).toEqual(['callback2'])
+  })
 })
