@@ -1,5 +1,11 @@
 import type { Encounter } from '@assessmentis/clinical-domain/administration'
-import { capitalizeFirst } from '../../../common/utils/fhirDisplay'
+import {
+  capitalizeFirst,
+  formatDateTime,
+  formatDateTimeRange,
+  formatDate,
+  formatDateRange,
+} from '../../../common/utils/fhirDisplay'
 
 /**
  * Get a display-friendly name for an encounter
@@ -109,16 +115,14 @@ export function formatEncounterDetails(encounter: Encounter) {
   }
 
   if (encounter.period) {
-    const start = encounter.period.start
-      ? new Date(encounter.period.start.epochMillis).toLocaleString()
-      : 'Not specified'
-    const end = encounter.period.end
-      ? new Date(encounter.period.end.epochMillis).toLocaleString()
-      : 'Ongoing'
-
     details.push({
       label: 'Period',
-      value: `${start} - ${end}`,
+      value: formatDateTimeRange(
+        encounter.period.start,
+        encounter.period.end,
+        'Ongoing',
+        'Not specified'
+      ),
     })
   }
 
@@ -163,18 +167,10 @@ export function getEncounterPeriodDisplay(encounter: Encounter): string {
     return 'No period specified'
   }
 
-  if (encounter.period.start) {
-    const startDate = new Date(
-      encounter.period.start.epochMillis
-    ).toLocaleDateString()
-    if (encounter.period.end) {
-      const endDate = new Date(
-        encounter.period.end.epochMillis
-      ).toLocaleDateString()
-      return `${startDate} - ${endDate}`
-    }
-    return `${startDate} - Ongoing`
-  }
-
-  return 'No period specified'
+  return formatDateRange(
+    encounter.period.start,
+    encounter.period.end,
+    'Ongoing',
+    'No period specified'
+  )
 }

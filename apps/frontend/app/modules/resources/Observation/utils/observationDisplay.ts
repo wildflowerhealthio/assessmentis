@@ -1,4 +1,9 @@
 import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import {
+  formatDateTime,
+  formatDate,
+  formatDateRange,
+} from '../../../common/utils/fhirDisplay'
 
 /**
  * Get a display-friendly name for an observation
@@ -72,7 +77,7 @@ export function formatObservationValue(
   }
 
   if ('valueDateTime' in observation && observation.valueDateTime) {
-    return new Date(observation.valueDateTime.epochMillis).toLocaleString()
+    return formatDateTime(observation.valueDateTime)
   }
 
   if ('valueDate' in observation && observation.valueDate) {
@@ -115,28 +120,20 @@ export function formatObservationValue(
  */
 export function getObservationEffectiveDate(observation: Observation): string {
   if (observation.effectiveDateTime) {
-    return new Date(
-      observation.effectiveDateTime.epochMillis
-    ).toLocaleDateString()
+    return formatDate(observation.effectiveDateTime)
   }
 
-  if (observation.effectivePeriod?.start) {
-    const startDate = new Date(
-      observation.effectivePeriod.start.epochMillis
-    ).toLocaleDateString()
-    if (observation.effectivePeriod.end) {
-      const endDate = new Date(
-        observation.effectivePeriod.end.epochMillis
-      ).toLocaleDateString()
-      return `${startDate} - ${endDate}`
-    }
-    return `${startDate} - Ongoing`
+  if (observation.effectivePeriod) {
+    return formatDateRange(
+      observation.effectivePeriod.start,
+      observation.effectivePeriod.end,
+      'Ongoing',
+      'Unknown date'
+    )
   }
 
   if (observation.effectiveInstant) {
-    return new Date(
-      observation.effectiveInstant.epochMillis
-    ).toLocaleDateString()
+    return formatDate(observation.effectiveInstant)
   }
 
   return 'Unknown date'
@@ -164,7 +161,7 @@ export function formatObservationDetails(observation: Observation) {
   if (observation.issued) {
     details.push({
       label: 'Issued',
-      value: new Date(observation.issued.epochMillis).toLocaleString(),
+      value: formatDateTime(observation.issued),
     })
   }
 
