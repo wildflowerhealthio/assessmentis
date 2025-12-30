@@ -1,25 +1,20 @@
 import { describe, it, expect } from 'vitest'
-import { Context } from 'effect'
-import { BaseClinicalDataRepository } from '@assessmentis/clinical-domain'
 import { createResourceCollectionHook } from './createResourceCollectionHook'
-
-// Define a test resource type
-type TestResourceId = string & { readonly __brand: 'TestResourceId' }
-interface TestResource {
-  id?: TestResourceId
-  name: string
-}
-
-// Create a test repository tag
-class TestRepository extends Context.Tag('TestRepository')<
-  TestRepository,
-  BaseClinicalDataRepository<TestResource, TestResourceId>
->() {}
+import {
+  PatientId,
+  Patient,
+  PatientRepository,
+} from '@assessmentis/clinical-domain/administration'
 
 describe('createResourceCollectionHook', () => {
   it('should create a hook function', () => {
-    const useTestCollection = createResourceCollectionHook({
-      repository: TestRepository,
+    const useTestCollection = createResourceCollectionHook<
+      PatientRepository,
+      PatientId,
+      Patient,
+      typeof PatientRepository
+    >({
+      repository: PatientRepository,
     })
 
     expect(useTestCollection).toBeDefined()
@@ -27,8 +22,13 @@ describe('createResourceCollectionHook', () => {
   })
 
   it('should return a function that accepts filters parameter', () => {
-    const useTestCollection = createResourceCollectionHook({
-      repository: TestRepository,
+    const useTestCollection = createResourceCollectionHook<
+      PatientRepository,
+      PatientId,
+      Patient,
+      typeof PatientRepository
+    >({
+      repository: PatientRepository,
     })
 
     // The hook should be a function
