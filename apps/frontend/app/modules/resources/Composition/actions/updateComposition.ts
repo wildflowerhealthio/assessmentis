@@ -1,4 +1,3 @@
-import { Effect } from 'effect'
 import {
   Composition,
   CompositionId,
@@ -10,35 +9,21 @@ import {
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
+import { ClientRuntimeContext } from '@assessmentis/platform-domain'
 import {
-  CompositionFormData,
   transformToComposition,
+  CompositionFormData,
 } from '../schemas/CompositionFormSchema'
-import { WithId } from '@assessmentis/clinical-domain/data-types'
+import { createResourceUpdateAction } from '../../../common/actions/createResourceActions'
 
-export const updateComposition = (
-  id: CompositionId,
-  currentComposition: Composition,
-  formData: CompositionFormData
-): Effect.Effect<
+export const updateComposition = createResourceUpdateAction<
+  CompositionFormData,
   Composition,
+  CompositionId,
   | UnhandledError
   | NeedsAuthenticationError
   | ExternalAssertionError
   | NotFoundError,
-  CompositionRepository
-> => {
-  return Effect.gen(function* () {
-    const repository = yield* CompositionRepository
-
-    // Transform form data and merge with existing composition
-    const updatedFields = transformToComposition(formData)
-    const updatedComposition: WithId<Composition> = {
-      ...currentComposition,
-      ...updatedFields,
-      id,
-    }
-
-    return yield* repository.update(updatedComposition)
-  })
-}
+  typeof CompositionRepository,
+  ClientRuntimeContext
+>(CompositionRepository, transformToComposition)

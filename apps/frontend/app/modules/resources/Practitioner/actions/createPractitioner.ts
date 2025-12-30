@@ -1,4 +1,3 @@
-import { Effect } from 'effect'
 import {
   Practitioner,
   PractitionerRepository,
@@ -8,21 +7,17 @@ import {
   NeedsAuthenticationError,
   UnhandledError,
 } from '@assessmentis/ontology'
+import { ClientRuntimeContext } from '@assessmentis/platform-domain'
 import {
-  PractitionerFormData,
   transformToPractitioner,
+  PractitionerFormData,
 } from '../schemas/PractitionerFormSchema'
+import { createResourceCreateAction } from '../../../common/actions/createResourceActions'
 
-export const createPractitioner = (
-  formData: PractitionerFormData
-): Effect.Effect<
+export const createPractitioner = createResourceCreateAction<
+  PractitionerFormData,
   Practitioner,
   UnhandledError | NeedsAuthenticationError | ExternalAssertionError,
-  PractitionerRepository
-> => {
-  return Effect.gen(function* () {
-    const repository = yield* PractitionerRepository
-    const practitioner = transformToPractitioner(formData)
-    return yield* repository.create(practitioner)
-  })
-}
+  typeof PractitionerRepository,
+  ClientRuntimeContext
+>(PractitionerRepository, transformToPractitioner)

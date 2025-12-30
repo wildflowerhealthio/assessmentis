@@ -1,4 +1,3 @@
-import { Effect } from 'effect'
 import {
   Composition,
   CompositionRepository,
@@ -8,21 +7,17 @@ import {
   NeedsAuthenticationError,
   UnhandledError,
 } from '@assessmentis/ontology'
+import { ClientRuntimeContext } from '@assessmentis/platform-domain'
 import {
-  CompositionFormData,
   transformToComposition,
+  CompositionFormData,
 } from '../schemas/CompositionFormSchema'
+import { createResourceCreateAction } from '../../../common/actions/createResourceActions'
 
-export const createComposition = (
-  formData: CompositionFormData
-): Effect.Effect<
+export const createComposition = createResourceCreateAction<
+  CompositionFormData,
   Composition,
   UnhandledError | NeedsAuthenticationError | ExternalAssertionError,
-  CompositionRepository
-> => {
-  return Effect.gen(function* () {
-    const repository = yield* CompositionRepository
-    const composition = transformToComposition(formData)
-    return yield* repository.create(composition)
-  })
-}
+  typeof CompositionRepository,
+  ClientRuntimeContext
+>(CompositionRepository, transformToComposition)

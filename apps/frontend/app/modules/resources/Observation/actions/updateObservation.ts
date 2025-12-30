@@ -1,4 +1,3 @@
-import { Effect } from 'effect'
 import {
   Observation,
   ObservationId,
@@ -10,34 +9,21 @@ import {
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
+import { ClientRuntimeContext } from '@assessmentis/platform-domain'
 import {
-  ObservationFormData,
   transformToObservation,
+  ObservationFormData,
 } from '../schemas/ObservationFormSchema'
-import { WithId } from '@assessmentis/clinical-domain/data-types'
+import { createResourceUpdateAction } from '../../../common/actions/createResourceActions'
 
-export const updateObservation = (
-  id: ObservationId,
-  currentObservation: Observation,
-  formData: ObservationFormData
-): Effect.Effect<
+export const updateObservation = createResourceUpdateAction<
+  ObservationFormData,
   Observation,
+  ObservationId,
   | UnhandledError
   | NeedsAuthenticationError
   | ExternalAssertionError
   | NotFoundError,
-  ObservationRepository
-> => {
-  return Effect.gen(function* () {
-    const repository = yield* ObservationRepository
-
-    // Merge form data with existing observation
-    const updatedObservation: WithId<Observation> = {
-      ...currentObservation,
-      ...transformToObservation(formData),
-      id,
-    }
-
-    return yield* repository.update(updatedObservation)
-  })
-}
+  typeof ObservationRepository,
+  ClientRuntimeContext
+>(ObservationRepository, transformToObservation)

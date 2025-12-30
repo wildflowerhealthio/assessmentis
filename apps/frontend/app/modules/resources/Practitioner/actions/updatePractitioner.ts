@@ -1,4 +1,3 @@
-import { Effect } from 'effect'
 import {
   Practitioner,
   PractitionerId,
@@ -10,35 +9,21 @@ import {
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
+import { ClientRuntimeContext } from '@assessmentis/platform-domain'
 import {
-  PractitionerFormData,
   transformToPractitioner,
+  PractitionerFormData,
 } from '../schemas/PractitionerFormSchema'
-import { WithId } from '@assessmentis/clinical-domain/data-types'
+import { createResourceUpdateAction } from '../../../common/actions/createResourceActions'
 
-export const updatePractitioner = (
-  id: PractitionerId,
-  currentPractitioner: Practitioner,
-  formData: PractitionerFormData
-): Effect.Effect<
+export const updatePractitioner = createResourceUpdateAction<
+  PractitionerFormData,
   Practitioner,
+  PractitionerId,
   | UnhandledError
   | NeedsAuthenticationError
   | ExternalAssertionError
   | NotFoundError,
-  PractitionerRepository
-> => {
-  return Effect.gen(function* () {
-    const repository = yield* PractitionerRepository
-
-    // Transform form data and merge with existing practitioner
-    const updatedFields = transformToPractitioner(formData)
-    const updatedPractitioner: WithId<Practitioner> = {
-      ...currentPractitioner,
-      ...updatedFields,
-      id,
-    }
-
-    return yield* repository.update(updatedPractitioner)
-  })
-}
+  typeof PractitionerRepository,
+  ClientRuntimeContext
+>(PractitionerRepository, transformToPractitioner)

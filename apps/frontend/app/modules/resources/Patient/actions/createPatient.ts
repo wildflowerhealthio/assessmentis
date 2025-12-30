@@ -1,4 +1,3 @@
-import { Effect } from 'effect'
 import {
   Patient,
   PatientRepository,
@@ -8,21 +7,17 @@ import {
   NeedsAuthenticationError,
   UnhandledError,
 } from '@assessmentis/ontology'
+import { ClientRuntimeContext } from '@assessmentis/platform-domain'
 import {
-  PatientFormData,
   transformToPatient,
+  PatientFormData,
 } from '../schemas/PatientFormSchema'
+import { createResourceCreateAction } from '../../../common/actions/createResourceActions'
 
-export const createPatient = (
-  formData: PatientFormData
-): Effect.Effect<
+export const createPatient = createResourceCreateAction<
+  PatientFormData,
   Patient,
   UnhandledError | NeedsAuthenticationError | ExternalAssertionError,
-  PatientRepository
-> => {
-  return Effect.gen(function* () {
-    const repository = yield* PatientRepository
-    const patient = transformToPatient(formData)
-    return yield* repository.create(patient)
-  })
-}
+  typeof PatientRepository,
+  ClientRuntimeContext
+>(PatientRepository, transformToPatient)

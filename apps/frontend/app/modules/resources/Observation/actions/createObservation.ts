@@ -1,4 +1,3 @@
-import { Effect } from 'effect'
 import {
   Observation,
   ObservationRepository,
@@ -8,21 +7,17 @@ import {
   NeedsAuthenticationError,
   UnhandledError,
 } from '@assessmentis/ontology'
+import { ClientRuntimeContext } from '@assessmentis/platform-domain'
 import {
-  ObservationFormData,
   transformToObservation,
+  ObservationFormData,
 } from '../schemas/ObservationFormSchema'
+import { createResourceCreateAction } from '../../../common/actions/createResourceActions'
 
-export const createObservation = (
-  formData: ObservationFormData
-): Effect.Effect<
+export const createObservation = createResourceCreateAction<
+  ObservationFormData,
   Observation,
   UnhandledError | NeedsAuthenticationError | ExternalAssertionError,
-  ObservationRepository
-> => {
-  return Effect.gen(function* () {
-    const repository = yield* ObservationRepository
-    const observation = transformToObservation(formData)
-    return yield* repository.create(observation)
-  })
-}
+  typeof ObservationRepository,
+  ClientRuntimeContext
+>(ObservationRepository, transformToObservation)
