@@ -15,6 +15,13 @@ import {
  * 2. Transforming form data to resource format
  * 3. Calling repository.create()
  *
+ * Note: The return type uses `as Effect.Effect<any, any, any>` to work around
+ * TypeScript's type inference limitations with Effect's contravariant requirements
+ * parameter. This allows the returned actions to be used with ClientRuntimeContext
+ * (which is a union of all repository types) without type errors. The runtime
+ * behavior is still type-safe as the repository.create() method enforces the
+ * correct types at runtime.
+ *
  * @example
  * ```typescript
  * export const createPatient = createResourceCreateAction(
@@ -46,6 +53,13 @@ export function createResourceCreateAction<
  * 2. Transforming form data to resource format
  * 3. Merging with current resource and id
  * 4. Calling repository.update()
+ *
+ * Note: The return type uses `as Effect.Effect<any, any, any>` to work around
+ * TypeScript's type inference limitations with Effect's contravariant requirements
+ * parameter. This allows the returned actions to be used with ClientRuntimeContext
+ * (which is a union of all repository types) without type errors. The runtime
+ * behavior is still type-safe as the repository.update() method enforces the
+ * correct types at runtime.
  *
  * @example
  * ```typescript
