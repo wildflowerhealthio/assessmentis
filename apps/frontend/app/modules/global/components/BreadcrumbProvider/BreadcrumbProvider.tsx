@@ -28,11 +28,6 @@ const areBreadcrumbsEqual = (
       }
     }
 
-    if ('loading' in segmentA && 'loading' in segmentB) {
-      // Both segments must have same shape
-      return segmentA.loading === segmentB.loading
-    }
-
     if ('label' in segmentA && 'label' in segmentB) {
       return (
         segmentA.label === segmentB.label && segmentA.href === segmentB.href

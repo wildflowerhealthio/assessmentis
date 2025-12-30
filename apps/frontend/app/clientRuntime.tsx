@@ -62,7 +62,7 @@ export const useRuntime = () => {
     }
   }, [loadedRuntime])
 
-  const shamRuntime = useMemo(() => {
+  const partialRuntime = useMemo(() => {
     if (loadedRuntime._tag == 'loading')
       return {
         runPromise: <A, E>(effect: Effect.Effect<A, E, ClientRuntimeContext>) =>
@@ -82,7 +82,7 @@ export const useRuntime = () => {
     return loadedRuntime.value
   }, [loadedRuntime])
 
-  return shamRuntime
+  return partialRuntime
 }
 
 export type ContextError = OrgError
