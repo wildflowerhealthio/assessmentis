@@ -247,4 +247,59 @@ describe('useAutoSave', () => {
     expect(onSave2).toHaveBeenCalledWith(data)
     expect(calls).toEqual(['callback2'])
   })
+
+  it('should skip auto-save on initial mount when skipInitialSave is true', async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined)
+    const data = { test: 'initialValue' }
+
+    const { rerender } = renderHook(
+      ({ data }) =>
+        useAutoSave({
+          data,
+          onSave,
+          delay: 1000,
+          skipInitialSave: true,
+        }),
+      { initialProps: { data } }
+    )
+
+    // Fast-forward past the delay on initial mount
+    vi.advanceTimersByTime(1000)
+    await vi.runOnlyPendingTimersAsync()
+
+    // Should not have been called on initial mount
+    expect(onSave).not.toHaveBeenCalled()
+
+    // Now change the data
+    rerender({ data: { test: 'updatedValue' } })
+
+    // Fast-forward past the delay
+    vi.advanceTimersByTime(1000)
+    await vi.runOnlyPendingTimersAsync()
+
+    // Should now be called with the updated data
+    expect(onSave).toHaveBeenCalledTimes(1)
+    expect(onSave).toHaveBeenCalledWith({ test: 'updatedValue' })
+  })
+
+  it('should trigger auto-save on initial mount when skipInitialSave is false (default)', async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined)
+    const data = { test: 'initialValue' }
+
+    renderHook(() =>
+      useAutoSave({
+        data,
+        onSave,
+        delay: 1000,
+      })
+    )
+
+    // Fast-forward past the delay on initial mount
+    vi.advanceTimersByTime(1000)
+    await vi.runOnlyPendingTimersAsync()
+
+    // Should have been called on initial mount
+    expect(onSave).toHaveBeenCalledTimes(1)
+    expect(onSave).toHaveBeenCalledWith(data)
+  })
 })

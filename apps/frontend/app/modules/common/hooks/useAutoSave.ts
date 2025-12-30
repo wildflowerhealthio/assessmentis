@@ -20,6 +20,12 @@ export interface UseAutoSaveOptions<T> {
    * @default true
    */
   enabled?: boolean
+  /**
+   * Whether to skip auto-save on initial mount
+   * When true, auto-save will only trigger after the data changes, not on first render
+   * @default false
+   */
+  skipInitialSave?: boolean
 }
 
 /**
@@ -41,9 +47,11 @@ export function useAutoSave<T>({
   onSave,
   delay = 5000,
   enabled = true,
+  skipInitialSave = false,
 }: UseAutoSaveOptions<T>) {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const onSaveRef = useRef(onSave)
+  const isInitialMountRef = useRef(true)
 
   // Keep the latest onSave callback in a ref to avoid dependency issues.
   // We use a ref here because:
@@ -64,6 +72,15 @@ export function useAutoSave<T>({
       clearTimeout(timeoutRef.current)
     }
 
+    // Skip auto-save on initial mount if requested
+    if (skipInitialSave && isInitialMountRef.current) {
+      isInitialMountRef.current = false
+      return
+    }
+
+    // Mark that we've passed the initial mount
+    isInitialMountRef.current = false
+
     // If auto-save is disabled, don't set up a new timeout
     if (!enabled) {
       return
@@ -82,5 +99,5 @@ export function useAutoSave<T>({
         clearTimeout(timeoutRef.current)
       }
     }
-  }, [data, delay, enabled])
+  }, [data, delay, enabled, skipInitialSave])
 }
