@@ -1,6 +1,9 @@
 import { Effect } from 'effect'
 import { useMemo } from 'react'
-import { BaseClinicalDataRepository } from '@assessmentis/clinical-domain'
+import {
+  BaseClinicalDataRepository,
+  RepositoryFilters,
+} from '@assessmentis/clinical-domain'
 import { ReadonlyTag } from 'effect/Context'
 import { useResourceRunEffect } from '../../../clientRuntime'
 import { useClinicalDataCollection } from '../hooks/useClinicalDataCollection'
@@ -30,7 +33,7 @@ export function createResourceCollectionHook<
     BaseClinicalDataRepository<TResource, TId>
   >,
 >(config: { repository: TRepoTag }) {
-  return (filters?: object) => {
+  return (filters?: RepositoryFilters<TResource>) => {
     const resources = useResourceRunEffect(
       useMemo(() => {
         return Effect.gen(function* () {
