@@ -20,6 +20,13 @@ type ExtractResourceTypes<T> =
     : never
 
 /**
+ * Extract the Tag type from a ReadonlyTag
+ * For Context.Tag, the first parameter is the tag type itself
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ExtractTag<T> = T extends ReadonlyTag<infer TTag, any> ? TTag : never
+
+/**
  * Creates a resource collection hook with standardized behavior
  *
  * This factory function reduces duplication across resource collection hooks by
@@ -42,6 +49,7 @@ export function createResourceCollectionHook<
   type Types = ExtractResourceTypes<Service>
   type TResource = Types['resource']
   type TId = Types['id']
+  type TTag = ExtractTag<TRepoTag>
 
   return (filters: object) => {
     const resources = useResourceRunEffect(
@@ -53,8 +61,7 @@ export function createResourceCollectionHook<
       }, [filters])
     )
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return useClinicalDataCollection<TId, TResource, any, TRepoTag, never>(
+    return useClinicalDataCollection<TId, TResource, TTag, TRepoTag, never>(
       config.repository,
       resources
     )
