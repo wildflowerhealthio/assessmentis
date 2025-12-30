@@ -21,6 +21,18 @@ export type ClinicalDataRepositoryErrorsWithNotFound =
   | NotFoundError
 
 /**
+ * Filter type for getMany operations on clinical data repositories
+ * Allows filtering by resource properties, converting Reference types to strings
+ */
+export type RepositoryFilters<TResource> = {
+  [key in Exclude<keyof TResource, 'resourceType'>]?: TResource[key] extends
+    | Reference
+    | undefined
+    ? string
+    : TResource[key]
+}
+
+/**
  * Base class for clinical data repositories that support CRUD operations
  * on FHIR resources. This provides a common structure for repositories
  * managing clinical data in the FHIR store.

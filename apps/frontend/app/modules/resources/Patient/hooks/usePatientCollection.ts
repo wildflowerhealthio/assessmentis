@@ -3,25 +3,13 @@ import {
   PatientId,
   PatientRepository,
 } from '@assessmentis/clinical-domain/administration'
-import { useClinicalDataCollection } from 'app/modules/common/hooks/useClinicalDataCollection'
-import { useResourceRunEffect } from '../../../../clientRuntime'
-import { useMemo } from 'react'
-import { Effect } from 'effect'
+import { createResourceCollectionHook } from '../../../common/utils/createResourceCollectionHook'
 
-export const usePatientCollection = (filters: object) => {
-  const patients = useResourceRunEffect(
-    useMemo(() => {
-      return Effect.gen(function* () {
-        const patientRepository = yield* PatientRepository
-        return yield* patientRepository.getMany(filters)
-      })
-    }, [filters])
-  )
-  return useClinicalDataCollection<
-    PatientId,
-    Patient,
-    PatientRepository,
-    typeof PatientRepository,
-    never
-  >(PatientRepository, patients)
-}
+export const usePatientCollection = createResourceCollectionHook<
+  PatientRepository,
+  PatientId,
+  Patient,
+  typeof PatientRepository
+>({
+  repository: PatientRepository,
+})
