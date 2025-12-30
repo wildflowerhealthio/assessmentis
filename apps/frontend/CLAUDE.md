@@ -313,6 +313,60 @@ describe('EncounterStatus', () => {
 })
 ```
 
+## End-to-End Testing with Playwright
+
+### Running E2E Tests
+
+```bash
+npm run test:e2e              # Run all E2E tests headless
+npm run test:e2e:ui           # Open Playwright UI for interactive testing
+npm run test:e2e:debug        # Debug tests with Playwright Inspector
+npm run test:e2e:codegen      # Generate test code by recording actions
+```
+
+### Writing E2E Tests
+
+**Location:** `apps/frontend/e2e/tests/`
+
+**Test Structure:**
+```typescript
+import { test, expect } from '../../fixtures/auth'
+
+test.describe('Feature Name', () => {
+  test('should do something', async ({ authenticatedPage }) => {
+    // Arrange: Navigate and set up
+    await authenticatedPage.goto('/path')
+
+    // Act: Perform user actions
+    await authenticatedPage.click('button')
+
+    // Assert: Verify expected outcomes
+    await expect(authenticatedPage.locator('h1')).toContainText('Expected')
+  })
+})
+```
+
+### Using Playwright with Claude Code
+
+Claude Code can interact with your running app via Playwright MCP:
+
+1. **Start dev server:** `npm run dev`
+2. **Ask Claude to interact:**
+   - "Open the app in Playwright and navigate to /Encounter"
+   - "Click the Create Encounter button and take a screenshot"
+   - "Fill in the patient form and verify it submits"
+3. **Visual verification:** Claude can take screenshots at each step
+4. **Generate tests:** Claude can convert manual interactions into test code
+
+### Best Practices
+
+- Use `data-testid` attributes for stable selectors
+- Test user workflows, not implementation details
+- Include happy path AND error scenarios
+- Use fixtures for authentication and common setup
+- Take screenshots for visual verification
+- Run tests in CI/CD before merging
+
 ## Common Patterns
 
 ### Conditional Rendering

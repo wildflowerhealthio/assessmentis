@@ -13,6 +13,11 @@
     "lint": "eslint \"./app/**/*\"",
     "lint:fix": "eslint --fix \"./app/**/*\"",
     "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:codegen": "playwright codegen http://localhost:5173",
+    "test:e2e:report": "playwright show-report",
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
     "deploy": "firebase deploy --only hosting"
@@ -62,6 +67,7 @@
   "devDependencies": {
     "@assessmentis/eslint-config": "*",
     "@assessmentis/typescript-config": "*",
+    "@playwright/test": "^1.50.0",
     "@react-router/dev": "^7.9.6",
     "@types/fhir": "^0.0.41",
     "@types/gapi": "^0.0.47",

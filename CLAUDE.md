@@ -219,6 +219,44 @@ For frontend work in `/apps/frontend`:
 5. Add property-based component tests
 6. Commit when satisfied
 
+## End-to-End Testing with Playwright
+
+### Running E2E Tests
+
+```bash
+cd apps/frontend
+npm run test:e2e              # Run all E2E tests headless
+npm run test:e2e:ui           # Open Playwright UI for interactive testing
+npm run test:e2e:debug        # Debug tests with Playwright Inspector
+npm run test:e2e:codegen      # Generate test code by recording actions
+```
+
+### Using the Web App with Claude Code
+
+Claude Code can interact with the running web app through Playwright MCP:
+
+**Starting the App:**
+```bash
+npm run dev  # Start dev server on http://localhost:5173
+```
+
+**Interacting with the App:**
+Once the dev server is running, Claude Code can:
+- Navigate to pages: "Open http://localhost:5173 in Playwright"
+- Take screenshots: "Take a screenshot of the current page"
+- Click elements: "Click the 'Create Encounter' button"
+- Fill forms: "Fill in patient name with 'John Doe'"
+- Verify UI: "Check if the encounter list shows 3 items"
+
+**Visual Verification Workflow:**
+1. Make code changes
+2. Ask Claude to open the app in Playwright
+3. Navigate to the changed feature
+4. Take screenshot for verification
+5. Iterate based on visual feedback
+
+See [apps/frontend/CLAUDE.md](apps/frontend/CLAUDE.md) for detailed E2E testing patterns.
+
 ## See Also
 
 - Custom slash commands: `.claude/commands/` (once created)
