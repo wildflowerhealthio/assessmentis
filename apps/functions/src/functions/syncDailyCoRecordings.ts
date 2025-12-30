@@ -8,7 +8,9 @@ import { google } from 'googleapis'
 interface DailyCoRecording {
   id: string
   room_name: string
+  /** Unix timestamp in seconds representing when the recording started */
   start_ts: number
+  /** Duration of the recording in seconds */
   duration: number
 }
 
@@ -84,11 +86,14 @@ interface FhirBundle {
 
 /**
  * Extracts the room name from a Daily.co room URL
+ * @param url - The full Daily.co room URL
+ * @returns The room name or undefined if the URL is invalid
  */
 function extractRoomNameFromUrl(url: string): string | undefined {
+  if (!url || typeof url !== 'string') return undefined
   const urlParts = url.split('/')
-  if (urlParts.length === 0) return undefined
-  return urlParts[urlParts.length - 1]
+  const roomName = urlParts[urlParts.length - 1]
+  return roomName && roomName.trim() !== '' ? roomName : undefined
 }
 
 /**
@@ -126,6 +131,13 @@ async function fetchRecordingDownloadLink(
     error(`Error fetching recording link for ${recordingId}:`, err)
     return undefined
   }
+}
+
+/**
+ * Constructs the FHIR base URL from a FHIR store configuration
+ */
+function getFhirBaseUrl(config: GoogleFhirConfig): string {
+  return `https://healthcare.googleapis.com/v1/projects/${config.projectId}/locations/${config.region}/datasets/${config.dataset}/fhirStores/${config.storeId}/fhir`
 }
 
 /**
@@ -241,7 +253,7 @@ async function syncOrgRecordings(orgId: string): Promise<{
       throw new Error('Failed to get access token')
     }
 
-    const fhirBaseUrl = `https://healthcare.googleapis.com/v1/projects/${mediaRepoConfig.projectId}/locations/${mediaRepoConfig.region}/datasets/${mediaRepoConfig.dataset}/fhirStores/${mediaRepoConfig.storeId}/fhir`
+    const fhirBaseUrl = getFhirBaseUrl(mediaRepoConfig)
 
     // Fetch all recordings from Daily.co
     const allRecordingsUrl = 'https://api.daily.co/v1/recordings'
@@ -487,12 +499,167 @@ async function syncOrgRecordings(orgId: string): Promise<{
 }
 
 /**
+ * Core sync logic shared between scheduled and manual functions
+ */
+async function performSync(): Promise<{
+  totalOrgs: number
+  successfulOrgs: Array<{
+    orgId: string
+    recordingsFound: number
+    mediaCreated: number
+    mediaUpdated: number
+  }>
+  failedOrgs: Array<{
+    orgId: string
+    errors: string[]
+  }>
+}> {
+  // Fetch all organizations
+  const orgsSnapshot = await db.collection('orgs').get()
+  const orgIds = orgsSnapshot.docs.map((doc) => doc.id)
+
+  info(`Found ${orgIds.length} organizations to sync`)
+
+  const results = await Promise.allSettled(
+    orgIds.map((orgId) => syncOrgRecordings(orgId))
+  )
+
+  // Collect results
+  const failedOrgs: Array<{
+    orgId: string
+    errors: string[]
+  }> = []
+  const successfulOrgs: Array<{
+    orgId: string
+    recordingsFound: number
+    mediaCreated: number
+    mediaUpdated: number
+  }> = []
+
+  results.forEach((result, index) => {
+    const orgId = orgIds[index]
+    if (result.status === 'rejected') {
+      failedOrgs.push({ orgId, errors: [String(result.reason)] })
+    } else if (!result.value.success) {
+      failedOrgs.push({ orgId, errors: result.value.errors })
+    } else {
+      successfulOrgs.push({
+        orgId,
+        recordingsFound: result.value.recordingsFound,
+        mediaCreated: result.value.mediaCreated,
+        mediaUpdated: result.value.mediaUpdated,
+      })
+    }
+  })
+
+  return {
+    totalOrgs: orgIds.length,
+    successfulOrgs,
+    failedOrgs,
+  }
+}
+
+/**
+ * Handles failure tracking and notifications
+ */
+async function handleSyncResults(results: {
+  totalOrgs: number
+  successfulOrgs: Array<{
+    orgId: string
+    recordingsFound: number
+    mediaCreated: number
+    mediaUpdated: number
+  }>
+  failedOrgs: Array<{
+    orgId: string
+    errors: string[]
+  }>
+}): Promise<void> {
+  const { totalOrgs, successfulOrgs, failedOrgs } = results
+  const totalRecordings = successfulOrgs.reduce(
+    (sum, org) => sum + org.recordingsFound,
+    0
+  )
+  const totalMediaCreated = successfulOrgs.reduce(
+    (sum, org) => sum + org.mediaCreated,
+    0
+  )
+  const totalMediaUpdated = successfulOrgs.reduce(
+    (sum, org) => sum + org.mediaUpdated,
+    0
+  )
+
+  if (failedOrgs.length > 0) {
+    error(`Sync completed with failures for ${failedOrgs.length} orgs:`, failedOrgs)
+
+    // Track failures in Firestore for admin notification
+    for (const failedOrg of failedOrgs) {
+      try {
+        const failureDoc = db
+          .collection('orgs')
+          .doc(failedOrg.orgId)
+          .collection('syncFailures')
+          .doc('dailyCoRecordings')
+
+        const failureData = await failureDoc.get()
+        const currentCount = failureData.exists
+          ? (failureData.data()?.consecutiveFailures || 0)
+          : 0
+        const newCount = currentCount + 1
+
+        await failureDoc.set({
+          lastFailure: new Date().toISOString(),
+          lastErrors: failedOrg.errors,
+          consecutiveFailures: newCount,
+        })
+
+        // Log warning if failures are accumulating
+        if (newCount >= 3) {
+          warn(
+            `Org ${failedOrg.orgId} has ${newCount} consecutive sync failures. Admin notification recommended.`
+          )
+          // TODO: Send email/Slack notification to admins
+          // This could be implemented by:
+          // 1. Using SendGrid or Firebase Extensions for email
+          // 2. Using Slack webhooks for Slack notifications
+          // 3. Creating a document in a 'notifications' collection that admins monitor
+        }
+      } catch (err) {
+        error(`Error tracking failure for org ${failedOrg.orgId}:`, err)
+      }
+    }
+  } else {
+    info(
+      `All ${totalOrgs} organizations synced successfully. Found ${totalRecordings} recordings, created ${totalMediaCreated} media, updated ${totalMediaUpdated} media.`
+    )
+
+    // Clear failure counts for all orgs
+    const allOrgIds = [
+      ...successfulOrgs.map((org) => org.orgId),
+      ...failedOrgs.map((org) => org.orgId),
+    ]
+    for (const orgId of allOrgIds) {
+      try {
+        await db
+          .collection('orgs')
+          .doc(orgId)
+          .collection('syncFailures')
+          .doc('dailyCoRecordings')
+          .delete()
+      } catch (err) {
+        // Ignore errors when deleting non-existent documents
+      }
+    }
+  }
+}
+
+/**
  * Cloud Function that syncs Daily.co recordings for all organizations
  * Scheduled to run every hour
  */
 export const syncDailyCoRecordings = onSchedule(
   {
-    schedule: 'every 1 hours',
+    schedule: 'every 1 hour',
     timeZone: 'America/Toronto',
     timeoutSeconds: 540, // 9 minutes
     memory: '512MiB',
@@ -501,99 +668,8 @@ export const syncDailyCoRecordings = onSchedule(
     info('Starting Daily.co recordings sync', { event })
 
     try {
-      // Fetch all organizations
-      const orgsSnapshot = await db.collection('orgs').get()
-      const orgIds = orgsSnapshot.docs.map((doc) => doc.id)
-
-      info(`Found ${orgIds.length} organizations to sync`)
-
-      const results = await Promise.allSettled(
-        orgIds.map((orgId) => syncOrgRecordings(orgId))
-      )
-
-      // Collect results
-      const failedOrgs: Array<{
-        orgId: string
-        errors: string[]
-      }> = []
-      let totalRecordings = 0
-      let totalMediaCreated = 0
-      let totalMediaUpdated = 0
-
-      results.forEach((result, index) => {
-        const orgId = orgIds[index]
-        if (result.status === 'rejected') {
-          failedOrgs.push({ orgId, errors: [String(result.reason)] })
-        } else if (!result.value.success) {
-          failedOrgs.push({ orgId, errors: result.value.errors })
-        } else {
-          totalRecordings += result.value.recordingsFound
-          totalMediaCreated += result.value.mediaCreated
-          totalMediaUpdated += result.value.mediaUpdated
-        }
-      })
-
-      if (failedOrgs.length > 0) {
-        error(
-          `Sync completed with failures for ${failedOrgs.length} orgs:`,
-          failedOrgs
-        )
-
-        // Track failures in Firestore for admin notification
-        for (const failedOrg of failedOrgs) {
-          try {
-            const failureDoc = db
-              .collection('orgs')
-              .doc(failedOrg.orgId)
-              .collection('syncFailures')
-              .doc('dailyCoRecordings')
-
-            const failureData = await failureDoc.get()
-            const currentCount = failureData.exists
-              ? (failureData.data()?.consecutiveFailures || 0)
-              : 0
-            const newCount = currentCount + 1
-
-            await failureDoc.set({
-              lastFailure: new Date().toISOString(),
-              lastErrors: failedOrg.errors,
-              consecutiveFailures: newCount,
-            })
-
-            // Log warning if failures are accumulating
-            if (newCount >= 3) {
-              warn(
-                `Org ${failedOrg.orgId} has ${newCount} consecutive sync failures. Admin notification recommended.`
-              )
-              // TODO: Send email/Slack notification to admins
-              // This could be implemented by:
-              // 1. Using SendGrid or Firebase Extensions for email
-              // 2. Using Slack webhooks for Slack notifications
-              // 3. Creating a document in a 'notifications' collection that admins monitor
-            }
-          } catch (err) {
-            error(`Error tracking failure for org ${failedOrg.orgId}:`, err)
-          }
-        }
-      } else {
-        info(
-          `All ${orgIds.length} organizations synced successfully. Found ${totalRecordings} recordings, created ${totalMediaCreated} media, updated ${totalMediaUpdated} media.`
-        )
-
-        // Clear failure counts for all orgs
-        for (const orgId of orgIds) {
-          try {
-            await db
-              .collection('orgs')
-              .doc(orgId)
-              .collection('syncFailures')
-              .doc('dailyCoRecordings')
-              .delete()
-          } catch (err) {
-            // Ignore errors when deleting non-existent documents
-          }
-        }
-      }
+      const results = await performSync()
+      await handleSyncResults(results)
     } catch (err) {
       error('Fatal error during sync:', err)
       throw err
@@ -616,59 +692,26 @@ export const syncDailyCoRecordingsManual = onCall(
       uid: request.auth?.uid,
     })
 
-    // TODO: Add authentication check to ensure only admins can trigger this
-    // const uid = request.auth?.uid
-    // if (!uid) {
-    //   throw new Error('Unauthorized: No user ID')
-    // }
+    // Check authentication
+    const uid = request.auth?.uid
+    if (!uid) {
+      throw new Error('Unauthorized: Authentication required')
+    }
+
+    // TODO: Add role-based authorization check
+    // Verify that the user has admin privileges for at least one organization
+    // This could be done by querying orgs/*/users/{uid} and checking roles
 
     try {
-      // Fetch all organizations
-      const orgsSnapshot = await db.collection('orgs').get()
-      const orgIds = orgsSnapshot.docs.map((doc) => doc.id)
-
-      info(`Found ${orgIds.length} organizations to sync`)
-
-      const results = await Promise.allSettled(
-        orgIds.map((orgId) => syncOrgRecordings(orgId))
-      )
-
-      // Collect results
-      const failedOrgs: Array<{
-        orgId: string
-        errors: string[]
-      }> = []
-      const successfulOrgs: Array<{
-        orgId: string
-        recordingsFound: number
-        mediaCreated: number
-        mediaUpdated: number
-      }> = []
-
-      results.forEach((result, index) => {
-        const orgId = orgIds[index]
-        if (result.status === 'rejected') {
-          failedOrgs.push({ orgId, errors: [String(result.reason)] })
-        } else if (!result.value.success) {
-          failedOrgs.push({ orgId, errors: result.value.errors })
-        } else {
-          successfulOrgs.push({
-            orgId,
-            recordingsFound: result.value.recordingsFound,
-            mediaCreated: result.value.mediaCreated,
-            mediaUpdated: result.value.mediaUpdated,
-          })
-        }
-      })
+      const results = await performSync()
+      await handleSyncResults(results)
 
       return {
         success: true,
-        totalOrgs: orgIds.length,
-        successfulOrgs: successfulOrgs.length,
-        failedOrgs: failedOrgs.length,
+        ...results,
         results: {
-          successful: successfulOrgs,
-          failed: failedOrgs,
+          successful: results.successfulOrgs,
+          failed: results.failedOrgs,
         },
       }
     } catch (err) {
