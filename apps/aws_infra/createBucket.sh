@@ -12,7 +12,7 @@ curl --request POST \
       \"recordings_bucket\": {
         \"bucket_name\": \"${AWS_BUCKET_NAME}\",
         \"bucket_region\": \"${REGION}\",
-        \"assume_role_arn\": \"\",
+        \"assume_role_arn\": \"${ASSUME_ROLE_ARN}\",
         \"allow_api_access\": true
       }
     }
