@@ -4,11 +4,14 @@
  * 
  * This module respects timezone semantics:
  * - DateTime.Utc: For global times that matter to the application/server (e.g., last-updated timestamps)
+ *   These are ALWAYS displayed in the user's local timezone
  * - DateTime.Zoned: For local times meaningful in the user's space (e.g., appointment times)
+ *   These show their timezone if it differs from local time
  * - Date (string): For timezone-independent dates (e.g., birthdays)
  */
 
 import { DateTime } from 'effect'
+import type { Period } from '@assessmentis/clinical-domain/data-types'
 
 /**
  * Get ordinal suffix for a day (st, nd, rd, th)
@@ -48,58 +51,18 @@ function isSameDay(date1: Date, date2: Date): boolean {
 
 /**
  * Format a timezone-independent date (e.g., birthdays, anniversaries)
- * @param date - Date string (YYYY-MM-DD format)
+ * @param date - Date object or undefined
  * @param fallback - Fallback string if date is undefined or invalid
  * @returns Formatted date string (e.g., "January 15th" or "January 15th, 2024")
  */
 export function formatTimelessDate(
-  date: string | Date | undefined,
+  date: Date | undefined,
   fallback: string = 'Unknown'
 ): string {
   if (!date) return fallback
   
-  const dateObj = typeof date === 'string' ? new Date(date + 'T00:00:00') : date
-  if (isNaN(dateObj.getTime())) return fallback
+  if (isNaN(date.getTime())) return fallback
 
-  const month = dateObj.toLocaleString('en-US', { month: 'long' })
-  const day = dateObj.getDate()
-  const year = dateObj.getFullYear()
-  const withinThreeMonths = isWithinThreeMonths(dateObj)
-
-  if (withinThreeMonths) {
-    return `${month} ${day}${getDaySuffix(day)}`
-  }
-  return `${month} ${day}${getDaySuffix(day)}, ${year}`
-}
-
-/**
- * Format a UTC timestamp (for server/application times like last-updated)
- * @param utc - DateTime.Utc timestamp
- * @param fallback - Fallback string if timestamp is undefined
- * @returns Formatted date and time string
- */
-export function formatUtcDateTime(
-  utc: DateTime.Utc | undefined,
-  fallback: string = 'Unknown'
-): string {
-  if (!utc) return fallback
-  const date = DateTime.toDateUtc(utc)
-  return date.toLocaleString()
-}
-
-/**
- * Format a UTC timestamp as just a date (for server/application dates)
- * @param utc - DateTime.Utc timestamp
- * @param fallback - Fallback string if timestamp is undefined
- * @returns Formatted date string with user-friendly formatting
- */
-export function formatUtcDate(
-  utc: DateTime.Utc | undefined,
-  fallback: string = 'Unknown'
-): string {
-  if (!utc) return fallback
-  const date = DateTime.toDateUtc(utc)
-  
   const month = date.toLocaleString('en-US', { month: 'long' })
   const day = date.getDate()
   const year = date.getFullYear()
@@ -109,21 +72,6 @@ export function formatUtcDate(
     return `${month} ${day}${getDaySuffix(day)}`
   }
   return `${month} ${day}${getDaySuffix(day)}, ${year}`
-}
-
-/**
- * Format a zoned datetime (for user-space times like appointments)
- * @param zoned - DateTime.Zoned timestamp
- * @param fallback - Fallback string if timestamp is undefined
- * @returns Formatted date and time string
- */
-export function formatZonedDateTime(
-  zoned: DateTime.Zoned | undefined,
-  fallback: string = 'Unknown'
-): string {
-  if (!zoned) return fallback
-  const date = DateTime.toDateAdjusted(zoned)
-  return date.toLocaleString()
 }
 
 /**
@@ -139,16 +87,85 @@ export interface DateRangeFormatOptions {
 }
 
 /**
- * Format a UTC date range with smart formatting
+ * Format a DateTime (Utc or Zoned) as a date
+ * UTC dates are displayed in local time
+ * Zoned dates show timezone if different from local
+ * @param dateTime - DateTime.Utc or DateTime.Zoned
+ * @param fallback - Fallback string if undefined
+ * @returns Formatted date string with user-friendly formatting
+ */
+export function formatDateTime(
+  dateTime: DateTime.Utc | DateTime.Zoned | undefined,
+  fallback: string = 'Unknown'
+): string {
+  if (dateTime === undefined) return fallback
+  
+  // Convert to local Date for display
+  const date = DateTime.isZoned(dateTime) 
+    ? DateTime.toDateAdjusted(dateTime)
+    : DateTime.toDateUtc(dateTime)
+  
+  const month = date.toLocaleString('en-US', { month: 'long' })
+  const day = date.getDate()
+  const year = date.getFullYear()
+  const withinThreeMonths = isWithinThreeMonths(date)
+
+  const dateStr = withinThreeMonths
+    ? `${month} ${day}${getDaySuffix(day)}`
+    : `${month} ${day}${getDaySuffix(day)}, ${year}`
+
+  // For Zoned datetime, show timezone if different from local
+  if (DateTime.isZoned(dateTime)) {
+    const zoneName = DateTime.zonedGetZone(dateTime)
+    const localZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    if (zoneName !== localZone) {
+      return `${dateStr} (${zoneName})`
+    }
+  }
+
+  return dateStr
+}
+
+/**
+ * Format a DateTime (Utc or Zoned) with time
+ * UTC datetimes are displayed in local time
+ * Zoned datetimes show timezone if different from local
+ * @param dateTime - DateTime.Utc or DateTime.Zoned
+ * @param fallback - Fallback string if undefined
+ * @returns Formatted date and time string
+ */
+export function formatDateTimeWithTime(
+  dateTime: DateTime.Utc | DateTime.Zoned | undefined,
+  fallback: string = 'Unknown'
+): string {
+  if (dateTime === undefined) return fallback
+  
+  // Convert to local Date for display
+  const date = DateTime.isZoned(dateTime) 
+    ? DateTime.toDateAdjusted(dateTime)
+    : DateTime.toDateUtc(dateTime)
+
+  // For Zoned datetime, show timezone if different from local
+  if (DateTime.isZoned(dateTime)) {
+    const zoneName = DateTime.zonedGetZone(dateTime)
+    const localZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    if (zoneName !== localZone) {
+      return date.toLocaleString('en-US', { timeZone: zoneName, timeZoneName: 'short' })
+    }
+  }
+
+  return date.toLocaleString()
+}
+
+/**
+ * Format a Period (date range) with smart formatting
  * Shows date once when on the same day, omits year for recent dates
- * @param start - Start DateTime.Utc
- * @param end - End DateTime.Utc
+ * @param period - Period with optional start and end DateTime.Utc
  * @param options - Format options
  * @returns Formatted range (e.g., "December 31st 9 AM - 10 AM", "January 10 - 14th")
  */
-export function formatUtcDateRange(
-  start: DateTime.Utc | undefined,
-  end: DateTime.Utc | undefined,
+export function formatDateRange(
+  period: Period | undefined,
   options: DateRangeFormatOptions = {}
 ): string {
   const {
@@ -157,9 +174,13 @@ export function formatUtcDateRange(
     neitherFallback = 'Unknown Range',
   } = options
 
+  if (!period) return neitherFallback
+  
+  const { start, end } = period
+
   if (!start && !end) return neitherFallback
-  if (!start) return `${startFallback} - ${formatUtcDate(end, endFallback)}`
-  if (!end) return `${formatUtcDate(start, startFallback)} - ${endFallback}`
+  if (!start) return `${startFallback} - ${formatDateTime(end, endFallback)}`
+  if (!end) return `${formatDateTime(start, startFallback)} - ${endFallback}`
 
   const startDate = DateTime.toDateUtc(start)
   const endDate = DateTime.toDateUtc(end)
@@ -195,19 +216,17 @@ export function formatUtcDateRange(
   }
 
   // Different months/years: show both dates
-  return `${formatUtcDate(start)} - ${formatUtcDate(end)}`
+  return `${formatDateTime(start)} - ${formatDateTime(end)}`
 }
 
 /**
- * Format a UTC datetime range with smart formatting
- * @param start - Start DateTime.Utc
- * @param end - End DateTime.Utc
+ * Format a Period (datetime range) with smart formatting
+ * @param period - Period with optional start and end DateTime.Utc
  * @param options - Format options
  * @returns Formatted datetime range
  */
-export function formatUtcDateTimeRange(
-  start: DateTime.Utc | undefined,
-  end: DateTime.Utc | undefined,
+export function formatDateTimeRange(
+  period: Period | undefined,
   options: DateRangeFormatOptions = {}
 ): string {
   const {
@@ -216,9 +235,13 @@ export function formatUtcDateTimeRange(
     neitherFallback = 'Unknown Range',
   } = options
 
+  if (!period) return neitherFallback
+  
+  const { start, end } = period
+
   if (!start && !end) return neitherFallback
-  if (!start) return `${startFallback} - ${formatUtcDateTime(end, endFallback)}`
-  if (!end) return `${formatUtcDateTime(start, startFallback)} - ${endFallback}`
+  if (!start) return `${startFallback} - ${formatDateTimeWithTime(end, endFallback)}`
+  if (!end) return `${formatDateTimeWithTime(start, startFallback)} - ${endFallback}`
 
   const startDate = DateTime.toDateUtc(start)
   const endDate = DateTime.toDateUtc(end)
@@ -241,169 +264,5 @@ export function formatUtcDateTimeRange(
   }
 
   // Different days: show full datetime for both
-  return `${formatUtcDateTime(start)} - ${formatUtcDateTime(end)}`
-}
-
-/**
- * Format a zoned datetime range with smart formatting
- * @param start - Start DateTime.Zoned
- * @param end - End DateTime.Zoned
- * @param options - Format options
- * @returns Formatted datetime range
- */
-export function formatZonedDateTimeRange(
-  start: DateTime.Zoned | undefined,
-  end: DateTime.Zoned | undefined,
-  options: DateRangeFormatOptions = {}
-): string {
-  const {
-    startFallback = 'Not specified',
-    endFallback = 'Ongoing',
-    neitherFallback = 'Unknown Range',
-  } = options
-
-  if (!start && !end) return neitherFallback
-  if (!start) return `${startFallback} - ${formatZonedDateTime(end, endFallback)}`
-  if (!end) return `${formatZonedDateTime(start, startFallback)} - ${endFallback}`
-
-  const startDate = DateTime.toDateAdjusted(start)
-  const endDate = DateTime.toDateAdjusted(end)
-
-  // Same day: "December 31st 9:00 AM - 10:30 AM"
-  if (isSameDay(startDate, endDate)) {
-    const month = startDate.toLocaleString('en-US', { month: 'long' })
-    const day = startDate.getDate()
-    const startTime = startDate.toLocaleString('en-US', { 
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true 
-    })
-    const endTime = endDate.toLocaleString('en-US', { 
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true 
-    })
-    return `${month} ${day}${getDaySuffix(day)} ${startTime} - ${endTime}`
-  }
-
-  // Different days: show full datetime for both
-  return `${formatZonedDateTime(start)} - ${formatZonedDateTime(end)}`
-}
-
-// Legacy compatibility functions (deprecated - use timezone-specific functions)
-
-/**
- * @deprecated Use formatUtcDate or formatTimelessDate instead
- */
-export function formatDate(
-  date: Date | string | number | { epochMillis: number } | DateTime.Utc | undefined,
-  fallback: string = 'Unknown'
-): string {
-  if (!date) return fallback
-  
-  // Handle DateTime.Utc
-  if (typeof date === 'object' && 'pipe' in date) {
-    return formatUtcDate(date as DateTime.Utc, fallback)
-  }
-  
-  // Handle epochMillis object
-  if (typeof date === 'object' && 'epochMillis' in date) {
-    const d = new Date(date.epochMillis)
-    if (isNaN(d.getTime())) return fallback
-    return d.toLocaleDateString()
-  }
-  
-  // Handle Date object
-  if (date instanceof Date) {
-    if (isNaN(date.getTime())) return fallback
-    return date.toLocaleDateString()
-  }
-  
-  // Handle number (epoch millis)
-  if (typeof date === 'number') {
-    const d = new Date(date)
-    if (isNaN(d.getTime())) return fallback
-    return d.toLocaleDateString()
-  }
-  
-  // Handle string
-  if (typeof date === 'string') {
-    const d = new Date(date)
-    if (isNaN(d.getTime())) return fallback
-    return d.toLocaleDateString()
-  }
-  
-  return fallback
-}
-
-/**
- * @deprecated Use formatUtcDateTime instead
- */
-export function formatDateTime(
-  date: Date | string | number | { epochMillis: number } | DateTime.Utc | undefined,
-  fallback: string = 'Unknown'
-): string {
-  if (!date) return fallback
-  
-  // Handle DateTime.Utc
-  if (typeof date === 'object' && 'pipe' in date) {
-    return formatUtcDateTime(date as DateTime.Utc, fallback)
-  }
-  
-  // Handle epochMillis object
-  if (typeof date === 'object' && 'epochMillis' in date) {
-    const d = new Date(date.epochMillis)
-    if (isNaN(d.getTime())) return fallback
-    return d.toLocaleString()
-  }
-  
-  // Handle Date object
-  if (date instanceof Date) {
-    if (isNaN(date.getTime())) return fallback
-    return date.toLocaleString()
-  }
-  
-  // Handle number (epoch millis)
-  if (typeof date === 'number') {
-    const d = new Date(date)
-    if (isNaN(d.getTime())) return fallback
-    return d.toLocaleString()
-  }
-  
-  // Handle string
-  if (typeof date === 'string') {
-    const d = new Date(date)
-    if (isNaN(d.getTime())) return fallback
-    return d.toLocaleString()
-  }
-  
-  return fallback
-}
-
-/**
- * @deprecated Use formatUtcDateRange instead
- */
-export function formatDateRange(
-  start: Date | string | number | { epochMillis: number } | DateTime.Utc | undefined,
-  end?: Date | string | number | { epochMillis: number } | DateTime.Utc | undefined,
-  endFallback: string = 'Present',
-  startFallback: string = 'Unknown'
-): string {
-  const startStr = formatDate(start, startFallback)
-  const endStr = end !== undefined ? formatDate(end, endFallback) : endFallback
-  return `${startStr} - ${endStr}`
-}
-
-/**
- * @deprecated Use formatUtcDateTimeRange instead
- */
-export function formatDateTimeRange(
-  start: Date | string | number | { epochMillis: number } | DateTime.Utc | undefined,
-  end?: Date | string | number | { epochMillis: number } | DateTime.Utc | undefined,
-  endFallback: string = 'Ongoing',
-  startFallback: string = 'Not specified'
-): string {
-  const startStr = formatDateTime(start, startFallback)
-  const endStr = end !== undefined ? formatDateTime(end, endFallback) : endFallback
-  return `${startStr} - ${endStr}`
+  return `${formatDateTimeWithTime(start)} - ${formatDateTimeWithTime(end)}`
 }

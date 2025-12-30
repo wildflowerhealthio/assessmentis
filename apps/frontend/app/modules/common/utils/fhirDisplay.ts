@@ -36,35 +36,6 @@ export function capitalizeFirst(str: string): string {
 }
 
 /**
- * Format a date string for display, with validation
- * @param date - ISO date string or undefined
- * @returns Formatted date or fallback string
- */
-export function formatDate(
-  date: Date | undefined,
-  fallback: string = 'Unknown'
-): string {
-  if (!date) return fallback
-  if (isNaN(date.getTime())) return 'Invalid date'
-  return date.toLocaleDateString()
-}
-
-/**
- * Format a date from epoch milliseconds for display
- * @param epochMillis - Epoch milliseconds or undefined
- * @returns Formatted date or fallback string
- */
-export function formatDateTime(
-  epochMillis: number | undefined,
-  fallback: string = 'Unknown'
-): string {
-  if (!epochMillis) return fallback
-  const date = new Date(epochMillis)
-  if (isNaN(date.getTime())) return 'Invalid date'
-  return date.toLocaleString()
-}
-
-/**
  * Format gender with proper capitalization
  * @param gender - Gender string (e.g., "male", "female")
  * @returns Capitalized gender or fallback
