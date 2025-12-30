@@ -21,14 +21,6 @@ export type ClinicalDataRepositoryErrorsWithNotFound =
   | NotFoundError
 
 /**
- * Extract TId and TResource from a BaseClinicalDataRepository
- */
-export type ExtractResourceTypes<T> =
-  T extends BaseClinicalDataRepository<infer TResource, infer TId>
-    ? { resource: TResource; id: TId }
-    : never
-
-/**
  * Filter type for getMany operations on clinical data repositories
  * Allows filtering by resource properties, converting Reference types to strings
  */
