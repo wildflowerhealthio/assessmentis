@@ -45,7 +45,15 @@ export function useAutoSave<T>({
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const onSaveRef = useRef(onSave)
 
-  // Keep the latest onSave callback in a ref to avoid dependency issues
+  // Keep the latest onSave callback in a ref to avoid dependency issues.
+  // We use a ref here because:
+  // 1. Including onSave in the main effect's dependency array would cause the timeout
+  //    to reset whenever the callback changes (which happens on every render if the
+  //    callback is defined inline or recreated).
+  // 2. By storing onSave in a ref and updating it separately, we ensure that when the
+  //    timeout fires, it always calls the most recent version of onSave, while only
+  //    resetting the timer when the actual data, delay, or enabled state changes.
+  // 3. This prevents unnecessary debounce resets and ensures stable auto-save behavior.
   useEffect(() => {
     onSaveRef.current = onSave
   }, [onSave])
