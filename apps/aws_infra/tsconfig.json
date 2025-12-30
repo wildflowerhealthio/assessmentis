@@ -1,0 +1,14 @@
+{
+  "extends": "@assessmentis/typescript-config/base.json",
+  "include": ["lib", "bin", "test"],
+  "exclude": ["node_modules", "cdk.out", "eslint.config.js"],
+  "compilerOptions": {
+    "outDir": "dist",
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "experimentalDecorators": true,
+    "strictPropertyInitialization": false,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": false
+  }
+}

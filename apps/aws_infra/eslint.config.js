@@ -5,8 +5,7 @@ import tsParser from '@typescript-eslint/parser'
 export default defineConfig([
   ...baseConfig,
   {
-    ignores: [],
-    // extends: [baseConfig],
+    ignores: ['./eslint.config.ts', './cdk.out/**', './dist/**'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
