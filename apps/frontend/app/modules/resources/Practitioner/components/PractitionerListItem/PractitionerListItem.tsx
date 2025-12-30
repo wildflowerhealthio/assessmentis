@@ -5,7 +5,7 @@ import {
   getPractitionerDisplayName,
   getPractitionerQualification,
 } from '../../utils/practitionerDisplay'
-import classes from './PractitionerListItem.module.css'
+import baseClasses from 'app/modules/common/components/styles/BaseListItem.module.css'
 
 interface PractitionerListItemProps {
   item: Practitioner
@@ -25,10 +25,10 @@ export function PractitionerListItem({
     <>
       <Link
         to={`/Practitioner/${practitioner.id}`}
-        className={classes.PractitionerListItem__content}
+        className={baseClasses.content}
       >
         <strong>{displayName}</strong>
-        <span className={classes.PractitionerListItem__metadata}>
+        <span className={baseClasses.metadata}>
           {practitioner.gender ?? 'Unknown'} • {qualification}
           {practitioner.active === false ? ' • Inactive' : undefined}
         </span>

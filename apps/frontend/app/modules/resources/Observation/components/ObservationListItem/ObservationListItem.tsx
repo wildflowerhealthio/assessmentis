@@ -7,7 +7,7 @@ import {
   getObservationEffectiveDate,
   formatObservationValue,
 } from '../../utils/observationDisplay'
-import classes from './ObservationListItem.module.css'
+import baseClasses from 'app/modules/common/components/styles/BaseListItem.module.css'
 
 interface ObservationListItemProps {
   item: Observation
@@ -29,10 +29,10 @@ export function ObservationListItem({
     <>
       <Link
         to={`/Observation/${observation.id}`}
-        className={classes.ObservationListItem__content}
+        className={baseClasses.content}
       >
         <strong>{displayName}</strong>
-        <span className={classes.ObservationListItem__metadata}>
+        <span className={baseClasses.metadata}>
           {status} • {effectiveDate} • Value: {value}
         </span>
       </Link>

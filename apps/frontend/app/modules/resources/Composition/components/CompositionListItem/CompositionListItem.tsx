@@ -5,7 +5,7 @@ import {
   getCompositionDisplayName,
   getCompositionType,
 } from '../../utils/compositionDisplay'
-import classes from './CompositionListItem.module.css'
+import baseClasses from 'app/modules/common/components/styles/BaseListItem.module.css'
 
 interface CompositionListItemProps {
   item: Composition
@@ -27,10 +27,10 @@ export function CompositionListItem({
     <>
       <Link
         to={`/Composition/${composition.id}`}
-        className={classes.CompositionListItem__content}
+        className={baseClasses.content}
       >
         <strong>{displayName}</strong>
-        <span className={classes.CompositionListItem__metadata}>
+        <span className={baseClasses.metadata}>
           {compositionType} • {composition.status} • {dateStr}
         </span>
       </Link>
