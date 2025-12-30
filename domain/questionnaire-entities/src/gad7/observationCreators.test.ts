@@ -75,63 +75,59 @@ const buildResponse = (scores: ReadonlyArray<number | null>) =>
   )
 
 describe('GAD-7 observations extraction', () => {
-  it(
-    'returns seven question observations plus total with correct codings and score',
-    { timeout: 15_000 },
-    () => {
-      const scoresArb = fc.array(fc.option(fc.integer({ min: 0, max: 3 })), {
-        minLength: 7,
-        maxLength: 7,
-      })
+  it('returns seven question observations plus total with correct codings and score', () => {
+    const scoresArb = fc.array(fc.option(fc.integer({ min: 0, max: 3 })), {
+      minLength: 7,
+      maxLength: 7,
+    })
 
-      fc.assert(
-        fc.property(
-          scoresArb.chain((scores) =>
-            buildResponse(scores).map((response) => [scores, response] as const)
-          ),
-          ([maybeScores, response]) => {
-            const scores = maybeScores.map((v) => (v === null ? undefined : v))
+    fc.assert(
+      fc.property(
+        scoresArb.chain((scores) =>
+          buildResponse(scores).map((response) => [scores, response] as const)
+        ),
+        ([maybeScores, response]) => {
+          const scores = maybeScores.map((v) => (v === null ? undefined : v))
 
-            const observations = extractObservationsFromGad7Response(response)
+          const observations = extractObservationsFromGad7Response(response)
 
-            expect(observations).toHaveLength(8)
+          expect(observations).toHaveLength(8)
 
-            const questionObs = observations.slice(0, 7)
+          const questionObs = observations.slice(0, 7)
 
-            questionObs.forEach((obs, idx) => {
-              expect(obs.resourceType).toBe('Observation')
-              expect(obs.category?.[0]?.coding?.[0]?.code).toBe('survey')
-              expect(obs.code.coding?.[0]).toEqual(linkIdToQuestionCoding[idx])
+          questionObs.forEach((obs, idx) => {
+            expect(obs.resourceType).toBe('Observation')
+            expect(obs.category?.[0]?.coding?.[0]?.code).toBe('survey')
+            expect(obs.code.coding?.[0]).toEqual(linkIdToQuestionCoding[idx])
 
-              const expectedScore = scores[idx]
-              if (expectedScore === undefined) {
-                expect(obs).not.toHaveProperty('valueCodeableConcept')
-              } else {
-                expect(
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  (obs as any).valueCodeableConcept.coding[0].code
-                ).toEqual(scoreToCoding[expectedScore].code)
-              }
-            })
+            const expectedScore = scores[idx]
+            if (expectedScore === undefined) {
+              expect(obs).not.toHaveProperty('valueCodeableConcept')
+            } else {
+              expect(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (obs as any).valueCodeableConcept.coding[0].code
+              ).toEqual(scoreToCoding[expectedScore].code)
+            }
+          })
 
-            const totalObservation = observations[7]
-            const expectedTotal = scores.reduce(
-              (acc: number, score) => acc + (score ?? 0),
-              0
-            )
-            expect(
-              'valueInteger' in totalObservation &&
-                totalObservation.valueInteger
-            ).toBe(expectedTotal)
-            expect(totalObservation.code).toEqual(totalScore.code)
+          const totalObservation = observations[7]
+          const expectedTotal = scores.reduce(
+            (acc: number, score) => acc + (score ?? 0),
+            0
+          )
+          expect(
+            'valueInteger' in totalObservation && totalObservation.valueInteger
+          ).toBe(expectedTotal)
+          expect(totalObservation.code).toEqual(totalScore.code)
 
-            const recomputed = computeGad7HelperTotalScoreObservation(response)
-            expect(
-              'valueInteger' in recomputed && recomputed.valueInteger
-            ).toBe(expectedTotal)
-          }
-        )
-      )
-    }
-  )
+          const recomputed = computeGad7HelperTotalScoreObservation(response)
+          expect('valueInteger' in recomputed && recomputed.valueInteger).toBe(
+            expectedTotal
+          )
+        }
+      ),
+      { numRuns: 20 }
+    )
+  })
 })

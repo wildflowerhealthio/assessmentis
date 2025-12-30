@@ -47,6 +47,16 @@ jobs:
           filter_mode: diff_context
           workdir: apps/functions
 
+      - name: Lint apps/aws_infra
+        uses: reviewdog/action-eslint@v1
+        continue-on-error: true
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_level: error
+          filter_mode: diff_context
+          workdir: apps/aws_infra
+
       - name: Lint domain/clinical-domain
         uses: reviewdog/action-eslint@v1
         continue-on-error: true

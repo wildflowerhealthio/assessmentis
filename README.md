@@ -99,7 +99,8 @@ graph TB
 assessmentis/
 ├── apps/
 │   ├── frontend/           # React SPA (React Router v7)
-│   └── functions/          # Firebase Cloud Functions
+│   ├── functions/          # Firebase Cloud Functions
+│   └── aws_infra/          # AWS CDK infrastructure for Daily.co recordings
 ├── domain/
 │   ├── clinical-domain/    # FHIR resources & repository interfaces
 │   ├── document-domain/    # Document generation & scoring logic

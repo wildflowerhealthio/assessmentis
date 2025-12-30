@@ -35,7 +35,8 @@
     "infrastructure/document-template-instances",
     "apps/functions",
     "apps/frontend",
-    "apps/firecms"
+    "apps/firecms",
+    "apps/aws_infra"
   ],
   "dependencies": {
     "@assessmentis/document-template-kinds": "^0.0.1",
