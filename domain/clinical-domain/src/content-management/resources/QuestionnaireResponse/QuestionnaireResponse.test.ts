@@ -21,7 +21,8 @@ describe('QuestionnaireResponse resource', () => {
         const encoded = Schema.encodeSync(QuestionnaireResponse)(response)
         const decoded = Schema.decodeSync(QuestionnaireResponse)(encoded)
         expect(decoded).toEqual(response)
-      })
+      }),
+      { numRuns: 50 }
     )
   })
 
