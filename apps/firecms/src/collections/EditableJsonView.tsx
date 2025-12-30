@@ -40,6 +40,12 @@ export function EditableJsonView<M extends Record<string, any>>({
       // Validate JSON
       const parsedValues = JSON.parse(jsonText)
 
+      // Ensure it's an object
+      if (typeof parsedValues !== 'object' || parsedValues === null || Array.isArray(parsedValues)) {
+        setError('JSON must be an object (not an array or primitive value)')
+        return
+      }
+
       // Update form values
       if (formContext.setFieldValue) {
         // Update all fields with the new values
@@ -48,11 +54,11 @@ export function EditableJsonView<M extends Record<string, any>>({
         })
 
         setError(null)
-        setSuccessMessage('JSON saved successfully!')
+        setSuccessMessage('JSON saved successfully! Click the main Save button to persist changes.')
         setIsEdited(false)
 
-        // Clear success message after 3 seconds
-        setTimeout(() => setSuccessMessage(null), 3000)
+        // Clear success message after 5 seconds
+        setTimeout(() => setSuccessMessage(null), 5000)
       }
     } catch (err) {
       if (err instanceof SyntaxError) {
