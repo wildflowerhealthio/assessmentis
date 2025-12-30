@@ -7,7 +7,7 @@ import {
 import { ReadonlyTag } from 'effect/Context'
 import { useResourceRunEffect } from '../../../clientRuntime'
 import { useClinicalDataCollection } from '../hooks/useClinicalDataCollection'
-import { ClientRuntimeContext } from '../../../../../../domain/platform-domain/src/PlatformService'
+import { ClientRuntimeContext } from '@assessmentis/platform-domain'
 
 /**
  * Creates a resource collection hook with standardized behavior
