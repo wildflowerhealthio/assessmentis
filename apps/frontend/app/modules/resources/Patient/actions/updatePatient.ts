@@ -1,44 +1,8 @@
-import { Effect } from 'effect'
-import {
-  Patient,
-  PatientId,
+import { PatientRepository } from '@assessmentis/clinical-domain/administration'
+import { transformToPatient } from '../schemas/PatientFormSchema'
+import { createResourceUpdateAction } from '../../../common/actions/createResourceActions'
+
+export const updatePatient = createResourceUpdateAction(
   PatientRepository,
-} from '@assessmentis/clinical-domain/administration'
-import {
-  ExternalAssertionError,
-  NeedsAuthenticationError,
-  NotFoundError,
-  UnhandledError,
-} from '@assessmentis/ontology'
-import {
-  PatientFormData,
-  transformToPatient,
-} from '../schemas/PatientFormSchema'
-import { WithId } from '@assessmentis/clinical-domain/data-types'
-
-export const updatePatient = (
-  id: PatientId,
-  currentPatient: Patient,
-  formData: PatientFormData
-): Effect.Effect<
-  Patient,
-  | UnhandledError
-  | NeedsAuthenticationError
-  | ExternalAssertionError
-  | NotFoundError,
-  PatientRepository
-> => {
-  return Effect.gen(function* () {
-    const repository = yield* PatientRepository
-
-    // Transform form data and merge with existing patient
-    const updatedFields = transformToPatient(formData)
-    const updatedPatient: WithId<Patient> = {
-      ...currentPatient,
-      ...updatedFields,
-      id,
-    }
-
-    return yield* repository.update(updatedPatient)
-  })
-}
+  transformToPatient
+)
