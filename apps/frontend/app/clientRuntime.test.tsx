@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
-import { renderHook, waitFor } from '@testing-library/react'
 import React from 'react'
+import { renderHook, waitFor } from '@testing-library/react'
+import { JSDOM } from 'jsdom'
 import { Effect, ManagedRuntime } from 'effect'
 import { ClientRuntimeContext } from '@assessmentis/platform-domain'
 
@@ -15,6 +16,10 @@ vi.mock('./firebase', () => ({
 
 import { useRuntime, LoadedRuntimeContext, ContextError } from './clientRuntime'
 import { LoadedResult } from '@assessmentis/ontology'
+
+// Ensure DOM globals are available when tests run outside jsdom-configured env
+const dom = new JSDOM('<!doctype html><html><body></body></html>')
+globalThis.window = dom.window as unknown as typeof globalThis.window
 
 describe('useRuntime', () => {
   it('should return a runtime with runPromise when loading', () => {
