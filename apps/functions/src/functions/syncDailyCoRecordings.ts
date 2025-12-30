@@ -538,15 +538,61 @@ export const syncDailyCoRecordings = onSchedule(
           `Sync completed with failures for ${failedOrgs.length} orgs:`,
           failedOrgs
         )
-        // TODO: Implement admin notification for repeated failures
-        // This could be done by:
-        // 1. Storing failure counts in Firestore
-        // 2. Sending email/Slack notifications when threshold is reached
-        // 3. Creating an alert in the admin dashboard
+
+        // Track failures in Firestore for admin notification
+        for (const failedOrg of failedOrgs) {
+          try {
+            const failureDoc = db
+              .collection('orgs')
+              .doc(failedOrg.orgId)
+              .collection('syncFailures')
+              .doc('dailyCoRecordings')
+
+            const failureData = await failureDoc.get()
+            const currentCount = failureData.exists
+              ? (failureData.data()?.consecutiveFailures || 0)
+              : 0
+            const newCount = currentCount + 1
+
+            await failureDoc.set({
+              lastFailure: new Date().toISOString(),
+              lastErrors: failedOrg.errors,
+              consecutiveFailures: newCount,
+            })
+
+            // Log warning if failures are accumulating
+            if (newCount >= 3) {
+              warn(
+                `Org ${failedOrg.orgId} has ${newCount} consecutive sync failures. Admin notification recommended.`
+              )
+              // TODO: Send email/Slack notification to admins
+              // This could be implemented by:
+              // 1. Using SendGrid or Firebase Extensions for email
+              // 2. Using Slack webhooks for Slack notifications
+              // 3. Creating a document in a 'notifications' collection that admins monitor
+            }
+          } catch (err) {
+            error(`Error tracking failure for org ${failedOrg.orgId}:`, err)
+          }
+        }
       } else {
         info(
           `All ${orgIds.length} organizations synced successfully. Found ${totalRecordings} recordings, created ${totalMediaCreated} media, updated ${totalMediaUpdated} media.`
         )
+
+        // Clear failure counts for all orgs
+        for (const orgId of orgIds) {
+          try {
+            await db
+              .collection('orgs')
+              .doc(orgId)
+              .collection('syncFailures')
+              .doc('dailyCoRecordings')
+              .delete()
+          } catch (err) {
+            // Ignore errors when deleting non-existent documents
+          }
+        }
       }
     } catch (err) {
       error('Fatal error during sync:', err)
