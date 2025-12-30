@@ -3,6 +3,7 @@ import { onCall } from 'firebase-functions/v2/https'
 import { info, error, warn } from 'firebase-functions/logger'
 import { db, defaultHttpOptions } from '../util/context'
 import fetch from 'node-fetch'
+import { google } from 'googleapis'
 
 interface DailyCoRecording {
   id: string
@@ -52,12 +53,33 @@ interface OrgSecrets {
 
 interface MediaResource {
   resourceType: 'Media'
+  id?: string
   status: 'completed'
   identifier?: Array<{ value: string }>
   createdDateTime?: string
   duration?: number
   content?: { url: string }
   encounter?: { reference: string }
+}
+
+interface EncounterResource {
+  id: string
+  resourceType: 'Encounter'
+  location?: Array<{
+    location?: {
+      identifier?: {
+        value: string
+      }
+    }
+  }>
+}
+
+interface FhirBundle {
+  resourceType: 'Bundle'
+  type: string
+  entry?: Array<{
+    resource: EncounterResource | MediaResource
+  }>
 }
 
 /**
@@ -108,19 +130,23 @@ async function fetchRecordingDownloadLink(
 
 /**
  * Syncs recordings for a single organization
- * 
- * Note: This implementation focuses on querying Daily.co for recordings and
- * preparing Media resources. The actual FHIR store updates require OAuth2
- * credentials which would be handled by the existing infrastructure layers
- * in a production deployment.
+ *
+ * This function:
+ * 1. Fetches all recordings from Daily.co
+ * 2. For each encounter in the org, finds matching recordings by room name
+ * 3. Creates/updates Media resources in the FHIR store
  */
 async function syncOrgRecordings(orgId: string): Promise<{
   success: boolean
   recordingsFound: number
+  mediaCreated: number
+  mediaUpdated: number
   errors: string[]
 }> {
   const errors: string[] = []
   let recordingsFound = 0
+  let mediaCreated = 0
+  let mediaUpdated = 0
 
   try {
     info(`Starting sync for org: ${orgId}`)
@@ -129,7 +155,13 @@ async function syncOrgRecordings(orgId: string): Promise<{
     const orgDoc = await db.collection('orgs').doc(orgId).get()
     if (!orgDoc.exists) {
       warn(`Org ${orgId} not found`)
-      return { success: false, recordingsFound: 0, errors: ['Org not found'] }
+      return {
+        success: false,
+        recordingsFound: 0,
+        mediaCreated: 0,
+        mediaUpdated: 0,
+        errors: ['Org not found'],
+      }
     }
 
     const orgData = orgDoc.data() as OrgConfig
@@ -138,7 +170,13 @@ async function syncOrgRecordings(orgId: string): Promise<{
     // Check if this org uses Daily.co
     if (!videoCallClient || videoCallClient._tag !== 'daily_co_proxy') {
       info(`Org ${orgId} does not use Daily.co, skipping`)
-      return { success: true, recordingsFound: 0, errors: [] }
+      return {
+        success: true,
+        recordingsFound: 0,
+        mediaCreated: 0,
+        mediaUpdated: 0,
+        errors: [],
+      }
     }
 
     // Fetch Daily.co API key
@@ -157,23 +195,55 @@ async function syncOrgRecordings(orgId: string): Promise<{
       return {
         success: false,
         recordingsFound: 0,
+        mediaCreated: 0,
+        mediaUpdated: 0,
         errors: ['No Daily.co API key'],
       }
     }
 
     // Get FHIR store configuration
     const mediaRepoConfig = orgData.frontendConfig?.mediaRepository
+    const encounterRepoConfig = orgData.frontendConfig?.encounterRepository
+
     if (!mediaRepoConfig || mediaRepoConfig._tag !== 'google_fhir_store') {
-      warn(`Org ${orgId} does not have a FHIR store configured`)
+      warn(`Org ${orgId} does not have a FHIR store configured for Media`)
       return {
         success: false,
         recordingsFound: 0,
-        errors: ['No FHIR store configured'],
+        mediaCreated: 0,
+        mediaUpdated: 0,
+        errors: ['No FHIR store configured for Media'],
       }
     }
 
+    if (
+      !encounterRepoConfig ||
+      encounterRepoConfig._tag !== 'google_fhir_store'
+    ) {
+      warn(`Org ${orgId} does not have a FHIR store configured for Encounter`)
+      return {
+        success: false,
+        recordingsFound: 0,
+        mediaCreated: 0,
+        mediaUpdated: 0,
+        errors: ['No FHIR store configured for Encounter'],
+      }
+    }
+
+    // Initialize Google Cloud authentication
+    const auth = new google.auth.GoogleAuth({
+      scopes: ['https://www.googleapis.com/auth/cloud-healthcare'],
+    })
+    const authClient = await auth.getClient()
+    const accessToken = await authClient.getAccessToken()
+
+    if (!accessToken.token) {
+      throw new Error('Failed to get access token')
+    }
+
+    const fhirBaseUrl = `https://healthcare.googleapis.com/v1/projects/${mediaRepoConfig.projectId}/locations/${mediaRepoConfig.region}/datasets/${mediaRepoConfig.dataset}/fhirStores/${mediaRepoConfig.storeId}/fhir`
+
     // Fetch all recordings from Daily.co
-    // Note: In a production system, we would paginate through results
     const allRecordingsUrl = 'https://api.daily.co/v1/recordings'
     const allRecordingsResponse = await fetch(allRecordingsUrl, {
       method: 'GET',
@@ -186,16 +256,21 @@ async function syncOrgRecordings(orgId: string): Promise<{
     if (allRecordingsResponse.status !== 200) {
       const errorMsg = `Failed to fetch recordings from Daily.co: HTTP ${allRecordingsResponse.status}`
       error(errorMsg)
-      return { success: false, recordingsFound: 0, errors: [errorMsg] }
+      return {
+        success: false,
+        recordingsFound: 0,
+        mediaCreated: 0,
+        mediaUpdated: 0,
+        errors: [errorMsg],
+      }
     }
 
     const recordingsData =
       (await allRecordingsResponse.json()) as DailyCoRecordingsResponse
     const allRecordings = recordingsData.data
 
-    info(
-      `Found ${allRecordings.length} total recordings for org ${orgId} from Daily.co`
-    )
+    recordingsFound = allRecordings.length
+    info(`Found ${recordingsFound} total recordings for org ${orgId}`)
 
     // Group recordings by room name
     const recordingsByRoom = new Map<string, DailyCoRecording[]>()
@@ -205,28 +280,209 @@ async function syncOrgRecordings(orgId: string): Promise<{
       recordingsByRoom.set(recording.room_name, roomRecordings)
     }
 
-    // TODO: For each room, find corresponding encounter and sync recordings
-    // This would require:
-    // 1. Querying Firestore or FHIR store for encounters with matching room URLs
-    // 2. Fetching existing Media resources for each encounter
-    // 3. Creating new Media resources for recordings not yet synced
-    // 4. Updating existing Media resources with fresh download URLs
-    //
-    // The actual FHIR store operations require OAuth2 authentication which
-    // is handled by the existing infrastructure layers. This cloud function
-    // serves as a coordinator that can be triggered periodically or manually.
+    // Fetch all encounters from FHIR store
+    const encountersUrl = `${fhirBaseUrl}/Encounter`
+    const encountersResponse = await fetch(encountersUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/fhir+json',
+        Authorization: `Bearer ${accessToken.token}`,
+      },
+    })
 
-    recordingsFound = allRecordings.length
+    if (encountersResponse.status !== 200) {
+      const errorMsg = `Failed to fetch encounters from FHIR store: HTTP ${encountersResponse.status}`
+      error(errorMsg)
+      errors.push(errorMsg)
+      return {
+        success: false,
+        recordingsFound,
+        mediaCreated: 0,
+        mediaUpdated: 0,
+        errors,
+      }
+    }
+
+    const encountersBundle = (await encountersResponse.json()) as FhirBundle
+    const encounters =
+      encountersBundle.entry?.map((e) => e.resource as EncounterResource) || []
+
+    info(`Found ${encounters.length} encounters for org ${orgId}`)
+
+    // Process each encounter
+    for (const encounter of encounters) {
+      try {
+        const roomUrl = encounter.location?.[0]?.location?.identifier?.value
+        if (!roomUrl) {
+          continue
+        }
+
+        const roomName = extractRoomNameFromUrl(roomUrl)
+        if (!roomName) {
+          continue
+        }
+
+        const recordings = recordingsByRoom.get(roomName)
+        if (!recordings || recordings.length === 0) {
+          continue
+        }
+
+        info(
+          `Processing ${recordings.length} recordings for encounter ${encounter.id}`
+        )
+
+        // Fetch existing Media resources for this encounter
+        const mediaSearchUrl = `${fhirBaseUrl}/Media?encounter=${encodeURIComponent(`Encounter/${encounter.id}`)}`
+        const mediaSearchResponse = await fetch(mediaSearchUrl, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/fhir+json',
+            Authorization: `Bearer ${accessToken.token}`,
+          },
+        })
+
+        if (mediaSearchResponse.status !== 200) {
+          warn(
+            `Failed to fetch media for encounter ${encounter.id}: HTTP ${mediaSearchResponse.status}`
+          )
+          continue
+        }
+
+        const mediaBundle = (await mediaSearchResponse.json()) as FhirBundle
+        const existingMedia =
+          mediaBundle.entry?.map((e) => e.resource as MediaResource) || []
+
+        // Create a map of existing media by recording ID
+        const existingMediaMap = new Map<string, MediaResource>()
+        for (const media of existingMedia) {
+          const recordingId = media.identifier?.find((id) => id.value)?.value
+          if (recordingId) {
+            existingMediaMap.set(recordingId, media)
+          }
+        }
+
+        // Process each recording
+        for (const recording of recordings) {
+          try {
+            // Fetch download link
+            const downloadLink = await fetchRecordingDownloadLink(
+              recording.id,
+              dailyApiKey
+            )
+
+            if (!downloadLink) {
+              warn(
+                `Recording ${recording.id} does not have a download link yet`
+              )
+              continue
+            }
+
+            const existingMedia = existingMediaMap.get(recording.id)
+
+            if (existingMedia) {
+              // Update existing Media resource with fresh URL
+              const updatedMedia = {
+                ...existingMedia,
+                content: {
+                  url: downloadLink,
+                },
+              }
+
+              const updateUrl = `${fhirBaseUrl}/Media/${existingMedia.id}`
+              const updateResponse = await fetch(updateUrl, {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/fhir+json',
+                  Authorization: `Bearer ${accessToken.token}`,
+                },
+                body: JSON.stringify(updatedMedia),
+              })
+
+              if (updateResponse.status !== 200) {
+                warn(
+                  `Failed to update Media ${existingMedia.id}: HTTP ${updateResponse.status}`
+                )
+                errors.push(
+                  `Failed to update Media ${existingMedia.id}: HTTP ${updateResponse.status}`
+                )
+                continue
+              }
+
+              mediaUpdated++
+              info(
+                `Updated Media resource ${existingMedia.id} for recording ${recording.id}`
+              )
+            } else {
+              // Create new Media resource
+              const newMedia: MediaResource = {
+                resourceType: 'Media',
+                status: 'completed',
+                identifier: [{ value: recording.id }],
+                createdDateTime: new Date(
+                  recording.start_ts * 1000
+                ).toISOString(),
+                duration: recording.duration,
+                content: { url: downloadLink },
+                encounter: { reference: `Encounter/${encounter.id}` },
+              }
+
+              const createUrl = `${fhirBaseUrl}/Media`
+              const createResponse = await fetch(createUrl, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/fhir+json',
+                  Authorization: `Bearer ${accessToken.token}`,
+                },
+                body: JSON.stringify(newMedia),
+              })
+
+              if (createResponse.status !== 201) {
+                warn(
+                  `Failed to create Media for recording ${recording.id}: HTTP ${createResponse.status}`
+                )
+                errors.push(
+                  `Failed to create Media for recording ${recording.id}: HTTP ${createResponse.status}`
+                )
+                continue
+              }
+
+              mediaCreated++
+              info(`Created Media resource for recording ${recording.id}`)
+            }
+          } catch (err) {
+            const errorMsg = `Error processing recording ${recording.id}: ${err}`
+            error(errorMsg)
+            errors.push(errorMsg)
+          }
+        }
+      } catch (err) {
+        const errorMsg = `Error syncing encounter ${encounter.id}: ${err}`
+        error(errorMsg)
+        errors.push(errorMsg)
+      }
+    }
 
     info(
-      `Completed sync for org ${orgId}: ${recordingsFound} recordings found across ${recordingsByRoom.size} rooms`
+      `Completed sync for org ${orgId}: ${mediaCreated} media created, ${mediaUpdated} media updated, ${errors.length} errors`
     )
-    return { success: true, recordingsFound, errors }
+    return {
+      success: errors.length === 0,
+      recordingsFound,
+      mediaCreated,
+      mediaUpdated,
+      errors,
+    }
   } catch (err) {
     const errorMsg = `Error syncing org ${orgId}: ${err}`
     error(errorMsg)
     errors.push(errorMsg)
-    return { success: false, recordingsFound, errors }
+    return {
+      success: false,
+      recordingsFound,
+      mediaCreated,
+      mediaUpdated,
+      errors,
+    }
   }
 }
 
@@ -256,8 +512,13 @@ export const syncDailyCoRecordings = onSchedule(
       )
 
       // Collect results
-      const failedOrgs: Array<{ orgId: string; errors: string[] }> = []
+      const failedOrgs: Array<{
+        orgId: string
+        errors: string[]
+      }> = []
       let totalRecordings = 0
+      let totalMediaCreated = 0
+      let totalMediaUpdated = 0
 
       results.forEach((result, index) => {
         const orgId = orgIds[index]
@@ -267,6 +528,8 @@ export const syncDailyCoRecordings = onSchedule(
           failedOrgs.push({ orgId, errors: result.value.errors })
         } else {
           totalRecordings += result.value.recordingsFound
+          totalMediaCreated += result.value.mediaCreated
+          totalMediaUpdated += result.value.mediaUpdated
         }
       })
 
@@ -282,7 +545,7 @@ export const syncDailyCoRecordings = onSchedule(
         // 3. Creating an alert in the admin dashboard
       } else {
         info(
-          `All ${orgIds.length} organizations synced successfully. Found ${totalRecordings} total recordings.`
+          `All ${orgIds.length} organizations synced successfully. Found ${totalRecordings} recordings, created ${totalMediaCreated} media, updated ${totalMediaUpdated} media.`
         )
       }
     } catch (err) {
@@ -325,9 +588,16 @@ export const syncDailyCoRecordingsManual = onCall(
       )
 
       // Collect results
-      const failedOrgs: Array<{ orgId: string; errors: string[] }> = []
-      const successfulOrgs: Array<{ orgId: string; recordingsFound: number }> =
-        []
+      const failedOrgs: Array<{
+        orgId: string
+        errors: string[]
+      }> = []
+      const successfulOrgs: Array<{
+        orgId: string
+        recordingsFound: number
+        mediaCreated: number
+        mediaUpdated: number
+      }> = []
 
       results.forEach((result, index) => {
         const orgId = orgIds[index]
@@ -339,6 +609,8 @@ export const syncDailyCoRecordingsManual = onCall(
           successfulOrgs.push({
             orgId,
             recordingsFound: result.value.recordingsFound,
+            mediaCreated: result.value.mediaCreated,
+            mediaUpdated: result.value.mediaUpdated,
           })
         }
       })
