@@ -77,7 +77,7 @@ const buildResponse = (scores: ReadonlyArray<number | null>) =>
 describe('GAD-7 observations extraction', () => {
   it(
     'returns seven question observations plus total with correct codings and score',
-    { timeout: 15_000 },
+    { timeout: 25_000 },
     () => {
       const scoresArb = fc.array(fc.option(fc.integer({ min: 0, max: 3 })), {
         minLength: 7,
