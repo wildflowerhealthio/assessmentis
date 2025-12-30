@@ -11,3 +11,8 @@ dist/
 test-results/
 playwright-report/
 playwright/.cache/
+
+*storybook.log
+storybook-static
+
+e2e/tests/*-snapshots/*

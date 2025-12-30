@@ -7,6 +7,9 @@ import { defineConfig, devices } from '@playwright/test'
 export default defineConfig({
   testDir: './e2e',
 
+  // Glob patterns or regular expressions that match test files.
+  testMatch: /.*\.e2e\.ts$/,
+
   // Run tests in files in parallel
   fullyParallel: true,
 

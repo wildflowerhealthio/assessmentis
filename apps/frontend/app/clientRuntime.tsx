@@ -239,20 +239,22 @@ export const useResourceRunEffect = <A, E>(
       [effect]
     )
   )
-  if (loaded._tag == 'error') {
-    const error = loaded.error
-    if (typeof error === 'object' && error !== null && '_tag' in error) {
-      if (
-        error._tag == 'OrgDataError' ||
-        error._tag == 'UserDataError' ||
-        error._tag == 'AuthStateError' ||
-        error._tag == 'NotLoggedIn'
-      ) {
-        throw error
+  return useMemo(() => {
+    if (loaded._tag == 'error') {
+      const error = loaded.error
+      if (typeof error === 'object' && error !== null && '_tag' in error) {
+        if (
+          error._tag == 'OrgDataError' ||
+          error._tag == 'UserDataError' ||
+          error._tag == 'AuthStateError' ||
+          error._tag == 'NotLoggedIn'
+        ) {
+          throw error
+        }
       }
+      return LoadedResult.error(error)
     }
-    return LoadedResult.error(error)
-  }
 
-  return loaded
+    return loaded
+  }, [loaded])
 }

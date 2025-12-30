@@ -3,6 +3,7 @@ import {
   Combobox,
   ComboboxButton,
   ComboboxInput,
+  ComboboxOption,
   ComboboxOptions,
 } from '@headlessui/react'
 import { cn } from '@assessmentis/react-util'
@@ -147,7 +148,7 @@ export function BasePicker<T>(props: BasePickerProps<T>) {
             </div>
           ) : (
             filteredItems.map((item) => (
-              <Combobox.Option
+              <ComboboxOption
                 key={item.id}
                 value={item}
                 className={({ active }) =>
@@ -190,7 +191,7 @@ export function BasePicker<T>(props: BasePickerProps<T>) {
                     )}
                   </div>
                 )}
-              </Combobox.Option>
+              </ComboboxOption>
             ))
           )}
         </ComboboxOptions>

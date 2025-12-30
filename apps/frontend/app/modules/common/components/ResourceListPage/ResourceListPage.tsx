@@ -1,4 +1,4 @@
-import { ComponentType, JSX, ReactNode } from 'react'
+import { ComponentType, ReactNode } from 'react'
 import { Link } from 'react-router'
 import { LoadedResult } from '@assessmentis/ontology'
 import { cn } from '@assessmentis/react-util'
@@ -29,7 +29,7 @@ interface ResourceListPageProps<T extends { id?: string }, E = unknown> {
   emptyMessage?: string
 
   // Error rendering
-  ErrorBody?: (error: E) => JSX.Element
+  ErrorBody?: React.FC<{ error: E }>
 
   // Optional filtering
   filterSlot?: ReactNode
@@ -40,6 +40,69 @@ interface ResourceListPageProps<T extends { id?: string }, E = unknown> {
   // Class overrides
   className?: string
 }
+
+const Body = <T extends { id?: string }, E>({
+  collection,
+  skeletonCount,
+  emptyMessage,
+  onDelete,
+  ErrorBody,
+  ItemComponent,
+}: {
+  collection: LoadedResult<Array<{ data: T; loading: boolean }>, E>
+  skeletonCount: number
+  emptyMessage: string
+  onDelete: (id: T['id']) => Promise<void>
+  ErrorBody?: React.FC<{ error: E }>
+  ItemComponent: ComponentType<{
+    item: T
+    onDelete: () => void
+    loading: boolean
+  }>
+}) =>
+  LoadedResult.handle(collection, {
+    onLoading: () => (
+      <ul className={classes.ListPage__list}>
+        {[...Array(skeletonCount)].map((_, i) => (
+          <li key={i} className={classes.ListPage__item}>
+            <Skeleton width={40} height={20} />
+            <div style={{ flex: 1 }}>
+              <Skeleton width="60%" height={20} />
+              <Skeleton width="80%" height={16} style={{ marginTop: 4 }} />
+            </div>
+          </li>
+        ))}
+      </ul>
+    ),
+    onError: (error) =>
+      ErrorBody ? (
+        <ErrorBody error={error} />
+      ) : (
+        <p className={cn('body-3', classes.ListPage__error)}>
+          Error loading data: {String(error)}
+        </p>
+      ),
+    onSuccess: (items) =>
+      items.length === 0 ? (
+        <p className={cn('body-3', classes.ListPage__empty)}>{emptyMessage}</p>
+      ) : (
+        <ul className={classes.ListPage__list}>
+          {items.map(({ data, loading }) => (
+            <li
+              key={data.id ?? ''}
+              className={classes.ListPage__item}
+              data-loading={loading}
+            >
+              <ItemComponent
+                item={data}
+                onDelete={() => onDelete(data.id)}
+                loading={loading}
+              />
+            </li>
+          ))}
+        </ul>
+      ),
+  })
 
 export function ResourceListPage<T extends { id?: string }, E = unknown>(
   props: ResourceListPageProps<T, E>
@@ -71,51 +134,14 @@ export function ResourceListPage<T extends { id?: string }, E = unknown>(
         <div className={classes.ListPage__filters}>{filterSlot}</div>
       ) : undefined}
 
-      {LoadedResult.handle(collection, {
-        onLoading: () => (
-          <ul className={classes.ListPage__list}>
-            {[...Array(skeletonCount)].map((_, i) => (
-              <li key={i} className={classes.ListPage__item}>
-                <Skeleton width={40} height={20} />
-                <div style={{ flex: 1 }}>
-                  <Skeleton width="60%" height={20} />
-                  <Skeleton width="80%" height={16} style={{ marginTop: 4 }} />
-                </div>
-              </li>
-            ))}
-          </ul>
-        ),
-        onError: (error) =>
-          ErrorBody ? (
-            ErrorBody(error)
-          ) : (
-            <p className={cn('body-3', classes.ListPage__error)}>
-              Error loading data: {String(error)}
-            </p>
-          ),
-        onSuccess: (items) =>
-          items.length === 0 ? (
-            <p className={cn('body-3', classes.ListPage__empty)}>
-              {emptyMessage}
-            </p>
-          ) : (
-            <ul className={classes.ListPage__list}>
-              {items.map(({ data, loading }) => (
-                <li
-                  key={data.id ?? ''}
-                  className={classes.ListPage__item}
-                  data-loading={loading}
-                >
-                  <ItemComponent
-                    item={data}
-                    onDelete={() => onDelete(data.id)}
-                    loading={loading}
-                  />
-                </li>
-              ))}
-            </ul>
-          ),
-      })}
+      <Body
+        collection={collection}
+        skeletonCount={skeletonCount}
+        emptyMessage={emptyMessage}
+        onDelete={onDelete}
+        ErrorBody={ErrorBody}
+        ItemComponent={ItemComponent}
+      />
     </div>
   )
 }

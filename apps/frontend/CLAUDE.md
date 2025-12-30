@@ -367,6 +367,85 @@ Claude Code can interact with your running app via Playwright MCP:
 - Take screenshots for visual verification
 - Run tests in CI/CD before merging
 
+## Storybook Component Development
+
+### Running Storybook
+
+```bash
+npm run storybook              # Start Storybook on http://localhost:6006
+npm run build-storybook        # Build static Storybook for deployment
+```
+
+### Writing Stories
+
+**Location:** `app/**/*.stories.tsx`
+
+**Story Structure:**
+```typescript
+import type { Meta, StoryObj } from '@storybook/react'
+import { MyComponent } from './MyComponent'
+
+const meta: Meta<typeof MyComponent> = {
+  title: 'Components/MyComponent',
+  component: MyComponent,
+  parameters: {
+    layout: 'centered',
+  },
+  tags: ['autodocs'],
+}
+
+export default meta
+type Story = StoryObj<typeof MyComponent>
+
+export const Default: Story = {
+  args: {
+    title: 'Hello World',
+    count: 0,
+  },
+}
+
+export const WithData: Story = {
+  args: {
+    title: 'Hello World',
+    count: 5,
+  },
+}
+```
+
+### Visual Regression Testing with Storybook
+
+Playwright can test Storybook stories for visual regressions:
+
+```bash
+# Run visual regression tests
+npm run test:e2e -- e2e/tests/storybook-visual-regression.spec.ts
+
+# Update screenshots (when UI changes are intentional)
+npm run test:e2e -- e2e/tests/storybook-visual-regression.spec.ts --update-snapshots
+```
+
+**Test Structure:**
+```typescript
+test('Component - Story Name', async ({ page }) => {
+  await page.goto('http://localhost:6006/iframe.html?id=components-mycomponent--default')
+  await page.waitForLoadState('networkidle')
+
+  // Take screenshot and compare
+  await expect(page).toHaveScreenshot('mycomponent-default.png', {
+    maxDiffPixels: 100,
+  })
+})
+```
+
+### Best Practices for Stories
+
+- Create stories for all component states (loading, error, empty, etc.)
+- Use descriptive story names that explain the scenario
+- Include interactive stories that demonstrate user interactions
+- Document props using JSDoc comments
+- Test edge cases and error states
+- Keep stories focused on a single variant
+
 ## Common Patterns
 
 ### Conditional Rendering
