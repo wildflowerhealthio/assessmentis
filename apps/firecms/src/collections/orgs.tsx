@@ -15,6 +15,7 @@ import { Match, Schema, SchemaAST } from 'effect'
 
 import { Org } from '@assessmentis/platform-domain'
 import { RadioGroup } from '@firecms/ui'
+import { EditableJsonView } from './EditableJsonView'
 
 type PropertySets =
   | MapProperty
@@ -181,4 +182,11 @@ export const orgsCollection = buildCollection({
   path: 'orgs',
   properties: (asFireCmsProperty('Org', Org.ast) as unknown as MapProperty)
     .properties!,
+  entityViews: [
+    {
+      key: 'editable_json',
+      name: 'JSON Editor',
+      Builder: EditableJsonView,
+    },
+  ],
 })
