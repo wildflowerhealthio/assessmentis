@@ -1,7 +1,9 @@
 import { Effect, Option, Schema } from 'effect'
 import { useNavigate } from 'react-router'
-import { useLoadedRuntimeContext } from 'app/clientRuntime'
-import { getRuntime } from 'app/clientRuntime'
+import {
+  useLoadedRuntimeContext,
+  useResourceRunEffect,
+} from 'app/clientRuntime'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { PractitionerForm } from 'app/modules/resources/Practitioner/components/PractitionerForm'
 import { updatePractitioner } from 'app/modules/resources/Practitioner/actions/updatePractitioner'
@@ -14,51 +16,64 @@ import { NotFoundError } from '@assessmentis/ontology'
 import type { Route } from './+types/_resource.Practitioner.$practitionerId.edit'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { getPractitionerDisplayName } from '../modules/resources/Practitioner/utils/practitionerDisplay'
+import { useMemo } from 'react'
+import Skeleton from 'react-loading-skeleton'
 
 const tryDecodePractitionerId = Schema.decodeOption(PractitionerId)
 
-export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-  const runtime = await getRuntime()
-  const practitionerIdMaybe = tryDecodePractitionerId(params.practitionerId)
+export default function EditPractitionerPage({ params }: Route.ComponentProps) {
+  const practitionerLoader = useResourceRunEffect(
+    useMemo(() => {
+      const practitionerIdMaybe = tryDecodePractitionerId(params.practitionerId)
 
-  const practitioner = await runtime.runPromise(
-    Effect.gen(function* () {
-      const repository = yield* PractitionerRepository
+      return Effect.gen(function* () {
+        const repository = yield* PractitionerRepository
 
-      const practitionerId = yield* practitionerIdMaybe.pipe(
-        Option.map(Effect.succeed),
-        Option.getOrElse(() =>
-          Effect.fail(
-            new NotFoundError({
-              resourceType: 'Practitioner',
-              params: { id: params.practitionerId },
-            })
+        const practitionerId = yield* practitionerIdMaybe.pipe(
+          Option.map(Effect.succeed),
+          Option.getOrElse(() =>
+            Effect.fail(
+              new NotFoundError({
+                resourceType: 'Practitioner',
+                params: { id: params.practitionerId },
+              })
+            )
           )
         )
-      )
 
-      return yield* repository.get(practitionerId)
-    })
+        return yield* repository.get(practitionerId)
+      })
+    }, [params.practitionerId])
   )
 
-  return { practitioner }
-}
-
-export default function EditPractitionerPage({
-  loaderData,
-}: Route.ComponentProps) {
-  const { practitioner } = loaderData
   const navigate = useNavigate()
   const clientRuntime = useLoadedRuntimeContext()
 
   useBreadcrumbs([
     { label: 'Practitioners', href: '/Practitioner' },
     {
-      label: getPractitionerDisplayName(practitioner),
-      href: `/Practitioner/${practitioner.id}`,
+      loading: practitionerLoader._tag === 'loading',
+      label:
+        practitionerLoader._tag === 'loaded'
+          ? getPractitionerDisplayName(practitionerLoader.value)
+          : 'Unknown Practitioner',
+      href: `/Practitioner/${params.practitionerId}`,
     },
     { label: 'Edit' },
   ])
+
+  if (practitionerLoader._tag == 'loading') {
+    return (
+      <FormPage title="Edit Practitioner">
+        <Skeleton count={5} height={40} style={{ marginBottom: '1rem' }} />
+      </FormPage>
+    )
+  }
+  if (practitionerLoader._tag === 'error') {
+    throw practitionerLoader.error
+  }
+
+  const practitioner = practitionerLoader.value
 
   // Transform practitioner to form initial values
   const initialValues: PractitionerFormData = {

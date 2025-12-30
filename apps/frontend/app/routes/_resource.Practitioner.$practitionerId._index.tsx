@@ -5,7 +5,7 @@ import {
 } from '@assessmentis/clinical-domain/administration'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/_resource.Practitioner.$practitionerId._index'
-import { getRuntime } from '../clientRuntime'
+import { useResourceRunEffect } from '../clientRuntime'
 import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
 import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
 import {
@@ -17,43 +17,77 @@ import { PractitionerContactInfo } from '../modules/resources/Practitioner/compo
 import { PractitionerAddresses } from '../modules/resources/Practitioner/components/PractitionerAddresses/PractitionerAddresses'
 import { PractitionerLanguages } from '../modules/resources/Practitioner/components/PractitionerLanguages/PractitionerLanguages'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
+import { useMemo } from 'react'
+import Skeleton from 'react-loading-skeleton'
 
 const tryDecodePractitionerId = Schema.decodeOption(PractitionerId)
 
-export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-  const runtime = await getRuntime()
-  const practitionerIdMaybe = tryDecodePractitionerId(params.practitionerId)
+export default function PractitionerDetailPage({
+  params,
+}: Route.ComponentProps) {
+  const practitionerLoader = useResourceRunEffect(
+    useMemo(() => {
+      const practitionerIdMaybe = tryDecodePractitionerId(params.practitionerId)
 
-  const practitioner = await runtime.runPromise(
-    Effect.gen(function* () {
-      const repository = yield* PractitionerRepository
+      return Effect.gen(function* () {
+        const repository = yield* PractitionerRepository
 
-      const practitionerId = yield* practitionerIdMaybe.pipe(
-        Option.map(Effect.succeed),
-        Option.getOrElse(() =>
-          Effect.fail(
-            new UnhandledError({ cause: 'Practitioner ID not found' })
+        const practitionerId = yield* practitionerIdMaybe.pipe(
+          Option.map(Effect.succeed),
+          Option.getOrElse(() =>
+            Effect.fail(
+              new UnhandledError({ cause: 'Practitioner ID not found' })
+            )
           )
         )
-      )
 
-      return yield* repository.get(practitionerId)
-    })
+        return yield* repository.get(practitionerId)
+      })
+    }, [params.practitionerId])
   )
-
-  return { practitioner }
-}
-
-export default function PractitionerDetailPage({
-  loaderData,
-}: Route.ComponentProps) {
-  const { practitioner } = loaderData
-  const displayName = getPractitionerDisplayName(practitioner)
 
   useBreadcrumbs([
     { label: 'Practitioners', href: '/Practitioner' },
-    { label: displayName },
+    {
+      loading: practitionerLoader._tag === 'loading',
+      label:
+        practitionerLoader._tag === 'loaded'
+          ? getPractitionerDisplayName(practitionerLoader.value)
+          : 'Unknown Practitioner',
+      href: `/Practitioner/${params.practitionerId}`,
+    },
   ])
+
+  if (practitionerLoader._tag == 'loading') {
+    return (
+      <ResourceDetailPage
+        editTo={`/Practitioner/${params.practitionerId}/edit`}
+        title={<Skeleton width={200} />}
+        subtitle={
+          <>
+            Practitioner ID: <Skeleton width={100} />
+          </>
+        }
+        sections={[
+          {
+            id: 'demographics',
+            title: 'Demographics',
+            content: (
+              <DetailGrid
+                items={{ skeleton: [<Skeleton />, <Skeleton />, <Skeleton />] }}
+              />
+            ),
+          },
+        ]}
+      />
+    )
+  }
+  if (practitionerLoader._tag === 'error') {
+    throw practitionerLoader.error
+  }
+
+  const practitioner = practitionerLoader.value
+  const displayName = getPractitionerDisplayName(practitioner)
 
   return (
     <ResourceDetailPage

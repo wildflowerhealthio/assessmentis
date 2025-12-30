@@ -21,8 +21,6 @@ import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider
 
 const tryDecodePatientId = Schema.decodeOption(PatientId)
 
-export async function clientLoader(_: Route.ClientLoaderArgs) {}
-
 export default function PatientDetailPage({ params }: Route.ComponentProps) {
   const loadedPatient = useResourceRunEffect(
     useMemo(

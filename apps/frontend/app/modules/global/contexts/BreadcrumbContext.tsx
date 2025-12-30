@@ -1,8 +1,8 @@
 import { createContext, useContext } from 'react'
 
 export type BreadcrumbSegment =
-  | { label: string; href?: string }
-  | { loading: true }
+  | { label: string; href?: string; loading?: false }
+  | { loading: true; label?: string; href?: string }
 
 type BreadcrumbContextValue = {
   breadcrumbs: BreadcrumbSegment[]

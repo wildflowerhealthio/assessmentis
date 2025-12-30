@@ -1,15 +1,10 @@
 import { Effect } from 'effect'
-import { useRuntimeContext } from '../clientRuntime'
-import { Route } from './+types/_index'
+import { useRuntime } from '../clientRuntime'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 
-export async function clientLoader(_: Route.ClientLoaderArgs) {
-  return
-}
-
 export default function Home() {
-  useBreadcrumbs([{ label: 'Home', href: '/' }])
-  const runtime = useRuntimeContext()
+  useBreadcrumbs([])
+  const runtime = useRuntime()
   return (
     <section>
       <h1 className="heading-6">Assessment.is</h1>

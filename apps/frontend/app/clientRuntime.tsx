@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import {
   Chunk,
   Effect,
@@ -25,11 +32,58 @@ export class ContextSetupError extends Error {
   }
 }
 
-export const RuntimeContext = createContext<
-  ManagedRuntime.ManagedRuntime<ClientRuntimeContext, never> | undefined
->(undefined)
+export const useRuntime = () => {
+  const loadedRuntime = useLoadedRuntimeContext()
+  const effectQueueRef = useRef<
+    {
+      runner: (
+        runtime: ManagedRuntime.ManagedRuntime<ClientRuntimeContext, never>
+      ) => void
+      reject: (reason?: unknown) => void
+    }[]
+  >([])
 
-export const useRuntimeContext = () => useContext(RuntimeContext)!
+  useEffect(() => {
+    if (effectQueueRef.current.length > 0) {
+      if (loadedRuntime._tag == 'loaded') {
+        const runtime = loadedRuntime.value
+        const currentQueue = effectQueueRef.current
+        effectQueueRef.current = []
+        currentQueue.forEach(({ runner }) => {
+          runner(runtime)
+        })
+      } else if (loadedRuntime._tag == 'error') {
+        const currentQueue = effectQueueRef.current
+        effectQueueRef.current = []
+        currentQueue.forEach(({ reject }) => {
+          reject(loadedRuntime.error)
+        })
+      }
+    }
+  }, [loadedRuntime])
+
+  const partialRuntime = useMemo(() => {
+    if (loadedRuntime._tag == 'loading')
+      return {
+        runPromise: <A, E>(effect: Effect.Effect<A, E, ClientRuntimeContext>) =>
+          new Promise<A>((resolve, reject) => {
+            const runner = (
+              runtime: ManagedRuntime.ManagedRuntime<
+                ClientRuntimeContext,
+                never
+              >
+            ) => runtime.runPromise(effect).then(resolve).catch(reject)
+            effectQueueRef.current.push({ runner, reject })
+          }),
+      }
+    else if (loadedRuntime._tag == 'error') {
+      throw loadedRuntime.error
+    }
+    return loadedRuntime.value
+  }, [loadedRuntime])
+
+  return partialRuntime
+}
 
 export type ContextError = OrgError
 

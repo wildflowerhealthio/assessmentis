@@ -1,6 +1,7 @@
-import { ReactNode, Fragment } from 'react'
+import { ReactNode, Fragment, JSX } from 'react'
 import { cn } from '@assessmentis/react-util'
 import classes from './DetailGrid.module.css'
+import React from 'react'
 
 interface DetailGridItem {
   label: string
@@ -9,7 +10,7 @@ interface DetailGridItem {
 }
 
 interface DetailGridProps {
-  items: DetailGridItem[]
+  items: DetailGridItem[] | { skeleton: JSX.Element[] }
   columns?: string // CSS grid-template-columns value
   className?: string
 }
@@ -24,19 +25,21 @@ export function DetailGrid({
       className={cn(classes.DetailGrid, className)}
       style={{ gridTemplateColumns: columns }}
     >
-      {items.map(
-        (item, index) =>
-          !item.hidden && (
-            <Fragment key={index}>
-              <dt className={cn('body-3', classes.DetailGrid__label)}>
-                {item.label}
-              </dt>
-              <dd className={cn('body-3', classes.DetailGrid__value)}>
-                {item.value}
-              </dd>
-            </Fragment>
-          )
-      )}
+      {'skeleton' in items
+        ? items.skeleton
+        : items.map(
+            (item, index) =>
+              !item.hidden && (
+                <Fragment key={index}>
+                  <dt className={cn('body-3', classes.DetailGrid__label)}>
+                    {item.label}
+                  </dt>
+                  <dd className={cn('body-3', classes.DetailGrid__value)}>
+                    {item.value}
+                  </dd>
+                </Fragment>
+              )
+          )}
     </dl>
   )
 }

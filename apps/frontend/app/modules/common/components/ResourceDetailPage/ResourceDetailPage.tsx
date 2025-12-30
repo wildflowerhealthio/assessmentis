@@ -16,11 +16,11 @@ interface ResourceDetailPageProps {
   editTo?: string
 
   // Header
-  title: string
-  subtitle?: string
+  title: string | ReactNode
+  subtitle?: string | ReactNode
 
   // Content sections
-  sections: ResourceDetailSection[]
+  sections: ResourceDetailSection[] | { skeleton: ReactNode[] }
 
   // Debug data
   debugData?: unknown
@@ -54,16 +54,18 @@ export function ResourceDetailPage({
         </p>
       ) : undefined}
 
-      {sections.map((section) =>
-        !section.hidden ? (
-          <section key={section.id} className={classes.DetailPage__section}>
-            <h2 className="heading-4">{section.title}</h2>
-            <div className={classes.DetailPage__sectionContent}>
-              {section.content}
-            </div>
-          </section>
-        ) : undefined
-      )}
+      {'skeleton' in sections
+        ? sections.skeleton
+        : sections.map((section) =>
+            !section.hidden ? (
+              <section key={section.id} className={classes.DetailPage__section}>
+                <h2 className="heading-4">{section.title}</h2>
+                <div className={classes.DetailPage__sectionContent}>
+                  {section.content}
+                </div>
+              </section>
+            ) : undefined
+          )}
 
       {shouldShowRawData(debugData) ? (
         <details className={classes.DetailPage__debug}>

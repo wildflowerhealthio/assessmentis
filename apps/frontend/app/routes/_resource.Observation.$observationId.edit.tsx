@@ -1,7 +1,9 @@
 import { DateTime, Effect, Option, Schema } from 'effect'
 import { useNavigate } from 'react-router'
-import { useLoadedRuntimeContext } from 'app/clientRuntime'
-import { getRuntime } from 'app/clientRuntime'
+import {
+  useLoadedRuntimeContext,
+  useResourceRunEffect,
+} from 'app/clientRuntime'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { ObservationForm } from 'app/modules/resources/Observation/components/ObservationForm'
 import { updateObservation } from 'app/modules/resources/Observation/actions/updateObservation'
@@ -15,51 +17,64 @@ import type { Route } from './+types/_resource.Observation.$observationId.edit'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { getObservationDisplayName } from '../modules/resources/Observation/utils/observationDisplay'
 import { extractReferenceId } from 'app/modules/common/utils/fhirDisplay'
+import { useMemo } from 'react'
+import Skeleton from 'react-loading-skeleton'
 
 const tryDecodeObservationId = Schema.decodeOption(ObservationId)
 
-export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-  const runtime = await getRuntime()
-  const observationIdMaybe = tryDecodeObservationId(params.observationId)
+export default function EditObservationPage({ params }: Route.ComponentProps) {
+  const observationLoader = useResourceRunEffect(
+    useMemo(() => {
+      const observationIdMaybe = tryDecodeObservationId(params.observationId)
 
-  const observation = await runtime.runPromise(
-    Effect.gen(function* () {
-      const repository = yield* ObservationRepository
+      return Effect.gen(function* () {
+        const repository = yield* ObservationRepository
 
-      const observationId = yield* observationIdMaybe.pipe(
-        Option.map(Effect.succeed),
-        Option.getOrElse(() =>
-          Effect.fail(
-            new NotFoundError({
-              resourceType: 'Observation',
-              params: { id: params.observationId },
-            })
+        const observationId = yield* observationIdMaybe.pipe(
+          Option.map(Effect.succeed),
+          Option.getOrElse(() =>
+            Effect.fail(
+              new NotFoundError({
+                resourceType: 'Observation',
+                params: { id: params.observationId },
+              })
+            )
           )
         )
-      )
 
-      return yield* repository.get(observationId)
-    })
+        return yield* repository.get(observationId)
+      })
+    }, [params.observationId])
   )
 
-  return { observation }
-}
-
-export default function EditObservationPage({
-  loaderData,
-}: Route.ComponentProps) {
-  const { observation } = loaderData
   const navigate = useNavigate()
+  const clientRuntime = useLoadedRuntimeContext()
 
   useBreadcrumbs([
     { label: 'Observations', href: '/Observation' },
     {
-      label: getObservationDisplayName(observation),
-      href: `/Observation/${observation.id}`,
+      loading: observationLoader._tag === 'loading',
+      label:
+        observationLoader._tag === 'loaded'
+          ? getObservationDisplayName(observationLoader.value)
+          : 'Unknown Observation',
+      href: `/Observation/${params.observationId}`,
     },
     { label: 'Edit' },
   ])
-  const clientRuntime = useLoadedRuntimeContext()
+
+  if (observationLoader._tag == 'loading') {
+    return (
+      <FormPage title="Edit Observation">
+        <Skeleton count={5} height={40} style={{ marginBottom: '1rem' }} />
+      </FormPage>
+    )
+  }
+  if (observationLoader._tag === 'error') {
+    throw observationLoader.error
+  }
+
+  const observation = observationLoader.value
 
   // Determine which value type is present
   let valueType:

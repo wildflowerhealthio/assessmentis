@@ -1,7 +1,9 @@
 import { Effect, Option, Schema, DateTime } from 'effect'
 import { useNavigate } from 'react-router'
-import { useLoadedRuntimeContext } from 'app/clientRuntime'
-import { getRuntime } from 'app/clientRuntime'
+import {
+  useLoadedRuntimeContext,
+  useResourceRunEffect,
+} from 'app/clientRuntime'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { EncounterForm } from 'app/modules/resources/Encounter/components/EncounterForm'
 import { updateEncounter } from 'app/modules/resources/Encounter/actions/updateEncounter'
@@ -18,51 +20,64 @@ import {
   extractReferenceId,
   extractReferenceIds,
 } from 'app/modules/common/utils/fhirDisplay'
+import { useMemo } from 'react'
+import Skeleton from 'react-loading-skeleton'
 
 const tryDecodeEncounterId = Schema.decodeOption(EncounterId)
 
-export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-  const runtime = await getRuntime()
-  const encounterIdMaybe = tryDecodeEncounterId(params.encounterId)
+export default function EditEncounterPage({ params }: Route.ComponentProps) {
+  const encounterLoader = useResourceRunEffect(
+    useMemo(() => {
+      const encounterIdMaybe = tryDecodeEncounterId(params.encounterId)
 
-  const encounter = await runtime.runPromise(
-    Effect.gen(function* () {
-      const repository = yield* EncounterRepository
+      return Effect.gen(function* () {
+        const repository = yield* EncounterRepository
 
-      const encounterId = yield* encounterIdMaybe.pipe(
-        Option.map(Effect.succeed),
-        Option.getOrElse(() =>
-          Effect.fail(
-            new NotFoundError({
-              resourceType: 'Encounter',
-              params: { id: params.encounterId },
-            })
+        const encounterId = yield* encounterIdMaybe.pipe(
+          Option.map(Effect.succeed),
+          Option.getOrElse(() =>
+            Effect.fail(
+              new NotFoundError({
+                resourceType: 'Encounter',
+                params: { id: params.encounterId },
+              })
+            )
           )
         )
-      )
 
-      return yield* repository.get(encounterId)
-    })
+        return yield* repository.get(encounterId)
+      })
+    }, [params.encounterId])
   )
 
-  return { encounter }
-}
-
-export default function EditEncounterPage({
-  loaderData,
-}: Route.ComponentProps) {
-  const { encounter } = loaderData
   const navigate = useNavigate()
   const clientRuntime = useLoadedRuntimeContext()
 
   useBreadcrumbs([
     { label: 'Encounters', href: '/Encounter' },
     {
-      label: getEncounterDisplayName(encounter),
-      href: `/Encounter/${encounter.id}`,
+      loading: encounterLoader._tag === 'loading',
+      label:
+        encounterLoader._tag === 'loaded'
+          ? getEncounterDisplayName(encounterLoader.value)
+          : 'Unknown Encounter',
+      href: `/Encounter/${params.encounterId}`,
     },
     { label: 'Edit' },
   ])
+
+  if (encounterLoader._tag == 'loading') {
+    return (
+      <FormPage title="Edit Encounter">
+        <Skeleton count={5} height={40} style={{ marginBottom: '1rem' }} />
+      </FormPage>
+    )
+  }
+  if (encounterLoader._tag === 'error') {
+    throw encounterLoader.error
+  }
+
+  const encounter = encounterLoader.value
 
   // Extract participant practitioner IDs
   const practitionerIds = extractReferenceIds(

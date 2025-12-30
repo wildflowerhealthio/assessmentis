@@ -1,7 +1,9 @@
 import { Effect, Option, Schema } from 'effect'
 import { useNavigate } from 'react-router'
-import { useLoadedRuntimeContext } from 'app/clientRuntime'
-import { getRuntime } from 'app/clientRuntime'
+import {
+  useLoadedRuntimeContext,
+  useResourceRunEffect,
+} from 'app/clientRuntime'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { CompositionForm } from 'app/modules/resources/Composition/components/CompositionForm'
 import { updateComposition } from 'app/modules/resources/Composition/actions/updateComposition'
@@ -18,51 +20,63 @@ import type { Route } from './+types/_resource.Composition.$compositionId.edit'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { getCompositionDisplayName } from '../modules/resources/Composition/utils/compositionDisplay'
 import { extractReferenceId } from 'app/modules/common/utils/fhirDisplay'
+import { useMemo } from 'react'
+import Skeleton from 'react-loading-skeleton'
 
 const tryDecodeCompositionId = Schema.decodeOption(CompositionId)
 
-export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-  const runtime = await getRuntime()
-  const compositionIdMaybe = tryDecodeCompositionId(params.compositionId)
+export default function EditCompositionPage({ params }: Route.ComponentProps) {
+  const compositionLoader = useResourceRunEffect(
+    useMemo(() => {
+      const compositionIdMaybe = tryDecodeCompositionId(params.compositionId)
 
-  const composition = await runtime.runPromise(
-    Effect.gen(function* () {
-      const repository = yield* CompositionRepository
+      return Effect.gen(function* () {
+        const repository = yield* CompositionRepository
 
-      const compositionId = yield* compositionIdMaybe.pipe(
-        Option.map(Effect.succeed),
-        Option.getOrElse(() =>
-          Effect.fail(
-            new NotFoundError({
-              resourceType: 'Composition',
-              params: { id: params.compositionId },
-            })
+        const compositionId = yield* compositionIdMaybe.pipe(
+          Option.map(Effect.succeed),
+          Option.getOrElse(() =>
+            Effect.fail(
+              new NotFoundError({
+                resourceType: 'Composition',
+                params: { id: params.compositionId },
+              })
+            )
           )
         )
-      )
 
-      return yield* repository.get(compositionId)
-    })
+        return yield* repository.get(compositionId)
+      })
+    }, [params.compositionId])
   )
 
-  return { composition }
-}
-
-export default function EditCompositionPage({
-  loaderData,
-}: Route.ComponentProps) {
   useBreadcrumbs([
     { label: 'Compositions', href: '/Composition' },
     {
-      label: getCompositionDisplayName(loaderData.composition),
-      href: `/Composition/${loaderData.composition.id}`,
+      loading: compositionLoader._tag === 'loading',
+      label:
+        compositionLoader._tag === 'loaded'
+          ? getCompositionDisplayName(compositionLoader.value)
+          : 'Unknown Composition',
+      href: `/Composition/${params.compositionId}`,
     },
     { label: 'Edit' },
   ])
-  const { composition } = loaderData
   const navigate = useNavigate()
   const clientRuntime = useLoadedRuntimeContext()
 
+  if (compositionLoader._tag == 'loading') {
+    return (
+      <FormPage title="Edit Composition">
+        <Skeleton count={5} height={40} style={{ marginBottom: '1rem' }} />
+      </FormPage>
+    )
+  }
+  if (compositionLoader._tag === 'error') {
+    throw compositionLoader.error
+  }
+
+  const composition = compositionLoader.value
   // Transform composition to form initial values
   const initialValues: typeof CompositionFormSchema.Encoded = {
     title: composition.title ?? '',

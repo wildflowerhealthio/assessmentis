@@ -13,8 +13,6 @@ import { useMemo } from 'react'
 import { ResourceListPage } from '../modules/common/components/ResourceListPage/ResourceListPage'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 
-export async function clientLoader(_: Route.ClientLoaderArgs) {}
-
 const useQuestionnaires = () => {
   const questionnaires = useResourceRunEffect(
     useMemo(() => {

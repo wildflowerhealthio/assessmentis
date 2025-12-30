@@ -1,10 +1,5 @@
 import { useEffect, useState } from 'react'
-import {
-  ContextError,
-  LoadedRuntimeContext,
-  RuntimeContext,
-  useLoadedRuntimeContext,
-} from '../../../clientRuntime'
+import { ContextError, LoadedRuntimeContext } from '../../../clientRuntime'
 import { Effect, ManagedRuntime, Stream } from 'effect'
 import { ClientRuntimeContext } from '@assessmentis/platform-domain'
 import { LoadedResult } from '@assessmentis/ontology'
@@ -59,25 +54,5 @@ export const LoadedRuntimeContextProvider = ({
     <LoadedRuntimeContext.Provider value={runtime}>
       {children}
     </LoadedRuntimeContext.Provider>
-  )
-}
-
-export const RuntimeContextOrErr = ({
-  children,
-  className,
-}: React.PropsWithChildren<{ className?: string | undefined }>) => {
-  const runtime = useLoadedRuntimeContext()
-  if (runtime._tag === 'loading') {
-    return <div className={className}>Loading...</div>
-  }
-
-  if (runtime._tag === 'error') {
-    throw runtime.error
-  }
-
-  return (
-    <RuntimeContext value={runtime.value}>
-      <div className={className}>{children}</div>
-    </RuntimeContext>
   )
 }

@@ -12,7 +12,7 @@ import {
   QuestionnaireResponseRepository,
 } from '@assessmentis/clinical-domain/content-management'
 
-import { getRuntime, useRuntimeContext } from 'app/clientRuntime'
+import { getRuntime, useRuntime as useEffectRuntime } from 'app/clientRuntime'
 import type { Route } from './+types/_resource.QuestionnaireResponse.$questionnaireResponseId'
 import QuestionnaireForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/QuestionnaireForm'
 import { updateEncounterRecordingsAndTranscripts } from '../modules/resources/Encounter/actions/updateEncounterRecordingsAndTranscripts'
@@ -104,7 +104,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 export default function QuestionnaireResponseDetailsPage({
   loaderData,
 }: Route.ComponentProps) {
-  const runtime = useRuntimeContext()
+  const runtime = useEffectRuntime()
   const navigate = useNavigate()
   const [highlightLinks, setHighlightLinks] = useState<
     Set<QuestionnaireItemLink>
@@ -131,7 +131,6 @@ export default function QuestionnaireResponseDetailsPage({
     >(MediaRepository, recordingResult)
 
   const syncObservations = () => {
-    if (!runtime) return undefined
     console.log('Syncing observations...')
 
     let observations: Observation[] = []
@@ -163,7 +162,6 @@ export default function QuestionnaireResponseDetailsPage({
       questionnaireResponse.encounter?.reference?.split('/')[1] ?? undefined
     if (!encounterIdStr) return undefined
     const encounterId = EncounterId.make(encounterIdStr)
-    if (!runtime) return undefined
 
     return () =>
       runtime

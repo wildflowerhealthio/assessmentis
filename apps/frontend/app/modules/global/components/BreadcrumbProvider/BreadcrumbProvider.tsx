@@ -19,9 +19,13 @@ const areBreadcrumbsEqual = (
   return a.every((segmentA, index) => {
     const segmentB = b[index]
 
-    // Both segments must have same shape
     if ('loading' in segmentA && 'loading' in segmentB) {
-      return segmentA.loading === segmentB.loading
+      if (segmentA.loading && segmentB.loading) {
+        return true
+      }
+      if (segmentA.loading || segmentB.loading) {
+        return false
+      }
     }
 
     if ('label' in segmentA && 'label' in segmentB) {
