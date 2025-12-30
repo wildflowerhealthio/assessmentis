@@ -10,7 +10,6 @@ import {
 } from '@assessmentis/clinical-domain/content-management'
 import { cn } from '@assessmentis/react-util'
 import { DateTime, Effect } from 'effect'
-import { useRuntime } from 'app/clientRuntime'
 
 export interface IProps {
   questionnaireItem: QuestionnaireItem

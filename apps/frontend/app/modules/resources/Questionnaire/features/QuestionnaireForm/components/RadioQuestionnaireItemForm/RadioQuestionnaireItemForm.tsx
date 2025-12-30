@@ -9,7 +9,6 @@ import {
 } from '@assessmentis/clinical-domain/content-management'
 import { ValueElement } from '@assessmentis/clinical-domain/data-types'
 import { cn } from '@assessmentis/react-util'
-import { useRuntime } from 'app/clientRuntime'
 
 export interface IProps {
   questionnaireItem: QuestionnaireItem
@@ -39,8 +38,6 @@ const RadioQuestionnaireItemForm = ({
   setQuestionnaireResponseItem,
   uiControl,
 }: IProps) => {
-  const clientRuntime = useRuntime()
-
   const displayAsGrid = uiControl === QuestionnaireItemUIControlCode.enums.table
 
   const answerOptions: undefined | ReadonlyArray<ValueElement> =

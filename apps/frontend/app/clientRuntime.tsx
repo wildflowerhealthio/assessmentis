@@ -1,9 +1,9 @@
 import {
   createContext,
-  useCallback,
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import {
@@ -34,7 +34,7 @@ export class ContextSetupError extends Error {
 
 export const useRuntime = () => {
   const loadedRuntime = useLoadedRuntimeContext()
-  const [effectQueue, setEffectQueue] = useState<
+  const effectQueueRef = useRef<
     {
       runner: (
         runtime: ManagedRuntime.ManagedRuntime<ClientRuntimeContext, never>
@@ -44,25 +44,23 @@ export const useRuntime = () => {
   >([])
 
   useEffect(() => {
-    if (effectQueue.length > 0) {
-      setEffectQueue((effectQueue) => {
-        if (loadedRuntime._tag == 'loaded') {
-          const runtime = loadedRuntime.value
-          effectQueue.forEach(({ runner }) => {
-            runner(runtime)
-          })
-          return []
-        } else if (loadedRuntime._tag == 'error') {
-          effectQueue.forEach(({ reject }) => {
-            reject(loadedRuntime.error)
-          })
-          return []
-        } else {
-          return effectQueue
-        }
-      })
+    if (effectQueueRef.current.length > 0) {
+      if (loadedRuntime._tag == 'loaded') {
+        const runtime = loadedRuntime.value
+        const currentQueue = effectQueueRef.current
+        effectQueueRef.current = []
+        currentQueue.forEach(({ runner }) => {
+          runner(runtime)
+        })
+      } else if (loadedRuntime._tag == 'error') {
+        const currentQueue = effectQueueRef.current
+        effectQueueRef.current = []
+        currentQueue.forEach(({ reject }) => {
+          reject(loadedRuntime.error)
+        })
+      }
     }
-  }, [loadedRuntime, effectQueue])
+  }, [loadedRuntime])
 
   const shamRuntime = useMemo(() => {
     if (loadedRuntime._tag == 'loading')
@@ -75,7 +73,7 @@ export const useRuntime = () => {
                 never
               >
             ) => runtime.runPromise(effect).then(resolve).catch(reject)
-            setEffectQueue((q) => [...q, { runner, reject }])
+            effectQueueRef.current.push({ runner, reject })
           }),
       }
     else if (loadedRuntime._tag == 'error') {
