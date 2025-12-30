@@ -962,7 +962,7 @@ const ResourceList = ({
 
 ### Shared CSS Modules
 
-**Location**: `/apps/frontend/app/modules/common/components/styles/`
+**Location**: `/apps/frontend/app/modules/common/components/BaseListItem/`
 
 For commonly repeated CSS patterns across multiple components, create shared CSS modules that can be imported and reused.
 
@@ -989,14 +989,14 @@ For commonly repeated CSS patterns across multiple components, create shared CSS
 **Usage in ListItem components**:
 
 ```typescript
-import baseClasses from 'app/modules/common/components/styles/BaseListItem.module.css'
+import baseListItemClasses from 'app/modules/common/components/BaseListItem/BaseListItem.module.css'
 
 export function PatientListItem({ item, onDelete, loading }) {
   return (
     <>
-      <Link to={`/Patient/${item.id}`} className={baseClasses.content}>
+      <Link to={`/Patient/${item.id}`} className={baseListItemClasses.content}>
         <strong>{displayName}</strong>
-        <span className={baseClasses.metadata}>
+        <span className={baseListItemClasses.metadata}>
           {metadata}
         </span>
       </Link>

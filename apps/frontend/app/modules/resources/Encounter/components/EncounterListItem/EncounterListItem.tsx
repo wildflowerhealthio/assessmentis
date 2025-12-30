@@ -6,7 +6,7 @@ import {
   getEncounterStatus,
   getEncounterPeriodDisplay,
 } from '../../utils/encounterDisplay'
-import baseClasses from 'app/modules/common/components/styles/BaseListItem.module.css'
+import baseListItemClasses from 'app/modules/common/components/BaseListItem/BaseListItem.module.css'
 
 interface EncounterListItemProps {
   item: Encounter
@@ -25,9 +25,12 @@ export function EncounterListItem({
 
   return (
     <>
-      <Link to={`/Encounter/${encounter.id}`} className={baseClasses.content}>
+      <Link
+        to={`/Encounter/${encounter.id}`}
+        className={baseListItemClasses.content}
+      >
         <strong>{displayName}</strong>
-        <span className={baseClasses.metadata}>
+        <span className={baseListItemClasses.metadata}>
           {status} • {periodDisplay}
         </span>
       </Link>
