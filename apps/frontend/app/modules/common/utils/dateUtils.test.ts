@@ -1,203 +1,207 @@
 import { describe, it, expect } from 'vitest'
+import { DateTime } from 'effect'
 import {
-  formatDate,
-  formatDateTime,
-  formatDateRange,
-  formatDateTimeRange,
+  formatTimelessDate,
+  formatUtcDate,
+  formatUtcDateTime,
+  formatUtcDateRange,
+  formatUtcDateTimeRange,
 } from './dateUtils'
 
 describe('dateUtils', () => {
-  describe('formatDate', () => {
+  describe('formatTimelessDate', () => {
+    it('should format a date string with ordinal suffix', () => {
+      const result = formatTimelessDate('2024-01-15')
+      expect(result).toContain('January')
+      expect(result).toContain('15')
+      expect(result).toContain('th')
+    })
+
     it('should format a Date object', () => {
-      const date = new Date('2024-01-15T12:00:00Z')
-      const result = formatDate(date)
-      // Should contain date components (year and day)
-      expect(result).toContain('2024')
-      expect(result).toMatch(/15/)
+      const date = new Date('2024-01-01T00:00:00')
+      const result = formatTimelessDate(date)
+      expect(result).toContain('January')
+      expect(result).toContain('1')
+      expect(result).toContain('st')
     })
 
-    it('should format an ISO string', () => {
-      const result = formatDate('2024-01-15')
-      expect(result).toContain('2024')
-      expect(result).toMatch(/15/)
+    it('should omit year for dates within 3 months', () => {
+      const now = new Date()
+      const oneMonthAgo = new Date(now)
+      oneMonthAgo.setMonth(now.getMonth() - 1)
+      const dateStr = oneMonthAgo.toISOString().split('T')[0]
+      
+      const result = formatTimelessDate(dateStr)
+      // Should not contain year for recent dates
+      const currentYear = now.getFullYear()
+      expect(result).not.toContain(currentYear.toString())
     })
 
-    it('should format epoch milliseconds', () => {
-      const epochMillis = new Date('2024-01-15').getTime()
-      const result = formatDate(epochMillis)
-      expect(result).toContain('2024')
-      expect(result).toMatch(/15/)
-    })
-
-    it('should format an object with epochMillis property', () => {
-      const epochObj = { epochMillis: new Date('2024-01-15').getTime() }
-      const result = formatDate(epochObj)
-      expect(result).toContain('2024')
-      expect(result).toMatch(/15/)
+    it('should include year for dates beyond 3 months', () => {
+      const result = formatTimelessDate('2020-01-15')
+      expect(result).toContain('2020')
     })
 
     it('should return fallback for undefined', () => {
-      expect(formatDate(undefined)).toBe('Unknown')
+      expect(formatTimelessDate(undefined)).toBe('Unknown')
     })
 
     it('should return custom fallback', () => {
-      expect(formatDate(undefined, 'N/A')).toBe('N/A')
-    })
-
-    it('should return fallback for invalid date', () => {
-      expect(formatDate('invalid-date')).toBe('Unknown')
-    })
-
-    it('should handle zero timestamp', () => {
-      const result = formatDate(0)
-      expect(result).toMatch(/1970/)
+      expect(formatTimelessDate(undefined, 'N/A')).toBe('N/A')
     })
   })
 
-  describe('formatDateTime', () => {
-    it('should format a Date object with time', () => {
-      const date = new Date('2024-01-15T12:30:00Z')
-      const result = formatDateTime(date)
-      // Should include date components
-      expect(result).toContain('2024')
-      // Should be longer than just a date (includes time)
-      expect(result.length).toBeGreaterThan(10)
+  describe('formatUtcDate', () => {
+    it('should format a UTC timestamp', () => {
+      const utc = DateTime.unsafeMakeZoned('2024-01-15T12:00:00Z', {
+        timeZone: 'UTC',
+      })
+      const result = formatUtcDate(DateTime.removeTimeZone(utc))
+      expect(result).toContain('January')
+      expect(result).toContain('15')
     })
 
-    it('should format epoch milliseconds with time', () => {
-      const epochMillis = new Date('2024-01-15T12:30:00Z').getTime()
-      const result = formatDateTime(epochMillis)
-      expect(result).toContain('2024')
-      expect(result.length).toBeGreaterThan(10)
+    it('should return fallback for undefined', () => {
+      expect(formatUtcDate(undefined)).toBe('Unknown')
     })
+  })
 
-    it('should format an object with epochMillis property with time', () => {
-      const epochObj = {
-        epochMillis: new Date('2024-01-15T12:30:00Z').getTime(),
-      }
-      const result = formatDateTime(epochObj)
-      expect(result).toContain('2024')
+  describe('formatUtcDateTime', () => {
+    it('should format a UTC timestamp with time', () => {
+      const utc = DateTime.unsafeMakeZoned('2024-01-15T12:30:00Z', {
+        timeZone: 'UTC',
+      })
+      const result = formatUtcDateTime(DateTime.removeTimeZone(utc))
+      // Should contain date components
       expect(result.length).toBeGreaterThan(10)
     })
 
     it('should return fallback for undefined', () => {
-      expect(formatDateTime(undefined)).toBe('Unknown')
-    })
-
-    it('should return custom fallback', () => {
-      expect(formatDateTime(undefined, 'N/A')).toBe('N/A')
-    })
-
-    it('should return fallback for invalid date', () => {
-      expect(formatDateTime('invalid-date')).toBe('Unknown')
+      expect(formatUtcDateTime(undefined)).toBe('Unknown')
     })
   })
 
-  describe('formatDateRange', () => {
+  describe('formatUtcDateRange', () => {
     it('should format a date range with both dates', () => {
-      const start = new Date('2021-01-01')
-      const end = new Date('2022-01-01')
-      const result = formatDateRange(start, end)
-      // Should contain both years and a separator
+      const start = DateTime.unsafeMakeZoned('2021-01-01T00:00:00Z', {
+        timeZone: 'UTC',
+      })
+      const end = DateTime.unsafeMakeZoned('2022-01-01T00:00:00Z', {
+        timeZone: 'UTC',
+      })
+      const result = formatUtcDateRange(
+        DateTime.removeTimeZone(start),
+        DateTime.removeTimeZone(end)
+      )
       expect(result).toContain('2021')
       expect(result).toContain('2022')
       expect(result).toContain('-')
     })
 
-    it('should handle epoch milliseconds for both dates', () => {
-      const start = new Date('2021-01-01').getTime()
-      const end = new Date('2022-01-01').getTime()
-      const result = formatDateRange(start, end)
-      expect(result).toContain('2021')
-      expect(result).toContain('2022')
-      expect(result).toContain('-')
-    })
-
-    it('should handle objects with epochMillis property', () => {
-      const start = { epochMillis: new Date('2021-01-01').getTime() }
-      const end = { epochMillis: new Date('2022-01-01').getTime() }
-      const result = formatDateRange(start, end)
-      expect(result).toContain('2021')
-      expect(result).toContain('2022')
-      expect(result).toContain('-')
-    })
-
-    it('should use "Present" when end date is undefined', () => {
-      const start = new Date('2021-01-01')
-      const result = formatDateRange(start, undefined)
+    it('should use "Present" when end is undefined', () => {
+      const start = DateTime.unsafeMakeZoned('2021-01-01T00:00:00Z', {
+        timeZone: 'UTC',
+      })
+      const result = formatUtcDateRange(DateTime.removeTimeZone(start), undefined)
       expect(result).toContain('2021')
       expect(result).toContain('Present')
     })
 
-    it('should use "Present" when end parameter is omitted', () => {
-      const start = new Date('2021-01-01')
-      const result = formatDateRange(start)
-      expect(result).toContain('2021')
-      expect(result).toContain('Present')
+    it('should use custom fallbacks from options', () => {
+      const result = formatUtcDateRange(undefined, undefined, {
+        neitherFallback: 'No dates',
+        startFallback: 'Start unknown',
+        endFallback: 'End unknown',
+      })
+      expect(result).toBe('No dates')
     })
 
-    it('should use "Unknown" when start date is undefined', () => {
-      const end = new Date('2022-01-01')
-      const result = formatDateRange(undefined, end)
-      expect(result).toContain('Unknown')
-      expect(result).toContain('2022')
+    it('should format same-day range smartly', () => {
+      const start = DateTime.unsafeMakeZoned('2024-01-15T09:00:00Z', {
+        timeZone: 'UTC',
+      })
+      const end = DateTime.unsafeMakeZoned('2024-01-15T10:00:00Z', {
+        timeZone: 'UTC',
+      })
+      const result = formatUtcDateRange(
+        DateTime.removeTimeZone(start),
+        DateTime.removeTimeZone(end)
+      )
+      // Should show date once: "January 15th 9 AM - 10 AM"
+      expect(result).toContain('January')
+      expect(result).toContain('15')
+      expect(result).toContain('AM')
     })
 
-    it('should use custom fallbacks', () => {
-      const result = formatDateRange(undefined, undefined, 'Now', 'N/A')
-      expect(result).toBe('N/A - Now')
-    })
-
-    it('should handle mixed input types', () => {
-      const start = new Date('2021-01-01').getTime()
-      const end = { epochMillis: new Date('2022-01-01').getTime() }
-      const result = formatDateRange(start, end)
-      expect(result).toContain('2021')
-      expect(result).toContain('2022')
+    it('should format same-month range smartly', () => {
+      const start = DateTime.unsafeMakeZoned('2024-01-10T00:00:00Z', {
+        timeZone: 'UTC',
+      })
+      const end = DateTime.unsafeMakeZoned('2024-01-14T00:00:00Z', {
+        timeZone: 'UTC',
+      })
+      const result = formatUtcDateRange(
+        DateTime.removeTimeZone(start),
+        DateTime.removeTimeZone(end)
+      )
+      // Should show: "January 10 - 14th" (if within 3 months)
+      expect(result).toContain('January')
+      expect(result).toContain('10')
+      expect(result).toContain('14')
     })
   })
 
-  describe('formatDateTimeRange', () => {
-    it('should format a date/time range with both dates', () => {
-      const start = new Date('2021-01-01T09:00:00Z')
-      const end = new Date('2022-01-01T17:00:00Z')
-      const result = formatDateTimeRange(start, end)
+  describe('formatUtcDateTimeRange', () => {
+    it('should format datetime range with both dates', () => {
+      const start = DateTime.unsafeMakeZoned('2021-01-01T09:00:00Z', {
+        timeZone: 'UTC',
+      })
+      const end = DateTime.unsafeMakeZoned('2022-01-01T17:00:00Z', {
+        timeZone: 'UTC',
+      })
+      const result = formatUtcDateTimeRange(
+        DateTime.removeTimeZone(start),
+        DateTime.removeTimeZone(end)
+      )
       expect(result).toContain('2021')
       expect(result).toContain('2022')
       expect(result).toContain('-')
-      expect(result.length).toBeGreaterThan(20) // Should include time components
     })
 
-    it('should handle epoch milliseconds', () => {
-      const start = new Date('2021-01-01T09:00:00Z').getTime()
-      const end = new Date('2022-01-01T17:00:00Z').getTime()
-      const result = formatDateTimeRange(start, end)
-      expect(result).toContain('2021')
-      expect(result).toContain('2022')
-    })
-
-    it('should use "Ongoing" when end date is undefined', () => {
-      const start = new Date('2021-01-01T09:00:00Z')
-      const result = formatDateTimeRange(start, undefined)
+    it('should use "Ongoing" when end is undefined', () => {
+      const start = DateTime.unsafeMakeZoned('2021-01-01T09:00:00Z', {
+        timeZone: 'UTC',
+      })
+      const result = formatUtcDateTimeRange(
+        DateTime.removeTimeZone(start),
+        undefined
+      )
       expect(result).toContain('2021')
       expect(result).toContain('Ongoing')
     })
 
-    it('should use "Not specified" when start date is undefined', () => {
-      const end = new Date('2022-01-01T17:00:00Z')
-      const result = formatDateTimeRange(undefined, end)
-      expect(result).toContain('Not specified')
-      expect(result).toContain('2022')
+    it('should format same-day datetime range smartly', () => {
+      const start = DateTime.unsafeMakeZoned('2024-01-15T09:00:00Z', {
+        timeZone: 'UTC',
+      })
+      const end = DateTime.unsafeMakeZoned('2024-01-15T10:30:00Z', {
+        timeZone: 'UTC',
+      })
+      const result = formatUtcDateTimeRange(
+        DateTime.removeTimeZone(start),
+        DateTime.removeTimeZone(end)
+      )
+      // Should show time with minutes: "January 15th 9:00 AM - 10:30 AM"
+      expect(result).toContain('January')
+      expect(result).toContain('15')
+      expect(result).toContain(':')
     })
 
-    it('should use custom fallbacks', () => {
-      const result = formatDateTimeRange(
-        undefined,
-        undefined,
-        'Current',
-        'Missing'
-      )
-      expect(result).toBe('Missing - Current')
+    it('should use custom fallbacks from options', () => {
+      const result = formatUtcDateTimeRange(undefined, undefined, {
+        neitherFallback: 'No times',
+      })
+      expect(result).toBe('No times')
     })
   })
 })

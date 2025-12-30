@@ -6,14 +6,6 @@ export {
   extractReferenceIds,
 } from '@assessmentis/clinical-domain/data-types'
 
-// Re-export date utilities from centralized dateUtils module
-export {
-  formatDate,
-  formatDateTime,
-  formatDateRange,
-  formatDateTimeRange,
-} from './dateUtils'
-
 /**
  * Format a FHIR HumanName into a display string
  * @param name - The FHIR HumanName to format
@@ -41,6 +33,35 @@ export function formatHumanName(
 export function capitalizeFirst(str: string): string {
   if (!str) return str
   return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+/**
+ * Format a date string for display, with validation
+ * @param date - ISO date string or undefined
+ * @returns Formatted date or fallback string
+ */
+export function formatDate(
+  date: Date | undefined,
+  fallback: string = 'Unknown'
+): string {
+  if (!date) return fallback
+  if (isNaN(date.getTime())) return 'Invalid date'
+  return date.toLocaleDateString()
+}
+
+/**
+ * Format a date from epoch milliseconds for display
+ * @param epochMillis - Epoch milliseconds or undefined
+ * @returns Formatted date or fallback string
+ */
+export function formatDateTime(
+  epochMillis: number | undefined,
+  fallback: string = 'Unknown'
+): string {
+  if (!epochMillis) return fallback
+  const date = new Date(epochMillis)
+  if (isNaN(date.getTime())) return 'Invalid date'
+  return date.toLocaleDateString()
 }
 
 /**

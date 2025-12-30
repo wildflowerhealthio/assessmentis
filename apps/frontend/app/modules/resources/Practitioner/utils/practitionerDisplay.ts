@@ -1,9 +1,9 @@
 import type { Practitioner } from '@assessmentis/clinical-domain/administration'
+import { formatHumanName } from '../../../common/utils/fhirDisplay'
 import {
-  formatHumanName,
-  formatDate,
-  formatDateRange,
-} from '../../../common/utils/fhirDisplay'
+  formatTimelessDate,
+  formatUtcDateRange,
+} from '../../../common/utils/dateUtils'
 
 /**
  * Get a display-friendly name for a practitioner
@@ -36,7 +36,7 @@ export function formatPractitionerDemographics(practitioner: Practitioner) {
     },
     {
       label: 'Birth Date',
-      value: formatDate(practitioner.birthDate, 'Not specified'),
+      value: formatTimelessDate(practitioner.birthDate, 'Not specified'),
     },
     {
       label: 'Status',

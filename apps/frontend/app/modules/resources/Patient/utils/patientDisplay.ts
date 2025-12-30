@@ -2,8 +2,8 @@ import type { Patient } from '@assessmentis/clinical-domain/administration'
 import {
   formatHumanName,
   extractReferenceId,
-  formatDate,
 } from '../../../common/utils/fhirDisplay'
+import { formatTimelessDate, formatUtcDateTime } from '../../../common/utils/dateUtils'
 
 /**
  * Get a display-friendly name for a patient
@@ -23,7 +23,7 @@ export function formatPatientDemographics(patient: Patient) {
     },
     {
       label: 'Birth Date',
-      value: formatDate(patient.birthDate, 'Not specified'),
+      value: formatTimelessDate(patient.birthDate, 'Not specified'),
     },
     {
       label: 'Status',
@@ -41,7 +41,7 @@ export function formatPatientDemographics(patient: Patient) {
   if (patient.deceasedDateTime) {
     items.push({
       label: 'Deceased Date',
-      value: new Date(patient.deceasedDateTime.epochMillis).toLocaleString(),
+      value: formatUtcDateTime(patient.deceasedDateTime),
     })
   }
 

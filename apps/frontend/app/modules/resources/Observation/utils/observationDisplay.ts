@@ -1,9 +1,9 @@
 import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import {
-  formatDateTime,
-  formatDate,
-  formatDateRange,
-} from '../../../common/utils/fhirDisplay'
+  formatUtcDateTime,
+  formatUtcDate,
+  formatUtcDateRange,
+} from '../../../common/utils/dateUtils'
 
 /**
  * Get a display-friendly name for an observation
@@ -77,7 +77,8 @@ export function formatObservationValue(
   }
 
   if ('valueDateTime' in observation && observation.valueDateTime) {
-    return formatDateTime(observation.valueDateTime)
+    return formatUtcDateTime(observation.valueDateTime)
+  }
   }
 
   if ('valueDate' in observation && observation.valueDate) {
@@ -120,20 +121,22 @@ export function formatObservationValue(
  */
 export function getObservationEffectiveDate(observation: Observation): string {
   if (observation.effectiveDateTime) {
-    return formatDate(observation.effectiveDateTime)
+    return formatUtcDate(observation.effectiveDateTime)
   }
 
   if (observation.effectivePeriod) {
-    return formatDateRange(
+    return formatUtcDateRange(
       observation.effectivePeriod.start,
       observation.effectivePeriod.end,
-      'Ongoing',
-      'Unknown date'
+      {
+        endFallback: 'Ongoing',
+        neitherFallback: 'Unknown date',
+      }
     )
   }
 
   if (observation.effectiveInstant) {
-    return formatDate(observation.effectiveInstant)
+    return formatUtcDate(observation.effectiveInstant)
   }
 
   return 'Unknown date'
@@ -161,7 +164,7 @@ export function formatObservationDetails(observation: Observation) {
   if (observation.issued) {
     details.push({
       label: 'Issued',
-      value: formatDateTime(observation.issued),
+      value: formatUtcDateTime(observation.issued),
     })
   }
 

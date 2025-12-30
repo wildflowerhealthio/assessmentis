@@ -1,5 +1,5 @@
 import type { Practitioner } from '@assessmentis/clinical-domain/administration'
-import { formatDateRange } from '../../utils/practitionerDisplay'
+import { formatUtcDateRange } from '../../../../common/utils/dateUtils'
 import classes from './PractitionerQualifications.module.css'
 
 interface PractitionerQualificationsProps {
@@ -25,10 +25,7 @@ export function PractitionerQualifications({
           {qual.period ? (
             <div className={classes.Qualifications__detail}>
               Period:{' '}
-              {formatDateRange(
-                qual.period.start?.epochMillis,
-                qual.period.end?.epochMillis
-              )}
+              {formatUtcDateRange(qual.period.start, qual.period.end)}
             </div>
           ) : undefined}
           {qual.issuer ? (

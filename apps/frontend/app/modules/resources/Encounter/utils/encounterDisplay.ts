@@ -1,11 +1,10 @@
 import type { Encounter } from '@assessmentis/clinical-domain/administration'
+import { capitalizeFirst } from '../../../common/utils/fhirDisplay'
 import {
-  capitalizeFirst,
-  formatDateTime,
-  formatDateTimeRange,
-  formatDate,
-  formatDateRange,
-} from '../../../common/utils/fhirDisplay'
+  formatUtcDate,
+  formatUtcDateRange,
+  formatUtcDateTimeRange,
+} from '../../../common/utils/dateUtils'
 
 /**
  * Get a display-friendly name for an encounter
@@ -16,33 +15,7 @@ export function getEncounterDisplayName(encounter: Encounter): string {
 
   // Add date if available
   if (encounter.period?.start) {
-    const date = new Date(encounter.period.start.epochMillis)
-
-    // Validate that the date is valid
-    if (!isNaN(date.getTime())) {
-      const now = new Date()
-
-      // Calculate if date is within 3 months before or after today
-      const threeMonthsAgo = new Date(now)
-      threeMonthsAgo.setMonth(now.getMonth() - 3)
-      const threeMonthsFromNow = new Date(now)
-      threeMonthsFromNow.setMonth(now.getMonth() + 3)
-
-      const isWithinThreeMonths =
-        date >= threeMonthsAgo && date <= threeMonthsFromNow
-
-      // Format date
-      const month = date.toLocaleString('en-US', { month: 'long' })
-      const day = date.getDate()
-      const daySuffix = getDaySuffix(day)
-      const year = date.getFullYear()
-
-      if (isWithinThreeMonths) {
-        parts.push(`${month} ${day}${daySuffix}`)
-      } else {
-        parts.push(`${month} ${day}${daySuffix}, ${year}`)
-      }
-    }
+    parts.push(formatUtcDate(encounter.period.start))
   }
 
   // Add patient name if available
@@ -59,6 +32,7 @@ export function getEncounterDisplayName(encounter: Encounter): string {
 
 /**
  * Get the ordinal suffix for a day (st, nd, rd, th)
+ * @deprecated This function is no longer needed as it's in dateUtils
  */
 function getDaySuffix(day: number): string {
   if (day >= 11 && day <= 13) {
@@ -117,12 +91,10 @@ export function formatEncounterDetails(encounter: Encounter) {
   if (encounter.period) {
     details.push({
       label: 'Period',
-      value: formatDateTimeRange(
-        encounter.period.start,
-        encounter.period.end,
-        'Ongoing',
-        'Not specified'
-      ),
+      value: formatUtcDateTimeRange(encounter.period.start, encounter.period.end, {
+        endFallback: 'Ongoing',
+        startFallback: 'Not specified',
+      }),
     })
   }
 
@@ -167,10 +139,8 @@ export function getEncounterPeriodDisplay(encounter: Encounter): string {
     return 'No period specified'
   }
 
-  return formatDateRange(
-    encounter.period.start,
-    encounter.period.end,
-    'Ongoing',
-    'No period specified'
-  )
+  return formatUtcDateRange(encounter.period.start, encounter.period.end, {
+    endFallback: 'Ongoing',
+    neitherFallback: 'No period specified',
+  })
 }
