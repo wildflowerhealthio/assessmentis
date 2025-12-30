@@ -248,6 +248,15 @@ export const DailyCoExternalVideoCallClientLayer = (
               exp,
               enable_chat: params.enableChat ?? false,
               enable_recording: params.enableRecording ? 'cloud' : undefined,
+              ...(dailyCoConf.recordingsBucket && {
+                recordings_bucket: {
+                  bucket_name: dailyCoConf.recordingsBucket.bucket_name,
+                  bucket_region: dailyCoConf.recordingsBucket.bucket_region,
+                  assume_role_arn: dailyCoConf.recordingsBucket.assume_role_arn,
+                  allow_api_access:
+                    dailyCoConf.recordingsBucket.allow_api_access,
+                },
+              }),
             },
           }
 

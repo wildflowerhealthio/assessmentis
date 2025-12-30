@@ -25,9 +25,22 @@ src/
 
 ```typescript
 import { GoogleFhirConfig } from '@assessmentis/config-domain/googleFhir'
+import { DailyCoProxyConfig } from '@assessmentis/config-domain/dailyCo'
 
 // Validate environment variables
 const config = Schema.decodeUnknownSync(GoogleFhirConfig)(envVars)
+
+// Daily.co configuration with optional S3 recordings bucket
+const dailyConfig: DailyCoProxyConfig = {
+  _tag: 'daily_co_proxy',
+  dailyCoProxyUrl: 'https://api.daily.co/proxy',
+  recordingsBucket: {
+    bucket_name: 'my-recordings-bucket',
+    bucket_region: 'us-east-1',
+    assume_role_arn: 'arn:aws:iam::123456789012:role/DailyRecordingRole',
+    allow_api_access: true,
+  },
+}
 ```
 
 ## Important Guidelines
