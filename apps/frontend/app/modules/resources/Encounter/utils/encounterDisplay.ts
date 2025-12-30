@@ -31,26 +31,6 @@ export function getEncounterDisplayName(encounter: Encounter): string {
 }
 
 /**
- * Get the ordinal suffix for a day (st, nd, rd, th)
- * @deprecated This function is no longer needed as it's in dateUtils
- */
-function getDaySuffix(day: number): string {
-  if (day >= 11 && day <= 13) {
-    return 'th'
-  }
-  switch (day % 10) {
-    case 1:
-      return 'st'
-    case 2:
-      return 'nd'
-    case 3:
-      return 'rd'
-    default:
-      return 'th'
-  }
-}
-
-/**
  * Get the encounter class display text
  */
 export function getEncounterClass(encounter: Encounter): string {

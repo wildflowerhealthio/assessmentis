@@ -61,7 +61,7 @@ export function formatDateTime(
   if (!epochMillis) return fallback
   const date = new Date(epochMillis)
   if (isNaN(date.getTime())) return 'Invalid date'
-  return date.toLocaleDateString()
+  return date.toLocaleString()
 }
 
 /**
