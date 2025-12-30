@@ -10,14 +10,20 @@ import {
   UnhandledError,
 } from '@assessmentis/ontology'
 import { ClientRuntimeContext } from '@assessmentis/platform-domain'
-import { transformToPractitioner, PractitionerFormData } from '../schemas/PractitionerFormSchema'
+import {
+  transformToPractitioner,
+  PractitionerFormData,
+} from '../schemas/PractitionerFormSchema'
 import { createResourceUpdateAction } from '../../../common/actions/createResourceActions'
 
 export const updatePractitioner = createResourceUpdateAction<
   PractitionerFormData,
   Practitioner,
   PractitionerId,
-  UnhandledError | NeedsAuthenticationError | ExternalAssertionError | NotFoundError,
+  | UnhandledError
+  | NeedsAuthenticationError
+  | ExternalAssertionError
+  | NotFoundError,
   typeof PractitionerRepository,
   ClientRuntimeContext
 >(PractitionerRepository, transformToPractitioner)

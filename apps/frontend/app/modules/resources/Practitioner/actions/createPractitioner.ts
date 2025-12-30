@@ -8,7 +8,10 @@ import {
   UnhandledError,
 } from '@assessmentis/ontology'
 import { ClientRuntimeContext } from '@assessmentis/platform-domain'
-import { transformToPractitioner, PractitionerFormData } from '../schemas/PractitionerFormSchema'
+import {
+  transformToPractitioner,
+  PractitionerFormData,
+} from '../schemas/PractitionerFormSchema'
 import { createResourceCreateAction } from '../../../common/actions/createResourceActions'
 
 export const createPractitioner = createResourceCreateAction<

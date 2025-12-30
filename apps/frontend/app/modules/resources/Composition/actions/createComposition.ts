@@ -8,7 +8,10 @@ import {
   UnhandledError,
 } from '@assessmentis/ontology'
 import { ClientRuntimeContext } from '@assessmentis/platform-domain'
-import { transformToComposition, CompositionFormData } from '../schemas/CompositionFormSchema'
+import {
+  transformToComposition,
+  CompositionFormData,
+} from '../schemas/CompositionFormSchema'
 import { createResourceCreateAction } from '../../../common/actions/createResourceActions'
 
 export const createComposition = createResourceCreateAction<

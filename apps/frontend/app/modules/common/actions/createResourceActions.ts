@@ -35,7 +35,9 @@ export function createResourceCreateAction<
   repository: TRepo,
   transform: (data: TFormData) => TResource | Omit<TResource, 'id'>
 ): (formData: TFormData) => Effect.Effect<TResource, TError, TRequirements> {
-  return (formData: TFormData): Effect.Effect<TResource, TError, TRequirements> => {
+  return (
+    formData: TFormData
+  ): Effect.Effect<TResource, TError, TRequirements> => {
     return Effect.gen(function* () {
       const repo = yield* repository
       const resource = transform(formData)
