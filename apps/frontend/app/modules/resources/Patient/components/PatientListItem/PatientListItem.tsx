@@ -23,10 +23,7 @@ export function PatientListItem({
 
   return (
     <>
-      <Link
-        to={`/Patient/${patient.id}`}
-        className={baseClasses.content}
-      >
+      <Link to={`/Patient/${patient.id}`} className={baseClasses.content}>
         <strong>{displayName}</strong>
         <span className={baseClasses.metadata}>
           {patient.gender ?? '-'} • Born: {birthDateStr}

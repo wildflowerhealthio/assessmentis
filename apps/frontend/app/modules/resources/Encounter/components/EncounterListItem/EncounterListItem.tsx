@@ -25,10 +25,7 @@ export function EncounterListItem({
 
   return (
     <>
-      <Link
-        to={`/Encounter/${encounter.id}`}
-        className={baseClasses.content}
-      >
+      <Link to={`/Encounter/${encounter.id}`} className={baseClasses.content}>
         <strong>{displayName}</strong>
         <span className={baseClasses.metadata}>
           {status} • {periodDisplay}
