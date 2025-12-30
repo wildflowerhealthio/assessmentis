@@ -81,7 +81,8 @@ export function formatDateRange(
   startFallback: string = 'Unknown'
 ): string {
   const startStr = formatDate(start, startFallback)
-  const endStr = end !== undefined ? formatDate(end, endFallback) : endFallback
+  const endStr =
+    end !== undefined ? formatDate(end, endFallback) : endFallback
   return `${startStr} - ${endStr}`
 }
 
