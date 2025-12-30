@@ -42,7 +42,13 @@ export function useAutoSave<T>({
   delay = 5000,
   enabled = true,
 }: UseAutoSaveOptions<T>) {
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const onSaveRef = useRef(onSave)
+
+  // Keep the latest onSave callback in a ref to avoid dependency issues
+  useEffect(() => {
+    onSaveRef.current = onSave
+  }, [onSave])
 
   useEffect(() => {
     // Clear any pending timeout
@@ -57,7 +63,7 @@ export function useAutoSave<T>({
 
     // Set up new timeout for auto-save
     timeoutRef.current = setTimeout(() => {
-      onSave(data).catch((err) => {
+      onSaveRef.current(data).catch((err) => {
         console.error('Auto-save failed:', err)
       })
     }, delay)
@@ -68,5 +74,5 @@ export function useAutoSave<T>({
         clearTimeout(timeoutRef.current)
       }
     }
-  }, [data, onSave, delay, enabled])
+  }, [data, delay, enabled])
 }
