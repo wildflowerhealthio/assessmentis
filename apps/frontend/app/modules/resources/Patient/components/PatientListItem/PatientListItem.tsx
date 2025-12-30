@@ -2,7 +2,7 @@ import { Link } from 'react-router'
 import type { Patient } from '@assessmentis/clinical-domain/administration'
 import { ResourceItemActions } from 'app/modules/common/components/ResourceItemActions/ResourceItemActions'
 import { getPatientDisplayName } from '../../utils/patientDisplay'
-import classes from './PatientListItem.module.css'
+import baseListItemClasses from 'app/modules/common/components/BaseListItem/BaseListItem.module.css'
 
 interface PatientListItemProps {
   item: Patient
@@ -25,10 +25,10 @@ export function PatientListItem({
     <>
       <Link
         to={`/Patient/${patient.id}`}
-        className={classes.PatientListItem__content}
+        className={baseListItemClasses.content}
       >
         <strong>{displayName}</strong>
-        <span className={classes.PatientListItem__metadata}>
+        <span className={baseListItemClasses.metadata}>
           {patient.gender ?? '-'} • Born: {birthDateStr}
           {patient.active === false ? ' • Inactive' : undefined}
         </span>

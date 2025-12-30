@@ -960,6 +960,63 @@ const ResourceList = ({
 </div>
 ```
 
+### Shared CSS Modules
+
+**Location**: `/apps/frontend/app/modules/common/components/BaseListItem/`
+
+For commonly repeated CSS patterns across multiple components, create shared CSS modules that can be imported and reused.
+
+**BaseListItem.module.css** - Shared styles for resource list item components:
+
+```css
+/* Base styles for resource list items */
+
+.content {
+  flex: 1;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.metadata {
+  font-size: 0.9em;
+  color: var(--color-text-secondary);
+}
+```
+
+**Usage in ListItem components**:
+
+```typescript
+import baseListItemClasses from 'app/modules/common/components/BaseListItem/BaseListItem.module.css'
+
+export function PatientListItem({ item, onDelete, loading }) {
+  return (
+    <>
+      <Link to={`/Patient/${item.id}`} className={baseListItemClasses.content}>
+        <strong>{displayName}</strong>
+        <span className={baseListItemClasses.metadata}>
+          {metadata}
+        </span>
+      </Link>
+      <ResourceItemActions ... />
+    </>
+  )
+}
+```
+
+**Benefits**:
+- Ensures visual consistency across all resource list items
+- Single source of truth for common styles
+- Easier to update styles globally
+- Reduces CSS duplication
+
+**When to create shared CSS modules**:
+- Multiple components (3+) use identical styles
+- Styles define a common UI pattern (list items, cards, badges, etc.)
+- Updates to the pattern should affect all instances consistently
+
 ## Reference Patterns (FHIR)
 
 ### Handling FHIR References
