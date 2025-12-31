@@ -15,6 +15,7 @@ import { Match, Schema, SchemaAST } from 'effect'
 
 import { Org } from '@assessmentis/platform-domain'
 import { RadioGroup } from '@firecms/ui'
+import { EditableJsonView } from './EditableJsonView'
 
 type PropertySets =
   | MapProperty
@@ -73,6 +74,15 @@ const asFireCmsProperty = (name: string, s: SchemaAST.AST): PropertySets => {
     })
   } else if (SchemaAST.isUnion(s)) {
     const properties: Record<string, PropertySets> = {}
+
+    if (
+      s.types.length == 2 &&
+      s.types.some((t) => SchemaAST.isUndefinedKeyword(t))
+    ) {
+      const definedType = s.types.find((t) => !SchemaAST.isUndefinedKeyword(t))!
+      return asFireCmsProperty(name, definedType)
+    }
+
     const tags = s.types.map((typeAst) => {
       if (SchemaAST.isTypeLiteral(typeAst)) {
         const tagAst = typeAst.propertySignatures.find((p) => p.name === '_tag')
@@ -181,4 +191,11 @@ export const orgsCollection = buildCollection({
   path: 'orgs',
   properties: (asFireCmsProperty('Org', Org.ast) as unknown as MapProperty)
     .properties!,
+  entityViews: [
+    {
+      key: 'editable_json',
+      name: 'JSON Editor',
+      Builder: EditableJsonView,
+    },
+  ],
 })
