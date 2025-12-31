@@ -3,9 +3,9 @@ import * as FirebaseWebInfrastructure from './index'
 import { snapshotStream } from './firestore'
 
 describe('firebase-web-infrastructure exports', () => {
-  test('exports createPlatformService', () => {
-    expect(FirebaseWebInfrastructure.createPlatformService).toBeDefined()
-    expect(typeof FirebaseWebInfrastructure.createPlatformService).toBe(
+  test('exports createUserPlatformService', () => {
+    expect(FirebaseWebInfrastructure.createUserPlatformService).toBeDefined()
+    expect(typeof FirebaseWebInfrastructure.createUserPlatformService).toBe(
       'function'
     )
   })

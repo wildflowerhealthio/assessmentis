@@ -3,7 +3,7 @@ import { useState, useMemo } from 'react'
 import { useResourceRunEffect } from 'app/clientRuntime'
 import { PickerItem } from '../types/PickerTypes'
 import { BaseClinicalDataRepository } from '@assessmentis/clinical-domain'
-import { ClientRuntimeContext } from '../../../../../../../../domain/platform-domain/src/PlatformService'
+import { ClientRuntimeContext } from '../../../../../../../../domain/platform-domain/src/UserPlatformService'
 import { LoadedResult } from '@assessmentis/ontology'
 
 export interface UsePickerDataOptions<

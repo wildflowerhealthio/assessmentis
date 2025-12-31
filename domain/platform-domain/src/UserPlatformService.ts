@@ -36,8 +36,8 @@ export type ClientRuntimeContext =
   | PatientRepository
   | PractitionerRepository
 
-export class PlatformService extends Context.Tag('PlatformService')<
-  PlatformService,
+export class UserPlatformService extends Context.Tag('UserPlatformService')<
+  UserPlatformService,
   {
     currentUserId: LoadedResultStream<UserId, CurrentUserIdError>
 

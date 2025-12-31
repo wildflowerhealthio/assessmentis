@@ -1,4 +1,4 @@
-import { createPlatformService } from '@assessmentis/firebase-web-infrastructure'
+import { createUserPlatformService } from '@assessmentis/firebase-web-infrastructure'
 import { Effect } from 'effect'
 import {
   FirebaseError,
@@ -128,4 +128,4 @@ export const useAuthedGapi = () =>
     })
   }, [])
 
-export const platform = Effect.runSync(createPlatformService(app, auth, db))
+export const platform = Effect.runSync(createUserPlatformService(app, auth, db))

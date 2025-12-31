@@ -20,7 +20,10 @@ import { FetchHttpClient } from '@effect/platform'
 import { Effect, Layer, Match } from 'effect'
 import { DailyCoExternalVideoCallClientLayer } from '@assessmentis/daily-co-infrastructure'
 import { layerCurrentZoneLocal } from 'effect/DateTime'
-import { FrontendConfig } from '@assessmentis/platform-domain'
+import {
+  FrontendConfig,
+  ClientRuntimeContext,
+} from '@assessmentis/platform-domain'
 import { getAuth } from 'firebase/auth'
 
 const unimplementedClinicalDataRepository = {
@@ -78,7 +81,11 @@ const WebSdkLive = WebSdk.layer(() => ({
   spanProcessor: new BatchSpanProcessor(new OTLPTraceExporter({})),
 }))
 
-export const createRuntime = (frontendConfig: FrontendConfig) => {
+/**
+ * Create repository layers from FrontendConfig
+ * Reusable between client and server
+ */
+export const createRepositoryLayers = (frontendConfig: FrontendConfig) => {
   const questionnaireRepositoryLayer = Match.value(
     frontendConfig.questionnaireRepository
   ).pipe(
@@ -94,6 +101,7 @@ export const createRuntime = (frontendConfig: FrontendConfig) => {
     Match.tag('not_implemented', notImplemented.QuestionnaireResponse),
     Match.exhaustive
   )
+
   const encounterRepositoryLayer = Match.value(
     frontendConfig.encounterRepository
   ).pipe(
@@ -140,21 +148,7 @@ export const createRuntime = (frontendConfig: FrontendConfig) => {
     Match.exhaustive
   )
 
-  const externalVideoCallClientLayer = Match.value(
-    frontendConfig.videoCallClient
-  ).pipe(
-    Match.tag('daily_co_proxy', (dailyCoConf) =>
-      DailyCoExternalVideoCallClientLayer(
-        async () => getAuth().currentUser?.getIdToken(),
-        dailyCoConf
-      )
-    ),
-    Match.tag('not_implemented', notImplemented.ExternalVideoCallClient),
-    Match.exhaustive
-  )
-
-  return Layer.mergeAll(
-    externalVideoCallClientLayer,
+  return {
     questionnaireRepositoryLayer,
     questionnaireResponseRepositoryLayer,
     encounterRepositoryLayer,
@@ -163,8 +157,56 @@ export const createRuntime = (frontendConfig: FrontendConfig) => {
     observationRepositoryLayer,
     patientRepositoryLayer,
     practitionerRepositoryLayer,
+  }
+}
+
+/**
+ * Create video call client layer with parameterized auth token provider
+ * Reusable between client and server with different auth implementations
+ */
+export const createVideoCallClientLayer = (
+  frontendConfig: FrontendConfig,
+  getAuthToken: () => Promise<string | undefined>
+) => {
+  return Match.value(frontendConfig.videoCallClient).pipe(
+    Match.tag('daily_co_proxy', (dailyCoConf) =>
+      DailyCoExternalVideoCallClientLayer(getAuthToken, dailyCoConf)
+    ),
+    Match.tag('not_implemented', notImplemented.ExternalVideoCallClient),
+    Match.exhaustive
+  )
+}
+
+/**
+ * Create client-side runtime layer
+ * Uses WebSdk for telemetry and Firebase Auth for video call tokens
+ */
+export const createClientRuntime = (
+  frontendConfig: FrontendConfig
+): Layer.Layer<ClientRuntimeContext, never> => {
+  const repos = createRepositoryLayers(frontendConfig)
+  const videoClient = createVideoCallClientLayer(frontendConfig, async () =>
+    getAuth().currentUser?.getIdToken()
+  )
+
+  return Layer.mergeAll(
+    videoClient,
+    repos.questionnaireRepositoryLayer,
+    repos.questionnaireResponseRepositoryLayer,
+    repos.encounterRepositoryLayer,
+    repos.compositionRepositoryLayer,
+    repos.mediaRepositoryLayer,
+    repos.observationRepositoryLayer,
+    repos.patientRepositoryLayer,
+    repos.practitionerRepositoryLayer,
     layerCurrentZoneLocal,
     FetchHttpClient.layer,
     WebSdkLive
   ).pipe(Layer.annotateSpans('NODE_ENV', process.env.NODE_ENV), Layer.orDie)
 }
+
+/**
+ * Legacy export - alias for createClientRuntime
+ * @deprecated Use createClientRuntime instead
+ */
+export const createRuntime = createClientRuntime

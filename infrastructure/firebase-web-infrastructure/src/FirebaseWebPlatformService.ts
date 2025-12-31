@@ -14,7 +14,7 @@ import {
   Org,
   OrgDataError,
   OrgError,
-  PlatformService,
+  UserPlatformService,
   UserDataError,
 } from '@assessmentis/platform-domain'
 import { doc, Firestore, onSnapshot } from 'firebase/firestore'
@@ -29,11 +29,11 @@ import { LoadedResult } from '@assessmentis/ontology'
 import { createRuntime } from './RuntimeProvider'
 import { FirebaseApp } from 'firebase/app'
 
-export const createPlatformService = (
+export const createUserPlatformService = (
   app: FirebaseApp,
   auth: Auth,
   db: Firestore
-): Effect.Effect<typeof PlatformService.Service> =>
+): Effect.Effect<typeof UserPlatformService.Service> =>
   Effect.gen(function* () {
     const initGapi = async (token: string) => {
       const apiKey = app.options.apiKey!

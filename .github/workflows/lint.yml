@@ -177,6 +177,16 @@ jobs:
           filter_mode: diff_context
           workdir: infrastructure/google-meet-infrastructure
 
+      - name: Lint infrastructure/firebase-server-infrastructure
+        uses: reviewdog/action-eslint@v1
+        continue-on-error: true
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_level: error
+          filter_mode: diff_context
+          workdir: infrastructure/firebase-server-infrastructure
+
       - name: Lint infrastructure/document-template-instances
         uses: reviewdog/action-eslint@v1
         continue-on-error: true

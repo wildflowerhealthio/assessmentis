@@ -1,4 +1,5 @@
-export * from './PlatformService'
+export * from './UserPlatformService'
+export * from './ServerPlatformService'
 export * from './loadedValues/FrontendConfig'
 export * from './loadedValues/OrgRole'
 export * from './loadedValues/IdTypes'

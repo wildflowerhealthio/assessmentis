@@ -1,6 +1,6 @@
 import { Effect } from 'effect'
 import { BaseClinicalDataRepository } from '@assessmentis/clinical-domain'
-import { ClientRuntimeContext } from '../../../../../../domain/platform-domain/src/PlatformService'
+import { ClientRuntimeContext } from '../../../../../../domain/platform-domain/src/UserPlatformService'
 import { BasePicker } from '../components/BasePicker/BasePicker'
 import { usePickerData } from '../components/BasePicker/hooks/usePickerData'
 import {
