@@ -125,17 +125,20 @@ export interface DateRangeFormatOptions {
 export const humanizeDateTimeForLocalReader = (
   dateTime: DateTime.Utc | DateTime.Zoned | undefined,
   fallback: string = 'Unknown'
-): Effect.Effect<string> =>
+): Effect.Effect<string, never, DateTime.CurrentTimeZone> =>
   Effect.gen(function* () {
     if (dateTime == undefined) return fallback
 
     const needsYear = yield* needsDisambiguatingYear(dateTime)
+    const currentTz = yield* DateTime.CurrentTimeZone
+    const timeZone = currentTz._tag == 'Named' ? currentTz.id : undefined
 
     if (DateTime.isUtc(dateTime)) {
       // UTC just gets localized
       const dateStyle: 'medium' | 'long' = needsYear ? 'medium' : 'long'
       return DateTime.formatLocal(dateTime, {
         dateStyle,
+        timeZone,
       })
     }
 
@@ -143,12 +146,14 @@ export const humanizeDateTimeForLocalReader = (
       // Local Zoned just shows date
       return DateTime.formatLocal(dateTime, {
         dateStyle: needsYear ? 'medium' : 'long',
+        timeZone,
       })
     }
 
     return DateTime.formatLocal(dateTime, {
       dateStyle: needsYear ? 'medium' : 'long',
       timeZoneName: 'short',
+      timeZone,
     })
   })
 
@@ -170,22 +175,21 @@ export const humanizeDateTimeWithTime = (
 
     const needsYear = yield* needsDisambiguatingYear(dateTime)
 
-    const baseTime: Intl.DateTimeFormatOptions = {
+    const timeZone = yield* DateTime.CurrentTimeZone
+    const baseFormat: Intl.DateTimeFormatOptions = {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
-    }
-    const baseDate: Intl.DateTimeFormatOptions = {
       day: 'numeric',
       month: 'short',
       year: needsYear ? 'numeric' : undefined,
+      timeZone: timeZone._tag == 'Named' ? timeZone.id : undefined,
     }
 
     if (DateTime.isUtc(dateTime)) {
       // UTC just gets localized
       return DateTime.formatLocal(dateTime, {
-        ...baseDate,
-        ...baseTime,
+        ...baseFormat,
       })
     }
 
@@ -195,14 +199,12 @@ export const humanizeDateTimeWithTime = (
     if (sourceOffset == localEquivalentOffset) {
       // Local Zoned just shows date
       return DateTime.formatLocal(dateTime, {
-        ...baseDate,
-        ...baseTime,
+        ...baseFormat,
       })
     }
 
     return DateTime.formatLocal(dateTime, {
-      ...baseTime,
-      ...baseDate,
+      ...baseFormat,
       timeZoneName: 'short',
     })
   })
