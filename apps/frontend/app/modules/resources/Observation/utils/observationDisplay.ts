@@ -1,4 +1,9 @@
 import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import { Effect } from 'effect'
+import {
+  humanizeDateTimeForLocalReader,
+  humanizeDateTimeRangeForLocalReader,
+} from '../../../common/utils/dateUtils'
 
 /**
  * Get a display-friendly name for an observation
@@ -35,167 +40,174 @@ export function getObservationCategory(observation: Observation): string {
 /**
  * Format observation value as a string for display
  */
-export function formatObservationValue(
+export const formatObservationValue = (
   observation: Observation | NonNullable<Observation['component']>[number]
-): string {
-  if ('valueQuantity' in observation && observation.valueQuantity) {
-    const val = observation.valueQuantity.value ?? ''
-    const unit = observation.valueQuantity.unit ?? ''
-    return `${val} ${unit}`.trim()
-  }
+) =>
+  Effect.gen(function* () {
+    if ('valueQuantity' in observation && observation.valueQuantity) {
+      const val = observation.valueQuantity.value ?? ''
+      const unit = observation.valueQuantity.unit ?? ''
+      return `${val} ${unit}`.trim()
+    }
 
-  if ('valueString' in observation && observation.valueString) {
-    return observation.valueString
-  }
+    if ('valueString' in observation && observation.valueString) {
+      return observation.valueString
+    }
 
-  if ('valueInteger' in observation && observation.valueInteger !== undefined) {
-    return observation.valueInteger.toString()
-  }
+    if (
+      'valueInteger' in observation &&
+      observation.valueInteger !== undefined
+    ) {
+      return observation.valueInteger.toString()
+    }
 
-  if ('valueDecimal' in observation && observation.valueDecimal !== undefined) {
-    return observation.valueDecimal.toString()
-  }
+    if (
+      'valueDecimal' in observation &&
+      observation.valueDecimal !== undefined
+    ) {
+      return observation.valueDecimal.toString()
+    }
 
-  if (
-    'valueCodeableConcept' in observation &&
-    observation.valueCodeableConcept
-  ) {
-    return (
-      observation.valueCodeableConcept.text ??
-      observation.valueCodeableConcept.coding?.[0]?.display ??
-      'Coded value'
-    )
-  }
+    if (
+      'valueCodeableConcept' in observation &&
+      observation.valueCodeableConcept
+    ) {
+      return (
+        observation.valueCodeableConcept.text ??
+        observation.valueCodeableConcept.coding?.[0]?.display ??
+        'Coded value'
+      )
+    }
 
-  if ('valueBoolean' in observation && observation.valueBoolean !== undefined) {
-    return observation.valueBoolean ? 'Yes' : 'No'
-  }
+    if (
+      'valueBoolean' in observation &&
+      observation.valueBoolean !== undefined
+    ) {
+      return observation.valueBoolean ? 'Yes' : 'No'
+    }
 
-  if ('valueDateTime' in observation && observation.valueDateTime) {
-    return new Date(observation.valueDateTime.epochMillis).toLocaleString()
-  }
+    if ('valueDateTime' in observation && observation.valueDateTime) {
+      return yield* humanizeDateTimeForLocalReader(observation.valueDateTime)
+    }
 
-  if ('valueDate' in observation && observation.valueDate) {
-    return observation.valueDate
-  }
+    if ('valueDate' in observation && observation.valueDate) {
+      return observation.valueDate
+    }
 
-  if ('valueTime' in observation && observation.valueTime) {
-    return observation.valueTime
-  }
+    if ('valueTime' in observation && observation.valueTime) {
+      return observation.valueTime
+    }
 
-  if ('valueCoding' in observation && observation.valueCoding) {
-    return (
-      observation.valueCoding.display ??
-      observation.valueCoding.code ??
-      'Coded value'
-    )
-  }
+    if ('valueCoding' in observation && observation.valueCoding) {
+      return (
+        observation.valueCoding.display ??
+        observation.valueCoding.code ??
+        'Coded value'
+      )
+    }
 
-  if ('valueCode' in observation && observation.valueCode) {
-    return observation.valueCode
-  }
+    if ('valueCode' in observation && observation.valueCode) {
+      return observation.valueCode
+    }
 
-  if ('valueReference' in observation && observation.valueReference) {
-    return (
-      observation.valueReference.display ??
-      observation.valueReference.reference ??
-      'Reference'
-    )
-  }
+    if ('valueReference' in observation && observation.valueReference) {
+      return (
+        observation.valueReference.display ??
+        observation.valueReference.reference ??
+        'Reference'
+      )
+    }
 
-  if ('dataAbsentReason' in observation && observation.dataAbsentReason) {
-    return `Data absent: ${observation.dataAbsentReason.text ?? 'Unknown reason'}`
-  }
+    if ('dataAbsentReason' in observation && observation.dataAbsentReason) {
+      return `Data absent: ${observation.dataAbsentReason.text ?? 'Unknown reason'}`
+    }
 
-  return 'See details'
-}
+    return 'See details'
+  })
 
 /**
  * Get effective date display for observation
  */
-export function getObservationEffectiveDate(observation: Observation): string {
-  if (observation.effectiveDateTime) {
-    return new Date(
-      observation.effectiveDateTime.epochMillis
-    ).toLocaleDateString()
-  }
-
-  if (observation.effectivePeriod?.start) {
-    const startDate = new Date(
-      observation.effectivePeriod.start.epochMillis
-    ).toLocaleDateString()
-    if (observation.effectivePeriod.end) {
-      const endDate = new Date(
-        observation.effectivePeriod.end.epochMillis
-      ).toLocaleDateString()
-      return `${startDate} - ${endDate}`
+export const getObservationEffectiveDate = (observation: Observation) =>
+  Effect.gen(function* () {
+    if (observation.effectiveDateTime) {
+      return yield* humanizeDateTimeForLocalReader(
+        observation.effectiveDateTime
+      )
     }
-    return `${startDate} - Ongoing`
-  }
 
-  if (observation.effectiveInstant) {
-    return new Date(
-      observation.effectiveInstant.epochMillis
-    ).toLocaleDateString()
-  }
+    if (observation.effectivePeriod) {
+      return yield* humanizeDateTimeRangeForLocalReader(
+        observation.effectivePeriod,
+        {
+          endFallback: 'Ongoing',
+          neitherFallback: 'Unknown date',
+        }
+      )
+    }
 
-  return 'Unknown date'
-}
+    if (observation.effectiveInstant) {
+      return yield* humanizeDateTimeForLocalReader(observation.effectiveInstant)
+    }
+
+    return 'Unknown date'
+  })
 
 /**
  * Format observation details for display in DetailGrid
  */
-export function formatObservationDetails(observation: Observation) {
-  const details = [
-    {
-      label: 'Status',
-      value: getObservationStatus(observation),
-    },
-    {
-      label: 'Category',
-      value: getObservationCategory(observation),
-    },
-    {
-      label: 'Effective Date',
-      value: getObservationEffectiveDate(observation),
-    },
-  ]
+export const formatObservationDetails = (observation: Observation) =>
+  Effect.gen(function* () {
+    const details: { label: string; value: string }[] = [
+      {
+        label: 'Status',
+        value: getObservationStatus(observation),
+      },
+      {
+        label: 'Category',
+        value: getObservationCategory(observation),
+      },
+      {
+        label: 'Effective Date',
+        value: yield* getObservationEffectiveDate(observation),
+      },
+    ]
 
-  if (observation.issued) {
-    details.push({
-      label: 'Issued',
-      value: new Date(observation.issued.epochMillis).toLocaleString(),
-    })
-  }
+    if (observation.issued) {
+      details.push({
+        label: 'Issued',
+        value: yield* humanizeDateTimeForLocalReader(observation.issued),
+      })
+    }
 
-  if (observation.subject) {
-    details.push({
-      label: 'Subject',
-      value:
-        observation.subject.display ??
-        observation.subject.reference ??
-        'Not specified',
-    })
-  }
+    if (observation.subject) {
+      details.push({
+        label: 'Subject',
+        value:
+          observation.subject.display ??
+          observation.subject.reference ??
+          'Not specified',
+      })
+    }
 
-  if (observation.encounter) {
-    details.push({
-      label: 'Encounter',
-      value:
-        observation.encounter.display ??
-        observation.encounter.reference ??
-        'Not specified',
-    })
-  }
+    if (observation.encounter) {
+      details.push({
+        label: 'Encounter',
+        value:
+          observation.encounter.display ??
+          observation.encounter.reference ??
+          'Not specified',
+      })
+    }
 
-  if (observation.performer && observation.performer.length > 0) {
-    details.push({
-      label: 'Performer(s)',
-      value: observation.performer
-        .map((p) => p.display ?? p.reference ?? 'Unknown')
-        .join(', '),
-    })
-  }
+    if (observation.performer && observation.performer.length > 0) {
+      details.push({
+        label: 'Performer(s)',
+        value: observation.performer
+          .map((p) => p.display ?? p.reference ?? 'Unknown')
+          .join(', '),
+      })
+    }
 
-  return details
-}
+    return details
+  })

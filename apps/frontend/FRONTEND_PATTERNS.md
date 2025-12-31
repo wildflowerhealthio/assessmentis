@@ -82,6 +82,92 @@ import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 </FormPage>
 ```
 
+## Date and Time Handling
+
+This codebase uses Effect's DateTime types to maintain timezone semantics and avoid common datetime pitfalls.
+
+### DateTime Types and Their Meanings
+
+**DateTime.Utc** - Global/Server Time
+- Use for: Server timestamps, last-updated times, system events
+- Represents: A moment in time that's the same for everyone globally
+- Examples: `meta.lastUpdated`, `observation.issued`, encounter periods
+- Display: Converts to user's local timezone for display
+
+**DateTime.Zoned** - User-Local Time
+- Use for: Appointment times, scheduled events meaningful in user's space
+- Represents: A time that matters in a specific timezone
+- Examples: Future appointments, scheduled procedures
+- Display: Shows in the user's intended timezone
+
+**Date (string)** - Timezone-Independent Dates
+- Use for: Birthdays, anniversaries, dates without specific times
+- Represents: A calendar date independent of timezone
+- Format: `YYYY-MM-DD` string (e.g., `"1990-01-15"`)
+- Examples: `patient.birthDate`, `practitioner.birthDate`
+- Display: Shows as-is without timezone conversion
+
+### Date Formatting Utilities
+
+Location: `app/modules/common/utils/dateUtils.ts`
+
+**For UTC timestamps:**
+```typescript
+import { formatUtcDate, formatUtcDateTime, formatUtcDateRange } from '../utils/dateUtils'
+
+// Format a UTC date with smart year handling
+formatUtcDate(observation.issued) // "January 15th" or "January 15th, 2024"
+
+// Format a UTC datetime
+formatUtcDateTime(observation.issued) // "1/15/2024, 3:30:00 PM"
+
+// Format a UTC date range with smart formatting
+formatUtcDateRange(encounter.period.start, encounter.period.end)
+// Same day: "December 31st 9:00 AM - 10:30 AM"
+// Same month: "January 10 - 14th"
+// Different months: "January 15th - February 20th"
+```
+
+**For timezone-independent dates:**
+```typescript
+import { formatTimelessDate } from '../utils/dateUtils'
+
+// Format a birthday or anniversary
+formatTimelessDate(patient.birthDate) // "March 20th" or "March 20th, 1990"
+```
+
+**Range formatting with options:**
+```typescript
+formatUtcDateRange(start, end, {
+  startFallback: 'Unknown',
+  endFallback: 'Present',
+  neitherFallback: 'Unknown Range'
+})
+```
+
+### User-Friendly Formatting
+
+The date utilities automatically apply user-friendly formatting:
+
+1. **Omit year for recent dates** - Dates within 3 months show without year
+2. **Smart range display** - Show date once when it's the same
+   - Same day: "December 31st 9 AM - 10 AM"
+   - Same month: "January 10 - 14th"
+3. **Ordinal suffixes** - "1st", "2nd", "3rd", "4th"
+
+### Migration from Legacy Functions
+
+The following functions exist for backward compatibility but are deprecated:
+
+```typescript
+// ❌ Deprecated - loses timezone information
+formatDate(someDate)
+formatDateTime(someTimestamp)
+
+// ✅ Preferred - preserves timezone semantics
+formatUtcDate(utcTimestamp)
+formatTimelessDate(dateString)
+
 ## Page Patterns
 
 ### List Pages

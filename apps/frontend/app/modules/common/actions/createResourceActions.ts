@@ -1,3 +1,9 @@
+import {
+  BaseClinicalDataRepository,
+  ClinicalDataRepositoryErrors,
+  ClinicalDataRepositoryErrorsWithNotFound,
+} from '@assessmentis/clinical-domain'
+import { WithId } from '@assessmentis/clinical-domain/data-types'
 import { Effect, Context } from 'effect'
 
 /**
@@ -27,22 +33,28 @@ import { Effect, Context } from 'effect'
  */
 export function createResourceCreateAction<
   TFormData,
-  TResource,
-  TError,
-  TRepo extends Context.Tag<any, any>,
-  TRequirements = TRepo,
+  TId extends string,
+  TResource extends { id?: TId },
+  TagId extends string,
+  TRepo extends Context.TagClass<
+    TRepo,
+    TagId,
+    BaseClinicalDataRepository<TResource, TId>
+  >,
 >(
   repository: TRepo,
-  transform: (data: TFormData) => TResource | Omit<TResource, 'id'>
-): (formData: TFormData) => Effect.Effect<TResource, TError, TRequirements> {
+  transform: (data: TFormData) => TResource | (TResource & { id: undefined })
+): (
+  formData: TFormData
+) => Effect.Effect<WithId<TResource>, ClinicalDataRepositoryErrors, TRepo> {
   return (
     formData: TFormData
-  ): Effect.Effect<TResource, TError, TRequirements> => {
+  ): Effect.Effect<WithId<TResource>, ClinicalDataRepositoryErrors, TRepo> => {
     return Effect.gen(function* () {
       const repo = yield* repository
       const resource = transform(formData)
       return yield* repo.create(resource)
-    }) as Effect.Effect<TResource, TError, TRequirements>
+    })
   }
 }
 
@@ -75,11 +87,14 @@ export function createResourceCreateAction<
  */
 export function createResourceUpdateAction<
   TFormData,
-  TResource,
-  TId,
-  TError,
-  TRepo extends Context.Tag<any, any>,
-  TRequirements = TRepo,
+  TId extends string,
+  TResource extends { id?: TId },
+  TagId extends string,
+  TRepo extends Context.TagClass<
+    TRepo,
+    TagId,
+    BaseClinicalDataRepository<TResource, TId>
+  >,
 >(
   repository: TRepo,
   transform: (data: TFormData) => TResource | Omit<TResource, 'id'>
@@ -87,12 +102,16 @@ export function createResourceUpdateAction<
   id: TId,
   current: TResource,
   formData: TFormData
-) => Effect.Effect<TResource, TError, TRequirements> {
+) => Effect.Effect<TResource, ClinicalDataRepositoryErrorsWithNotFound, TRepo> {
   return (
     id: TId,
     current: TResource,
     formData: TFormData
-  ): Effect.Effect<TResource, TError, TRequirements> => {
+  ): Effect.Effect<
+    TResource,
+    ClinicalDataRepositoryErrorsWithNotFound,
+    TRepo
+  > => {
     return Effect.gen(function* () {
       const repo = yield* repository
       const updatedFields = transform(formData)
@@ -102,6 +121,6 @@ export function createResourceUpdateAction<
         id,
       }
       return yield* repo.update(updated)
-    }) as Effect.Effect<TResource, TError, TRequirements>
+    })
   }
 }

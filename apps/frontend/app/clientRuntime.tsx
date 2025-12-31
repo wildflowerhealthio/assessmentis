@@ -8,6 +8,7 @@ import {
 } from 'react'
 import {
   Chunk,
+  DateTime,
   Effect,
   Exit,
   Fiber,
@@ -180,6 +181,24 @@ export const useRunEffect = <A, E>(
     return loadedRuntime
   }
   return res
+}
+
+type SyncContext = DateTime.CurrentTimeZone
+
+export const runEffectSync = <A, E>(
+  effect: Effect.Effect<A, E, SyncContext>
+): A | E => {
+  return Effect.runSyncExit(effect.pipe(DateTime.withCurrentZoneLocal)).pipe(
+    Exit.match({
+      onFailure: (e) => {
+        if (e._tag === 'Fail') {
+          return e.error
+        }
+        throw new UnhandledError({ cause: e })
+      },
+      onSuccess: (a) => a,
+    })
+  )
 }
 
 export const useResourceRunEffect = <A, E>(

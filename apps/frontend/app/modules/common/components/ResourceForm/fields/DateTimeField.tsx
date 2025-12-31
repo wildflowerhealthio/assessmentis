@@ -16,9 +16,9 @@ export interface DateTimeFieldProps {
  * Convert Effect DateTime to ISO string for datetime-local input
  */
 function dateTimeToInputValue(dateTime: DateTime.Zoned | undefined): string {
-  if (!dateTime) return ''
+  if (dateTime == undefined) return ''
   // datetime-local input expects format: YYYY-MM-DDTHH:mm
-  return dateTime.pipe(DateTime.formatLocal).slice(0, 16)
+  return DateTime.formatLocal(dateTime).slice(0, 16)
 }
 
 /**

@@ -4,13 +4,6 @@ import {
   CompositionRepository,
 } from '@assessmentis/clinical-domain/content-management'
 import {
-  ExternalAssertionError,
-  NeedsAuthenticationError,
-  NotFoundError,
-  UnhandledError,
-} from '@assessmentis/ontology'
-import { ClientRuntimeContext } from '@assessmentis/platform-domain'
-import {
   transformToComposition,
   CompositionFormData,
 } from '../schemas/CompositionFormSchema'
@@ -18,12 +11,8 @@ import { createResourceUpdateAction } from '../../../common/actions/createResour
 
 export const updateComposition = createResourceUpdateAction<
   CompositionFormData,
-  Composition,
   CompositionId,
-  | UnhandledError
-  | NeedsAuthenticationError
-  | ExternalAssertionError
-  | NotFoundError,
-  typeof CompositionRepository,
-  ClientRuntimeContext
+  Composition,
+  CompositionRepository['Id'],
+  InstanceType<typeof CompositionRepository>
 >(CompositionRepository, transformToComposition)

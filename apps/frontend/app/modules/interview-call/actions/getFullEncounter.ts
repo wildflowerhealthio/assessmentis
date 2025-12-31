@@ -1,4 +1,4 @@
-import { Effect, Schema, Option } from 'effect'
+import { Effect, Option } from 'effect'
 import {
   Encounter,
   EncounterId,
@@ -18,17 +18,11 @@ import {
 } from '@assessmentis/clinical-domain/content-management'
 import { WithId } from '@assessmentis/clinical-domain/data-types'
 
-export const FullEncounter = Schema.Struct({
-  ...Encounter.fields,
-  questionnaireResponses: Schema.Array(
-    Schema.Struct({
-      ...QuestionnaireResponse.fields,
-      _questionnaire: Questionnaire,
-    })
-  ),
-})
-
-export type FullEncounter = WithId<typeof FullEncounter.Type>
+export type FullEncounter = WithId<Encounter> & {
+  questionnaireResponses: Array<
+    WithId<QuestionnaireResponse> & { _questionnaire: Questionnaire }
+  >
+}
 
 export const getFullEncounter = (
   encounterIdMaybe: Option.Option<EncounterId>
@@ -112,7 +106,6 @@ export const getFullEncounter = (
 
     return encounterRes
   }).pipe(
-    Effect.flatMap((encounter) => Schema.encode(FullEncounter)(encounter)),
     Effect.catchSome((err) =>
       err._tag == 'NotFoundError' && err.resourceType == 'Encounter'
         ? Option.some(
@@ -130,10 +123,6 @@ export const getFullEncounter = (
           )
         : Option.none()
     ),
-    Effect.catchTag('ParseError', (cause) =>
-      Effect.fail(new UnhandledError({ cause: cause.toJSON() }))
-    ),
-    Effect.map((data) => JSON.parse(JSON.stringify(data))),
     Effect.withSpan('getFullEncounter')
   )
 }

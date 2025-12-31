@@ -5,7 +5,7 @@ import {
 } from '@assessmentis/clinical-domain/administration'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/_resource.Patient.$patientId._index'
-import { useResourceRunEffect } from '../clientRuntime'
+import { runEffectSync, useResourceRunEffect } from '../clientRuntime'
 import { useMemo } from 'react'
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
@@ -79,7 +79,9 @@ export default function PatientDetailPage({ params }: Route.ComponentProps) {
 
   const patient = loadedPatient.value
   const displayName = getPatientDisplayName(patient)
-
+  const patientDemographicItems = runEffectSync(
+    formatPatientDemographics(patient)
+  )
   return (
     <ResourceDetailPage
       editTo={`/Patient/${patient.id}/edit`}
@@ -89,7 +91,7 @@ export default function PatientDetailPage({ params }: Route.ComponentProps) {
         {
           id: 'demographics',
           title: 'Demographics',
-          content: <DetailGrid items={formatPatientDemographics(patient)} />,
+          content: <DetailGrid items={patientDemographicItems} />,
         },
         {
           id: 'contact',

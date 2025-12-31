@@ -3,7 +3,7 @@ import { EncounterId } from '@assessmentis/clinical-domain/administration'
 import { getFullEncounter } from 'app/modules/interview-call/actions/getFullEncounter'
 import InterviewCall from 'app/modules/interview-call/features/InterviewCall/InterviewCall'
 import type { Route } from './+types/_resource.Encounter.$encounterId._index'
-import { useResourceRunEffect } from '../clientRuntime'
+import { runEffectSync, useResourceRunEffect } from '../clientRuntime'
 import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
 import { getEncounterDisplayName } from '../modules/resources/Encounter/utils/encounterDisplay'
 import { useMemo } from 'react'
@@ -25,7 +25,11 @@ export default function EncounterPage({ params }: Route.ComponentProps) {
     encounterLoader._tag === 'loaded'
       ? [
           { label: 'Encounters', href: '/Encounter' },
-          { label: getEncounterDisplayName(encounterLoader.value) },
+          {
+            label: runEffectSync(
+              getEncounterDisplayName(encounterLoader.value)
+            ),
+          },
         ]
       : [{ label: 'Encounters', href: '/Encounter' }, { loading: true }]
   )
@@ -42,7 +46,8 @@ export default function EncounterPage({ params }: Route.ComponentProps) {
   }
 
   const encounterData = encounterLoader.value
-  const displayName = getEncounterDisplayName(encounterData)
+
+  const displayName = runEffectSync(getEncounterDisplayName(encounterData))
 
   return (
     <ResourceDetailPage

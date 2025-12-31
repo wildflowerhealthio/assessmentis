@@ -8,6 +8,8 @@ import {
   formatObservationValue,
 } from '../../utils/observationDisplay'
 import baseListItemClasses from 'app/modules/common/components/BaseListItem/BaseListItem.module.css'
+import { runEffectSync } from '../../../../../clientRuntime'
+import { Effect } from 'effect'
 
 interface ObservationListItemProps {
   item: Observation
@@ -22,8 +24,14 @@ export function ObservationListItem({
 }: ObservationListItemProps) {
   const displayName = getObservationDisplayName(observation)
   const status = getObservationStatus(observation)
-  const effectiveDate = getObservationEffectiveDate(observation)
-  const value = formatObservationValue(observation)
+  const { effectiveDate, value } = runEffectSync(
+    Effect.gen(function* () {
+      return {
+        effectiveDate: yield* getObservationEffectiveDate(observation),
+        value: yield* formatObservationValue(observation),
+      }
+    })
+  )
 
   return (
     <>

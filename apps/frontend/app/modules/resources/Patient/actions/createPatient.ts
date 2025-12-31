@@ -1,13 +1,8 @@
 import {
   Patient,
+  PatientId,
   PatientRepository,
 } from '@assessmentis/clinical-domain/administration'
-import {
-  ExternalAssertionError,
-  NeedsAuthenticationError,
-  UnhandledError,
-} from '@assessmentis/ontology'
-import { ClientRuntimeContext } from '@assessmentis/platform-domain'
 import {
   transformToPatient,
   PatientFormData,
@@ -16,8 +11,8 @@ import { createResourceCreateAction } from '../../../common/actions/createResour
 
 export const createPatient = createResourceCreateAction<
   PatientFormData,
+  PatientId,
   Patient,
-  UnhandledError | NeedsAuthenticationError | ExternalAssertionError,
-  typeof PatientRepository,
-  ClientRuntimeContext
+  PatientRepository['Id'],
+  InstanceType<typeof PatientRepository>
 >(PatientRepository, transformToPatient)

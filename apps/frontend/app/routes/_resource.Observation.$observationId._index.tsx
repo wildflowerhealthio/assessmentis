@@ -5,7 +5,7 @@ import {
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/_resource.Observation.$observationId._index'
-import { useResourceRunEffect } from '../clientRuntime'
+import { runEffectSync, useResourceRunEffect } from '../clientRuntime'
 import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
 import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
 import {
@@ -93,7 +93,9 @@ export default function ObservationDetailPage({
 
   const observation = observationLoader.value
   const displayName = getObservationDisplayName(observation)
-
+  const observationDetails = runEffectSync(
+    formatObservationDetails(observation)
+  )
   return (
     <ResourceDetailPage
       editTo={`/Observation/${observation.id}/edit`}
@@ -103,7 +105,7 @@ export default function ObservationDetailPage({
         {
           id: 'details',
           title: 'Details',
-          content: <DetailGrid items={formatObservationDetails(observation)} />,
+          content: <DetailGrid items={observationDetails} />,
         },
         {
           id: 'value',

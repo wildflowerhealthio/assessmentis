@@ -1,6 +1,6 @@
 import { expect, test, describe } from 'vitest'
 import { Period } from './Period'
-import { Arbitrary, Schema } from 'effect'
+import { Arbitrary, DateTime, Schema } from 'effect'
 import * as fc from 'fast-check'
 import { DeepReadonly } from '@assessmentis/util'
 import { Period as FhirPeriod } from 'fhir/r4'
@@ -19,5 +19,19 @@ describe('Period model', () => {
         expect(decoded).toEqual(period)
       })
     )
+  })
+
+  test('should handle google style input', () => {
+    const decode = Schema.decodeSync(Period)
+
+    const decoded = decode({
+      start: '2026-01-04T00:00:00.000Z',
+      end: '2026-01-07T00:00:00.000Z',
+    })
+
+    expect(decoded.start).toEqual(
+      DateTime.unsafeMake('2026-01-04T00:00:00.000Z')
+    )
+    expect(decoded.end).toEqual(DateTime.unsafeMake('2026-01-07T00:00:00.000Z'))
   })
 })

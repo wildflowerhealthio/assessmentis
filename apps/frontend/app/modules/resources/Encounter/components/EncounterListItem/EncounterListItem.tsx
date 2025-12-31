@@ -7,6 +7,7 @@ import {
   getEncounterPeriodDisplay,
 } from '../../utils/encounterDisplay'
 import baseListItemClasses from 'app/modules/common/components/BaseListItem/BaseListItem.module.css'
+import { runEffectSync } from '../../../../../clientRuntime'
 
 interface EncounterListItemProps {
   item: Encounter
@@ -19,9 +20,9 @@ export function EncounterListItem({
   onDelete,
   loading,
 }: EncounterListItemProps) {
-  const displayName = getEncounterDisplayName(encounter)
+  const displayName = runEffectSync(getEncounterDisplayName(encounter))
   const status = getEncounterStatus(encounter)
-  const periodDisplay = getEncounterPeriodDisplay(encounter)
+  const periodDisplay = runEffectSync(getEncounterPeriodDisplay(encounter))
 
   return (
     <>

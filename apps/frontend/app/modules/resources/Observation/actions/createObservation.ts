@@ -1,13 +1,8 @@
 import {
   Observation,
+  ObservationId,
   ObservationRepository,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import {
-  ExternalAssertionError,
-  NeedsAuthenticationError,
-  UnhandledError,
-} from '@assessmentis/ontology'
-import { ClientRuntimeContext } from '@assessmentis/platform-domain'
 import {
   transformToObservation,
   ObservationFormData,
@@ -16,8 +11,8 @@ import { createResourceCreateAction } from '../../../common/actions/createResour
 
 export const createObservation = createResourceCreateAction<
   ObservationFormData,
+  ObservationId,
   Observation,
-  UnhandledError | NeedsAuthenticationError | ExternalAssertionError,
-  typeof ObservationRepository,
-  ClientRuntimeContext
+  ObservationRepository['Id'],
+  InstanceType<typeof ObservationRepository>
 >(ObservationRepository, transformToObservation)

@@ -1,6 +1,7 @@
 import { Effect, Option, Schema, DateTime } from 'effect'
 import { useNavigate } from 'react-router'
 import {
+  runEffectSync,
   useLoadedRuntimeContext,
   useResourceRunEffect,
 } from 'app/clientRuntime'
@@ -59,7 +60,7 @@ export default function EditEncounterPage({ params }: Route.ComponentProps) {
       loading: encounterLoader._tag === 'loading',
       label:
         encounterLoader._tag === 'loaded'
-          ? getEncounterDisplayName(encounterLoader.value)
+          ? runEffectSync(getEncounterDisplayName(encounterLoader.value))
           : 'Unknown Encounter',
       href: `/Encounter/${params.encounterId}`,
     },
