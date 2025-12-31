@@ -9,26 +9,28 @@ import {
 } from './dateUtils'
 
 // Fixed reference time for deterministic tests: June 1, 2024 12:00:00 UTC
-const FIXED_NOW = new Date('2024-06-01T12:00:00Z')
+const FIXED_NOW = DateTime.unsafeMakeZoned(
+  {
+    year: 2024,
+    month: 6,
+    day: 1,
+    hours: 12,
+    minutes: 0,
+    seconds: 0,
+  },
+  { timeZone: 'UTC' }
+)
 const DEFAULT_TZ = 'America/Toronto'
 const OTHER_TZ = 'Europe/London'
 /**
  * Run an Effect with a fixed Clock and timezone for deterministic testing
  */
 async function runWithFixedClock<A>(
-  effect: Effect.Effect<A, never, DateTime.CurrentTimeZone>,
-  options: {
-    now?: Date
-    timezone?: string
-  } = {}
+  effect: Effect.Effect<A, never, DateTime.CurrentTimeZone>
 ): Promise<A> {
-  const now = options.now ?? FIXED_NOW
-  const timezone = options.timezone ?? DEFAULT_TZ
-
-  // Run effect with test context and set the clock time
   return Effect.gen(function* () {
-    yield* TestClock.setTime(now.getTime())
-    return yield* effect.pipe(DateTime.withCurrentZoneNamed(timezone))
+    yield* TestClock.setTime(FIXED_NOW)
+    return yield* effect.pipe(DateTime.withCurrentZoneNamed(DEFAULT_TZ))
   }).pipe(Effect.provide(TestContext.TestContext), Effect.runPromise)
 }
 
