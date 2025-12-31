@@ -1,8 +1,8 @@
 import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import { Effect } from 'effect'
 import {
-  formatUtcDateTime,
-  formatUtcDate,
-  formatUtcDateRange,
+  humanizeDateTimeForLocalReader,
+  humanizeDateTimeRangeForLocalReader,
 } from '../../../common/utils/dateUtils'
 
 /**
@@ -77,8 +77,9 @@ export function formatObservationValue(
   }
 
   if ('valueDateTime' in observation && observation.valueDateTime) {
-    return formatUtcDateTime(observation.valueDateTime)
-  }
+    return Effect.runSync(
+      humanizeDateTimeForLocalReader(observation.valueDateTime)
+    )
   }
 
   if ('valueDate' in observation && observation.valueDate) {
@@ -119,83 +120,88 @@ export function formatObservationValue(
 /**
  * Get effective date display for observation
  */
-export function getObservationEffectiveDate(observation: Observation): string {
-  if (observation.effectiveDateTime) {
-    return formatUtcDate(observation.effectiveDateTime)
-  }
+export const getObservationEffectiveDate = (observation: Observation) =>
+  Effect.gen(function* () {
+    if (observation.effectiveDateTime) {
+      return yield* humanizeDateTimeForLocalReader(
+        observation.effectiveDateTime
+      )
+    }
 
-  if (observation.effectivePeriod) {
-    return formatUtcDateRange(
-      observation.effectivePeriod.start,
-      observation.effectivePeriod.end,
-      {
-        endFallback: 'Ongoing',
-        neitherFallback: 'Unknown date',
-      }
-    )
-  }
+    if (observation.effectivePeriod) {
+      return yield* humanizeDateTimeRangeForLocalReader(
+        observation.effectivePeriod,
+        {
+          endFallback: 'Ongoing',
+          neitherFallback: 'Unknown date',
+        }
+      )
+    }
 
-  if (observation.effectiveInstant) {
-    return formatUtcDate(observation.effectiveInstant)
-  }
+    if (observation.effectiveInstant) {
+      return Effect.runSync(
+        humanizeDateTimeForLocalReader(observation.effectiveInstant)
+      )
+    }
 
-  return 'Unknown date'
-}
+    return 'Unknown date'
+  })
 
 /**
  * Format observation details for display in DetailGrid
  */
-export function formatObservationDetails(observation: Observation) {
-  const details = [
-    {
-      label: 'Status',
-      value: getObservationStatus(observation),
-    },
-    {
-      label: 'Category',
-      value: getObservationCategory(observation),
-    },
-    {
-      label: 'Effective Date',
-      value: getObservationEffectiveDate(observation),
-    },
-  ]
+export const formatObservationDetails = (observation: Observation) =>
+  Effect.gen(function* () {
+    const details: { label: string; value: string }[] = [
+      {
+        label: 'Status',
+        value: getObservationStatus(observation),
+      },
+      {
+        label: 'Category',
+        value: getObservationCategory(observation),
+      },
+      {
+        label: 'Effective Date',
+        value: yield* getObservationEffectiveDate(observation),
+      },
+    ]
 
-  if (observation.issued) {
-    details.push({
-      label: 'Issued',
-      value: formatUtcDateTime(observation.issued),
-    })
-  }
+    if (observation.issued) {
+      details.push({
+        label: 'Issued',
+        value: yield* humanizeDateTimeForLocalReader(observation.issued),
+      })
+    }
 
-  if (observation.subject) {
-    details.push({
-      label: 'Subject',
-      value:
-        observation.subject.display ??
-        observation.subject.reference ??
-        'Not specified',
-    })
-  }
+    if (observation.subject) {
+      details.push({
+        label: 'Subject',
+        value:
+          observation.subject.display ??
+          observation.subject.reference ??
+          'Not specified',
+      })
+    }
 
-  if (observation.encounter) {
-    details.push({
-      label: 'Encounter',
-      value:
-        observation.encounter.display ??
-        observation.encounter.reference ??
-        'Not specified',
-    })
-  }
+    if (observation.encounter) {
+      details.push({
+        label: 'Encounter',
+        value:
+          observation.encounter.display ??
+          observation.encounter.reference ??
+          'Not specified',
+      })
+    }
 
-  if (observation.performer && observation.performer.length > 0) {
-    details.push({
-      label: 'Performer(s)',
-      value: observation.performer
-        .map((p) => p.display ?? p.reference ?? 'Unknown')
-        .join(', '),
-    })
-  }
+    if (observation.performer && observation.performer.length > 0) {
+      details.push({
+        label: 'Performer(s)',
+        value: observation.performer
+          .map((p) => p.display ?? p.reference ?? 'Unknown')
+          .join(', '),
+      })
+    }
 
-  return details
-}
+    return details
+  })

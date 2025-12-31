@@ -1,207 +1,277 @@
-import { describe, it, expect } from 'vitest'
-import { DateTime } from 'effect'
+import { describe, expect, test } from 'vitest'
+import { DateTime, Effect, TestClock, TestContext } from 'effect'
 import {
-  formatTimelessDate,
-  formatUtcDate,
-  formatUtcDateTime,
-  formatUtcDateRange,
-  formatUtcDateTimeRange,
+  humanizeTimelessDate,
+  humanizeDateTimeForLocalReader,
+  humanizeDateTimeWithTime,
+  humanizeDateRange,
+  humanizeDateTimeRangeForLocalReader,
 } from './dateUtils'
 
-describe('dateUtils', () => {
-  describe('formatTimelessDate', () => {
-    it('should format a date string with ordinal suffix', () => {
-      const result = formatTimelessDate('2024-01-15')
-      expect(result).toContain('January')
-      expect(result).toContain('15')
-      expect(result).toContain('th')
-    })
+// Fixed reference time for deterministic tests: June 1, 2024 12:00:00 UTC
+const FIXED_NOW = new Date('2024-06-01T12:00:00Z')
+const DEFAULT_TZ = 'America/Toronto'
+const OTHER_TZ = 'Europe/London'
+/**
+ * Run an Effect with a fixed Clock and timezone for deterministic testing
+ */
+async function runWithFixedClock<A>(
+  effect: Effect.Effect<A, never, DateTime.CurrentTimeZone>,
+  options: {
+    now?: Date
+    timezone?: string
+  } = {}
+): Promise<A> {
+  const now = options.now ?? FIXED_NOW
+  const timezone = options.timezone ?? DEFAULT_TZ
 
-    it('should format a Date object', () => {
-      const date = new Date('2024-01-01T00:00:00')
-      const result = formatTimelessDate(date)
-      expect(result).toContain('January')
-      expect(result).toContain('1')
-      expect(result).toContain('st')
-    })
+  // Run effect with test context and set the clock time
+  return Effect.gen(function* () {
+    yield* TestClock.setTime(now.getTime())
+    return yield* effect.pipe(DateTime.withCurrentZoneNamed(timezone))
+  }).pipe(Effect.provide(TestContext.TestContext), Effect.runPromise)
+}
 
-    it('should omit year for dates within 3 months', () => {
-      const now = new Date()
-      const oneMonthAgo = new Date(now)
-      oneMonthAgo.setMonth(now.getMonth() - 1)
-      const dateStr = oneMonthAgo.toISOString().split('T')[0]
-      
-      const result = formatTimelessDate(dateStr)
-      // Should not contain year for recent dates
-      const currentYear = now.getFullYear()
-      expect(result).not.toContain(currentYear.toString())
-    })
+describe('humanizeTimelessDate', () => {
+  test.each([
+    {
+      testcase: 'undefined date returns fallback',
+      date: undefined,
+      fallback: 'Unknown',
+      returns: 'Unknown',
+    },
+    {
+      testcase: 'invalid date returns fallback',
+      date: new Date('invalid-date'),
+      fallback: 'Unknown',
+      returns: 'Unknown',
+    },
+    {
+      testcase: 'exactly 90 days from FIXED_NOW includes year',
+      date: new Date('2024-03-03T12:00:00Z'),
+      returns: 'Mar 3, 2024',
+    },
+    {
+      testcase: 'less than 90 days before FIXED_NOW includes year',
+      date: new Date('2024-03-04T00:00:00Z'),
+      returns: 'Mar 4',
+    },
+    {
+      testcase: 'almost 90 days after FIXED_NOW omits year',
+      date: new Date('2024-08-29T00:00:00Z'),
+      returns: 'Aug 29',
+    },
+    {
+      testcase: 'more than 90 days after FIXED_NOW includes year',
+      date: new Date('2024-09-01T00:00:01Z'),
+      returns: 'Sep 1, 2024',
+    },
+  ])('$testcase', async ({ date, fallback = '', returns }) => {
+    const result = await runWithFixedClock(humanizeTimelessDate(date, fallback))
+    expect(result).toBe(returns)
+  })
+})
 
-    it('should include year for dates beyond 3 months', () => {
-      const result = formatTimelessDate('2020-01-15')
-      expect(result).toContain('2020')
-    })
+describe('humanizeDateTimeForLocalReader', () => {
+  test.each([
+    {
+      testcase: 'undefined dateTime returns fallback',
+      dateTime: undefined,
+      fallback: 'N/A',
+      expected: 'N/A',
+    },
+    {
+      testcase: 'more than 90 days from FIXED_NOW uses medium style',
+      dateTime: DateTime.unsafeFromDate(new Date('2024-01-15T10:30:00Z')),
+      fallback: 'Unknown',
+      expected: 'Jan 15, 2024',
+    },
+  ])('$testcase', async ({ dateTime, fallback, expected }) => {
+    const result = await runWithFixedClock(
+      humanizeDateTimeForLocalReader(dateTime, fallback)
+    )
+    expect(result).toBe(expected)
+  })
+})
 
-    it('should return fallback for undefined', () => {
-      expect(formatTimelessDate(undefined)).toBe('Unknown')
-    })
+describe('humanizeDateTimeWithTime', () => {
+  const localOptions = { timeZone: DateTime.zoneUnsafeMakeNamed(DEFAULT_TZ) }
+  test.each([
+    {
+      testcase: 'undefined dateTime returns fallback',
+      dateTime: undefined,
+      fallback: 'N/A',
+      returns: 'N/A',
+    },
+    {
+      testcase: 'exactly 90 days from FIXED_NOW includes year',
+      dateTime: DateTime.unsafeMakeZoned('2024-03-03T11:34:00Z', localOptions),
+      returns: 'Mar 3, 2024, 6:34 AM',
+    },
+    {
+      testcase: 'less than 90 days before FIXED_NOW includes year',
+      dateTime: DateTime.unsafeMakeZoned('2024-03-04T12:34:00Z', localOptions),
+      returns: 'Mar 4, 7:34 AM',
+    },
+    {
+      testcase: 'almost 90 days after FIXED_NOW omits year',
+      dateTime: DateTime.unsafeMakeZoned('2024-08-29T12:34:00Z', localOptions),
+      returns: 'Aug 29, 8:34 AM',
+    },
+    {
+      testcase: 'more than 90 days after FIXED_NOW includes year',
+      dateTime: DateTime.unsafeMakeZoned('2024-09-01T12:34:00Z', localOptions),
+      returns: 'Sep 1, 2024, 8:34 AM',
+    },
+  ])('$testcase', async ({ dateTime, fallback = '', returns }) => {
+    const result = await runWithFixedClock(
+      humanizeDateTimeWithTime(dateTime, fallback)
+    )
+    expect(result).toBe(returns)
+  })
 
-    it('should return custom fallback', () => {
-      expect(formatTimelessDate(undefined, 'N/A')).toBe('N/A')
+  describe('when the dateTime is in a different timezone', () => {
+    const otherOptions = { timeZone: DateTime.zoneUnsafeMakeNamed(OTHER_TZ) }
+    test.each([
+      {
+        testcase: 'less than 90 days before FIXED_NOW includes year',
+        dateTime: DateTime.unsafeMakeZoned(
+          '2024-03-04T12:34:00Z',
+          otherOptions
+        ),
+        returns: 'Mar 4, 7:34 AM EST',
+      },
+      {
+        testcase:
+          'more than 90 days after FIXED_NOW in other timezone includes year',
+        dateTime: DateTime.unsafeMakeZoned(
+          '2024-09-01T12:34:00Z',
+          otherOptions
+        ),
+        returns: 'Sep 1, 2024, 8:34 AM EDT',
+      },
+    ])('$testcase', async ({ dateTime, returns }) => {
+      const result = await runWithFixedClock(
+        humanizeDateTimeWithTime(dateTime, '')
+      )
+      expect(result).toBe(returns)
     })
   })
 
-  describe('formatUtcDate', () => {
-    it('should format a UTC timestamp', () => {
-      const utc = DateTime.unsafeMakeZoned('2024-01-15T12:00:00Z', {
-        timeZone: 'UTC',
-      })
-      const result = formatUtcDate(DateTime.removeTimeZone(utc))
-      expect(result).toContain('January')
-      expect(result).toContain('15')
-    })
-
-    it('should return fallback for undefined', () => {
-      expect(formatUtcDate(undefined)).toBe('Unknown')
+  describe('when the dateTime is in UTC', () => {
+    test.each([
+      {
+        testcase: 'less than 90 days before FIXED_NOW includes year',
+        dateTime: DateTime.unsafeMake('2024-03-04T12:34:00Z'),
+        returns: 'Mar 4, 7:34 AM',
+      },
+      {
+        testcase:
+          'more than 90 days after FIXED_NOW in other timezone includes year',
+        dateTime: DateTime.unsafeMake('2024-09-01T12:34:00Z'),
+        returns: 'Sep 1, 2024, 8:34 AM',
+      },
+    ])('$testcase', async ({ dateTime, returns }) => {
+      const result = await runWithFixedClock(
+        humanizeDateTimeWithTime(dateTime, '')
+      )
+      expect(result).toBe(returns)
     })
   })
+})
 
-  describe('formatUtcDateTime', () => {
-    it('should format a UTC timestamp with time', () => {
-      const utc = DateTime.unsafeMakeZoned('2024-01-15T12:30:00Z', {
-        timeZone: 'UTC',
-      })
-      const result = formatUtcDateTime(DateTime.removeTimeZone(utc))
-      // Should contain date components
-      expect(result.length).toBeGreaterThan(10)
-    })
-
-    it('should return fallback for undefined', () => {
-      expect(formatUtcDateTime(undefined)).toBe('Unknown')
-    })
+describe('humanizeDateRange', () => {
+  test.each([
+    {
+      testcase: 'undefined period returns neitherFallback',
+      period: undefined,
+      options: {},
+      expected: 'Unknown Range',
+    },
+    {
+      testcase: 'empty period returns neitherFallback',
+      period: { start: undefined, end: undefined },
+      options: {},
+      expected: 'Unknown Range',
+    },
+    {
+      testcase: 'same day range shows compact format with times',
+      period: {
+        start: DateTime.unsafeFromDate(new Date('2024-01-15T10:00:00Z')),
+        end: DateTime.unsafeFromDate(new Date('2024-01-15T11:00:00Z')),
+      },
+      options: {},
+      expected: 'January 15th 5 AM - 6 AM',
+    },
+    {
+      testcase: 'missing start uses startFallback',
+      period: {
+        start: undefined,
+        end: DateTime.unsafeFromDate(new Date('2024-01-15T10:00:00Z')),
+      },
+      options: { startFallback: 'Start missing' },
+      expected: 'Start missing - Jan 15, 2024',
+    },
+    {
+      testcase: 'missing end uses endFallback',
+      period: {
+        start: DateTime.unsafeFromDate(new Date('2024-01-15T10:00:00Z')),
+        end: undefined,
+      },
+      options: { endFallback: 'Ongoing' },
+      expected: 'Jan 15, 2024 - Ongoing',
+    },
+  ])('$testcase', async ({ period, options, expected }) => {
+    const result = await runWithFixedClock(humanizeDateRange(period, options))
+    expect(result).toBe(expected)
   })
+})
 
-  describe('formatUtcDateRange', () => {
-    it('should format a date range with both dates', () => {
-      const start = DateTime.unsafeMakeZoned('2021-01-01T00:00:00Z', {
-        timeZone: 'UTC',
-      })
-      const end = DateTime.unsafeMakeZoned('2022-01-01T00:00:00Z', {
-        timeZone: 'UTC',
-      })
-      const result = formatUtcDateRange(
-        DateTime.removeTimeZone(start),
-        DateTime.removeTimeZone(end)
-      )
-      expect(result).toContain('2021')
-      expect(result).toContain('2022')
-      expect(result).toContain('-')
-    })
-
-    it('should use "Present" when end is undefined', () => {
-      const start = DateTime.unsafeMakeZoned('2021-01-01T00:00:00Z', {
-        timeZone: 'UTC',
-      })
-      const result = formatUtcDateRange(DateTime.removeTimeZone(start), undefined)
-      expect(result).toContain('2021')
-      expect(result).toContain('Present')
-    })
-
-    it('should use custom fallbacks from options', () => {
-      const result = formatUtcDateRange(undefined, undefined, {
-        neitherFallback: 'No dates',
-        startFallback: 'Start unknown',
-        endFallback: 'End unknown',
-      })
-      expect(result).toBe('No dates')
-    })
-
-    it('should format same-day range smartly', () => {
-      const start = DateTime.unsafeMakeZoned('2024-01-15T09:00:00Z', {
-        timeZone: 'UTC',
-      })
-      const end = DateTime.unsafeMakeZoned('2024-01-15T10:00:00Z', {
-        timeZone: 'UTC',
-      })
-      const result = formatUtcDateRange(
-        DateTime.removeTimeZone(start),
-        DateTime.removeTimeZone(end)
-      )
-      // Should show date once: "January 15th 9 AM - 10 AM"
-      expect(result).toContain('January')
-      expect(result).toContain('15')
-      expect(result).toContain('AM')
-    })
-
-    it('should format same-month range smartly', () => {
-      const start = DateTime.unsafeMakeZoned('2024-01-10T00:00:00Z', {
-        timeZone: 'UTC',
-      })
-      const end = DateTime.unsafeMakeZoned('2024-01-14T00:00:00Z', {
-        timeZone: 'UTC',
-      })
-      const result = formatUtcDateRange(
-        DateTime.removeTimeZone(start),
-        DateTime.removeTimeZone(end)
-      )
-      // Should show: "January 10 - 14th" (if within 3 months)
-      expect(result).toContain('January')
-      expect(result).toContain('10')
-      expect(result).toContain('14')
-    })
-  })
-
-  describe('formatUtcDateTimeRange', () => {
-    it('should format datetime range with both dates', () => {
-      const start = DateTime.unsafeMakeZoned('2021-01-01T09:00:00Z', {
-        timeZone: 'UTC',
-      })
-      const end = DateTime.unsafeMakeZoned('2022-01-01T17:00:00Z', {
-        timeZone: 'UTC',
-      })
-      const result = formatUtcDateTimeRange(
-        DateTime.removeTimeZone(start),
-        DateTime.removeTimeZone(end)
-      )
-      expect(result).toContain('2021')
-      expect(result).toContain('2022')
-      expect(result).toContain('-')
-    })
-
-    it('should use "Ongoing" when end is undefined', () => {
-      const start = DateTime.unsafeMakeZoned('2021-01-01T09:00:00Z', {
-        timeZone: 'UTC',
-      })
-      const result = formatUtcDateTimeRange(
-        DateTime.removeTimeZone(start),
-        undefined
-      )
-      expect(result).toContain('2021')
-      expect(result).toContain('Ongoing')
-    })
-
-    it('should format same-day datetime range smartly', () => {
-      const start = DateTime.unsafeMakeZoned('2024-01-15T09:00:00Z', {
-        timeZone: 'UTC',
-      })
-      const end = DateTime.unsafeMakeZoned('2024-01-15T10:30:00Z', {
-        timeZone: 'UTC',
-      })
-      const result = formatUtcDateTimeRange(
-        DateTime.removeTimeZone(start),
-        DateTime.removeTimeZone(end)
-      )
-      // Should show time with minutes: "January 15th 9:00 AM - 10:30 AM"
-      expect(result).toContain('January')
-      expect(result).toContain('15')
-      expect(result).toContain(':')
-    })
-
-    it('should use custom fallbacks from options', () => {
-      const result = formatUtcDateTimeRange(undefined, undefined, {
-        neitherFallback: 'No times',
-      })
-      expect(result).toBe('No times')
-    })
+describe('humanizeDateTimeRangeForLocalReader', () => {
+  test.each([
+    {
+      testcase: 'undefined period returns neitherFallback',
+      period: undefined,
+      options: {},
+      expected: 'Unknown Range',
+    },
+    {
+      testcase: 'empty period returns neitherFallback',
+      period: { start: undefined, end: undefined },
+      options: {},
+      expected: 'Unknown Range',
+    },
+    {
+      testcase: 'different days use medium style with comma',
+      period: {
+        start: DateTime.unsafeFromDate(new Date('2024-01-15T09:00:00Z')),
+        end: DateTime.unsafeFromDate(new Date('2024-01-16T17:30:00Z')),
+      },
+      options: {},
+      expected: 'Jan 15, 2024, 4:00 AM - Jan 16, 2024, 12:30 PM',
+    },
+    {
+      testcase: 'missing start uses startFallback',
+      period: {
+        start: undefined,
+        end: DateTime.unsafeFromDate(new Date('2024-01-15T10:00:00Z')),
+      },
+      options: { startFallback: 'Not specified' },
+      expected: 'Not specified - Jan 15, 2024, 5:00 AM',
+    },
+    {
+      testcase: 'missing end uses endFallback',
+      period: {
+        start: DateTime.unsafeFromDate(new Date('2024-01-15T10:00:00Z')),
+        end: undefined,
+      },
+      options: { endFallback: 'Ongoing' },
+      expected: 'Jan 15, 2024, 5:00 AM - Ongoing',
+    },
+  ])('$testcase', async ({ period, options, expected }) => {
+    const result = await runWithFixedClock(
+      humanizeDateTimeRangeForLocalReader(period, options)
+    )
+    expect(result).toBe(expected)
   })
 })

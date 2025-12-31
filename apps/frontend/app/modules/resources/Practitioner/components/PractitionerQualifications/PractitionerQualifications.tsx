@@ -1,5 +1,6 @@
 import type { Practitioner } from '@assessmentis/clinical-domain/administration'
-import { formatDateRange } from '../../../../common/utils/dateUtils'
+import { Effect } from 'effect'
+import { humanizeDateRange } from '../../../../common/utils/dateUtils'
 import classes from './PractitionerQualifications.module.css'
 
 interface PractitionerQualificationsProps {
@@ -24,7 +25,7 @@ export function PractitionerQualifications({
           </strong>
           {qual.period ? (
             <div className={classes.Qualifications__detail}>
-              Period: {formatDateRange(qual.period)}
+              Period: {Effect.runSync(humanizeDateRange(qual.period))}
             </div>
           ) : undefined}
           {qual.issuer ? (

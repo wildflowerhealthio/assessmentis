@@ -5,7 +5,7 @@ import {
 } from '@assessmentis/clinical-domain/administration'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/_resource.Practitioner.$practitionerId._index'
-import { useResourceRunEffect } from '../clientRuntime'
+import { runEffectSync, useResourceRunEffect } from '../clientRuntime'
 import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
 import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
 import {
@@ -87,6 +87,9 @@ export default function PractitionerDetailPage({
   }
 
   const practitioner = practitionerLoader.value
+  const demographicsItems = runEffectSync(
+    formatPractitionerDemographics(practitionerLoader.value)
+  )
   const displayName = getPractitionerDisplayName(practitioner)
 
   return (
@@ -98,9 +101,7 @@ export default function PractitionerDetailPage({
         {
           id: 'demographics',
           title: 'Demographics',
-          content: (
-            <DetailGrid items={formatPractitionerDemographics(practitioner)} />
-          ),
+          content: <DetailGrid items={demographicsItems} />,
         },
         {
           id: 'qualifications',

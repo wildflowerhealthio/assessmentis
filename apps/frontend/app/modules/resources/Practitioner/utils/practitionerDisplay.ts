@@ -1,9 +1,7 @@
 import type { Practitioner } from '@assessmentis/clinical-domain/administration'
+import { Effect } from 'effect'
 import { formatHumanName } from '../../../common/utils/fhirDisplay'
-import {
-  formatTimelessDate,
-  formatUtcDateRange,
-} from '../../../common/utils/dateUtils'
+import { humanizeTimelessDate } from '../../../common/utils/dateUtils'
 
 /**
  * Get a display-friendly name for a practitioner
@@ -28,19 +26,23 @@ export function getPractitionerQualification(
 /**
  * Format practitioner demographics for display in DetailGrid
  */
-export function formatPractitionerDemographics(practitioner: Practitioner) {
-  return [
-    {
-      label: 'Gender',
-      value: practitioner.gender ?? 'Not specified',
-    },
-    {
-      label: 'Birth Date',
-      value: formatTimelessDate(practitioner.birthDate, 'Not specified'),
-    },
-    {
-      label: 'Status',
-      value: practitioner.active !== false ? 'Active' : 'Inactive',
-    },
-  ]
-}
+export const formatPractitionerDemographics = (practitioner: Practitioner) =>
+  Effect.gen(function* () {
+    return [
+      {
+        label: 'Gender',
+        value: practitioner.gender ?? 'Not specified',
+      },
+      {
+        label: 'Birth Date',
+        value: yield* humanizeTimelessDate(
+          practitioner.birthDate,
+          'Not specified'
+        ),
+      },
+      {
+        label: 'Status',
+        value: practitioner.active !== false ? 'Active' : 'Inactive',
+      },
+    ]
+  })

@@ -1,9 +1,13 @@
 import type { Patient } from '@assessmentis/clinical-domain/administration'
+import { Effect } from 'effect'
 import {
   formatHumanName,
   extractReferenceId,
 } from '../../../common/utils/fhirDisplay'
-import { formatTimelessDate, formatUtcDateTime } from '../../../common/utils/dateUtils'
+import {
+  humanizeDateTimeForLocalReader,
+  humanizeTimelessDate,
+} from '../../../common/utils/dateUtils'
 
 /**
  * Get a display-friendly name for a patient
@@ -15,38 +19,41 @@ export function getPatientDisplayName(patient: Patient): string {
 /**
  * Format patient demographics for display in DetailGrid
  */
-export function formatPatientDemographics(patient: Patient) {
-  const items = [
-    {
-      label: 'Gender',
-      value: patient.gender ?? 'Not specified',
-    },
-    {
-      label: 'Birth Date',
-      value: formatTimelessDate(patient.birthDate, 'Not specified'),
-    },
-    {
-      label: 'Status',
-      value: patient.active !== false ? 'Active' : 'Inactive',
-    },
-  ]
+export const formatPatientDemographics = (patient: Patient) =>
+  Effect.gen(function* () {
+    const items = [
+      {
+        label: 'Gender',
+        value: patient.gender ?? 'Not specified',
+      },
+      {
+        label: 'Birth Date',
+        value: yield* humanizeTimelessDate(patient.birthDate, 'Not specified'),
+      },
+      {
+        label: 'Status',
+        value: patient.active !== false ? 'Active' : 'Inactive',
+      },
+    ]
 
-  if (patient.deceasedBoolean) {
-    items.push({
-      label: 'Deceased',
-      value: 'Yes',
-    })
-  }
+    if (patient.deceasedBoolean) {
+      items.push({
+        label: 'Deceased',
+        value: 'Yes',
+      })
+    }
 
-  if (patient.deceasedDateTime) {
-    items.push({
-      label: 'Deceased Date',
-      value: formatUtcDateTime(patient.deceasedDateTime),
-    })
-  }
+    if (patient.deceasedDateTime) {
+      items.push({
+        label: 'Deceased Date',
+        value: Effect.runSync(
+          humanizeDateTimeForLocalReader(patient.deceasedDateTime)
+        ),
+      })
+    }
 
-  return items
-}
+    return items
+  })
 
 /**
  * Get the current practitioner ID from patient's general practitioner reference

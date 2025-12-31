@@ -3,7 +3,7 @@ import {
   formatGender,
   formatHumanName,
 } from '../../../common/utils/fhirDisplay'
-import { formatTimelessDate } from '../../../common/utils/dateUtils'
+import { humanizeTimelessDate } from '../../../common/utils/dateUtils'
 import { createResourcePicker } from '../../../common/utils/createResourcePicker'
 
 export const PatientPicker = createResourcePicker({
@@ -11,7 +11,7 @@ export const PatientPicker = createResourcePicker({
   formatDisplay: (patient) =>
     formatHumanName(patient.name?.[0], 'Unnamed Patient'),
   formatSecondary: (patient) =>
-    `${formatGender(patient.gender)} • Born: ${formatTimelessDate(patient.birthDate)}`,
+    `${formatGender(patient.gender)} • Born: ${humanizeTimelessDate(patient.birthDate)}`,
   defaultPlaceholder: 'Select a patient...',
   defaultLabel: 'Patient',
 })
