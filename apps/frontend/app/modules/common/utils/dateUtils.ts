@@ -175,7 +175,8 @@ export const humanizeDateTimeWithTime = (
 
     const needsYear = yield* needsDisambiguatingYear(dateTime)
 
-    const timeZone = yield* DateTime.CurrentTimeZone
+    const currentTz = yield* DateTime.CurrentTimeZone
+    const timeZone = currentTz._tag == 'Named' ? currentTz.id : undefined
     const baseFormat: Intl.DateTimeFormatOptions = {
       hour: 'numeric',
       minute: '2-digit',
@@ -183,7 +184,7 @@ export const humanizeDateTimeWithTime = (
       day: 'numeric',
       month: 'short',
       year: needsYear ? 'numeric' : undefined,
-      timeZone: timeZone._tag == 'Named' ? timeZone.id : undefined,
+      timeZone,
     }
 
     if (DateTime.isUtc(dateTime)) {
@@ -247,20 +248,22 @@ export const humanizeDateRange = (
       return `${startFormatted} - ${endFallback}`
     }
 
-    const startDate = DateTime.toDateUtc(start)
-    const endDate = DateTime.toDateUtc(end)
+    const currentTz = yield* DateTime.CurrentTimeZone
+    const timeZone = currentTz._tag == 'Named' ? currentTz.id : undefined
 
     // Same day: "December 31st 9 AM - 10 AM"
     if (isSameDay(start, end)) {
-      const month = startDate.toLocaleString('en-US', { month: 'long' })
-      const day = startDate.getDate()
-      const startTime = startDate.toLocaleString('en-US', {
+      const month = DateTime.formatLocal(start, { month: 'long' })
+      const day = DateTime.getPart(start, 'day')
+      const startTime = DateTime.formatLocal(start, {
         hour: 'numeric',
         hour12: true,
+        timeZone,
       })
-      const endTime = endDate.toLocaleString('en-US', {
+      const endTime = DateTime.formatLocal(end, {
         hour: 'numeric',
         hour12: true,
+        timeZone,
       })
       return `${month} ${day}${getDaySuffix(day)} ${startTime} - ${endTime}`
     }
@@ -270,15 +273,15 @@ export const humanizeDateRange = (
       start.partsUtc?.month === end.partsUtc?.month &&
       start.partsUtc?.year === end.partsUtc?.year
     ) {
-      const month = startDate.toLocaleString('en-US', { month: 'short' })
-      const startDay = startDate.getDate()
-      const endDay = endDate.getDate()
+      const month = DateTime.formatLocal(start, { month: 'short' })
+      const startDay = DateTime.getPart(start, 'day')
+      const endDay = DateTime.getPart(end, 'day')
       const withinThreeMonths = yield* needsDisambiguatingYear(start)
 
       if (withinThreeMonths) {
         return `${month} ${startDay} - ${endDay}${getDaySuffix(endDay)}`
       }
-      const year = startDate.getFullYear()
+      const year = DateTime.getPart(start, 'year')
       return `${month} ${startDay} - ${endDay}${getDaySuffix(endDay)}, ${year}`
     }
 
@@ -309,8 +312,11 @@ export const humanizeDateTimeRangeForLocalReader = (
     if (!period) return neitherFallback
 
     const { start, end } = period
-
     if (!start && !end) return neitherFallback
+
+    const currentTz = yield* DateTime.CurrentTimeZone
+    const timeZone = currentTz._tag == 'Named' ? currentTz.id : undefined
+
     if (!start) {
       const endFormatted = yield* humanizeDateTimeWithTime(end, endFallback)
       return `${startFallback} - ${endFormatted}`
@@ -323,22 +329,21 @@ export const humanizeDateTimeRangeForLocalReader = (
       return `${startFormatted} - ${endFallback}`
     }
 
-    const startDate = DateTime.toDateUtc(start)
-    const endDate = DateTime.toDateUtc(end)
-
     // Same day: "December 31st 9:00 AM - 10:30 AM"
     if (isSameDay(start, end)) {
-      const month = startDate.toLocaleString('en-US', { month: 'short' })
-      const day = startDate.getDate()
-      const startTime = startDate.toLocaleString('en-US', {
+      const month = DateTime.formatLocal(start, { month: 'short' })
+      const day = DateTime.getPart(start, 'day')
+      const startTime = DateTime.formatLocal(start, {
         hour: 'numeric',
         minute: '2-digit',
         hour12: true,
+        timeZone,
       })
-      const endTime = endDate.toLocaleString('en-US', {
+      const endTime = DateTime.formatLocal(end, {
         hour: 'numeric',
         minute: '2-digit',
         hour12: true,
+        timeZone,
       })
       return `${month} ${day}${getDaySuffix(day)} ${startTime} - ${endTime}`
     }
