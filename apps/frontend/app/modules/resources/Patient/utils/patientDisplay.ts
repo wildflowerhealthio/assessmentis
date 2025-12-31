@@ -46,9 +46,7 @@ export const formatPatientDemographics = (patient: Patient) =>
     if (patient.deceasedDateTime) {
       items.push({
         label: 'Deceased Date',
-        value: Effect.runSync(
-          humanizeDateTimeForLocalReader(patient.deceasedDateTime)
-        ),
+        value: yield* humanizeDateTimeForLocalReader(patient.deceasedDateTime),
       })
     }
 

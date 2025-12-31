@@ -219,7 +219,7 @@ export const humanizeDateTimeWithTime = (
 export const humanizeDateRange = (
   period: Period | undefined,
   options: DateRangeFormatOptions = {}
-): Effect.Effect<string> =>
+): Effect.Effect<string, never, DateTime.CurrentTimeZone> =>
   Effect.gen(function* () {
     const {
       startFallback = 'Unknown',

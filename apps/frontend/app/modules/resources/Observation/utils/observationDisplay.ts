@@ -40,82 +40,90 @@ export function getObservationCategory(observation: Observation): string {
 /**
  * Format observation value as a string for display
  */
-export function formatObservationValue(
+export const formatObservationValue = (
   observation: Observation | NonNullable<Observation['component']>[number]
-): string {
-  if ('valueQuantity' in observation && observation.valueQuantity) {
-    const val = observation.valueQuantity.value ?? ''
-    const unit = observation.valueQuantity.unit ?? ''
-    return `${val} ${unit}`.trim()
-  }
+) =>
+  Effect.gen(function* () {
+    if ('valueQuantity' in observation && observation.valueQuantity) {
+      const val = observation.valueQuantity.value ?? ''
+      const unit = observation.valueQuantity.unit ?? ''
+      return `${val} ${unit}`.trim()
+    }
 
-  if ('valueString' in observation && observation.valueString) {
-    return observation.valueString
-  }
+    if ('valueString' in observation && observation.valueString) {
+      return observation.valueString
+    }
 
-  if ('valueInteger' in observation && observation.valueInteger !== undefined) {
-    return observation.valueInteger.toString()
-  }
+    if (
+      'valueInteger' in observation &&
+      observation.valueInteger !== undefined
+    ) {
+      return observation.valueInteger.toString()
+    }
 
-  if ('valueDecimal' in observation && observation.valueDecimal !== undefined) {
-    return observation.valueDecimal.toString()
-  }
+    if (
+      'valueDecimal' in observation &&
+      observation.valueDecimal !== undefined
+    ) {
+      return observation.valueDecimal.toString()
+    }
 
-  if (
-    'valueCodeableConcept' in observation &&
-    observation.valueCodeableConcept
-  ) {
-    return (
-      observation.valueCodeableConcept.text ??
-      observation.valueCodeableConcept.coding?.[0]?.display ??
-      'Coded value'
-    )
-  }
+    if (
+      'valueCodeableConcept' in observation &&
+      observation.valueCodeableConcept
+    ) {
+      return (
+        observation.valueCodeableConcept.text ??
+        observation.valueCodeableConcept.coding?.[0]?.display ??
+        'Coded value'
+      )
+    }
 
-  if ('valueBoolean' in observation && observation.valueBoolean !== undefined) {
-    return observation.valueBoolean ? 'Yes' : 'No'
-  }
+    if (
+      'valueBoolean' in observation &&
+      observation.valueBoolean !== undefined
+    ) {
+      return observation.valueBoolean ? 'Yes' : 'No'
+    }
 
-  if ('valueDateTime' in observation && observation.valueDateTime) {
-    return Effect.runSync(
-      humanizeDateTimeForLocalReader(observation.valueDateTime)
-    )
-  }
+    if ('valueDateTime' in observation && observation.valueDateTime) {
+      return yield* humanizeDateTimeForLocalReader(observation.valueDateTime)
+    }
 
-  if ('valueDate' in observation && observation.valueDate) {
-    return observation.valueDate
-  }
+    if ('valueDate' in observation && observation.valueDate) {
+      return observation.valueDate
+    }
 
-  if ('valueTime' in observation && observation.valueTime) {
-    return observation.valueTime
-  }
+    if ('valueTime' in observation && observation.valueTime) {
+      return observation.valueTime
+    }
 
-  if ('valueCoding' in observation && observation.valueCoding) {
-    return (
-      observation.valueCoding.display ??
-      observation.valueCoding.code ??
-      'Coded value'
-    )
-  }
+    if ('valueCoding' in observation && observation.valueCoding) {
+      return (
+        observation.valueCoding.display ??
+        observation.valueCoding.code ??
+        'Coded value'
+      )
+    }
 
-  if ('valueCode' in observation && observation.valueCode) {
-    return observation.valueCode
-  }
+    if ('valueCode' in observation && observation.valueCode) {
+      return observation.valueCode
+    }
 
-  if ('valueReference' in observation && observation.valueReference) {
-    return (
-      observation.valueReference.display ??
-      observation.valueReference.reference ??
-      'Reference'
-    )
-  }
+    if ('valueReference' in observation && observation.valueReference) {
+      return (
+        observation.valueReference.display ??
+        observation.valueReference.reference ??
+        'Reference'
+      )
+    }
 
-  if ('dataAbsentReason' in observation && observation.dataAbsentReason) {
-    return `Data absent: ${observation.dataAbsentReason.text ?? 'Unknown reason'}`
-  }
+    if ('dataAbsentReason' in observation && observation.dataAbsentReason) {
+      return `Data absent: ${observation.dataAbsentReason.text ?? 'Unknown reason'}`
+    }
 
-  return 'See details'
-}
+    return 'See details'
+  })
 
 /**
  * Get effective date display for observation
@@ -139,9 +147,7 @@ export const getObservationEffectiveDate = (observation: Observation) =>
     }
 
     if (observation.effectiveInstant) {
-      return Effect.runSync(
-        humanizeDateTimeForLocalReader(observation.effectiveInstant)
-      )
+      return yield* humanizeDateTimeForLocalReader(observation.effectiveInstant)
     }
 
     return 'Unknown date'
