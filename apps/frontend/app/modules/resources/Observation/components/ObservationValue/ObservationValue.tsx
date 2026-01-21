@@ -1,7 +1,7 @@
 import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { formatObservationValue } from '../../utils/observationDisplay'
 import classes from './ObservationValue.module.css'
-import { runEffectSync } from '../../../../../clientRuntime'
+import { runEffectSync } from '../../../../../runEffectSync'
 
 interface ObservationValueProps {
   observation: Observation | NonNullable<Observation['component']>[number]

@@ -1,7 +1,7 @@
 import type { Practitioner } from '@assessmentis/clinical-domain/administration'
 import { humanizeDateRange } from '../../../../common/utils/dateUtils'
 import classes from './PractitionerQualifications.module.css'
-import { runEffectSync } from '../../../../../clientRuntime'
+import { runEffectSync } from '../../../../../runEffectSync'
 
 interface PractitionerQualificationsProps {
   practitioner: Practitioner

@@ -7,10 +7,8 @@ export interface PickerItem<T> {
   metadata?: undefined | T
 }
 
-export interface BasePickerProps<T> {
-  items: ReadonlyArray<PickerItem<T>>
+export interface CommonPickerProps<T> {
   picking: PickerSelectionProps
-  loading?: boolean
 
   // Display
   placeholder?: string
@@ -28,5 +26,14 @@ export interface BasePickerProps<T> {
 
   // Styling
   className?: string
+}
+
+export interface BasePickerProps<T> extends CommonPickerProps<T> {
+  items: ReadonlyArray<PickerItem<T>>
+  loading?: boolean
   error?: string
+}
+
+export interface PromisedPickerProps<T> extends CommonPickerProps<T> {
+  itemsPromise: Promise<ReadonlyArray<PickerItem<T>>>
 }

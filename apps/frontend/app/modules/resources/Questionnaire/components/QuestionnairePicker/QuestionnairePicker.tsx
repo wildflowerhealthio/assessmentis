@@ -1,15 +1,12 @@
-import { QuestionnaireRepository } from '@assessmentis/clinical-domain/content-management'
+import { Questionnaire } from '@assessmentis/clinical-domain/content-management'
 import { createResourcePicker } from '../../../../common/utils/createResourcePicker'
 import { humanizeDateTimeForLocalReader } from '../../../../common/utils/dateUtils'
-import { DateTime } from 'effect'
 
-function formatQuestionnaireTitle(questionnaire: { title?: string }): string {
+function formatQuestionnaireTitle(questionnaire: Questionnaire): string {
   return questionnaire.title || 'Untitled Questionnaire'
 }
 
-function formatQuestionnaireSecondary(questionnaire: {
-  meta?: { lastUpdated?: DateTime.Utc }
-}): string {
+function formatQuestionnaireSecondary(questionnaire: Questionnaire): string {
   const lastUpdatedValue = questionnaire.meta?.lastUpdated
   const lastUpdated =
     typeof lastUpdatedValue === 'object' && lastUpdatedValue !== null
@@ -22,7 +19,7 @@ function formatQuestionnaireSecondary(questionnaire: {
 }
 
 export const QuestionnairePicker = createResourcePicker({
-  repository: QuestionnaireRepository,
+  resourceType: 'Questionnaire',
   formatDisplay: formatQuestionnaireTitle,
   formatSecondary: formatQuestionnaireSecondary,
   defaultPlaceholder: 'Select questionnaire(s)...',

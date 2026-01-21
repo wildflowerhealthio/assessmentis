@@ -89,18 +89,21 @@ This codebase uses Effect's DateTime types to maintain timezone semantics and av
 ### DateTime Types and Their Meanings
 
 **DateTime.Utc** - Global/Server Time
+
 - Use for: Server timestamps, last-updated times, system events
 - Represents: A moment in time that's the same for everyone globally
 - Examples: `meta.lastUpdated`, `observation.issued`, encounter periods
 - Display: Converts to user's local timezone for display
 
 **DateTime.Zoned** - User-Local Time
+
 - Use for: Appointment times, scheduled events meaningful in user's space
 - Represents: A time that matters in a specific timezone
 - Examples: Future appointments, scheduled procedures
 - Display: Shows in the user's intended timezone
 
 **Date (string)** - Timezone-Independent Dates
+
 - Use for: Birthdays, anniversaries, dates without specific times
 - Represents: A calendar date independent of timezone
 - Format: `YYYY-MM-DD` string (e.g., `"1990-01-15"`)
@@ -112,8 +115,13 @@ This codebase uses Effect's DateTime types to maintain timezone semantics and av
 Location: `app/modules/common/utils/dateUtils.ts`
 
 **For UTC timestamps:**
+
 ```typescript
-import { formatUtcDate, formatUtcDateTime, formatUtcDateRange } from '../utils/dateUtils'
+import {
+  formatUtcDate,
+  formatUtcDateTime,
+  formatUtcDateRange,
+} from '../utils/dateUtils'
 
 // Format a UTC date with smart year handling
 formatUtcDate(observation.issued) // "January 15th" or "January 15th, 2024"
@@ -129,6 +137,7 @@ formatUtcDateRange(encounter.period.start, encounter.period.end)
 ```
 
 **For timezone-independent dates:**
+
 ```typescript
 import { formatTimelessDate } from '../utils/dateUtils'
 
@@ -137,11 +146,12 @@ formatTimelessDate(patient.birthDate) // "March 20th" or "March 20th, 1990"
 ```
 
 **Range formatting with options:**
+
 ```typescript
 formatUtcDateRange(start, end, {
   startFallback: 'Unknown',
   endFallback: 'Present',
-  neitherFallback: 'Unknown Range'
+  neitherFallback: 'Unknown Range',
 })
 ```
 
@@ -159,7 +169,7 @@ The date utilities automatically apply user-friendly formatting:
 
 The following functions exist for backward compatibility but are deprecated:
 
-```typescript
+````typescript
 // ❌ Deprecated - loses timezone information
 formatDate(someDate)
 formatDateTime(someTimestamp)
@@ -214,7 +224,7 @@ export default function ResourcePage(_: Route.ComponentProps) {
     </>
   )
 }
-```
+````
 
 **List pages with filtering** (server-side):
 
@@ -756,11 +766,7 @@ import {
   ResourceId,
   ResourceRepository,
 } from '@assessmentis/clinical-domain/...'
-import {
-  UnhandledError,
-  NeedsAuthenticationError,
-  NotFoundError,
-} from '@assessmentis/ontology'
+import { UnhandledError, NotFoundError } from '@assessmentis/ontology'
 import { WithId } from '@assessmentis/clinical-domain/data-types'
 import { ResourceFormData } from '../schemas/ResourceFormSchema'
 
@@ -1093,12 +1099,14 @@ export function PatientListItem({ item, onDelete, loading }) {
 ```
 
 **Benefits**:
+
 - Ensures visual consistency across all resource list items
 - Single source of truth for common styles
 - Easier to update styles globally
 - Reduces CSS duplication
 
 **When to create shared CSS modules**:
+
 - Multiple components (3+) use identical styles
 - Styles define a common UI pattern (list items, cards, badges, etc.)
 - Updates to the pattern should affect all instances consistently

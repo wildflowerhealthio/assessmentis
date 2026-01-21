@@ -1,9 +1,5 @@
-import { Effect, Option, Schema } from 'effect'
+import { Effect, Option, pipe, Schema } from 'effect'
 import { useNavigate } from 'react-router'
-import {
-  useLoadedRuntimeContext,
-  useResourceRunEffect,
-} from 'app/clientRuntime'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { CompositionForm } from 'app/modules/resources/Composition/components/CompositionForm'
 import { updateComposition } from 'app/modules/resources/Composition/actions/updateComposition'
@@ -12,92 +8,95 @@ import {
   CompositionFormSchema,
 } from 'app/modules/resources/Composition/schemas/CompositionFormSchema'
 import {
+  Composition,
   CompositionId,
-  CompositionRepository,
 } from '@assessmentis/clinical-domain/content-management'
 import { NotFoundError } from '@assessmentis/ontology'
 import type { Route } from './+types/_resource.Composition.$compositionId.edit'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { getCompositionDisplayName } from '../modules/resources/Composition/utils/compositionDisplay'
 import { extractReferenceId } from 'app/modules/common/utils/fhirDisplay'
-import { useMemo } from 'react'
-import Skeleton from 'react-loading-skeleton'
+import { useCallback, useMemo } from 'react'
+import { usePlatformContext } from '../layers/PlatformContext'
+import { useEffectTs } from '../../../../global/react-util/src/hooks/effectHooks'
+import { ClinicalDataRepositoryService } from '../layers/ClinicalDataRepositoriesService'
 
 const tryDecodeCompositionId = Schema.decodeOption(CompositionId)
 
 export default function EditCompositionPage({ params }: Route.ComponentProps) {
-  const compositionLoader = useResourceRunEffect(
-    useMemo(() => {
-      const compositionIdMaybe = tryDecodeCompositionId(params.compositionId)
+  const { clinicalDataRepositoryService } = usePlatformContext()
 
-      return Effect.gen(function* () {
-        const repository = yield* CompositionRepository
+  const repositoryEffect = useMemo(() => {
+    return clinicalDataRepositoryService.repositoryEffect<Composition>(
+      'Composition'
+    )
+  }, [clinicalDataRepositoryService])
 
-        const compositionId = yield* compositionIdMaybe.pipe(
-          Option.map(Effect.succeed),
-          Option.getOrElse(() =>
-            Effect.fail(
-              new NotFoundError({
-                resourceType: 'Composition',
-                params: { id: params.compositionId },
-              })
-            )
-          )
+  const compositionEffect = useMemo(() => {
+    return pipe(
+      tryDecodeCompositionId(params.compositionId),
+      Option.match<Effect.Effect<CompositionId, NotFoundError>, CompositionId>({
+        onSome: Effect.succeed,
+        onNone: () =>
+          Effect.fail(
+            new NotFoundError({
+              resourceType: 'Composition',
+              params: { id: params.compositionId },
+            })
+          ),
+      }),
+      Effect.flatMap((compositionId) =>
+        Effect.flatMap(repositoryEffect, (repository) =>
+          repository.get(compositionId)
         )
+      )
+    )
+  }, [repositoryEffect, params.compositionId])
 
-        return yield* repository.get(compositionId)
-      })
-    }, [params.compositionId])
+  const compositionPromise = useEffectTs(compositionEffect)
+
+  const breadcrumbPromise = useMemo(
+    () => [
+      { label: 'Compositions', href: '/Composition' },
+      compositionPromise.then((c) => ({
+        label: getCompositionDisplayName(c),
+        href: `/Composition/${c.id}`,
+      })),
+      { label: 'Edit' },
+    ],
+    [compositionPromise]
   )
 
-  useBreadcrumbs([
-    { label: 'Compositions', href: '/Composition' },
-    {
-      loading: compositionLoader._tag === 'loading',
-      label:
-        compositionLoader._tag === 'loaded'
-          ? getCompositionDisplayName(compositionLoader.value)
-          : 'Unknown Composition',
-      href: `/Composition/${params.compositionId}`,
-    },
-    { label: 'Edit' },
-  ])
+  useBreadcrumbs(breadcrumbPromise)
   const navigate = useNavigate()
-  const clientRuntime = useLoadedRuntimeContext()
 
-  if (compositionLoader._tag == 'loading') {
-    return (
-      <FormPage title="Edit Composition">
-        <Skeleton count={5} height={40} style={{ marginBottom: '1rem' }} />
-      </FormPage>
-    )
-  }
-  if (compositionLoader._tag === 'error') {
-    throw compositionLoader.error
-  }
-
-  const composition = compositionLoader.value
   // Transform composition to form initial values
-  const initialValues: typeof CompositionFormSchema.Encoded = {
-    title: composition.title ?? '',
-    patientId: extractReferenceId(composition.subject),
-  }
+  const initialValues: Promise<typeof CompositionFormSchema.Encoded> =
+    useMemo(() => {
+      return compositionPromise.then((composition) => ({
+        title: composition.title ?? '',
+        patientId: extractReferenceId(composition.subject),
+      }))
+    }, [compositionPromise])
 
-  const handleSubmit = async (formData: CompositionFormData) => {
-    if (!composition.id) return
+  const handleSubmit = useCallback(
+    async (formData: CompositionFormData) => {
+      const composition = await compositionPromise
 
-    if (clientRuntime._tag != 'loaded') {
-      console.error('Runtime not loaded', clientRuntime)
-      return
-    }
+      await Effect.runPromise(
+        updateComposition(composition.id, composition, formData).pipe(
+          Effect.provideService(
+            ClinicalDataRepositoryService,
+            clinicalDataRepositoryService
+          )
+        )
+      )
 
-    await clientRuntime.value.runPromise(
-      updateComposition(composition.id, composition, formData)
-    )
-
-    // Redirect back to detail page
-    navigate(`/Composition/${composition.id}`)
-  }
+      // Redirect back to detail page
+      navigate(`/Composition/${composition.id}`)
+    },
+    [compositionPromise, navigate, clinicalDataRepositoryService]
+  )
 
   return (
     <FormPage title="Edit Composition">

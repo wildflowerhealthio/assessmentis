@@ -6,12 +6,12 @@ import {
 } from '@assessmentis/clinical-domain/administration'
 import {
   ExternalAssertionError,
-  NeedsAuthenticationError,
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
 import { WithId } from '@assessmentis/clinical-domain/data-types'
 import { EncounterFormData } from '../schemas/EncounterFormSchema'
+import { AuthError, AuthzError } from '@assessmentis/platform-domain'
 
 export const updateEncounter = (
   id: EncounterId,
@@ -20,7 +20,8 @@ export const updateEncounter = (
 ): Effect.Effect<
   Encounter,
   | UnhandledError
-  | NeedsAuthenticationError
+  | AuthError
+  | AuthzError
   | ExternalAssertionError
   | NotFoundError,
   EncounterRepository

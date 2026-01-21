@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, Suspense } from 'react'
 import {
   Combobox,
   ComboboxButton,
@@ -6,11 +6,13 @@ import {
   ComboboxOption,
   ComboboxOptions,
 } from '@headlessui/react'
-import { cn } from '@assessmentis/react-util'
-import { BasePickerProps } from './types/PickerTypes'
+import { cn, useLoadingPromise } from '@assessmentis/react-util'
+import { BasePickerProps, PromisedPickerProps } from './types/PickerTypes'
 import { usePickerFilter } from './hooks/usePickerFilter'
 import { usePickerSelection } from './hooks/usePickerSelection'
 import classes from './BasePicker.module.css'
+import { ErrorBoundary } from 'react-error-boundary'
+import { Await } from 'react-router'
 
 function ChevronIcon({ className }: { className?: string }) {
   return (
@@ -50,6 +52,25 @@ function CheckIcon({ className }: { className?: string }) {
   )
 }
 
+export function PromisedDataPicker<T>({
+  itemsPromise,
+  ...commonProps
+}: PromisedPickerProps<T>) {
+  return (
+    <ErrorBoundary
+      fallbackRender={({ error }) => (
+        <BasePicker {...commonProps} items={[]} error={String(error)} />
+      )}
+    >
+      <Suspense fallback={<BasePicker {...commonProps} items={[]} loading />}>
+        <Await resolve={itemsPromise}>
+          {(items) => <BasePicker {...commonProps} items={items} />}
+        </Await>
+      </Suspense>
+    </ErrorBoundary>
+  )
+}
+
 export function BasePicker<T>(props: BasePickerProps<T>) {
   const {
     items,
@@ -71,23 +92,28 @@ export function BasePicker<T>(props: BasePickerProps<T>) {
   const { selectedItems, handleSelect, handleSelectMany, isSelected } =
     usePickerSelection<T>(items, picking)
 
+  const {
+    value: loadedValue,
+    loading: loadingValue,
+    error: loadingError,
+  } = useLoadingPromise<Awaited<typeof picking.value>>(picking.value)
   // Create placeholder items while loading if we have a value but no matching items
   const displayItems = useMemo(() => {
     if (selectedItems.length > 0) {
       return selectedItems
     }
-    const { value } = picking
     // If we have a value but no selectedItems (items still loading), show placeholder
-    if (value && loading) {
-      const ids = Array.isArray(value) ? value : [value]
+    if (loadedValue && loading) {
+      const ids = Array.isArray(loadedValue) ? loadedValue : [loadedValue]
       return ids.map((id) => ({
         id,
         displayName: 'Loading...',
         metadata: undefined,
       }))
     }
+
     return selectedItems
-  }, [selectedItems, picking, loading])
+  }, [selectedItems, loadedValue, loading])
 
   return (
     <div className={cn(classes.Picker, className)}>
@@ -105,7 +131,7 @@ export function BasePicker<T>(props: BasePickerProps<T>) {
           }
         }}
         multiple={props.picking.multiple}
-        disabled={disabled || loading}
+        disabled={disabled || loading || loadingValue || !!loadingError}
         immediate={immediate}
       >
         <div className={classes.Picker__container}>

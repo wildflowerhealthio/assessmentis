@@ -8,7 +8,7 @@ import {
   formatObservationValue,
 } from '../../utils/observationDisplay'
 import baseListItemClasses from 'app/modules/common/components/BaseListItem/BaseListItem.module.css'
-import { runEffectSync } from '../../../../../clientRuntime'
+import { runEffectSync } from '../../../../../runEffectSync'
 import { Effect } from 'effect'
 
 interface ObservationListItemProps {

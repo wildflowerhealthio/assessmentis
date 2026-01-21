@@ -4,7 +4,7 @@ This directory contains concrete implementations of domain interfaces. See [../C
 
 ## Infrastructure Packages
 
-- **google-fhir-infrastructure/** - Google Cloud Healthcare API client (FHIR store)
+- **google-fhir-web-infrastructure/** - Google Cloud Healthcare API client (FHIR store)
 - **daily-co-infrastructure/** - Daily.co video integration
 - **firebase-web-infrastructure/** - Firebase Auth and Firestore client
 - **document-template-instances/** - React document templates
@@ -13,6 +13,7 @@ This directory contains concrete implementations of domain interfaces. See [../C
 ## Infrastructure Guidelines
 
 ### What Infrastructure Should Do
+
 ✅ Implement repository interfaces from domain packages
 ✅ Use Effect Layers for dependency injection
 ✅ Handle external API calls (Google Cloud, Daily.co, Firebase)
@@ -20,6 +21,7 @@ This directory contains concrete implementations of domain interfaces. See [../C
 ✅ Manage API credentials and configuration
 
 ### What Infrastructure Should NOT Do
+
 ❌ Add business logic (belongs in domain)
 ❌ Add UI components (belongs in apps)
 ❌ Duplicate domain logic
@@ -30,7 +32,7 @@ This directory contains concrete implementations of domain interfaces. See [../C
 Infrastructure packages provide Layer implementations of domain interfaces:
 
 ```typescript
-// infrastructure/google-fhir-infrastructure/src/PatientRepositoryLive.ts
+// infrastructure/google-fhir-web-infrastructure/src/PatientRepositoryLive.ts
 import { Layer, Effect } from 'effect'
 import { PatientRepository } from '@assessmentis/clinical-domain'
 
@@ -58,7 +60,7 @@ export const PatientRepositoryLive = Layer.effect(
 
           // Decode and validate with Effect Schema
           return yield* Schema.decodeUnknown(Patient)(response.data)
-        })
+        }),
     })
   })
 )
@@ -71,13 +73,13 @@ Compose layers to provide all dependencies:
 ```typescript
 // apps/functions/src/index.ts
 import { Layer } from 'effect'
-import { PatientRepositoryLive } from '@assessmentis/google-fhir-infrastructure'
+import { PatientRepositoryLive } from '@assessmentis/google-fhir-web-infrastructure'
 import { ConfigServiceLive } from '@assessmentis/firebase-web-infrastructure'
 
 // Compose all infrastructure layers
 const InfrastructureLayer = Layer.mergeAll(
   ConfigServiceLive,
-  PatientRepositoryLive,
+  PatientRepositoryLive
   // ... other layers
 )
 
@@ -97,20 +99,31 @@ import { Effect, Match } from 'effect'
 
 const mapApiError = (error: ApiError) =>
   Match.value(error.status).pipe(
-    Match.when(404, () => new ResourceNotFoundError({ /* ... */ })),
-    Match.when(403, () => new UnauthorizedError({ /* ... */ })),
+    Match.when(
+      404,
+      () =>
+        new ResourceNotFoundError({
+          /* ... */
+        })
+    ),
+    Match.when(
+      403,
+      () =>
+        new UnauthorizedError({
+          /* ... */
+        })
+    ),
     Match.orElse(() => new UnhandledError({ cause: error }))
   )
 
 // In repository implementation
-yield* apiCall.pipe(
-  Effect.mapError(mapApiError)
-)
+yield * apiCall.pipe(Effect.mapError(mapApiError))
 ```
 
 ## External API Client Patterns
 
 ### Google Cloud Healthcare API
+
 ```typescript
 import { google } from 'googleapis'
 
@@ -118,29 +131,31 @@ const healthcare = google.healthcare({ version: 'v1', auth })
 
 // FHIR operations
 await healthcare.projects.locations.datasets.fhirStores.fhir.read({
-  name: `projects/${projectId}/locations/${location}/datasets/${datasetId}/fhirStores/${fhirStoreId}/fhir/Patient/${patientId}`
+  name: `projects/${projectId}/locations/${location}/datasets/${datasetId}/fhirStores/${fhirStoreId}/fhir/Patient/${patientId}`,
 })
 ```
 
 ### Daily.co API
+
 ```typescript
 // Create Daily.co room
 const response = await fetch('https://api.daily.co/v1/rooms', {
   method: 'POST',
   headers: {
-    'Authorization': `Bearer ${apiKey}`,
-    'Content-Type': 'application/json'
+    Authorization: `Bearer ${apiKey}`,
+    'Content-Type': 'application/json',
   },
   body: JSON.stringify({
     properties: {
       enable_recording: 'cloud',
       // ... other properties
-    }
-  })
+    },
+  }),
 })
 ```
 
 ### Firebase (Auth, Firestore)
+
 ```typescript
 import { initializeApp } from 'firebase/app'
 import { getAuth, signInWithCustomToken } from 'firebase/auth'
@@ -154,7 +169,7 @@ const db = getFirestore(app)
 const getDocument = (collection: string, id: string) =>
   Effect.tryPromise({
     try: () => getDoc(doc(db, collection, id)),
-    catch: (error) => new UnhandledError({ cause: error })
+    catch: (error) => new UnhandledError({ cause: error }),
   })
 ```
 
@@ -170,6 +185,7 @@ const getDocument = (collection: string, id: string) =>
 8. Export layer from package `src/index.ts`
 
 Example structure:
+
 ```
 infrastructure/
   my-service-infrastructure/
@@ -194,7 +210,7 @@ infrastructure/
 export const PatientRepositoryMock = Layer.succeed(
   PatientRepository,
   PatientRepository.of({
-    get: (id) => Effect.succeed(mockPatient)
+    get: (id) => Effect.succeed(mockPatient),
   })
 )
 ```
@@ -210,7 +226,7 @@ const FhirStoreConfig = Config.all({
   projectId: Config.string('FHIR_PROJECT_ID'),
   location: Config.string('FHIR_LOCATION'),
   datasetId: Config.string('FHIR_DATASET_ID'),
-  storeId: Config.string('FHIR_STORE_ID')
+  storeId: Config.string('FHIR_STORE_ID'),
 })
 
 // Use in Layer

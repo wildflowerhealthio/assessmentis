@@ -1,6 +1,6 @@
-import { useMemo } from 'react'
+import { Suspense, useMemo } from 'react'
 import { Schema, Option, Effect, DateTime } from 'effect'
-import { LoadedResult, UnhandledError } from '@assessmentis/ontology'
+import { UnhandledError } from '@assessmentis/ontology'
 import {
   firstItemAnsweredAfter,
   Questionnaire,
@@ -12,25 +12,32 @@ import {
   QuestionnaireResponseRepository,
 } from '@assessmentis/clinical-domain/content-management'
 
-import { getRuntime, useRuntime as useEffectRuntime } from 'app/clientRuntime'
 import type { Route } from './+types/_resource.QuestionnaireResponse.$questionnaireResponseId'
 import QuestionnaireForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/QuestionnaireForm'
 import { updateEncounterRecordingsAndTranscripts } from '../modules/resources/Encounter/actions/updateEncounterRecordingsAndTranscripts'
 import { getEncounterRecordings } from '../modules/resources/Encounter/actions/getEncounterRecordings'
-import { EncounterId } from '@assessmentis/clinical-domain/administration'
+import {
+  EncounterId,
+  EncounterRepository,
+} from '@assessmentis/clinical-domain/administration'
 import {
   Media,
-  MediaId,
   MediaRepository,
   Observation,
   ObservationRepository,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { useNavigate } from 'react-router'
+import { Await, useNavigate } from 'react-router'
 import { useState } from 'react'
 import SplitPane from '../modules/common/components/SplitPane/SplitPane'
 import { gad7 } from '@assessmentis/questionnaire-entities'
 import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
+import { ExternalVideoCallClient } from '@assessmentis/video-call-domain'
+import { useEffectTs } from '@assessmentis/react-util'
+
+import { usePlatformContext } from '../layers/PlatformContext'
+import { ErrorBoundary } from 'react-error-boundary'
+import { ClinicalDataRepositoryService } from '../layers/ClinicalDataRepositoriesService'
 
 const tryDecodeQuestionnaireResponseId = Schema.decodeOption(
   QuestionnaireResponseId
@@ -43,11 +50,7 @@ export const QuestionnaireResponseWithQuestionnaire = Schema.Struct({
   observations: Schema.Array(Observation),
 })
 
-export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-  const runtime = await getRuntime()
-
-  const questionnaireResponseIdStr = params.questionnaireResponseId
-
+function questionnaireEffect(questionnaireResponseIdStr: string) {
   const questionnaireResponseIdMaybe = tryDecodeQuestionnaireResponseId(
     questionnaireResponseIdStr
   )
@@ -64,7 +67,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
       ),
       Option.getOrElse(() =>
         Effect.fail(
-          new UnhandledError({ cause: 'Questionnaire Response not found' })
+          new UnhandledError({ message: 'Questionnaire Response not found' })
         )
       )
     )
@@ -98,37 +101,80 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     }
   })
 
-  return await runtime.runPromise(questionnaireResponseEffect)
+  return questionnaireResponseEffect
 }
 
 export default function QuestionnaireResponseDetailsPage({
-  loaderData,
+  params,
 }: Route.ComponentProps) {
-  const runtime = useEffectRuntime()
+  const { clinicalDataRepositoryService } = usePlatformContext()
+
+  const pageEffect = useMemo(() => {
+    const { Media, Observation, Questionnaire, QuestionnaireResponse } =
+      clinicalDataRepositoryService
+    return questionnaireEffect(params.questionnaireResponseId).pipe(
+      Effect.provideServiceEffect(
+        QuestionnaireResponseRepository,
+        QuestionnaireResponse
+      ),
+      Effect.provideServiceEffect(QuestionnaireRepository, Questionnaire),
+      Effect.provideServiceEffect(MediaRepository, Media),
+      Effect.provideServiceEffect(ObservationRepository, Observation)
+    )
+  }, [clinicalDataRepositoryService, params.questionnaireResponseId])
+
+  const dataPromise = useEffectTs(pageEffect)
+
+  return (
+    <Suspense fallback={<h1> Loading! </h1>}>
+      <ErrorBoundary
+        fallbackRender={({ error }) => <h1>Error: {String(error)}</h1>}
+      >
+        <Await resolve={dataPromise}>
+          {(data) => <ResponsePage {...data} />}
+        </Await>
+      </ErrorBoundary>
+    </Suspense>
+  )
+}
+
+const ResponsePage = ({
+  questionnaire,
+  questionnaireResponse,
+  recordings,
+  observations,
+}: typeof QuestionnaireResponseWithQuestionnaire.Type) => {
   const navigate = useNavigate()
+  const { clinicalDataRepositoryService, externalVideoCallClientService } =
+    usePlatformContext()
+
   const [highlightLinks, setHighlightLinks] = useState<
     Set<QuestionnaireItemLink>
   >(new Set())
-  const { questionnaire, questionnaireResponse, recordings, observations } =
-    loaderData
 
   useBreadcrumbs([
     { label: 'Questionnaire Responses', href: '/QuestionnaireResponse' },
     { label: questionnaire.title || `Response ${questionnaireResponse.id}` },
   ])
 
-  const recordingResult = useMemo(
-    () => LoadedResult.loaded<typeof recordings, never>(recordings),
-    [recordings]
+  const repoEffect = useMemo(() => {
+    return Effect.gen(function* () {
+      const repoService = yield* ClinicalDataRepositoryService
+      const repository = yield* repoService.Media
+
+      return repository
+    }).pipe(
+      Effect.provideService(
+        ClinicalDataRepositoryService,
+        clinicalDataRepositoryService
+      )
+    )
+  }, [clinicalDataRepositoryService])
+
+  const { collection, deleteItem: deleteMedia } = useClinicalDataCollection(
+    repoEffect,
+    recordings
   )
-  const { collection: media, deleteItem: deleteMedia } =
-    useClinicalDataCollection<
-      MediaId,
-      Media,
-      MediaRepository,
-      typeof MediaRepository,
-      never
-    >(MediaRepository, recordingResult)
 
   const syncObservations = () => {
     console.log('Syncing observations...')
@@ -143,12 +189,16 @@ export default function QuestionnaireResponseDetailsPage({
         }))
     }
     console.log('Extracted observations:', observations)
-    return runtime
-      .runPromise(
-        ObservationRepository.pipe(
-          Effect.flatMap((o) => o.createMany(observations))
+
+    return Effect.runPromise(
+      ObservationRepository.pipe(
+        Effect.flatMap((o) => o.createMany(observations)),
+        Effect.provideServiceEffect(
+          ObservationRepository,
+          clinicalDataRepositoryService.Observation
         )
       )
+    )
       .then((data) => {
         console.log('Synced observations:', data)
       })
@@ -163,10 +213,24 @@ export default function QuestionnaireResponseDetailsPage({
     if (!encounterIdStr) return undefined
     const encounterId = EncounterId.make(encounterIdStr)
 
-    return () =>
-      runtime
-        .runPromise(updateEncounterRecordingsAndTranscripts(encounterId))
-        .then(() => navigate(0))
+    const updateEffect = updateEncounterRecordingsAndTranscripts(
+      encounterId
+    ).pipe(
+      Effect.provideServiceEffect(
+        MediaRepository,
+        clinicalDataRepositoryService.Media
+      ),
+      Effect.provideServiceEffect(
+        ExternalVideoCallClient,
+        externalVideoCallClientService.client
+      ),
+      Effect.provideServiceEffect(
+        EncounterRepository,
+        clinicalDataRepositoryService.Encounter
+      )
+    )
+
+    return () => Effect.runPromise(updateEffect).then(() => navigate(0))
   })()
 
   return (
@@ -206,44 +270,43 @@ export default function QuestionnaireResponseDetailsPage({
               Refresh
             </button>
           </h3>
-          {media._tag === 'loaded' &&
-            media.value.map(({ data }) => (
-              <>
-                <video
-                  style={{ width: '100%', aspectRatio: 'calc(16/9)' }}
-                  onTimeUpdate={(e) => {
-                    if (data.createdDateTime) {
-                      const videoTime = DateTime.add(data.createdDateTime, {
-                        seconds: e.currentTarget.currentTime,
-                      })
-                      const nextAnswer = firstItemAnsweredAfter(
-                        questionnaireResponse,
-                        videoTime
-                      )
+          {collection.map(({ data }) => (
+            <>
+              <video
+                style={{ width: '100%', aspectRatio: 'calc(16/9)' }}
+                onTimeUpdate={(e) => {
+                  if (data.createdDateTime) {
+                    const videoTime = DateTime.add(data.createdDateTime, {
+                      seconds: e.currentTarget.currentTime,
+                    })
+                    const nextAnswer = firstItemAnsweredAfter(
+                      questionnaireResponse,
+                      videoTime
+                    )
 
-                      setHighlightLinks(
-                        nextAnswer ? new Set([nextAnswer.linkId]) : new Set()
-                      )
-                    }
-                  }}
-                  controls
-                >
-                  <source src={data.content.url} type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-                <button
-                  className="element-button button-1 filled accent-red"
-                  style={{
-                    marginTop: 'var(--space-1)',
-                    marginBottom: 'var(--space-5)',
-                    width: '100%',
-                  }}
-                  onClick={() => deleteMedia(data.id)}
-                >
-                  Delete
-                </button>
-              </>
-            ))}
+                    setHighlightLinks(
+                      nextAnswer ? new Set([nextAnswer.linkId]) : new Set()
+                    )
+                  }
+                }}
+                controls
+              >
+                <source src={data.content.url} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+              <button
+                className="element-button button-1 filled accent-red"
+                style={{
+                  marginTop: 'var(--space-1)',
+                  marginBottom: 'var(--space-5)',
+                  width: '100%',
+                }}
+                onClick={() => deleteMedia(data.id)}
+              >
+                Delete
+              </button>
+            </>
+          ))}
 
           <h3
             className="heading-4"

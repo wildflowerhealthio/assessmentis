@@ -7,10 +7,10 @@ import {
   QuestionnaireResponseRepository,
 } from '@assessmentis/clinical-domain/content-management'
 import QuestionnaireItemForm from './components/QuestionnaireItemForm/QuestionnaireItemForm'
-import { useRuntime } from 'app/clientRuntime'
 import { Effect } from 'effect'
 import { hasId } from '@assessmentis/clinical-domain/data-types'
 import { useAutoSave } from 'app/modules/common/hooks/useAutoSave'
+import { usePlatformContext } from '../../../../../layers/PlatformContext'
 
 type IProps = {
   questionnaire: Questionnaire
@@ -23,7 +23,7 @@ const QuestionnaireForm = ({
   questionnaireResponse: loadedQuestionnaireResponse,
   highlightLinks,
 }: IProps) => {
-  const effectRuntime = useRuntime()
+  const { clinicalDataRepositoryService } = usePlatformContext()
   const [questionnaireResponse, setQuestionnaireResponse] =
     useState<QuestionnaireResponse>(loadedQuestionnaireResponse)
 
@@ -31,13 +31,18 @@ const QuestionnaireForm = ({
   useAutoSave({
     data: questionnaireResponse,
     onSave: async (data) => {
-      await effectRuntime.runPromise(
+      await Effect.runPromise(
         Effect.gen(function* () {
           const questionnaireResponseClient =
             yield* QuestionnaireResponseRepository
           if (!hasId(data)) return
           return yield* questionnaireResponseClient.update(data)
-        })
+        }).pipe(
+          Effect.provideServiceEffect(
+            QuestionnaireResponseRepository,
+            clinicalDataRepositoryService.QuestionnaireResponse
+          )
+        )
       )
     },
     delay: 5000,

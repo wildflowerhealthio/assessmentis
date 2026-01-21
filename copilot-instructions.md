@@ -27,7 +27,7 @@ assessmentis/
 └── packages/
     ├── domain/                      # Core business logic and types
     ├── react-util/                  # Shared React components and hooks
-    ├── google-fhir-infrastructure/  # FHIR/Google Healthcare integration
+    ├── google-fhir-web-infrastructure/  # FHIR/Google Healthcare integration
     ├── daily-co-infrastructure/     # Video call integration
     ├── google-meet-infrastructure/  # Future Google Meet integration
     ├── eslint-config/               # Shared ESLint configuration
@@ -343,7 +343,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { Effect, Schema } from 'effect'
 import { Questionnaire } from '@assessmentis/clinical-domain/questionnaires'
-import { FhirClient } from '@assessmentis/google-fhir-infrastructure'
+import { FhirClient } from '@assessmentis/google-fhir-web-infrastructure'
 import { cn } from '@assessmentis/react-util'
 import { useRuntimeContext } from 'app/clientRuntime'
 import NavHeader from './components/NavHeader'
@@ -642,7 +642,7 @@ The project uses Tundra CSS variables:
 
 - **@assessmentis/clinical-domain**: Types, schemas, repository interfaces, business logic
 - **@assessmentis/react-util**: Shared React hooks, components, utilities
-- **@assessmentis/google-fhir-infrastructure**: FHIR/Google Healthcare implementations
+- **@assessmentis/google-fhir-web-infrastructure**: FHIR/Google Healthcare implementations
 - **@assessmentis/daily-co-infrastructure**: Daily.co video call implementation
 - **@assessmentis/eslint-config**: Import in `eslint.config.js`
 - **@assessmentis/prettier-config**: Set in `package.json` "prettier" field

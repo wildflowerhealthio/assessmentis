@@ -1,40 +1,15 @@
-import { createPlatformService } from '@assessmentis/firebase-web-infrastructure'
-import { Effect } from 'effect'
-import {
-  FirebaseError,
-  initializeApp,
-  type FirebaseOptions,
-} from 'firebase/app'
+import { FirebaseError } from 'firebase/app'
 import {
   GoogleAuthProvider,
   getAuth,
   getRedirectResult,
   signInWithPopup,
   signInWithRedirect,
-  signOut,
 } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
 
-import { useEffect } from 'react'
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: 'AIzaSyC1OAnpn5Aj6EQqnDNCKI4b26CgHm_-aTc',
-  authDomain: 'assessmentis.firebaseapp.com',
-  projectId: 'assessmentis',
-  storageBucket: 'assessmentis.firebasestorage.app',
-  messagingSenderId: '363489601410',
-  appId: '1:363489601410:web:5a39eb160d09c84fae519b',
-} satisfies FirebaseOptions
-// Initialize Firebase
-
-export const app = initializeApp(firebaseConfig)
-app.automaticDataCollectionEnabled = false
-
-export const db = getFirestore(app, 'assessmentis')
-
-// Initialize Firebase Authentication and get a reference to the service
-export const auth = getAuth(app)
+import { auth } from './FirebaseWebLayer'
+import { FirebaseWeb } from '../../../infrastructure/firebase-web-infrastructure/src/tagClasses'
+import { Effect } from 'effect'
 
 export const googleAuthProvider = new GoogleAuthProvider()
 
@@ -44,6 +19,7 @@ const scopes = [
   // 'https://www.googleapis.com/auth/cloud-platform',
   'https://www.googleapis.com/auth/cloud-healthcare',
 ] as const
+
 for (const scope of scopes) {
   googleAuthProvider.addScope(scope)
 }
@@ -77,55 +53,38 @@ const handleAuthError = (error: FirebaseError) => {
   console.error({ errorCode, errorMessage, email, credential })
 }
 
-export const setOauth2FromDb = (authToken: string | undefined) => {
-  if (authToken === undefined) {
-    localStorage.removeItem('oauth2Token')
-    return
-  }
-  localStorage.setItem('oauth2Token', authToken)
-}
-
 export const getOauth2FromDb = () => {
   return localStorage.getItem('oauth2Token') ?? undefined
 }
 
-export const useAuthedGapi = () =>
-  useEffect(() => {
-    return auth.onIdTokenChanged(async (user) => {
-      if (user) {
-        const token = await getOauth2FromDb()
-        if (!token) {
-          signOut(auth)
+export const authTokenWatcher = Effect.gen(function* () {
+  const { auth } = yield* FirebaseWeb
+  return auth.onIdTokenChanged(async (user) => {
+    if (user) {
+      user
+        .getIdToken()
+        .then(function (idToken) {
+          fetch('/api/googleLogin', {
+            method: 'POST',
+            headers: {
+              'Content-type': 'application/json',
+              authorization: 'Bearer ' + idToken,
+            },
+            body: JSON.stringify({}),
+          })
+            .then((response) => response.json())
+            .then((result) => {
+              window.open(result.url, '_self')
+            })
+            .catch(function (error) {
+              console.log('failed to fetch ' + error)
+            })
+        })
+        .catch(function (error) {
+          console.log('couldnt get user token ' + error)
+        })
 
-          if (auth.currentUser) {
-            auth.currentUser
-              .getIdToken()
-              .then(function (idToken) {
-                fetch('/api/googleLogin', {
-                  method: 'POST',
-                  headers: {
-                    'Content-type': 'application/json',
-                    authorization: 'Bearer ' + idToken,
-                  },
-                  body: JSON.stringify({}),
-                })
-                  .then((response) => response.json())
-                  .then((result) => {
-                    window.open(result.url, '_self')
-                  })
-                  .catch(function (error) {
-                    console.log('failed to fetch ' + error)
-                  })
-              })
-              .catch(function (error) {
-                console.log('couldnt get user token ' + error)
-              })
-          }
-
-          return
-        }
-      }
-    })
-  }, [])
-
-export const platform = Effect.runSync(createPlatformService(app, auth, db))
+      return
+    }
+  })
+})

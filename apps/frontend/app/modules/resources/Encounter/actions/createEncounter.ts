@@ -8,12 +8,9 @@ import {
   EncounterRepository,
   Encounter,
 } from '@assessmentis/clinical-domain/administration'
-import {
-  NeedsAuthenticationError,
-  UnhandledError,
-  ExternalAssertionError,
-} from '@assessmentis/ontology'
+import { UnhandledError, ExternalAssertionError } from '@assessmentis/ontology'
 import { Code } from '@assessmentis/clinical-domain/data-types'
+import { AuthError, AuthzError } from '@assessmentis/platform-domain'
 
 export const CreateEncounterArg = Schema.extend(
   Schema.partial(Encounter),
@@ -39,7 +36,7 @@ export const createEncounter = (
   args: CreateEncounterArg
 ): Effect.Effect<
   CreateEncounterResponse,
-  UnhandledError | NeedsAuthenticationError | ExternalAssertionError,
+  UnhandledError | AuthError | AuthzError | ExternalAssertionError,
   | EncounterRepository
   | QuestionnaireResponseRepository
   | ExternalVideoCallClient
@@ -76,15 +73,6 @@ export const createEncounter = (
     } as const
 
     const createdEncounter = yield* encounterRepository.create(encounterData)
-
-    // const roomInsertsEffect = videoCallRepository.createVideoCallRooms([
-    //   {
-    //     encounterId: createdEncounter.id,
-    //     externalVideoCallRoomId: externalVideoCallRoom.id,
-    //     externalVideoCallRoomName: externalVideoCallRoom.roomName,
-    //     url: externalVideoCallRoom.url,
-    //   },
-    // ]);
 
     const questionnaireResponsesEffect =
       questionnaireResponseRepository.createMany(

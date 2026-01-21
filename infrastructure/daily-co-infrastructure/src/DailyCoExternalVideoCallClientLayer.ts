@@ -8,9 +8,10 @@ import {
   RoomCreationParams,
   ExternalVideoCallRoom,
 } from '@assessmentis/video-call-domain'
+import { AuthDataService, AuthError } from '@assessmentis/platform-domain'
 import { Media } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { UnhandledError, ExternalAssertionError } from '@assessmentis/ontology'
-import { DailyCoProxyConfig } from '@assessmentis/config-domain/dailyCo'
+import { DailyCoProxyConfig } from '@assessmentis/config-domain'
 
 const ApiDailyCoRecordingSchema = Schema.Struct({
   total_count: Schema.Number,
@@ -35,7 +36,6 @@ const ApiDailyCoRoomSchema = Schema.Struct({
 })
 
 export const DailyCoExternalVideoCallClientLayer = (
-  getIdToken: () => Promise<string | undefined>,
   dailyCoConf: DailyCoProxyConfig
 ) =>
   Layer.effect(
@@ -53,27 +53,23 @@ export const DailyCoExternalVideoCallClientLayer = (
       const apiDailyCoRecordingLinkSchemaParser = Schema.decodeUnknown(
         ApiDailyCoRecordingLinkSchema
       )
-      const idToken = yield* Effect.tryPromise(() => getIdToken()).pipe(
-        Effect.mapError(
-          (cause) =>
-            new UnhandledError({
-              cause,
-              message: 'Error fetching ID Token for DailyCo API',
-            })
-        )
-      )
+      const authDataService = yield* AuthDataService
 
-      const headers = {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        authorization: `Bearer ${idToken}`,
-      } as const
+      const headersEffect = Effect.map(
+        authDataService.authData,
+        ({ authToken }) =>
+          ({
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            authorization: `Bearer ${authToken}`,
+          }) as const
+      )
 
       const fetchRecordingFileUrl = (
         recordingId: string
       ): Effect.Effect<
         string | undefined,
-        UnhandledError | ExternalAssertionError
+        UnhandledError | ExternalAssertionError | AuthError
       > => {
         return Effect.gen(function* () {
           const url = new URL(
@@ -81,7 +77,7 @@ export const DailyCoExternalVideoCallClientLayer = (
           )
           const options = {
             method: 'GET',
-            headers,
+            headers: yield* headersEffect,
           }
           const res = yield* httpClient.get(url, options).pipe(
             Effect.mapError(
@@ -148,7 +144,7 @@ export const DailyCoExternalVideoCallClientLayer = (
             url.searchParams.set('room_name', roomName)
             const options = {
               method: 'GET',
-              headers,
+              headers: yield* headersEffect,
             }
             const res = yield* httpClient.get(url, options).pipe(
               Effect.mapError(
@@ -232,7 +228,7 @@ export const DailyCoExternalVideoCallClientLayer = (
         params: RoomCreationParams
       ): Effect.Effect<
         ExternalVideoCallRoom,
-        UnhandledError | ExternalAssertionError,
+        UnhandledError | ExternalAssertionError | AuthError,
         never
       > =>
         Effect.gen(function* () {
@@ -271,7 +267,7 @@ export const DailyCoExternalVideoCallClientLayer = (
                   })
               )
             ),
-            headers,
+            headers: yield* headersEffect,
           }
 
           const res = yield* httpClient.post(url, options).pipe(

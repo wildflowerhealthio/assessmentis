@@ -1,4 +1,4 @@
-import { EncounterRepository } from '@assessmentis/clinical-domain/administration'
+import { Encounter } from '@assessmentis/clinical-domain/administration'
 import { createResourcePicker } from '../../../common/utils/createResourcePicker'
 
 function formatEncounterDisplay(encounter: { id?: string }): string {
@@ -16,8 +16,8 @@ function formatEncounterSecondary(encounter: {
   return `${encounterClass} • Status: ${status}`
 }
 
-export const EncounterPicker = createResourcePicker({
-  repository: EncounterRepository,
+export const EncounterPicker = createResourcePicker<Encounter>({
+  resourceType: 'Encounter',
   formatDisplay: formatEncounterDisplay,
   formatSecondary: formatEncounterSecondary,
   defaultPlaceholder: 'Select an encounter...',

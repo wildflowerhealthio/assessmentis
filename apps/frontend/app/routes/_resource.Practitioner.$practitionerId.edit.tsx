@@ -1,9 +1,5 @@
 import { Effect, Option, Schema } from 'effect'
 import { useNavigate } from 'react-router'
-import {
-  useLoadedRuntimeContext,
-  useResourceRunEffect,
-} from 'app/clientRuntime'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { PractitionerForm } from 'app/modules/resources/Practitioner/components/PractitionerForm'
 import { updatePractitioner } from 'app/modules/resources/Practitioner/actions/updatePractitioner'
@@ -17,82 +13,81 @@ import type { Route } from './+types/_resource.Practitioner.$practitionerId.edit
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { getPractitionerDisplayName } from '../modules/resources/Practitioner/utils/practitionerDisplay'
 import { useMemo } from 'react'
-import Skeleton from 'react-loading-skeleton'
+import { useEffectTs } from '@assessmentis/react-util'
+import { usePlatformContext } from '../layers/PlatformContext'
+import { ClinicalDataRepositoryService } from '../layers/ClinicalDataRepositoriesService'
 
 const tryDecodePractitionerId = Schema.decodeOption(PractitionerId)
 
 export default function EditPractitionerPage({ params }: Route.ComponentProps) {
-  const practitionerLoader = useResourceRunEffect(
-    useMemo(() => {
-      const practitionerIdMaybe = tryDecodePractitionerId(params.practitionerId)
+  const { clinicalDataRepositoryService } = usePlatformContext()
 
-      return Effect.gen(function* () {
-        const repository = yield* PractitionerRepository
+  const practitionerEffect = useMemo(() => {
+    const practitionerIdMaybe = tryDecodePractitionerId(params.practitionerId)
 
-        const practitionerId = yield* practitionerIdMaybe.pipe(
-          Option.map(Effect.succeed),
-          Option.getOrElse(() =>
-            Effect.fail(
-              new NotFoundError({
-                resourceType: 'Practitioner',
-                params: { id: params.practitionerId },
-              })
-            )
+    return Effect.gen(function* () {
+      const repository = yield* PractitionerRepository
+
+      const practitionerId = yield* practitionerIdMaybe.pipe(
+        Option.map(Effect.succeed),
+        Option.getOrElse(() =>
+          Effect.fail(
+            new NotFoundError({
+              resourceType: 'Practitioner',
+              params: { id: params.practitionerId },
+            })
           )
         )
+      )
 
-        return yield* repository.get(practitionerId)
-      })
-    }, [params.practitionerId])
-  )
+      return yield* repository.get(practitionerId)
+    }).pipe(
+      Effect.provideServiceEffect(
+        PractitionerRepository,
+        clinicalDataRepositoryService.Practitioner
+      )
+    )
+  }, [clinicalDataRepositoryService.Practitioner, params.practitionerId])
+
+  const practitionerPromise = useEffectTs(practitionerEffect)
 
   const navigate = useNavigate()
-  const clientRuntime = useLoadedRuntimeContext()
 
-  useBreadcrumbs([
-    { label: 'Practitioners', href: '/Practitioner' },
-    {
-      loading: practitionerLoader._tag === 'loading',
-      label:
-        practitionerLoader._tag === 'loaded'
-          ? getPractitionerDisplayName(practitionerLoader.value)
-          : 'Unknown Practitioner',
-      href: `/Practitioner/${params.practitionerId}`,
-    },
-    { label: 'Edit' },
-  ])
+  const breadcrumbs = useMemo(
+    () => [
+      { label: 'Practitioners', href: '/Practitioner' },
+      practitionerPromise.then((p) => ({
+        label: getPractitionerDisplayName(p),
+        href: `/Practitioner/${params.practitionerId}`,
+      })),
+      { label: 'Edit' },
+    ],
+    [practitionerPromise, params.practitionerId]
+  )
 
-  if (practitionerLoader._tag == 'loading') {
-    return (
-      <FormPage title="Edit Practitioner">
-        <Skeleton count={5} height={40} style={{ marginBottom: '1rem' }} />
-      </FormPage>
-    )
-  }
-  if (practitionerLoader._tag === 'error') {
-    throw practitionerLoader.error
-  }
+  useBreadcrumbs(breadcrumbs)
 
-  const practitioner = practitionerLoader.value
-
-  // Transform practitioner to form initial values
-  const initialValues: PractitionerFormData = {
-    givenName: practitioner.name?.[0]?.given?.[0] ?? '',
-    familyName: practitioner.name?.[0]?.family ?? '',
-    gender: practitioner.gender ?? undefined,
-    qualification: practitioner.qualification?.[0]?.code?.text ?? undefined,
-  }
+  const initialValues: Promise<PractitionerFormData> = useMemo(
+    () =>
+      practitionerPromise.then((practitioner) => ({
+        givenName: practitioner.name?.[0]?.given?.[0] ?? '',
+        familyName: practitioner.name?.[0]?.family ?? '',
+        gender: practitioner.gender ?? undefined,
+        qualification: practitioner.qualification?.[0]?.code?.text ?? undefined,
+      })),
+    [practitionerPromise]
+  )
 
   const handleSubmit = async (formData: PractitionerFormData) => {
-    if (!practitioner.id) return
+    const practitioner = await practitionerPromise
 
-    if (clientRuntime._tag != 'loaded') {
-      console.error('Runtime not loaded', clientRuntime)
-      return
-    }
-
-    await clientRuntime.value.runPromise(
-      updatePractitioner(practitioner.id, practitioner, formData)
+    await Effect.runPromise(
+      updatePractitioner(practitioner.id, practitioner, formData).pipe(
+        Effect.provideService(
+          ClinicalDataRepositoryService,
+          clinicalDataRepositoryService
+        )
+      )
     )
 
     // Redirect back to detail page

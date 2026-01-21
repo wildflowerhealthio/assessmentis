@@ -2,21 +2,23 @@ import { Effect, Option } from 'effect'
 import {
   Encounter,
   EncounterId,
-  EncounterRepository,
 } from '@assessmentis/clinical-domain/administration'
 import {
-  NeedsAuthenticationError,
   UnhandledError,
   NotFoundError,
   ExternalAssertionError,
 } from '@assessmentis/ontology'
 import {
   Questionnaire,
-  QuestionnaireRepository,
   QuestionnaireResponse,
-  QuestionnaireResponseRepository,
 } from '@assessmentis/clinical-domain/content-management'
 import { WithId } from '@assessmentis/clinical-domain/data-types'
+import {
+  AuthError,
+  AuthzError,
+  NoSelectedOrgError,
+} from '@assessmentis/platform-domain'
+import { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
 
 export type FullEncounter = WithId<Encounter> & {
   questionnaireResponses: Array<
@@ -29,12 +31,12 @@ export const getFullEncounter = (
 ): Effect.Effect<
   FullEncounter,
   | UnhandledError
-  | NeedsAuthenticationError
+  | AuthError
+  | AuthzError
   | NotFoundError
-  | ExternalAssertionError,
-  | EncounterRepository
-  | QuestionnaireResponseRepository
-  | QuestionnaireRepository
+  | ExternalAssertionError
+  | NoSelectedOrgError,
+  ClinicalDataRepositoryService
 > => {
   return Effect.gen(function* () {
     const encounterId = yield* encounterIdMaybe.pipe(
@@ -49,10 +51,12 @@ export const getFullEncounter = (
       )
     )
 
-    const encounterRepository = yield* EncounterRepository
-    const questionnaireRepository = yield* QuestionnaireRepository
+    const clinicalDataRepositoryService = yield* ClinicalDataRepositoryService
+    const encounterRepository = yield* clinicalDataRepositoryService.Encounter
+    const questionnaireRepository =
+      yield* clinicalDataRepositoryService.Questionnaire
     const questionnaireResponseRepository =
-      yield* QuestionnaireResponseRepository
+      yield* clinicalDataRepositoryService.QuestionnaireResponse
     yield* Effect.logDebug('Getting full encounter with ID ', encounterId)
 
     yield* Effect.logDebug('encounterEffect started')
@@ -85,7 +89,7 @@ export const getFullEncounter = (
               Option.getOrElse(() =>
                 Effect.fail(
                   new UnhandledError({
-                    cause: `Questionnaire Response's Questionnaire '${qr.questionnaire}' could not be found`,
+                    message: `Questionnaire Response's Questionnaire '${qr.questionnaire}' could not be found`,
                   })
                 )
               )

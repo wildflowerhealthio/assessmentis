@@ -37,7 +37,7 @@ export const Default: Story = {
   args: {
     name: 'gender',
     label: 'Gender',
-    value: '',
+    value: Promise.resolve(''),
     options: genderOptions,
   },
 }
@@ -49,7 +49,7 @@ export const WithSelection: Story = {
   args: {
     name: 'gender',
     label: 'Gender',
-    value: 'male',
+    value: Promise.resolve('male'),
     options: genderOptions,
   },
 }
@@ -61,7 +61,7 @@ export const Required: Story = {
   args: {
     name: 'gender',
     label: 'Gender',
-    value: '',
+    value: Promise.resolve(''),
     options: genderOptions,
     required: true,
   },
@@ -74,7 +74,7 @@ export const WithError: Story = {
   args: {
     name: 'gender',
     label: 'Gender',
-    value: '',
+    value: Promise.resolve(''),
     options: genderOptions,
     error: 'Please select a gender',
   },
@@ -87,7 +87,7 @@ export const PreselectedFemale: Story = {
   args: {
     name: 'gender',
     label: 'Gender',
-    value: 'female',
+    value: Promise.resolve('female'),
     options: genderOptions,
   },
 }
@@ -99,7 +99,7 @@ export const ManyOptions: Story = {
   args: {
     name: 'country',
     label: 'Country',
-    value: '',
+    value: Promise.resolve(''),
     options: [
       { value: 'us', label: 'United States' },
       { value: 'uk', label: 'United Kingdom' },

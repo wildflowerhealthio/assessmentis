@@ -9,11 +9,12 @@ import {
   CompositionFormSchema,
   type CompositionFormData,
 } from '../schemas/CompositionFormSchema'
+import { promiseFieldsFromPromise } from '../../../../../../../global/util/src/PromiseFields'
 
 interface CompositionFormProps {
   onSubmit: (data: CompositionFormData) => void | Promise<void>
   submitLabel: string
-  initialValues?: Partial<typeof CompositionFormSchema.Encoded>
+  initialValues: Promise<typeof CompositionFormSchema.Encoded>
 }
 
 export function CompositionForm({
@@ -46,7 +47,7 @@ export function CompositionForm({
       fieldOrder={['title', 'patientId']}
       onSubmit={onSubmit}
       submitLabel={submitLabel}
-      initialValues={initialValues}
+      initialValues={promiseFieldsFromPromise(initialValues)}
     />
   )
 }

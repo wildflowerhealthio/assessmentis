@@ -7,13 +7,13 @@ import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider
 const emptyFilters = {}
 
 export default function EncounterPage(_: Route.ComponentProps) {
-  const { collection, deleteItem } = useEncounterCollection(emptyFilters)
+  const { collectionPromise, deleteItem } = useEncounterCollection(emptyFilters)
   useBreadcrumbs([{ label: 'Encounters' }])
 
   return (
     <ResourceListPage
       title="Encounters"
-      collection={collection}
+      collectionPromise={collectionPromise}
       createPath="/Encounter/new"
       createLabel="Create New Encounter"
       onDelete={deleteItem}

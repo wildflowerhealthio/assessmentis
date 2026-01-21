@@ -1,72 +1,64 @@
-import { Effect } from 'effect'
+import { Effect, Schema } from 'effect'
 import { useState, useMemo } from 'react'
-import { useResourceRunEffect } from 'app/clientRuntime'
 import { PickerItem } from '../types/PickerTypes'
-import { BaseClinicalDataRepository } from '@assessmentis/clinical-domain'
-import { ClientRuntimeContext } from '../../../../../../../../domain/platform-domain/src/PlatformService'
-import { LoadedResult } from '@assessmentis/ontology'
+import { ClinicalDataRepository, Schemas } from '@assessmentis/clinical-domain'
+import { useEffectTs } from '@assessmentis/react-util'
+import { usePlatformContext } from '../../../../../layers/PlatformContext'
+import {
+  ClinicalDataRepositoryService,
+  ClinicalDataRepositoryServiceType,
+} from '../../../../../layers/ClinicalDataRepositoriesService'
 
 export interface UsePickerDataOptions<
-  T extends { id?: string | undefined },
-  TRepo extends BaseClinicalDataRepository<T, string>,
+  T extends Schema.Schema.Type<(typeof Schemas)[keyof typeof Schemas]>,
   O,
 > {
-  repository: Effect.Effect<TRepo, never, ClientRuntimeContext>
+  resourceType: T['resourceType']
   transform: (item: T) => PickerItem<O>
   enabled?: boolean
 }
 
-interface UsePickerDataResult<O> {
-  items: PickerItem<O>[]
-  loading: boolean
-  error: Error | null
-  refetch: () => void
-}
+type UsePickerDataResult<O> = [Promise<PickerItem<O>[]>, () => void]
 
 export function usePickerData<
-  T extends { id?: string | undefined },
-  TRepo extends BaseClinicalDataRepository<T, string>,
+  T extends Schema.Schema.Type<(typeof Schemas)[keyof typeof Schemas]>,
   O,
->(options: UsePickerDataOptions<T, TRepo, O>): UsePickerDataResult<O> {
-  const { repository, transform, enabled = true } = options
-
+>(options: UsePickerDataOptions<T, O>): UsePickerDataResult<O> {
+  const { resourceType, transform, enabled = true } = options
+  const { clinicalDataRepositoryService } = usePlatformContext()
   const [refetchTrigger, setRefetchTrigger] = useState(0)
 
-  const items = useResourceRunEffect(
-    useMemo(
-      () =>
-        Effect.gen(function* () {
-          const _ = refetchTrigger
-          if (!enabled) return yield* Effect.fail({ _tag: 'Disabled' } as const)
+  const itemEffect = useMemo(
+    () =>
+      Effect.gen(function* () {
+        const _ = refetchTrigger
+        if (!enabled) return yield* Effect.fail({ _tag: 'Disabled' } as const)
 
-          const repo = yield* repository
-          const resources = yield* repo.getMany()
-          return resources.map(transform)
-        }),
-      [repository, transform, refetchTrigger, enabled]
-    )
+        const service: ClinicalDataRepositoryServiceType =
+          yield* ClinicalDataRepositoryService
+        const repo = (yield* service[
+          resourceType
+        ]) as unknown as ClinicalDataRepository<T>
+        const resources = yield* repo.getMany()
+        return resources.map(transform)
+      }).pipe(
+        Effect.provideService(
+          ClinicalDataRepositoryService,
+          clinicalDataRepositoryService
+        )
+      ),
+    [
+      clinicalDataRepositoryService,
+      refetchTrigger,
+      enabled,
+      resourceType,
+      transform,
+    ]
   )
+
+  const itemsPromise = useEffectTs(itemEffect)
 
   const refetch = () => setRefetchTrigger((prev) => prev + 1)
 
-  return LoadedResult.handle(items, {
-    onLoading: (): UsePickerDataResult<O> => ({
-      items: [],
-      loading: true,
-      error: null,
-      refetch,
-    }),
-    onError: (error): UsePickerDataResult<O> => ({
-      items: [],
-      loading: false,
-      error: new Error(error == null ? 'Unknown error' : String(error)),
-      refetch,
-    }),
-    onSuccess: (loadedItems): UsePickerDataResult<O> => ({
-      items: loadedItems,
-      loading: false,
-      error: null,
-      refetch,
-    }),
-  })
+  return [itemsPromise, refetch]
 }

@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"./src/**/*\"",
     "lint:fix": "eslint --fix \"./src/**/*\"",
-    "test": "echo \"No tests in this package\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
@@ -23,7 +24,10 @@
   "main": "dist/index.js",
   "types": "dist/index.d.js",
   "dependencies": {
+    "@assessmentis/firebase-server-infrastructure": "*",
+    "@assessmentis/platform-domain": "*",
     "@effect/opentelemetry": "^0.59.1",
+    "effect": "^3.19.9",
     "eslint": "^9.39.1",
     "firebase-admin": "^13.6.0",
     "firebase-functions": "^7.0.1",
@@ -35,8 +39,10 @@
     "@types/gapi": "^0.0.47",
     "@types/gapi.client.healthcare-v1": "^0.0.4",
     "@types/node-fetch": "^3.0.2",
+    "fast-check": "^3.23.2",
     "firebase-functions-test": "^3.4.1",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^4.0.15"
   },
   "private": true
 }

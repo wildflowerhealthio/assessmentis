@@ -1,15 +1,97 @@
-import type { Response } from 'express'
+import { type Response } from 'express'
+import { type ParsedQs } from 'qs'
 import { onRequest, type Request } from 'firebase-functions/https'
 import { info, error } from 'firebase-functions/logger'
 import fetch from 'node-fetch'
-import { ensureAuthenticated, makeUserOrgRoleValidator } from '../util/auth'
-import { app, db, defaultHttpOptions } from '../util/context'
+import { Effect, Data, Exit, Layer } from 'effect'
+import {
+  LoadedDailyCoSecret,
+  OrgSlug,
+  OrgUserService,
+  OrgUserServiceLayer,
+} from '@assessmentis/platform-domain'
+import { defaultHttpOptions } from '../util/functionContext'
+import { handleError } from '../util/handleError'
+import { DailyCoSecretLayerLive } from '../layers/orgSecretLayers'
+import { makeServerRuntime } from '../util/BaseLayer'
+import { CurrentOrgLayerLive } from '../layers/CurrentOrgLayerLive'
+import { CurrentUserIdLayerLive } from '../layers/CurrentUserIdLayerLive'
+
+class DailyCoError extends Data.TaggedError('DailyCoError')<{
+  message: string
+  cause: unknown
+}> {
+  constructor(message: string, cause: unknown) {
+    super({ message, cause })
+  }
+}
+
+/**
+ * Proxy a request to Daily.co API with org-specific authentication
+ */
+export const dailycoEffect = (
+  inbound: {
+    method: string
+    rawBody: Buffer
+    headers: Record<string, string | string[] | undefined>
+    query: ParsedQs
+  },
+  destination: string
+) =>
+  Effect.gen(function* () {
+    // Verify authentication
+    const orgContext = yield* OrgUserService
+    const rolesWithDailyCoAccess = ['admin', 'clinician'] as const
+    yield* orgContext.ensureRole(rolesWithDailyCoAccess)
+
+    const secret = yield* LoadedDailyCoSecret
+
+    // Build Daily.co API URL
+    const queryParams = new URLSearchParams(
+      Object.entries(inbound.query).map(([key, value]) => [key, String(value)])
+    )
+    const url = `https://api.daily.co/v1/${destination}?${queryParams}`
+
+    // Prepare headers (filter out sensitive headers)
+    const {
+      host: _host,
+      'set-cookie': _setCookie,
+      authorization: _authorization,
+      ...forwardedHeaders
+    } = inbound.headers
+
+    const headers = {
+      ...forwardedHeaders,
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + secret.apiKey,
+    }
+
+    info('Forwarding request to Daily.co API:', inbound.method, url)
+
+    // Proxy request to Daily.co
+    const externalRes = yield* Effect.tryPromise({
+      try: () =>
+        fetch(url, {
+          headers,
+          method: inbound.method,
+          body: inbound.rawBody,
+        }),
+      catch: (error): DailyCoError =>
+        new DailyCoError(
+          `Failed to fetch from Daily.co: ${String(error)}`,
+          error
+        ),
+    })
+
+    return { externalRes }
+  })
 
 export const dailyco = onRequest(
   defaultHttpOptions,
   async (request: Request, response: Response) => {
     info('Received request for Daily.co proxy:', request.method, request.path)
 
+    // Extract org slug and destination from URL
     const urlMatch = request.path.match(
       /^\/api\/daily-co-proxies\/([^/]+)\/(.*)$/
     )
@@ -21,58 +103,31 @@ export const dailyco = onRequest(
       })
       return
     }
-    const [_, orgId, destination] = urlMatch
 
-    const uid = await ensureAuthenticated(request, response)
-    if (uid == undefined) return
-    const rolesWithDailyCoAccess = ['admin', 'clinician'] as const
-    const shouldHaveDailyCoAccess = makeUserOrgRoleValidator(
-      app,
-      rolesWithDailyCoAccess
+    const [_, orgSlugStr, destination] = urlMatch
+    const orgSlug = OrgSlug.make(orgSlugStr)
+    const runtime = makeServerRuntime(
+      Layer.mergeAll(OrgUserServiceLayer, DailyCoSecretLayerLive).pipe(
+        Layer.provide(CurrentOrgLayerLive),
+        Layer.provide(CurrentUserIdLayerLive)
+      ),
+      { request, orgSlug }
     )
-    if (!(await shouldHaveDailyCoAccess(uid, orgId, response))) return
-
-    const queryParams = new URLSearchParams(
-      Object.entries(request.query).map(([key, value]) => [key, String(value)])
-    )
-    const url = `https://api.daily.co/v1/${destination}?${queryParams}`
-
-    const dailyCoSecretsDoc = await db
-      .collection('orgs')
-      .doc(orgId)
-      .collection('secrets')
-      .doc('dailyCo')
-      .get()
-
-    const dailyApiKey = dailyCoSecretsDoc.data()?.apiKey
-
-    if (!dailyApiKey) {
-      response.status(500).json({
-        message: 'No API Key',
-      })
-      return
-    }
-
-    const {
-      host: _host,
-      'set-cookie': _setCookie,
-      authorization: _authorization,
-      ...forwardedHeaders
-    } = request.headers
-
-    const headers = {
-      ...forwardedHeaders,
-      'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + dailyApiKey,
-    } as const
-
-    info('Forwarding request to Daily.co API:', request.method, url)
-
-    const externalRes = await fetch(url, {
-      headers,
-      method: request.method,
-      body: request.rawBody,
-    })
-    externalRes.body?.pipe(response.status(externalRes.status), { end: true })
+    await runtime
+      .runPromiseExit(dailycoEffect(request, destination))
+      .then((exit) =>
+        exit.pipe(
+          Exit.match({
+            onSuccess: ({ externalRes }) => {
+              externalRes.body?.pipe(response.status(externalRes.status), {
+                end: true,
+              })
+            },
+            onFailure: (error) => {
+              handleError(error, response)
+            },
+          })
+        )
+      )
   }
 )

@@ -69,5 +69,5 @@ export const ServiceConfig = Schema.Struct({
 
 ## Related Packages
 
-- `@assessmentis/google-fhir-infrastructure`: Uses googleFhir config
+- `@assessmentis/google-fhir-web-infrastructure`: Uses googleFhir config
 - `@assessmentis/daily-co-infrastructure`: Uses dailyCo config

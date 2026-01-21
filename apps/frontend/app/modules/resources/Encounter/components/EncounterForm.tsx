@@ -12,11 +12,12 @@ import {
   EncounterFormSchema,
   type EncounterFormData,
 } from '../schemas/EncounterFormSchema'
+import { promiseFieldsFromPromise } from '@assessmentis/util'
 
 interface EncounterFormProps {
   onSubmit: (data: EncounterFormData) => void | Promise<void>
   submitLabel: string
-  initialValues?: Partial<typeof EncounterFormSchema.Encoded>
+  initialValues: Promise<Partial<typeof EncounterFormSchema.Encoded>>
 }
 
 export function EncounterForm({
@@ -95,7 +96,7 @@ export function EncounterForm({
       ]}
       onSubmit={onSubmit}
       submitLabel={submitLabel}
-      initialValues={initialValues}
+      initialValues={promiseFieldsFromPromise(initialValues)}
     />
   )
 }

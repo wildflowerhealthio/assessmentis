@@ -1,67 +1,26 @@
 import {
   ExternalAssertionError,
-  NeedsAuthenticationError,
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
 import React, { JSX } from 'react'
 import { Outlet } from 'react-router'
-import { NotLoggedIn } from '../../../../domain/platform-domain/src/loadedValues/UserId'
 import { LoginButton } from '../modules/global/components/LoginButton'
-import { useLoadedRuntimeContext } from '../clientRuntime'
 import { Generic404Content } from '../modules/common/components/Generic404Content'
+import { AuthError } from '@assessmentis/platform-domain'
 
-interface IProps {
-  loadedRuntime: ReturnType<typeof useLoadedRuntimeContext>
-}
+type IProps = object
 
 const ResourcePage = () => {
-  const loadedRuntime = useLoadedRuntimeContext()
-  return <InnerResourcePage loadedRuntime={loadedRuntime} />
+  return <InnerResourcePage />
 }
 
 export default ResourcePage
 
-const hasTag = (error: unknown, tag: string): boolean => {
-  return (
-    typeof error == 'object' &&
-    error !== null &&
-    '_tag' in error &&
-    error._tag == tag
-  )
-}
-
 const asCaughtError = (error: unknown) => {
-  if (error instanceof NeedsAuthenticationError) {
+  if (error instanceof AuthError) {
     return {
-      type: 'NeedsAuthenticationError',
-      error,
-    }
-  }
-  if (hasTag(error, 'NotLoggedIn')) {
-    return {
-      type: 'NotLoggedIn',
-      error,
-    }
-  }
-
-  if (hasTag(error, 'OrgDataError')) {
-    return {
-      type: 'OrgDataError',
-      error,
-    }
-  }
-
-  if (hasTag(error, 'UserDataError')) {
-    return {
-      type: 'UserDataError',
-      error,
-    }
-  }
-
-  if (hasTag(error, 'AuthStateError')) {
-    return {
-      type: 'AuthStateError',
+      type: 'AuthError',
       error,
     }
   }
@@ -96,12 +55,8 @@ class InnerResourcePage extends React.Component<
     error:
       | null
       | {
-          type: 'NeedsAuthenticationError'
-          error: NeedsAuthenticationError
-        }
-      | {
-          type: 'NotLoggedIn'
-          error: NotLoggedIn
+          type: 'AuthError'
+          error: AuthError
         }
       | {
           type: 'ExternalAssertionError'
@@ -114,18 +69,6 @@ class InnerResourcePage extends React.Component<
       | {
           type: 'NotFoundError'
           error: NotFoundError
-        }
-      | {
-          type: 'OrgDataError'
-          error: unknown
-        }
-      | {
-          type: 'UserDataError'
-          error: unknown
-        }
-      | {
-          type: 'AuthStateError'
-          error: unknown
         }
   }
 > {
@@ -156,21 +99,18 @@ class InnerResourcePage extends React.Component<
     }
   }
 
-  componentDidUpdate(_prevProps: IProps, _prevState: object) {
-    if (this.state.error === null) return
+  // TODO: Delete
+  // componentDidUpdate(_prevProps: IProps, _prevState: object) {
+  //   if (this.state.error === null) return
 
-    switch (this.state.error.type) {
-      case 'NeedsAuthenticationError':
-      case 'NotLoggedIn':
-      case 'OrgDataError':
-      case 'UserDataError':
-      case 'AuthStateError':
-        if (this.props.loadedRuntime._tag == 'loaded') {
-          this.setState({ error: null })
-        }
-        return
-    }
-  }
+  //   switch (this.state.error.type) {
+  //     case 'AuthError':
+  //       if (this.props.loadedRuntime._tag == 'loaded') {
+  //         this.setState({ error: null })
+  //       }
+  //       return
+  //   }
+  // }
 
   render() {
     if (this.state.error === null) {
@@ -178,12 +118,7 @@ class InnerResourcePage extends React.Component<
     }
 
     let errorContent: JSX.Element
-    if (
-      this.state.error &&
-      ['NotLoggedIn', 'NeedsAuthenticationError', 'AuthStateError'].includes(
-        this.state.error.type
-      )
-    ) {
+    if (this.state.error && 'AuthError' == this.state.error.type) {
       errorContent = (
         <>
           <h1 style={{ textAlign: 'center' }}>Please log in</h1>
@@ -194,21 +129,6 @@ class InnerResourcePage extends React.Component<
             style={{ display: 'block', margin: '0 auto' }}
             className="element-button button-2"
           />
-        </>
-      )
-    } else if (this.state.error && ['', ''].includes(this.state.error.type)) {
-      errorContent = (
-        <>
-          <h1 style={{ textAlign: 'center' }}>
-            There Was a Problem Loading Your Organization or User Data
-          </h1>
-          <button
-            className="element-button button-2"
-            style={{ display: 'block', margin: '0 auto' }}
-            onClick={() => this.setState({ error: null })}
-          >
-            Call for help
-          </button>
         </>
       )
     } else if (this.state.error?.type == 'ExternalAssertionError') {

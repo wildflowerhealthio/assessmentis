@@ -12,17 +12,18 @@ import { FiberFailureCauseId } from 'effect/Runtime'
 import { Cause } from 'effect'
 import {
   ExternalAssertionError,
-  NeedsAuthenticationError,
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
 import * as firebase from 'app/firebase'
+import * as auth from './FirebaseWebLayer'
 import NavHeader from './modules/global/components/NavHeader/NavHeader'
-import { LoadedRuntimeContextProvider } from './modules/global/components/RuntimeContextOrErr'
 import { BreadcrumbProvider } from './modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
 import { shouldShowRawData } from './util/debugHelpers'
 import { PageLoader } from './modules/common/components/PageLoader/PageLoader'
-
+import { AuthError } from '@assessmentis/platform-domain'
+import { OrgContextProvider } from './layers/OrgContextProvider'
+import { PlatformContextProvider } from './layers/PlatformContextProvider'
 // HydrateFallback is rendered while the client loader is running
 export function HydrateFallback() {
   return <PageLoader />
@@ -44,27 +45,29 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
       </head>
       <body>
-        <LoadedRuntimeContextProvider>
-          <BreadcrumbProvider>
-            <NavHeader />
-            <div
-              style={{
-                width: '100%',
-                margin: '0 auto',
-                flexGrow: 1,
-                flexShrink: 1,
-                flexDirection: 'column',
-                overflowY: 'hidden',
+        <PlatformContextProvider>
+          <OrgContextProvider>
+            <BreadcrumbProvider>
+              <NavHeader />
+              <div
+                style={{
+                  width: '100%',
+                  margin: '0 auto',
+                  flexGrow: 1,
+                  flexShrink: 1,
+                  flexDirection: 'column',
+                  overflowY: 'hidden',
 
-                paddingBlock: 'var(--space-4)',
-                paddingInline: 'var(--space-8)',
-                marginInline: 'auto',
-              }}
-            >
-              {children}
-            </div>
-          </BreadcrumbProvider>
-        </LoadedRuntimeContextProvider>
+                  paddingBlock: 'var(--space-4)',
+                  paddingInline: 'var(--space-8)',
+                  marginInline: 'auto',
+                }}
+              >
+                {children}
+              </div>
+            </BreadcrumbProvider>
+          </OrgContextProvider>
+        </PlatformContextProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -108,10 +111,10 @@ export function ErrorBoundary({ error }: { error: unknown }) {
     rootError = cause && 'error' in cause ? cause.error : undefined
 
     if (cause && Cause.isFailure(cause) && rootError) {
-      if (rootError instanceof NeedsAuthenticationError) {
+      if (rootError instanceof AuthError) {
         message = 'Please Reauthenticate'
         details = 'Please log back into your Google account to reconnect'
-        firebase.auth.signOut()
+        auth.auth.signOut()
         action = {
           label: 'Log In',
           onClick: () => firebase.signIn().then(() => navigate(0)),

@@ -4,24 +4,18 @@ import {
   QuestionnaireResponse,
   QuestionnaireRepository,
   QuestionnaireResponseRepository,
-  QuestionnaireResponseId,
 } from '@assessmentis/clinical-domain/content-management'
-import { useResourceRunEffect } from 'app/clientRuntime'
 import type { Route } from './+types/_resource.QuestionnaireResponse._index'
 import { QuestionnaireResponseListItem } from '../modules/resources/Questionnaire/components/QuestionnaireResponseListItem/QuestionnaireResponseListItem'
 import { ResourceListPage } from '../modules/common/components/ResourceListPage/ResourceListPage'
-import {
-  ExternalAssertionError,
-  NeedsAuthenticationError,
-  UnhandledError,
-} from '@assessmentis/ontology'
-import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
-import { useMemo } from 'react'
+import { ExternalAssertionError, UnhandledError } from '@assessmentis/ontology'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
+import { AuthError, AuthzError } from '@assessmentis/platform-domain'
+import { createResourceCollectionHook } from '../modules/common/utils/createResourceCollectionHook'
 
 const _getQuestionnaireResponses = (): Effect.Effect<
   (QuestionnaireResponse & { _questionnaire: Questionnaire | undefined })[],
-  UnhandledError | ExternalAssertionError | NeedsAuthenticationError,
+  UnhandledError | ExternalAssertionError | AuthError | AuthzError,
   QuestionnaireRepository | QuestionnaireResponseRepository
 > => {
   return Effect.gen(function* () {
@@ -46,36 +40,20 @@ const _getQuestionnaireResponses = (): Effect.Effect<
   })
 }
 
-const useQuestionnaireResponse = () => {
-  const questionnaireResponses = useResourceRunEffect(
-    useMemo(() => {
-      return Effect.gen(function* () {
-        const questionnaireResponseRepository =
-          yield* QuestionnaireResponseRepository
-        return yield* questionnaireResponseRepository.getMany()
-      })
-    }, [])
-  )
-  return useClinicalDataCollection<
-    QuestionnaireResponseId,
-    QuestionnaireResponse,
-    QuestionnaireResponseRepository,
-    typeof QuestionnaireResponseRepository,
-    never
-  >(QuestionnaireResponseRepository, questionnaireResponses)
-}
+const useQuestionnaireResponse =
+  createResourceCollectionHook<QuestionnaireResponse>({
+    resourceType: 'QuestionnaireResponse',
+  })
 
 export default function QuestionnaireResponsePage(_: Route.ComponentProps) {
-  const {
-    collection: questionnaireResponses,
-    deleteItem: deleteQuestionnaireResponse,
-  } = useQuestionnaireResponse()
+  const { collectionPromise, deleteItem: deleteQuestionnaireResponse } =
+    useQuestionnaireResponse()
   useBreadcrumbs([{ label: 'Questionnaire Responses' }])
 
   return (
     <ResourceListPage
       title="Questionnaire Responses"
-      collection={questionnaireResponses}
+      collectionPromise={collectionPromise}
       createPath=""
       createLabel="Create Questionnaire Response"
       onDelete={deleteQuestionnaireResponse}

@@ -1,4 +1,4 @@
-import { PatientRepository } from '@assessmentis/clinical-domain/administration'
+import { Patient } from '@assessmentis/clinical-domain/administration'
 import {
   formatGender,
   formatHumanName,
@@ -7,10 +7,10 @@ import { humanizeTimelessDate } from '../../../common/utils/dateUtils'
 import { createResourcePicker } from '../../../common/utils/createResourcePicker'
 
 export const PatientPicker = createResourcePicker({
-  repository: PatientRepository,
-  formatDisplay: (patient) =>
+  resourceType: 'Patient',
+  formatDisplay: (patient: Patient) =>
     formatHumanName(patient.name?.[0], 'Unnamed Patient'),
-  formatSecondary: (patient) =>
+  formatSecondary: (patient: Patient) =>
     `${formatGender(patient.gender)} • Born: ${humanizeTimelessDate(patient.birthDate)}`,
   defaultPlaceholder: 'Select a patient...',
   defaultLabel: 'Patient',

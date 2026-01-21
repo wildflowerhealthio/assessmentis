@@ -14,6 +14,7 @@ This directory contains domain packages with pure business logic and types. See 
 ## Critical Domain Rules
 
 ### MUST Keep Packages Pure
+
 ⚠️ **Absolutely NO side effects in domain packages**
 
 ❌ NO HTTP calls or API requests
@@ -23,7 +24,9 @@ This directory contains domain packages with pure business logic and types. See 
 ✅ Only pure functions and data transformations
 
 ### MUST Use Effect-TS
+
 All business logic uses Effect-TS:
+
 ```typescript
 import { Effect, Schema, Context, Data } from 'effect'
 
@@ -31,14 +34,16 @@ import { Effect, Schema, Context, Data } from 'effect'
 export const Patient = Schema.Struct({
   id: Schema.String,
   name: Schema.String,
-  birthDate: Schema.DateFromString
+  birthDate: Schema.DateFromString,
 })
 
 // Define repository interface as Effect Tag
 export class PatientRepository extends Context.Tag('PatientRepository')<
   PatientRepository,
   {
-    get: (id: string) => Effect.Effect<
+    get: (
+      id: string
+    ) => Effect.Effect<
       typeof Patient.Type,
       PatientNotFoundError | UnhandledError
     >
@@ -86,13 +91,13 @@ export const Encounter = Schema.Struct({
   ),
   class: Schema.Struct({
     system: Schema.String,
-    code: Schema.String
+    code: Schema.String,
   }),
   subject: Schema.optional(
     Schema.Struct({
-      reference: Schema.String
+      reference: Schema.String,
     })
-  )
+  ),
   // ... other FHIR fields
 })
 
@@ -133,7 +138,9 @@ export class QuestionnaireRepository extends Context.Tag(
 )<
   QuestionnaireRepository,
   {
-    get: (id: string) => Effect.Effect<
+    get: (
+      id: string
+    ) => Effect.Effect<
       Questionnaire,
       QuestionnaireNotFoundError | UnhandledError
     >
@@ -142,6 +149,7 @@ export class QuestionnaireRepository extends Context.Tag(
 ```
 
 **Why error wrappers?**
+
 - Enable targeted error handling at application boundaries
 - Make error flows explicit in type signatures
 - Allow different recovery strategies for same underlying error
@@ -155,23 +163,22 @@ Define interfaces in domain, implement in infrastructure:
 export class PatientRepository extends Context.Tag('PatientRepository')<
   PatientRepository,
   {
-    get: (id: PatientId) => Effect.Effect<
-      Patient,
-      PatientNotFoundError | UnhandledError
-    >
-    create: (patient: Patient) => Effect.Effect<
-      Patient,
-      ValidationError | UnhandledError
-    >
+    get: (
+      id: PatientId
+    ) => Effect.Effect<Patient, PatientNotFoundError | UnhandledError>
+    create: (
+      patient: Patient
+    ) => Effect.Effect<Patient, ValidationError | UnhandledError>
   }
 >() {}
 ```
 
-Implementation lives in infrastructure packages (e.g., `google-fhir-infrastructure`).
+Implementation lives in infrastructure packages (e.g., `google-fhir-web-infrastructure`).
 
 ## Testing Domain Logic
 
 ### Property-Based Tests First
+
 Use fast-check with Effect Schema arbitraries:
 
 ```typescript
@@ -192,16 +199,27 @@ it('should maintain age calculation invariant', () => {
 ```
 
 ### MECE Test Structure
+
 Mutually Exclusive, Completely Exhaustive:
 
 ```typescript
 describe('Encounter status transitions', () => {
   // Partition the domain completely
-  describe('when status is planned', () => { /* ... */ })
-  describe('when status is arrived', () => { /* ... */ })
-  describe('when status is in-progress', () => { /* ... */ })
-  describe('when status is finished', () => { /* ... */ })
-  describe('when status is cancelled', () => { /* ... */ })
+  describe('when status is planned', () => {
+    /* ... */
+  })
+  describe('when status is arrived', () => {
+    /* ... */
+  })
+  describe('when status is in-progress', () => {
+    /* ... */
+  })
+  describe('when status is finished', () => {
+    /* ... */
+  })
+  describe('when status is cancelled', () => {
+    /* ... */
+  })
 })
 ```
 

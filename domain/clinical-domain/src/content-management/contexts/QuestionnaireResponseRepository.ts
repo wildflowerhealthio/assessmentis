@@ -1,13 +1,10 @@
 import { Context } from 'effect'
-import {
-  QuestionnaireResponse,
-  QuestionnaireResponseId,
-} from '../resources/QuestionnaireResponse/QuestionnaireResponse'
-import { BaseClinicalDataRepository } from '../../assessmentis/contexts/ClinicalDataRepository'
+import { QuestionnaireResponse } from '../resources/QuestionnaireResponse/QuestionnaireResponse'
+import { ClinicalDataRepository } from '../../types'
 
 export class QuestionnaireResponseRepository extends Context.Tag(
   'QuestionnaireResponseRepository'
 )<
   QuestionnaireResponseRepository,
-  BaseClinicalDataRepository<QuestionnaireResponse, QuestionnaireResponseId>
+  ClinicalDataRepository<QuestionnaireResponse>
 >() {}

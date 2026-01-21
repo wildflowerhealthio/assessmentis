@@ -12,11 +12,11 @@ import {
   ObservationFormSchema,
   type ObservationFormData,
 } from '../schemas/ObservationFormSchema'
-
+import { promiseFieldsFromPromise } from '@assessmentis/util'
 interface ObservationFormProps {
   onSubmit: (data: ObservationFormData) => void | Promise<void>
   submitLabel: string
-  initialValues?: Partial<typeof ObservationFormSchema.Encoded>
+  initialValues: Promise<Partial<typeof ObservationFormSchema.Encoded>>
 }
 
 export function ObservationForm({
@@ -145,7 +145,7 @@ export function ObservationForm({
       ]}
       onSubmit={onSubmit}
       submitLabel={submitLabel}
-      initialValues={initialValues}
+      initialValues={promiseFieldsFromPromise(initialValues)}
     />
   )
 }

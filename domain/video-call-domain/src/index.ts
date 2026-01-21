@@ -1,5 +1,4 @@
 export * from './ExternalVideoCallClient'
-export * from './VideoCallRepository'
 export * from './records/VideoCallRecording'
 export * from './records/ExternalVideoCallRecordingRepository'
 export * from './records/ExternalVideoCallRoom'

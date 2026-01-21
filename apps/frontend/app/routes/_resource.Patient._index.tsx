@@ -7,13 +7,13 @@ import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider
 const emptyFilters = {}
 
 export default function PatientPage(_: Route.ComponentProps) {
-  const { collection, deleteItem } = usePatientCollection(emptyFilters)
+  const { collectionPromise, deleteItem } = usePatientCollection(emptyFilters)
   useBreadcrumbs([{ label: 'Patients' }])
 
   return (
     <ResourceListPage
       title="Patients"
-      collection={collection}
+      collectionPromise={collectionPromise}
       createPath="/Patient/new"
       createLabel="Create New Patient"
       onDelete={deleteItem}

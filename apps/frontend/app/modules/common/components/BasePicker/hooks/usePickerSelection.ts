@@ -1,15 +1,16 @@
 import { useMemo, useCallback } from 'react'
 import { PickerItem } from '../types/PickerTypes'
+import { useLoadingPromise } from '@assessmentis/react-util'
 
 export interface SinglePickerProps {
   multiple: false
-  value: string | undefined
+  value: Promise<string | undefined>
   onChange: (value: string | undefined) => void
 }
 
 export interface MultiPickerProps {
   multiple: true
-  value: ReadonlyArray<string> | undefined
+  value: Promise<ReadonlyArray<string> | undefined>
   onChange: (value: ReadonlyArray<string> | undefined) => void
 }
 
@@ -24,7 +25,7 @@ export function usePickerSelection<T>(
   handleSelectMany: (item: ReadonlyArray<PickerItem<T>>) => void
   isSelected: (item: PickerItem<T>) => boolean
 } {
-  const { value } = props
+  const { value } = useLoadingPromise<Awaited<typeof props.value>>(props.value)
   // Normalize value to array internally
   const normalizedValue: ReadonlyArray<string> = useMemo(() => {
     if (typeof value === 'string') {

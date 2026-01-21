@@ -1,13 +1,16 @@
-import { Effect } from 'effect'
+import { Effect, Schema } from 'effect'
 import { useMemo } from 'react'
+import { RepositoryFilters, Schemas } from '@assessmentis/clinical-domain'
+
+import { useClinicalDataCollectionPromise } from '../hooks/useClinicalDataCollection'
+import { useEffectTs } from '@assessmentis/react-util'
+import { usePlatformContext } from '../../../layers/PlatformContext'
 import {
-  BaseClinicalDataRepository,
-  RepositoryFilters,
-} from '@assessmentis/clinical-domain'
-import { ReadonlyTag } from 'effect/Context'
-import { useResourceRunEffect } from '../../../clientRuntime'
-import { useClinicalDataCollection } from '../hooks/useClinicalDataCollection'
-import { ClientRuntimeContext } from '@assessmentis/platform-domain'
+  ExternalAssertionError,
+  NotFoundError,
+  UnhandledError,
+} from '@assessmentis/ontology'
+import { NoSelectedOrgError, AuthError } from '@assessmentis/platform-domain'
 
 /**
  * Creates a resource collection hook with standardized behavior
@@ -25,27 +28,32 @@ import { ClientRuntimeContext } from '@assessmentis/platform-domain'
  * ```
  */
 export function createResourceCollectionHook<
-  TagId extends ClientRuntimeContext,
-  TId extends string,
-  TResource extends { id?: TId },
-  TRepoTag extends ReadonlyTag<
-    TagId,
-    BaseClinicalDataRepository<TResource, TId>
-  >,
->(config: { repository: TRepoTag }) {
+  TResource extends Schema.Schema.Type<(typeof Schemas)[keyof typeof Schemas]>,
+>(config: { resourceType: TResource['resourceType'] }) {
   return (filters?: RepositoryFilters<TResource>) => {
-    const resources = useResourceRunEffect(
-      useMemo(() => {
-        return Effect.gen(function* () {
-          const repository = yield* config.repository
-          return yield* repository.getMany(filters)
-        })
-      }, [filters])
-    )
+    const { clinicalDataRepositoryService } = usePlatformContext()
 
-    return useClinicalDataCollection<TId, TResource, TagId, TRepoTag, never>(
-      config.repository,
-      resources
-    )
+    const repoEffect = useMemo(() => {
+      return clinicalDataRepositoryService.repositoryEffect<TResource>(
+        config.resourceType
+      )
+    }, [clinicalDataRepositoryService])
+
+    const resourcesEffect = useMemo(() => {
+      return Effect.flatMap(repoEffect, (repository) =>
+        repository.getMany(filters)
+      )
+    }, [repoEffect, filters])
+
+    const resourcesPromise = useEffectTs(resourcesEffect)
+
+    return useClinicalDataCollectionPromise<
+      TResource,
+      | UnhandledError
+      | ExternalAssertionError
+      | NotFoundError
+      | NoSelectedOrgError
+      | AuthError
+    >(repoEffect, resourcesPromise)
   }
 }

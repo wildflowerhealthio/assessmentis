@@ -74,5 +74,5 @@ firebase deploy --only functions
 ## Related Packages
 
 - `@assessmentis/clinical-domain`: Business logic
-- `@assessmentis/google-fhir-infrastructure`: FHIR API client
+- `@assessmentis/google-fhir-web-infrastructure`: FHIR API client
 - `@assessmentis/daily-co-infrastructure`: Video service client

@@ -1,10 +1,6 @@
 import { Effect, Option, Schema, DateTime } from 'effect'
 import { useNavigate } from 'react-router'
-import {
-  runEffectSync,
-  useLoadedRuntimeContext,
-  useResourceRunEffect,
-} from 'app/clientRuntime'
+import { runEffectSync } from 'app/runEffectSync'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { EncounterForm } from 'app/modules/resources/Encounter/components/EncounterForm'
 import { updateEncounter } from 'app/modules/resources/Encounter/actions/updateEncounter'
@@ -22,102 +18,103 @@ import {
   extractReferenceIds,
 } from 'app/modules/common/utils/fhirDisplay'
 import { useMemo } from 'react'
-import Skeleton from 'react-loading-skeleton'
+import { useEffectTs } from '@assessmentis/react-util'
+import { usePlatformContext } from '../layers/PlatformContext'
 
 const tryDecodeEncounterId = Schema.decodeOption(EncounterId)
 
 export default function EditEncounterPage({ params }: Route.ComponentProps) {
-  const encounterLoader = useResourceRunEffect(
-    useMemo(() => {
-      const encounterIdMaybe = tryDecodeEncounterId(params.encounterId)
+  const { clinicalDataRepositoryService } = usePlatformContext()
 
-      return Effect.gen(function* () {
-        const repository = yield* EncounterRepository
+  const encounterEffect = useMemo(() => {
+    const encounterIdMaybe = tryDecodeEncounterId(params.encounterId)
 
-        const encounterId = yield* encounterIdMaybe.pipe(
-          Option.map(Effect.succeed),
-          Option.getOrElse(() =>
-            Effect.fail(
-              new NotFoundError({
-                resourceType: 'Encounter',
-                params: { id: params.encounterId },
-              })
-            )
+    return Effect.gen(function* () {
+      const repository = yield* EncounterRepository
+
+      const encounterId = yield* encounterIdMaybe.pipe(
+        Option.map(Effect.succeed),
+        Option.getOrElse(() =>
+          Effect.fail(
+            new NotFoundError({
+              resourceType: 'Encounter',
+              params: { id: params.encounterId },
+            })
           )
         )
+      )
 
-        return yield* repository.get(encounterId)
-      })
-    }, [params.encounterId])
-  )
+      return yield* repository.get(encounterId)
+    }).pipe(
+      Effect.provideServiceEffect(
+        EncounterRepository,
+        clinicalDataRepositoryService.Encounter
+      )
+    )
+  }, [clinicalDataRepositoryService.Encounter, params.encounterId])
+
+  const encounterPromise = useEffectTs(encounterEffect)
 
   const navigate = useNavigate()
-  const clientRuntime = useLoadedRuntimeContext()
 
-  useBreadcrumbs([
-    { label: 'Encounters', href: '/Encounter' },
-    {
-      loading: encounterLoader._tag === 'loading',
-      label:
-        encounterLoader._tag === 'loaded'
-          ? runEffectSync(getEncounterDisplayName(encounterLoader.value))
-          : 'Unknown Encounter',
-      href: `/Encounter/${params.encounterId}`,
-    },
-    { label: 'Edit' },
-  ])
-
-  if (encounterLoader._tag == 'loading') {
-    return (
-      <FormPage title="Edit Encounter">
-        <Skeleton count={5} height={40} style={{ marginBottom: '1rem' }} />
-      </FormPage>
-    )
-  }
-  if (encounterLoader._tag === 'error') {
-    throw encounterLoader.error
-  }
-
-  const encounter = encounterLoader.value
-
-  // Extract participant practitioner IDs
-  const practitionerIds = extractReferenceIds(
-    encounter.participant
-      ?.filter(
-        (p): p is { individual: { reference: string } } =>
-          p.individual?.reference?.startsWith('Practitioner/') ?? false
-      )
-      .map((p) => p.individual) ?? []
+  const breadcrumbs = useMemo(
+    () => [
+      { label: 'Encounters', href: '/Encounter' },
+      encounterPromise.then((e) => ({
+        label: runEffectSync(getEncounterDisplayName(e)),
+        href: `/Encounter/${params.encounterId}`,
+      })),
+      { label: 'Edit' },
+    ],
+    [encounterPromise, params.encounterId]
   )
 
-  // Extract location display (first location's display or identifier value)
-  const locationDisplay =
-    encounter.location?.[0]?.location?.display ||
-    encounter.location?.[0]?.location?.identifier?.value
+  useBreadcrumbs(breadcrumbs)
 
-  const initialValues: typeof EncounterFormSchema.Encoded = {
-    patientId: extractReferenceId(encounter.subject),
-    practitionerIds,
-    questionnaireIds: [] as ReadonlyArray<string>, // Would need to query related QuestionnaireResponses
-    periodStart: encounter.period?.start?.pipe(
-      DateTime.setZone(DateTime.zoneMakeLocal())
-    ),
-    periodEnd: encounter.period?.end?.pipe(
-      DateTime.setZone(DateTime.zoneMakeLocal())
-    ),
-    locationDisplay,
-  }
+  const initialValues: Promise<typeof EncounterFormSchema.Encoded> = useMemo(
+    () =>
+      encounterPromise.then((encounter) => {
+        // Extract participant practitioner IDs
+        const practitionerIds = extractReferenceIds(
+          encounter.participant
+            ?.filter(
+              (p): p is { individual: { reference: string } } =>
+                p.individual?.reference?.startsWith('Practitioner/') ?? false
+            )
+            .map((p) => p.individual) ?? []
+        )
+
+        // Extract location display (first location's display or identifier value)
+        const locationDisplay =
+          encounter.location?.[0]?.location?.display ||
+          encounter.location?.[0]?.location?.identifier?.value
+
+        return {
+          patientId: extractReferenceId(encounter.subject),
+          practitionerIds,
+          questionnaireIds: [] as ReadonlyArray<string>, // Would need to query related QuestionnaireResponses
+          periodStart: encounter.period?.start?.pipe(
+            DateTime.setZone(DateTime.zoneMakeLocal())
+          ),
+          periodEnd: encounter.period?.end?.pipe(
+            DateTime.setZone(DateTime.zoneMakeLocal())
+          ),
+          locationDisplay,
+        }
+      }),
+    [encounterPromise]
+  )
 
   const handleSubmit = async (data: typeof EncounterFormSchema.Type) => {
-    if (!encounter.id) return
+    const encounter = await encounterPromise
 
-    if (clientRuntime._tag != 'loaded') {
-      console.error('Runtime not loaded', clientRuntime)
-      return
-    }
-
-    await clientRuntime.value.runPromise(
-      updateEncounter(encounter.id, encounter, data)
+    await Effect.runPromise(
+      updateEncounter(encounter.id, encounter, data).pipe(
+        Effect.provideServiceEffect(
+          EncounterRepository,
+          clinicalDataRepositoryService.Encounter
+        )
+      )
     )
 
     // Redirect back to detail page

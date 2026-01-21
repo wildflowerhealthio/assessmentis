@@ -1,43 +1,96 @@
 import { RefObject, useEffect, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
+import { useStatePromise } from './effectHooks'
 
-export const useCollection = <
-  Id extends string,
-  T extends { id?: Id | undefined },
->(
+export * from './effectHooks'
+export * from './useLoadingPromise'
+export * from './usePromiseOrDefault'
+
+export const useCollection = <T extends { id?: string | undefined }>(
   {
     apiDelete,
     apiCreate,
   }: {
-    apiDelete: (id: Id) => Promise<unknown>
+    apiDelete: (id: NonNullable<T['id']>) => Promise<unknown>
     apiCreate: (value: T) => Promise<T>
   },
   initial: ReadonlyArray<T>
 ) => {
-  const [collection, setCollection] = useState(
-    initial.map((item) => ({ data: item, loading: false }))
+  const [collection, setCollection] = useState<
+    ReadonlyArray<{ data: T; loading: boolean }>
+  >(initial.map((item) => ({ data: item, loading: false })))
+  const { deleteItem, createItem } = collectionMethods<T>(
+    { apiDelete, apiCreate },
+    (f) => setCollection((c) => f(c))
   )
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setCollection(initial.map((item) => ({ data: item, loading: false })))
-  }, [initial])
+  return { collection, deleteItem, createItem }
+}
 
-  const deleteItem = async (id: Id | undefined) => {
+export const useCollectionPromise = <T extends { id?: string | undefined }>(
+  {
+    apiDelete,
+    apiCreate,
+  }: {
+    apiDelete: (id: NonNullable<T['id']>) => Promise<unknown>
+    apiCreate: (value: T) => Promise<T>
+  },
+  initial: Promise<ReadonlyArray<T>>
+) => {
+  const [collectionPromise, methods] = useStatePromise<
+    ReadonlyArray<{
+      data: T
+      loading: boolean
+    }>
+  >()
+
+  useEffect(() => {
+    initial.then((items) =>
+      methods.resolve(items.map((item) => ({ data: item, loading: false })))
+    )
+  }, [initial, methods])
+
+  const { deleteItem, createItem } = collectionMethods<T>(
+    { apiDelete, apiCreate },
+    methods.map
+  )
+
+  return { collectionPromise, deleteItem, createItem }
+}
+
+function collectionMethods<T extends { id?: string | undefined }>(
+  {
+    apiDelete,
+    apiCreate,
+  }: {
+    apiDelete: (id: NonNullable<T['id']>) => Promise<unknown>
+    apiCreate: (value: T) => Promise<T>
+  },
+  updateCache: (
+    f: (
+      t: ReadonlyArray<{
+        data: T
+        loading: boolean
+      }>
+    ) => ReadonlyArray<{
+      data: T
+      loading: boolean
+    }>
+  ) => void
+) {
+  const deleteItem = async (id: T['id']) => {
     if (!id) return
-    setCollection((current) =>
+    updateCache((current) =>
       current.map((item) =>
         item.data.id === id ? { ...item, loading: true } : item
       )
     )
     await apiDelete(id)
       .then(() =>
-        setCollection((current) =>
-          current.filter((item) => item.data.id !== id)
-        )
+        updateCache((current) => current.filter((item) => item.data.id !== id))
       )
       .catch(() =>
-        setCollection((current) =>
+        updateCache((current) =>
           current.map((item) =>
             item.data.id === id ? { ...item, loading: false } : item
           )
@@ -47,13 +100,13 @@ export const useCollection = <
 
   const createItem = async (t: T) => {
     const id = t.id ?? uuidv4()
-    setCollection((current) => [
+    updateCache((current) => [
       { data: { ...t, id }, loading: true },
       ...current,
     ])
     apiCreate(t)
       .then((created) =>
-        setCollection((current) =>
+        updateCache((current) =>
           current.map((item) =>
             item.data.id === id
               ? { ...item, data: created, loading: false }
@@ -62,12 +115,10 @@ export const useCollection = <
         )
       )
       .catch(() =>
-        setCollection((current) =>
-          current.filter((item) => item.data.id !== id)
-        )
+        updateCache((current) => current.filter((item) => item.data.id !== id))
       )
   }
-  return { collection, deleteItem, createItem }
+  return { deleteItem, createItem }
 }
 
 export const useOutsideClickHandler = (

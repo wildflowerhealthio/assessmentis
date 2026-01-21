@@ -30,7 +30,7 @@ export default function ObservationPage(_: Route.ComponentProps) {
     return filter
   }, [patientId, encounterId])
 
-  const { collection, deleteItem } = useObservationCollection(filter)
+  const { collectionPromise, deleteItem } = useObservationCollection(filter)
 
   const handlePatientChange = (id: string | undefined) => {
     const newParams = new URLSearchParams(searchParams)
@@ -55,7 +55,7 @@ export default function ObservationPage(_: Route.ComponentProps) {
   return (
     <ResourceListPage
       title="Observations"
-      collection={collection}
+      collectionPromise={collectionPromise}
       createPath="/Observation/new"
       createLabel="Create New Observation"
       onDelete={deleteItem}

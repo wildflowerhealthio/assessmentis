@@ -6,6 +6,9 @@ export default defineConfig({
   plugins: [reactRouter(), tsconfigPaths()],
   envPrefix: 'PUBLIC_',
   optimizeDeps: {},
+  build: {
+    ssr: false,
+  },
   server: {
     proxy: {
       '/api/': {

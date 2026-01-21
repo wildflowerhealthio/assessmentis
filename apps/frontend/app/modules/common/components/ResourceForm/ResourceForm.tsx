@@ -5,10 +5,14 @@ import { FormError } from './types/FormTypes'
 import { extractFormErrors } from './utils/validation'
 import { getFieldError, getFieldLabel } from './utils/errorFormatting'
 import classes from './ResourceForm.module.css'
+import {
+  fromPromiseFields,
+  PromiseFields,
+} from '../../../../../../../global/util/src/PromiseFields'
 
 export type CommonFieldProps<T> = {
   error?: string | undefined
-  value: T | undefined
+  value: Promise<T | undefined>
   onChange: (data: T) => void
 }
 
@@ -20,7 +24,7 @@ interface ResourceFormProps<A extends object, E extends object> {
   fieldOrder: ReadonlyArray<keyof E>
   onSubmit: (data: A) => void | Promise<void>
   submitLabel?: string
-  initialValues?: Partial<E>
+  initialValues?: Partial<PromiseFields<Partial<E>>>
   className?: string
 }
 
@@ -33,7 +37,8 @@ export function ResourceForm<A extends object, E extends object>({
   initialValues = {},
   className,
 }: ResourceFormProps<A, E>) {
-  const [content, setContent] = useState<Partial<E>>(initialValues)
+  const [content, setContent] =
+    useState<Partial<PromiseFields<Partial<E>>>>(initialValues)
   const [formErrors, setFormErrors] = useState<FormError[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -44,7 +49,9 @@ export function ResourceForm<A extends object, E extends object>({
 
     try {
       // Parse against schema - returns Either<ParseError, T>
-      const result = Schema.decodeUnknownEither(schema)(content)
+      const result = Schema.decodeUnknownEither(schema)(
+        await fromPromiseFields(content)
+      )
 
       // Handle validation result
       if (Either.isLeft(result)) {
@@ -75,10 +82,10 @@ export function ResourceForm<A extends object, E extends object>({
     const fieldError = getFieldError(formErrors, name)
 
     const onChange = (data: E[N]) =>
-      setContent((content) => ({ ...content, [name]: data }))
+      setContent((content) => ({ ...content, [name]: Promise.resolve(data) }))
     return (
       <FieldComponent
-        value={content[name]}
+        value={content[name] ?? Promise.resolve(undefined)}
         onChange={onChange}
         error={fieldError}
       />
