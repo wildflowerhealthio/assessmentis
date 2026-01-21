@@ -31,7 +31,6 @@
     "@assessmentis/ontology": "*",
     "@assessmentis/prettier-config": "*",
     "@assessmentis/react-util": "*",
-    "@assessmentis/runtimes": "*",
     "@assessmentis/video-call-domain": "*",
     "@effect/opentelemetry": "^0.59.1",
     "@effect/platform": "^0.93.5",
