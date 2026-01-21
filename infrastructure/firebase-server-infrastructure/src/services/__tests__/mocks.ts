@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { vi } from 'vitest'
 
 /**
@@ -11,29 +12,23 @@ export const createMockDocumentSnapshot = (data?: Record<string, unknown>) => ({
 /**
  * Mock Firestore DocumentReference
  */
-export const createMockDocumentReference = () => {
-  const mockDoc = {
-    get: vi.fn(),
-    set: vi.fn(),
-    collection: vi.fn(() => mockCollection),
-  }
-  return mockDoc
-}
+export const createMockDocumentReference = (): any => ({
+  get: vi.fn(),
+  set: vi.fn(),
+  collection: vi.fn(),
+})
 
 /**
  * Mock Firestore CollectionReference
  */
-export const createMockCollectionReference = () => {
-  const mockCollection = {
-    doc: vi.fn(() => createMockDocumentReference()),
-  }
-  return mockCollection
-}
+export const createMockCollectionReference = (): any => ({
+  doc: vi.fn(() => createMockDocumentReference()),
+})
 
 /**
  * Mock Firestore instance
  */
-export const createMockFirestore = () => ({
+export const createMockFirestore = (): any => ({
   settings: vi.fn(),
   collection: vi.fn(() => createMockCollectionReference()),
 })

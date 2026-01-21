@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { Effect, Layer, Exit, Cause, Stream, Option } from 'effect'
+import { Effect, Exit, Cause, Stream } from 'effect'
 import { DocumentStore } from '@assessmentis/platform-domain'
-import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
 import { createMockFirestore } from '../services/__tests__/mocks'
 
 // Mock firebase-admin modules before imports
@@ -40,7 +40,7 @@ describe('FirebaseAdminDocumentStoreLayer', () => {
       const mockCollection = {
         doc: vi.fn(() => mockDoc),
       }
-      mockFirestore.collection.mockReturnValue(mockCollection)
+      mockFirestore.collection.mockReturnValue(mockCollection as any)
 
       const program = Effect.gen(function* () {
         const store = yield* DocumentStore
@@ -70,7 +70,7 @@ describe('FirebaseAdminDocumentStoreLayer', () => {
       const mockCollection = {
         doc: vi.fn(() => mockDoc),
       }
-      mockFirestore.collection.mockReturnValue(mockCollection)
+      mockFirestore.collection.mockReturnValue(mockCollection as any)
 
       const program = Effect.gen(function* () {
         const store = yield* DocumentStore
@@ -84,7 +84,7 @@ describe('FirebaseAdminDocumentStoreLayer', () => {
 
       expect(Exit.isFailure(result)).toBe(true)
       if (Exit.isFailure(result)) {
-        const error = Cause.squash(result.cause)
+        const error = Cause.squash(result.cause) as any
         expect(error._tag).toBe('NotFoundError')
         if (error._tag === 'NotFoundError') {
           expect(error.resourceType).toBe('/orgs')
@@ -112,7 +112,7 @@ describe('FirebaseAdminDocumentStoreLayer', () => {
       const mockParentCollection = {
         doc: vi.fn(() => mockParentDoc),
       }
-      mockFirestore.collection.mockReturnValue(mockParentCollection)
+      mockFirestore.collection.mockReturnValue(mockParentCollection as any)
 
       const program = Effect.gen(function* () {
         const store = yield* DocumentStore
@@ -141,7 +141,7 @@ describe('FirebaseAdminDocumentStoreLayer', () => {
       const mockCollection = {
         doc: vi.fn(() => mockDoc),
       }
-      mockFirestore.collection.mockReturnValue(mockCollection)
+      mockFirestore.collection.mockReturnValue(mockCollection as any)
 
       const program = Effect.gen(function* () {
         const store = yield* DocumentStore
@@ -155,7 +155,7 @@ describe('FirebaseAdminDocumentStoreLayer', () => {
 
       expect(Exit.isFailure(result)).toBe(true)
       if (Exit.isFailure(result)) {
-        const error = Cause.squash(result.cause)
+        const error = Cause.squash(result.cause) as any
         expect(error._tag).toBe('UnhandledError')
       }
     })
@@ -164,30 +164,29 @@ describe('FirebaseAdminDocumentStoreLayer', () => {
   describe('subscribeTo', () => {
     it('emits document changes', async () => {
       const mockDocData1 = { name: 'Test Org', version: 1 }
-      let snapshotCallback: ((snapshot: unknown) => void) | null = null
-      
+
       const mockOnSnapshot = vi.fn((callback: (snapshot: unknown) => void) => {
-        snapshotCallback = callback
+        // callback
         // Immediately emit first snapshot
         setTimeout(() => callback({ data: () => mockDocData1 }), 0)
         return () => {} // unsubscribe function
       })
-      
+
       const mockDoc = {
         onSnapshot: mockOnSnapshot,
       }
       const mockCollection = {
         doc: vi.fn(() => mockDoc),
       }
-      mockFirestore.collection.mockReturnValue(mockCollection)
+      mockFirestore.collection.mockReturnValue(mockCollection as any)
 
       const program = Effect.gen(function* () {
         const store = yield* DocumentStore
         const stream = store.subscribeTo('orgs', 'test-org')
-        
+
         // Take first element from stream
         const first = yield* Stream.runHead(stream)
-        
+
         return first
       }).pipe(
         Effect.provide(FirebaseAdminDocumentStoreLayer),
@@ -211,30 +210,28 @@ describe('FirebaseAdminDocumentStoreLayer', () => {
     })
 
     it('emits NotFoundError when document does not exist', async () => {
-      let snapshotCallback: ((snapshot: unknown) => void) | null = null
-      
       const mockOnSnapshot = vi.fn((callback: (snapshot: unknown) => void) => {
-        snapshotCallback = callback
+        // callback
         // Immediately emit snapshot with no data
         setTimeout(() => callback({ data: () => undefined }), 0)
         return () => {} // unsubscribe function
       })
-      
+
       const mockDoc = {
         onSnapshot: mockOnSnapshot,
       }
       const mockCollection = {
         doc: vi.fn(() => mockDoc),
       }
-      mockFirestore.collection.mockReturnValue(mockCollection)
+      mockFirestore.collection.mockReturnValue(mockCollection as any)
 
       const program = Effect.gen(function* () {
         const store = yield* DocumentStore
         const stream = store.subscribeTo('orgs', 'missing-org')
-        
+
         // Take first element from stream
         const first = yield* Stream.runHead(stream)
-        
+
         return first
       }).pipe(
         Effect.provide(FirebaseAdminDocumentStoreLayer),
@@ -269,7 +266,7 @@ describe('FirebaseAdminDocumentStoreLayer', () => {
       const mockCollection = {
         doc: vi.fn(() => mockDoc),
       }
-      mockFirestore.collection.mockReturnValue(mockCollection)
+      mockFirestore.collection.mockReturnValue(mockCollection as any)
 
       const program = Effect.gen(function* () {
         const store = yield* DocumentStore
@@ -283,7 +280,7 @@ describe('FirebaseAdminDocumentStoreLayer', () => {
 
       expect(Exit.isFailure(result)).toBe(true)
       if (Exit.isFailure(result)) {
-        const error = Cause.squash(result.cause)
+        const error = Cause.squash(result.cause) as any
         if (error._tag === 'NotFoundError') {
           expect(error.resourceType).toBe('/orgs')
         }
@@ -306,7 +303,7 @@ describe('FirebaseAdminDocumentStoreLayer', () => {
       const mockParentCollection = {
         doc: vi.fn(() => mockParentDoc),
       }
-      mockFirestore.collection.mockReturnValue(mockParentCollection)
+      mockFirestore.collection.mockReturnValue(mockParentCollection as any)
 
       const program = Effect.gen(function* () {
         const store = yield* DocumentStore
@@ -320,7 +317,7 @@ describe('FirebaseAdminDocumentStoreLayer', () => {
 
       expect(Exit.isFailure(result)).toBe(true)
       if (Exit.isFailure(result)) {
-        const error = Cause.squash(result.cause)
+        const error = Cause.squash(result.cause) as any
         if (error._tag === 'NotFoundError') {
           expect(error.resourceType).toBe('/orgs/*/users')
           // Bug in params function: uses wrong index after slice
@@ -340,7 +337,7 @@ describe('FirebaseAdminDocumentStoreLayer', () => {
       const mockCollection = {
         doc: vi.fn(() => mockDoc),
       }
-      mockFirestore.collection.mockReturnValue(mockCollection)
+      mockFirestore.collection.mockReturnValue(mockCollection as any)
 
       const program = Effect.gen(function* () {
         const store = yield* DocumentStore
@@ -354,7 +351,7 @@ describe('FirebaseAdminDocumentStoreLayer', () => {
 
       expect(Exit.isFailure(result)).toBe(true)
       if (Exit.isFailure(result)) {
-        const error = Cause.squash(result.cause)
+        const error = Cause.squash(result.cause) as any
         if (error._tag === 'NotFoundError') {
           // Bug in params function: for 2-element paths, returns {}
           expect(error.params).toEqual({})

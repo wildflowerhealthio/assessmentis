@@ -29,7 +29,6 @@ describe('FirebaseAdmin', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     // Set defaults
-    const mockApp = { name: '[DEFAULT]' }
     const mockAuth = {}
     const mockFirestore = {
       settings: vi.fn(),
@@ -102,7 +101,9 @@ describe('FirebaseAdmin', () => {
       expect(result.value.firestore).toBe(mockFirestore)
       expect(mockGetAuth).toHaveBeenCalledWith(mockApp)
       expect(mockGetFirestore).toHaveBeenCalledWith(mockApp, 'assessmentis')
-      expect(mockFirestore.settings).toHaveBeenCalledWith({ ignoreUndefinedProperties: true })
+      expect(mockFirestore.settings).toHaveBeenCalledWith({
+        ignoreUndefinedProperties: true,
+      })
     }
   })
 })

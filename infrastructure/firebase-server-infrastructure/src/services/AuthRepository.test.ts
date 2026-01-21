@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { Effect, Layer, Exit, Cause } from 'effect'
+import { Effect, Exit, Cause } from 'effect'
 import { UserId } from '@assessmentis/platform-domain'
-import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
 import { createMockFirestore } from './__tests__/mocks'
 
 // Mock firebase-admin modules before imports
@@ -25,7 +25,7 @@ import { FirebaseAdmin } from './FirebaseAdmin'
 
 describe('AuthRepository', () => {
   const testUserId = 'test-user-123' as UserId
-  
+
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -46,7 +46,7 @@ describe('AuthRepository', () => {
       const mockUsersCollection = {
         doc: vi.fn(() => mockUserDoc),
       }
-      mockFirestore.collection.mockReturnValue(mockUsersCollection)
+      mockFirestore.collection.mockReturnValue(mockUsersCollection as any)
 
       const program = Effect.gen(function* () {
         const repo = yield* AuthRepository
@@ -65,7 +65,9 @@ describe('AuthRepository', () => {
       expect(mockFirestore.collection).toHaveBeenCalledWith('users')
       expect(mockUsersCollection.doc).toHaveBeenCalledWith(testUserId)
       expect(mockUserDoc.collection).toHaveBeenCalledWith('tokens')
-      expect(mockTokenCollection.doc).toHaveBeenCalledWith('googleOAuthRefreshToken')
+      expect(mockTokenCollection.doc).toHaveBeenCalledWith(
+        'googleOAuthRefreshToken'
+      )
     })
 
     it('returns NotFoundError when token is missing', async () => {
@@ -83,7 +85,7 @@ describe('AuthRepository', () => {
       const mockUsersCollection = {
         doc: vi.fn(() => mockUserDoc),
       }
-      mockFirestore.collection.mockReturnValue(mockUsersCollection)
+      mockFirestore.collection.mockReturnValue(mockUsersCollection as any)
 
       const program = Effect.gen(function* () {
         const repo = yield* AuthRepository
@@ -97,7 +99,7 @@ describe('AuthRepository', () => {
 
       expect(Exit.isFailure(result)).toBe(true)
       if (Exit.isFailure(result)) {
-        const error = Cause.squash(result.cause)
+        const error = Cause.squash(result.cause) as any
         expect(error._tag).toBe('NotFoundError')
         if (error._tag === 'NotFoundError') {
           expect(error.resourceType).toBe('RefreshToken')
@@ -121,7 +123,7 @@ describe('AuthRepository', () => {
       const mockUsersCollection = {
         doc: vi.fn(() => mockUserDoc),
       }
-      mockFirestore.collection.mockReturnValue(mockUsersCollection)
+      mockFirestore.collection.mockReturnValue(mockUsersCollection as any)
 
       const program = Effect.gen(function* () {
         const repo = yield* AuthRepository
@@ -135,7 +137,7 @@ describe('AuthRepository', () => {
 
       expect(Exit.isFailure(result)).toBe(true)
       if (Exit.isFailure(result)) {
-        const error = Cause.squash(result.cause)
+        const error = Cause.squash(result.cause) as any
         expect(error._tag).toBe('NotFoundError')
       }
     })
@@ -150,8 +152,10 @@ describe('AuthRepository', () => {
         set: vi.fn().mockResolvedValue(undefined),
       }
       const mockTokenCollection = {
-        doc: vi.fn((docName: string) => 
-          docName === 'googleOAuthAccessToken' ? mockAccessTokenDoc : mockRefreshTokenDoc
+        doc: vi.fn((docName: string) =>
+          docName === 'googleOAuthAccessToken'
+            ? mockAccessTokenDoc
+            : mockRefreshTokenDoc
         ),
       }
       const mockUserDoc = {
@@ -160,7 +164,7 @@ describe('AuthRepository', () => {
       const mockUsersCollection = {
         doc: vi.fn(() => mockUserDoc),
       }
-      mockFirestore.collection.mockReturnValue(mockUsersCollection)
+      mockFirestore.collection.mockReturnValue(mockUsersCollection as any)
 
       const tokens = {
         accessToken: 'access-token-xyz',
@@ -204,8 +208,10 @@ describe('AuthRepository', () => {
         set: vi.fn().mockResolvedValue(undefined),
       }
       const mockTokenCollection = {
-        doc: vi.fn((docName: string) => 
-          docName === 'googleOAuthAccessToken' ? mockAccessTokenDoc : mockRefreshTokenDoc
+        doc: vi.fn((docName: string) =>
+          docName === 'googleOAuthAccessToken'
+            ? mockAccessTokenDoc
+            : mockRefreshTokenDoc
         ),
       }
       const mockUserDoc = {
@@ -214,7 +220,7 @@ describe('AuthRepository', () => {
       const mockUsersCollection = {
         doc: vi.fn(() => mockUserDoc),
       }
-      mockFirestore.collection.mockReturnValue(mockUsersCollection)
+      mockFirestore.collection.mockReturnValue(mockUsersCollection as any)
 
       const tokens = {
         accessToken: 'access-token-xyz',
@@ -236,7 +242,7 @@ describe('AuthRepository', () => {
 
       expect(Exit.isFailure(result)).toBe(true)
       if (Exit.isFailure(result)) {
-        const error = Cause.squash(result.cause)
+        const error = Cause.squash(result.cause) as any
         expect(error._tag).toBe('UnhandledError')
       }
     })
@@ -256,13 +262,17 @@ describe('AuthRepository', () => {
       const mockUsersCollection = {
         doc: vi.fn(() => mockUserDoc),
       }
-      mockFirestore.collection.mockReturnValue(mockUsersCollection)
+      mockFirestore.collection.mockReturnValue(mockUsersCollection as any)
 
       const expiresAt = new Date('2026-01-22T00:00:00Z')
 
       const program = Effect.gen(function* () {
         const repo = yield* AuthRepository
-        return yield* repo.updateAccessToken(testUserId, 'new-access-token', expiresAt)
+        return yield* repo.updateAccessToken(
+          testUserId,
+          'new-access-token',
+          expiresAt
+        )
       }).pipe(
         Effect.provide(AuthRepository.Default),
         Effect.provide(FirebaseAdmin.Default)
@@ -292,13 +302,17 @@ describe('AuthRepository', () => {
       const mockUsersCollection = {
         doc: vi.fn(() => mockUserDoc),
       }
-      mockFirestore.collection.mockReturnValue(mockUsersCollection)
+      mockFirestore.collection.mockReturnValue(mockUsersCollection as any)
 
       const expiresAt = new Date('2026-01-22T00:00:00Z')
 
       const program = Effect.gen(function* () {
         const repo = yield* AuthRepository
-        return yield* repo.updateAccessToken(testUserId, 'new-access-token', expiresAt)
+        return yield* repo.updateAccessToken(
+          testUserId,
+          'new-access-token',
+          expiresAt
+        )
       }).pipe(
         Effect.provide(AuthRepository.Default),
         Effect.provide(FirebaseAdmin.Default)
@@ -308,7 +322,7 @@ describe('AuthRepository', () => {
 
       expect(Exit.isFailure(result)).toBe(true)
       if (Exit.isFailure(result)) {
-        const error = Cause.squash(result.cause)
+        const error = Cause.squash(result.cause) as any
         expect(error._tag).toBe('UnhandledError')
       }
     })
