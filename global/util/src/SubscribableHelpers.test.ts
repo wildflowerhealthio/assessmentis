@@ -178,13 +178,14 @@ describe('SubscribableHelpers', () => {
             const effect = Effect.fail(errorMsg)
             const subscribable = effectToSubscribable(effect)
 
-            const result = await Effect.runPromise(
-              Effect.either(subscribable.get)
-            )
+            const exit = await Effect.runPromiseExit(subscribable.get)
 
-            expect(Either.isLeft(result)).toBe(true)
-            if (Either.isLeft(result)) {
-              expect(result.left).toBe(errorMsg)
+            expect(exit._tag).toBe('Failure')
+            if (exit._tag === 'Failure') {
+              expect(exit.cause._tag).toBe('Fail')
+              if (exit.cause._tag === 'Fail') {
+                expect(exit.cause.error).toBe(errorMsg)
+              }
             }
           })
         )
@@ -217,13 +218,16 @@ describe('SubscribableHelpers', () => {
             const effect = Effect.fail(errorMsg)
             const subscribable = effectToSubscribable(effect)
 
-            const result = await Effect.runPromise(
-              Effect.either(subscribable.changes.pipe(Stream.runCollect))
+            const exit = await Effect.runPromiseExit(
+              subscribable.changes.pipe(Stream.runCollect)
             )
 
-            expect(Either.isLeft(result)).toBe(true)
-            if (Either.isLeft(result)) {
-              expect(result.left).toBe(errorMsg)
+            expect(exit._tag).toBe('Failure')
+            if (exit._tag === 'Failure') {
+              expect(exit.cause._tag).toBe('Fail')
+              if (exit.cause._tag === 'Fail') {
+                expect(exit.cause.error).toBe(errorMsg)
+              }
             }
           })
         )

@@ -8,8 +8,8 @@ import {
 
 // Helper to create a promise with external resolve/reject (polyfill for Promise.withResolvers)
 function createDeferredPromise<T>() {
-  let resolve!: (value: T) => void
-  let reject!: (reason?: unknown) => void
+  let resolve: (value: T) => void
+  let reject: (reason?: unknown) => void
   const promise = new Promise<T>((res, rej) => {
     resolve = res
     reject = rej
@@ -78,8 +78,8 @@ describe('PromiseFields', () => {
       })
     })
 
-    describe('with delayed promise', () => {
-      it('property: fields resolve after the promise resolves', async () => {
+    describe('with programmatic promise resolution', () => {
+      it('property: fields resolve after the promise is resolved programmatically', async () => {
         await fc.assert(
           fc.asyncProperty(fc.record({ value: fc.integer() }), async (obj) => {
             const { promise, resolve } = createDeferredPromise<typeof obj>()
@@ -116,10 +116,14 @@ describe('PromiseFields', () => {
       it('property: field access rejects with the promise error', async () => {
         await fc.assert(
           fc.asyncProperty(fc.string(), async (errorMsg) => {
-            const promise = Promise.reject(new Error(errorMsg))
+            const { promise, reject } = createDeferredPromise<never>()
             const proxy = promiseFieldsFromPromise(promise)
 
-            await expect(proxy.value).rejects.toThrow(errorMsg)
+            const valuePromise = proxy.value
+            const error = new Error(errorMsg)
+            reject(error)
+
+            await expect(valuePromise).rejects.toThrow(errorMsg)
           })
         )
       })
