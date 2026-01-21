@@ -30,24 +30,29 @@ export const mockDocumentStoreImplementations = {
     /**
      * Returns NotFoundError for all paths
      */
-    notFound: () => (...path: readonly string[]) =>
-      Effect.fail(
-        new NotFoundError({
-          resourceType: path[0],
-          params: { path: path.join('/') },
-        })
-      ),
+    notFound:
+      () =>
+      (...path: readonly string[]) =>
+        Effect.fail(
+          new NotFoundError({
+            resourceType: path[0],
+            params: { path: path.join('/') },
+          })
+        ),
 
     /**
      * Returns the provided data for all paths
      */
-    returning: (data: DocumentData) => (..._path: readonly string[]) =>
-      Effect.succeed(data),
+    returning:
+      (data: DocumentData) =>
+      (..._path: readonly string[]) =>
+        Effect.succeed(data),
 
     /**
      * Returns data from a custom function, useful for complex logic
      */
-    withCallback: (fn: (...path: readonly string[]) => DocumentData | undefined) => 
+    withCallback:
+      (fn: (...path: readonly string[]) => DocumentData | undefined) =>
       (...path: readonly string[]) => {
         const data = fn(...path)
 
@@ -68,18 +73,25 @@ export const mockDocumentStoreImplementations = {
     /**
      * Returns an empty stream that never emits
      */
-    emptyStream: () => (..._path: readonly string[]) => Stream.never,
+    emptyStream:
+      () =>
+      (..._path: readonly string[]) =>
+        Stream.never,
   },
 }
 
 /**
  * Create a mock DocumentStore for testing using vitest mocks
- * 
+ *
  * @param impl - Partial implementation to override defaults
  * @returns DocumentStore service with vitest mocks
  */
-export const mockDocumentStore = (impl: Partial<DocumentStoreService> = {}): DocumentStoreService => ({
+export const mockDocumentStore = (
+  impl: Partial<DocumentStoreService> = {}
+): DocumentStoreService => ({
   get: vi.fn(mockDocumentStoreImplementations.get.notFound()),
-  subscribeTo: vi.fn(mockDocumentStoreImplementations.subscribeTo.emptyStream()),
+  subscribeTo: vi.fn(
+    mockDocumentStoreImplementations.subscribeTo.emptyStream()
+  ),
   ...impl,
 })
