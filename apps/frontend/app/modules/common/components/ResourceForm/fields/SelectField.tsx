@@ -1,6 +1,5 @@
 import { cn, useLoadingPromise } from '@assessmentis/react-util'
 import classes from '../ResourceForm.module.css'
-import { useEffect, useState } from 'react'
 
 export interface SelectFieldProps<T extends string> {
   name: string

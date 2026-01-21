@@ -6,7 +6,6 @@ import {
   PickerItem,
 } from '../components/BasePicker/types/PickerTypes'
 import { Schemas } from '@assessmentis/clinical-domain'
-import { useCallback } from 'react'
 
 /**
  * Configuration for creating a resource picker component

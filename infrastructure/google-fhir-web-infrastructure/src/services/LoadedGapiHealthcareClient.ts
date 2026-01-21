@@ -1,7 +1,6 @@
 import { Effect } from 'effect'
 import { ExternalAssertionError } from '@assessmentis/ontology'
 import { LoadedGapiClient } from './LoadedGapiClient'
-import { effect } from 'effect/Layer'
 
 export type GapiHealthcareClient = typeof gapi.client.healthcare
 

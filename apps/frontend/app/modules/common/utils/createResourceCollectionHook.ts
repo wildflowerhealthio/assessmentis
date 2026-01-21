@@ -1,15 +1,10 @@
 import { Effect, Schema } from 'effect'
 import { useMemo } from 'react'
-import {
-  ClinicalDataRepository,
-  RepositoryFilters,
-  Schemas,
-} from '@assessmentis/clinical-domain'
+import { RepositoryFilters, Schemas } from '@assessmentis/clinical-domain'
 
 import { useClinicalDataCollectionPromise } from '../hooks/useClinicalDataCollection'
 import { useEffectTs } from '@assessmentis/react-util'
 import { usePlatformContext } from '../../../layers/PlatformContext'
-import { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
 import {
   ExternalAssertionError,
   NotFoundError,

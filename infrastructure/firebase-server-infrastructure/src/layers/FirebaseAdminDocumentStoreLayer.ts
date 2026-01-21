@@ -1,6 +1,6 @@
 import { UnhandledError, NotFoundError } from '@assessmentis/ontology'
 import { DocumentData, DocumentStore } from '@assessmentis/platform-domain'
-import { Layer, Effect } from 'effect'
+import { Layer, Effect, Either } from 'effect'
 import { FirebaseAdmin } from '../services'
 import { Firestore } from 'firebase-admin/firestore'
 import { unsubscribableCallbackAsStream } from '@assessmentis/util'
@@ -58,20 +58,25 @@ export const FirebaseAdminDocumentStoreLayer = Layer.effect(
       })
 
     const subscribeTo: typeof DocumentStore.Service.subscribeTo = (...path) =>
-      unsubscribableCallbackAsStream<DocumentData, NotFoundError>((onData) =>
+      unsubscribableCallbackAsStream<
+        Either.Either<DocumentData, NotFoundError>,
+        never
+      >((onData) =>
         doc(db, path).onSnapshot((documentSnapshot) => {
           const data = documentSnapshot.data()
           if (data == undefined) {
             onData(
-              Effect.fail(
-                new NotFoundError({
-                  resourceType: resourceType(path),
-                  params: params(path),
-                })
+              Effect.succeed(
+                Either.left(
+                  new NotFoundError({
+                    resourceType: resourceType(path),
+                    params: params(path),
+                  })
+                )
               )
             )
           } else {
-            onData(Effect.succeed(data))
+            onData(Effect.succeed(Either.right(data)))
           }
         })
       )
