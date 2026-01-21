@@ -5,7 +5,7 @@ import { CurrentOrg } from '../tagClasses'
 import { OrgSlug } from '../models/IdTypes'
 import { UserId } from '../models/UserId'
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
-import { createMockDocumentStore, createMockUserData, createMockUserOrgRoles } from './__tests__/mocks'
+import { createMockDocumentStore, getImplementations } from './__tests__/mocks'
 
 describe('OrgAdminService', () => {
   const testOrgSlug = OrgSlug.make('test-org')
@@ -13,15 +13,18 @@ describe('OrgAdminService', () => {
   
   describe('getUser', () => {
     it('returns user when found', async () => {
-      const validUserData = createMockUserData('user-123', {
-        'test-org': ['admin', 'viewer'],
-      })
+      const validUserData = {
+        uid: 'user-123',
+        org_roles: {
+          'test-org': ['admin', 'viewer'],
+        },
+      }
 
-      const { layer: mockDocumentStore } = createMockDocumentStore({
-        data: new Map([
+      const { layer: mockDocumentStore } = createMockDocumentStore(
+        getImplementations.withData(new Map([
           [`users/${testUserId}`, validUserData],
-        ]),
-      })
+        ]))
+      )
 
       const testLayer = OrgAdminServiceLayer.pipe(
         Layer.provide(mockDocumentStore),
@@ -42,9 +45,9 @@ describe('OrgAdminService', () => {
     })
 
     it('returns NotFoundError when user not found', async () => {
-      const { layer: mockDocumentStore } = createMockDocumentStore({
-        data: new Map(),
-      })
+      const { layer: mockDocumentStore } = createMockDocumentStore(
+        getImplementations.withData(new Map())
+      )
 
       const testLayer = OrgAdminServiceLayer.pipe(
         Layer.provide(mockDocumentStore),
@@ -73,11 +76,11 @@ describe('OrgAdminService', () => {
         },
       }
 
-      const { layer: mockDocumentStore } = createMockDocumentStore({
-        data: new Map([
+      const { layer: mockDocumentStore } = createMockDocumentStore(
+        getImplementations.withData(new Map([
           [`users/${testUserId}`, invalidUserData],
-        ]),
-      })
+        ]))
+      )
 
       const testLayer = OrgAdminServiceLayer.pipe(
         Layer.provide(mockDocumentStore),
@@ -101,13 +104,13 @@ describe('OrgAdminService', () => {
 
   describe('getUserOrgRoles', () => {
     it('returns roles array when valid', async () => {
-      const rolesData = createMockUserOrgRoles(['admin', 'viewer'])
+      const rolesData = { roles: ['admin', 'viewer'] }
 
-      const { layer: mockDocumentStore } = createMockDocumentStore({
-        data: new Map([
+      const { layer: mockDocumentStore } = createMockDocumentStore(
+        getImplementations.withData(new Map([
           [`orgs/${testOrgSlug}/users/${testUserId}`, rolesData],
-        ]),
-      })
+        ]))
+      )
 
       const testLayer = OrgAdminServiceLayer.pipe(
         Layer.provide(mockDocumentStore),
@@ -128,9 +131,9 @@ describe('OrgAdminService', () => {
     })
 
     it('returns NotFoundError when user not found in org', async () => {
-      const { layer: mockDocumentStore } = createMockDocumentStore({
-        data: new Map(),
-      })
+      const { layer: mockDocumentStore } = createMockDocumentStore(
+        getImplementations.withData(new Map())
+      )
 
       const testLayer = OrgAdminServiceLayer.pipe(
         Layer.provide(mockDocumentStore),
@@ -152,11 +155,11 @@ describe('OrgAdminService', () => {
     })
 
     it('returns UnhandledError for invalid roles data', async () => {
-      const { layer: mockDocumentStore } = createMockDocumentStore({
-        data: new Map([
+      const { layer: mockDocumentStore } = createMockDocumentStore(
+        getImplementations.withData(new Map([
           [`orgs/${testOrgSlug}/users/${testUserId}`, { someOtherField: 'value' }],
-        ]),
-      })
+        ]))
+      )
 
       const testLayer = OrgAdminServiceLayer.pipe(
         Layer.provide(mockDocumentStore),
@@ -178,11 +181,11 @@ describe('OrgAdminService', () => {
     })
 
     it('returns UnhandledError when roles is not an array', async () => {
-      const { layer: mockDocumentStore } = createMockDocumentStore({
-        data: new Map([
+      const { layer: mockDocumentStore } = createMockDocumentStore(
+        getImplementations.withData(new Map([
           [`orgs/${testOrgSlug}/users/${testUserId}`, { roles: 'not-an-array' }],
-        ]),
-      })
+        ]))
+      )
 
       const testLayer = OrgAdminServiceLayer.pipe(
         Layer.provide(mockDocumentStore),

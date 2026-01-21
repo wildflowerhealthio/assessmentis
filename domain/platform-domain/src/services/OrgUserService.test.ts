@@ -6,7 +6,7 @@ import { OrgSlug } from '../models/IdTypes'
 import { UserId } from '../models/UserId'
 import { UnhandledError } from '@assessmentis/ontology'
 import { AuthzError } from '../errors'
-import { createMockDocumentStore, createMockUserOrgRoles } from './__tests__/mocks'
+import { createMockDocumentStore, getImplementations } from './__tests__/mocks'
 
 describe('OrgUserService', () => {
   const testOrgSlug = OrgSlug.make('test-org')
@@ -15,13 +15,13 @@ describe('OrgUserService', () => {
     it('succeeds when user has allowed role', async () => {
       const testUserId = UserId.make('user-with-admin')
       
-      const rolesData = createMockUserOrgRoles(['admin', 'viewer'])
+      const rolesData = { roles: ['admin', 'viewer'] }
 
-      const { layer: mockDocumentStore } = createMockDocumentStore({
-        data: new Map([
+      const { layer: mockDocumentStore } = createMockDocumentStore(
+        getImplementations.withData(new Map([
           [`orgs/${testOrgSlug}/users/${testUserId}`, rolesData],
-        ]),
-      })
+        ]))
+      )
 
       const testLayer = OrgUserServiceLayer.pipe(
         Layer.provide(mockDocumentStore),
@@ -46,13 +46,13 @@ describe('OrgUserService', () => {
     it('succeeds when user has one of multiple allowed roles', async () => {
       const testUserId = UserId.make('user-with-viewer')
       
-      const rolesData = createMockUserOrgRoles(['viewer'])
+      const rolesData = { roles: ['viewer'] }
 
-      const { layer: mockDocumentStore } = createMockDocumentStore({
-        data: new Map([
+      const { layer: mockDocumentStore } = createMockDocumentStore(
+        getImplementations.withData(new Map([
           [`orgs/${testOrgSlug}/users/${testUserId}`, rolesData],
-        ]),
-      })
+        ]))
+      )
 
       const testLayer = OrgUserServiceLayer.pipe(
         Layer.provide(mockDocumentStore),
@@ -77,13 +77,13 @@ describe('OrgUserService', () => {
     it('fails with AuthzError when user lacks role', async () => {
       const testUserId = UserId.make('user-with-viewer')
       
-      const rolesData = createMockUserOrgRoles(['viewer'])
+      const rolesData = { roles: ['viewer'] }
 
-      const { layer: mockDocumentStore } = createMockDocumentStore({
-        data: new Map([
+      const { layer: mockDocumentStore } = createMockDocumentStore(
+        getImplementations.withData(new Map([
           [`orgs/${testOrgSlug}/users/${testUserId}`, rolesData],
-        ]),
-      })
+        ]))
+      )
 
       const testLayer = OrgUserServiceLayer.pipe(
         Layer.provide(mockDocumentStore),
@@ -113,9 +113,9 @@ describe('OrgUserService', () => {
     it('fails with AuthzError when user not in org', async () => {
       const testUserId = UserId.make('nonexistent-user')
       
-      const { layer: mockDocumentStore } = createMockDocumentStore({
-        data: new Map(),
-      })
+      const { layer: mockDocumentStore } = createMockDocumentStore(
+        getImplementations.withData(new Map())
+      )
 
       const testLayer = OrgUserServiceLayer.pipe(
         Layer.provide(mockDocumentStore),
@@ -145,11 +145,11 @@ describe('OrgUserService', () => {
     it('fails with UnhandledError when roles data is missing', async () => {
       const testUserId = UserId.make('user-no-roles')
       
-      const { layer: mockDocumentStore } = createMockDocumentStore({
-        data: new Map([
+      const { layer: mockDocumentStore } = createMockDocumentStore(
+        getImplementations.withData(new Map([
           [`orgs/${testOrgSlug}/users/${testUserId}`, { someOtherField: 'value' }],
-        ]),
-      })
+        ]))
+      )
 
       const testLayer = OrgUserServiceLayer.pipe(
         Layer.provide(mockDocumentStore),
@@ -179,11 +179,11 @@ describe('OrgUserService', () => {
     it('fails with UnhandledError when roles is not an array', async () => {
       const testUserId = UserId.make('user-invalid-roles')
       
-      const { layer: mockDocumentStore } = createMockDocumentStore({
-        data: new Map([
+      const { layer: mockDocumentStore } = createMockDocumentStore(
+        getImplementations.withData(new Map([
           [`orgs/${testOrgSlug}/users/${testUserId}`, { roles: 'not-an-array' }],
-        ]),
-      })
+        ]))
+      )
 
       const testLayer = OrgUserServiceLayer.pipe(
         Layer.provide(mockDocumentStore),
@@ -213,11 +213,11 @@ describe('OrgUserService', () => {
     it('fails with UnhandledError when data is null', async () => {
       const testUserId = UserId.make('user-null-data')
       
-      const { layer: mockDocumentStore } = createMockDocumentStore({
-        data: new Map([
-          [`orgs/${testOrgSlug}/users/${testUserId}`, null],
-        ]),
-      })
+      const { layer: mockDocumentStore } = createMockDocumentStore(
+        getImplementations.withData(new Map([
+          [`orgs/${testOrgSlug}/users/${testUserId}`, null as any],
+        ]))
+      )
 
       const testLayer = OrgUserServiceLayer.pipe(
         Layer.provide(mockDocumentStore),

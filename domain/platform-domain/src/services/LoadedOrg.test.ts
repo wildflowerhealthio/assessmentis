@@ -8,14 +8,24 @@ import {
 import { CurrentOrg } from '../tagClasses'
 import { OrgSlug } from '../models/IdTypes'
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
-import { createMockDocumentStore, createMockOrgData } from './__tests__/mocks'
+import { createMockDocumentStore, defaultOrg, getImplementations } from './__tests__/mocks'
 
 describe('LoadedOrg', () => {
   const testOrgSlug = OrgSlug.make('test-org')
   
   describe('LiteralLoadedOrgLayer', () => {
     it('successfully decodes valid org data', async () => {
-      const validOrgData = createMockOrgData('test-org')
+      const validOrgData = {
+        slug: 'test-org',
+        frontendConfig: {
+          fhirServer: {
+            _tag: 'not_implemented' as const,
+          },
+          videoCallClient: {
+            _tag: 'not_implemented' as const,
+          },
+        },
+      }
 
       const program = Effect.gen(function* () {
         const org = yield* LoadedOrg
@@ -69,13 +79,13 @@ describe('LoadedOrg', () => {
 
   describe('LoadedOrgLayer', () => {
     it('successfully loads from DocumentStore', async () => {
-      const validOrgData = createMockOrgData('test-org')
+      const validOrgData = defaultOrg()
       
-      const { layer: mockDocumentStore, getMock } = createMockDocumentStore({
-        data: new Map([
+      const { layer: mockDocumentStore, getMock } = createMockDocumentStore(
+        getImplementations.withData(new Map([
           [`orgs/${testOrgSlug}`, validOrgData],
-        ]),
-      })
+        ]))
+      )
 
       const testLayer = LoadedOrgLayer.pipe(
         Layer.provide(mockDocumentStore),
@@ -98,9 +108,9 @@ describe('LoadedOrg', () => {
     })
 
     it('fails with NotFoundError when org not found in DocumentStore', async () => {
-      const { layer: mockDocumentStore, getMock } = createMockDocumentStore({
-        data: new Map(), // Empty data
-      })
+      const { layer: mockDocumentStore, getMock } = createMockDocumentStore(
+        getImplementations.notFound()
+      )
 
       const testLayer = LoadedOrgLayer.pipe(
         Layer.provide(mockDocumentStore),

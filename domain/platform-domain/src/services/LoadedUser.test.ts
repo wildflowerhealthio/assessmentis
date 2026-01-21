@@ -8,16 +8,19 @@ import {
 import { CurrentUserId } from '../tagClasses'
 import { UserId } from '../models/UserId'
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
-import { createMockDocumentStore, createMockUserData } from './__tests__/mocks'
+import { createMockDocumentStore, getImplementations } from './__tests__/mocks'
 
 describe('LoadedUser', () => {
   const testUserId = UserId.make('user-123')
   
   describe('LiteralLoadedUserLayer', () => {
     it('successfully decodes valid user data', async () => {
-      const validUserData = createMockUserData('user-123', {
-        'test-org': ['admin', 'viewer'],
-      })
+      const validUserData = {
+        uid: 'user-123',
+        org_roles: {
+          'test-org': ['admin', 'viewer'],
+        },
+      }
 
       const program = Effect.gen(function* () {
         const user = yield* LoadedUser
@@ -71,15 +74,18 @@ describe('LoadedUser', () => {
 
   describe('LoadedUserLayer', () => {
     it('successfully loads from DocumentStore', async () => {
-      const validUserData = createMockUserData('user-123', {
-        'test-org': ['admin', 'viewer'],
-      })
+      const validUserData = {
+        uid: 'user-123',
+        org_roles: {
+          'test-org': ['admin', 'viewer'],
+        },
+      }
 
-      const { layer: mockDocumentStore } = createMockDocumentStore({
-        data: new Map([
+      const { layer: mockDocumentStore } = createMockDocumentStore(
+        getImplementations.withData(new Map([
           [`users/${testUserId}`, validUserData],
-        ]),
-      })
+        ]))
+      )
 
       const testLayer = LoadedUserLayer.pipe(
         Layer.provide(mockDocumentStore),
@@ -104,9 +110,9 @@ describe('LoadedUser', () => {
     })
 
     it('fails with NotFoundError when user not found in DocumentStore', async () => {
-      const { layer: mockDocumentStore } = createMockDocumentStore({
-        data: new Map(),
-      })
+      const { layer: mockDocumentStore } = createMockDocumentStore(
+        getImplementations.withData(new Map())
+      )
 
       const testLayer = LoadedUserLayer.pipe(
         Layer.provide(mockDocumentStore),
@@ -139,11 +145,11 @@ describe('LoadedUser', () => {
         },
       }
 
-      const { layer: mockDocumentStore } = createMockDocumentStore({
-        data: new Map([
+      const { layer: mockDocumentStore } = createMockDocumentStore(
+        getImplementations.withData(new Map([
           [`users/${testUserId}`, invalidUserData],
-        ]),
-      })
+        ]))
+      )
 
       const testLayer = LoadedUserLayer.pipe(
         Layer.provide(mockDocumentStore),

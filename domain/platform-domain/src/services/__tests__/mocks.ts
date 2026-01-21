@@ -1,46 +1,48 @@
 import { vi, type Mock } from 'vitest'
 import { Effect, Layer, Stream, Context } from 'effect'
-import { DocumentStore } from '../../tagClasses'
+import { DocumentStore, type DocumentData } from '../../tagClasses'
 import { NotFoundError } from '@assessmentis/ontology'
-import type { OrgSlug } from '../../models/IdTypes'
-import type { UserId } from '../../models/UserId'
+import type { Org } from '../../models/Org'
 
 /**
- * Create a mock DocumentStore for testing
- * 
- * @param config - Configuration for the mock behavior
- * @returns A Layer providing the mocked DocumentStore
+ * Default org literal for testing
  */
-export function createMockDocumentStore(config: {
+export const defaultOrg = (): Org => ({
+  slug: 'test-org' as any, // Will be branded in tests
+  frontendConfig: {
+    fhirServer: {
+      _tag: 'not_implemented' as const,
+    },
+    videoCallClient: {
+      _tag: 'not_implemented' as const,
+    },
+  },
+})
+
+/**
+ * Helper implementations for DocumentStore.get mock
+ */
+export const getImplementations = {
   /**
-   * Map of path keys to data responses
-   * Key format: "collection/id" (e.g., "orgs/test-org", "users/user-123")
+   * Returns NotFoundError for all paths
    */
-  data?: Map<string, any>
+  notFound: () => (...path: readonly string[]) =>
+    Effect.fail(
+      new NotFoundError({
+        resourceType: path[0],
+        params: { path: path.join('/') },
+      })
+    ),
+
   /**
-   * Custom get function for more complex mocking scenarios
+   * Returns specific data for matching paths, NotFoundError otherwise
    */
-  customGet?: (...path: readonly string[]) => Effect.Effect<any, NotFoundError, never>
-}): {
-  layer: Layer.Layer<DocumentStore, never, never>
-  getMock: Mock
-} {
-  const getMock = vi.fn()
-  
-  const get = ((...path: readonly string[]) => {
-    getMock(...path)
+  withData: (dataMap: Map<string, DocumentData>) => (...path: readonly string[]) => {
+    const key = path.join('/')
+    const data = dataMap.get(key)
     
-    if (config.customGet) {
-      return config.customGet(...path)
-    }
-    
-    if (config.data) {
-      const key = path.join('/')
-      const data = config.data.get(key)
-      
-      if (data !== undefined) {
-        return Effect.succeed(data as any)
-      }
+    if (data !== undefined) {
+      return Effect.succeed(data)
     }
     
     return Effect.fail(
@@ -49,6 +51,44 @@ export function createMockDocumentStore(config: {
         params: { path: path.join('/') },
       })
     )
+  },
+
+  /**
+   * Returns data from a custom function, useful for complex logic
+   */
+  custom: (fn: (...path: readonly string[]) => DocumentData | undefined) => 
+    (...path: readonly string[]) => {
+      const data = fn(...path)
+      
+      if (data !== undefined) {
+        return Effect.succeed(data)
+      }
+      
+      return Effect.fail(
+        new NotFoundError({
+          resourceType: path[0],
+          params: { path: path.join('/') },
+        })
+      )
+    },
+}
+
+/**
+ * Create a mock DocumentStore for testing using vitest mocks
+ * 
+ * @param getImpl - Implementation for the get method (use getImplementations helpers)
+ * @returns Layer and vitest mock for DocumentStore
+ */
+export function createMockDocumentStore(
+  getImpl?: (...path: readonly string[]) => Effect.Effect<DocumentData, NotFoundError, never>
+): {
+  layer: Layer.Layer<DocumentStore, never, never>
+  getMock: Mock
+} {
+  const getMock = vi.fn(getImpl ?? getImplementations.notFound()) as Mock
+  
+  const get = ((...path: readonly string[]) => {
+    return getMock(...path)
   }) as Context.Tag.Service<typeof DocumentStore>['get']
 
   const mockLayer = Layer.succeed(DocumentStore, {
@@ -59,41 +99,5 @@ export function createMockDocumentStore(config: {
   return {
     layer: mockLayer,
     getMock,
-  }
-}
-
-/**
- * Create mock org data for testing
- */
-export function createMockOrgData(orgSlug: string | OrgSlug) {
-  return {
-    slug: typeof orgSlug === 'string' ? orgSlug : orgSlug,
-    frontendConfig: {
-      fhirServer: {
-        _tag: 'not_implemented' as const,
-      },
-      videoCallClient: {
-        _tag: 'not_implemented' as const,
-      },
-    },
-  }
-}
-
-/**
- * Create mock user data for testing
- */
-export function createMockUserData(userId: string | UserId, orgRoles: Record<string, string[]> = {}) {
-  return {
-    uid: typeof userId === 'string' ? userId : userId,
-    org_roles: orgRoles,
-  }
-}
-
-/**
- * Create mock user org roles data for testing
- */
-export function createMockUserOrgRoles(roles: string[]) {
-  return {
-    roles,
   }
 }
