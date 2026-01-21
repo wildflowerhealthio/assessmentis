@@ -113,6 +113,109 @@ it('Encounter should round-trip correctly', () => {
 })
 ```
 
+## Platform-Domain Services
+
+The `platform-domain` package provides authentication, authorization, and org-scoped data abstractions.
+
+### AuthError vs AuthzError
+
+Two distinct error types for different failure modes:
+
+```typescript
+import { Schema } from 'effect'
+
+// Authentication error - user not logged in
+export class AuthError extends Schema.TaggedClass<AuthError>()('AuthError', {
+  message: Schema.String,
+  cause: Schema.optional(Schema.Unknown),
+}) {
+  static Unauthenticated() {
+    return new AuthError({ message: 'User is not authenticated' })
+  }
+}
+
+// Authorization error - user lacks permissions (but IS authenticated)
+export class AuthzError extends Schema.TaggedClass<AuthzError>()('AuthzError', {
+  message: Schema.String,
+  cause: Schema.optional(Schema.Unknown),
+}) {}
+```
+
+**When to use each:**
+- `AuthError` → User session invalid/expired, redirect to login
+- `AuthzError` → User authenticated but lacks role/permission, show "Access Denied"
+
+### Context Tag Classes
+
+Platform-domain defines abstract tags for dependency injection:
+
+```typescript
+// CurrentUserId - provides authenticated user context
+export class CurrentUserId extends Context.Tag('CurrentUserId')<
+  CurrentUserId,
+  { userId: UserId; authToken: string }
+>() {}
+
+// CurrentOrg - provides org context for multi-tenant operations
+export class CurrentOrg extends Context.Tag('CurrentOrg')<
+  CurrentOrg,
+  OrgSlug
+>() {}
+
+// DocumentStore - abstract data access layer
+export class DocumentStore extends Context.Tag('DocumentStore')<
+  DocumentStore,
+  {
+    get: (...path: string[]) => Effect.Effect<DocumentData, NotFoundError | UnhandledError>
+    subscribeTo: (...path: string[]) => Stream.Stream<Either<DocumentData, NotFoundError>>
+  }
+>() {}
+```
+
+### LoadedOrg/LoadedUser Pattern
+
+Pre-load and validate domain objects for downstream services:
+
+```typescript
+import { Context, Layer, Effect } from 'effect'
+import { LoadedOrg, LoadedOrgLayer, LiteralLoadedOrgLayer } from '@assessmentis/platform-domain'
+
+// LoadedOrg is a Context.Tag providing a validated Org object
+export class LoadedOrg extends Context.Tag('LoadedOrg')<LoadedOrg, Org>() {}
+
+// Two ways to create the layer:
+
+// 1. From DocumentStore + CurrentOrg (production)
+const prodLayer = LoadedOrgLayer  // requires DocumentStore, CurrentOrg
+
+// 2. From literal data (testing)
+const testLayer = LiteralLoadedOrgLayer(orgSlug, mockOrgData)
+
+// Use in downstream services
+const myService = Effect.gen(function* () {
+  const org = yield* LoadedOrg  // Already validated Org object
+  return org.name
+})
+```
+
+### Role-Based Authorization
+
+Use `OrgUserService` for permission checks:
+
+```typescript
+import { OrgUserService, OrgUserServiceLayer } from '@assessmentis/platform-domain'
+
+const protectedOperation = Effect.gen(function* () {
+  const orgUserService = yield* OrgUserService
+
+  // Fails with AuthzError if user lacks role
+  yield* orgUserService.ensureRole(['admin', 'clinician'])
+
+  // User has required role, proceed with operation
+  return yield* performSensitiveAction()
+})
+```
+
 ## Error Wrappers Pattern
 
 Use unique error wrappers to distinguish failure modes:

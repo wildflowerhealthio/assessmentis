@@ -4,11 +4,16 @@ This directory contains concrete implementations of domain interfaces. See [../C
 
 ## Infrastructure Packages
 
+### Web (Browser) Infrastructure
 - **google-fhir-web-infrastructure/** - Google Cloud Healthcare API client (FHIR store)
+- **firebase-web-infrastructure/** - Firebase Auth and Firestore client (browser)
 - **daily-co-infrastructure/** - Daily.co video integration
-- **firebase-web-infrastructure/** - Firebase Auth and Firestore client
 - **document-template-instances/** - React document templates
 - **google-meet-infrastructure/** - (Currently unused)
+
+### Server (Node.js) Infrastructure
+- **firebase-server-infrastructure/** - Firebase Admin SDK for Cloud Functions
+- **google-fhir-node-infrastructure/** - Node.js FHIR client (placeholder)
 
 ## Infrastructure Guidelines
 
@@ -237,6 +242,111 @@ export const ConfigServiceLive = Layer.effect(
     return ConfigService.of(config)
   })
 )
+```
+
+## Server-Side Infrastructure (firebase-server-infrastructure)
+
+The `firebase-server-infrastructure` package provides Firebase Admin SDK implementations for Cloud Functions.
+
+### FirebaseAdmin Service
+
+Singleton service providing Firebase Admin SDK access:
+
+```typescript
+import { Effect } from 'effect'
+import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
+
+const myFunction = Effect.gen(function* () {
+  const { app, auth, firestore } = yield* FirebaseAdmin
+  // Use admin SDK
+  const user = yield* Effect.tryPromise(() => auth.getUser(userId))
+  return user
+})
+
+// FirebaseAdmin.Default provides the layer
+myFunction.pipe(Effect.provide(FirebaseAdmin.Default))
+```
+
+### FirebaseAdminDocumentStoreLayer
+
+Server-side implementation of the `DocumentStore` interface from `platform-domain`:
+
+```typescript
+import { Layer } from 'effect'
+import { FirebaseAdminDocumentStoreLayer } from '@assessmentis/firebase-server-infrastructure'
+import { DocumentStore } from '@assessmentis/platform-domain'
+
+// Use in Cloud Functions
+const ServerLayer = FirebaseAdminDocumentStoreLayer
+
+const readOrg = Effect.gen(function* () {
+  const store = yield* DocumentStore
+  const data = yield* store.get('orgs', 'my-org-slug')
+  return data
+}).pipe(Effect.provide(ServerLayer))
+```
+
+### AuthRepository
+
+OAuth token storage for server-side operations:
+
+```typescript
+import { AuthRepository } from '@assessmentis/firebase-server-infrastructure'
+
+const refreshTokens = Effect.gen(function* () {
+  const authRepo = yield* AuthRepository
+  const refreshToken = yield* authRepo.getRefreshToken(userId)
+  // Use refresh token to get new access token
+}).pipe(Effect.provide(AuthRepository.Default))
+```
+
+## Server-Side Layer Composition
+
+Compose server infrastructure layers for Cloud Functions:
+
+```typescript
+import { Layer } from 'effect'
+import {
+  FirebaseAdmin,
+  FirebaseAdminDocumentStoreLayer,
+  AuthRepository,
+} from '@assessmentis/firebase-server-infrastructure'
+import {
+  LoadedOrgLayer,
+  LoadedUserLayer,
+  OrgUserServiceLayer,
+} from '@assessmentis/platform-domain'
+
+// Base server layer
+const BaseServerLayer = Layer.mergeAll(
+  FirebaseAdmin.Default,
+  FirebaseAdminDocumentStoreLayer,
+  AuthRepository.Default
+)
+
+// Add domain layers on top
+const FullServerLayer = Layer.provideMerge(
+  Layer.mergeAll(LoadedOrgLayer, LoadedUserLayer, OrgUserServiceLayer),
+  BaseServerLayer
+)
+
+// Use in Cloud Function
+export const myCloudFunction = functions.https.onCall(async (data, context) => {
+  const program = Effect.gen(function* () {
+    // All layers available
+    const org = yield* LoadedOrg
+    yield* (yield* OrgUserService).ensureRole(['admin'])
+    // ...
+  })
+
+  return Effect.runPromise(
+    program.pipe(
+      Effect.provide(FullServerLayer),
+      Effect.provideService(CurrentUserId, { userId, authToken }),
+      Effect.provideService(CurrentOrg, orgSlug)
+    )
+  )
+})
 ```
 
 ## See Also
