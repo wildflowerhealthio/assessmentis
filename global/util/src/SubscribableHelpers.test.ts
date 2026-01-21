@@ -5,6 +5,8 @@ import {
   Either,
   Exit,
   Cause,
+  Option,
+  pipe,
   SubscriptionRef,
   Subscribable,
   Readable,
@@ -75,12 +77,18 @@ describe('SubscribableHelpers', () => {
               const subscribable = subscriptionRefToSubscribable(ref)
 
               // Expect the get to fail with the error message
-              yield* Effect.flip(subscribable.get).pipe(
-                Effect.tap((error) => Effect.sync(() => expect(error).toBe(errorMsg)))
-              )
+              return yield* subscribable.get
             })
 
-            await Effect.runPromise(program)
+            const exit = await Effect.runPromiseExit(program)
+            expect(Exit.isFailure(exit)).toBeTruthy()
+            const error = pipe(
+              exit,
+              Exit.causeOption,
+              Option.flatMap(Cause.failureOption),
+              Option.getOrThrow
+            )
+            expect(error).toBe(errorMsg)
           })
         )
       })
@@ -182,18 +190,14 @@ describe('SubscribableHelpers', () => {
 
             const exit = await Effect.runPromiseExit(subscribable.get)
 
-            Exit.match(exit, {
-              onFailure: (cause) => {
-                const failure = Cause.failureOption(cause)
-                expect(failure._tag).toBe('Some')
-                if (failure._tag === 'Some') {
-                  expect(failure.value).toBe(errorMsg)
-                }
-              },
-              onSuccess: () => {
-                throw new Error('Expected failure but got success')
-              },
-            })
+            expect(Exit.isFailure(exit)).toBeTruthy()
+            const error = pipe(
+              exit,
+              Exit.causeOption,
+              Option.flatMap(Cause.failureOption),
+              Option.getOrThrow
+            )
+            expect(error).toBe(errorMsg)
           })
         )
       })
@@ -229,18 +233,14 @@ describe('SubscribableHelpers', () => {
               subscribable.changes.pipe(Stream.runCollect)
             )
 
-            Exit.match(exit, {
-              onFailure: (cause) => {
-                const failure = Cause.failureOption(cause)
-                expect(failure._tag).toBe('Some')
-                if (failure._tag === 'Some') {
-                  expect(failure.value).toBe(errorMsg)
-                }
-              },
-              onSuccess: () => {
-                throw new Error('Expected failure but got success')
-              },
-            })
+            expect(Exit.isFailure(exit)).toBeTruthy()
+            const error = pipe(
+              exit,
+              Exit.causeOption,
+              Option.flatMap(Cause.failureOption),
+              Option.getOrThrow
+            )
+            expect(error).toBe(errorMsg)
           })
         )
       })
