@@ -18,7 +18,7 @@ Shared React components, hooks, and utilities used across Assessment.is React ap
 This package requires:
 - **React 19.x** - Core React library
 - **React DOM 19.x** - React DOM rendering
-- **Effect-TS** - Functional effect system (peer dependency)
+- **Effect-TS** - Functional effect system (provided by consuming applications)
 - **uuid 13.x** - UUID generation for collections
 
 ## Hooks
