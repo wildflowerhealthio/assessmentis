@@ -1,40 +1,31 @@
 import { describe, it, expect } from 'vitest'
-import { Effect, Layer, Either, Stream, Context } from 'effect'
+import { Effect, Layer, Exit, Cause } from 'effect'
 import {
   LoadedOrg,
   LiteralLoadedOrgLayer,
   LoadedOrgLayer,
 } from './LoadedOrg'
-import { CurrentOrg, DocumentStore } from '../tagClasses'
+import { CurrentOrg } from '../tagClasses'
 import { OrgSlug } from '../models/IdTypes'
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
+import { createMockDocumentStore, createMockOrgData } from './__tests__/mocks'
 
 describe('LoadedOrg', () => {
   const testOrgSlug = OrgSlug.make('test-org')
   
   describe('LiteralLoadedOrgLayer', () => {
     it('successfully decodes valid org data', async () => {
-      const validOrgData = {
-        slug: 'test-org',
-        frontendConfig: {
-          fhirServer: {
-            _tag: 'not_implemented',
-          },
-          videoCallClient: {
-            _tag: 'not_implemented',
-          },
-        },
-      }
+      const validOrgData = createMockOrgData('test-org')
 
       const program = Effect.gen(function* () {
         const org = yield* LoadedOrg
         return org
       }).pipe(Effect.provide(LiteralLoadedOrgLayer(testOrgSlug, validOrgData)))
 
-      const result = await Effect.runPromise(Effect.either(program))
-      expect(Either.isRight(result)).toBe(true)
-      if (Either.isRight(result)) {
-        expect(result.right.slug).toBe('test-org')
+      const result = await Effect.runPromiseExit(program)
+      expect(Exit.isSuccess(result)).toBe(true)
+      if (Exit.isSuccess(result)) {
+        expect(result.value.slug).toBe('test-org')
       }
     })
 
@@ -44,11 +35,12 @@ describe('LoadedOrg', () => {
         return org
       }).pipe(Effect.provide(LiteralLoadedOrgLayer(testOrgSlug, undefined)))
 
-      const result = await Effect.runPromise(Effect.either(program))
-      expect(Either.isLeft(result)).toBe(true)
-      if (Either.isLeft(result)) {
-        expect(result.left._tag).toBe('NotFoundError')
-        expect(result.left).toBeInstanceOf(NotFoundError)
+      const result = await Effect.runPromiseExit(program)
+      expect(Exit.isFailure(result)).toBe(true)
+      if (Exit.isFailure(result)) {
+        const error = Cause.squash(result.cause) as any
+        expect(error._tag).toBe('NotFoundError')
+        expect(error).toBeInstanceOf(NotFoundError)
       }
     })
 
@@ -65,39 +57,24 @@ describe('LoadedOrg', () => {
         return org
       }).pipe(Effect.provide(LiteralLoadedOrgLayer(testOrgSlug, invalidOrgData)))
 
-      const result = await Effect.runPromise(Effect.either(program))
-      expect(Either.isLeft(result)).toBe(true)
-      if (Either.isLeft(result)) {
-        expect(result.left._tag).toBe('UnhandledError')
-        expect(result.left).toBeInstanceOf(UnhandledError)
+      const result = await Effect.runPromiseExit(program)
+      expect(Exit.isFailure(result)).toBe(true)
+      if (Exit.isFailure(result)) {
+        const error = Cause.squash(result.cause) as any
+        expect(error._tag).toBe('UnhandledError')
+        expect(error).toBeInstanceOf(UnhandledError)
       }
     })
   })
 
   describe('LoadedOrgLayer', () => {
     it('successfully loads from DocumentStore', async () => {
-      const validOrgData = {
-        slug: 'test-org',
-        frontendConfig: {
-          fhirServer: {
-            _tag: 'not_implemented',
-          },
-          videoCallClient: {
-            _tag: 'not_implemented',
-          },
-        },
-      }
-
-      const mockDocumentStore = Layer.succeed(DocumentStore, {
-        get: ((...path: readonly string[]) => {
-          if (path[0] === 'orgs' && path[1] === testOrgSlug) {
-            return Effect.succeed(validOrgData as any)
-          }
-          return Effect.fail(
-            new NotFoundError({ resourceType: 'orgs', params: {} })
-          )
-        }) as Context.Tag.Service<typeof DocumentStore>['get'],
-        subscribeTo: () => Stream.never,
+      const validOrgData = createMockOrgData('test-org')
+      
+      const { layer: mockDocumentStore, getMock } = createMockDocumentStore({
+        data: new Map([
+          [`orgs/${testOrgSlug}`, validOrgData],
+        ]),
       })
 
       const testLayer = LoadedOrgLayer.pipe(
@@ -110,24 +87,19 @@ describe('LoadedOrg', () => {
         return org
       }).pipe(Effect.provide(testLayer))
 
-      const result = await Effect.runPromise(Effect.either(program))
-      expect(Either.isRight(result)).toBe(true)
-      if (Either.isRight(result)) {
-        expect(result.right.slug).toBe('test-org')
+      const result = await Effect.runPromiseExit(program)
+      expect(Exit.isSuccess(result)).toBe(true)
+      if (Exit.isSuccess(result)) {
+        expect(result.value.slug).toBe('test-org')
       }
+      
+      // Verify the mock was called
+      expect(getMock).toHaveBeenCalledWith('orgs', testOrgSlug)
     })
 
     it('fails with NotFoundError when org not found in DocumentStore', async () => {
-      const mockDocumentStore = Layer.succeed(DocumentStore, {
-        get: ((...path: readonly string[]) => {
-          return Effect.fail(
-            new NotFoundError({
-              resourceType: 'orgs',
-              params: { orgSlug: path[1] },
-            })
-          )
-        }) as Context.Tag.Service<typeof DocumentStore>['get'],
-        subscribeTo: () => Stream.never,
+      const { layer: mockDocumentStore, getMock } = createMockDocumentStore({
+        data: new Map(), // Empty data
       })
 
       const testLayer = LoadedOrgLayer.pipe(
@@ -140,11 +112,15 @@ describe('LoadedOrg', () => {
         return org
       }).pipe(Effect.provide(testLayer))
 
-      const result = await Effect.runPromise(Effect.either(program))
-      expect(Either.isLeft(result)).toBe(true)
-      if (Either.isLeft(result)) {
-        expect(result.left._tag).toBe('NotFoundError')
+      const result = await Effect.runPromiseExit(program)
+      expect(Exit.isFailure(result)).toBe(true)
+      if (Exit.isFailure(result)) {
+        const error = Cause.squash(result.cause) as any
+        expect(error._tag).toBe('NotFoundError')
       }
+      
+      // Verify the mock was called
+      expect(getMock).toHaveBeenCalled()
     })
   })
 })
