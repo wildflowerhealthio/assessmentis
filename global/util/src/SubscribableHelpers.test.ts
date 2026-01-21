@@ -17,17 +17,24 @@ import {
 describe('SubscribableHelpers', () => {
   describe('subscriptionRefToSubscribable', () => {
     describe('TypeId implementation', () => {
-      it('property: returns object with correct Subscribable TypeId', async () => {
+      it('property: has correct TypeId and required fields', async () => {
         await fc.assert(
           fc.asyncProperty(fc.integer(), async (val) => {
             const program = Effect.gen(function* () {
               const ref = yield* SubscriptionRef.make(Either.right(val))
               const subscribable = subscriptionRefToSubscribable(ref)
 
+              // Verify TypeIds
               expect(subscribable[Subscribable.TypeId]).toBe(
                 Subscribable.TypeId
               )
               expect(subscribable[Readable.TypeId]).toBe(Readable.TypeId)
+              
+              // Verify required fields exist and have correct types
+              expect(subscribable.get).toBeDefined()
+              expect(Effect.isEffect(subscribable.get)).toBe(true)
+              expect(subscribable.changes).toBeDefined()
+              expect(typeof subscribable.changes).toBe('object')
             })
 
             await Effect.runPromise(program)
@@ -56,7 +63,7 @@ describe('SubscribableHelpers', () => {
     })
 
     describe('get behavior with Either.Left', () => {
-      it('property: get returns the Left value as failure', async () => {
+      it('property: get fails with the Left value', async () => {
         await fc.assert(
           fc.asyncProperty(fc.string(), async (errorMsg) => {
             const program = Effect.gen(function* () {
@@ -65,12 +72,10 @@ describe('SubscribableHelpers', () => {
               )
               const subscribable = subscriptionRefToSubscribable(ref)
 
-              const result = yield* Effect.either(subscribable.get)
-
-              expect(Either.isLeft(result)).toBe(true)
-              if (Either.isLeft(result)) {
-                expect(result.left).toBe(errorMsg)
-              }
+              // Expect the get to fail with the error message
+              yield* Effect.flip(subscribable.get).pipe(
+                Effect.tap((error) => Effect.sync(() => expect(error).toBe(errorMsg)))
+              )
             })
 
             await Effect.runPromise(program)
