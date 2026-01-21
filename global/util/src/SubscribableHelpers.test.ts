@@ -181,12 +181,8 @@ describe('SubscribableHelpers', () => {
             const exit = await Effect.runPromiseExit(subscribable.get)
 
             expect(exit._tag).toBe('Failure')
-            if (exit._tag === 'Failure') {
-              expect(exit.cause._tag).toBe('Fail')
-              if (exit.cause._tag === 'Fail') {
-                expect(exit.cause.error).toBe(errorMsg)
-              }
-            }
+            expect(exit.cause._tag).toBe('Fail')
+            expect((exit.cause as any).error).toBe(errorMsg)
           })
         )
       })
@@ -223,12 +219,8 @@ describe('SubscribableHelpers', () => {
             )
 
             expect(exit._tag).toBe('Failure')
-            if (exit._tag === 'Failure') {
-              expect(exit.cause._tag).toBe('Fail')
-              if (exit.cause._tag === 'Fail') {
-                expect(exit.cause.error).toBe(errorMsg)
-              }
-            }
+            expect(exit.cause._tag).toBe('Fail')
+            expect((exit.cause as any).error).toBe(errorMsg)
           })
         )
       })
