@@ -6,19 +6,6 @@ import {
   fromPromiseFields,
 } from './PromiseFields'
 
-// Helper to create a promise with external resolve/reject (polyfill for Promise.withResolvers)
-function createDeferredPromise<T>() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let resolve: (value: T) => void = undefined as any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let reject: (reason?: unknown) => void = undefined as any
-  const promise = new Promise<T>((res, rej) => {
-    resolve = res
-    reject = rej
-  })
-  return { promise, resolve, reject }
-}
-
 describe('PromiseFields', () => {
   describe('promiseFieldsFromObject', () => {
     describe('field access returns promises', () => {
@@ -84,15 +71,11 @@ describe('PromiseFields', () => {
       it('property: fields resolve after the promise is resolved programmatically', async () => {
         await fc.assert(
           fc.asyncProperty(fc.record({ value: fc.integer() }), async (obj) => {
-            const { promise, resolve } = createDeferredPromise<typeof obj>()
+            const { promise, resolve } = Promise.withResolvers<typeof obj>()
             const proxy = promiseFieldsFromPromise(promise)
 
-            // Resolve the promise programmatically
             resolve(obj)
-
-            const value = await proxy.value
-
-            expect(value).toBe(obj.value)
+            await expect(proxy.value).resolves.toEqual(obj.value)
           })
         )
       })
@@ -103,12 +86,10 @@ describe('PromiseFields', () => {
         await fc.assert(
           fc.asyncProperty(fc.record({ a: fc.integer() }), async (obj) => {
             const promise = Promise.resolve(obj)
-            const proxy = promiseFieldsFromPromise(promise)
-
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const nonExistent = await (proxy as any).nonExistentField
+            const proxy = promiseFieldsFromPromise(promise) as any
 
-            expect(nonExistent).toBeUndefined()
+            await expect(proxy.nonExistentField).resolves.toBeUndefined()
           })
         )
       })
@@ -118,7 +99,9 @@ describe('PromiseFields', () => {
       it('property: field access rejects with the promise error', async () => {
         await fc.assert(
           fc.asyncProperty(fc.string(), async (errorMsg) => {
-            const { promise, reject } = createDeferredPromise<{ value: number }>()
+            const { promise, reject } = Promise.withResolvers<{
+              value: number
+            }>()
             const proxy = promiseFieldsFromPromise(promise)
 
             const valuePromise = proxy.value
@@ -159,8 +142,8 @@ describe('PromiseFields', () => {
           fc.asyncProperty(
             fc.record({ a: fc.integer(), b: fc.string() }),
             async (obj) => {
-              const { promise, resolve } = createDeferredPromise<string>()
-              
+              const { promise, resolve } = Promise.withResolvers<string>()
+
               // Mix of promise and non-promise values
               const mixedObj = {
                 a: obj.a, // not a promise
