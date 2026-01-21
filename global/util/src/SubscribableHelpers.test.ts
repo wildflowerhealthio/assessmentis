@@ -3,6 +3,8 @@ import * as fc from 'fast-check'
 import {
   Effect,
   Either,
+  Exit,
+  Cause,
   SubscriptionRef,
   Subscribable,
   Readable,
@@ -180,9 +182,19 @@ describe('SubscribableHelpers', () => {
 
             const exit = await Effect.runPromiseExit(subscribable.get)
 
-            expect(exit._tag).toBe('Failure')
-            expect(exit.cause._tag).toBe('Fail')
-            expect((exit.cause as any).error).toBe(errorMsg)
+            Exit.match(exit, {
+              onFailure: (cause) => {
+                expect(Cause.isFailType(cause)).toBe(true)
+                const failure = Cause.failureOption(cause)
+                expect(failure._tag).toBe('Some')
+                if (failure._tag === 'Some') {
+                  expect(failure.value).toBe(errorMsg)
+                }
+              },
+              onSuccess: () => {
+                throw new Error('Expected failure but got success')
+              },
+            })
           })
         )
       })
@@ -218,9 +230,19 @@ describe('SubscribableHelpers', () => {
               subscribable.changes.pipe(Stream.runCollect)
             )
 
-            expect(exit._tag).toBe('Failure')
-            expect(exit.cause._tag).toBe('Fail')
-            expect((exit.cause as any).error).toBe(errorMsg)
+            Exit.match(exit, {
+              onFailure: (cause) => {
+                expect(Cause.isFailType(cause)).toBe(true)
+                const failure = Cause.failureOption(cause)
+                expect(failure._tag).toBe('Some')
+                if (failure._tag === 'Some') {
+                  expect(failure.value).toBe(errorMsg)
+                }
+              },
+              onSuccess: () => {
+                throw new Error('Expected failure but got success')
+              },
+            })
           })
         )
       })

@@ -8,7 +8,9 @@ import {
 
 // Helper to create a promise with external resolve/reject (polyfill for Promise.withResolvers)
 function createDeferredPromise<T>() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let resolve: (value: T) => void = undefined as any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let reject: (reason?: unknown) => void = undefined as any
   const promise = new Promise<T>((res, rej) => {
     resolve = res
