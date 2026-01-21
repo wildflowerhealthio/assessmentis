@@ -37,7 +37,7 @@ import { useStream } from '@assessmentis/react-util'
 import { Stream, Effect } from 'effect'
 
 function DataComponent() {
-  // Stream that emits data every second
+  // Simple stream of static data values
   const dataStream = Stream.make(1, 2, 3, 4, 5)
   
   // Get the latest value as a Promise
