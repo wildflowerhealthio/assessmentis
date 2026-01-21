@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import * as fc from 'fast-check'
-import { Effect, Either } from 'effect'
+import { Effect } from 'effect'
 import {
   refineOrFail,
   refineEffectOrFail,
@@ -17,13 +17,8 @@ describe('failUnless', () => {
 
         fc.assert(
           fc.property(fc.string(), (val) => {
-            const result = Effect.runSync(
-              Effect.either(refineOrFail(isString, makeErr)(val))
-            )
-            expect(Either.isRight(result)).toBe(true)
-            if (Either.isRight(result)) {
-              expect(result.right).toBe(val)
-            }
+            const result = Effect.runSync(refineOrFail(isString, makeErr)(val))
+            expect(result).toBe(val)
           })
         )
       })
@@ -36,13 +31,9 @@ describe('failUnless', () => {
 
         fc.assert(
           fc.property(fc.integer(), (val) => {
-            const result = Effect.runSync(
-              Effect.either(refineOrFail(isString, makeErr)(val))
-            )
-            expect(Either.isLeft(result)).toBe(true)
-            if (Either.isLeft(result)) {
-              expect(result.left).toBe(`Not a string: ${val}`)
-            }
+            expect(() =>
+              Effect.runSync(refineOrFail(isString, makeErr)(val))
+            ).toThrow(`Not a string: ${val}`)
           })
         )
       })
@@ -57,15 +48,9 @@ describe('failUnless', () => {
       fc.assert(
         fc.property(fc.integer({ min: 1, max: 1000 }), (val) => {
           const result = Effect.runSync(
-            Effect.succeed(val).pipe(
-              refineEffectOrFail(isPositive, makeErr),
-              Effect.either
-            )
+            Effect.succeed(val).pipe(refineEffectOrFail(isPositive, makeErr))
           )
-          expect(Either.isRight(result)).toBe(true)
-          if (Either.isRight(result)) {
-            expect(result.right).toBe(val)
-          }
+          expect(result).toBe(val)
         })
       )
     })
@@ -76,16 +61,11 @@ describe('failUnless', () => {
 
       fc.assert(
         fc.property(fc.integer({ max: 0 }), (val) => {
-          const result = Effect.runSync(
-            Effect.succeed(val).pipe(
-              refineEffectOrFail(isPositive, makeErr),
-              Effect.either
+          expect(() =>
+            Effect.runSync(
+              Effect.succeed(val).pipe(refineEffectOrFail(isPositive, makeErr))
             )
-          )
-          expect(Either.isLeft(result)).toBe(true)
-          if (Either.isLeft(result)) {
-            expect(result.left).toBe(`Not positive: ${val}`)
-          }
+          ).toThrow(`Not positive: ${val}`)
         })
       )
     })
@@ -95,19 +75,14 @@ describe('failUnless', () => {
     describe('identity property', () => {
       it('property: always succeeds with the input value when condition is always true', () => {
         fc.assert(
-          fc.property(fc.anything(), (val) => {
+          fc.property(fc.integer(), (val) => {
             const result = Effect.runSync(
-              Effect.either(
-                failUnless(
-                  () => true,
-                  () => 'error'
-                )(val)
-              )
+              failUnless(
+                () => true,
+                () => 'error'
+              )(val)
             )
-            expect(Either.isRight(result)).toBe(true)
-            if (Either.isRight(result)) {
-              expect(result.right).toBe(val)
-            }
+            expect(result).toBe(val)
           })
         )
       })
@@ -116,47 +91,17 @@ describe('failUnless', () => {
     describe('failure property', () => {
       it('property: always fails with makeErr output when condition is always false', () => {
         fc.assert(
-          fc.property(fc.anything(), (val) => {
-            const errorMsg = `Failed for: ${String(val)}`
-            const result = Effect.runSync(
-              Effect.either(
+          fc.property(fc.integer(), (val) => {
+            const errorMsg = `Failed for: ${val}`
+            
+            expect(() =>
+              Effect.runSync(
                 failUnless(
                   () => false,
                   () => errorMsg
                 )(val)
               )
-            )
-            expect(Either.isLeft(result)).toBe(true)
-            if (Either.isLeft(result)) {
-              expect(result.left).toBe(errorMsg)
-            }
-          })
-        )
-      })
-    })
-
-    describe('conditional behavior', () => {
-      it('property: succeeds for values passing predicate, fails for others', () => {
-        const isEven = (n: number) => n % 2 === 0
-        const makeErr = (n: number) => `${n} is odd`
-
-        fc.assert(
-          fc.property(fc.integer(), (val) => {
-            const result = Effect.runSync(
-              Effect.either(failUnless(isEven, makeErr)(val))
-            )
-
-            if (isEven(val)) {
-              expect(Either.isRight(result)).toBe(true)
-              if (Either.isRight(result)) {
-                expect(result.right).toBe(val)
-              }
-            } else {
-              expect(Either.isLeft(result)).toBe(true)
-              if (Either.isLeft(result)) {
-                expect(result.left).toBe(`${val} is odd`)
-              }
-            }
+            ).toThrow(errorMsg)
           })
         )
       })
@@ -172,14 +117,16 @@ describe('failUnless', () => {
               return 'error'
             }
 
-            Effect.runSync(
-              Effect.either(
+            try {
+              Effect.runSync(
                 failUnless(
                   () => false,
                   makeErr
                 )(val)
               )
-            )
+            } catch {
+              // Expected to fail
+            }
 
             expect(receivedValue).toBe(val)
           })
@@ -196,15 +143,9 @@ describe('failUnless', () => {
       fc.assert(
         fc.property(fc.integer({ min: 1, max: 1000 }), (val) => {
           const result = Effect.runSync(
-            Effect.succeed(val).pipe(
-              failEffectUnless(isPositive, makeErr),
-              Effect.either
-            )
+            Effect.succeed(val).pipe(failEffectUnless(isPositive, makeErr))
           )
-          expect(Either.isRight(result)).toBe(true)
-          if (Either.isRight(result)) {
-            expect(result.right).toBe(val)
-          }
+          expect(result).toBe(val)
         })
       )
     })
@@ -215,16 +156,11 @@ describe('failUnless', () => {
 
       fc.assert(
         fc.property(fc.integer({ max: 0 }), (val) => {
-          const result = Effect.runSync(
-            Effect.succeed(val).pipe(
-              failEffectUnless(isPositive, makeErr),
-              Effect.either
+          expect(() =>
+            Effect.runSync(
+              Effect.succeed(val).pipe(failEffectUnless(isPositive, makeErr))
             )
-          )
-          expect(Either.isLeft(result)).toBe(true)
-          if (Either.isLeft(result)) {
-            expect(result.left).toBe(`${val} is not positive`)
-          }
+          ).toThrow(`${val} is not positive`)
         })
       )
     })
