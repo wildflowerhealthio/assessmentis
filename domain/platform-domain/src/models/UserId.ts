@@ -7,9 +7,3 @@ export const AuthStateError = Schema.TaggedStruct('AuthStateError', {
   cause: Schema.optional(Schema.Unknown),
 })
 export type AuthStateError = typeof AuthStateError.Type
-
-export const NotLoggedIn = Schema.TaggedStruct('NotLoggedIn', {})
-export type NotLoggedIn = typeof NotLoggedIn.Type
-
-export const CurrentUserIdError = Schema.Union(AuthStateError, NotLoggedIn)
-export type CurrentUserIdError = typeof CurrentUserIdError.Type

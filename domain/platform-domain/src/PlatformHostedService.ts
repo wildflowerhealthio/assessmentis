@@ -1,8 +1,8 @@
 import { Deferred, Option, Effect } from 'effect'
-import { UserId } from './loadedValues/UserId'
-import { User } from './loadedValues/User'
-import { OrgSlug } from './loadedValues/IdTypes'
-import { Org } from './loadedValues/Org'
+import { UserId } from './models/UserId'
+import { User } from './models/User'
+import { OrgSlug } from './models/IdTypes'
+import { Org } from './models/Org'
 
 export default interface PlatformHostedService {
   setOrgSlug: (orgSlug: Option.Option<OrgSlug>) => Effect.Effect<void>

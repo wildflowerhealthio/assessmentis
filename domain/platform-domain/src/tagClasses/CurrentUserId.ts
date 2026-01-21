@@ -1,5 +1,5 @@
 import { Context } from 'effect'
-import { UserId } from '../loadedValues/UserId'
+import { UserId } from '../models/UserId'
 
 export class CurrentUserId extends Context.Tag('CurrentUserId')<
   CurrentUserId,

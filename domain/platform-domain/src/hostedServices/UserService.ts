@@ -15,7 +15,7 @@ import {
 } from 'effect'
 import { UnhandledError, NotFoundError } from '@assessmentis/ontology'
 import { AuthError } from '../errors'
-import { User } from '../loadedValues/User'
+import { User } from '../models/User'
 import { AuthDataService, DocumentStore } from '../tagClasses'
 
 const decodeUser = (data: unknown) =>

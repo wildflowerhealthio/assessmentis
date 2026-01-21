@@ -1,6 +1,6 @@
 import { Context, Effect, Layer, Schema } from 'effect'
-import { User } from '../loadedValues/User'
-import { UserId } from '../loadedValues/UserId'
+import { User } from '../models/User'
+import { UserId } from '../models/UserId'
 import { ClientRuntimeContext } from '../UserPlatformService'
 import { AuthError, AuthzError } from '../errors'
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'

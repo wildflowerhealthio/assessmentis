@@ -1,8 +1,5 @@
 import { DateTime, Effect, Exit } from 'effect'
-import { OrgError } from '@assessmentis/platform-domain'
 import { UnhandledError } from '@assessmentis/ontology'
-
-export type ContextError = OrgError
 
 type SyncContext = DateTime.CurrentTimeZone
 
