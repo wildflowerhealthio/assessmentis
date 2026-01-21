@@ -87,7 +87,8 @@ function App() {
     useValidateAuthenticator({
       authController,
       authenticator: myAuthenticator,
-      dataSourceDelegate: firestoreDelegate,
+      // TODO: remove after fire CMS fixes this
+      dataSourceDelegate: firestoreDelegate as any,
       storageSource,
     })
 
@@ -95,7 +96,8 @@ function App() {
     disabled: authLoading,
     collections,
     authController,
-    dataSourceDelegate: firestoreDelegate,
+    // TODO: remove after fire CMS fixes this
+    dataSourceDelegate: firestoreDelegate as any,
   })
 
   if (firebaseConfigLoading || !firebaseApp) {
@@ -117,7 +119,8 @@ function App() {
           navigationController={navigationController}
           authController={authController}
           userConfigPersistence={userConfigPersistence}
-          dataSourceDelegate={firestoreDelegate}
+          // TODO: remove after fire CMS fixes this incompatibility
+          dataSourceDelegate={firestoreDelegate as any}
           storageSource={storageSource}
         >
           {({ context, loading }) => {
