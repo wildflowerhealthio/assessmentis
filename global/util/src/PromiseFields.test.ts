@@ -8,8 +8,8 @@ import {
 
 // Helper to create a promise with external resolve/reject (polyfill for Promise.withResolvers)
 function createDeferredPromise<T>() {
-  let resolve: (value: T) => void
-  let reject: (reason?: unknown) => void
+  let resolve: (value: T) => void = undefined as any
+  let reject: (reason?: unknown) => void = undefined as any
   const promise = new Promise<T>((res, rej) => {
     resolve = res
     reject = rej
@@ -116,7 +116,7 @@ describe('PromiseFields', () => {
       it('property: field access rejects with the promise error', async () => {
         await fc.assert(
           fc.asyncProperty(fc.string(), async (errorMsg) => {
-            const { promise, reject } = createDeferredPromise<never>()
+            const { promise, reject } = createDeferredPromise<{ value: number }>()
             const proxy = promiseFieldsFromPromise(promise)
 
             const valuePromise = proxy.value
