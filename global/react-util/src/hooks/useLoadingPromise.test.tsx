@@ -92,10 +92,9 @@ describe('useLoadingPromise', () => {
   describe('promise reference changes', () => {
     it('should reset to loading state when promise reference changes', async () => {
       const promise1 = Promise.resolve('first')
-      const { result, rerender } = renderHook(
-        ({ p }) => useLoadingPromise(p),
-        { initialProps: { p: promise1 } }
-      )
+      const { result, rerender } = renderHook(({ p }) => useLoadingPromise(p), {
+        initialProps: { p: promise1 },
+      })
 
       // Wait for first promise to resolve
       await waitFor(() => {
@@ -123,10 +122,9 @@ describe('useLoadingPromise', () => {
 
     it('should handle transition from resolved to rejected', async () => {
       const promise1 = Promise.resolve('success')
-      const { result, rerender } = renderHook(
-        ({ p }) => useLoadingPromise(p),
-        { initialProps: { p: promise1 } }
-      )
+      const { result, rerender } = renderHook(({ p }) => useLoadingPromise(p), {
+        initialProps: { p: promise1 },
+      })
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
@@ -277,10 +275,9 @@ describe('useLoadingPromise', () => {
 
     it('should reset to loading state on cleanup', async () => {
       const promise1 = Promise.resolve('first')
-      const { result, rerender } = renderHook(
-        ({ p }) => useLoadingPromise(p),
-        { initialProps: { p: promise1 } }
-      )
+      const { result, rerender } = renderHook(({ p }) => useLoadingPromise(p), {
+        initialProps: { p: promise1 },
+      })
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false)

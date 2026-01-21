@@ -265,9 +265,7 @@ describe('useCollection', () => {
     it('should add items to the beginning of the collection', async () => {
       const initial: TestItem[] = [{ id: '1', name: 'Existing' }]
       const apiDelete = vi.fn()
-      const apiCreate = vi
-        .fn()
-        .mockResolvedValue({ id: '2', name: 'New Item' })
+      const apiCreate = vi.fn().mockResolvedValue({ id: '2', name: 'New Item' })
 
       const { result } = renderHook(() =>
         useCollection({ apiDelete, apiCreate }, initial)
@@ -310,7 +308,9 @@ describe('useCollection', () => {
 
       const { result } = renderHook(() => {
         renderCount++
-        return useCollection({ apiDelete, apiCreate }, [{ id: '1', name: 'Item' }])
+        return useCollection({ apiDelete, apiCreate }, [
+          { id: '1', name: 'Item' },
+        ])
       })
 
       expect(renderCount).toBe(1)
