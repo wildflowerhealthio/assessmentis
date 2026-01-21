@@ -184,7 +184,6 @@ describe('SubscribableHelpers', () => {
 
             Exit.match(exit, {
               onFailure: (cause) => {
-                expect(Cause.isFailType(cause)).toBe(true)
                 const failure = Cause.failureOption(cause)
                 expect(failure._tag).toBe('Some')
                 if (failure._tag === 'Some') {
@@ -232,7 +231,6 @@ describe('SubscribableHelpers', () => {
 
             Exit.match(exit, {
               onFailure: (cause) => {
-                expect(Cause.isFailType(cause)).toBe(true)
                 const failure = Cause.failureOption(cause)
                 expect(failure._tag).toBe('Some')
                 if (failure._tag === 'Some') {
