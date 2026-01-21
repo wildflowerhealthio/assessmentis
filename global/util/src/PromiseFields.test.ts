@@ -6,6 +6,17 @@ import {
   fromPromiseFields,
 } from './PromiseFields'
 
+// Helper to create a promise with external resolve/reject (polyfill for Promise.withResolvers)
+function createDeferredPromise<T>() {
+  let resolve!: (value: T) => void
+  let reject!: (reason?: unknown) => void
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res
+    reject = rej
+  })
+  return { promise, resolve, reject }
+}
+
 describe('PromiseFields', () => {
   describe('promiseFieldsFromObject', () => {
     describe('field access returns promises', () => {
@@ -70,20 +81,17 @@ describe('PromiseFields', () => {
     describe('with delayed promise', () => {
       it('property: fields resolve after the promise resolves', async () => {
         await fc.assert(
-          fc.asyncProperty(
-            fc.record({ value: fc.integer() }),
-            fc.integer({ min: 1, max: 10 }),
-            async (obj, delay) => {
-              const promise = new Promise<typeof obj>((resolve) =>
-                setTimeout(() => resolve(obj), delay)
-              )
-              const proxy = promiseFieldsFromPromise(promise)
+          fc.asyncProperty(fc.record({ value: fc.integer() }), async (obj) => {
+            const { promise, resolve } = createDeferredPromise<typeof obj>()
+            const proxy = promiseFieldsFromPromise(promise)
 
-              const value = await proxy.value
+            // Resolve the promise programmatically
+            resolve(obj)
 
-              expect(value).toBe(obj.value)
-            }
-          )
+            const value = await proxy.value
+
+            expect(value).toBe(obj.value)
+          })
         )
       })
     })
@@ -99,6 +107,19 @@ describe('PromiseFields', () => {
             const nonExistent = await (proxy as any).nonExistentField
 
             expect(nonExistent).toBeUndefined()
+          })
+        )
+      })
+    })
+
+    describe('with rejected promise', () => {
+      it('property: field access rejects with the promise error', async () => {
+        await fc.assert(
+          fc.asyncProperty(fc.string(), async (errorMsg) => {
+            const promise = Promise.reject(new Error(errorMsg))
+            const proxy = promiseFieldsFromPromise(promise)
+
+            await expect(proxy.value).rejects.toThrow(errorMsg)
           })
         )
       })
@@ -132,11 +153,16 @@ describe('PromiseFields', () => {
           fc.asyncProperty(
             fc.record({ a: fc.integer(), b: fc.string() }),
             async (obj) => {
+              const { promise, resolve } = createDeferredPromise<string>()
+              
               // Mix of promise and non-promise values
               const mixedObj = {
                 a: obj.a, // not a promise
-                b: Promise.resolve(obj.b), // is a promise
+                b: promise, // is a promise that we'll resolve programmatically
               }
+
+              // Resolve the promise programmatically
+              resolve(obj.b)
 
               const result = await fromPromiseFields(mixedObj)
 
