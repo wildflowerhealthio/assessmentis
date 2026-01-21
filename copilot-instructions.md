@@ -17,31 +17,93 @@
 
 ### Monorepo Structure
 
-This project uses a **Turborepo monorepo** with npm workspaces. The structure separates concerns into apps and shared packages:
+This project uses a **Turborepo monorepo** with npm workspaces. The structure separates concerns into apps, domain logic, infrastructure, and shared configurations:
 
 ```
 assessmentis/
 ├── apps/
 │   ├── frontend/        # React Router v7 SPA
-│   └── functions/       # Firebase Cloud Functions
-└── packages/
-    ├── domain/                      # Core business logic and types
-    ├── react-util/                  # Shared React components and hooks
-    ├── google-fhir-web-infrastructure/  # FHIR/Google Healthcare integration
-    ├── daily-co-infrastructure/     # Video call integration
-    ├── google-meet-infrastructure/  # Future Google Meet integration
-    ├── eslint-config/               # Shared ESLint configuration
-    ├── prettier-config/             # Shared Prettier configuration
-    └── typescript-config/           # Shared TypeScript configurations
+│   ├── functions/       # Firebase Cloud Functions
+│   └── firecms/         # FireCMS admin interface
+├── domain/              # Pure business logic (no side effects)
+│   ├── clinical-domain/            # FHIR resources, repositories, clinical logic
+│   └── platform-domain/            # User, Org, auth services
+├── infrastructure/      # Concrete implementations of domain interfaces
+│   ├── google-fhir-web-infrastructure/   # Browser-side FHIR client
+│   ├── google-fhir-node-infrastructure/  # Server-side FHIR client (stub)
+│   ├── firebase-web-infrastructure/      # Browser-side Firebase
+│   ├── firebase-server-infrastructure/   # Server-side Firebase Admin SDK
+│   ├── daily-co-infrastructure/          # Daily.co video integration
+│   └── google-meet-infrastructure/       # Google Meet integration
+└── global/              # Shared configurations and utilities
+    ├── eslint-config/              # Shared ESLint configuration
+    ├── prettier-config/            # Shared Prettier configuration
+    ├── typescript-config/          # Shared TypeScript configurations
+    ├── react-util/                 # Shared React components and hooks
+    ├── ontology/                   # Shared types and utilities
+    └── util/                       # Framework-agnostic utilities
 ```
 
 ### Key Architectural Principles
 
-1. **Domain-Driven Design**: The `domain` package contains all core business logic and is framework-agnostic
+1. **Domain-Driven Design**: The `domain` packages contain all core business logic and are framework-agnostic
 2. **Effect-TS First**: Heavy use of Effect-TS for functional, composable, and type-safe code
 3. **FHIR Compliance**: All healthcare data structures follow FHIR R4 specifications
 4. **Layered Architecture**: Infrastructure concerns are isolated in dedicated packages
 5. **Type Safety**: Strict TypeScript with Effect Schema for runtime validation
+
+### Platform Service Architecture
+
+The frontend uses a **two-level context hierarchy** for dependency injection and service management:
+
+```
+PlatformContextProvider (root)
+├── AuthDataService       # Authentication state management
+├── OrgService            # Organization selection and loading
+├── UserService           # User data and roles
+├── FhirR4ClientService   # FHIR client for clinical data
+├── ClinicalDataRepositoryService  # Repository factory
+└── ExternalVideoCallClientService # Video call client
+    │
+    └── OrgContextProvider (child)
+        └── Selected Org context for route components
+```
+
+**Service Initialization Flow:**
+
+1. `PlatformContextProvider` initializes all core services using Effect Layers
+2. Services use `PubSub` + `Stream` patterns for reactive state updates
+3. `OrgContextProvider` subscribes to `OrgService` and provides org selection UI
+4. Route components access services via `usePlatformContext()` hook
+
+**Server vs Client Runtime:**
+
+- **Client (Browser):** Uses `FirebaseWebDocumentStoreLayer` for Firestore access
+- **Server (Cloud Functions):** Uses `FirebaseAdminDocumentStoreLayer` for admin SDK access
+
+Both implement the `DocumentStore` interface from `platform-domain`, enabling shared business logic.
+
+#### DocumentStore Abstraction
+
+The `DocumentStore` tag class in `platform-domain/tagClasses/` provides an abstract interface for document operations:
+
+```typescript
+interface DocumentStore {
+  get(...path: string[]) => Effect<DocumentData, NotFoundError | UnhandledError>
+  subscribeTo(...path: string[]) => Stream<Either<DocumentData, NotFoundError>>
+}
+```
+
+This abstraction enables:
+
+- **Shared domain logic** between client and server
+- **Testability** via mock implementations
+- **Platform flexibility** (could swap Firebase for another backend)
+
+**Platform Error Types** (from `platform-domain/errors.ts`):
+
+- `AuthError` - User is not authenticated
+- `AuthzError` - User lacks required permissions (authenticated but not authorized)
 
 ### Technology Stack
 
@@ -89,6 +151,14 @@ apps/frontend/app/
 │   ├── Encounter.$encounterId.tsx
 │   ├── Questionnaire._index.tsx
 │   └── QuestionnaireResponse.$questionnaireResponseId.tsx
+├── layers/                     # Service composition layer
+│   ├── PlatformContext.tsx    # Core services interface definition
+│   ├── PlatformContextProvider.tsx  # Initializes all platform services
+│   ├── OrgContext.tsx         # Organization selection context
+│   ├── OrgContextProvider.tsx # Org selection and validation
+│   ├── FhirR4ClientService.tsx       # FHIR client service
+│   ├── ClinicalDataRepositoriesService.ts  # Repository factory
+│   └── ExternalVideoCallClientService.tsx  # Video call client
 ├── modules/                    # Feature modules
 │   ├── encounters/
 │   │   └── actions/           # Business logic for encounters
@@ -101,21 +171,23 @@ apps/frontend/app/
 │       └── questionnaire-templates/  # Questionnaire templates
 ├── components/                 # Shared UI components
 │   ├── NavHeader.tsx
-│   ├── LoginButton.tsx
-│   └── RuntimeContextOrErr.tsx
-├── clientRuntime.tsx          # Effect runtime setup
+│   └── LoginButton.tsx
 ├── firebase.tsx               # Firebase initialization
 └── globals.css                # Global styles
 ```
 
 ### Domain Package Structure
 
-The domain package is organized by **domain concepts** (FHIR resources):
+Domain packages contain pure business logic with no side effects. There are multiple domain packages:
+
+#### Clinical Domain (`domain/clinical-domain/`)
+
+Organized by **FHIR resources**:
 
 ```
-packages/domain/src/
+domain/clinical-domain/src/
 ├── index.ts
-├── errors.ts                  # Domain error types
+├── errors.ts                  # Domain error types (NotFoundError, UnhandledError)
 ├── general-purpose/           # Base FHIR types (Element, Resource, etc.)
 ├── encounters/
 │   ├── models/               # Encounter domain models
@@ -134,12 +206,40 @@ packages/domain/src/
 └── compositions/             # FHIR Composition resources
 ```
 
+#### Platform Domain (`domain/platform-domain/`)
+
+User, organization, and authentication services:
+
+```
+domain/platform-domain/src/
+├── models/                    # Data schemas
+│   ├── User.ts               # User profile with org roles
+│   ├── Org.ts                # Organization model
+│   ├── OrgRole.ts            # Organization role mapping
+│   ├── FrontendConfig.ts     # Per-org frontend configuration
+│   └── IdTypes.ts            # Brand types (OrgSlug, Role, UserId)
+├── services/                  # Server-side services
+│   ├── LoadedOrg.ts          # Effect Tag for loaded org instance
+│   ├── LoadedUser.ts         # Effect Tag for loaded user instance
+│   ├── OrgAdminService.ts    # Org administration operations
+│   └── OrgUserService.ts     # User authorization checks
+├── hostedServices/           # Client-side reactive services
+│   ├── OrgService.ts         # Org selection with streams
+│   └── UserService.ts        # User data with streams
+├── tagClasses/               # Effect context tags
+│   ├── AuthDataService.ts    # Authentication stream
+│   ├── CurrentOrg.ts         # Current org context
+│   ├── CurrentUserId.ts      # Current user context
+│   └── DocumentStore.ts      # Document repository interface
+└── errors.ts                 # AuthError, AuthzError
+```
+
 ### Naming Conventions
 
 #### Files and Folders
 
 - **PascalCase** for component files: `NavHeader.tsx`, `QuestionnaireForm.tsx`
-- **camelCase** for utility files: `clientRuntime.tsx`, `create.ts`
+- **camelCase** for utility files: `firebase.tsx`, `create.ts`
 - **Folders**: Use singular nouns when possible, plural for collections: `components/`, `actions/`, `models/`
 
 #### Code
@@ -217,13 +317,14 @@ export const create = (args: CreateEncounterArg) =>
 
 - Use `Layer` to compose dependencies
 - Define layers in infrastructure packages
-- Compose app layer in `clientRuntime.tsx` or `serverRuntime.ts`
+- Frontend composes services in `layers/PlatformContextProvider.tsx`
+- Cloud Functions compose services in their respective handlers
 
 ### React Patterns
 
 #### Hooks
 
-- Use Effect runtime via `useRuntimeContext()`
+- Access platform services via `usePlatformContext()` from `layers/PlatformContext`
 - Run effects in `useEffect` with proper cleanup
 - Use custom hooks from `@assessmentis/react-util/hooks` when available
 
@@ -248,7 +349,7 @@ type IProps = {
 const ComponentName = ({ prop1, prop2 }: IProps) => {
   // Hooks
   const [state, setState] = useState()
-  const runtime = useRuntimeContext()
+  const platform = usePlatformContext()
 
   // Effects
   useEffect(() => {
@@ -345,7 +446,7 @@ import { Effect, Schema } from 'effect'
 import { Questionnaire } from '@assessmentis/clinical-domain/questionnaires'
 import { FhirClient } from '@assessmentis/google-fhir-web-infrastructure'
 import { cn } from '@assessmentis/react-util'
-import { useRuntimeContext } from 'app/clientRuntime'
+import { usePlatformContext } from 'app/layers/PlatformContext'
 import NavHeader from './components/NavHeader'
 import classes from './Component.module.css'
 ```
@@ -575,31 +676,26 @@ export default function NewResourceIndex() {
 
 ### Using Effect in React
 
+Access platform services via `usePlatformContext()`:
+
 ```typescript
 const Component = () => {
-  const runtime = useRuntimeContext()
+  const { clinicalDataRepositoryService } = usePlatformContext()
   const [data, setData] = useState<Data | null>(null)
 
   useEffect(() => {
     const effect = Effect.gen(function* () {
-      const repo = yield* SomeRepository
-      return yield* repo.getData()
+      const repo = yield* clinicalDataRepositoryService.repositoryEffect('Encounter')
+      return yield* repo.getAll()
     })
 
-    const promise = runtime.runPromise(effect)
-
-    promise
+    Effect.runPromise(effect)
       .then(setData)
       .catch((error) => {
         console.error(error)
         // Handle error
       })
-
-    // Cleanup if needed
-    return () => {
-      // Cancel effect if possible
-    }
-  }, [runtime])
+  }, [clinicalDataRepositoryService])
 
   return <div>{data ? <Display data={data} /> : 'Loading...'}</div>
 }
@@ -617,7 +713,7 @@ const Component = () => {
 
 ### OpenTelemetry
 
-- Configured in `clientRuntime.tsx` with WebSDK
+- Configured in `layers/PlatformContextProvider.tsx` with WebSDK
 - Use Effect's tracing capabilities
 - Spans are automatically created for Effects
 - Annotate with `Effect.withSpan` when needed
@@ -640,10 +736,22 @@ The project uses Tundra CSS variables:
 
 ### When to Use Each Package
 
-- **@assessmentis/clinical-domain**: Types, schemas, repository interfaces, business logic
-- **@assessmentis/react-util**: Shared React hooks, components, utilities
-- **@assessmentis/google-fhir-web-infrastructure**: FHIR/Google Healthcare implementations
+**Domain packages** (pure business logic):
+
+- **@assessmentis/clinical-domain**: FHIR resources, clinical repositories, business logic
+- **@assessmentis/platform-domain**: User, Org, auth services, DocumentStore interface
+
+**Infrastructure packages** (concrete implementations):
+
+- **@assessmentis/google-fhir-web-infrastructure**: Browser-side FHIR client
+- **@assessmentis/firebase-web-infrastructure**: Browser-side Firestore via Firebase SDK
+- **@assessmentis/firebase-server-infrastructure**: Server-side Firestore via Admin SDK
 - **@assessmentis/daily-co-infrastructure**: Daily.co video call implementation
+
+**Global packages** (shared utilities):
+
+- **@assessmentis/react-util**: Shared React hooks, components, utilities
+- **@assessmentis/ontology**: Shared types and utilities
 - **@assessmentis/eslint-config**: Import in `eslint.config.js`
 - **@assessmentis/prettier-config**: Set in `package.json` "prettier" field
 - **@assessmentis/typescript-config**: Extend in `tsconfig.json`
