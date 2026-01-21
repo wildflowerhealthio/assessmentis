@@ -1,14 +1,14 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { Effect, Layer, Exit, Cause } from 'effect'
 import {
   LoadedUser,
   LiteralLoadedUserLayer,
   LoadedUserLayer,
 } from './LoadedUser'
-import { CurrentUserId } from '../tagClasses'
+import { CurrentUserId, DocumentStore } from '../tagClasses'
 import { UserId } from '../models/UserId'
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
-import { createMockDocumentStore, getImplementations } from './__tests__/mocks'
+import { mockDocumentStore, mockDocumentStoreImplementations } from './__tests__/mocks'
 
 describe('LoadedUser', () => {
   const testUserId = UserId.make('user-123')
@@ -81,14 +81,12 @@ describe('LoadedUser', () => {
         },
       }
 
-      const { layer: mockDocumentStore } = createMockDocumentStore(
-        getImplementations.withData(new Map([
-          [`users/${testUserId}`, validUserData],
-        ]))
-      )
+      const mock = mockDocumentStore({
+        get: vi.fn(mockDocumentStoreImplementations.get.returning(validUserData))
+      })
 
       const testLayer = LoadedUserLayer.pipe(
-        Layer.provide(mockDocumentStore),
+        Layer.provide(Layer.succeed(DocumentStore, mock)),
         Layer.provide(
           Layer.succeed(CurrentUserId, {
             userId: testUserId,
@@ -110,12 +108,12 @@ describe('LoadedUser', () => {
     })
 
     it('fails with NotFoundError when user not found in DocumentStore', async () => {
-      const { layer: mockDocumentStore } = createMockDocumentStore(
-        getImplementations.withData(new Map())
-      )
+      const mock = mockDocumentStore({
+        get: vi.fn(mockDocumentStoreImplementations.get.notFound())
+      })
 
       const testLayer = LoadedUserLayer.pipe(
-        Layer.provide(mockDocumentStore),
+        Layer.provide(Layer.succeed(DocumentStore, mock)),
         Layer.provide(
           Layer.succeed(CurrentUserId, {
             userId: UserId.make('nonexistent-user'),
@@ -145,14 +143,12 @@ describe('LoadedUser', () => {
         },
       }
 
-      const { layer: mockDocumentStore } = createMockDocumentStore(
-        getImplementations.withData(new Map([
-          [`users/${testUserId}`, invalidUserData],
-        ]))
-      )
+      const mock = mockDocumentStore({
+        get: vi.fn(mockDocumentStoreImplementations.get.returning(invalidUserData))
+      })
 
       const testLayer = LoadedUserLayer.pipe(
-        Layer.provide(mockDocumentStore),
+        Layer.provide(Layer.succeed(DocumentStore, mock)),
         Layer.provide(
           Layer.succeed(CurrentUserId, {
             userId: testUserId,

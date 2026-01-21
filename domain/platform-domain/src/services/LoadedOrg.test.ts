@@ -1,14 +1,14 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { Effect, Layer, Exit, Cause } from 'effect'
 import {
   LoadedOrg,
   LiteralLoadedOrgLayer,
   LoadedOrgLayer,
 } from './LoadedOrg'
-import { CurrentOrg } from '../tagClasses'
+import { CurrentOrg, DocumentStore } from '../tagClasses'
 import { OrgSlug } from '../models/IdTypes'
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
-import { createMockDocumentStore, defaultOrg, getImplementations } from './__tests__/mocks'
+import { mockDocumentStore, mockDocumentStoreImplementations, defaultOrg } from './__tests__/mocks'
 
 describe('LoadedOrg', () => {
   const testOrgSlug = OrgSlug.make('test-org')
@@ -81,14 +81,12 @@ describe('LoadedOrg', () => {
     it('successfully loads from DocumentStore', async () => {
       const validOrgData = defaultOrg()
       
-      const { layer: mockDocumentStore, getMock } = createMockDocumentStore(
-        getImplementations.withData(new Map([
-          [`orgs/${testOrgSlug}`, validOrgData],
-        ]))
-      )
+      const mock = mockDocumentStore({
+        get: vi.fn(mockDocumentStoreImplementations.get.returning(validOrgData))
+      })
 
       const testLayer = LoadedOrgLayer.pipe(
-        Layer.provide(mockDocumentStore),
+        Layer.provide(Layer.succeed(DocumentStore, mock)),
         Layer.provide(Layer.succeed(CurrentOrg, testOrgSlug))
       )
 
@@ -104,16 +102,16 @@ describe('LoadedOrg', () => {
       }
       
       // Verify the mock was called
-      expect(getMock).toHaveBeenCalledWith('orgs', testOrgSlug)
+      expect(mock.get).toHaveBeenCalledWith('orgs', testOrgSlug)
     })
 
     it('fails with NotFoundError when org not found in DocumentStore', async () => {
-      const { layer: mockDocumentStore, getMock } = createMockDocumentStore(
-        getImplementations.notFound()
-      )
+      const mock = mockDocumentStore({
+        get: vi.fn(mockDocumentStoreImplementations.get.notFound())
+      })
 
       const testLayer = LoadedOrgLayer.pipe(
-        Layer.provide(mockDocumentStore),
+        Layer.provide(Layer.succeed(DocumentStore, mock)),
         Layer.provide(Layer.succeed(CurrentOrg, OrgSlug.make('nonexistent-org')))
       )
 
@@ -130,7 +128,7 @@ describe('LoadedOrg', () => {
       }
       
       // Verify the mock was called
-      expect(getMock).toHaveBeenCalled()
+      expect(mock.get).toHaveBeenCalled()
     })
   })
 })

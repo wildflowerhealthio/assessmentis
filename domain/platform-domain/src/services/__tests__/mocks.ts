@@ -1,14 +1,17 @@
-import { vi, type Mock } from 'vitest'
-import { Effect, Layer, Stream, Context } from 'effect'
+import { vi } from 'vitest'
+import { Effect, Stream, Context } from 'effect'
 import { DocumentStore, type DocumentData } from '../../tagClasses'
 import { NotFoundError } from '@assessmentis/ontology'
 import type { Org } from '../../models/Org'
+import { OrgSlug } from '../../models/IdTypes'
+
+type DocumentStoreService = Context.Tag.Service<typeof DocumentStore>
 
 /**
  * Default org literal for testing
  */
 export const defaultOrg = (): Org => ({
-  slug: 'test-org' as any, // Will be branded in tests
+  slug: OrgSlug.make('test-org'),
   frontendConfig: {
     fhirServer: {
       _tag: 'not_implemented' as const,
@@ -20,84 +23,63 @@ export const defaultOrg = (): Org => ({
 })
 
 /**
- * Helper implementations for DocumentStore.get mock
+ * Mock implementations for DocumentStore methods
  */
-export const getImplementations = {
-  /**
-   * Returns NotFoundError for all paths
-   */
-  notFound: () => (...path: readonly string[]) =>
-    Effect.fail(
-      new NotFoundError({
-        resourceType: path[0],
-        params: { path: path.join('/') },
-      })
-    ),
-
-  /**
-   * Returns specific data for matching paths, NotFoundError otherwise
-   */
-  withData: (dataMap: Map<string, DocumentData>) => (...path: readonly string[]) => {
-    const key = path.join('/')
-    const data = dataMap.get(key)
-    
-    if (data !== undefined) {
-      return Effect.succeed(data)
-    }
-    
-    return Effect.fail(
-      new NotFoundError({
-        resourceType: path[0],
-        params: { path: path.join('/') },
-      })
-    )
-  },
-
-  /**
-   * Returns data from a custom function, useful for complex logic
-   */
-  custom: (fn: (...path: readonly string[]) => DocumentData | undefined) => 
-    (...path: readonly string[]) => {
-      const data = fn(...path)
-      
-      if (data !== undefined) {
-        return Effect.succeed(data)
-      }
-      
-      return Effect.fail(
+export const mockDocumentStoreImplementations = {
+  get: {
+    /**
+     * Returns NotFoundError for all paths
+     */
+    notFound: () => (...path: readonly string[]) =>
+      Effect.fail(
         new NotFoundError({
           resourceType: path[0],
           params: { path: path.join('/') },
         })
-      )
-    },
+      ),
+
+    /**
+     * Returns the provided data for all paths
+     */
+    returning: (data: DocumentData) => (..._path: readonly string[]) =>
+      Effect.succeed(data),
+
+    /**
+     * Returns data from a custom function, useful for complex logic
+     */
+    withCallback: (fn: (...path: readonly string[]) => DocumentData | undefined) => 
+      (...path: readonly string[]) => {
+        const data = fn(...path)
+
+        if (data !== undefined) {
+          return Effect.succeed(data)
+        }
+
+        return Effect.fail(
+          new NotFoundError({
+            resourceType: path[0],
+            params: { path: path.join('/') },
+          })
+        )
+      },
+  },
+
+  subscribeTo: {
+    /**
+     * Returns an empty stream that never emits
+     */
+    emptyStream: () => (..._path: readonly string[]) => Stream.never,
+  },
 }
 
 /**
  * Create a mock DocumentStore for testing using vitest mocks
  * 
- * @param getImpl - Implementation for the get method (use getImplementations helpers)
- * @returns Layer and vitest mock for DocumentStore
+ * @param impl - Partial implementation to override defaults
+ * @returns DocumentStore service with vitest mocks
  */
-export function createMockDocumentStore(
-  getImpl?: (...path: readonly string[]) => Effect.Effect<DocumentData, NotFoundError, never>
-): {
-  layer: Layer.Layer<DocumentStore, never, never>
-  getMock: Mock
-} {
-  const getMock = vi.fn(getImpl ?? getImplementations.notFound()) as Mock
-  
-  const get = ((...path: readonly string[]) => {
-    return getMock(...path)
-  }) as Context.Tag.Service<typeof DocumentStore>['get']
-
-  const mockLayer = Layer.succeed(DocumentStore, {
-    get,
-    subscribeTo: () => Stream.never,
-  })
-
-  return {
-    layer: mockLayer,
-    getMock,
-  }
-}
+export const mockDocumentStore = (impl: Partial<DocumentStoreService> = {}): DocumentStoreService => ({
+  get: vi.fn(mockDocumentStoreImplementations.get.notFound()),
+  subscribeTo: vi.fn(mockDocumentStoreImplementations.subscribeTo.emptyStream()),
+  ...impl,
+})

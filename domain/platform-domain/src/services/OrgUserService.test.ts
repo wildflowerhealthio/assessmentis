@@ -1,12 +1,12 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { Effect, Layer, Exit, Cause } from 'effect'
 import { OrgUserService, OrgUserServiceLayer } from './OrgUserService'
-import { CurrentOrg, CurrentUserId } from '../tagClasses'
+import { CurrentOrg, CurrentUserId, DocumentStore } from '../tagClasses'
 import { OrgSlug } from '../models/IdTypes'
 import { UserId } from '../models/UserId'
 import { UnhandledError } from '@assessmentis/ontology'
 import { AuthzError } from '../errors'
-import { createMockDocumentStore, getImplementations } from './__tests__/mocks'
+import { mockDocumentStore, mockDocumentStoreImplementations } from './__tests__/mocks'
 
 describe('OrgUserService', () => {
   const testOrgSlug = OrgSlug.make('test-org')
@@ -17,14 +17,12 @@ describe('OrgUserService', () => {
       
       const rolesData = { roles: ['admin', 'viewer'] }
 
-      const { layer: mockDocumentStore } = createMockDocumentStore(
-        getImplementations.withData(new Map([
-          [`orgs/${testOrgSlug}/users/${testUserId}`, rolesData],
-        ]))
-      )
+      const mock = mockDocumentStore({
+        get: vi.fn(mockDocumentStoreImplementations.get.returning(rolesData))
+      })
 
       const testLayer = OrgUserServiceLayer.pipe(
-        Layer.provide(mockDocumentStore),
+        Layer.provide(Layer.succeed(DocumentStore, mock)),
         Layer.provide(Layer.succeed(CurrentOrg, testOrgSlug)),
         Layer.provide(
           Layer.succeed(CurrentUserId, {
@@ -48,14 +46,12 @@ describe('OrgUserService', () => {
       
       const rolesData = { roles: ['viewer'] }
 
-      const { layer: mockDocumentStore } = createMockDocumentStore(
-        getImplementations.withData(new Map([
-          [`orgs/${testOrgSlug}/users/${testUserId}`, rolesData],
-        ]))
-      )
+      const mock = mockDocumentStore({
+        get: vi.fn(mockDocumentStoreImplementations.get.returning(rolesData))
+      })
 
       const testLayer = OrgUserServiceLayer.pipe(
-        Layer.provide(mockDocumentStore),
+        Layer.provide(Layer.succeed(DocumentStore, mock)),
         Layer.provide(Layer.succeed(CurrentOrg, testOrgSlug)),
         Layer.provide(
           Layer.succeed(CurrentUserId, {
@@ -79,14 +75,12 @@ describe('OrgUserService', () => {
       
       const rolesData = { roles: ['viewer'] }
 
-      const { layer: mockDocumentStore } = createMockDocumentStore(
-        getImplementations.withData(new Map([
-          [`orgs/${testOrgSlug}/users/${testUserId}`, rolesData],
-        ]))
-      )
+      const mock = mockDocumentStore({
+        get: vi.fn(mockDocumentStoreImplementations.get.returning(rolesData))
+      })
 
       const testLayer = OrgUserServiceLayer.pipe(
-        Layer.provide(mockDocumentStore),
+        Layer.provide(Layer.succeed(DocumentStore, mock)),
         Layer.provide(Layer.succeed(CurrentOrg, testOrgSlug)),
         Layer.provide(
           Layer.succeed(CurrentUserId, {
@@ -113,12 +107,12 @@ describe('OrgUserService', () => {
     it('fails with AuthzError when user not in org', async () => {
       const testUserId = UserId.make('nonexistent-user')
       
-      const { layer: mockDocumentStore } = createMockDocumentStore(
-        getImplementations.withData(new Map())
-      )
+      const mock = mockDocumentStore({
+        get: vi.fn(mockDocumentStoreImplementations.get.notFound())
+      })
 
       const testLayer = OrgUserServiceLayer.pipe(
-        Layer.provide(mockDocumentStore),
+        Layer.provide(Layer.succeed(DocumentStore, mock)),
         Layer.provide(Layer.succeed(CurrentOrg, testOrgSlug)),
         Layer.provide(
           Layer.succeed(CurrentUserId, {
@@ -145,14 +139,12 @@ describe('OrgUserService', () => {
     it('fails with UnhandledError when roles data is missing', async () => {
       const testUserId = UserId.make('user-no-roles')
       
-      const { layer: mockDocumentStore } = createMockDocumentStore(
-        getImplementations.withData(new Map([
-          [`orgs/${testOrgSlug}/users/${testUserId}`, { someOtherField: 'value' }],
-        ]))
-      )
+      const mock = mockDocumentStore({
+        get: vi.fn(mockDocumentStoreImplementations.get.returning({ someOtherField: 'value' }))
+      })
 
       const testLayer = OrgUserServiceLayer.pipe(
-        Layer.provide(mockDocumentStore),
+        Layer.provide(Layer.succeed(DocumentStore, mock)),
         Layer.provide(Layer.succeed(CurrentOrg, testOrgSlug)),
         Layer.provide(
           Layer.succeed(CurrentUserId, {
@@ -179,14 +171,12 @@ describe('OrgUserService', () => {
     it('fails with UnhandledError when roles is not an array', async () => {
       const testUserId = UserId.make('user-invalid-roles')
       
-      const { layer: mockDocumentStore } = createMockDocumentStore(
-        getImplementations.withData(new Map([
-          [`orgs/${testOrgSlug}/users/${testUserId}`, { roles: 'not-an-array' }],
-        ]))
-      )
+      const mock = mockDocumentStore({
+        get: vi.fn(mockDocumentStoreImplementations.get.returning({ roles: 'not-an-array' }))
+      })
 
       const testLayer = OrgUserServiceLayer.pipe(
-        Layer.provide(mockDocumentStore),
+        Layer.provide(Layer.succeed(DocumentStore, mock)),
         Layer.provide(Layer.succeed(CurrentOrg, testOrgSlug)),
         Layer.provide(
           Layer.succeed(CurrentUserId, {
@@ -213,14 +203,12 @@ describe('OrgUserService', () => {
     it('fails with UnhandledError when data is null', async () => {
       const testUserId = UserId.make('user-null-data')
       
-      const { layer: mockDocumentStore } = createMockDocumentStore(
-        getImplementations.withData(new Map([
-          [`orgs/${testOrgSlug}/users/${testUserId}`, null as any],
-        ]))
-      )
+      const mock = mockDocumentStore({
+        get: vi.fn(mockDocumentStoreImplementations.get.returning(null as any))
+      })
 
       const testLayer = OrgUserServiceLayer.pipe(
-        Layer.provide(mockDocumentStore),
+        Layer.provide(Layer.succeed(DocumentStore, mock)),
         Layer.provide(Layer.succeed(CurrentOrg, testOrgSlug)),
         Layer.provide(
           Layer.succeed(CurrentUserId, {
