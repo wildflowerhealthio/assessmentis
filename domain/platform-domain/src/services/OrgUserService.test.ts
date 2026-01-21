@@ -1,36 +1,42 @@
 import { describe, it, expect } from 'vitest'
-import { Effect, Layer, Either, Stream } from 'effect'
+import { Effect, Layer, Either, Stream, Context } from 'effect'
 import { OrgUserService, OrgUserServiceLayer } from './OrgUserService'
 import { CurrentOrg, CurrentUserId, DocumentStore } from '../tagClasses'
+import { OrgSlug } from '../models/IdTypes'
+import { UserId } from '../models/UserId'
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
 import { AuthzError } from '../errors'
 
 describe('OrgUserService', () => {
+  const testOrgSlug = OrgSlug.make('test-org')
+  
   describe('ensureRole', () => {
     it('succeeds when user has allowed role', async () => {
+      const testUserId = UserId.make('user-with-admin')
+      
       const mockDocumentStore = Layer.succeed(DocumentStore, {
-        get: (...path: string[]) => {
+        get: ((...path: readonly string[]) => {
           if (
             path[0] === 'orgs' &&
-            path[1] === 'test-org' &&
+            path[1] === testOrgSlug &&
             path[2] === 'users' &&
-            path[3] === 'user-with-admin'
+            path[3] === testUserId
           ) {
-            return Effect.succeed({ roles: ['admin', 'viewer'] })
+            return Effect.succeed({ roles: ['admin', 'viewer'] } as any)
           }
           return Effect.fail(
             new NotFoundError({ resourceType: 'users/*', params: {} })
           )
-        },
+        }) as Context.Tag.Service<typeof DocumentStore>['get'],
         subscribeTo: () => Stream.never,
       })
 
       const testLayer = OrgUserServiceLayer.pipe(
         Layer.provide(mockDocumentStore),
-        Layer.provide(Layer.succeed(CurrentOrg, 'test-org')),
+        Layer.provide(Layer.succeed(CurrentOrg, testOrgSlug)),
         Layer.provide(
           Layer.succeed(CurrentUserId, {
-            userId: 'user-with-admin',
+            userId: testUserId,
             authToken: 'test-token',
           })
         )
@@ -46,29 +52,31 @@ describe('OrgUserService', () => {
     })
 
     it('succeeds when user has one of multiple allowed roles', async () => {
+      const testUserId = UserId.make('user-with-viewer')
+      
       const mockDocumentStore = Layer.succeed(DocumentStore, {
-        get: (...path: string[]) => {
+        get: ((...path: readonly string[]) => {
           if (
             path[0] === 'orgs' &&
-            path[1] === 'test-org' &&
+            path[1] === testOrgSlug &&
             path[2] === 'users' &&
-            path[3] === 'user-with-viewer'
+            path[3] === testUserId
           ) {
-            return Effect.succeed({ roles: ['viewer'] })
+            return Effect.succeed({ roles: ['viewer'] } as any)
           }
           return Effect.fail(
             new NotFoundError({ resourceType: 'users/*', params: {} })
           )
-        },
+        }) as Context.Tag.Service<typeof DocumentStore>['get'],
         subscribeTo: () => Stream.never,
       })
 
       const testLayer = OrgUserServiceLayer.pipe(
         Layer.provide(mockDocumentStore),
-        Layer.provide(Layer.succeed(CurrentOrg, 'test-org')),
+        Layer.provide(Layer.succeed(CurrentOrg, testOrgSlug)),
         Layer.provide(
           Layer.succeed(CurrentUserId, {
-            userId: 'user-with-viewer',
+            userId: testUserId,
             authToken: 'test-token',
           })
         )
@@ -84,29 +92,31 @@ describe('OrgUserService', () => {
     })
 
     it('fails with AuthzError when user lacks role', async () => {
+      const testUserId = UserId.make('user-with-viewer')
+      
       const mockDocumentStore = Layer.succeed(DocumentStore, {
-        get: (...path: string[]) => {
+        get: ((...path: readonly string[]) => {
           if (
             path[0] === 'orgs' &&
-            path[1] === 'test-org' &&
+            path[1] === testOrgSlug &&
             path[2] === 'users' &&
-            path[3] === 'user-with-viewer'
+            path[3] === testUserId
           ) {
-            return Effect.succeed({ roles: ['viewer'] })
+            return Effect.succeed({ roles: ['viewer'] } as any)
           }
           return Effect.fail(
             new NotFoundError({ resourceType: 'users/*', params: {} })
           )
-        },
+        }) as Context.Tag.Service<typeof DocumentStore>['get'],
         subscribeTo: () => Stream.never,
       })
 
       const testLayer = OrgUserServiceLayer.pipe(
         Layer.provide(mockDocumentStore),
-        Layer.provide(Layer.succeed(CurrentOrg, 'test-org')),
+        Layer.provide(Layer.succeed(CurrentOrg, testOrgSlug)),
         Layer.provide(
           Layer.succeed(CurrentUserId, {
-            userId: 'user-with-viewer',
+            userId: testUserId,
             authToken: 'test-token',
           })
         )
@@ -126,22 +136,24 @@ describe('OrgUserService', () => {
     })
 
     it('fails with AuthzError when user not in org', async () => {
+      const testUserId = UserId.make('nonexistent-user')
+      
       const mockDocumentStore = Layer.succeed(DocumentStore, {
-        get: (...path: string[]) => {
+        get: ((...path: readonly string[]) => {
           // User not found in org
           return Effect.fail(
             new NotFoundError({ resourceType: 'users/*', params: {} })
           )
-        },
+        }) as Context.Tag.Service<typeof DocumentStore>['get'],
         subscribeTo: () => Stream.never,
       })
 
       const testLayer = OrgUserServiceLayer.pipe(
         Layer.provide(mockDocumentStore),
-        Layer.provide(Layer.succeed(CurrentOrg, 'test-org')),
+        Layer.provide(Layer.succeed(CurrentOrg, testOrgSlug)),
         Layer.provide(
           Layer.succeed(CurrentUserId, {
-            userId: 'nonexistent-user',
+            userId: testUserId,
             authToken: 'test-token',
           })
         )
@@ -161,30 +173,32 @@ describe('OrgUserService', () => {
     })
 
     it('fails with UnhandledError when roles data is missing', async () => {
+      const testUserId = UserId.make('user-no-roles')
+      
       const mockDocumentStore = Layer.succeed(DocumentStore, {
-        get: (...path: string[]) => {
+        get: ((...path: readonly string[]) => {
           if (
             path[0] === 'orgs' &&
-            path[1] === 'test-org' &&
+            path[1] === testOrgSlug &&
             path[2] === 'users' &&
-            path[3] === 'user-no-roles'
+            path[3] === testUserId
           ) {
             // Missing roles field
-            return Effect.succeed({ someOtherField: 'value' })
+            return Effect.succeed({ someOtherField: 'value' } as any)
           }
           return Effect.fail(
             new NotFoundError({ resourceType: 'users/*', params: {} })
           )
-        },
+        }) as Context.Tag.Service<typeof DocumentStore>['get'],
         subscribeTo: () => Stream.never,
       })
 
       const testLayer = OrgUserServiceLayer.pipe(
         Layer.provide(mockDocumentStore),
-        Layer.provide(Layer.succeed(CurrentOrg, 'test-org')),
+        Layer.provide(Layer.succeed(CurrentOrg, testOrgSlug)),
         Layer.provide(
           Layer.succeed(CurrentUserId, {
-            userId: 'user-no-roles',
+            userId: testUserId,
             authToken: 'test-token',
           })
         )
@@ -204,30 +218,32 @@ describe('OrgUserService', () => {
     })
 
     it('fails with UnhandledError when roles is not an array', async () => {
+      const testUserId = UserId.make('user-invalid-roles')
+      
       const mockDocumentStore = Layer.succeed(DocumentStore, {
-        get: (...path: string[]) => {
+        get: ((...path: readonly string[]) => {
           if (
             path[0] === 'orgs' &&
-            path[1] === 'test-org' &&
+            path[1] === testOrgSlug &&
             path[2] === 'users' &&
-            path[3] === 'user-invalid-roles'
+            path[3] === testUserId
           ) {
             // roles is not an array
-            return Effect.succeed({ roles: 'not-an-array' })
+            return Effect.succeed({ roles: 'not-an-array' } as any)
           }
           return Effect.fail(
             new NotFoundError({ resourceType: 'users/*', params: {} })
           )
-        },
+        }) as Context.Tag.Service<typeof DocumentStore>['get'],
         subscribeTo: () => Stream.never,
       })
 
       const testLayer = OrgUserServiceLayer.pipe(
         Layer.provide(mockDocumentStore),
-        Layer.provide(Layer.succeed(CurrentOrg, 'test-org')),
+        Layer.provide(Layer.succeed(CurrentOrg, testOrgSlug)),
         Layer.provide(
           Layer.succeed(CurrentUserId, {
-            userId: 'user-invalid-roles',
+            userId: testUserId,
             authToken: 'test-token',
           })
         )
@@ -247,30 +263,32 @@ describe('OrgUserService', () => {
     })
 
     it('fails with UnhandledError when data is null', async () => {
+      const testUserId = UserId.make('user-null-data')
+      
       const mockDocumentStore = Layer.succeed(DocumentStore, {
-        get: (...path: string[]) => {
+        get: ((...path: readonly string[]) => {
           if (
             path[0] === 'orgs' &&
-            path[1] === 'test-org' &&
+            path[1] === testOrgSlug &&
             path[2] === 'users' &&
-            path[3] === 'user-null-data'
+            path[3] === testUserId
           ) {
             // data is null
-            return Effect.succeed(null)
+            return Effect.succeed(null as any)
           }
           return Effect.fail(
             new NotFoundError({ resourceType: 'users/*', params: {} })
           )
-        },
+        }) as Context.Tag.Service<typeof DocumentStore>['get'],
         subscribeTo: () => Stream.never,
       })
 
       const testLayer = OrgUserServiceLayer.pipe(
         Layer.provide(mockDocumentStore),
-        Layer.provide(Layer.succeed(CurrentOrg, 'test-org')),
+        Layer.provide(Layer.succeed(CurrentOrg, testOrgSlug)),
         Layer.provide(
           Layer.succeed(CurrentUserId, {
-            userId: 'user-null-data',
+            userId: testUserId,
             authToken: 'test-token',
           })
         )

@@ -1,14 +1,17 @@
 import { describe, it, expect } from 'vitest'
-import { Effect, Layer, Either, Stream } from 'effect'
+import { Effect, Layer, Either, Stream, Context } from 'effect'
 import {
   LoadedOrg,
   LiteralLoadedOrgLayer,
   LoadedOrgLayer,
 } from './LoadedOrg'
 import { CurrentOrg, DocumentStore } from '../tagClasses'
+import { OrgSlug } from '../models/IdTypes'
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
 
 describe('LoadedOrg', () => {
+  const testOrgSlug = OrgSlug.make('test-org')
+  
   describe('LiteralLoadedOrgLayer', () => {
     it('successfully decodes valid org data', async () => {
       const validOrgData = {
@@ -26,7 +29,7 @@ describe('LoadedOrg', () => {
       const program = Effect.gen(function* () {
         const org = yield* LoadedOrg
         return org
-      }).pipe(Effect.provide(LiteralLoadedOrgLayer('test-org', validOrgData)))
+      }).pipe(Effect.provide(LiteralLoadedOrgLayer(testOrgSlug, validOrgData)))
 
       const result = await Effect.runPromise(Effect.either(program))
       expect(Either.isRight(result)).toBe(true)
@@ -39,7 +42,7 @@ describe('LoadedOrg', () => {
       const program = Effect.gen(function* () {
         const org = yield* LoadedOrg
         return org
-      }).pipe(Effect.provide(LiteralLoadedOrgLayer('test-org', undefined)))
+      }).pipe(Effect.provide(LiteralLoadedOrgLayer(testOrgSlug, undefined)))
 
       const result = await Effect.runPromise(Effect.either(program))
       expect(Either.isLeft(result)).toBe(true)
@@ -60,7 +63,7 @@ describe('LoadedOrg', () => {
       const program = Effect.gen(function* () {
         const org = yield* LoadedOrg
         return org
-      }).pipe(Effect.provide(LiteralLoadedOrgLayer('test-org', invalidOrgData)))
+      }).pipe(Effect.provide(LiteralLoadedOrgLayer(testOrgSlug, invalidOrgData)))
 
       const result = await Effect.runPromise(Effect.either(program))
       expect(Either.isLeft(result)).toBe(true)
@@ -86,20 +89,20 @@ describe('LoadedOrg', () => {
       }
 
       const mockDocumentStore = Layer.succeed(DocumentStore, {
-        get: (...path: string[]) => {
-          if (path[0] === 'orgs' && path[1] === 'test-org') {
-            return Effect.succeed(validOrgData)
+        get: ((...path: readonly string[]) => {
+          if (path[0] === 'orgs' && path[1] === testOrgSlug) {
+            return Effect.succeed(validOrgData as any)
           }
           return Effect.fail(
             new NotFoundError({ resourceType: 'orgs', params: {} })
           )
-        },
+        }) as Context.Tag.Service<typeof DocumentStore>['get'],
         subscribeTo: () => Stream.never,
       })
 
       const testLayer = LoadedOrgLayer.pipe(
         Layer.provide(mockDocumentStore),
-        Layer.provide(Layer.succeed(CurrentOrg, 'test-org'))
+        Layer.provide(Layer.succeed(CurrentOrg, testOrgSlug))
       )
 
       const program = Effect.gen(function* () {
@@ -116,20 +119,20 @@ describe('LoadedOrg', () => {
 
     it('fails with NotFoundError when org not found in DocumentStore', async () => {
       const mockDocumentStore = Layer.succeed(DocumentStore, {
-        get: (...path: string[]) => {
+        get: ((...path: readonly string[]) => {
           return Effect.fail(
             new NotFoundError({
               resourceType: 'orgs',
               params: { orgSlug: path[1] },
             })
           )
-        },
+        }) as Context.Tag.Service<typeof DocumentStore>['get'],
         subscribeTo: () => Stream.never,
       })
 
       const testLayer = LoadedOrgLayer.pipe(
         Layer.provide(mockDocumentStore),
-        Layer.provide(Layer.succeed(CurrentOrg, 'nonexistent-org'))
+        Layer.provide(Layer.succeed(CurrentOrg, OrgSlug.make('nonexistent-org')))
       )
 
       const program = Effect.gen(function* () {
