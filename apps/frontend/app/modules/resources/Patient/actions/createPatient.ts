@@ -1,8 +1,4 @@
-import {
-  Patient,
-  PatientId,
-  PatientRepository,
-} from '@assessmentis/clinical-domain/administration'
+import { Patient } from '@assessmentis/clinical-domain/administration'
 import {
   transformToPatient,
   PatientFormData,
@@ -11,8 +7,5 @@ import { createResourceCreateAction } from '../../../common/actions/createResour
 
 export const createPatient = createResourceCreateAction<
   PatientFormData,
-  PatientId,
-  Patient,
-  PatientRepository['Id'],
-  InstanceType<typeof PatientRepository>
->(PatientRepository, transformToPatient)
+  Patient
+>('Patient', transformToPatient)

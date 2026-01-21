@@ -1,15 +1,7 @@
-import {
-  Composition,
-  CompositionId,
-  CompositionRepository,
-} from '@assessmentis/clinical-domain/content-management'
+import { Composition } from '@assessmentis/clinical-domain/content-management'
 import { createResourceCollectionHook } from '../../../common/utils/createResourceCollectionHook'
 
-export const useCompositionCollection = createResourceCollectionHook<
-  CompositionRepository,
-  CompositionId,
-  Composition,
-  typeof CompositionRepository
->({
-  repository: CompositionRepository,
-})
+export const useCompositionCollection =
+  createResourceCollectionHook<Composition>({
+    resourceType: 'Composition',
+  })

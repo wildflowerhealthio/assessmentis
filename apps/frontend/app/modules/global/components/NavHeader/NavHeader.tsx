@@ -1,7 +1,7 @@
-import { Link, useNavigate } from 'react-router'
+import { Await, Link, useNavigate } from 'react-router'
 import classes from './NavHeader.module.css'
 import { cn } from '@assessmentis/react-util'
-import { useRef, useState } from 'react'
+import { Suspense, useRef, useState } from 'react'
 import { useOutsideClickHandler } from '@assessmentis/react-util/hooks'
 import { LoginButton } from '../LoginButton'
 import { useBreadcrumbContext } from '../../contexts/BreadcrumbContext'
@@ -32,6 +32,39 @@ const NavHeader = () => {
       >
         {allBreadcrumbs.map((segment, index) => {
           const isLast = index === allBreadcrumbs.length - 1
+
+          if (segment instanceof Promise) {
+            return (
+              <span
+                key={index}
+                className={classes.NavHeader__breadcrumbSegment}
+              >
+                {index > 0 && (
+                  <span className={classes.NavHeader__breadcrumbSeparator}>
+                    {' / '}
+                  </span>
+                )}
+                <Suspense fallback={<Skeleton width={120} />} key={index}>
+                  <Await resolve={segment}>
+                    {(segment) =>
+                      segment.href && !isLast ? (
+                        <Link
+                          to={segment.href}
+                          className={classes.NavHeader__breadcrumbLink}
+                        >
+                          {segment.label}
+                        </Link>
+                      ) : (
+                        <span className={classes.NavHeader__breadcrumbCurrent}>
+                          {segment.label}
+                        </span>
+                      )
+                    }
+                  </Await>
+                </Suspense>
+              </span>
+            )
+          }
 
           return (
             <span key={index} className={classes.NavHeader__breadcrumbSegment}>

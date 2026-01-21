@@ -1,5 +1,6 @@
-import { cn } from '@assessmentis/react-util'
+import { cn, useLoadingPromise } from '@assessmentis/react-util'
 import classes from '../ResourceForm.module.css'
+import { useEffect, useState } from 'react'
 
 export interface SelectFieldProps<T extends string> {
   name: string
@@ -7,7 +8,7 @@ export interface SelectFieldProps<T extends string> {
   required?: boolean
   options: ReadonlyArray<{ value: T; label: string }>
   error?: string | undefined
-  value: T | undefined
+  value: Promise<T | undefined>
   onChange: (data: T | undefined) => void
   defaultValue?: T | undefined
 }
@@ -18,10 +19,11 @@ export function SelectField<T extends string>({
   required,
   options,
   error,
-  value,
+  value: promiseValue,
   onChange = () => {},
   defaultValue,
 }: SelectFieldProps<T>) {
+  const { value, loading, error: valueError } = useLoadingPromise(promiseValue)
   return (
     <div className={classes.FormField}>
       {label && (
@@ -38,6 +40,7 @@ export function SelectField<T extends string>({
         name={name}
         className={cn('input-2', error && classes['FormField__input--error'])}
         required={required}
+        disabled={loading || valueError !== undefined}
         value={value}
         onChange={(e) => {
           const selectedValue = e.target.value as T

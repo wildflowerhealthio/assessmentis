@@ -1,6 +1,5 @@
 import {
   ExternalAssertionError,
-  NeedsAuthenticationError,
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
@@ -8,16 +7,13 @@ import React, { JSX } from 'react'
 import { Outlet } from 'react-router'
 import { NotLoggedIn } from '../../../../domain/platform-domain/src/loadedValues/UserId'
 import { LoginButton } from '../modules/global/components/LoginButton'
-import { useLoadedRuntimeContext } from '../clientRuntime'
 import { Generic404Content } from '../modules/common/components/Generic404Content'
+import { AuthError } from '@assessmentis/platform-domain'
 
-interface IProps {
-  loadedRuntime: ReturnType<typeof useLoadedRuntimeContext>
-}
+interface IProps {}
 
 const ResourcePage = () => {
-  const loadedRuntime = useLoadedRuntimeContext()
-  return <InnerResourcePage loadedRuntime={loadedRuntime} />
+  return <InnerResourcePage />
 }
 
 export default ResourcePage
@@ -32,9 +28,9 @@ const hasTag = (error: unknown, tag: string): boolean => {
 }
 
 const asCaughtError = (error: unknown) => {
-  if (error instanceof NeedsAuthenticationError) {
+  if (error instanceof AuthError) {
     return {
-      type: 'NeedsAuthenticationError',
+      type: 'AuthError',
       error,
     }
   }
@@ -96,8 +92,8 @@ class InnerResourcePage extends React.Component<
     error:
       | null
       | {
-          type: 'NeedsAuthenticationError'
-          error: NeedsAuthenticationError
+          type: 'AuthError'
+          error: AuthError
         }
       | {
           type: 'NotLoggedIn'
@@ -156,21 +152,22 @@ class InnerResourcePage extends React.Component<
     }
   }
 
-  componentDidUpdate(_prevProps: IProps, _prevState: object) {
-    if (this.state.error === null) return
+  // TODO: Delete
+  // componentDidUpdate(_prevProps: IProps, _prevState: object) {
+  //   if (this.state.error === null) return
 
-    switch (this.state.error.type) {
-      case 'NeedsAuthenticationError':
-      case 'NotLoggedIn':
-      case 'OrgDataError':
-      case 'UserDataError':
-      case 'AuthStateError':
-        if (this.props.loadedRuntime._tag == 'loaded') {
-          this.setState({ error: null })
-        }
-        return
-    }
-  }
+  //   switch (this.state.error.type) {
+  //     case 'AuthError':
+  //     case 'NotLoggedIn':
+  //     case 'OrgDataError':
+  //     case 'UserDataError':
+  //     case 'AuthStateError':
+  //       if (this.props.loadedRuntime._tag == 'loaded') {
+  //         this.setState({ error: null })
+  //       }
+  //       return
+  //   }
+  // }
 
   render() {
     if (this.state.error === null) {
@@ -180,7 +177,7 @@ class InnerResourcePage extends React.Component<
     let errorContent: JSX.Element
     if (
       this.state.error &&
-      ['NotLoggedIn', 'NeedsAuthenticationError', 'AuthStateError'].includes(
+      ['NotLoggedIn', 'AuthError', 'AuthStateError'].includes(
         this.state.error.type
       )
     ) {

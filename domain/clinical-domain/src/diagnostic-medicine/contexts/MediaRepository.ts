@@ -1,7 +1,7 @@
 import { Context } from 'effect'
-import { Media, MediaId } from '../resources/Media'
-import { BaseClinicalDataRepository } from '../../assessmentis/contexts/ClinicalDataRepository'
+import { Media } from '../resources/Media'
+import { ClinicalDataRepository } from '../../types'
 export class MediaRepository extends Context.Tag('MediaRepository')<
   MediaRepository,
-  BaseClinicalDataRepository<Media, MediaId>
+  ClinicalDataRepository<Media>
 >() {}

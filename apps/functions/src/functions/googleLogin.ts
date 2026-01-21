@@ -1,31 +1,65 @@
 import type { Response } from 'express'
 import { onRequest, type Request } from 'firebase-functions/https'
-import { info, error } from 'firebase-functions/logger'
-import { defaultHttpOptions, oauth2Client, scopes } from '../util/context'
-import { ensureAuthenticated } from '../util/auth'
+import { info } from 'firebase-functions/logger'
+import { Effect, Exit, Layer } from 'effect'
+import { AuthError, CurrentUserId } from '@assessmentis/platform-domain'
+import {
+  defaultHttpOptions,
+  oauth2Client,
+  scopes,
+} from '../util/functionContext'
+import { handleError } from '../util/handleError'
+import { UnhandledError } from '../../../../global/ontology/src/errors'
+import { AuthRepository } from '@assessmentis/firebase-server-infrastructure'
+import { LoadedUserLayerLive } from '../layers/LoadedUserLayerLive'
+import { makeServerRuntime } from '../util/BaseLayer'
+import { CurrentUserIdLayerLive } from '../layers/CurrentUserIdLayerLive'
+
+/**
+ * Generate Google OAuth authorization URL for a verified user
+ */
+export const googleLoginEffect = (
+  request: Request
+): Effect.Effect<{ url: string }, AuthError | UnhandledError, CurrentUserId> =>
+  Effect.gen(function* () {
+    const { userId } = yield* CurrentUserId
+    // Verify authentication
+
+    // Generate authorization URL
+    const authorizationUrl = oauth2Client.generateAuthUrl({
+      access_type: 'offline',
+      scope: scopes,
+      include_granted_scopes: true,
+      prompt: 'consent',
+      state: JSON.stringify({ uid: userId, hostname: request.hostname }),
+    })
+
+    return { url: authorizationUrl }
+  })
 
 export const googleLogin = onRequest(
   defaultHttpOptions,
   async (request: Request, response: Response) => {
     info('Received request for Google OAuth login')
-    const uid = await ensureAuthenticated(request, response)
-    if (uid == undefined) return
-
-    // const userToken = (await db.collection('userTokens').doc(uid).get()).data()
-
-    try {
-      const authorizationUrl = oauth2Client.generateAuthUrl({
-        access_type: 'offline',
-        scope: scopes,
-        include_granted_scopes: true,
-        prompt: 'consent',
-        state: JSON.stringify({ uid, hostname: request.hostname }),
-      })
-      response.set('Cache-Control', 'private, max-age=0, s-maxage=0')
-      response.send({ url: authorizationUrl })
-    } catch (err) {
-      error('Error during Google OAuth login:', err)
-      response.status(400).send({ error: err })
-    }
+    const runtime = makeServerRuntime(
+      AuthRepository.Default.pipe(
+        Layer.provide(LoadedUserLayerLive),
+        Layer.provideMerge(CurrentUserIdLayerLive)
+      ),
+      { request }
+    )
+    await runtime.runPromiseExit(googleLoginEffect(request)).then((exit) =>
+      exit.pipe(
+        Exit.match({
+          onSuccess: (value) => {
+            response.set('Cache-Control', 'private, max-age=0, s-maxage=0')
+            response.status(200).json(value)
+          },
+          onFailure: (error) => {
+            handleError(error, response)
+          },
+        })
+      )
+    )
   }
 )

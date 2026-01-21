@@ -3,13 +3,13 @@
   "include": ["src"],
   "exclude": ["node_modules", "eslint.config.cjs"],
   "compilerOptions": {
-    "module": "NodeNext",
+    "module": "ESNext",
     "esModuleInterop": true,
-    "moduleResolution": "nodenext",
+    "moduleResolution": "Bundler",
     "noImplicitReturns": true,
     "outDir": "dist",
     "sourceMap": true,
     "strict": true,
-    "target": "es2017"
+    "target": "ES2017"
   }
 }

@@ -7,13 +7,14 @@ import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider
 const emptyFilters = {}
 
 export default function PractitionerPage(_: Route.ComponentProps) {
-  const { collection, deleteItem } = usePractitionerCollection(emptyFilters)
+  const { collectionPromise, deleteItem } =
+    usePractitionerCollection(emptyFilters)
   useBreadcrumbs([{ label: 'Practitioners' }])
 
   return (
     <ResourceListPage
       title="Practitioners"
-      collection={collection}
+      collectionPromise={collectionPromise}
       createPath="/Practitioner/new"
       createLabel="Create New Practitioner"
       onDelete={deleteItem}

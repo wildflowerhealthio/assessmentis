@@ -1,1 +1,2 @@
-export * from './contexts/ClinicalDataRepository'
+export * from './utility'
+export * from './tags'

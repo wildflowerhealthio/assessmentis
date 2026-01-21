@@ -22,9 +22,10 @@
     "vitest": "^4.0.15"
   },
   "dependencies": {
-    "@assessmentis/platform-domain": "*",
     "@assessmentis/firebase-web-infrastructure": "*",
     "@assessmentis/ontology": "*",
+    "@assessmentis/platform-domain": "*",
+    "@googleapis/healthcare": "^26.0.0",
     "effect": "^3.19.9",
     "firebase-admin": "^12.0.0"
   }

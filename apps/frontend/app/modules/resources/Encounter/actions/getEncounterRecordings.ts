@@ -1,6 +1,5 @@
 import { Effect } from 'effect'
 import {
-  NeedsAuthenticationError,
   UnhandledError,
   ExternalAssertionError,
   NotFoundError,
@@ -11,6 +10,10 @@ import {
   Media,
   MediaRepository,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import {
+  AuthError,
+  AuthzError,
+} from '../../../../../../../domain/platform-domain/src/errors'
 
 /**
  * Fetches Media resources (recordings) linked to an encounter.
@@ -21,10 +24,11 @@ import {
 export const getEncounterRecordings = (
   encounterId: EncounterId
 ): Effect.Effect<
-  WithId<Media>[],
+  ReadonlyArray<WithId<Media>>,
   | UnhandledError
-  | NeedsAuthenticationError
   | ExternalAssertionError
+  | AuthError
+  | AuthzError
   | NotFoundError,
   MediaRepository
 > => {

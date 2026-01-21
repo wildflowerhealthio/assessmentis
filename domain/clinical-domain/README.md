@@ -29,7 +29,10 @@ src/
 ## Usage
 
 ```typescript
-import { Questionnaire, QuestionnaireRepository } from '@assessmentis/clinical-domain/questionnaires'
+import {
+  Questionnaire,
+  QuestionnaireRepository,
+} from '@assessmentis/clinical-domain/questionnaires'
 import { Effect } from 'effect'
 
 Effect.gen(function* () {
@@ -71,15 +74,19 @@ Effect.gen(function* () {
 Repositories are defined as Effect Tags:
 
 ```typescript
-export class QuestionnaireRepository extends Context.Tag('QuestionnaireRepository')<
+export class QuestionnaireRepository extends Context.Tag(
+  'QuestionnaireRepository'
+)<
   QuestionnaireRepository,
   {
-    get: (id: QuestionnaireId) => Effect.Effect<Questionnaire, NotFoundError, never>
+    get: (
+      id: QuestionnaireId
+    ) => Effect.Effect<Questionnaire, NotFoundError, never>
   }
 >() {}
 ```
 
-Implementations are in infrastructure packages (e.g., `@assessmentis/google-fhir-infrastructure`).
+Implementations are in infrastructure packages (e.g., `@assessmentis/google-fhir-web-infrastructure`).
 
 ## FHIR Extensions
 
@@ -95,8 +102,7 @@ Custom extensions follow this pattern:
 ## Related Packages
 
 - `@assessmentis/ontology`: Domain errors used in this package
-- `@assessmentis/google-fhir-infrastructure`: Repository implementations
+- `@assessmentis/google-fhir-web-infrastructure`: Repository implementations
 - `@assessmentis/questionnaire-domain`: Questionnaire templates
 - `@assessmentis/document-domain`: Document generation
 - `@assessmentis/video-call-domain`: Video call models (uses Encounter, Media)
-

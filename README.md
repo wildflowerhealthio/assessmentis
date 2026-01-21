@@ -108,7 +108,7 @@ assessmentis/
 │   ├── platform-domain/    # Platform-level abstractions
 │   └── config-domain/      # Configuration schemas
 ├── infrastructure/
-│   ├── google-fhir-infrastructure/     # Google Healthcare API client
+│   ├── google-fhir-web-infrastructure/     # Google Healthcare API client
 │   ├── daily-co-infrastructure/        # Daily.co video integration
 │   ├── firebase-web-infrastructure/    # Firebase client
 │   ├── document-template-instances/    # React document templates

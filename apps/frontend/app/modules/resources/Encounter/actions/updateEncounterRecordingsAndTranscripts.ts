@@ -2,7 +2,6 @@ import { Effect } from 'effect'
 import { ExternalVideoCallClient } from '@assessmentis/video-call-domain'
 import { EncounterRepository } from '@assessmentis/clinical-domain/administration'
 import {
-  NeedsAuthenticationError,
   UnhandledError,
   ExternalAssertionError,
   NotFoundError,
@@ -16,6 +15,7 @@ import {
   Media,
   MediaRepository,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import { AuthError, AuthzError } from '@assessmentis/platform-domain'
 
 /**
  * Fetches recordings for an encounter's video call room and creates Media resources
@@ -28,7 +28,8 @@ export const updateEncounterRecordingsAndTranscripts = (
 ): Effect.Effect<
   WithId<Encounter>,
   | UnhandledError
-  | NeedsAuthenticationError
+  | AuthError
+  | AuthzError
   | ExternalAssertionError
   | NotFoundError,
   EncounterRepository | ExternalVideoCallClient | MediaRepository

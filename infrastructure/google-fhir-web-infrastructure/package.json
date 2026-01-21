@@ -1,0 +1,32 @@
+{
+  "name": "@assessmentis/google-fhir-web-infrastructure",
+  "version": "0.0.1",
+  "description": "Infrastructure for Google's FHIR store",
+  "author": "Ruth Marks",
+  "license": "UNLICENSED",
+  "prettier": "@assessmentis/prettier-config",
+  "scripts": {
+    "lint": "eslint \"./src/**/*\"",
+    "lint:fix": "eslint --fix \"./src/**/*\"",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"No tests in this package\""
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "devDependencies": {
+    "@assessmentis/prettier-config": "*",
+    "@types/fhir": "^0.0.41",
+    "typescript": "^5.9.3",
+    "@types/gapi.client.healthcare-v1": "^0.0.4",
+    "@types/gapi": "^0.0.47"
+  },
+  "dependencies": {
+    "@assessmentis/clinical-domain": "*",
+    "@assessmentis/config-domain": "*",
+    "@assessmentis/platform-domain": "*",
+    "@assessmentis/ontology": "*",
+    "effect": "^3.19.8",
+    "temporal-polyfill": "^0.3.0"
+  }
+}

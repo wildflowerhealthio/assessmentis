@@ -1,46 +1,84 @@
 import type { Response } from 'express'
 import { onRequest, type Request } from 'firebase-functions/https'
 import { info } from 'firebase-functions/logger'
-import { db, defaultHttpOptions, oauth2Client } from '../util/context'
-import { ensureAuthenticated } from '../util/auth'
+import { Effect, Exit, Layer } from 'effect'
+import { AuthError, CurrentUserId } from '@assessmentis/platform-domain'
+import { defaultHttpOptions, oauth2Client } from '../util/functionContext'
+import { CurrentUserIdLayerLive } from '../layers/CurrentUserIdLayerLive'
+import { handleError } from '../util/handleError'
+import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
+import { AuthRepository } from '@assessmentis/firebase-server-infrastructure'
+import { makeServerRuntime } from '../util/BaseLayer'
+
+/**
+ * Refresh Google OAuth access token for a verified user
+ */
+export const refreshGoogleOAuthTokenEffect: Effect.Effect<
+  Record<string, never>,
+  AuthError | NotFoundError | UnhandledError,
+  AuthRepository | CurrentUserId
+> = Effect.gen(function* () {
+  const authRepository = yield* AuthRepository
+  const { userId } = yield* CurrentUserId
+
+  // Get refresh token from Firestore
+  const refreshToken = yield* authRepository.getRefreshToken(userId)
+
+  // Refresh the access token using Google OAuth2 client
+  oauth2Client.setCredentials({
+    refresh_token: refreshToken,
+  })
+
+  const refreshTokenResponse = yield* Effect.tryPromise({
+    try: () => oauth2Client.refreshAccessToken(),
+    catch: (error: unknown) =>
+      new AuthError({
+        message: 'Failed to refresh access token',
+        cause: error,
+      }),
+  })
+
+  const { access_token, expiry_date } = refreshTokenResponse.credentials
+
+  if (!access_token) {
+    return yield* Effect.fail(
+      new AuthError({ message: 'No access token in response' })
+    )
+  }
+
+  // Update the access token in Firestore
+  yield* authRepository.updateAccessToken(
+    userId,
+    access_token,
+    expiry_date ? new Date(expiry_date) : new Date(Date.now() + 3600000) // Default to 1 hour if no expiry
+  )
+
+  return {}
+})
 
 export const refreshGoogleOAuthToken = onRequest(
   defaultHttpOptions,
   async (request: Request, response: Response) => {
-    info('Received request for Google OAuth login')
-    const uid = await ensureAuthenticated(request, response)
-    if (uid == undefined) return
-
-    const tokenCollection = db.collection('users').doc(uid).collection('tokens')
-    const refreshTokenDoc = await tokenCollection
-      .doc('googleOAuthRefreshToken')
-      .get()
-
-    if (!refreshTokenDoc.exists) {
-      response.status(400).send('Missing refresh token, please login')
-      return
-    }
-    const refreshToken = refreshTokenDoc.data()!
-
-    oauth2Client.setCredentials({
-      refresh_token: refreshToken.token,
-    })
-    const refreshTokenResponse = await oauth2Client.refreshAccessToken()
-
-    const { access_token, expiry_date, scope, token_type } =
-      refreshTokenResponse.credentials
-
-    const setAccessToken = tokenCollection.doc('googleOAuthAccessToken').set({
-      lastUpdated: new Date(),
-      scope,
-      tokenType: token_type,
-      token: access_token,
-      expiresAt: expiry_date ? new Date(expiry_date) : undefined,
-      credentials: refreshTokenResponse.credentials,
-    })
-
-    await setAccessToken
-    response.status(200).send('{}')
-    return
+    info('Received request to refresh Google OAuth token')
+    const runtime = makeServerRuntime(
+      Layer.merge(AuthRepository.Default, CurrentUserIdLayerLive),
+      { request }
+    )
+    await runtime.runPromiseExit(refreshGoogleOAuthTokenEffect).then((exit) =>
+      exit.pipe(
+        Exit.match({
+          onSuccess: () => response.status(200).json({ success: true }),
+          onFailure: (error) => {
+            handleError(error, response, (err: NotFoundError) => {
+              if (err instanceof NotFoundError) {
+                response.status(404).json({ message: 'Token not found' })
+                return true
+              }
+              return false
+            })
+          },
+        })
+      )
+    )
   }
 )

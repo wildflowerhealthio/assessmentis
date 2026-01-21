@@ -1,8 +1,4 @@
-import {
-  Practitioner,
-  PractitionerId,
-  PractitionerRepository,
-} from '@assessmentis/clinical-domain/administration'
+import { Practitioner } from '@assessmentis/clinical-domain/administration'
 import {
   transformToPractitioner,
   PractitionerFormData,
@@ -11,8 +7,5 @@ import { createResourceUpdateAction } from '../../../common/actions/createResour
 
 export const updatePractitioner = createResourceUpdateAction<
   PractitionerFormData,
-  PractitionerId,
-  Practitioner,
-  PractitionerRepository['Id'],
-  InstanceType<typeof PractitionerRepository>
->(PractitionerRepository, transformToPractitioner)
+  Practitioner
+>('Practitioner', transformToPractitioner)

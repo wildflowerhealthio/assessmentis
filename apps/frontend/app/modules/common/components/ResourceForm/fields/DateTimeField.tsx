@@ -1,5 +1,5 @@
 import { DateTime, Option } from 'effect'
-import { cn } from '@assessmentis/react-util'
+import { cn, useLoadingPromise } from '@assessmentis/react-util'
 import classes from '../ResourceForm.module.css'
 
 export interface DateTimeFieldProps {
@@ -7,8 +7,7 @@ export interface DateTimeFieldProps {
   label?: string
   required?: boolean
   error?: string
-  defaultValue?: DateTime.Zoned | undefined
-  value?: DateTime.Zoned | undefined
+  value: Promise<DateTime.Zoned | undefined>
   onChange: (data: DateTime.Zoned | undefined) => void
 }
 
@@ -40,8 +39,13 @@ export function DateTimeField({
   error,
   value,
   onChange,
-  defaultValue,
 }: DateTimeFieldProps) {
+  const {
+    value: resolvedValue,
+    loading,
+    error: loadingError,
+  } = useLoadingPromise(value)
+
   return (
     <div className={classes.FormField}>
       {label && (
@@ -59,8 +63,8 @@ export function DateTimeField({
         name={name}
         className={cn('input-2', error && classes['FormField__input--error'])}
         required={required}
-        defaultValue={dateTimeToInputValue(defaultValue)}
-        value={dateTimeToInputValue(value)}
+        disabled={loading || !!loadingError}
+        value={dateTimeToInputValue(resolvedValue)}
         onChange={(e) => {
           onChange(inputValueToDateTime(e.target.value))
         }}

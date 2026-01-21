@@ -1,8 +1,4 @@
-import {
-  Composition,
-  CompositionId,
-  CompositionRepository,
-} from '@assessmentis/clinical-domain/content-management'
+import { Composition } from '@assessmentis/clinical-domain/content-management'
 import {
   transformToComposition,
   CompositionFormData,
@@ -11,8 +7,5 @@ import { createResourceCreateAction } from '../../../common/actions/createResour
 
 export const createComposition = createResourceCreateAction<
   CompositionFormData,
-  CompositionId,
-  Composition,
-  CompositionRepository['Id'],
-  InstanceType<typeof CompositionRepository>
->(CompositionRepository, transformToComposition)
+  Composition
+>('Composition', transformToComposition)

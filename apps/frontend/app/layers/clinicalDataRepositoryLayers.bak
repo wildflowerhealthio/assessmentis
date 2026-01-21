@@ -1,0 +1,156 @@
+import {
+  Schemas,
+  ClinicalDomainRepositoryTagClass,
+} from '@assessmentis/clinical-domain'
+import { Effect, Layer, Match } from 'effect'
+import React, { createContext, useContext } from 'react'
+import {
+  Layers as GoogleFhirRepositoryLayers,
+  GoogleFhirWebLayer,
+} from '@assessmentis/google-fhir-web-infrastructure'
+import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
+import { ExternalAssertionError, UnhandledError } from '@assessmentis/ontology'
+import { LoadedOrg } from '@assessmentis/platform-domain'
+import {
+  EncounterRepository,
+  PatientRepository,
+  PractitionerRepository,
+} from '@assessmentis/clinical-domain/administration'
+import {
+  CompositionRepository,
+  QuestionnaireRepository,
+  QuestionnaireResponseRepository,
+} from '@assessmentis/clinical-domain/content-management'
+import {
+  MediaRepository,
+  ObservationRepository,
+} from '@assessmentis/clinical-domain/diagnostic-medicine'
+
+type LayerType<Key extends keyof typeof Schemas> = Layer.Layer<
+  ClinicalDomainRepositoryTagClass<Key>,
+  ExternalAssertionError | UnhandledError,
+  LoadedOrg
+>
+
+const makeClinicalDataRepositoryLayer = <Key extends keyof typeof Schemas>(
+  name: Key
+) => {
+  const ClinicalDataRepositoryContext = createContext<LayerType<Key>>(
+    Layer.die(new Error(`${name}RepositoryContext not provided`))
+  )
+  const useClinicalDataRepositoryLayer = () =>
+    useContext(ClinicalDataRepositoryContext)
+
+  const clinicalDataLayer: LayerType<Key> = Layer.unwrapEffect(
+    Effect.gen(function* () {
+      const { frontendConfig } = yield* LoadedOrg
+
+      const layer: LayerType<Key> = Match.value(frontendConfig.fhirServer).pipe(
+        Match.tagsExhaustive({
+          google_fhir_store: (fhirServer): LayerType<Key> =>
+            Layer.provide(
+              GoogleFhirRepositoryLayers[name] as GoogleFhirWebLayer<Key>,
+              Layer.succeed(LoadedGoogleFhirConfig, fhirServer)
+            ),
+          not_implemented: (): LayerType<Key> =>
+            Layer.fail(
+              new UnhandledError({ message: 'FHIR client not implemented' })
+            ),
+        })
+      )
+
+      return layer
+    })
+  )
+
+  const ClinicalDataRepositoryProvider: React.FC<
+    React.PropsWithChildren<object>
+  > = ({ children }) => {
+    return (
+      <ClinicalDataRepositoryContext.Provider value={clinicalDataLayer}>
+        {children}
+      </ClinicalDataRepositoryContext.Provider>
+    )
+  }
+
+  return [
+    useClinicalDataRepositoryLayer,
+    ClinicalDataRepositoryProvider,
+  ] as const
+}
+export interface ClinicalRepositoryHooksType {
+  CompositionRepository: () => Layer.Layer<
+    CompositionRepository,
+    ExternalAssertionError | UnhandledError,
+    LoadedOrg
+  >
+  EncounterRepository: () => Layer.Layer<
+    EncounterRepository,
+    ExternalAssertionError | UnhandledError,
+    LoadedOrg
+  >
+  MediaRepository: () => Layer.Layer<
+    MediaRepository,
+    ExternalAssertionError | UnhandledError,
+    LoadedOrg
+  >
+  ObservationRepository: () => Layer.Layer<
+    ObservationRepository,
+    ExternalAssertionError | UnhandledError,
+    LoadedOrg
+  >
+  PatientRepository: () => Layer.Layer<
+    PatientRepository,
+    ExternalAssertionError | UnhandledError,
+    LoadedOrg
+  >
+  PractitionerRepository: () => Layer.Layer<
+    PractitionerRepository,
+    ExternalAssertionError | UnhandledError,
+    LoadedOrg
+  >
+  QuestionnaireRepository: () => Layer.Layer<
+    QuestionnaireRepository,
+    ExternalAssertionError | UnhandledError,
+    LoadedOrg
+  >
+  QuestionnaireResponseRepository: () => Layer.Layer<
+    QuestionnaireResponseRepository,
+    ExternalAssertionError | UnhandledError,
+    LoadedOrg
+  >
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const clinicalRepositoryHooks: ClinicalRepositoryHooksType = {} as any
+
+let ClinicalDataRepositoryLayerProvider: React.FC<
+  React.PropsWithChildren<object>
+> = ({ children }) => children
+
+const names = [
+  'Composition',
+  'Encounter',
+  'Media',
+  'Observation',
+  'Patient',
+  'Practitioner',
+  'Questionnaire',
+  'QuestionnaireResponse',
+] as const
+
+for (const name of names) {
+  const [hook, ThisClinicalDataRepositoryLayerProvider] =
+    makeClinicalDataRepositoryLayer(name)
+  clinicalRepositoryHooks[`${name}Repository`] = hook
+  ClinicalDataRepositoryLayerProvider = ({ children }) => (
+    <ThisClinicalDataRepositoryLayerProvider>
+      <ClinicalDataRepositoryLayerProvider>
+        {children}
+      </ClinicalDataRepositoryLayerProvider>
+    </ThisClinicalDataRepositoryLayerProvider>
+  )
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+export { clinicalRepositoryHooks, ClinicalDataRepositoryLayerProvider }

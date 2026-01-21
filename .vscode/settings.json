@@ -50,5 +50,7 @@
   "prettier.bracketSameLine": true,
   "vs-code-prettier-eslint.prettierLast": true,
   "prettier.requireConfig": true,
-  "debug.allowBreakpointsEverywhere": true
+  "debug.allowBreakpointsEverywhere": true,
+  "typescript.tsserver.enableTracing": true,
+  "typescript.tsserver.experimental.enableProjectDiagnostics": true
 }

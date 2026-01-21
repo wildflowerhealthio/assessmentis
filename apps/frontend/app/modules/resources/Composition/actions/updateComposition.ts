@@ -8,11 +8,10 @@ import {
   CompositionFormData,
 } from '../schemas/CompositionFormSchema'
 import { createResourceUpdateAction } from '../../../common/actions/createResourceActions'
+import { Effect } from 'effect'
+import { ClinicalDataRepositoryErrorsWithNotFound } from '@assessmentis/clinical-domain'
 
 export const updateComposition = createResourceUpdateAction<
   CompositionFormData,
-  CompositionId,
-  Composition,
-  CompositionRepository['Id'],
-  InstanceType<typeof CompositionRepository>
->(CompositionRepository, transformToComposition)
+  Composition
+>('Composition', transformToComposition)

@@ -12,7 +12,8 @@
     "./content-management": "./src/content-management/index.ts",
     "./data-types": "./src/data-types/index.ts",
     "./diagnostic-medicine": "./src/diagnostic-medicine/index.ts",
-    "./foundation-framework": "./src/foundation-framework/index.ts"
+    "./foundation-framework": "./src/foundation-framework/index.ts",
+    "./assessmentis": "./src/assessmentis/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

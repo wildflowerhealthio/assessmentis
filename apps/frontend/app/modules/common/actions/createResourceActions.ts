@@ -1,10 +1,13 @@
 import {
-  BaseClinicalDataRepository,
   ClinicalDataRepositoryErrors,
   ClinicalDataRepositoryErrorsWithNotFound,
+  Schemas,
 } from '@assessmentis/clinical-domain'
 import { WithId } from '@assessmentis/clinical-domain/data-types'
-import { Effect, Context } from 'effect'
+import { Effect, Schema } from 'effect'
+import { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
+import { NoSelectedOrgError } from '../../../../../../domain/platform-domain/src/hostedServices'
+import { NotFoundError } from '@assessmentis/ontology'
 
 /**
  * Creates a generic create action for a resource
@@ -33,25 +36,30 @@ import { Effect, Context } from 'effect'
  */
 export function createResourceCreateAction<
   TFormData,
-  TId extends string,
-  TResource extends { id?: TId },
-  TagId extends string,
-  TRepo extends Context.TagClass<
-    TRepo,
-    TagId,
-    BaseClinicalDataRepository<TResource, TId>
+  TResource extends { id?: string; resourceType: string } & Schema.Schema.Type<
+    (typeof Schemas)[keyof typeof Schemas]
   >,
 >(
-  repository: TRepo,
+  resourceType: TResource['resourceType'],
   transform: (data: TFormData) => TResource | (TResource & { id: undefined })
 ): (
   formData: TFormData
-) => Effect.Effect<WithId<TResource>, ClinicalDataRepositoryErrors, TRepo> {
+) => Effect.Effect<
+  WithId<TResource>,
+  ClinicalDataRepositoryErrors | NotFoundError | NoSelectedOrgError,
+  ClinicalDataRepositoryService
+> {
   return (
     formData: TFormData
-  ): Effect.Effect<WithId<TResource>, ClinicalDataRepositoryErrors, TRepo> => {
+  ): Effect.Effect<
+    WithId<TResource>,
+    ClinicalDataRepositoryErrors | NotFoundError | NoSelectedOrgError,
+    ClinicalDataRepositoryService
+  > => {
     return Effect.gen(function* () {
-      const repo = yield* repository
+      const service: ClinicalDataRepositoryService =
+        yield* ClinicalDataRepositoryService
+      const repo = yield* service.repositoryEffect(resourceType)
       const resource = transform(formData)
       return yield* repo.create(resource)
     })
@@ -87,35 +95,36 @@ export function createResourceCreateAction<
  */
 export function createResourceUpdateAction<
   TFormData,
-  TId extends string,
-  TResource extends { id?: TId },
-  TagId extends string,
-  TRepo extends Context.TagClass<
-    TRepo,
-    TagId,
-    BaseClinicalDataRepository<TResource, TId>
+  TResource extends { id?: string; resourceType: string } & Schema.Schema.Type<
+    (typeof Schemas)[keyof typeof Schemas]
   >,
 >(
-  repository: TRepo,
-  transform: (data: TFormData) => TResource | Omit<TResource, 'id'>
+  resourceType: TResource['resourceType'],
+  transform: (data: TFormData) => Omit<TResource, 'id'>
 ): (
-  id: TId,
+  id: NonNullable<TResource['id']>,
   current: TResource,
   formData: TFormData
-) => Effect.Effect<TResource, ClinicalDataRepositoryErrorsWithNotFound, TRepo> {
+) => Effect.Effect<
+  TResource,
+  ClinicalDataRepositoryErrorsWithNotFound | NoSelectedOrgError,
+  ClinicalDataRepositoryService
+> {
   return (
-    id: TId,
+    id: NonNullable<TResource['id']>,
     current: TResource,
     formData: TFormData
   ): Effect.Effect<
     TResource,
-    ClinicalDataRepositoryErrorsWithNotFound,
-    TRepo
+    ClinicalDataRepositoryErrorsWithNotFound | NoSelectedOrgError,
+    ClinicalDataRepositoryService
   > => {
     return Effect.gen(function* () {
-      const repo = yield* repository
+      const service: ClinicalDataRepositoryService =
+        yield* ClinicalDataRepositoryService
+      const repo = yield* service.repositoryEffect(resourceType)
       const updatedFields = transform(formData)
-      const updated = {
+      const updated: WithId<TResource> = {
         ...current,
         ...updatedFields,
         id,

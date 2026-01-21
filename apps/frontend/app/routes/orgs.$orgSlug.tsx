@@ -1,15 +1,5 @@
-import { auth, db } from '../firebase'
-import { DailyCoProxyConfig } from '@assessmentis/config-domain/dailyCo'
-import {
-  CompositionConfig,
-  EncounterConfig,
-  MediaConfig,
-  ObservationConfig,
-  PatientConfig,
-  PractitionerConfig,
-  QuestionnaireConfig,
-  QuestionnaireResponseConfig,
-} from '@assessmentis/config-domain/googleFhir'
+import { auth, db } from 'app/FirebaseWebLayer'
+import { DailyCoProxyConfig } from '@assessmentis/config-domain'
 import { FrontendConfig } from '@assessmentis/platform-domain'
 import { Route } from './+types/orgs.$orgSlug'
 import { Form } from 'react-router'
@@ -20,8 +10,9 @@ import {
 } from '@assessmentis/firebase-web-infrastructure'
 
 const frontendConfig = (): FrontendConfig => {
-  const fhirStore = {
+  const fhirStore: FrontendConfig['fhirServer'] = {
     _tag: 'google_fhir_store' as const,
+    apiKey: null,
     dataset: 'sandbox-dataset',
     projectId: 'assessment-is-sandbox',
     region: 'northamerica-northeast2',
@@ -29,18 +20,7 @@ const frontendConfig = (): FrontendConfig => {
   }
 
   return FrontendConfig.make({
-    questionnaireRepository: QuestionnaireConfig.make({ ...fhirStore }),
-    questionnaireResponseRepository: QuestionnaireResponseConfig.make({
-      ...fhirStore,
-    }),
-    encounterRepository: EncounterConfig.make({ ...fhirStore }),
-    mediaRepository: MediaConfig.make({ ...fhirStore }),
-    observationRepository: ObservationConfig.make({ ...fhirStore }),
-    compositionRepository: CompositionConfig.make({
-      ...fhirStore,
-    }),
-    patientRepository: PatientConfig.make({ ...fhirStore }),
-    practitionerRepository: PractitionerConfig.make({ ...fhirStore }),
+    fhirServer: fhirStore,
     videoCallClient: DailyCoProxyConfig.make({ dailyCoProxyUrl: '' }),
   } as const)
 }

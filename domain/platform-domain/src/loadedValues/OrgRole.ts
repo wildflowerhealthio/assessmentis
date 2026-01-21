@@ -8,8 +8,5 @@ export const OrgRole = Schema.Struct({
 })
 export type OrgRole = typeof OrgRole.Type
 
-export const NoOrgSelected = Schema.TaggedStruct('NoOrgSelected', {})
-export type NoOrgSelected = typeof NoOrgSelected.Type
-
-export const OrgRoleError = Schema.Union(CurrentUserError, NoOrgSelected)
+export const OrgRoleError = Schema.Union(CurrentUserError)
 export type OrgRoleError = typeof OrgRoleError.Type

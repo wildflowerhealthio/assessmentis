@@ -1,4 +1,5 @@
-export * from './FirebaseWebPlatformService'
-export * from './RuntimeProvider'
+export * from './layers'
 export * from './firestoreEffects'
 export * from './firestore'
+export * from './tagClasses'
+export * from './utility'

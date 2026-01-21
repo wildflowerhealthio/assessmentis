@@ -1,6 +1,6 @@
 import { expect, test, describe } from 'vitest'
 import { Schema, Either } from 'effect'
-import { OrgRole, NoOrgSelected, OrgRoleError } from './OrgRole'
+import { OrgRole, OrgRoleError } from './OrgRole'
 import * as fc from 'fast-check'
 
 describe('OrgRole', () => {
@@ -83,47 +83,12 @@ describe('OrgRole', () => {
   })
 })
 
-describe('NoOrgSelected', () => {
-  test('property: encode-decode is identity for NoOrgSelected', () => {
-    // Property: decode(encode(x)) === x for NoOrgSelected state
-    const decode = Schema.decodeUnknownEither(NoOrgSelected)
-    const encode = Schema.encodeUnknownEither(NoOrgSelected)
-    const noOrg = { _tag: 'NoOrgSelected' as const }
-
-    const encoded = encode(noOrg)
-    expect(Either.isRight(encoded)).toBe(true)
-
-    if (Either.isRight(encoded)) {
-      const decoded = decode(encoded.right)
-      expect(Either.isRight(decoded)).toBe(true)
-      if (Either.isRight(decoded)) {
-        expect(decoded.right._tag).toBe('NoOrgSelected')
-      }
-    }
-  })
-
-  test('property: invalid _tag always fails', () => {
-    // Property: Only correct _tag value decodes successfully
-    fc.assert(
-      fc.property(
-        fc.string().filter((s) => s !== 'NoOrgSelected'),
-        (tag) => {
-          const decode = Schema.decodeUnknownEither(NoOrgSelected)
-          const result = decode({ _tag: tag })
-          expect(Either.isLeft(result)).toBe(true)
-        }
-      )
-    )
-  })
-})
-
 describe('OrgRoleError', () => {
   test('property: union accepts all valid member types', () => {
-    // Property: OrgRoleError should accept NoOrgSelected and all CurrentUserError types
+    // Property: OrgRoleError should accept all CurrentUserError types
     fc.assert(
       fc.property(
         fc.oneof(
-          fc.constant({ _tag: 'NoOrgSelected' as const }),
           fc.record({
             _tag: fc.constant('UserDataError' as const),
             cause: fc.option(fc.anything(), { nil: undefined }),
@@ -141,7 +106,6 @@ describe('OrgRoleError', () => {
           expect(Either.isRight(result)).toBe(true)
           if (Either.isRight(result)) {
             expect([
-              'NoOrgSelected',
               'UserDataError',
               'AuthStateLoading',
               'AuthStateError',
@@ -158,7 +122,6 @@ describe('OrgRoleError', () => {
     fc.assert(
       fc.property(
         fc.oneof(
-          fc.constant({ _tag: 'NoOrgSelected' as const }),
           fc.constant({ _tag: 'AuthStateLoading' as const }),
           fc.constant({ _tag: 'NotLoggedIn' as const })
         ),
@@ -192,7 +155,6 @@ describe('OrgRoleError', () => {
           .string()
           .filter(
             (s) =>
-              s !== 'NoOrgSelected' &&
               s !== 'UserDataError' &&
               s !== 'AuthStateLoading' &&
               s !== 'AuthStateError' &&

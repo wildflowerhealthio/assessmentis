@@ -7,9 +7,7 @@
   "prettier": "@assessmentis/prettier-config",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./googleFhir": "./src/googleFhir/index.ts",
-    "./dailyCo": "./src/dailyCo/index.ts"
+    ".": "./src/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

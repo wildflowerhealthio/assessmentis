@@ -7,7 +7,7 @@ import {
   getEncounterPeriodDisplay,
 } from '../../utils/encounterDisplay'
 import baseListItemClasses from 'app/modules/common/components/BaseListItem/BaseListItem.module.css'
-import { runEffectSync } from '../../../../../clientRuntime'
+import { runEffectSync } from '../../../../../runEffectSync'
 
 interface EncounterListItemProps {
   item: Encounter

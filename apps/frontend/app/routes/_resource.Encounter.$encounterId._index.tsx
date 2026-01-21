@@ -1,67 +1,75 @@
-import { Schema } from 'effect'
+import { Effect, Schema } from 'effect'
 import { EncounterId } from '@assessmentis/clinical-domain/administration'
 import { getFullEncounter } from 'app/modules/interview-call/actions/getFullEncounter'
 import InterviewCall from 'app/modules/interview-call/features/InterviewCall/InterviewCall'
 import type { Route } from './+types/_resource.Encounter.$encounterId._index'
-import { runEffectSync, useResourceRunEffect } from '../clientRuntime'
+import { runEffectSync } from '../runEffectSync'
 import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
 import { getEncounterDisplayName } from '../modules/resources/Encounter/utils/encounterDisplay'
-import { useMemo } from 'react'
+import { Suspense, useMemo } from 'react'
 import { NotFoundError } from '@assessmentis/ontology'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
+import { useEffectTs } from '@assessmentis/react-util'
+import { ClinicalDataRepositoryService } from '../layers/ClinicalDataRepositoriesService'
+import { usePlatformContext } from '../layers/PlatformContext'
+import { Await, useAsyncError } from 'react-router'
 
 const tryDecodeEncounterId = Schema.decodeOption(EncounterId)
 
+const EncounterError = () => {
+  const error = useAsyncError()
+  if (error instanceof NotFoundError) {
+    return <div>Encounter not found</div>
+  }
+  return <div>Error loading encounter: {String(error)}</div>
+}
+
 export default function EncounterPage({ params }: Route.ComponentProps) {
-  const encounterLoader = useResourceRunEffect(
-    useMemo(() => {
-      const encounterIdStr = params.encounterId
-      const encounterIdMaybe = tryDecodeEncounterId(encounterIdStr)
-      return getFullEncounter(encounterIdMaybe)
-    }, [params.encounterId])
-  )
+  const { clinicalDataRepositoryService } = usePlatformContext()
 
-  useBreadcrumbs(
-    encounterLoader._tag === 'loaded'
-      ? [
-          { label: 'Encounters', href: '/Encounter' },
-          {
-            label: runEffectSync(
-              getEncounterDisplayName(encounterLoader.value)
-            ),
-          },
-        ]
-      : [{ label: 'Encounters', href: '/Encounter' }, { loading: true }]
-  )
+  const encounterEffect = useMemo(() => {
+    const encounterIdStr = params.encounterId
+    const encounterIdMaybe = tryDecodeEncounterId(encounterIdStr)
+    return getFullEncounter(encounterIdMaybe).pipe(
+      Effect.provideService(
+        ClinicalDataRepositoryService,
+        clinicalDataRepositoryService
+      )
+    )
+  }, [params.encounterId, clinicalDataRepositoryService])
 
-  if (encounterLoader._tag === 'loading') {
-    return <div>Loading encounter...</div>
-  }
+  const encounterPromise = useEffectTs(encounterEffect)
 
-  if (encounterLoader._tag === 'error') {
-    if (encounterLoader.error instanceof NotFoundError) {
-      return <div>Encounter not found</div>
-    }
-    return <div>Error loading encounter: {String(encounterLoader.error)}</div>
-  }
+  const breadcrumbs = useMemo(() => {
+    return [
+      { label: 'Encounters', href: '/Encounter' },
+      encounterPromise.then((enc) => ({
+        label: runEffectSync(getEncounterDisplayName(enc)),
+      })),
+    ]
+  }, [encounterPromise])
 
-  const encounterData = encounterLoader.value
-
-  const displayName = runEffectSync(getEncounterDisplayName(encounterData))
+  useBreadcrumbs(breadcrumbs)
 
   return (
-    <ResourceDetailPage
-      editTo={`/Encounter/${encounterData.id}/edit`}
-      title={displayName}
-      subtitle={`Encounter ID: ${encounterData.id}`}
-      sections={[
-        {
-          id: 'interview',
-          title: 'Interview Call',
-          content: <InterviewCall encounter={encounterData} />,
-        },
-      ]}
-      debugData={encounterData}
-    />
+    <Suspense fallback={<div>Loading interview call...</div>}>
+      <Await resolve={encounterPromise} errorElement={<EncounterError />}>
+        {(encounterData) => (
+          <ResourceDetailPage
+            editTo={`/Encounter/${encounterData.id}/edit`}
+            title={runEffectSync(getEncounterDisplayName(encounterData))}
+            subtitle={`Encounter ID: ${encounterData.id}`}
+            sections={[
+              {
+                id: 'interview',
+                title: 'Interview Call',
+                content: <InterviewCall encounter={encounterData} />,
+              },
+            ]}
+            debugData={encounterData}
+          />
+        )}
+      </Await>
+    </Suspense>
   )
 }

@@ -1,8 +1,4 @@
-import {
-  Observation,
-  ObservationId,
-  ObservationRepository,
-} from '@assessmentis/clinical-domain/diagnostic-medicine'
+import { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import {
   ObservationFormData,
   transformToObservation,
@@ -11,8 +7,5 @@ import { createResourceUpdateAction } from '../../../common/actions/createResour
 
 export const updateObservation = createResourceUpdateAction<
   ObservationFormData,
-  ObservationId,
-  Observation,
-  ObservationRepository['Id'],
-  InstanceType<typeof ObservationRepository>
->(ObservationRepository, transformToObservation)
+  Observation
+>('Observation', transformToObservation)

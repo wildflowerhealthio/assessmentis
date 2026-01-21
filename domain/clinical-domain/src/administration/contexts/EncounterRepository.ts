@@ -1,9 +1,9 @@
 import { Context } from 'effect'
-import { Encounter, EncounterId } from '../resources/Encounter'
+import { Encounter } from '../resources/Encounter'
 
-import { BaseClinicalDataRepository } from '../../assessmentis/contexts/ClinicalDataRepository'
+import { ClinicalDataRepository } from '../../types'
 
 export class EncounterRepository extends Context.Tag('EncounterRepository')<
   EncounterRepository,
-  BaseClinicalDataRepository<Encounter, EncounterId>
+  ClinicalDataRepository<Encounter>
 >() {}

@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router'
-import { useRuntime } from 'app/clientRuntime'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { CompositionForm } from 'app/modules/resources/Composition/components/CompositionForm'
 import { createComposition } from 'app/modules/resources/Composition/actions/createComposition'
@@ -8,10 +7,20 @@ import {
   CompositionFormSchema,
 } from 'app/modules/resources/Composition/schemas/CompositionFormSchema'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
+import { Effect } from 'effect'
+import { ClinicalDataRepositoryService } from '../layers/ClinicalDataRepositoriesService'
+import { usePlatformContext } from '../layers/PlatformContext'
+
+// Provide default values to prevent uncontrolled input warnings
+const defaultValues: Promise<typeof CompositionFormSchema.Encoded> =
+  Promise.resolve({
+    title: '',
+    patientId: undefined,
+  })
 
 export default function CreateCompositionPage() {
   const navigate = useNavigate()
-  const clientRuntime = useRuntime()
+  const { clinicalDataRepositoryService } = usePlatformContext()
 
   useBreadcrumbs([
     { label: 'Compositions', href: '/Composition' },
@@ -19,14 +28,15 @@ export default function CreateCompositionPage() {
   ])
 
   const handleSubmit = async (formData: CompositionFormData) => {
-    await clientRuntime.runPromise(createComposition(formData))
+    await Effect.runPromise(
+      createComposition(formData).pipe(
+        Effect.provideService(
+          ClinicalDataRepositoryService,
+          clinicalDataRepositoryService
+        )
+      )
+    )
     navigate('/Composition')
-  }
-
-  // Provide default values to prevent uncontrolled input warnings
-  const defaultValues: typeof CompositionFormSchema.Encoded = {
-    title: '',
-    patientId: undefined,
   }
 
   return (

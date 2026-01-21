@@ -1,34 +1,9 @@
 import { expect, test, describe } from 'vitest'
 import * as fc from 'fast-check'
-import {
-  UnhandledError,
-  ExternalAssertionError,
-  NotFoundError,
-  NeedsAuthenticationError,
-} from './errors'
+import { UnhandledError, ExternalAssertionError, NotFoundError } from './errors'
 
 describe('Domain Errors', () => {
   describe('UnhandledError', () => {
-    test('property: preserves message from Error cause', () => {
-      fc.assert(
-        fc.property(fc.string(), (message) => {
-          const cause = new Error(message)
-          const error = new UnhandledError({ cause })
-          expect(error.message).toBe(message)
-        })
-      )
-    })
-
-    test('property: preserves stack from Error cause', () => {
-      fc.assert(
-        fc.property(fc.string(), (message) => {
-          const cause = new Error(message)
-          const error = new UnhandledError({ cause })
-          expect(error.stack).toBe(cause.stack)
-        })
-      )
-    })
-
     test('property: uses custom message when provided with Error cause', () => {
       fc.assert(
         fc.property(fc.string(), fc.string(), (causeMessage, customMessage) => {
@@ -36,22 +11,6 @@ describe('Domain Errors', () => {
           const error = new UnhandledError({ cause, message: customMessage })
           expect(error.message).toBe(customMessage)
         })
-      )
-    })
-
-    test('property: handles non-Error causes', () => {
-      fc.assert(
-        fc.property(
-          fc.oneof(fc.string(), fc.integer(), fc.object(), fc.constant(null)),
-          fc.option(fc.string(), { nil: undefined }),
-          (cause, message) => {
-            const error = new UnhandledError({ cause, message })
-            expect(error.cause).toBe(cause)
-            if (message !== undefined) {
-              expect(error.message).toBe(message)
-            }
-          }
-        )
       )
     })
 
@@ -63,7 +22,7 @@ describe('Domain Errors', () => {
           (name, message) => {
             const cause = new Error(message)
             cause.name = name
-            const error = new UnhandledError({ cause })
+            const error = new UnhandledError({ message: '', cause })
             expect(error.name).toBe(`Unhandled${name}`)
           }
         )
@@ -164,38 +123,6 @@ describe('Domain Errors', () => {
           expect(error.cause).toBeUndefined()
         })
       )
-    })
-  })
-
-  describe('NeedsAuthenticationError', () => {
-    test('property: accepts optional cause', () => {
-      fc.assert(
-        fc.property(
-          fc.option(
-            fc.oneof(
-              fc.string(),
-              fc.integer(),
-              fc.constantFrom(new Error('test')),
-              fc.constant(null)
-            ),
-            { nil: undefined }
-          ),
-          (cause) => {
-            const error = new NeedsAuthenticationError({ cause })
-            if (cause !== undefined) {
-              expect(error.cause).toBe(cause)
-            } else {
-              expect(error.cause).toBeUndefined()
-            }
-          }
-        )
-      )
-    })
-
-    test('property: can be created without parameters', () => {
-      const error = new NeedsAuthenticationError({})
-      expect(error).toBeInstanceOf(NeedsAuthenticationError)
-      expect(error.cause).toBeUndefined()
     })
   })
 })

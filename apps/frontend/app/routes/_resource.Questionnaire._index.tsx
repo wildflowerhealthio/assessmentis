@@ -1,39 +1,18 @@
-import { Effect } from 'effect'
-import {
-  Questionnaire,
-  QuestionnaireId,
-  QuestionnaireRepository,
-} from '@assessmentis/clinical-domain/content-management'
+import { Questionnaire } from '@assessmentis/clinical-domain/content-management'
 import { questionnaireTemplates } from '@assessmentis/questionnaire-entities'
 import type { Route } from './+types/_resource.Questionnaire._index'
-import { useResourceRunEffect } from '../clientRuntime'
-import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
 import { QuestionnaireListItem } from '../modules/resources/Questionnaire/components/QuestionnaireListItem/QuestionnaireListItem'
-import { useMemo } from 'react'
 import { ResourceListPage } from '../modules/common/components/ResourceListPage/ResourceListPage'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
+import { createResourceCollectionHook } from '../modules/common/utils/createResourceCollectionHook'
 
-const useQuestionnaires = () => {
-  const questionnaires = useResourceRunEffect(
-    useMemo(() => {
-      return Effect.gen(function* () {
-        const questionnaireRepository = yield* QuestionnaireRepository
-        return yield* questionnaireRepository.getMany()
-      })
-    }, [])
-  )
-  return useClinicalDataCollection<
-    QuestionnaireId,
-    Questionnaire,
-    QuestionnaireRepository,
-    typeof QuestionnaireRepository,
-    never
-  >(QuestionnaireRepository, questionnaires)
-}
+const useQuestionnaires = createResourceCollectionHook<Questionnaire>({
+  resourceType: 'Questionnaire',
+})
 
 export default function QuestionnairePage(_: Route.ComponentProps) {
   const {
-    collection: questionnaires,
+    collectionPromise: questionnairesPromise,
     deleteItem: deleteQuestionnaire,
     createItem: createQuestionnaire,
   } = useQuestionnaires()
@@ -50,7 +29,7 @@ export default function QuestionnairePage(_: Route.ComponentProps) {
     <>
       <ResourceListPage
         title="Questionnaires"
-        collection={questionnaires}
+        collectionPromise={questionnairesPromise}
         createPath=""
         createLabel="Create Questionnaire"
         onDelete={deleteQuestionnaire}

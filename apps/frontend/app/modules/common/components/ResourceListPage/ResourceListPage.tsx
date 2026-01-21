@@ -1,17 +1,16 @@
-import { ComponentType, ReactNode } from 'react'
-import { Link } from 'react-router'
-import { LoadedResult } from '@assessmentis/ontology'
+import { ComponentType, ReactNode, Suspense } from 'react'
+import { Await, Link, useAsyncError } from 'react-router'
 import { cn } from '@assessmentis/react-util'
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 import classes from './ResourceListPage.module.css'
 
-interface ResourceListPageProps<T extends { id?: string }, E = unknown> {
+interface ResourceListPageProps<T extends { id?: string }> {
   // Page metadata
   title: string
 
   // Collection data (using LoadedResult pattern)
-  collection: LoadedResult<Array<{ data: T; loading: boolean }>, E>
+  collectionPromise: Promise<ReadonlyArray<{ data: T; loading: boolean }>>
 
   // Actions
   createPath: string
@@ -29,7 +28,7 @@ interface ResourceListPageProps<T extends { id?: string }, E = unknown> {
   emptyMessage?: string
 
   // Error rendering
-  ErrorBody?: React.FC<{ error: E }>
+  ErrorBody?: React.FC<{ error: unknown }>
 
   // Optional filtering
   filterSlot?: ReactNode
@@ -41,27 +40,42 @@ interface ResourceListPageProps<T extends { id?: string }, E = unknown> {
   className?: string
 }
 
-const Body = <T extends { id?: string }, E>({
-  collection,
+const ErrorElement = ({
+  ErrorBody,
+}: {
+  ErrorBody?: React.FC<{ error: unknown }> | undefined
+}) => {
+  const error = useAsyncError()
+  return ErrorBody ? (
+    <ErrorBody error={error} />
+  ) : (
+    <p className={cn('body-3', classes.ListPage__error)}>
+      Error loading data: {String(error)}
+    </p>
+  )
+}
+
+const Body = <T extends { id?: string | undefined }>({
+  collectionPromise,
   skeletonCount,
   emptyMessage,
   onDelete,
   ErrorBody,
   ItemComponent,
 }: {
-  collection: LoadedResult<Array<{ data: T; loading: boolean }>, E>
+  collectionPromise: Promise<ReadonlyArray<{ data: T; loading: boolean }>>
   skeletonCount: number
   emptyMessage: string
   onDelete: (id: T['id']) => Promise<void>
-  ErrorBody?: React.FC<{ error: E }>
+  ErrorBody?: React.FC<{ error: unknown }>
   ItemComponent: ComponentType<{
     item: T
     onDelete: () => void
     loading: boolean
   }>
-}) =>
-  LoadedResult.handle(collection, {
-    onLoading: () => (
+}) => (
+  <Suspense
+    fallback={
       <ul className={classes.ListPage__list}>
         {[...Array(skeletonCount)].map((_, i) => (
           <li key={i} className={classes.ListPage__item}>
@@ -73,43 +87,45 @@ const Body = <T extends { id?: string }, E>({
           </li>
         ))}
       </ul>
-    ),
-    onError: (error) =>
-      ErrorBody ? (
-        <ErrorBody error={error} />
-      ) : (
-        <p className={cn('body-3', classes.ListPage__error)}>
-          Error loading data: {String(error)}
-        </p>
-      ),
-    onSuccess: (items) =>
-      items.length === 0 ? (
-        <p className={cn('body-3', classes.ListPage__empty)}>{emptyMessage}</p>
-      ) : (
-        <ul className={classes.ListPage__list}>
-          {items.map(({ data, loading }) => (
-            <li
-              key={data.id ?? ''}
-              className={classes.ListPage__item}
-              data-loading={loading}
-            >
-              <ItemComponent
-                item={data}
-                onDelete={() => onDelete(data.id)}
-                loading={loading}
-              />
-            </li>
-          ))}
-        </ul>
-      ),
-  })
+    }
+  >
+    <Await
+      resolve={collectionPromise}
+      errorElement={<ErrorElement ErrorBody={ErrorBody} />}
+    >
+      {(items) =>
+        items.length === 0 ? (
+          <p className={cn('body-3', classes.ListPage__empty)}>
+            {emptyMessage}
+          </p>
+        ) : (
+          <ul className={classes.ListPage__list}>
+            {items.map(({ data, loading }) => (
+              <li
+                key={data.id ?? ''}
+                className={classes.ListPage__item}
+                data-loading={loading}
+              >
+                <ItemComponent
+                  item={data}
+                  onDelete={() => onDelete(data.id)}
+                  loading={loading}
+                />
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </Await>
+  </Suspense>
+)
 
-export function ResourceListPage<T extends { id?: string }, E = unknown>(
-  props: ResourceListPageProps<T, E>
+export function ResourceListPage<T extends { id?: string }>(
+  props: ResourceListPageProps<T>
 ) {
   const {
     title,
-    collection,
+    collectionPromise,
     createPath,
     createLabel,
     onDelete,
@@ -135,7 +151,7 @@ export function ResourceListPage<T extends { id?: string }, E = unknown>(
       ) : undefined}
 
       <Body
-        collection={collection}
+        collectionPromise={collectionPromise}
         skeletonCount={skeletonCount}
         emptyMessage={emptyMessage}
         onDelete={onDelete}

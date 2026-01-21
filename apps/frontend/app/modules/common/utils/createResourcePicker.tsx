@@ -1,22 +1,20 @@
-import { Effect } from 'effect'
-import { BaseClinicalDataRepository } from '@assessmentis/clinical-domain'
-import { ClientRuntimeContext } from '../../../../../../domain/platform-domain/src/UserPlatformService'
-import { BasePicker } from '../components/BasePicker/BasePicker'
+import { Schema } from 'effect'
+import { PromisedDataPicker } from '../components/BasePicker/BasePicker'
 import { usePickerData } from '../components/BasePicker/hooks/usePickerData'
 import {
   BasePickerProps,
   PickerItem,
 } from '../components/BasePicker/types/PickerTypes'
+import { Schemas } from '@assessmentis/clinical-domain'
+import { useCallback } from 'react'
 
 /**
  * Configuration for creating a resource picker component
  */
-export interface ResourcePickerConfig<TResource extends { id?: string }> {
-  repository: Effect.Effect<
-    BaseClinicalDataRepository<TResource, string>,
-    never,
-    ClientRuntimeContext
-  >
+export interface ResourcePickerConfig<
+  TResource extends Schema.Schema.Type<(typeof Schemas)[keyof typeof Schemas]>,
+> {
+  resourceType: TResource['resourceType']
   formatDisplay: (resource: TResource) => string
   formatSecondary: (resource: TResource) => string
   defaultPlaceholder: string
@@ -43,30 +41,30 @@ export interface ResourcePickerConfig<TResource extends { id?: string }> {
  * })
  * ```
  */
-export function createResourcePicker<TResource extends { id?: string }>(
-  config: ResourcePickerConfig<TResource>
-) {
+export function createResourcePicker<
+  TResource extends Schema.Schema.Type<(typeof Schemas)[keyof typeof Schemas]>,
+>(config: ResourcePickerConfig<TResource>) {
+  const transform = (
+    resource: TResource
+  ): PickerItem<{ resource: TResource }> => ({
+    id: resource.id!,
+    displayName: config.formatDisplay(resource),
+    secondaryText: config.formatSecondary(resource),
+    metadata: { resource },
+  })
+
   return function ResourcePicker(
     props: Omit<BasePickerProps<{ resource: TResource }>, 'items' | 'loading'>
   ) {
-    const { items, loading, error } = usePickerData({
-      repository: config.repository,
-      transform: (
-        resource: TResource
-      ): PickerItem<{ resource: TResource }> => ({
-        id: resource.id!,
-        displayName: config.formatDisplay(resource),
-        secondaryText: config.formatSecondary(resource),
-        metadata: { resource },
-      }),
+    const [itemsPromise] = usePickerData<TResource, { resource: TResource }>({
+      resourceType: config.resourceType,
+      transform,
     })
 
     return (
-      <BasePicker
+      <PromisedDataPicker
         {...props}
-        items={items}
-        loading={loading}
-        error={error?.message || props.error}
+        itemsPromise={itemsPromise}
         immediate={props.immediate ?? true}
         placeholder={props.placeholder || config.defaultPlaceholder}
         label={props.label || config.defaultLabel}

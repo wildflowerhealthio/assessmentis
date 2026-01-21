@@ -1,9 +1,6 @@
 import { DateTime, Effect, Option, Schema } from 'effect'
 import { useNavigate } from 'react-router'
-import {
-  useLoadedRuntimeContext,
-  useResourceRunEffect,
-} from 'app/clientRuntime'
+import { useEffectTs } from '@assessmentis/react-util'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { ObservationForm } from 'app/modules/resources/Observation/components/ObservationForm'
 import { updateObservation } from 'app/modules/resources/Observation/actions/updateObservation'
@@ -18,124 +15,123 @@ import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider
 import { getObservationDisplayName } from '../modules/resources/Observation/utils/observationDisplay'
 import { extractReferenceId } from 'app/modules/common/utils/fhirDisplay'
 import { useMemo } from 'react'
-import Skeleton from 'react-loading-skeleton'
+import { ClinicalDataRepositoryService } from '../layers/ClinicalDataRepositoriesService'
+import { usePlatformContext } from '../layers/PlatformContext'
 
 const tryDecodeObservationId = Schema.decodeOption(ObservationId)
 
 export default function EditObservationPage({ params }: Route.ComponentProps) {
-  const observationLoader = useResourceRunEffect(
-    useMemo(() => {
-      const observationIdMaybe = tryDecodeObservationId(params.observationId)
+  const { clinicalDataRepositoryService } = usePlatformContext()
 
-      return Effect.gen(function* () {
-        const repository = yield* ObservationRepository
+  const observationEffect = useMemo(() => {
+    const observationIdMaybe = tryDecodeObservationId(params.observationId)
 
-        const observationId = yield* observationIdMaybe.pipe(
-          Option.map(Effect.succeed),
-          Option.getOrElse(() =>
-            Effect.fail(
-              new NotFoundError({
-                resourceType: 'Observation',
-                params: { id: params.observationId },
-              })
-            )
+    return Effect.gen(function* () {
+      const repository = yield* ObservationRepository
+
+      const observationId = yield* observationIdMaybe.pipe(
+        Option.map(Effect.succeed),
+        Option.getOrElse(() =>
+          Effect.fail(
+            new NotFoundError({
+              resourceType: 'Observation',
+              params: { id: params.observationId },
+            })
           )
         )
+      )
 
-        return yield* repository.get(observationId)
-      })
-    }, [params.observationId])
-  )
+      return yield* repository.get(observationId)
+    }).pipe(
+      Effect.provideServiceEffect(
+        ObservationRepository,
+        clinicalDataRepositoryService.Observation
+      )
+    )
+  }, [clinicalDataRepositoryService.Observation, params.observationId])
+
+  const observationPromise = useEffectTs(observationEffect)
 
   const navigate = useNavigate()
-  const clientRuntime = useLoadedRuntimeContext()
 
-  useBreadcrumbs([
-    { label: 'Observations', href: '/Observation' },
-    {
-      loading: observationLoader._tag === 'loading',
-      label:
-        observationLoader._tag === 'loaded'
-          ? getObservationDisplayName(observationLoader.value)
-          : 'Unknown Observation',
-      href: `/Observation/${params.observationId}`,
-    },
-    { label: 'Edit' },
-  ])
+  const breadcrumbs = useMemo(
+    () => [
+      { label: 'Observations', href: '/Observation' },
+      observationPromise.then((obs) => ({
+        label: getObservationDisplayName(obs),
+        href: `/Observation/${params.observationId}`,
+      })),
+      { label: 'Edit' },
+    ],
+    [observationPromise, params.observationId]
+  )
 
-  if (observationLoader._tag == 'loading') {
-    return (
-      <FormPage title="Edit Observation">
-        <Skeleton count={5} height={40} style={{ marginBottom: '1rem' }} />
-      </FormPage>
-    )
-  }
-  if (observationLoader._tag === 'error') {
-    throw observationLoader.error
-  }
-
-  const observation = observationLoader.value
+  useBreadcrumbs(breadcrumbs)
 
   // Determine which value type is present
-  let valueType:
-    | 'valueString'
-    | 'valueDecimal'
-    | 'valueQuantity'
-    | 'valueCodeableConcept' = 'valueQuantity'
-  if ('valueString' in observation) valueType = 'valueString'
-  else if ('valueDecimal' in observation) valueType = 'valueDecimal'
-  else if ('valueQuantity' in observation) valueType = 'valueQuantity'
-  else if ('valueCodeableConcept' in observation)
-    valueType = 'valueCodeableConcept'
+  const initialValues: Promise<typeof ObservationFormSchema.Encoded> = useMemo(
+    () =>
+      observationPromise.then((observation) => {
+        let valueType:
+          | 'valueString'
+          | 'valueDecimal'
+          | 'valueQuantity'
+          | 'valueCodeableConcept' = 'valueQuantity'
+        if ('valueString' in observation) valueType = 'valueString'
+        else if ('valueDecimal' in observation) valueType = 'valueDecimal'
+        else if ('valueQuantity' in observation) valueType = 'valueQuantity'
+        else if ('valueCodeableConcept' in observation)
+          valueType = 'valueCodeableConcept'
 
-  // Extract coding from valueCodeableConcept if present
-  const firstCoding =
-    'valueCodeableConcept' in observation
-      ? observation.valueCodeableConcept?.coding?.[0]
-      : undefined
+        const firstCoding =
+          'valueCodeableConcept' in observation
+            ? observation.valueCodeableConcept?.coding?.[0]
+            : undefined
 
-  // Transform observation to form initial values
-  const initialValues: typeof ObservationFormSchema.Encoded = {
-    patientId: extractReferenceId(observation.subject) ?? '',
-    encounterId: extractReferenceId(observation.encounter),
-    code: observation.code.text ?? '',
-    valueType,
-    valueString:
-      'valueString' in observation ? observation.valueString : undefined,
-    valueDecimal:
-      'valueDecimal' in observation
-        ? String(observation.valueDecimal)
-        : undefined,
-    valueQuantityValue:
-      'valueQuantity' in observation
-        ? observation.valueQuantity?.value?.toString()
-        : undefined,
-    valueQuantityUnit:
-      'valueQuantity' in observation
-        ? observation.valueQuantity?.unit
-        : undefined,
-    valueCodeableConceptText:
-      'valueCodeableConcept' in observation
-        ? observation.valueCodeableConcept?.text
-        : undefined,
-    valueCodeableConceptCodingCode: firstCoding?.code,
-    valueCodeableConceptCodingSystem: firstCoding?.system,
-    valueCodeableConceptCodingDisplay: firstCoding?.display,
-    effectiveDateTime: observation.effectiveDateTime?.pipe(
-      DateTime.setZone(DateTime.zoneMakeLocal())
-    ),
-  }
+        return {
+          patientId: extractReferenceId(observation.subject) ?? '',
+          encounterId: extractReferenceId(observation.encounter),
+          code: observation.code.text ?? '',
+          valueType,
+          valueString:
+            'valueString' in observation ? observation.valueString : undefined,
+          valueDecimal:
+            'valueDecimal' in observation
+              ? String(observation.valueDecimal)
+              : undefined,
+          valueQuantityValue:
+            'valueQuantity' in observation
+              ? observation.valueQuantity?.value?.toString()
+              : undefined,
+          valueQuantityUnit:
+            'valueQuantity' in observation
+              ? observation.valueQuantity?.unit
+              : undefined,
+          valueCodeableConceptText:
+            'valueCodeableConcept' in observation
+              ? observation.valueCodeableConcept?.text
+              : undefined,
+          valueCodeableConceptCodingCode: firstCoding?.code,
+          valueCodeableConceptCodingSystem: firstCoding?.system,
+          valueCodeableConceptCodingDisplay: firstCoding?.display,
+          effectiveDateTime: observation.effectiveDateTime?.pipe(
+            DateTime.setZone(DateTime.zoneMakeLocal())
+          ),
+        }
+      }),
+    [observationPromise]
+  )
 
   const handleSubmit = async (formData: typeof ObservationFormSchema.Type) => {
-    if (!observation.id) return
+    const observation = await observationPromise
 
-    if (clientRuntime._tag != 'loaded') {
-      console.error('Runtime not loaded', clientRuntime)
-      return
-    }
-
-    await clientRuntime.value.runPromise(
-      updateObservation(observation.id, observation, formData)
+    await Effect.runPromise(
+      updateObservation(observation.id, observation, formData).pipe(
+        Effect.provideService(
+          ClinicalDataRepositoryService,
+          clinicalDataRepositoryService
+        )
+      )
     )
 
     // Redirect back to detail page

@@ -3,92 +3,105 @@ import type { Request } from 'firebase-functions/v2/https'
 import { type Response } from 'express'
 import { google } from 'googleapis'
 import { info, error } from 'firebase-functions/logger'
-import { db, defaultHttpOptions, oauth2Client } from '../util/context'
+import { Effect, Exit } from 'effect'
+import { UserId, AuthError, AuthzError } from '@assessmentis/platform-domain'
+import { defaultHttpOptions, oauth2Client } from '../util/functionContext'
+import { handleError } from '../util/handleError'
+import { UnhandledError } from '../../../../global/ontology/src/errors'
+import { AuthRepository } from '@assessmentis/firebase-server-infrastructure'
+import { makeServerRuntime } from '../util/BaseLayer'
 
-export const oAuthCallback = onRequest(
-  defaultHttpOptions,
-  async (request: Request, response: Response) => {
-    const q = request.query
+/**
+ * Process OAuth callback with authorization code
+ */
+export const oAuthCallbackEffect = (q: {
+  error?: string | string[]
+  code?: string | string[]
+  state?: string | string[]
+}): Effect.Effect<
+  string,
+  AuthError | AuthzError | UnhandledError,
+  AuthRepository
+> =>
+  Effect.gen(function* () {
+    const authStore = yield* AuthRepository
 
     info('Received OAuth callback with query params:', q)
     if (q.error) {
       // An error response e.g. error=access_denied
       error('Error:' + q.error)
-    } else {
-      // Get access and refresh tokens (if access_type is offline)
-      const { tokens } = await oauth2Client.getToken(q.code?.toString() ?? '')
-      oauth2Client.setCredentials(tokens)
-      const oauth2 = google.oauth2({
-        auth: oauth2Client,
-        version: 'v2',
-      })
-      const { uid, hostname } = JSON.parse(q.state?.toString() ?? '{}')
-      const { data } = await oauth2.userinfo.get()
-      const { email } = data
-      const { refresh_token, id_token, access_token, ...getTokenExtra } = tokens
-      if (!(access_token && refresh_token && id_token && email && uid)) {
-        response.status(400).send('Missing required tokens or email')
-        return
-      }
+      const errorMessage = String(q.error)
 
-      const res = await oauth2.tokeninfo({
-        access_token: access_token,
-        id_token: id_token,
-      })
-
-      const tokenMetadata = {
-        email,
-        lastUpdated: new Date(),
-        scope: tokens.scope,
-        tokenType: tokens.token_type,
-      }
-
-      let success = false
-      if (res.data.scope) {
-        // Store the refresh token in the Firestore database.
-        try {
-          const refreshTokenExpiresInSeconds =
-            'expires_in' in res.data && typeof res.data.expires_in == 'number'
-              ? res.data.expires_in
-              : undefined
-          const tokenCollection = db
-            .collection('users')
-            .doc(uid)
-            .collection('tokens')
-          const setAccessToken = tokenCollection
-            .doc('googleOAuthAccessToken')
-            .set({
-              ...tokenMetadata,
-              token: tokens.access_token,
-              expiresAt: tokens.expiry_date
-                ? new Date(tokens.expiry_date)
-                : undefined,
-            })
-
-          const setRefreshToken = tokenCollection
-            .doc('googleOAuthRefreshToken')
-            .set({
-              ...tokenMetadata,
-              token: tokens.refresh_token,
-              expiresAt: refreshTokenExpiresInSeconds
-                ? new Date(Date.now() + refreshTokenExpiresInSeconds * 1000)
-                : undefined,
-              tokeninfo: res.data,
-              getTokenExtra,
-            })
-
-          info(
-            'Stored refresh token in Firestore',
-            Promise.all([setAccessToken, setRefreshToken])
-          )
-          success = true
-        } catch (err) {
-          error('Error storing refresh token in Firestore:', err)
-          success = false
-        }
-      }
-      const redirectUrl = `https://${hostname}/authorizeEmail?email=${email}&success=${success}`
-      response.redirect(redirectUrl)
+      return yield* Effect.fail(new AuthError({ message: errorMessage }))
     }
+
+    const code = q.code?.toString() ?? ''
+    const state = q.state?.toString() ?? '{}'
+
+    // Get access and refresh tokens (if access_type is offline)
+    const { tokens } = yield* Effect.promise(() => oauth2Client.getToken(code))
+
+    oauth2Client.setCredentials(tokens)
+    const oauth2 = google.oauth2({
+      auth: oauth2Client,
+      version: 'v2',
+    })
+
+    const { uid, hostname } = JSON.parse(state)
+    const { data } = yield* Effect.promise(() => oauth2.userinfo.get())
+    const { email } = data
+    const { refresh_token, id_token, access_token } = tokens
+
+    if (
+      !(
+        access_token &&
+        refresh_token &&
+        id_token &&
+        email &&
+        typeof email === 'string' &&
+        uid
+      )
+    ) {
+      return yield* Effect.fail(
+        new AuthError({ message: 'Missing required tokens or email' })
+      )
+    }
+
+    const userId = UserId.make(uid)
+
+    // Store tokens in Firestore
+    yield* authStore.storeOAuthTokens(userId, {
+      accessToken: access_token,
+      refreshToken: refresh_token,
+      expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : undefined,
+      scope: tokens.scope ?? undefined,
+      tokenType: tokens.token_type ?? undefined,
+    })
+
+    info('Stored OAuth tokens in Firestore')
+
+    const redirectUrl = `https://${hostname}/authorizeEmail?email=${email ?? ''}&success=true`
+    return redirectUrl
+  })
+
+export const oAuthCallback = onRequest(
+  defaultHttpOptions,
+  async (request: Request, response: Response) => {
+    info('Received request to refresh Google OAuth token')
+    const runtime = makeServerRuntime(AuthRepository.Default, { request })
+    await runtime
+      .runPromiseExit(oAuthCallbackEffect(request.query))
+      .then((exit) =>
+        exit.pipe(
+          Exit.match({
+            onSuccess: (redirectUrl) => {
+              response.redirect(redirectUrl)
+            },
+            onFailure: (error) => {
+              handleError(error, response)
+            },
+          })
+        )
+      )
   }
 )

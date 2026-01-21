@@ -157,7 +157,7 @@ jobs:
           filter_mode: diff_context
           workdir: infrastructure/firebase-web-infrastructure
 
-      - name: Lint infrastructure/google-fhir-infrastructure
+      - name: Lint infrastructure/google-fhir-web-infrastructure
         uses: reviewdog/action-eslint@v1
         continue-on-error: true
         with:
@@ -165,7 +165,7 @@ jobs:
           reporter: github-pr-review
           fail_level: error
           filter_mode: diff_context
-          workdir: infrastructure/google-fhir-infrastructure
+          workdir: infrastructure/google-fhir-web-infrastructure
 
       - name: Lint infrastructure/google-meet-infrastructure
         uses: reviewdog/action-eslint@v1

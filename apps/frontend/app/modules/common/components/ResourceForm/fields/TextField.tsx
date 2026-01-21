@@ -1,4 +1,4 @@
-import { cn } from '@assessmentis/react-util'
+import { cn, useLoadingPromise } from '@assessmentis/react-util'
 import classes from '../ResourceForm.module.css'
 import { FC } from 'react'
 
@@ -9,7 +9,7 @@ export interface TextFieldProps {
   placeholder?: string
   error?: string | undefined
   defaultValue?: string | undefined
-  value: string | undefined
+  value: Promise<string | undefined>
   onChange: (value: string) => void
 }
 
@@ -23,6 +23,11 @@ export const TextField: FC<TextFieldProps> = ({
   value,
   onChange,
 }: TextFieldProps) => {
+  const {
+    value: resolvedValue,
+    loading,
+    error: valueError,
+  } = useLoadingPromise(value)
   return (
     <div className={classes.FormField}>
       {label && (
@@ -42,8 +47,9 @@ export const TextField: FC<TextFieldProps> = ({
         placeholder={placeholder}
         required={required}
         defaultValue={defaultValue}
-        value={value}
+        value={resolvedValue}
         onChange={(e) => onChange(e.target.value)}
+        disabled={loading || valueError !== undefined}
       />
       {error && (
         <div className={cn('body-3', classes.FormField__error)}>{error}</div>

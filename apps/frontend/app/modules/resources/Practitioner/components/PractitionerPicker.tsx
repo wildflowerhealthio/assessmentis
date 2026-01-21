@@ -1,4 +1,4 @@
-import { PractitionerRepository } from '@assessmentis/clinical-domain/administration'
+import { Practitioner } from '@assessmentis/clinical-domain/administration'
 import { formatHumanName } from '../../../common/utils/fhirDisplay'
 import { createResourcePicker } from '../../../common/utils/createResourcePicker'
 
@@ -10,8 +10,8 @@ function formatQualification(practitioner: {
 }
 
 export const PractitionerPicker = createResourcePicker({
-  repository: PractitionerRepository,
-  formatDisplay: (practitioner) =>
+  resourceType: 'Practitioner',
+  formatDisplay: (practitioner: Practitioner) =>
     formatHumanName(practitioner.name?.[0], 'Unnamed Practitioner'),
   formatSecondary: (practitioner) => formatQualification(practitioner),
   defaultPlaceholder: 'Select practitioner(s)...',
