@@ -104,9 +104,7 @@ describe('PlatformContextProvider', () => {
       </PlatformContextProvider>
     )
 
-    expect(
-      screen.getByText(/Loading PlatformContextProvider/)
-    ).toBeDefined()
+    expect(screen.getByText(/Loading PlatformContextProvider/)).toBeDefined()
   })
 
   it('should provide platform services to children after initialization', async () => {
@@ -117,9 +115,7 @@ describe('PlatformContextProvider', () => {
     )
 
     // Initially should show loading
-    expect(
-      screen.getByText(/Loading PlatformContextProvider/)
-    ).toBeDefined()
+    expect(screen.getByText(/Loading PlatformContextProvider/)).toBeDefined()
 
     // After platform initializes, children should render
     await waitFor(
@@ -132,9 +128,8 @@ describe('PlatformContextProvider', () => {
 
   it('should render error boundary fallback on failure', async () => {
     // Mock a failure in the platform initialization
-    const { startAuthDataService } = await import(
-      '@assessmentis/firebase-web-infrastructure'
-    )
+    const { startAuthDataService } =
+      await import('@assessmentis/firebase-web-infrastructure')
     vi.mocked(startAuthDataService).mockImplementationOnce(() =>
       Effect.die(new Error('Mock initialization error'))
     )

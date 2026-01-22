@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -38,11 +39,6 @@ describe('OrgContextProvider', () => {
       },
     },
   }
-
-  const mockUserOrgs: ReadonlyArray<OrgSlug> = [
-    OrgSlug.make('test-org'),
-    OrgSlug.make('another-org'),
-  ]
 
   let mockSetActiveOrgSlug: ReturnType<typeof vi.fn>
 
