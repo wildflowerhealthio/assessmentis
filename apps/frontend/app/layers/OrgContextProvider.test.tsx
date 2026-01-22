@@ -7,15 +7,22 @@ import { usePlatformContext } from './PlatformContext'
 import type { Org, OrgSlug } from '@assessmentis/platform-domain'
 import { NoSelectedOrgError } from '@assessmentis/platform-domain'
 
+// Polyfill for Promise.withResolvers (Node < 22)
+if (!Promise.withResolvers) {
+  Promise.withResolvers = function <T>() {
+    let resolve!: (value: T | PromiseLike<T>) => void
+    let reject!: (reason?: any) => void
+    const promise = new Promise<T>((res, rej) => {
+      resolve = res
+      reject = rej
+    })
+    return { promise, resolve, reject }
+  }
+}
+
 // Mock the PlatformContext
 vi.mock('./PlatformContext', () => ({
   usePlatformContext: vi.fn(),
-}))
-
-// Mock react-util hooks
-vi.mock('@assessmentis/react-util', () => ({
-  useStream: vi.fn(),
-  useEffectTs: vi.fn(),
 }))
 
 describe('OrgContextProvider', () => {
@@ -56,13 +63,30 @@ describe('OrgContextProvider', () => {
   })
 
   it('should show org picker when no org selected', async () => {
-    const { useStream, useEffectTs } = await import('@assessmentis/react-util')
-
-    // Mock to return NoSelectedOrgError
-    vi.mocked(useStream).mockReturnValue(
-      Promise.resolve(Either.left(new NoSelectedOrgError({})))
+    // Mock activeOrgStream to emit NoSelectedOrgError
+    const activeOrgStream = Stream.succeed(
+      Either.left(new NoSelectedOrgError({}))
     )
-    vi.mocked(useEffectTs).mockReturnValue(Promise.resolve(mockUserOrgs))
+
+    // Mock user effect to return user with orgs
+    const userEffect = Effect.succeed({
+      org_roles: { 'test-org': 'admin', 'another-org': 'member' },
+    })
+
+    vi.mocked(usePlatformContext).mockReturnValue({
+      authDataService: {} as any,
+      orgService: {
+        activeOrgStream,
+        activeOrg: Effect.succeed(null),
+        setActiveOrgSlug: mockSetActiveOrgSlug,
+      } as any,
+      userService: {
+        user: userEffect,
+      } as any,
+      fhirR4ClientService: {} as any,
+      clinicalDataRepositoryService: {} as any,
+      externalVideoCallClientService: {} as any,
+    })
 
     render(
       <OrgContextProvider>
@@ -78,15 +102,30 @@ describe('OrgContextProvider', () => {
   })
 
   it('should show org picker with error when org load fails', async () => {
-    const { useStream, useEffectTs } = await import('@assessmentis/react-util')
-
     const mockError = new Error('Failed to load org')
 
-    // Mock to return error
-    vi.mocked(useStream).mockReturnValue(
-      Promise.resolve(Either.left(mockError))
-    )
-    vi.mocked(useEffectTs).mockReturnValue(Promise.resolve(mockUserOrgs))
+    // Mock activeOrgStream to emit error
+    const activeOrgStream = Stream.succeed(Either.left(mockError))
+
+    // Mock user effect to return user with orgs
+    const userEffect = Effect.succeed({
+      org_roles: { 'test-org': 'admin', 'another-org': 'member' },
+    })
+
+    vi.mocked(usePlatformContext).mockReturnValue({
+      authDataService: {} as any,
+      orgService: {
+        activeOrgStream,
+        activeOrg: Effect.succeed(null),
+        setActiveOrgSlug: mockSetActiveOrgSlug,
+      } as any,
+      userService: {
+        user: userEffect,
+      } as any,
+      fhirR4ClientService: {} as any,
+      clinicalDataRepositoryService: {} as any,
+      externalVideoCallClientService: {} as any,
+    })
 
     render(
       <OrgContextProvider>
@@ -103,13 +142,28 @@ describe('OrgContextProvider', () => {
   })
 
   it('should render children when org is selected', async () => {
-    const { useStream, useEffectTs } = await import('@assessmentis/react-util')
+    // Mock activeOrgStream to emit successful org
+    const activeOrgStream = Stream.succeed(Either.right(mockOrg))
 
-    // Mock to return successful org
-    vi.mocked(useStream).mockReturnValue(
-      Promise.resolve(Either.right(mockOrg))
-    )
-    vi.mocked(useEffectTs).mockReturnValue(Promise.resolve(mockUserOrgs))
+    // Mock user effect to return user with orgs
+    const userEffect = Effect.succeed({
+      org_roles: { 'test-org': 'admin', 'another-org': 'member' },
+    })
+
+    vi.mocked(usePlatformContext).mockReturnValue({
+      authDataService: {} as any,
+      orgService: {
+        activeOrgStream,
+        activeOrg: Effect.succeed(mockOrg),
+        setActiveOrgSlug: mockSetActiveOrgSlug,
+      } as any,
+      userService: {
+        user: userEffect,
+      } as any,
+      fhirR4ClientService: {} as any,
+      clinicalDataRepositoryService: {} as any,
+      externalVideoCallClientService: {} as any,
+    })
 
     render(
       <OrgContextProvider>
@@ -125,14 +179,32 @@ describe('OrgContextProvider', () => {
   })
 
   it('should call setActiveOrgSlug when org is picked from selector', async () => {
-    const { useStream, useEffectTs } = await import('@assessmentis/react-util')
     const user = userEvent.setup()
 
-    // Mock to return NoSelectedOrgError initially
-    vi.mocked(useStream).mockReturnValue(
-      Promise.resolve(Either.left(new NoSelectedOrgError({})))
+    // Mock activeOrgStream to emit NoSelectedOrgError initially
+    const activeOrgStream = Stream.succeed(
+      Either.left(new NoSelectedOrgError({}))
     )
-    vi.mocked(useEffectTs).mockReturnValue(Promise.resolve(mockUserOrgs))
+
+    // Mock user effect to return user with orgs
+    const userEffect = Effect.succeed({
+      org_roles: { 'test-org': 'admin', 'another-org': 'member' },
+    })
+
+    vi.mocked(usePlatformContext).mockReturnValue({
+      authDataService: {} as any,
+      orgService: {
+        activeOrgStream,
+        activeOrg: Effect.succeed(null),
+        setActiveOrgSlug: mockSetActiveOrgSlug,
+      } as any,
+      userService: {
+        user: userEffect,
+      } as any,
+      fhirR4ClientService: {} as any,
+      clinicalDataRepositoryService: {} as any,
+      externalVideoCallClientService: {} as any,
+    })
 
     render(
       <OrgContextProvider>
@@ -156,8 +228,6 @@ describe('OrgContextProvider', () => {
   })
 
   it('should not render children when org is not in user orgs', async () => {
-    const { useStream, useEffectTs } = await import('@assessmentis/react-util')
-
     const unauthorizedOrg: Org = {
       slug: 'unauthorized-org' as any,
       name: 'Unauthorized Organization',
@@ -165,11 +235,28 @@ describe('OrgContextProvider', () => {
       members: {},
     }
 
-    // Mock to return org that user doesn't have access to
-    vi.mocked(useStream).mockReturnValue(
-      Promise.resolve(Either.right(unauthorizedOrg))
-    )
-    vi.mocked(useEffectTs).mockReturnValue(Promise.resolve(mockUserOrgs))
+    // Mock activeOrgStream to emit org that user doesn't have access to
+    const activeOrgStream = Stream.succeed(Either.right(unauthorizedOrg))
+
+    // Mock user effect to return user with different orgs
+    const userEffect = Effect.succeed({
+      org_roles: { 'test-org': 'admin', 'another-org': 'member' },
+    })
+
+    vi.mocked(usePlatformContext).mockReturnValue({
+      authDataService: {} as any,
+      orgService: {
+        activeOrgStream,
+        activeOrg: Effect.succeed(unauthorizedOrg),
+        setActiveOrgSlug: mockSetActiveOrgSlug,
+      } as any,
+      userService: {
+        user: userEffect,
+      } as any,
+      fhirR4ClientService: {} as any,
+      clinicalDataRepositoryService: {} as any,
+      externalVideoCallClientService: {} as any,
+    })
 
     render(
       <OrgContextProvider>
