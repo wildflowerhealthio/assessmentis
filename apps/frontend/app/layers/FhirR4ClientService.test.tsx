@@ -115,10 +115,18 @@ describe('FhirR4ClientService', () => {
         const orgPubSub = yield* PubSub.unbounded<
           Take.Take<Either.Either<Org, NoSelectedOrgError>>
         >()
-        const orgStream = orgPubSub.subscribe.pipe(
-          Effect.map(Stream.fromQueue),
-          Stream.unwrap,
-          Stream.mapEffect((take) => Effect.succeed(take).pipe(Effect.map(Take.done), Effect.flatten)),
+        
+        // Convert PubSub to a stream - break down complex nested pipes for clarity
+        const baseStream = Stream.unwrap(
+          Effect.map(orgPubSub.subscribe, Stream.fromQueue)
+        )
+        const orgStream = baseStream.pipe(
+          Stream.mapEffect((take) => {
+            return Effect.gen(function* () {
+              const done = yield* Take.done(take)
+              return done
+            })
+          }),
           Stream.flatMap((chunk) => Stream.fromIterable(chunk))
         )
 
