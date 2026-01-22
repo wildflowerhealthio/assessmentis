@@ -25,6 +25,7 @@
     "domain/platform-domain",
     "domain/clinical-domain",
     "domain/config-domain",
+    "domain/fhir-client",
     "domain/questionnaire-entities",
     "domain/document-template-kinds",
     "domain/video-call-domain",

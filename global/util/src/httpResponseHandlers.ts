@@ -36,7 +36,7 @@ export const failOnHttpStatus = <TData, E>(
  * @returns Effect handler that can be piped after HTTP calls
  */
 export const failOnHttpStatuses = <TData, E>(
-  statusCodes: number[],
+  statusCodes: readonly number[],
   makeError: (resp: HttpResponse<TData>) => E
 ) =>
   Effect.flatMap((resp: HttpResponse<TData>) =>

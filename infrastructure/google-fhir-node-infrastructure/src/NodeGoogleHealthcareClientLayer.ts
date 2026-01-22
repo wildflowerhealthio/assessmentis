@@ -2,51 +2,23 @@ import { Effect, Layer } from 'effect'
 import { healthcare_v1 } from '@googleapis/healthcare'
 import { google } from 'googleapis'
 
-import { FhirR4Client } from '@assessmentis/clinical-domain/assessmentis'
+import { FhirR4Client, buildFhirStoreParent, buildFhirResourcePath } from '@assessmentis/fhir-client'
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
-import { UnhandledError, NotFoundError } from '@assessmentis/ontology'
-import { AuthError, AuthzError } from '@assessmentis/platform-domain'
-import {
-  HttpResponse,
-  failOnHttpStatus,
-  failOnHttpStatuses,
-  buildFhirStoreParent,
-  buildFhirResourcePath,
-} from '@assessmentis/util'
+import { UnhandledError } from '@assessmentis/ontology'
+import { HttpResponse } from '@assessmentis/util'
 import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
+import { handleAuthErr, handleAuthzErr, handleNotFoundErr } from './errorHandlers'
 
 /**
  * Adapter to convert googleapis response to HttpResponse
+ * Extracts actual HTTP status from response if available
  */
-const toHttpResponse = <T>(
-  response: healthcare_v1.Schema$HttpBody
-): HttpResponse<T> => ({
-  status: 200, // googleapis throws on non-2xx, so successful responses are always 200
-  data: response.data as T,
-})
-
-/**
- * Extracts status code from googleapis error
- */
-const getErrorStatus = (error: unknown): number => {
-  if (
-    error &&
-    typeof error === 'object' &&
-    'code' in error &&
-    typeof error.code === 'number'
-  ) {
-    return error.code
-  }
-  return 500
-}
-
-/**
- * Converts googleapis error to HttpResponse for error handling
- */
-const errorToHttpResponse = (error: unknown): HttpResponse => ({
-  status: getErrorStatus(error),
-  statusText: error instanceof Error ? error.message : String(error),
-  data: error,
+const toHttpResponse = <T>(response: {
+  status?: number
+  data: healthcare_v1.Schema$HttpBody
+}): HttpResponse<T> => ({
+  status: response.status ?? 200,
+  data: response.data.data as T,
 })
 
 /**
@@ -77,41 +49,6 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
       yield* LoadedGoogleFhirConfig
     const parent = buildFhirStoreParent({ projectId, dataset, region, storeId })
 
-    const handleAuthErr = failOnHttpStatus(
-      401,
-      (resp: HttpResponse) =>
-        new AuthError({
-          message: 'Unauthorized access to FHIR resource',
-          cause: resp.statusText,
-        })
-    )
-
-    const handleAuthzErr = failOnHttpStatus(
-      403,
-      (resp: HttpResponse) =>
-        new AuthzError({
-          message: 'Forbidden access to FHIR resource',
-          cause: resp.statusText,
-        })
-    )
-
-    const handleNotFoundErr = ({
-      resourceType,
-      id,
-    }: {
-      resourceType: string
-      id: string
-    }) =>
-      failOnHttpStatuses(
-        [404, 410],
-        (resp: HttpResponse) =>
-          new NotFoundError({
-            resourceType,
-            params: { id },
-            cause: resp,
-          })
-      )
-
     const read: (typeof FhirR4Client.Service)['read'] = ({
       resourceType,
       id,
@@ -122,38 +59,82 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
             await healthcare.projects.locations.datasets.fhirStores.fhir.read({
               name: buildFhirResourcePath(parent, resourceType, id),
             })
-          return toHttpResponse(response.data)
+          return toHttpResponse(response)
         },
-        catch: (cause) => errorToHttpResponse(cause),
+        catch: (error) => {
+          // googleapis throws errors for non-2xx responses
+          // Extract status from error and create HttpResponse
+          const status =
+            error &&
+            typeof error === 'object' &&
+            'code' in error &&
+            typeof error.code === 'number'
+              ? error.code
+              : 500
+
+          return {
+            status,
+            statusText: error instanceof Error ? error.message : String(error),
+            data: error,
+          } as HttpResponse
+        },
       }).pipe(
-        Effect.flatMap(Effect.succeed),
-        handleAuthErr,
-        handleAuthzErr,
-        handleNotFoundErr({ resourceType, id }),
+        Effect.flatMap((response) =>
+          Effect.succeed(response).pipe(
+            handleAuthErr,
+            handleAuthzErr,
+            handleNotFoundErr({ resourceType, id })
+          )
+        ),
         catchUnhandledError('Error reading FHIR resource'),
         Effect.map((response) => response.data)
       )
 
     const search: (typeof FhirR4Client.Service)['search'] = (params) => {
-      const { resourceType } = params
+      const { resourceType, ...searchParams } = params
 
       return Effect.tryPromise({
         try: async () => {
-          // Use searchType for resource-specific searches
           const response =
             await healthcare.projects.locations.datasets.fhirStores.fhir.searchType(
               {
                 parent,
                 resourceType,
-              }
+                // Pass search parameters as query params
+                ...(Object.keys(searchParams).length > 0 && {
+                  requestBody: {
+                    resourceType,
+                  },
+                }),
+              },
+              // Add search parameters to the request config
+              Object.keys(searchParams).length > 0
+                ? {
+                    params: searchParams,
+                  }
+                : undefined
             )
-          return toHttpResponse(response.data)
+          return toHttpResponse(response)
         },
-        catch: (cause) => errorToHttpResponse(cause),
+        catch: (error) => {
+          const status =
+            error &&
+            typeof error === 'object' &&
+            'code' in error &&
+            typeof error.code === 'number'
+              ? error.code
+              : 500
+
+          return {
+            status,
+            statusText: error instanceof Error ? error.message : String(error),
+            data: error,
+          } as HttpResponse
+        },
       }).pipe(
-        Effect.flatMap(Effect.succeed),
-        handleAuthErr,
-        handleAuthzErr,
+        Effect.flatMap((response) =>
+          Effect.succeed(response).pipe(handleAuthErr, handleAuthzErr)
+        ),
         catchUnhandledError('Error searching FHIR server'),
         Effect.map((response) => response.data)
       )
@@ -173,13 +154,27 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
                 requestBody: resource as healthcare_v1.Schema$HttpBody,
               }
             )
-          return toHttpResponse(response.data)
+          return toHttpResponse(response)
         },
-        catch: (cause) => errorToHttpResponse(cause),
+        catch: (error) => {
+          const status =
+            error &&
+            typeof error === 'object' &&
+            'code' in error &&
+            typeof error.code === 'number'
+              ? error.code
+              : 500
+
+          return {
+            status,
+            statusText: error instanceof Error ? error.message : String(error),
+            data: error,
+          } as HttpResponse
+        },
       }).pipe(
-        Effect.flatMap(Effect.succeed),
-        handleAuthErr,
-        handleAuthzErr,
+        Effect.flatMap((response) =>
+          Effect.succeed(response).pipe(handleAuthErr, handleAuthzErr)
+        ),
         catchUnhandledError('Error creating FHIR resource'),
         Effect.map((response) => response.data)
       )
@@ -198,14 +193,31 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
                 requestBody: resource as healthcare_v1.Schema$HttpBody,
               }
             )
-          return toHttpResponse(response.data)
+          return toHttpResponse(response)
         },
-        catch: (cause) => errorToHttpResponse(cause),
+        catch: (error) => {
+          const status =
+            error &&
+            typeof error === 'object' &&
+            'code' in error &&
+            typeof error.code === 'number'
+              ? error.code
+              : 500
+
+          return {
+            status,
+            statusText: error instanceof Error ? error.message : String(error),
+            data: error,
+          } as HttpResponse
+        },
       }).pipe(
-        Effect.flatMap(Effect.succeed),
-        handleAuthErr,
-        handleAuthzErr,
-        handleNotFoundErr({ resourceType: type, id }),
+        Effect.flatMap((response) =>
+          Effect.succeed(response).pipe(
+            handleAuthErr,
+            handleAuthzErr,
+            handleNotFoundErr({ resourceType: type, id })
+          )
+        ),
         catchUnhandledError(`Error updating FHIR ${type}`),
         Effect.map((response) => response.data)
       )
@@ -222,14 +234,31 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
                 name: buildFhirResourcePath(parent, type, id),
               }
             )
-          return toHttpResponse(response.data)
+          return toHttpResponse(response)
         },
-        catch: (cause) => errorToHttpResponse(cause),
+        catch: (error) => {
+          const status =
+            error &&
+            typeof error === 'object' &&
+            'code' in error &&
+            typeof error.code === 'number'
+              ? error.code
+              : 500
+
+          return {
+            status,
+            statusText: error instanceof Error ? error.message : String(error),
+            data: error,
+          } as HttpResponse
+        },
       }).pipe(
-        Effect.flatMap(Effect.succeed),
-        handleAuthErr,
-        handleAuthzErr,
-        handleNotFoundErr({ resourceType: type, id }),
+        Effect.flatMap((response) =>
+          Effect.succeed(response).pipe(
+            handleAuthErr,
+            handleAuthzErr,
+            handleNotFoundErr({ resourceType: type, id })
+          )
+        ),
         catchUnhandledError(`Error deleting FHIR ${type}`),
         Effect.asVoid
       )
@@ -246,13 +275,27 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
                 requestBody: bundle as healthcare_v1.Schema$HttpBody,
               }
             )
-          return toHttpResponse(response.data)
+          return toHttpResponse(response)
         },
-        catch: (cause) => errorToHttpResponse(cause),
+        catch: (error) => {
+          const status =
+            error &&
+            typeof error === 'object' &&
+            'code' in error &&
+            typeof error.code === 'number'
+              ? error.code
+              : 500
+
+          return {
+            status,
+            statusText: error instanceof Error ? error.message : String(error),
+            data: error,
+          } as HttpResponse
+        },
       }).pipe(
-        Effect.flatMap(Effect.succeed),
-        handleAuthErr,
-        handleAuthzErr,
+        Effect.flatMap((response) =>
+          Effect.succeed(response).pipe(handleAuthErr, handleAuthzErr)
+        ),
         catchUnhandledError('Error executing FHIR bundle'),
         Effect.map((response) => response.data)
       )

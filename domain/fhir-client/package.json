@@ -1,7 +1,7 @@
 {
-  "name": "@assessmentis/google-fhir-node-infrastructure",
+  "name": "@assessmentis/fhir-client",
   "version": "0.0.1",
-  "description": "Node.js infrastructure for Google Healthcare FHIR API",
+  "description": "FHIR client domain types and utilities",
   "author": "Ruth Marks",
   "license": "UNLICENSED",
   "type": "module",
@@ -16,21 +16,14 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@assessmentis/clinical-domain": "*",
-    "@assessmentis/config-domain": "*",
-    "@assessmentis/fhir-client": "*",
-    "@assessmentis/firebase-server-infrastructure": "*",
-    "@assessmentis/ontology": "*",
-    "@assessmentis/platform-domain": "*",
-    "@assessmentis/util": "*",
-    "@googleapis/healthcare": "^26.0.0",
-    "googleapis": "^168.0.0",
     "effect": "^3.19.8",
-    "temporal-polyfill": "^0.3.0"
+    "temporal-polyfill": "^0.3.0",
+    "@assessmentis/clinical-domain": "*",
+    "@assessmentis/ontology": "*",
+    "@assessmentis/platform-domain": "*"
   },
   "devDependencies": {
     "@assessmentis/prettier-config": "*",
-    "@types/node": "^22.10.5",
     "typescript": "^5.9.3",
     "vitest": "^4.0.15"
   }
