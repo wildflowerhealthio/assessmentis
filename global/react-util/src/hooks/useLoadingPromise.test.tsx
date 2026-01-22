@@ -1,13 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
-import { JSDOM } from 'jsdom'
 import * as fc from 'fast-check'
 import { useLoadingPromise, LoadingPromiseState } from './useLoadingPromise'
-
-// Ensure DOM globals are available when tests run outside jsdom-configured env
-const dom = new JSDOM('<!doctype html><html><body></body></html>')
-globalThis.window = dom.window as unknown as typeof globalThis.window
-globalThis.document = dom.window.document
 
 describe('useLoadingPromise', () => {
   it('should start in loading state and transition to resolved', async () => {

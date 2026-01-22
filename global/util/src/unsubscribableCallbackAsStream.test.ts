@@ -19,9 +19,7 @@ describe('unsubscribableCallbackAsStream', () => {
           )
 
           // Consume just one element from the stream
-          await Effect.runPromise(
-            stream.pipe(Stream.take(1), Stream.runDrain)
-          )
+          await Effect.runPromise(stream.pipe(Stream.take(1), Stream.runDrain))
 
           expect(subscribeWasCalled).toBe(true)
         })

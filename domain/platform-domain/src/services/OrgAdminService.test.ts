@@ -4,13 +4,15 @@ import { OrgAdminService, OrgAdminServiceLayer } from './OrgAdminService'
 import { CurrentOrg, DocumentStore } from '../tagClasses'
 import { OrgSlug } from '../models/IdTypes'
 import { UserId } from '../models/UserId'
-import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
-import { mockDocumentStore, mockDocumentStoreImplementations } from './__tests__/mocks'
+import {
+  mockDocumentStore,
+  mockDocumentStoreImplementations,
+} from './__tests__/mocks'
 
 describe('OrgAdminService', () => {
   const testOrgSlug = OrgSlug.make('test-org')
   const testUserId = UserId.make('user-123')
-  
+
   describe('getUser', () => {
     it('returns user when found', async () => {
       const validUserData = {
@@ -21,7 +23,9 @@ describe('OrgAdminService', () => {
       }
 
       const mock = mockDocumentStore({
-        get: vi.fn(mockDocumentStoreImplementations.get.returning(validUserData))
+        get: vi.fn(
+          mockDocumentStoreImplementations.get.returning(validUserData)
+        ),
       })
 
       const testLayer = OrgAdminServiceLayer.pipe(
@@ -44,7 +48,7 @@ describe('OrgAdminService', () => {
 
     it('returns NotFoundError when user not found', async () => {
       const mock = mockDocumentStore({
-        get: vi.fn(mockDocumentStoreImplementations.get.notFound())
+        get: vi.fn(mockDocumentStoreImplementations.get.notFound()),
       })
 
       const testLayer = OrgAdminServiceLayer.pipe(
@@ -75,7 +79,9 @@ describe('OrgAdminService', () => {
       }
 
       const mock = mockDocumentStore({
-        get: vi.fn(mockDocumentStoreImplementations.get.returning(invalidUserData))
+        get: vi.fn(
+          mockDocumentStoreImplementations.get.returning(invalidUserData)
+        ),
       })
 
       const testLayer = OrgAdminServiceLayer.pipe(
@@ -103,7 +109,7 @@ describe('OrgAdminService', () => {
       const rolesData = { roles: ['admin', 'viewer'] }
 
       const mock = mockDocumentStore({
-        get: vi.fn(mockDocumentStoreImplementations.get.returning(rolesData))
+        get: vi.fn(mockDocumentStoreImplementations.get.returning(rolesData)),
       })
 
       const testLayer = OrgAdminServiceLayer.pipe(
@@ -126,7 +132,7 @@ describe('OrgAdminService', () => {
 
     it('returns NotFoundError when user not found in org', async () => {
       const mock = mockDocumentStore({
-        get: vi.fn(mockDocumentStoreImplementations.get.notFound())
+        get: vi.fn(mockDocumentStoreImplementations.get.notFound()),
       })
 
       const testLayer = OrgAdminServiceLayer.pipe(
@@ -136,7 +142,9 @@ describe('OrgAdminService', () => {
 
       const program = Effect.gen(function* () {
         const service = yield* OrgAdminService
-        const roles = yield* service.getUserOrgRoles(UserId.make('nonexistent-user'))
+        const roles = yield* service.getUserOrgRoles(
+          UserId.make('nonexistent-user')
+        )
         return roles
       }).pipe(Effect.provide(testLayer))
 
@@ -150,7 +158,11 @@ describe('OrgAdminService', () => {
 
     it('returns UnhandledError for invalid roles data', async () => {
       const mock = mockDocumentStore({
-        get: vi.fn(mockDocumentStoreImplementations.get.returning({ someOtherField: 'value' }))
+        get: vi.fn(
+          mockDocumentStoreImplementations.get.returning({
+            someOtherField: 'value',
+          })
+        ),
       })
 
       const testLayer = OrgAdminServiceLayer.pipe(
@@ -174,7 +186,11 @@ describe('OrgAdminService', () => {
 
     it('returns UnhandledError when roles is not an array', async () => {
       const mock = mockDocumentStore({
-        get: vi.fn(mockDocumentStoreImplementations.get.returning({ roles: 'not-an-array' }))
+        get: vi.fn(
+          mockDocumentStoreImplementations.get.returning({
+            roles: 'not-an-array',
+          })
+        ),
       })
 
       const testLayer = OrgAdminServiceLayer.pipe(

@@ -93,7 +93,7 @@ describe('failUnless', () => {
         fc.assert(
           fc.property(fc.integer(), (val) => {
             const errorMsg = `Failed for: ${val}`
-            
+
             expect(() =>
               Effect.runSync(
                 failUnless(
@@ -118,12 +118,7 @@ describe('failUnless', () => {
             }
 
             try {
-              Effect.runSync(
-                failUnless(
-                  () => false,
-                  makeErr
-                )(val)
-              )
+              Effect.runSync(failUnless(() => false, makeErr)(val))
             } catch {
               // Expected to fail
             }

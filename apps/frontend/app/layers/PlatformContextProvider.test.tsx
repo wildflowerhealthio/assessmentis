@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { Effect, Layer, Stream } from 'effect'
 import { PlatformContextProvider } from './PlatformContextProvider'
@@ -95,6 +95,12 @@ vi.mock('./ExternalVideoCallClientService', () => ({
 describe('PlatformContextProvider', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.spyOn(console, 'log').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   it('should show loading state initially', () => {
