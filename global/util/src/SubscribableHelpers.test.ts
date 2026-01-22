@@ -33,7 +33,7 @@ describe('SubscribableHelpers', () => {
                 Subscribable.TypeId
               )
               expect(subscribable[Readable.TypeId]).toBe(Readable.TypeId)
-              
+
               // Verify required fields exist and have correct types
               expect(subscribable.get).toBeDefined()
               expect(Effect.isEffect(subscribable.get)).toBe(true)

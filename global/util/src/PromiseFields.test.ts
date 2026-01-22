@@ -36,7 +36,6 @@ describe('PromiseFields', () => {
             const proxy = promiseFieldsFromObject(obj)
 
             // Access a field that doesn't exist
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const nonExistent = await (proxy as any).nonExistentField
 
             expect(nonExistent).toBeUndefined()
@@ -86,7 +85,6 @@ describe('PromiseFields', () => {
         await fc.assert(
           fc.asyncProperty(fc.record({ a: fc.integer() }), async (obj) => {
             const promise = Promise.resolve(obj)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const proxy = promiseFieldsFromPromise(promise) as any
 
             await expect(proxy.nonExistentField).resolves.toBeUndefined()

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { Effect, Exit, Cause } from 'effect'
+import { Effect, Exit, Cause, Option, pipe, Arbitrary } from 'effect'
 import * as fc from 'fast-check'
 import {
   ExternalVideoCallClientService,
@@ -9,86 +9,59 @@ import {
   Org,
   AuthDataService,
   NoSelectedOrgError,
-  OrgSlug,
 } from '@assessmentis/platform-domain'
 import { UnhandledError } from '@assessmentis/ontology'
+import { neverUsedMock } from '@assessmentis/util'
+
+// Generate arbitrary Org values using the schema
+const orgArb = Arbitrary.make(Org)
 
 describe('ExternalVideoCallClientService', () => {
-  const mockOrgWithDailyCo: Org = {
-    slug: OrgSlug.make('test-org'),
-    frontendConfig: {
-      fhirServer: { _tag: 'not_implemented' },
-      videoCallClient: {
-        _tag: 'daily_co_proxy',
-        dailyCoProxyUrl: 'https://test.example.com/video',
-      },
-    },
-  }
-
-  const mockOrgNotImplemented: Org = {
-    slug: OrgSlug.make('test-org'),
-    frontendConfig: {
-      fhirServer: { _tag: 'not_implemented' },
-      videoCallClient: { _tag: 'not_implemented' },
-    },
-  }
-
   const mockAuthService: typeof AuthDataService.Service = {
     authData: Effect.succeed({
       uid: 'test-user',
       getIdToken: async () => 'test-token',
     } as any),
-    authDataStream: {} as any,
+    authDataStream: neverUsedMock('authDataStream'),
     shutdown: Effect.void,
   }
 
   it('property: service structure and config handling', async () => {
     await fc.assert(
-      fc.asyncProperty(
-        fc.constantFrom(mockOrgWithDailyCo, mockOrgNotImplemented),
-        fc.webUrl(),
-        async (baseOrg, dailyCoProxyUrl) => {
-          // Test with property-generated URL for daily_co
-          const testOrg: Org = baseOrg.frontendConfig.videoCallClient._tag === 'daily_co_proxy'
-            ? {
-                ...baseOrg,
-                frontendConfig: {
-                  ...baseOrg.frontendConfig,
-                  videoCallClient: {
-                    _tag: 'daily_co_proxy',
-                    dailyCoProxyUrl,
-                  },
-                },
-              }
-            : baseOrg
-
-          const service = await Effect.runPromise(
-            startExternalVideoCallClientService(
-              mockAuthService,
-              Effect.succeed(testOrg)
-            )
+      fc.asyncProperty(orgArb, async (org) => {
+        const service = await Effect.runPromise(
+          startExternalVideoCallClientService(
+            mockAuthService,
+            Effect.succeed(org)
           )
+        )
 
-          // Service always created with client property
-          expect(service).toBeDefined()
-          expect(service).toHaveProperty('client')
-          expect(Effect.isEffect(service.client)).toBe(true)
-          expect(Object.keys(service)).toEqual(['client'])
-          expect(ExternalVideoCallClientService.key).toBe('ExternalVideoCallClientService')
+        // Service always created with client property
+        expect(service).toBeDefined()
+        expect(service).toHaveProperty('client')
+        expect(Effect.isEffect(service.client)).toBe(true)
+        expect(Object.keys(service)).toEqual(['client'])
+        expect(ExternalVideoCallClientService.key).toBe(
+          'ExternalVideoCallClientService'
+        )
 
-          // Verify client behavior based on config
-          const clientResult = await Effect.runPromiseExit(service.client)
-          
-          if (testOrg.frontendConfig.videoCallClient._tag === 'not_implemented') {
-            expect(Exit.isFailure(clientResult)).toBe(true)
-            if (Exit.isFailure(clientResult)) {
-              const error = Cause.squash(clientResult.cause) as any
-              expect(error._tag).toBe('UnhandledError')
-              expect(error.message).toContain('not yet implemented')
-            }
-          }
+        // Verify client behavior based on config
+        const clientResult = await Effect.runPromiseExit(service.client)
+
+        if (org.frontendConfig.videoCallClient._tag === 'not_implemented') {
+          expect(Exit.isFailure(clientResult)).toBe(true)
+          const error = pipe(
+            clientResult,
+            Exit.causeOption,
+            Option.flatMap(Cause.failureOption),
+            Option.getOrThrow
+          )
+          expect(error._tag).toBe('UnhandledError')
+          expect((error as UnhandledError).message).toContain(
+            'not yet implemented'
+          )
         }
-      )
+      })
     )
   })
 

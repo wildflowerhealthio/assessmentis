@@ -8,11 +8,14 @@ import {
 import { CurrentUserId, DocumentStore } from '../tagClasses'
 import { UserId } from '../models/UserId'
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
-import { mockDocumentStore, mockDocumentStoreImplementations } from './__tests__/mocks'
+import {
+  mockDocumentStore,
+  mockDocumentStoreImplementations,
+} from './__tests__/mocks'
 
 describe('LoadedUser', () => {
   const testUserId = UserId.make('user-123')
-  
+
   describe('LiteralLoadedUserLayer', () => {
     it('successfully decodes valid user data', async () => {
       const validUserData = {
@@ -60,7 +63,9 @@ describe('LoadedUser', () => {
       const program = Effect.gen(function* () {
         const user = yield* LoadedUser
         return user
-      }).pipe(Effect.provide(LiteralLoadedUserLayer(testUserId, invalidUserData)))
+      }).pipe(
+        Effect.provide(LiteralLoadedUserLayer(testUserId, invalidUserData))
+      )
 
       const result = await Effect.runPromiseExit(program)
       expect(Exit.isFailure(result)).toBe(true)
@@ -82,7 +87,9 @@ describe('LoadedUser', () => {
       }
 
       const mock = mockDocumentStore({
-        get: vi.fn(mockDocumentStoreImplementations.get.returning(validUserData))
+        get: vi.fn(
+          mockDocumentStoreImplementations.get.returning(validUserData)
+        ),
       })
 
       const testLayer = LoadedUserLayer.pipe(
@@ -109,7 +116,7 @@ describe('LoadedUser', () => {
 
     it('fails with NotFoundError when user not found in DocumentStore', async () => {
       const mock = mockDocumentStore({
-        get: vi.fn(mockDocumentStoreImplementations.get.notFound())
+        get: vi.fn(mockDocumentStoreImplementations.get.notFound()),
       })
 
       const testLayer = LoadedUserLayer.pipe(
@@ -144,7 +151,9 @@ describe('LoadedUser', () => {
       }
 
       const mock = mockDocumentStore({
-        get: vi.fn(mockDocumentStoreImplementations.get.returning(invalidUserData))
+        get: vi.fn(
+          mockDocumentStoreImplementations.get.returning(invalidUserData)
+        ),
       })
 
       const testLayer = LoadedUserLayer.pipe(

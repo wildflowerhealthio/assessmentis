@@ -10,9 +10,10 @@ describe('pubsubUtils', () => {
         await fc.assert(
           fc.asyncProperty(fc.integer(), async (val) => {
             const program = Effect.gen(function* () {
-              const pubsub = yield* PubSub.unbounded<
-                Take.Take<Either.Either<number, string>>
-              >()
+              const pubsub =
+                yield* PubSub.unbounded<
+                  Take.Take<Either.Either<number, string>>
+                >()
 
               // Start consuming the stream
               const fiber = yield* pubsubAsPerpetualStream(pubsub).pipe(
@@ -52,9 +53,10 @@ describe('pubsubUtils', () => {
             fc.array(fc.integer(), { minLength: 1, maxLength: 5 }),
             async (vals) => {
               const program = Effect.gen(function* () {
-                const pubsub = yield* PubSub.unbounded<
-                  Take.Take<Either.Either<number, string>>
-                >()
+                const pubsub =
+                  yield* PubSub.unbounded<
+                    Take.Take<Either.Either<number, string>>
+                  >()
 
                 // Start consuming the stream
                 const fiber = yield* pubsubAsPerpetualStream(pubsub).pipe(
@@ -97,9 +99,10 @@ describe('pubsubUtils', () => {
         await fc.assert(
           fc.asyncProperty(fc.string(), async (errorMsg) => {
             const program = Effect.gen(function* () {
-              const pubsub = yield* PubSub.unbounded<
-                Take.Take<Either.Either<number, string>>
-              >()
+              const pubsub =
+                yield* PubSub.unbounded<
+                  Take.Take<Either.Either<number, string>>
+                >()
 
               // Start consuming the stream
               const fiber = yield* pubsubAsPerpetualStream(pubsub).pipe(
@@ -139,9 +142,10 @@ describe('pubsubUtils', () => {
         await fc.assert(
           fc.asyncProperty(fc.integer(), async (val) => {
             const program = Effect.gen(function* () {
-              const pubsub = yield* PubSub.unbounded<
-                Take.Take<Either.Either<number, string>>
-              >()
+              const pubsub =
+                yield* PubSub.unbounded<
+                  Take.Take<Either.Either<number, string>>
+                >()
 
               // Start waiting for value
               const fiber = yield* takeOneFromPubSubOrDie(pubsub).pipe(
@@ -171,9 +175,10 @@ describe('pubsubUtils', () => {
         await fc.assert(
           fc.asyncProperty(fc.string(), async (errorMsg) => {
             const program = Effect.gen(function* () {
-              const pubsub = yield* PubSub.unbounded<
-                Take.Take<Either.Either<number, string>>
-              >()
+              const pubsub =
+                yield* PubSub.unbounded<
+                  Take.Take<Either.Either<number, string>>
+                >()
 
               // Start waiting for value
               const fiber = yield* takeOneFromPubSubOrDie(pubsub).pipe(
@@ -205,32 +210,37 @@ describe('pubsubUtils', () => {
     describe('takes only first value', () => {
       it('property: ignores values after the first', async () => {
         await fc.assert(
-          fc.asyncProperty(fc.integer(), fc.integer(), async (first, second) => {
-            const program = Effect.gen(function* () {
-              const pubsub = yield* PubSub.unbounded<
-                Take.Take<Either.Either<number, string>>
-              >()
+          fc.asyncProperty(
+            fc.integer(),
+            fc.integer(),
+            async (first, second) => {
+              const program = Effect.gen(function* () {
+                const pubsub =
+                  yield* PubSub.unbounded<
+                    Take.Take<Either.Either<number, string>>
+                  >()
 
-              // Start waiting for value
-              const fiber = yield* takeOneFromPubSubOrDie(pubsub).pipe(
-                Effect.fork
-              )
+                // Start waiting for value
+                const fiber = yield* takeOneFromPubSubOrDie(pubsub).pipe(
+                  Effect.fork
+                )
 
-              // Give the fiber time to subscribe
-              yield* Effect.sleep('10 millis')
+                // Give the fiber time to subscribe
+                yield* Effect.sleep('10 millis')
 
-              // Publish two values
-              yield* pubsub.publish(Take.of(Either.right(first)))
-              yield* pubsub.publish(Take.of(Either.right(second)))
+                // Publish two values
+                yield* pubsub.publish(Take.of(Either.right(first)))
+                yield* pubsub.publish(Take.of(Either.right(second)))
 
-              // Get the result - should be the first value
-              const result = yield* Fiber.join(fiber)
+                // Get the result - should be the first value
+                const result = yield* Fiber.join(fiber)
 
-              expect(result).toBe(first)
-            })
+                expect(result).toBe(first)
+              })
 
-            await Effect.runPromise(program)
-          })
+              await Effect.runPromise(program)
+            }
+          )
         )
       })
     })

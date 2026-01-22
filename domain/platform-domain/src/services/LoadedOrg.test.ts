@@ -1,18 +1,18 @@
 import { describe, it, expect, vi } from 'vitest'
 import { Effect, Layer, Exit, Cause } from 'effect'
-import {
-  LoadedOrg,
-  LiteralLoadedOrgLayer,
-  LoadedOrgLayer,
-} from './LoadedOrg'
+import { LoadedOrg, LiteralLoadedOrgLayer, LoadedOrgLayer } from './LoadedOrg'
 import { CurrentOrg, DocumentStore } from '../tagClasses'
 import { OrgSlug } from '../models/IdTypes'
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
-import { mockDocumentStore, mockDocumentStoreImplementations, defaultOrg } from './__tests__/mocks'
+import {
+  mockDocumentStore,
+  mockDocumentStoreImplementations,
+  defaultOrg,
+} from './__tests__/mocks'
 
 describe('LoadedOrg', () => {
   const testOrgSlug = OrgSlug.make('test-org')
-  
+
   describe('LiteralLoadedOrgLayer', () => {
     it('successfully decodes valid org data', async () => {
       const validOrgData = {
@@ -65,7 +65,9 @@ describe('LoadedOrg', () => {
       const program = Effect.gen(function* () {
         const org = yield* LoadedOrg
         return org
-      }).pipe(Effect.provide(LiteralLoadedOrgLayer(testOrgSlug, invalidOrgData)))
+      }).pipe(
+        Effect.provide(LiteralLoadedOrgLayer(testOrgSlug, invalidOrgData))
+      )
 
       const result = await Effect.runPromiseExit(program)
       expect(Exit.isFailure(result)).toBe(true)
@@ -80,9 +82,11 @@ describe('LoadedOrg', () => {
   describe('LoadedOrgLayer', () => {
     it('successfully loads from DocumentStore', async () => {
       const validOrgData = defaultOrg()
-      
+
       const mock = mockDocumentStore({
-        get: vi.fn(mockDocumentStoreImplementations.get.returning(validOrgData))
+        get: vi.fn(
+          mockDocumentStoreImplementations.get.returning(validOrgData)
+        ),
       })
 
       const testLayer = LoadedOrgLayer.pipe(
@@ -100,19 +104,21 @@ describe('LoadedOrg', () => {
       if (Exit.isSuccess(result)) {
         expect(result.value.slug).toBe('test-org')
       }
-      
+
       // Verify the mock was called
       expect(mock.get).toHaveBeenCalledWith('orgs', testOrgSlug)
     })
 
     it('fails with NotFoundError when org not found in DocumentStore', async () => {
       const mock = mockDocumentStore({
-        get: vi.fn(mockDocumentStoreImplementations.get.notFound())
+        get: vi.fn(mockDocumentStoreImplementations.get.notFound()),
       })
 
       const testLayer = LoadedOrgLayer.pipe(
         Layer.provide(Layer.succeed(DocumentStore, mock)),
-        Layer.provide(Layer.succeed(CurrentOrg, OrgSlug.make('nonexistent-org')))
+        Layer.provide(
+          Layer.succeed(CurrentOrg, OrgSlug.make('nonexistent-org'))
+        )
       )
 
       const program = Effect.gen(function* () {
@@ -126,7 +132,7 @@ describe('LoadedOrg', () => {
         const error = Cause.squash(result.cause) as any
         expect(error._tag).toBe('NotFoundError')
       }
-      
+
       // Verify the mock was called
       expect(mock.get).toHaveBeenCalled()
     })
