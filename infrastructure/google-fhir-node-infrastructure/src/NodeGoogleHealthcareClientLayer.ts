@@ -242,7 +242,7 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
           const response =
             await healthcare.projects.locations.datasets.fhirStores.fhir.executeBundle(
               {
-                parent: parent,
+                parent,
                 requestBody: bundle as healthcare_v1.Schema$HttpBody,
               }
             )

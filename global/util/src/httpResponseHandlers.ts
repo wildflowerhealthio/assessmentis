@@ -3,6 +3,8 @@ import { failUnless } from './failUnless'
 
 /**
  * Generic HTTP response interface
+ * Note: status is expected to be a valid HTTP status code (100-599) as provided by
+ * the underlying HTTP library (googleapis, gapi, etc.)
  */
 export interface HttpResponse<TData = unknown> {
   status: number
