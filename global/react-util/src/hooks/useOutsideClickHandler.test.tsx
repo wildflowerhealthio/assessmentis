@@ -11,203 +11,90 @@ globalThis.document = dom.window.document
 const MouseEvent = dom.window.MouseEvent
 
 describe('useOutsideClickHandler', () => {
-  describe('click detection', () => {
-    it('should work with ref and handler setup', () => {
-      const handler = vi.fn()
-      const ref = createRef<HTMLDivElement>()
+  it('should not call handler when clicking inside ref or child elements', () => {
+    const handler = vi.fn()
+    const ref = createRef<HTMLDivElement>()
 
-      // Create and attach ref element
-      const refElement = document.createElement('div')
-      document.body.appendChild(refElement)
-      Object.defineProperty(ref, 'current', {
-        writable: true,
-        value: refElement,
-      })
-
-      const { unmount } = renderHook(() => useOutsideClickHandler(ref, handler))
-
-      // Verify hook mounts without errors
-      expect(ref.current).toBe(refElement)
-
-      unmount()
-
-      // Cleanup
-      document.body.removeChild(refElement)
+    const refElement = document.createElement('div')
+    document.body.appendChild(refElement)
+    Object.defineProperty(ref, 'current', {
+      writable: true,
+      value: refElement,
     })
 
-    it('should not call handler when clicking inside ref', () => {
-      const handler = vi.fn()
-      const ref = createRef<HTMLDivElement>()
+    renderHook(() => useOutsideClickHandler(ref, handler))
 
-      const refElement = document.createElement('div')
-      document.body.appendChild(refElement)
-      Object.defineProperty(ref, 'current', {
-        writable: true,
-        value: refElement,
-      })
+    // Click inside - should not call handler
+    refElement.dispatchEvent(
+      new MouseEvent('mousedown', { bubbles: true, cancelable: true })
+    )
+    expect(handler).not.toHaveBeenCalled()
 
-      renderHook(() => useOutsideClickHandler(ref, handler))
+    // Click on child element - should not call handler
+    const childElement = document.createElement('span')
+    refElement.appendChild(childElement)
+    childElement.dispatchEvent(
+      new MouseEvent('mousedown', { bubbles: true, cancelable: true })
+    )
+    expect(handler).not.toHaveBeenCalled()
 
-      // Click the ref element itself
-      const event = new MouseEvent('mousedown', {
-        bubbles: true,
-        cancelable: true,
-      })
-
-      refElement.dispatchEvent(event)
-
-      expect(handler).not.toHaveBeenCalled()
-
-      // Cleanup
-      document.body.removeChild(refElement)
-    })
-
-    it('should not call handler when clicking child element', () => {
-      const handler = vi.fn()
-      const ref = createRef<HTMLDivElement>()
-
-      const refElement = document.createElement('div')
-      const childElement = document.createElement('span')
-      refElement.appendChild(childElement)
-      document.body.appendChild(refElement)
-
-      Object.defineProperty(ref, 'current', {
-        writable: true,
-        value: refElement,
-      })
-
-      renderHook(() => useOutsideClickHandler(ref, handler))
-
-      // Click child element
-      const event = new MouseEvent('mousedown', {
-        bubbles: true,
-        cancelable: true,
-      })
-
-      childElement.dispatchEvent(event)
-
-      expect(handler).not.toHaveBeenCalled()
-
-      // Cleanup
-      document.body.removeChild(refElement)
-    })
-
-    it('should handle null ref gracefully', () => {
-      const handler = vi.fn()
-      const ref = createRef<HTMLDivElement>()
-      // ref.current is null by default
-
-      const { unmount } = renderHook(() => useOutsideClickHandler(ref, handler))
-
-      // Should not throw
-      expect(() => {
-        const event = new MouseEvent('mousedown', {
-          bubbles: true,
-          cancelable: true,
-        })
-        document.body.dispatchEvent(event)
-      }).not.toThrow()
-
-      unmount()
-    })
+    document.body.removeChild(refElement)
   })
 
-  describe('event listener lifecycle', () => {
-    it('should add event listener on mount', () => {
-      const handler = vi.fn()
-      const ref = createRef<HTMLDivElement>()
+  it('should handle null ref and non-Node targets without errors', () => {
+    const handler = vi.fn()
+    const ref = createRef<HTMLDivElement>()
 
-      const addEventListenerSpy = vi.spyOn(document, 'addEventListener')
+    renderHook(() => useOutsideClickHandler(ref, handler))
 
-      renderHook(() => useOutsideClickHandler(ref, handler))
+    // Click when ref is null - should not call handler
+    document.body.dispatchEvent(
+      new MouseEvent('mousedown', { bubbles: true, cancelable: true })
+    )
+    expect(handler).not.toHaveBeenCalled()
 
-      expect(addEventListenerSpy).toHaveBeenCalledWith(
-        'mousedown',
-        expect.any(Function)
-      )
-
-      addEventListenerSpy.mockRestore()
+    // Non-Node target should not throw
+    const event = new MouseEvent('mousedown', {
+      bubbles: true,
+      cancelable: true,
     })
-
-    it('should remove event listener on unmount', () => {
-      const handler = vi.fn()
-      const ref = createRef<HTMLDivElement>()
-
-      const removeEventListenerSpy = vi.spyOn(document, 'removeEventListener')
-
-      const { unmount } = renderHook(() => useOutsideClickHandler(ref, handler))
-
-      unmount()
-
-      expect(removeEventListenerSpy).toHaveBeenCalledWith(
-        'mousedown',
-        expect.any(Function)
-      )
-
-      removeEventListenerSpy.mockRestore()
+    Object.defineProperty(event, 'target', {
+      writable: false,
+      value: 'not a node',
     })
-
-    it('should not respond to clicks after unmount', () => {
-      const handler = vi.fn()
-      const ref = createRef<HTMLDivElement>()
-
-      const refElement = document.createElement('div')
-      document.body.appendChild(refElement)
-      Object.defineProperty(ref, 'current', {
-        writable: true,
-        value: refElement,
-      })
-
-      const { unmount } = renderHook(() => useOutsideClickHandler(ref, handler))
-
-      // Unmount first
-      unmount()
-
-      // Then dispatch event - should not throw
-      expect(() => {
-        const event = new MouseEvent('mousedown', {
-          bubbles: true,
-          cancelable: true,
-        })
-        document.body.dispatchEvent(event)
-      }).not.toThrow()
-
-      // Cleanup
-      document.body.removeChild(refElement)
-    })
+    expect(() => document.dispatchEvent(event)).not.toThrow()
+    expect(handler).not.toHaveBeenCalled()
   })
 
-  describe('edge cases', () => {
-    it('should handle non-Node event targets', () => {
-      const handler = vi.fn()
-      const ref = createRef<HTMLDivElement>()
-
-      const refElement = document.createElement('div')
-      document.body.appendChild(refElement)
-      Object.defineProperty(ref, 'current', {
-        writable: true,
-        value: refElement,
-      })
-
-      renderHook(() => useOutsideClickHandler(ref, handler))
-
-      // Create event with non-Node target (edge case)
-      const event = new MouseEvent('mousedown', {
-        bubbles: true,
-        cancelable: true,
-      })
-      Object.defineProperty(event, 'target', {
-        writable: false,
-        value: 'not a node',
-      })
-
-      document.dispatchEvent(event)
-
-      // Should not call handler for non-Node targets
-      expect(handler).not.toHaveBeenCalled()
-
-      // Cleanup
-      document.body.removeChild(refElement)
+  it('should add listener on mount and remove on unmount, without calling handler after unmount', () => {
+    const handler = vi.fn()
+    const ref = createRef<HTMLDivElement>()
+    const refElement = document.createElement('div')
+    document.body.appendChild(refElement)
+    Object.defineProperty(ref, 'current', {
+      writable: true,
+      value: refElement,
     })
+
+    const addSpy = vi.spyOn(document, 'addEventListener')
+    const removeSpy = vi.spyOn(document, 'removeEventListener')
+
+    const { unmount } = renderHook(() => useOutsideClickHandler(ref, handler))
+
+    expect(addSpy).toHaveBeenCalledWith('mousedown', expect.any(Function))
+
+    unmount()
+
+    expect(removeSpy).toHaveBeenCalledWith('mousedown', expect.any(Function))
+
+    // Verify handler not called after unmount
+    document.body.dispatchEvent(
+      new MouseEvent('mousedown', { bubbles: true, cancelable: true })
+    )
+    expect(handler).not.toHaveBeenCalled()
+
+    addSpy.mockRestore()
+    removeSpy.mockRestore()
+    document.body.removeChild(refElement)
   })
 })
