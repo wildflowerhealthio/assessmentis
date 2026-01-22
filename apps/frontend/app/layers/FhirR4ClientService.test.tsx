@@ -1,292 +1,80 @@
 import { describe, it, expect } from 'vitest'
-import { Effect, Either, PubSub, Stream, Scope, Take, Fiber, Chunk, Layer } from 'effect'
+import { Effect, Either, Stream, Take, Layer } from 'effect'
 import * as fc from 'fast-check'
 import {
   createFhirR4ClientPubSub,
   startFhirR4ClientService,
   FhirR4ClientService,
 } from './FhirR4ClientService'
-import { Org, NoSelectedOrgError, OrgSlug } from '@assessmentis/platform-domain'
+import { Org, OrgSlug } from '@assessmentis/platform-domain'
 import {
   LoadedGapiClient,
   LoadedGapiHealthcareClient,
 } from '@assessmentis/google-fhir-web-infrastructure'
 
 describe('FhirR4ClientService', () => {
-  describe('createFhirR4ClientPubSub', () => {
-    it('creates PubSub with correct type', async () => {
-      const program = Effect.gen(function* () {
-        const pubsub = yield* createFhirR4ClientPubSub
-        
-        // Verify we can interact with the pubsub
-        const testValue = Either.right({} as any)
-        yield* pubsub.publish(Take.of(testValue))
-        
-        return true
-      })
-
-      const result = await Effect.runPromise(program)
-      expect(result).toBe(true)
-    })
-
-    it('has sliding capacity of 1 with replay', async () => {
-      const program = Effect.gen(function* () {
-        const pubsub = yield* createFhirR4ClientPubSub
-        
-        // Publish first value
-        yield* pubsub.publish(Take.of(Either.right({} as any)))
-        // Publish second value (should replace first due to sliding capacity)
-        yield* pubsub.publish(Take.of(Either.right({} as any)))
-        
-        // Should still work - verify pubsub is functional
-        return true
-      })
-
-      const result = await Effect.runPromise(program)
-      expect(result).toBe(true)
-    })
-  })
-
-  describe('startFhirR4ClientService', () => {
-    const createMockOrg = (fhirServerTag: 'google_fhir_store' | 'not_implemented'): Org => ({
-      slug: OrgSlug.make('test-org'),
-      frontendConfig: {
-        fhirServer:
-          fhirServerTag === 'google_fhir_store'
-            ? {
-                _tag: 'google_fhir_store',
-                projectId: 'test-project',
-                location: 'us-central1',
-                datasetId: 'test-dataset',
-                fhirStoreId: 'test-store',
-              }
-            : { _tag: 'not_implemented' },
-        videoCallClient: { _tag: 'not_implemented' },
+  const mockOrgGoogleFhir: Org = {
+    slug: OrgSlug.make('test-org'),
+    frontendConfig: {
+      fhirServer: {
+        _tag: 'google_fhir_store',
+        projectId: 'test-project',
+        location: 'us-central1',
+        datasetId: 'test-dataset',
+        fhirStoreId: 'test-store',
       },
-    })
+      videoCallClient: { _tag: 'not_implemented' },
+    },
+  }
 
-    it('subscribes to org stream', async () => {
-      await fc.assert(
-        fc.asyncProperty(fc.constant(null), async () => {
+  const mockOrgNotImplemented: Org = {
+    slug: OrgSlug.make('test-org'),
+    frontendConfig: {
+      fhirServer: { _tag: 'not_implemented' },
+      videoCallClient: { _tag: 'not_implemented' },
+    },
+  }
+
+  const mockGapiLayers = [
+    Layer.succeed(LoadedGapiClient, {} as typeof LoadedGapiClient.Service),
+    Layer.succeed(LoadedGapiHealthcareClient, {} as typeof LoadedGapiHealthcareClient.Service),
+  ]
+
+  it('property: PubSub lifecycle and service structure', async () => {
+    await fc.assert(
+      fc.asyncProperty(
+        fc.constantFrom(mockOrgGoogleFhir, mockOrgNotImplemented),
+        async (mockOrg) => {
           const program = Effect.gen(function* () {
-            const clientPubSub = yield* createFhirR4ClientPubSub
-            const mockOrg = createMockOrg('google_fhir_store')
-            
-            // Create a simple org stream that emits one org
+            const pubsub = yield* createFhirR4ClientPubSub
+
+            // Verify PubSub interaction (sliding capacity of 1 with replay)
+            yield* pubsub.publish(Take.of(Either.right({} as any)))
+            yield* pubsub.publish(Take.of(Either.right({} as any)))
+
+            // Create service with org stream
             const orgStream = Stream.make(Either.right(mockOrg))
-
-            // Mock the Google API dependencies using Layer.succeed
-            const mockGapiClientLayer = Layer.succeed(
-              LoadedGapiClient,
-              {} as typeof LoadedGapiClient.Service
-            )
-            const mockHealthcareClientLayer = Layer.succeed(
-              LoadedGapiHealthcareClient,
-              {} as typeof LoadedGapiHealthcareClient.Service
-            )
-
             const service = yield* startFhirR4ClientService(
-              clientPubSub,
+              pubsub,
               orgStream
             ).pipe(
-              Effect.provide(mockGapiClientLayer),
-              Effect.provide(mockHealthcareClientLayer),
+              Effect.provide(mockGapiLayers[0]),
+              Effect.provide(mockGapiLayers[1]),
               Effect.scoped
             )
 
-            // Verify service has expected properties
+            // Verify service structure
+            expect(service).toBeDefined()
             expect(service).toHaveProperty('client')
             expect(service).toHaveProperty('clientStream')
             expect(service).toHaveProperty('shutdown')
+            expect(Effect.isEffect(service.shutdown)).toBe(true)
+            expect(FhirR4ClientService.key).toBe('FhirR4ClientService')
           })
 
           await Effect.runPromise(program)
-        })
+        }
       )
-    })
-
-    it('client updates when org changes', async () => {
-      const program = Effect.gen(function* () {
-        const clientPubSub = yield* createFhirR4ClientPubSub
-        const mockOrg1 = createMockOrg('google_fhir_store')
-        const mockOrg2 = createMockOrg('google_fhir_store')
-
-        // Create org stream with multiple values
-        const orgPubSub = yield* PubSub.unbounded<
-          Take.Take<Either.Either<Org, NoSelectedOrgError>>
-        >()
-        
-        // Convert PubSub to a stream - break down complex nested pipes for clarity
-        const baseStream = Stream.unwrap(
-          Effect.map(orgPubSub.subscribe, Stream.fromQueue)
-        )
-        const orgStream = baseStream.pipe(
-          Stream.mapEffect((take) => {
-            return Effect.gen(function* () {
-              const done = yield* Take.done(take)
-              return done
-            })
-          }),
-          Stream.flatMap((chunk) => Stream.fromIterable(chunk))
-        )
-
-        // Mock the Google API dependencies using Layer.succeed
-        const mockGapiClientLayer = Layer.succeed(
-          LoadedGapiClient,
-          {} as typeof LoadedGapiClient.Service
-        )
-        const mockHealthcareClientLayer = Layer.succeed(
-          LoadedGapiHealthcareClient,
-          {} as typeof LoadedGapiHealthcareClient.Service
-        )
-
-        const serviceFiber = yield* startFhirR4ClientService(
-          clientPubSub,
-          orgStream
-        ).pipe(
-          Effect.provide(mockGapiClientLayer),
-          Effect.provide(mockHealthcareClientLayer),
-          Effect.scoped,
-          Effect.fork
-        )
-
-        // Give time for subscription
-        yield* Effect.sleep('50 millis')
-
-        // Publish first org
-        yield* orgPubSub.publish(Take.of(Either.right(mockOrg1)))
-        yield* Effect.sleep('50 millis')
-
-        // Publish second org
-        yield* orgPubSub.publish(Take.of(Either.right(mockOrg2)))
-        yield* Effect.sleep('50 millis')
-
-        const service = yield* Fiber.join(serviceFiber)
-
-        // Verify service was created
-        expect(service).toBeDefined()
-        expect(service).toHaveProperty('client')
-      })
-
-      await Effect.runPromise(program)
-    })
-
-    it('handles not_implemented config type', async () => {
-      const program = Effect.gen(function* () {
-        const clientPubSub = yield* createFhirR4ClientPubSub
-        const mockOrg = createMockOrg('not_implemented')
-
-        const orgStream = Stream.make(Either.right(mockOrg))
-
-        // Mock the Google API dependencies using Layer.succeed
-        const mockGapiClientLayer = Layer.succeed(
-          LoadedGapiClient,
-          {} as typeof LoadedGapiClient.Service
-        )
-        const mockHealthcareClientLayer = Layer.succeed(
-          LoadedGapiHealthcareClient,
-          {} as typeof LoadedGapiHealthcareClient.Service
-        )
-
-        const service = yield* startFhirR4ClientService(
-          clientPubSub,
-          orgStream
-        ).pipe(
-          Effect.provide(mockGapiClientLayer),
-          Effect.provide(mockHealthcareClientLayer),
-          Effect.scoped
-        )
-
-        // Give time for stream processing
-        yield* Effect.sleep('50 millis')
-
-        // Service should be created even with not_implemented
-        expect(service).toBeDefined()
-        expect(service).toHaveProperty('client')
-      })
-
-      await Effect.runPromise(program)
-    })
-
-    it('shutdown properly cleans up resources', async () => {
-      const program = Effect.gen(function* () {
-        const clientPubSub = yield* createFhirR4ClientPubSub
-        const mockOrg = createMockOrg('not_implemented') // Use not_implemented to avoid google client issues
-
-        const orgStream = Stream.make(Either.right(mockOrg))
-
-        // Mock the Google API dependencies using Layer.succeed
-        const mockGapiClientLayer = Layer.succeed(
-          LoadedGapiClient,
-          {} as typeof LoadedGapiClient.Service
-        )
-        const mockHealthcareClientLayer = Layer.succeed(
-          LoadedGapiHealthcareClient,
-          {} as typeof LoadedGapiHealthcareClient.Service
-        )
-
-        const service = yield* startFhirR4ClientService(
-          clientPubSub,
-          orgStream
-        ).pipe(
-          Effect.provide(mockGapiClientLayer),
-          Effect.provide(mockHealthcareClientLayer),
-          Effect.scoped
-        )
-
-        // Verify shutdown method exists and is an Effect
-        expect(service.shutdown).toBeDefined()
-        expect(Effect.isEffect(service.shutdown)).toBe(true)
-
-        return true
-      })
-
-      const result = await Effect.runPromise(program)
-      expect(result).toBe(true)
-    })
-
-    it('clientStream provides perpetual stream of clients', async () => {
-      const program = Effect.gen(function* () {
-        const clientPubSub = yield* createFhirR4ClientPubSub
-        const mockOrg = createMockOrg('not_implemented') // Use not_implemented to avoid google client issues
-
-        const orgStream = Stream.make(Either.right(mockOrg))
-
-        // Mock the Google API dependencies using Layer.succeed
-        const mockGapiClientLayer = Layer.succeed(
-          LoadedGapiClient,
-          {} as typeof LoadedGapiClient.Service
-        )
-        const mockHealthcareClientLayer = Layer.succeed(
-          LoadedGapiHealthcareClient,
-          {} as typeof LoadedGapiHealthcareClient.Service
-        )
-
-        const service = yield* startFhirR4ClientService(
-          clientPubSub,
-          orgStream
-        ).pipe(
-          Effect.provide(mockGapiClientLayer),
-          Effect.provide(mockHealthcareClientLayer),
-          Effect.scoped
-        )
-
-        // Verify clientStream property exists and is a stream
-        expect(service.clientStream).toBeDefined()
-        // clientStream should be a stream - we can't easily verify its exact type
-        // but we can verify the service provides it
-        
-        return true
-      })
-
-      const result = await Effect.runPromise(program)
-      expect(result).toBe(true)
-    })
-  })
-
-  describe('FhirR4ClientService tag', () => {
-    it('has correct service name', () => {
-      expect(FhirR4ClientService.key).toBe('FhirR4ClientService')
-    })
+    )
   })
 })
