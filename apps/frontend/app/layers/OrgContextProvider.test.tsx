@@ -4,7 +4,8 @@ import userEvent from '@testing-library/user-event'
 import { Either, Effect, Stream } from 'effect'
 import { OrgContextProvider } from './OrgContextProvider'
 import { usePlatformContext } from './PlatformContext'
-import type { Org, OrgSlug } from '@assessmentis/platform-domain'
+import { OrgSlug } from '@assessmentis/platform-domain'
+import type { Org } from '@assessmentis/platform-domain'
 import { NoSelectedOrgError } from '@assessmentis/platform-domain'
 
 // Polyfill for Promise.withResolvers (Node < 22)
@@ -27,15 +28,20 @@ vi.mock('./PlatformContext', () => ({
 
 describe('OrgContextProvider', () => {
   const mockOrg: Org = {
-    slug: 'test-org' as any,
-    name: 'Test Organization',
-    owner_uid: 'user-123',
-    members: {},
+    slug: OrgSlug.make('test-org'),
+    frontendConfig: {
+      fhirServer: {
+        _tag: 'not_implemented' as const,
+      },
+      videoCallClient: {
+        _tag: 'not_implemented' as const,
+      },
+    },
   }
 
   const mockUserOrgs: ReadonlyArray<OrgSlug> = [
-    'test-org' as any,
-    'another-org' as any,
+    OrgSlug.make('test-org'),
+    OrgSlug.make('another-org'),
   ]
 
   let mockSetActiveOrgSlug: ReturnType<typeof vi.fn>
@@ -229,10 +235,15 @@ describe('OrgContextProvider', () => {
 
   it('should not render children when org is not in user orgs', async () => {
     const unauthorizedOrg: Org = {
-      slug: 'unauthorized-org' as any,
-      name: 'Unauthorized Organization',
-      owner_uid: 'user-123',
-      members: {},
+      slug: OrgSlug.make('unauthorized-org'),
+      frontendConfig: {
+        fhirServer: {
+          _tag: 'not_implemented' as const,
+        },
+        videoCallClient: {
+          _tag: 'not_implemented' as const,
+        },
+      },
     }
 
     // Mock activeOrgStream to emit org that user doesn't have access to

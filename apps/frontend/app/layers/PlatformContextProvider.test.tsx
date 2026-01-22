@@ -5,7 +5,7 @@ import { PlatformContextProvider } from './PlatformContextProvider'
 
 // Mock infrastructure modules
 vi.mock('@assessmentis/firebase-web-infrastructure', () => ({
-  FirebaseWebDocumentStoreLayer: Layer.succeed({}, {}),
+  FirebaseWebDocumentStoreLayer: Layer.empty,
   startAuthDataService: vi.fn(() =>
     Effect.succeed({
       authDataStream: Stream.empty,
@@ -16,16 +16,16 @@ vi.mock('@assessmentis/firebase-web-infrastructure', () => ({
 
 vi.mock('@assessmentis/google-fhir-web-infrastructure', () => ({
   LoadedGapiClient: {
-    Default: Layer.succeed({}, {}),
+    Default: Layer.empty,
   },
   LoadedGapiHealthcareClient: {
-    Default: Layer.succeed({}, {}),
+    Default: Layer.empty,
   },
   startAccessTokenSyncer: vi.fn(() => Effect.succeed(undefined)),
 }))
 
 vi.mock('../FirebaseWebLayer', () => ({
-  FirebaseWebLayer: Layer.succeed({}, {}),
+  FirebaseWebLayer: Layer.empty,
 }))
 
 vi.mock('@assessmentis/platform-domain', () => ({
@@ -81,7 +81,7 @@ vi.mock('./ClinicalDataRepositoriesService', () => ({
   ClinicalDataRepositoryService: Effect.succeed({
     repository: {},
   }),
-  Default: Layer.succeed({}, {}),
+  Default: Layer.empty,
 }))
 
 vi.mock('./ExternalVideoCallClientService', () => ({
@@ -136,7 +136,7 @@ describe('PlatformContextProvider', () => {
       '@assessmentis/firebase-web-infrastructure'
     )
     vi.mocked(startAuthDataService).mockImplementationOnce(() =>
-      Effect.fail(new Error('Mock initialization error'))
+      Effect.die(new Error('Mock initialization error'))
     )
 
     render(
