@@ -20,7 +20,7 @@ describe('ExternalVideoCallClientService', () => {
       fhirServer: { _tag: 'not_implemented' },
       videoCallClient: {
         _tag: 'daily_co_proxy',
-        videoRoomProxyUrl: 'https://test.example.com/video',
+        dailyCoProxyUrl: 'https://test.example.com/video',
       },
     },
   }
@@ -47,7 +47,7 @@ describe('ExternalVideoCallClientService', () => {
       fc.asyncProperty(
         fc.constantFrom(mockOrgWithDailyCo, mockOrgNotImplemented),
         fc.webUrl(),
-        async (baseOrg, videoRoomProxyUrl) => {
+        async (baseOrg, dailyCoProxyUrl) => {
           // Test with property-generated URL for daily_co
           const testOrg: Org = baseOrg.frontendConfig.videoCallClient._tag === 'daily_co_proxy'
             ? {
@@ -56,7 +56,7 @@ describe('ExternalVideoCallClientService', () => {
                   ...baseOrg.frontendConfig,
                   videoCallClient: {
                     _tag: 'daily_co_proxy',
-                    videoRoomProxyUrl,
+                    dailyCoProxyUrl,
                   },
                 },
               }

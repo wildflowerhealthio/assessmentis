@@ -18,10 +18,11 @@ describe('FhirR4ClientService', () => {
     frontendConfig: {
       fhirServer: {
         _tag: 'google_fhir_store',
+        apiKey: null,
         projectId: 'test-project',
-        location: 'us-central1',
-        datasetId: 'test-dataset',
-        fhirStoreId: 'test-store',
+        region: 'us-central1',
+        dataset: 'test-dataset',
+        storeId: 'test-store',
       },
       videoCallClient: { _tag: 'not_implemented' },
     },
@@ -34,11 +35,6 @@ describe('FhirR4ClientService', () => {
       videoCallClient: { _tag: 'not_implemented' },
     },
   }
-
-  const mockGapiLayers = [
-    Layer.succeed(LoadedGapiClient, {} as typeof LoadedGapiClient.Service),
-    Layer.succeed(LoadedGapiHealthcareClient, {} as typeof LoadedGapiHealthcareClient.Service),
-  ]
 
   it('property: PubSub lifecycle and service structure', async () => {
     await fc.assert(
@@ -58,8 +54,8 @@ describe('FhirR4ClientService', () => {
               pubsub,
               orgStream
             ).pipe(
-              Effect.provide(mockGapiLayers[0]),
-              Effect.provide(mockGapiLayers[1]),
+              Effect.provide(Layer.succeed(LoadedGapiClient, {} as typeof LoadedGapiClient.Service)),
+              Effect.provide(Layer.succeed(LoadedGapiHealthcareClient, {} as typeof LoadedGapiHealthcareClient.Service)),
               Effect.scoped
             )
 
