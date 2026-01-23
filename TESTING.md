@@ -81,12 +81,229 @@ fc.assert(
 
 Use stubbed contexts to run Effects with known inputs. This allows deterministic testing of side-effectful code without mocking the world.
 
-## 8. In Summary (AI Agents, Pay Attention)
+### Exit/Error Handling Pattern
+
+When testing Effects that may fail, use runPromiseExit to get the result. Use functional composition with `pipe` instead of nested conditionals to extract the inner error from the Exit
+
+```typescript
+// ❌ AVOID: Nested conditionals
+const exit = await Effect.runPromiseExit(program)
+if (Exit.isFailure(exit)) {
+  const error = Cause.squash(exit.cause) as any
+  expect(error._tag).toBe('SomeError')
+}
+
+// ✅ PREFERRED: Functional pipe pattern
+import { pipe, Exit, Cause, Option } from 'effect'
+
+const exit = await Effect.runPromiseExit(program)
+expect(Exit.isFailure(exit)).toBe(true)
+const error = pipe(
+  exit,
+  Exit.causeOption,
+  Option.flatMap(Cause.failureOption),
+  Option.getOrThrow
+)
+expect(error._tag).toBe('SomeError')
+```
+
+### Using Schema Arbitraries
+
+Use `Arbitrary.make(Schema)` to generate test data from Effect Schemas. It should be preferred to object literals as it allows for more compact and generalized tests.
+
+```typescript
+import { Arbitrary } from 'effect'
+import { Org } from '@assessmentis/platform-domain'
+
+const orgArb = Arbitrary.make(Org)
+
+it('property: handles any valid org', async () => {
+  await fc.assert(
+    fc.asyncProperty(orgArb, async (org) => {
+      // Test with generated org values
+      const result = await Effect.runPromise(myService(org))
+      expect(result).toBeDefined()
+    })
+  )
+})
+```
+
+## 8. React Component Testing
+
+### Environment Setup
+
+**Do NOT manually initialize JSDOM.** Vitest is configured with `environment: 'jsdom'` which automatically provides DOM globals.
+
+```typescript
+// ❌ AVOID: Redundant JSDOM setup
+import { JSDOM } from 'jsdom'
+const dom = new JSDOM('<!doctype html><html><body></body></html>')
+globalThis.window = dom.window as unknown as typeof globalThis.window
+globalThis.document = dom.window.document
+
+// ✅ CORRECT: Just import what you need
+import { renderHook, act } from '@testing-library/react'
+```
+
+### Console Mocking
+
+Suppress console noise in tests to keep output clean:
+
+```typescript
+import { vi, beforeEach, afterEach } from 'vitest'
+
+beforeEach(() => {
+  vi.spyOn(console, 'log').mockImplementation(() => {})
+  vi.spyOn(console, 'error').mockImplementation(() => {})
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
+```
+
+### Testing with waitFor
+
+**Do NOT wrap `waitFor` in `act()`.** The `waitFor` function from `@testing-library/react` already handles `act()` internally. Double-wrapping can cause timing issues.
+
+```typescript
+// ❌ AVOID: Double-wrapping causes issues
+await act(async () => {
+  await waitFor(() => {
+    expect(screen.getByText('Content')).toBeDefined()
+  })
+})
+
+// ✅ CORRECT: waitFor handles act() internally
+await waitFor(() => {
+  expect(screen.getByText('Content')).toBeDefined()
+})
+```
+
+### Reducing Mock Duplication
+
+Create helper factories to reduce boilerplate in tests with complex mocks:
+
+```typescript
+// Helper factory for platform context mocks
+const createMockPlatformContext = (
+  overrides: {
+    activeOrgStream?: Stream.Stream<Either.Either<Org, Error>>
+    activeOrg?: Effect.Effect<Org | null>
+    userOrgs?: Record<string, string>
+  } = {}
+) => ({
+  authDataService: {} as any,
+  orgService: {
+    activeOrgStream: overrides.activeOrgStream ?? Stream.empty,
+    activeOrg: overrides.activeOrg ?? Effect.succeed(mockOrg),
+    setActiveOrgSlug: mockSetActiveOrgSlug,
+  } as any,
+  userService: {
+    user: Effect.succeed({
+      org_roles: overrides.userOrgs ?? { 'test-org': 'admin' },
+    }),
+  } as any,
+  // ... other services
+})
+
+// Usage in tests
+it('should show org picker when no org selected', async () => {
+  vi.mocked(usePlatformContext).mockReturnValue(
+    createMockPlatformContext({
+      activeOrgStream: Stream.succeed(Either.left(new NoSelectedOrgError({}))),
+      userOrgs: { 'test-org': 'admin', 'another-org': 'member' },
+    })
+  )
+  // ... test body
+})
+```
+
+### Testing Hooks with Effects
+
+For hooks that use Effect-TS, wrap state transitions in `act()`:
+
+```typescript
+import { renderHook, act } from '@testing-library/react'
+
+it('should resolve effect correctly', async () => {
+  const { result, unmount } = renderHook(() => useEffectTs(Effect.succeed(42)))
+
+  await act(async () => {
+    await new Promise((r) => setTimeout(r, 50))
+  })
+
+  await expect(result.current).resolves.toBe(42)
+  unmount()
+})
+```
+
+### Handling Promise Rejections
+
+Catch promise rejections early to prevent unhandled rejection warnings:
+
+```typescript
+it('should reject with error', async () => {
+  const error = new Error('test error')
+  const { result, unmount } = renderHook(() => useEffectTs(Effect.fail(error)))
+
+  // Catch early to prevent unhandled rejection warnings
+  const errorPromise = result.current.catch((e) => e)
+
+  await act(async () => {
+    await new Promise((r) => setTimeout(r, 50))
+  })
+
+  const caught = await errorPromise
+  expect(caught).toBe(error)
+  unmount()
+})
+```
+
+## 9. Property Test Arbitraries
+
+### Use Constrained Arbitraries
+
+Prefer specific arbitraries over generic ones for better test reliability:
+
+```typescript
+// ❌ AVOID: Too generic
+fc.anything()
+
+// ✅ PREFERRED: Constrained arbitraries
+fc.integer()
+fc.string({ minLength: 1, maxLength: 100 })
+fc.webUrl()
+```
+
+### When fc.constantFrom() is Appropriate
+
+Use `fc.constantFrom()` when testing specific behavior variations (like error types), not for general data generation:
+
+```typescript
+// ✅ APPROPRIATE: Testing specific error type handling
+fc.constantFrom(
+  new NoSelectedOrgError({ message: 'No org' }),
+  new UnhandledError({ message: 'Unhandled' })
+)
+
+// ❌ AVOID: Use Arbitrary.make() for data generation
+fc.constantFrom(mockOrg1, mockOrg2) // Only 2 values!
+
+// ✅ PREFERRED: Schema-based arbitrary
+Arbitrary.make(Org)
+```
+
+## 10. In Summary (AI Agents, Pay Attention)
 
 When generating tests for this codebase:
 
-1. **Default to `fast-check` properties.**
+1. **Default to `fast-check` properties** with `Arbitrary.make(Schema)` for data generation.
 2. **Follow Domain-Specific Patterns:**
    - **Clinical:** Compile-time FHIR check + Round-trip check.
+   - **React Components:** Use `waitFor` without `act()` wrapper, mock console output.
+   - **Effect-TS:** Use `pipe` pattern for error handling, not nested conditionals.
 3. **Test Helper Identities:** Look for `get(with(x))` patterns and verify they are reversible.
 4. **Keep it Concise:** Delete redundant properties. If the round-trip works, you don't need to test every field individually.
+5. **Environment:** Do NOT manually set up JSDOM - Vitest handles it.
+6. **Reduce Duplication:** Create helper factories for complex mock setups.

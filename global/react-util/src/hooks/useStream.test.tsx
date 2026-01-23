@@ -1,13 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { JSDOM } from 'jsdom'
 import { Cause, Effect, Queue, Stream } from 'effect'
 import { useStream } from './effectHooks'
-
-// Ensure DOM globals are available when tests run outside jsdom-configured env
-const dom = new JSDOM('<!doctype html><html><body></body></html>')
-globalThis.window = dom.window as unknown as typeof globalThis.window
-globalThis.document = dom.window.document
 
 describe('useStream', () => {
   beforeEach(() => {

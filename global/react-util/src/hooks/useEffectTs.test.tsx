@@ -1,14 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { JSDOM } from 'jsdom'
 import * as fc from 'fast-check'
 import { Cause, Effect } from 'effect'
 import { useEffectTs } from './effectHooks'
-
-// Ensure DOM globals are available when tests run outside jsdom-configured env
-const dom = new JSDOM('<!doctype html><html><body></body></html>')
-globalThis.window = dom.window as unknown as typeof globalThis.window
-globalThis.document = dom.window.document
 
 describe('useEffectTs', () => {
   beforeEach(() => {

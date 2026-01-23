@@ -1,13 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
-import { JSDOM } from 'jsdom'
 import * as fc from 'fast-check'
 import { usePromiseOrDefault } from './usePromiseOrDefault'
-
-// Ensure DOM globals are available when tests run outside jsdom-configured env
-const dom = new JSDOM('<!doctype html><html><body></body></html>')
-globalThis.window = dom.window as unknown as typeof globalThis.window
-globalThis.document = dom.window.document
 
 describe('usePromiseOrDefault', () => {
   it('should return default initially and resolved value after resolution', async () => {
