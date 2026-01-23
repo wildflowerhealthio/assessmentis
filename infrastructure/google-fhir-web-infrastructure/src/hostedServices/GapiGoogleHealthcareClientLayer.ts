@@ -7,10 +7,7 @@ import {
 } from '@assessmentis/fhir-client'
 import { buildSearchParams } from '@assessmentis/util'
 import { LoadedGapiClient } from '../services/LoadedGapiClient'
-import {
-  GapiHealthcareClient,
-  LoadedGapiHealthcareClient,
-} from '../services/LoadedGapiHealthcareClient'
+import { LoadedGapiHealthcareClient } from '../services/LoadedGapiHealthcareClient'
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
 import { ExternalAssertionError, UnhandledError } from '@assessmentis/ontology'
 
@@ -25,8 +22,6 @@ const _retryGoogle502s = <A extends { status: number }, E>(
     times: 3,
     schedule: Schedule.exponential('500 millis', 2),
   })
-
-type FhirResp = gapi.client.Response<gapi.client.healthcare.HttpBody>
 
 export const startGapiGoogleHealthcareClient: Effect.Effect<
   typeof FhirR4Client.Service,

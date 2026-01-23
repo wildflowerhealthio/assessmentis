@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi } from 'vitest'
 import { Effect, Exit, Layer } from 'effect'
 import * as fc from 'fast-check'
