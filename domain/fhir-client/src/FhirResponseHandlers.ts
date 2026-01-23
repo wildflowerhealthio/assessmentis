@@ -1,40 +1,35 @@
 import { Effect } from 'effect'
-import { AuthError, AuthzError } from '@assessmentis/platform-domain'
-import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
-import { failUnless } from '@assessmentis/util'
-
-/**
- * Generic HTTP response interface
- */
-export interface HttpResponse<TData = unknown> {
-  status: number
-  statusText?: string
-  data: TData
-}
+import {
+  AuthError,
+  AuthzError,
+  NotFoundError,
+  UnhandledError,
+} from '@assessmentis/ontology'
+import { failIf } from '@assessmentis/util'
 
 /**
  * A set of handlers to coerce FHIR responses of a given type into the right shape
  */
-export interface FhirResponseHandlers<R> {
+export interface FhirResponseHandlers<T, R extends T, S extends R> {
   handleReadResponse: (
     response: R,
     params: { resourceType: string; id: string }
   ) => Effect.Effect<
-    R,
+    S,
     AuthError | AuthzError | UnhandledError | NotFoundError,
     never
   >
   handleSearchResponse: (
     response: R
-  ) => Effect.Effect<R, AuthError | AuthzError | UnhandledError, never>
+  ) => Effect.Effect<S, AuthError | AuthzError | UnhandledError, never>
   handleCreateResponse: (
     response: R
-  ) => Effect.Effect<R, AuthError | AuthzError | UnhandledError, never>
+  ) => Effect.Effect<S, AuthError | AuthzError | UnhandledError, never>
   handleUpdateResponse: (
     response: R,
     params: { resourceType: string; id: string }
   ) => Effect.Effect<
-    R,
+    S,
     AuthError | AuthzError | UnhandledError | NotFoundError,
     never
   >
@@ -42,61 +37,45 @@ export interface FhirResponseHandlers<R> {
     response: R,
     params: { resourceType: string; id: string }
   ) => Effect.Effect<
-    R,
+    S,
     AuthError | AuthzError | UnhandledError | NotFoundError,
     never
   >
   handleExecuteBundleResponse: (
     response: R
-  ) => Effect.Effect<R, AuthError | AuthzError | UnhandledError, never>
+  ) => Effect.Effect<S, AuthError | AuthzError | UnhandledError, never>
 }
-
-/**
- * Creates an error handler that fails when response status matches the given code
- */
-const failOnHttpStatus = <TData, E>(
-  statusCode: number,
-  makeError: (resp: HttpResponse<TData>) => E
-) =>
-  Effect.flatMap((resp: HttpResponse<TData>) =>
-    failUnless(
-      (r: HttpResponse<TData>) => r.status !== statusCode,
-      makeError
-    )(resp)
-  )
-
-/**
- * Creates an error handler that fails when response status matches any of the given codes
- */
-const failOnHttpStatuses = <TData, E>(
-  statusCodes: readonly number[],
-  makeError: (resp: HttpResponse<TData>) => E
-) =>
-  Effect.flatMap((resp: HttpResponse<TData>) =>
-    failUnless(
-      (r: HttpResponse<TData>) => !statusCodes.includes(r.status),
-      makeError
-    )(resp)
-  )
 
 /**
  * Creates response handlers for a given response type that implements HttpResponse
  */
 export const createFhirResponseHandlers = <
-  R extends HttpResponse,
->(): FhirResponseHandlers<R> => {
-  const handleAuthErr = failOnHttpStatus(401, (resp: HttpResponse) =>
-    new AuthError({
-      message: 'Unauthorized access to FHIR resource',
-      cause: resp.statusText,
-    })
+  T,
+  R extends T,
+  S extends R,
+>(request: {
+  isNotFound: (resp: T) => boolean
+  isUnauthorized: (resp: T) => boolean
+  isUnauthenticated: (resp: T) => boolean
+  isSuccess: (resp: T) => resp is S
+  // etc
+}): FhirResponseHandlers<T, R, S> => {
+  const handleAuthErr = failIf(
+    request.isUnauthenticated,
+    (cause) =>
+      new AuthError({
+        message: 'Unauthorized access to FHIR resource',
+        cause,
+      })
   )
 
-  const handleAuthzErr = failOnHttpStatus(403, (resp: HttpResponse) =>
-    new AuthzError({
-      message: 'Forbidden access to FHIR resource',
-      cause: resp.statusText,
-    })
+  const handleAuthzErr = failIf(
+    request.isUnauthorized,
+    (cause) =>
+      new AuthzError({
+        message: 'Forbidden access to FHIR resource',
+        cause,
+      })
   )
 
   const handleNotFoundErr = ({
@@ -106,74 +85,79 @@ export const createFhirResponseHandlers = <
     resourceType: string
     id: string
   }) =>
-    failOnHttpStatuses([404, 410], (resp: HttpResponse) =>
-      new NotFoundError({
-        resourceType,
-        params: { id },
-        cause: resp,
-      })
+    failIf(
+      request.isNotFound,
+      (cause) =>
+        new NotFoundError({
+          resourceType,
+          params: { id },
+          cause,
+        })
     )
 
-  const catchUnhandledError = (message: string) =>
-    Effect.catchAll((error: unknown) =>
-      Effect.fail(
-        new UnhandledError({
-          message,
-          cause: error,
-        })
-      )
-    )
+  const succeedOrUnhandled = Effect.flatMap((resp: T) =>
+    request.isSuccess(resp)
+      ? Effect.succeed(resp)
+      : Effect.fail(
+          new UnhandledError({
+            message: 'Expected failure but got success response',
+          })
+        )
+  )
 
   return {
-    handleReadResponse: (response, { resourceType, id }) =>
+    handleReadResponse: (
+      response: R,
+      { resourceType, id }: { resourceType: string; id: string }
+    ) =>
       Effect.succeed(response).pipe(
-        handleAuthErr,
-        handleAuthzErr,
-        handleNotFoundErr({ resourceType, id })
-      ) as Effect.Effect<
-        R,
-        AuthError | AuthzError | UnhandledError | NotFoundError,
-        never
-      >,
+        Effect.flatMap(handleAuthErr),
+        Effect.flatMap(handleAuthzErr),
+        Effect.flatMap(handleNotFoundErr({ resourceType, id })),
+        succeedOrUnhandled
+      ),
 
-    handleSearchResponse: (response) =>
+    handleSearchResponse: (response: R) =>
       Effect.succeed(response).pipe(
-        handleAuthErr,
-        handleAuthzErr
-      ) as Effect.Effect<R, AuthError | AuthzError | UnhandledError, never>,
+        Effect.flatMap(handleAuthErr),
+        Effect.flatMap(handleAuthzErr),
+        succeedOrUnhandled
+      ),
 
-    handleCreateResponse: (response) =>
+    handleCreateResponse: (response: R) =>
       Effect.succeed(response).pipe(
-        handleAuthErr,
-        handleAuthzErr
-      ) as Effect.Effect<R, AuthError | AuthzError | UnhandledError, never>,
+        Effect.flatMap(handleAuthErr),
+        Effect.flatMap(handleAuthzErr),
+        succeedOrUnhandled
+      ),
 
-    handleUpdateResponse: (response, { resourceType, id }) =>
+    handleUpdateResponse: (
+      response: R,
+      { resourceType, id }: { resourceType: string; id: string }
+    ) =>
       Effect.succeed(response).pipe(
-        handleAuthErr,
-        handleAuthzErr,
-        handleNotFoundErr({ resourceType, id })
-      ) as Effect.Effect<
-        R,
-        AuthError | AuthzError | UnhandledError | NotFoundError,
-        never
-      >,
+        Effect.flatMap(handleAuthErr),
+        Effect.flatMap(handleAuthzErr),
+        Effect.flatMap(handleNotFoundErr({ resourceType, id })),
+        succeedOrUnhandled
+      ),
 
-    handleDeleteResponse: (response, { resourceType, id }) =>
+    handleDeleteResponse: (
+      response: R,
+      { resourceType, id }: { resourceType: string; id: string }
+    ) =>
       Effect.succeed(response).pipe(
-        handleAuthErr,
-        handleAuthzErr,
-        handleNotFoundErr({ resourceType, id })
-      ) as Effect.Effect<
-        R,
-        AuthError | AuthzError | UnhandledError | NotFoundError,
-        never
-      >,
+        Effect.flatMap(handleAuthErr),
+        Effect.flatMap(handleAuthzErr),
+        Effect.flatMap(handleNotFoundErr({ resourceType, id })),
+        succeedOrUnhandled
+      ),
 
-    handleExecuteBundleResponse: (response) =>
+    handleExecuteBundleResponse: (response: R) =>
       Effect.succeed(response).pipe(
-        handleAuthErr,
-        handleAuthzErr
-      ) as Effect.Effect<R, AuthError | AuthzError | UnhandledError, never>,
+        Effect.flatMap(handleAuthErr),
+        Effect.flatMap(handleAuthzErr),
+        succeedOrUnhandled
+      ),
   }
 }

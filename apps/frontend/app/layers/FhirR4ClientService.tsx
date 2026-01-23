@@ -1,10 +1,11 @@
-import { FhirR4Client } from '@assessmentis/clinical-domain/assessmentis'
+import { FhirR4Client } from '@assessmentis/fhir-client'
 import {
   LoadedGapiClient,
   LoadedGapiHealthcareClient,
   startGapiGoogleHealthcareClient,
 } from '@assessmentis/google-fhir-web-infrastructure'
 import {
+  AuthError,
   UnhandledError,
   NotFoundError,
   ExternalAssertionError,
@@ -21,7 +22,6 @@ import {
   Take,
 } from 'effect'
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
-import { AuthError } from '@assessmentis/platform-domain'
 import { NoSelectedOrgError } from '@assessmentis/platform-domain'
 import { Org } from '@assessmentis/platform-domain'
 import {

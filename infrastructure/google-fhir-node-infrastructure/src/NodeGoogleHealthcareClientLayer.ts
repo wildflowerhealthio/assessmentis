@@ -1,59 +1,39 @@
-import { Effect, Layer } from 'effect'
+import { Effect, Layer, Option } from 'effect'
 import { healthcare_v1 } from '@googleapis/healthcare'
 import { google } from 'googleapis'
-
+import { GaxiosResponseWithHTTP2, GaxiosError } from 'googleapis-common'
 import {
   FhirR4Client,
   buildFhirStoreParent,
   buildFhirResourcePath,
-  HttpResponse,
   createFhirResponseHandlers,
 } from '@assessmentis/fhir-client'
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
-import { UnhandledError } from '@assessmentis/ontology'
 import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
+import { UnknownException } from 'effect/Cause'
+import { UnhandledError } from '@assessmentis/ontology'
 
-/**
- * Adapter to convert googleapis response to HttpResponse
- * Extracts actual HTTP status from response if available
- */
-const toHttpResponse = <T>(response: {
-  status?: number
-  data: healthcare_v1.Schema$HttpBody
-}): HttpResponse<T> => ({
-  status: response.status ?? 200,
-  data: response.data.data as T,
-})
+const recoverGaxiosError: <A, E, R>(
+  eff: Effect.Effect<A, E | UnknownException, R>
+) => Effect.Effect<A | GaxiosError<unknown>, E | UnknownException, R> =
+  Effect.catchSome((error) => {
+    if (
+      error instanceof UnknownException &&
+      error.error instanceof GaxiosError
+    ) {
+      return Option.some(Effect.succeed(error.error as GaxiosError<unknown>))
+    }
+    return Option.none()
+  })
 
-/**
- * Extracts status code from googleapis error
- */
-const getErrorStatus = (error: unknown): number => {
-  if (
-    error &&
-    typeof error === 'object' &&
-    'code' in error &&
-    typeof error.code === 'number'
-  ) {
-    return error.code
-  }
-  return 500
-}
-
-/**
- * Converts googleapis error to HttpResponse for error handling
- */
-const errorToHttpResponse = (error: unknown): HttpResponse => ({
-  status: getErrorStatus(error),
-  statusText: error instanceof Error ? error.message : String(error),
-  data: error,
-})
-
-/**
- * Converts unknown error to UnhandledError
- */
-const toUnhandledError = (message: string) => (error: unknown) =>
-  new UnhandledError({ message, cause: error })
+const markExceptionUnhandled = <A, E, R>(
+  eff: Effect.Effect<A, E | UnknownException, R>
+): Effect.Effect<A, E | UnhandledError, R> =>
+  Effect.mapError(eff, (error) =>
+    error instanceof UnknownException
+      ? new UnhandledError({ message: error.message, cause: error.error })
+      : error
+  )
 
 export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
   FhirR4Client,
@@ -70,7 +50,35 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
       yield* LoadedGoogleFhirConfig
     const parent = buildFhirStoreParent({ projectId, dataset, region, storeId })
 
-    const handlers = createFhirResponseHandlers<HttpResponse>()
+    const handlers = createFhirResponseHandlers<
+      {
+        status?: number | undefined
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      GaxiosResponseWithHTTP2<any> | GaxiosError<unknown>,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      GaxiosResponseWithHTTP2<any>
+    >({
+      isNotFound(resp) {
+        return resp.status === 404 || resp.status == 410
+      },
+      isUnauthenticated(resp) {
+        return resp.status === 401
+      },
+      isUnauthorized(resp) {
+        return resp.status === 403
+      },
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      isSuccess(resp): resp is GaxiosResponseWithHTTP2<any> {
+        return (
+          resp.status !== undefined &&
+          resp.status >= 200 &&
+          resp.status < 300 &&
+          'data' in resp
+        )
+      },
+    })
 
     const read: (typeof FhirR4Client.Service)['read'] = ({
       resourceType,
@@ -81,16 +89,15 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
           name: buildFhirResourcePath(parent, resourceType, id),
         })
       ).pipe(
-        Effect.map(toHttpResponse),
-        Effect.catchAll((error) =>
-          handlers.handleReadResponse(errorToHttpResponse(error), {
+        recoverGaxiosError,
+        (a) => a,
+        Effect.flatMap((response) =>
+          handlers.handleReadResponse(response, {
             resourceType,
             id,
           })
         ),
-        Effect.flatMap((response) =>
-          handlers.handleReadResponse(response, { resourceType, id })
-        ),
+        markExceptionUnhandled,
         Effect.map((response) => response.data)
       )
 
@@ -115,11 +122,9 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
             : undefined
         )
       ).pipe(
-        Effect.map(toHttpResponse),
-        Effect.catchAll((error) =>
-          handlers.handleSearchResponse(errorToHttpResponse(error))
-        ),
+        (a) => a,
         Effect.flatMap((response) => handlers.handleSearchResponse(response)),
+        markExceptionUnhandled,
         Effect.map((response) => response.data)
       )
     }
@@ -135,11 +140,10 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
           requestBody: resource as healthcare_v1.Schema$HttpBody,
         })
       ).pipe(
-        Effect.map(toHttpResponse),
-        Effect.catchAll((error) =>
-          handlers.handleCreateResponse(errorToHttpResponse(error))
-        ),
+        recoverGaxiosError,
+        (a) => a,
         Effect.flatMap((response) => handlers.handleCreateResponse(response)),
+        markExceptionUnhandled,
         Effect.map((response) => response.data)
       )
 
@@ -154,16 +158,14 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
           requestBody: resource as healthcare_v1.Schema$HttpBody,
         })
       ).pipe(
-        Effect.map(toHttpResponse),
-        Effect.catchAll((error) =>
-          handlers.handleUpdateResponse(errorToHttpResponse(error), {
-            resourceType: type,
-            id,
-          })
+        recoverGaxiosError,
+        Effect.flatMap((response) =>
+          handlers.handleUpdateResponse(response, { resourceType: type, id })
         ),
         Effect.flatMap((response) =>
           handlers.handleUpdateResponse(response, { resourceType: type, id })
         ),
+        markExceptionUnhandled,
         Effect.map((response) => response.data)
       )
 
@@ -176,16 +178,11 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
           name: buildFhirResourcePath(parent, type, id),
         })
       ).pipe(
-        Effect.map(toHttpResponse),
-        Effect.catchAll((error) =>
-          handlers.handleDeleteResponse(errorToHttpResponse(error), {
-            resourceType: type,
-            id,
-          })
-        ),
+        recoverGaxiosError,
         Effect.flatMap((response) =>
           handlers.handleDeleteResponse(response, { resourceType: type, id })
         ),
+        markExceptionUnhandled,
         Effect.asVoid
       )
 
@@ -198,13 +195,11 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
           requestBody: bundle as healthcare_v1.Schema$HttpBody,
         })
       ).pipe(
-        Effect.map(toHttpResponse),
-        Effect.catchAll((error) =>
-          handlers.handleExecuteBundleResponse(errorToHttpResponse(error))
-        ),
+        recoverGaxiosError,
         Effect.flatMap((response) =>
           handlers.handleExecuteBundleResponse(response)
         ),
+        markExceptionUnhandled,
         Effect.map((response) => response.data)
       )
 

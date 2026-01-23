@@ -10,10 +10,7 @@ import {
   Media,
   MediaRepository,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import {
-  AuthError,
-  AuthzError,
-} from '../../../../../../../domain/platform-domain/src/errors'
+import { AuthError, AuthzError } from '@assessmentis/ontology'
 
 /**
  * Fetches Media resources (recordings) linked to an encounter.

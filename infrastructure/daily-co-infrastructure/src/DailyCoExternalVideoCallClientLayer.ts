@@ -8,9 +8,13 @@ import {
   RoomCreationParams,
   ExternalVideoCallRoom,
 } from '@assessmentis/video-call-domain'
-import { AuthDataService, AuthError } from '@assessmentis/platform-domain'
+import { AuthDataService } from '@assessmentis/platform-domain'
 import { Media } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { UnhandledError, ExternalAssertionError } from '@assessmentis/ontology'
+import {
+  AuthError,
+  UnhandledError,
+  ExternalAssertionError,
+} from '@assessmentis/ontology'
 import { DailyCoProxyConfig } from '@assessmentis/config-domain'
 
 const ApiDailyCoRecordingSchema = Schema.Struct({

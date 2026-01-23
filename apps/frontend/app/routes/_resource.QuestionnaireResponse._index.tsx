@@ -8,9 +8,13 @@ import {
 import type { Route } from './+types/_resource.QuestionnaireResponse._index'
 import { QuestionnaireResponseListItem } from '../modules/resources/Questionnaire/components/QuestionnaireResponseListItem/QuestionnaireResponseListItem'
 import { ResourceListPage } from '../modules/common/components/ResourceListPage/ResourceListPage'
-import { ExternalAssertionError, UnhandledError } from '@assessmentis/ontology'
+import {
+  ExternalAssertionError,
+  UnhandledError,
+  AuthError,
+  AuthzError,
+} from '@assessmentis/ontology'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
-import { AuthError, AuthzError } from '@assessmentis/platform-domain'
 import { createResourceCollectionHook } from '../modules/common/utils/createResourceCollectionHook'
 
 const _getQuestionnaireResponses = (): Effect.Effect<

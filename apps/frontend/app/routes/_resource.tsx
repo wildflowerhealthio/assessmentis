@@ -7,7 +7,7 @@ import React, { JSX } from 'react'
 import { Outlet } from 'react-router'
 import { LoginButton } from '../modules/global/components/LoginButton'
 import { Generic404Content } from '../modules/common/components/Generic404Content'
-import { AuthError } from '@assessmentis/platform-domain'
+import { AuthError } from '@assessmentis/ontology'
 
 type IProps = object
 

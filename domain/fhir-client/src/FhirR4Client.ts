@@ -1,6 +1,10 @@
 import { Context, Effect } from 'effect'
-import { AuthError, AuthzError } from '@assessmentis/platform-domain'
-import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
+import {
+  NotFoundError,
+  UnhandledError,
+  AuthError,
+  AuthzError,
+} from '@assessmentis/ontology'
 import { Bundle } from '@assessmentis/clinical-domain/foundation-framework'
 import { DeepReadonly } from '@assessmentis/util'
 

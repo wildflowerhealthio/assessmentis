@@ -24,8 +24,8 @@
     "@assessmentis/platform-domain": "*",
     "@assessmentis/util": "*",
     "@googleapis/healthcare": "^26.0.0",
-    "googleapis": "^168.0.0",
     "effect": "^3.19.8",
+    "googleapis": "^168.0.0",
     "temporal-polyfill": "^0.3.0"
   },
   "devDependencies": {

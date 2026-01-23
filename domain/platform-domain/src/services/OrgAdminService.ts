@@ -2,8 +2,12 @@ import { Context, Effect, Layer, Schema } from 'effect'
 import { User } from '../models/User'
 import { UserId } from '../models/UserId'
 import { ClientRuntimeContext } from '../UserPlatformService'
-import { AuthError, AuthzError } from '../errors'
-import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
+import {
+  AuthError,
+  AuthzError,
+  NotFoundError,
+  UnhandledError,
+} from '@assessmentis/ontology'
 import { CurrentOrg, DocumentStore } from '../tagClasses'
 
 // Reuse ClientRuntimeContext for server (includes all repositories)

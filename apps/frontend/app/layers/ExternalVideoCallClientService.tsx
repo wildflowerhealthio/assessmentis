@@ -1,11 +1,14 @@
 import { DailyCoExternalVideoCallClientLayer } from '@assessmentis/daily-co-infrastructure'
-import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
+import {
+  AuthError,
+  NotFoundError,
+  UnhandledError,
+} from '@assessmentis/ontology'
 import { ExternalVideoCallClient } from '@assessmentis/video-call-domain'
 import { Context, Effect, Match } from 'effect'
 
 import {
   Org,
-  AuthError,
   AuthDataService,
   NoSelectedOrgError,
 } from '@assessmentis/platform-domain'

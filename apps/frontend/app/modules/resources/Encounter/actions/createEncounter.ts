@@ -8,9 +8,13 @@ import {
   EncounterRepository,
   Encounter,
 } from '@assessmentis/clinical-domain/administration'
-import { UnhandledError, ExternalAssertionError } from '@assessmentis/ontology'
+import {
+  AuthError,
+  AuthzError,
+  UnhandledError,
+  ExternalAssertionError,
+} from '@assessmentis/ontology'
 import { Code } from '@assessmentis/clinical-domain/data-types'
-import { AuthError, AuthzError } from '@assessmentis/platform-domain'
 
 export const CreateEncounterArg = Schema.extend(
   Schema.partial(Encounter),

@@ -4,6 +4,8 @@ import {
   EncounterId,
 } from '@assessmentis/clinical-domain/administration'
 import {
+  AuthError,
+  AuthzError,
   UnhandledError,
   NotFoundError,
   ExternalAssertionError,
@@ -13,11 +15,7 @@ import {
   QuestionnaireResponse,
 } from '@assessmentis/clinical-domain/content-management'
 import { WithId } from '@assessmentis/clinical-domain/data-types'
-import {
-  AuthError,
-  AuthzError,
-  NoSelectedOrgError,
-} from '@assessmentis/platform-domain'
+import { NoSelectedOrgError } from '@assessmentis/platform-domain'
 import { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
 
 export type FullEncounter = WithId<Encounter> & {

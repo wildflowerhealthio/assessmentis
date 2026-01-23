@@ -18,9 +18,7 @@
   "dependencies": {
     "effect": "^3.19.8",
     "temporal-polyfill": "^0.3.0",
-    "@assessmentis/clinical-domain": "*",
     "@assessmentis/ontology": "*",
-    "@assessmentis/platform-domain": "*",
     "@assessmentis/util": "*"
   },
   "devDependencies": {

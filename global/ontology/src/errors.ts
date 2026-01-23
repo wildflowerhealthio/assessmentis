@@ -37,3 +37,23 @@ export class NotFoundError extends Data.TaggedError('NotFoundError')<{
   params: object
   cause?: unknown
 }> {}
+
+/**
+ * Authentication error
+ */
+export class AuthError extends Data.TaggedError('AuthError')<{
+  message: string
+  cause?: unknown
+}> {
+  static Unauthenticated() {
+    return new AuthError({ message: 'User is not authenticated' })
+  }
+}
+
+/**
+ * Authorization error (authenticated but lacking permissions)
+ */
+export class AuthzError extends Data.TaggedError('AuthzError')<{
+  message: string
+  cause?: unknown
+}> {}

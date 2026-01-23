@@ -1,6 +1,10 @@
 import { Context, Effect, Layer } from 'effect'
-import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
-import { AuthError, AuthzError } from '../errors'
+import {
+  AuthError,
+  AuthzError,
+  NotFoundError,
+  UnhandledError,
+} from '@assessmentis/ontology'
 import { CurrentUserId } from '../tagClasses/CurrentUserId'
 import { CurrentOrg } from '../tagClasses'
 import { DocumentStore } from '../tagClasses/DocumentStore'

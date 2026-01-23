@@ -4,21 +4,23 @@ import { OrgUserService, OrgUserServiceLayer } from './OrgUserService'
 import { CurrentOrg, CurrentUserId, DocumentStore } from '../tagClasses'
 import { OrgSlug } from '../models/IdTypes'
 import { UserId } from '../models/UserId'
-import { UnhandledError } from '@assessmentis/ontology'
-import { AuthzError } from '../errors'
-import { mockDocumentStore, mockDocumentStoreImplementations } from './__tests__/mocks'
+import { UnhandledError, AuthzError } from '@assessmentis/ontology'
+import {
+  mockDocumentStore,
+  mockDocumentStoreImplementations,
+} from './__tests__/mocks'
 
 describe('OrgUserService', () => {
   const testOrgSlug = OrgSlug.make('test-org')
-  
+
   describe('ensureRole', () => {
     it('succeeds when user has allowed role', async () => {
       const testUserId = UserId.make('user-with-admin')
-      
+
       const rolesData = { roles: ['admin', 'viewer'] }
 
       const mock = mockDocumentStore({
-        get: vi.fn(mockDocumentStoreImplementations.get.returning(rolesData))
+        get: vi.fn(mockDocumentStoreImplementations.get.returning(rolesData)),
       })
 
       const testLayer = OrgUserServiceLayer.pipe(
@@ -43,11 +45,11 @@ describe('OrgUserService', () => {
 
     it('succeeds when user has one of multiple allowed roles', async () => {
       const testUserId = UserId.make('user-with-viewer')
-      
+
       const rolesData = { roles: ['viewer'] }
 
       const mock = mockDocumentStore({
-        get: vi.fn(mockDocumentStoreImplementations.get.returning(rolesData))
+        get: vi.fn(mockDocumentStoreImplementations.get.returning(rolesData)),
       })
 
       const testLayer = OrgUserServiceLayer.pipe(
@@ -72,11 +74,11 @@ describe('OrgUserService', () => {
 
     it('fails with AuthzError when user lacks role', async () => {
       const testUserId = UserId.make('user-with-viewer')
-      
+
       const rolesData = { roles: ['viewer'] }
 
       const mock = mockDocumentStore({
-        get: vi.fn(mockDocumentStoreImplementations.get.returning(rolesData))
+        get: vi.fn(mockDocumentStoreImplementations.get.returning(rolesData)),
       })
 
       const testLayer = OrgUserServiceLayer.pipe(
@@ -106,9 +108,9 @@ describe('OrgUserService', () => {
 
     it('fails with AuthzError when user not in org', async () => {
       const testUserId = UserId.make('nonexistent-user')
-      
+
       const mock = mockDocumentStore({
-        get: vi.fn(mockDocumentStoreImplementations.get.notFound())
+        get: vi.fn(mockDocumentStoreImplementations.get.notFound()),
       })
 
       const testLayer = OrgUserServiceLayer.pipe(
@@ -138,9 +140,13 @@ describe('OrgUserService', () => {
 
     it('fails with UnhandledError when roles data is missing', async () => {
       const testUserId = UserId.make('user-no-roles')
-      
+
       const mock = mockDocumentStore({
-        get: vi.fn(mockDocumentStoreImplementations.get.returning({ someOtherField: 'value' }))
+        get: vi.fn(
+          mockDocumentStoreImplementations.get.returning({
+            someOtherField: 'value',
+          })
+        ),
       })
 
       const testLayer = OrgUserServiceLayer.pipe(
@@ -170,9 +176,13 @@ describe('OrgUserService', () => {
 
     it('fails with UnhandledError when roles is not an array', async () => {
       const testUserId = UserId.make('user-invalid-roles')
-      
+
       const mock = mockDocumentStore({
-        get: vi.fn(mockDocumentStoreImplementations.get.returning({ roles: 'not-an-array' }))
+        get: vi.fn(
+          mockDocumentStoreImplementations.get.returning({
+            roles: 'not-an-array',
+          })
+        ),
       })
 
       const testLayer = OrgUserServiceLayer.pipe(
@@ -202,9 +212,9 @@ describe('OrgUserService', () => {
 
     it('fails with UnhandledError when data is null', async () => {
       const testUserId = UserId.make('user-null-data')
-      
+
       const mock = mockDocumentStore({
-        get: vi.fn(mockDocumentStoreImplementations.get.returning(null as any))
+        get: vi.fn(mockDocumentStoreImplementations.get.returning(null as any)),
       })
 
       const testLayer = OrgUserServiceLayer.pipe(

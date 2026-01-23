@@ -18,6 +18,9 @@ export const failUnless = <E, A>(
   makeErr: (a: A) => E
 ) => refineOrFail<E, A, A>(cond as (a: A) => a is A, makeErr)
 
+export const failIf = <E, A>(cond: (a: A) => boolean, makeErr: (a: A) => E) =>
+  refineOrFail<E, A, A>(((a: A) => !cond(a)) as (a: A) => a is A, makeErr)
+
 export const failEffectUnless = <E, A, R = never>(
   cond: (a: A) => boolean,
   makeErr: (a: A) => E

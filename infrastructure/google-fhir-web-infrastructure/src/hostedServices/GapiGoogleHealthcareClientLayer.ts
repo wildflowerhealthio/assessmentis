@@ -3,12 +3,14 @@ import {
   FhirR4Client,
   buildFhirStoreParent,
   buildFhirResourcePath,
-  HttpResponse,
   createFhirResponseHandlers,
 } from '@assessmentis/fhir-client'
 import { buildSearchParams } from '@assessmentis/util'
 import { LoadedGapiClient } from '../services/LoadedGapiClient'
-import { LoadedGapiHealthcareClient } from '../services/LoadedGapiHealthcareClient'
+import {
+  GapiHealthcareClient,
+  LoadedGapiHealthcareClient,
+} from '../services/LoadedGapiHealthcareClient'
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
 import { ExternalAssertionError, UnhandledError } from '@assessmentis/ontology'
 
@@ -26,13 +28,6 @@ const _retryGoogle502s = <A extends { status: number }, E>(
 
 type FhirResp = gapi.client.Response<gapi.client.healthcare.HttpBody>
 
-// Adapter to convert gapi response to HttpResponse
-const toHttpResponse = <T>(resp: FhirResp): HttpResponse<T> => ({
-  status: resp.status ?? 200,
-  statusText: resp.statusText,
-  data: resp.result as T,
-})
-
 export const startGapiGoogleHealthcareClient: Effect.Effect<
   typeof FhirR4Client.Service,
   ExternalAssertionError,
@@ -48,7 +43,11 @@ export const startGapiGoogleHealthcareClient: Effect.Effect<
 
   const parent = buildFhirStoreParent({ projectId, dataset, region, storeId })
 
-  const handlers = createFhirResponseHandlers<HttpResponse>()
+  const handlers = createFhirResponseHandlers<{ status?: number | undefined }>({
+    isNotFound: (resp) => resp.status === 404 || resp.status === 410,
+    isUnauthorized: (resp) => resp.status === 403,
+    isUnauthenticated: (resp) => resp.status === 401,
+  })
 
   const read: (typeof FhirR4Client.Service)['read'] = ({
     resourceType,
@@ -70,9 +69,9 @@ export const startGapiGoogleHealthcareClient: Effect.Effect<
       },
     }).pipe(
       Effect.flatMap((resp) =>
-        handlers.handleReadResponse(toHttpResponse(resp), { resourceType, id })
+        handlers.handleReadResponse(resp, { resourceType, id })
       ),
-      Effect.map((response) => response.data)
+      Effect.map((response) => response.result)
     )
 
   const search: (typeof FhirR4Client.Service)['search'] = (
@@ -96,10 +95,8 @@ export const startGapiGoogleHealthcareClient: Effect.Effect<
         })
       },
     }).pipe(
-      Effect.flatMap((resp) =>
-        handlers.handleSearchResponse(toHttpResponse(resp))
-      ),
-      Effect.map((response) => response.data as unknown)
+      Effect.flatMap((resp) => handlers.handleSearchResponse(resp)),
+      Effect.map((response) => response.result as unknown)
     )
   }
 
@@ -126,10 +123,8 @@ export const startGapiGoogleHealthcareClient: Effect.Effect<
         })
       },
     }).pipe(
-      Effect.flatMap((resp) =>
-        handlers.handleCreateResponse(toHttpResponse(resp))
-      ),
-      Effect.map((response) => response.data)
+      Effect.flatMap((resp) => handlers.handleCreateResponse(resp)),
+      Effect.map((response) => response.result)
     )
 
   const update: (typeof FhirR4Client.Service)['update'] = ({
@@ -155,12 +150,12 @@ export const startGapiGoogleHealthcareClient: Effect.Effect<
       },
     }).pipe(
       Effect.flatMap((resp) =>
-        handlers.handleUpdateResponse(toHttpResponse(resp), {
+        handlers.handleUpdateResponse(resp, {
           resourceType: type,
           id,
         })
       ),
-      Effect.map((response) => response.data)
+      Effect.map((response) => response.result)
     )
 
   const deleteResource: (typeof FhirR4Client.Service)['delete'] = ({
@@ -185,7 +180,7 @@ export const startGapiGoogleHealthcareClient: Effect.Effect<
       },
     }).pipe(
       Effect.flatMap((resp) =>
-        handlers.handleDeleteResponse(toHttpResponse(resp), {
+        handlers.handleDeleteResponse(resp, {
           resourceType: type,
           id,
         })
@@ -211,10 +206,8 @@ export const startGapiGoogleHealthcareClient: Effect.Effect<
         })
       },
     }).pipe(
-      Effect.flatMap((resp) =>
-        handlers.handleExecuteBundleResponse(toHttpResponse(resp))
-      ),
-      Effect.map((response) => response.data)
+      Effect.flatMap((resp) => handlers.handleExecuteBundleResponse(resp)),
+      Effect.map((response) => response.result)
     )
 
   return {

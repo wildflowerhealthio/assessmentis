@@ -24,7 +24,8 @@
   "dependencies": {
     "effect": "^3.19.8",
     "temporal-polyfill": "^0.3.0",
-    "@assessmentis/ontology": "*"
+    "@assessmentis/ontology": "*",
+    "@assessmentis/fhir-client": "*"
   },
   "devDependencies": {
     "@assessmentis/prettier-config": "*",

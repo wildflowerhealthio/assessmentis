@@ -1,4 +1,5 @@
-import { UserId, AuthError } from '@assessmentis/platform-domain'
+import { UserId } from '@assessmentis/platform-domain'
+import { AuthError } from '@assessmentis/ontology'
 import { Context, Effect, Either, PubSub, Scope, Stream, Take } from 'effect'
 
 export interface AuthData {
