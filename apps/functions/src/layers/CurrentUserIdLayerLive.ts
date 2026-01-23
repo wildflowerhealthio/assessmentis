@@ -1,5 +1,6 @@
 import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
-import { CurrentUserId, AuthError, UserId } from '@assessmentis/platform-domain'
+import { CurrentUserId, UserId } from '@assessmentis/platform-domain'
+import { AuthError } from '@assessmentis/ontology'
 import { Effect, Layer } from 'effect'
 import { FunctionsContext } from '../tags/FunctionsContext'
 

@@ -24,8 +24,10 @@ describe('usePromiseOrDefault', () => {
   it('should return default on rejection', async () => {
     const promise = Promise.reject(new Error('test'))
     promise.catch(() => {}) // Prevent unhandled rejection
-    
-    const { result } = renderHook(() => usePromiseOrDefault(promise, 'fallback'))
+
+    const { result } = renderHook(() =>
+      usePromiseOrDefault(promise, 'fallback')
+    )
 
     expect(result.current).toBe('fallback')
 

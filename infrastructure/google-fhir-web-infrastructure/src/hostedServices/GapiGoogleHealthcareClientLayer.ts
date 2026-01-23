@@ -43,10 +43,19 @@ export const startGapiGoogleHealthcareClient: Effect.Effect<
 
   const parent = buildFhirStoreParent({ projectId, dataset, region, storeId })
 
-  const handlers = createFhirResponseHandlers<{ status?: number | undefined }>({
+  const handlers = createFhirResponseHandlers<
+    { status?: number | undefined },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    gapi.client.Response<any>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    gapi.client.Response<any>
+  >({
     isNotFound: (resp) => resp.status === 404 || resp.status === 410,
     isUnauthorized: (resp) => resp.status === 403,
     isUnauthenticated: (resp) => resp.status === 401,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    isSuccess: (resp): resp is gapi.client.Response<any> =>
+      resp.status !== undefined && resp.status >= 200 && resp.status < 300,
   })
 
   const read: (typeof FhirR4Client.Service)['read'] = ({
