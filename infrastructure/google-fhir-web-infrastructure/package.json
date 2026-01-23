@@ -24,8 +24,11 @@
   "dependencies": {
     "@assessmentis/clinical-domain": "*",
     "@assessmentis/config-domain": "*",
-    "@assessmentis/platform-domain": "*",
+    "@assessmentis/fhir-client": "*",
+    "@assessmentis/firebase-web-infrastructure": "*",
     "@assessmentis/ontology": "*",
+    "@assessmentis/platform-domain": "*",
+    "@assessmentis/util": "*",
     "effect": "^3.19.8",
     "temporal-polyfill": "^0.3.0"
   }

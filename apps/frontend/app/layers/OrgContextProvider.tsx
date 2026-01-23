@@ -1,16 +1,15 @@
 import React, { useMemo, useCallback, Suspense } from 'react'
 import { Either, Effect, Option, Stream } from 'effect'
-import {
-  AuthError,
-  NoSelectedOrgError,
-  Org,
-  OrgSlug,
-} from '@assessmentis/platform-domain'
+import { NoSelectedOrgError, Org, OrgSlug } from '@assessmentis/platform-domain'
 
 import { OrgContext } from './OrgContext'
 import { usePlatformContext } from './PlatformContext'
 import { useEffectTs, useStream } from '@assessmentis/react-util'
-import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
+import {
+  AuthError,
+  NotFoundError,
+  UnhandledError,
+} from '@assessmentis/ontology'
 import { Await } from 'react-router'
 import { ErrorBoundary } from 'react-error-boundary'
 

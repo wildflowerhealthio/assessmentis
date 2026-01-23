@@ -1,15 +1,45 @@
-import { Effect, Layer } from 'effect'
-import google from '@googleapis/healthcare'
-
+import { Effect, Layer, Option } from 'effect'
+import { healthcare_v1 } from '@googleapis/healthcare'
+import { google } from 'googleapis'
+import { GaxiosResponseWithHTTP2, GaxiosError } from 'googleapis-common'
+import {
+  FhirR4Client,
+  buildFhirStoreParent,
+  buildFhirResourcePath,
+  createFhirResponseHandlers,
+} from '@assessmentis/fhir-client'
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
+import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
+import { UnknownException } from 'effect/Cause'
 import { UnhandledError } from '@assessmentis/ontology'
-import { FirebaseAdmin } from '../../firebase-server-infrastructure/src/services'
+
+const recoverGaxiosError: <A, E, R>(
+  eff: Effect.Effect<A, E | UnknownException, R>
+) => Effect.Effect<A | GaxiosError<unknown>, E | UnknownException, R> =
+  Effect.catchSome((error) => {
+    if (
+      error instanceof UnknownException &&
+      error.error instanceof GaxiosError
+    ) {
+      return Option.some(Effect.succeed(error.error as GaxiosError<unknown>))
+    }
+    return Option.none()
+  })
+
+const markExceptionUnhandled = <A, E, R>(
+  eff: Effect.Effect<A, E | UnknownException, R>
+): Effect.Effect<A, E | UnhandledError, R> =>
+  Effect.mapError(eff, (error) =>
+    error instanceof UnknownException
+      ? new UnhandledError({ message: error.message, cause: error.error })
+      : error
+  )
 
 export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
   FhirR4Client,
   Effect.gen(function* () {
     const _ = yield* FirebaseAdmin
-    const _healthcare = google.healthcare({
+    const healthcare = google.healthcare({
       version: 'v1',
       auth: new google.auth.GoogleAuth({
         scopes: ['https://www.googleapis.com/auth/cloud-platform'],
@@ -18,19 +48,168 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
 
     const { projectId, dataset, region, storeId } =
       yield* LoadedGoogleFhirConfig
-    const _parent = `projects/${projectId}/locations/${region}/datasets/${dataset}/fhirStores/${storeId}`
+    const parent = buildFhirStoreParent({ projectId, dataset, region, storeId })
+
+    const handlers = createFhirResponseHandlers<
+      {
+        status?: number | undefined
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      GaxiosResponseWithHTTP2<any> | GaxiosError<unknown>,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      GaxiosResponseWithHTTP2<any>
+    >({
+      isNotFound(resp) {
+        return resp.status === 404 || resp.status == 410
+      },
+      isUnauthenticated(resp) {
+        return resp.status === 401
+      },
+      isUnauthorized(resp) {
+        return resp.status === 403
+      },
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      isSuccess(resp): resp is GaxiosResponseWithHTTP2<any> {
+        return (
+          resp.status !== undefined &&
+          resp.status >= 200 &&
+          resp.status < 300 &&
+          'data' in resp
+        )
+      },
+    })
+
+    const read: (typeof FhirR4Client.Service)['read'] = ({
+      resourceType,
+      id,
+    }) =>
+      Effect.tryPromise(() =>
+        healthcare.projects.locations.datasets.fhirStores.fhir.read({
+          name: buildFhirResourcePath(parent, resourceType, id),
+        })
+      ).pipe(
+        recoverGaxiosError,
+        (a) => a,
+        Effect.flatMap((response) =>
+          handlers.handleReadResponse(response, {
+            resourceType,
+            id,
+          })
+        ),
+        markExceptionUnhandled,
+        Effect.map((response) => response.data)
+      )
+
+    const search: (typeof FhirR4Client.Service)['search'] = (params) => {
+      const { resourceType, ...searchParams } = params
+
+      return Effect.tryPromise(() =>
+        healthcare.projects.locations.datasets.fhirStores.fhir.searchType(
+          {
+            parent,
+            resourceType,
+            ...(Object.keys(searchParams).length > 0 && {
+              requestBody: {
+                resourceType,
+              },
+            }),
+          },
+          Object.keys(searchParams).length > 0
+            ? {
+                params: searchParams,
+              }
+            : undefined
+        )
+      ).pipe(
+        (a) => a,
+        Effect.flatMap((response) => handlers.handleSearchResponse(response)),
+        markExceptionUnhandled,
+        Effect.map((response) => response.data)
+      )
+    }
+
+    const create: (typeof FhirR4Client.Service)['create'] = ({
+      type,
+      resource,
+    }) =>
+      Effect.tryPromise(() =>
+        healthcare.projects.locations.datasets.fhirStores.fhir.create({
+          parent,
+          type,
+          requestBody: resource as healthcare_v1.Schema$HttpBody,
+        })
+      ).pipe(
+        recoverGaxiosError,
+        (a) => a,
+        Effect.flatMap((response) => handlers.handleCreateResponse(response)),
+        markExceptionUnhandled,
+        Effect.map((response) => response.data)
+      )
+
+    const update: (typeof FhirR4Client.Service)['update'] = ({
+      id,
+      type,
+      resource,
+    }) =>
+      Effect.tryPromise(() =>
+        healthcare.projects.locations.datasets.fhirStores.fhir.update({
+          name: buildFhirResourcePath(parent, type, id),
+          requestBody: resource as healthcare_v1.Schema$HttpBody,
+        })
+      ).pipe(
+        recoverGaxiosError,
+        Effect.flatMap((response) =>
+          handlers.handleUpdateResponse(response, { resourceType: type, id })
+        ),
+        Effect.flatMap((response) =>
+          handlers.handleUpdateResponse(response, { resourceType: type, id })
+        ),
+        markExceptionUnhandled,
+        Effect.map((response) => response.data)
+      )
+
+    const deleteResource: (typeof FhirR4Client.Service)['delete'] = ({
+      id,
+      type,
+    }) =>
+      Effect.tryPromise(() =>
+        healthcare.projects.locations.datasets.fhirStores.fhir.delete({
+          name: buildFhirResourcePath(parent, type, id),
+        })
+      ).pipe(
+        recoverGaxiosError,
+        Effect.flatMap((response) =>
+          handlers.handleDeleteResponse(response, { resourceType: type, id })
+        ),
+        markExceptionUnhandled,
+        Effect.asVoid
+      )
+
+    const executeBundle: (typeof FhirR4Client.Service)['executeBundle'] = (
+      bundle
+    ) =>
+      Effect.tryPromise(() =>
+        healthcare.projects.locations.datasets.fhirStores.fhir.executeBundle({
+          parent,
+          requestBody: bundle as healthcare_v1.Schema$HttpBody,
+        })
+      ).pipe(
+        recoverGaxiosError,
+        Effect.flatMap((response) =>
+          handlers.handleExecuteBundleResponse(response)
+        ),
+        markExceptionUnhandled,
+        Effect.map((response) => response.data)
+      )
 
     return {
-      read: () =>
-        Effect.fail(new UnhandledError({ message: 'Not Implemented' })),
-      search: () =>
-        Effect.fail(new UnhandledError({ message: 'Not Implemented' })),
-      create: () =>
-        Effect.fail(new UnhandledError({ message: 'Not Implemented' })),
-      update: () =>
-        Effect.fail(new UnhandledError({ message: 'Not Implemented' })),
-      delete: () =>
-        Effect.fail(new UnhandledError({ message: 'Not Implemented' })),
+      read,
+      search,
+      create,
+      update,
+      delete: deleteResource,
+      executeBundle,
     }
   })
 )

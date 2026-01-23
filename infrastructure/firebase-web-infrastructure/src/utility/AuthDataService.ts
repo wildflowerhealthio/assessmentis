@@ -1,5 +1,6 @@
 import { Effect, Either, Fiber, Option, PubSub, Stream, Take } from 'effect'
-import { AuthError, UserId } from '@assessmentis/platform-domain'
+import { UserId } from '@assessmentis/platform-domain'
+import { AuthError } from '@assessmentis/ontology'
 import { onIdTokenChanged } from 'firebase/auth'
 import { FirebaseWeb } from '../tagClasses'
 import {

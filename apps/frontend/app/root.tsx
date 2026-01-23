@@ -14,6 +14,7 @@ import {
   ExternalAssertionError,
   NotFoundError,
   UnhandledError,
+  AuthError,
 } from '@assessmentis/ontology'
 import * as firebase from 'app/firebase'
 import * as auth from './FirebaseWebLayer'
@@ -21,7 +22,6 @@ import NavHeader from './modules/global/components/NavHeader/NavHeader'
 import { BreadcrumbProvider } from './modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
 import { shouldShowRawData } from './util/debugHelpers'
 import { PageLoader } from './modules/common/components/PageLoader/PageLoader'
-import { AuthError } from '@assessmentis/platform-domain'
 import { OrgContextProvider } from './layers/OrgContextProvider'
 import { PlatformContextProvider } from './layers/PlatformContextProvider'
 // HydrateFallback is rendered while the client loader is running

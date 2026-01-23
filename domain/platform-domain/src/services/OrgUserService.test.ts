@@ -4,8 +4,7 @@ import { OrgUserService, OrgUserServiceLayer } from './OrgUserService'
 import { CurrentOrg, CurrentUserId, DocumentStore } from '../tagClasses'
 import { OrgSlug } from '../models/IdTypes'
 import { UserId } from '../models/UserId'
-import { UnhandledError } from '@assessmentis/ontology'
-import { AuthzError } from '../errors'
+import { UnhandledError, AuthzError } from '@assessmentis/ontology'
 import {
   mockDocumentStore,
   mockDocumentStoreImplementations,

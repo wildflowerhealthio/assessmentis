@@ -21,12 +21,13 @@ import {
 import { makeClinicalDataRepository } from '@assessmentis/clinical-domain/assessmentis'
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
 import {
+  AuthError,
   ExternalAssertionError,
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
 import { FhirR4ClientService } from './FhirR4ClientService'
-import { AuthError, NoSelectedOrgError } from '@assessmentis/platform-domain'
+import { NoSelectedOrgError } from '@assessmentis/platform-domain'
 
 export type GoogleFhirWebLayer<Key extends keyof typeof Schemas> = Layer.Layer<
   ClinicalDomainRepositoryTagClass<Key>,

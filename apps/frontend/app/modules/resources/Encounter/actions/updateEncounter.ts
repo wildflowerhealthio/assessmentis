@@ -11,7 +11,7 @@ import {
 } from '@assessmentis/ontology'
 import { WithId } from '@assessmentis/clinical-domain/data-types'
 import { EncounterFormData } from '../schemas/EncounterFormSchema'
-import { AuthError, AuthzError } from '@assessmentis/platform-domain'
+import { AuthError, AuthzError } from '@assessmentis/ontology'
 
 export const updateEncounter = (
   id: EncounterId,

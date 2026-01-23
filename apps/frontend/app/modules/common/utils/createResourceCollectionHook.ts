@@ -6,11 +6,12 @@ import { useClinicalDataCollectionPromise } from '../hooks/useClinicalDataCollec
 import { useEffectTs } from '@assessmentis/react-util'
 import { usePlatformContext } from '../../../layers/PlatformContext'
 import {
+  AuthError,
   ExternalAssertionError,
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
-import { NoSelectedOrgError, AuthError } from '@assessmentis/platform-domain'
+import { NoSelectedOrgError } from '@assessmentis/platform-domain'
 
 /**
  * Creates a resource collection hook with standardized behavior

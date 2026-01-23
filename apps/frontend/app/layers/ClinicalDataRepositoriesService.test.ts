@@ -3,7 +3,7 @@ import { Effect, Layer } from 'effect'
 import * as fc from 'fast-check'
 import { ClinicalDataRepositoryService } from './ClinicalDataRepositoriesService'
 import { FhirR4ClientService } from './FhirR4ClientService'
-import { FhirR4Client } from '@assessmentis/clinical-domain/assessmentis'
+import { FhirR4Client } from '@assessmentis/fhir-client'
 
 describe('ClinicalDataRepositoryService', () => {
   const createMockFhirR4ClientService =

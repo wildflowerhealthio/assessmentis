@@ -13,8 +13,11 @@ import {
   Stream,
   Take,
 } from 'effect'
-import { UnhandledError, NotFoundError } from '@assessmentis/ontology'
-import { AuthError } from '../errors'
+import {
+  AuthError,
+  UnhandledError,
+  NotFoundError,
+} from '@assessmentis/ontology'
 import { User } from '../models/User'
 import { AuthDataService, DocumentStore } from '../tagClasses'
 

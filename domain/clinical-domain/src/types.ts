@@ -1,10 +1,11 @@
 import { Context, Effect } from 'effect'
 import {
+  AuthError,
+  AuthzError,
   ExternalAssertionError,
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
-import { AuthError, AuthzError } from '@assessmentis/platform-domain'
 import { WithId } from './data-types/base/Element'
 import { Reference } from './data-types/complex/IdentifierAndReference'
 import Schemas from './Schemas'

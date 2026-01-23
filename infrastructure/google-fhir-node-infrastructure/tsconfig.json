@@ -1,0 +1,12 @@
+{
+  "extends": "@assessmentis/typescript-config/base.json",
+  "include": ["src"],
+  "exclude": ["node_modules", "eslint.config.cjs"],
+  "compilerOptions": {
+    "lib": ["ES2024"],
+    "types": ["node"],
+    "baseUrl": "",
+    "rootDir": "src",
+    "outDir": "dist"
+  }
+}

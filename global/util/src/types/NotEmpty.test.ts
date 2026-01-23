@@ -57,8 +57,7 @@ const _withOptional: WithOptionalNotEmpty = { required: 1 }
 // We can't directly assign to `never`, but we can verify the type relationship
 
 // Type-level assertion that NotEmpty<{}> extends never
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-type EmptyObj = {}
+type EmptyObj = object
 type EmptyResult = NotEmpty<EmptyObj>
 // If EmptyResult is `never`, then this conditional type resolves to true
 type IsNever<T> = [T] extends [never] ? true : false

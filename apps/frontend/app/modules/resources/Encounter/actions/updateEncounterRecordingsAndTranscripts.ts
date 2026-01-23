@@ -15,7 +15,7 @@ import {
   Media,
   MediaRepository,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { AuthError, AuthzError } from '@assessmentis/platform-domain'
+import { AuthError, AuthzError } from '@assessmentis/ontology'
 
 /**
  * Fetches recordings for an encounter's video call room and creates Media resources

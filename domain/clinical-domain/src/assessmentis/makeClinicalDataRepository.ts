@@ -8,8 +8,8 @@ import {
 } from '@assessmentis/clinical-domain/data-types'
 import { Bundle } from '@assessmentis/clinical-domain/foundation-framework'
 import { UnhandledError, ExternalAssertionError } from '@assessmentis/ontology'
-import { FhirR4Client } from '../tags/FhirR4Client'
-import { ClinicalDataRepository } from '../../types'
+import { FhirR4Client } from '@assessmentis/fhir-client'
+import { ClinicalDataRepository } from '../types'
 
 export const makeClinicalDataRepository = <
   A extends Element<string> & { resourceType: string },

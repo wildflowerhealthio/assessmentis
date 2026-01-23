@@ -1,11 +1,7 @@
 import { Effect, Either, Scope, Stream } from 'effect'
-import {
-  AuthData,
-  AuthError,
-  DocumentStore,
-} from '@assessmentis/platform-domain'
+import { AuthData, DocumentStore } from '@assessmentis/platform-domain'
 import { LoadedGapiClient } from '../services/LoadedGapiClient'
-import { NotFoundError } from '@assessmentis/ontology'
+import { AuthError, NotFoundError } from '@assessmentis/ontology'
 
 export const startAccessTokenSyncer = (
   userStream: Stream.Stream<

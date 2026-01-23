@@ -2,14 +2,15 @@ import type { Response } from 'express'
 import { onRequest, type Request } from 'firebase-functions/https'
 import { info } from 'firebase-functions/logger'
 import { Effect, Exit, Layer } from 'effect'
-import { AuthError, CurrentUserId } from '@assessmentis/platform-domain'
+import { CurrentUserId } from '@assessmentis/platform-domain'
+import { AuthError } from '@assessmentis/ontology'
 import {
   defaultHttpOptions,
   oauth2Client,
   scopes,
 } from '../util/functionContext'
 import { handleError } from '../util/handleError'
-import { UnhandledError } from '../../../../global/ontology/src/errors'
+import { UnhandledError } from '@assessmentis/ontology'
 import { AuthRepository } from '@assessmentis/firebase-server-infrastructure'
 import { LoadedUserLayerLive } from '../layers/LoadedUserLayerLive'
 import { makeServerRuntime } from '../util/BaseLayer'

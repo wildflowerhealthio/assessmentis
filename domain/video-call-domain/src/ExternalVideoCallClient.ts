@@ -3,8 +3,11 @@ import { ExternalVideoCallRoom } from './records/ExternalVideoCallRoom'
 import { Zoned } from 'effect/DateTime'
 import { ExternalVideoCallRoomName } from './records/VideoCallRoom'
 import { Media } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { UnhandledError, ExternalAssertionError } from '@assessmentis/ontology'
-import { AuthError } from '@assessmentis/platform-domain'
+import {
+  AuthError,
+  UnhandledError,
+  ExternalAssertionError,
+} from '@assessmentis/ontology'
 
 export interface RoomCreationParams {
   expiresAt?: Zoned
