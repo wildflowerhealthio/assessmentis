@@ -1,5 +1,5 @@
-import { Effect } from 'effect'
-import { ExternalAssertionError } from '@assessmentis/ontology'
+import { Effect, Schedule } from 'effect'
+import { AuthError, ExternalAssertionError } from '@assessmentis/ontology'
 import { LoadedGapiClient } from './LoadedGapiClient'
 
 export type GapiHealthcareClient = typeof gapi.client.healthcare
@@ -12,7 +12,7 @@ export class LoadedGapiHealthcareClient extends Effect.Service<LoadedGapiHealthc
     dependencies: [],
     effect: Effect.gen(function* () {
       const client = yield* yield* LoadedGapiClient
-
+      const localClient = client
       return yield* Effect.tryPromise<
         GapiHealthcareClient,
         ExternalAssertionError
@@ -34,21 +34,23 @@ export class LoadedGapiHealthcareClient extends Effect.Service<LoadedGapiHealthc
           })
         },
       }).pipe(
-        Effect.flatMap((healthcare) => {
-          if (healthcare) return Effect.succeed(healthcare)
+        Effect.flatMap((healthcare) =>
+          Effect.gen(function* () {
+            if (healthcare) return healthcare
 
-          return Effect.flatMap(Effect.flatten(LoadedGapiClient), (client) =>
-            client.healthcare
-              ? Effect.succeed(client.healthcare)
-              : Effect.fail(
-                  new ExternalAssertionError({
-                    expected:
-                      'Google Healthcare API client to be present after loading',
-                    cause: null,
-                  })
-                )
-          )
-        })
+            const client = yield* Effect.flatten(LoadedGapiClient)
+
+            if (!client.healthcare)
+              return yield* Effect.fail(
+                new ExternalAssertionError({
+                  expected:
+                    'Google Healthcare API client to be present after loading',
+                  cause: null,
+                })
+              )
+            return client.healthcare
+          })
+        )
       )
     }),
   }

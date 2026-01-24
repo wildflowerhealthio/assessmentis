@@ -9,6 +9,7 @@ import {
   UnhandledError,
   NotFoundError,
   ExternalAssertionError,
+  BadDataError,
 } from '@assessmentis/ontology'
 import {
   Context,
@@ -22,7 +23,7 @@ import {
   Take,
 } from 'effect'
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
-import { NoSelectedOrgError } from '@assessmentis/platform-domain'
+import { NoSelectedOrgError, OrgSlug } from '@assessmentis/platform-domain'
 import { Org } from '@assessmentis/platform-domain'
 import {
   takeOneFromPubSubOrDie,
@@ -33,11 +34,7 @@ export const createFhirR4ClientPubSub = PubSub.sliding<
   Take.Take<
     Either.Either<
       typeof FhirR4Client.Service,
-      | NoSelectedOrgError
-      | AuthError
-      | UnhandledError
-      | NotFoundError
-      | ExternalAssertionError
+      NoSelectedOrgError | AuthError | UnhandledError
     >
   >
 >({
@@ -50,21 +47,13 @@ export class FhirR4ClientService extends Context.Tag('FhirR4ClientService')<
   {
     client: Effect.Effect<
       typeof FhirR4Client.Service,
-      | NoSelectedOrgError
-      | AuthError
-      | UnhandledError
-      | NotFoundError
-      | ExternalAssertionError,
+      NoSelectedOrgError | AuthError | UnhandledError | ExternalAssertionError,
       never
     >
     clientStream: Stream.Stream<
       Either.Either<
         typeof FhirR4Client.Service,
-        | NoSelectedOrgError
-        | AuthError
-        | UnhandledError
-        | NotFoundError
-        | ExternalAssertionError
+        NoSelectedOrgError | AuthError | UnhandledError | ExternalAssertionError
       >,
       never,
       Scope.Scope
@@ -77,18 +66,18 @@ export const startFhirR4ClientService = (
     Take.Take<
       Either.Either<
         typeof FhirR4Client.Service,
-        | NoSelectedOrgError
-        | AuthError
-        | UnhandledError
-        | NotFoundError
-        | ExternalAssertionError
+        NoSelectedOrgError | AuthError | UnhandledError
       >
     >
   >,
   orgStream: Stream.Stream<
     Either.Either<
       Org,
-      NoSelectedOrgError | AuthError | UnhandledError | NotFoundError
+      | NoSelectedOrgError
+      | AuthError
+      | UnhandledError
+      | BadDataError
+      | NotFoundError<'Org', { orgSlug: OrgSlug }>
     >,
     never,
     Scope.Scope
@@ -101,22 +90,32 @@ export const startFhirR4ClientService = (
   Effect.gen(function* () {
     const clientStream = orgStream.pipe(
       Stream.map(
+        Either.mapLeft((e) =>
+          e instanceof ExternalAssertionError ||
+          e instanceof NotFoundError ||
+          e instanceof BadDataError
+            ? e.asUnhandledError()
+            : e
+        )
+      ),
+      Stream.map(
         Either.map(
           ({
             frontendConfig,
           }): Effect.Effect<
             typeof FhirR4Client.Service,
-            | NoSelectedOrgError
-            | AuthError
-            | UnhandledError
-            | NotFoundError
-            | ExternalAssertionError,
+            NoSelectedOrgError | AuthError | UnhandledError,
             Scope.Scope | LoadedGapiClient | LoadedGapiHealthcareClient
           > =>
             Match.value(frontendConfig.fhirServer).pipe(
               Match.tag('google_fhir_store', (googleConf) => {
                 const e = startGapiGoogleHealthcareClient.pipe(
-                  Effect.provideService(LoadedGoogleFhirConfig, googleConf)
+                  Effect.provideService(LoadedGoogleFhirConfig, googleConf),
+                  Effect.mapError((e) =>
+                    e instanceof ExternalAssertionError
+                      ? e.asUnhandledError()
+                      : e
+                  )
                 )
                 return e
               }),

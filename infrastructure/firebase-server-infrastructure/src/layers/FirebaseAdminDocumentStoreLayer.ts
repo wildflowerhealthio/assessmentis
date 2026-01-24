@@ -20,14 +20,6 @@ const resourceType = (path: ReadonlyArray<string>) =>
       (acc, segment, i) => (i % 2 == 0 ? `${acc}/${segment}` : `${acc}/*`),
       ''
     )
-const params = (path: ReadonlyArray<string>) =>
-  path
-    .slice(1)
-    .reduce(
-      (acc, segment, i) =>
-        i % 2 == 0 ? acc : { ...acc, [path[i - 1]]: segment },
-      {} as Record<string, string>
-    )
 
 export const FirebaseAdminDocumentStoreLayer = Layer.effect(
   DocumentStore,
@@ -49,8 +41,8 @@ export const FirebaseAdminDocumentStoreLayer = Layer.effect(
         if (data == undefined) {
           return yield* Effect.fail(
             new NotFoundError({
-              resourceType: resourceType(path),
-              params: params(path),
+              resourceType: 'Document',
+              params: { path },
             })
           )
         }
@@ -59,7 +51,10 @@ export const FirebaseAdminDocumentStoreLayer = Layer.effect(
 
     const subscribeTo: typeof DocumentStore.Service.subscribeTo = (...path) =>
       unsubscribableCallbackAsStream<
-        Either.Either<DocumentData, NotFoundError>,
+        Either.Either<
+          DocumentData,
+          NotFoundError<'Document', { path: ReadonlyArray<string> }>
+        >,
         never
       >((onData) =>
         doc(db, path).onSnapshot((documentSnapshot) => {
@@ -69,8 +64,8 @@ export const FirebaseAdminDocumentStoreLayer = Layer.effect(
               Effect.succeed(
                 Either.left(
                   new NotFoundError({
-                    resourceType: resourceType(path),
-                    params: params(path),
+                    resourceType: 'Document',
+                    params: { path },
                   })
                 )
               )

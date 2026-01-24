@@ -45,9 +45,11 @@ export const useCollectionPromise = <T extends { id?: string | undefined }>(
   >()
 
   useEffect(() => {
-    initial.then((items) =>
-      methods.resolve(items.map((item) => ({ data: item, loading: false })))
-    )
+    initial
+      .then((items) =>
+        methods.resolve(items.map((item) => ({ data: item, loading: false })))
+      )
+      .catch((err) => methods.reject(err))
   }, [initial, methods])
 
   const { deleteItem, createItem } = collectionMethods<T>(

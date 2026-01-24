@@ -1,0 +1,23 @@
+.HeaderBreadcrumbs__segment {
+  display: inline-flex;
+  align-items: center;
+}
+
+.HeaderBreadcrumbs__separator {
+  color: var(--neutral-5);
+  user-select: none;
+  padding-inline: var(--space-2);
+}
+
+.HeaderBreadcrumbs__link {
+  color: var(--app-accent);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.HeaderBreadcrumbs__current {
+  color: var(--neutral-1);
+}

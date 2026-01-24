@@ -1,11 +1,11 @@
-import { auth, db } from 'app/FirebaseWebLayer'
+import { auth, db, FirebaseWebLayer } from 'app/FirebaseWebLayer'
 import { DailyCoProxyConfig } from '@assessmentis/config-domain'
-import { FrontendConfig } from '@assessmentis/platform-domain'
+import { DocumentStore, FrontendConfig } from '@assessmentis/platform-domain'
 import { Route } from './+types/orgs.$orgSlug'
 import { Form } from 'react-router'
-import { Effect } from 'effect'
+import { Effect, pipe } from 'effect'
 import {
-  getDocument,
+  FirebaseWebDocumentStoreLayer,
   setDocument,
 } from '@assessmentis/firebase-web-infrastructure'
 
@@ -30,8 +30,14 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   await auth.authStateReady()
   console.log('Loading org data for', params.orgSlug)
   const result = await Effect.runPromise(
-    getDocument(db, 'orgs', params.orgSlug).pipe(
-      Effect.catchTag('NotFoundError', () => Effect.succeed(null))
+    pipe(
+      DocumentStore,
+      Effect.flatMap((documentStore) =>
+        documentStore.get('orgs', params.orgSlug)
+      ),
+      Effect.catchTag('NotFoundError', () => Effect.succeed(null)),
+      Effect.provide(FirebaseWebDocumentStoreLayer),
+      Effect.provide(FirebaseWebLayer)
     )
   )
   console.log('loaded org data for', result)

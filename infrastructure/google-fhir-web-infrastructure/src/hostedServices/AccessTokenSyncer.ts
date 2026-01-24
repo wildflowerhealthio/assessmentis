@@ -1,7 +1,11 @@
 import { Effect, Either, Scope, Stream } from 'effect'
-import { AuthData, DocumentStore } from '@assessmentis/platform-domain'
+import { AuthData, DocumentStore, UserId } from '@assessmentis/platform-domain'
 import { LoadedGapiClient } from '../services/LoadedGapiClient'
-import { AuthError, NotFoundError } from '@assessmentis/ontology'
+import {
+  AuthError,
+  NotFoundError,
+  UnhandledError,
+} from '@assessmentis/ontology'
 
 export const startAccessTokenSyncer = (
   userStream: Stream.Stream<
@@ -45,12 +49,27 @@ export const startAccessTokenSyncer = (
             userId,
             authToken,
           }): Stream.Stream<
-            Either.Either<void, AuthError | NotFoundError>,
+            Either.Either<
+              void,
+              | AuthError
+              | NotFoundError<'GoogleOAuthAccessToken', { userId: UserId }>
+              | UnhandledError
+            >,
             never
           > {
             return documentStore
               .subscribeTo('users', userId, 'tokens', 'googleOAuthAccessToken')
               .pipe(
+                Stream.map(
+                  Either.mapLeft((err) =>
+                    err instanceof NotFoundError
+                      ? new NotFoundError({
+                          resourceType: 'GoogleOAuthAccessToken',
+                          params: { userId },
+                        })
+                      : err
+                  )
+                ),
                 Stream.map(
                   Either.map((data) => {
                     const token =
@@ -101,7 +120,11 @@ export const startAccessTokenSyncer = (
           onLeft(
             left
           ): Stream.Stream<
-            Either.Either<void, AuthError | NotFoundError>,
+            Either.Either<
+              void,
+              | AuthError
+              | NotFoundError<'GoogleOAuthAccessToken', { userId: UserId }>
+            >,
             never
           > {
             return Stream.succeed(Either.left(left))

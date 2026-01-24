@@ -35,7 +35,13 @@ export default function EditCompositionPage({ params }: Route.ComponentProps) {
   const compositionEffect = useMemo(() => {
     return pipe(
       tryDecodeCompositionId(params.compositionId),
-      Option.match<Effect.Effect<CompositionId, NotFoundError>, CompositionId>({
+      Option.match<
+        Effect.Effect<
+          CompositionId,
+          NotFoundError<'Composition', { id: string }>
+        >,
+        CompositionId
+      >({
         onSome: Effect.succeed,
         onNone: () =>
           Effect.fail(

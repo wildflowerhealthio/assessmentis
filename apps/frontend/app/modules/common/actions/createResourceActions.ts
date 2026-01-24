@@ -7,7 +7,6 @@ import { WithId } from '@assessmentis/clinical-domain/data-types'
 import { Effect, Schema } from 'effect'
 import { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
 import { NoSelectedOrgError } from '../../../../../../domain/platform-domain/src/hostedServices'
-import { NotFoundError } from '@assessmentis/ontology'
 
 /**
  * Creates a generic create action for a resource
@@ -46,14 +45,14 @@ export function createResourceCreateAction<
   formData: TFormData
 ) => Effect.Effect<
   WithId<TResource>,
-  ClinicalDataRepositoryErrors | NotFoundError | NoSelectedOrgError,
+  ClinicalDataRepositoryErrors | NoSelectedOrgError,
   ClinicalDataRepositoryService
 > {
   return (
     formData: TFormData
   ): Effect.Effect<
     WithId<TResource>,
-    ClinicalDataRepositoryErrors | NotFoundError | NoSelectedOrgError,
+    ClinicalDataRepositoryErrors | NoSelectedOrgError,
     ClinicalDataRepositoryService
   > => {
     return Effect.gen(function* () {
@@ -107,7 +106,7 @@ export function createResourceUpdateAction<
   formData: TFormData
 ) => Effect.Effect<
   TResource,
-  ClinicalDataRepositoryErrorsWithNotFound | NoSelectedOrgError,
+  ClinicalDataRepositoryErrorsWithNotFound<TResource> | NoSelectedOrgError,
   ClinicalDataRepositoryService
 > {
   return (
@@ -116,7 +115,7 @@ export function createResourceUpdateAction<
     formData: TFormData
   ): Effect.Effect<
     TResource,
-    ClinicalDataRepositoryErrorsWithNotFound | NoSelectedOrgError,
+    ClinicalDataRepositoryErrorsWithNotFound<TResource> | NoSelectedOrgError,
     ClinicalDataRepositoryService
   > => {
     return Effect.gen(function* () {

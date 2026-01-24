@@ -16,6 +16,7 @@ vi.mock('./PlatformContext', () => ({
 describe('OrgContextProvider', () => {
   const mockOrg: Org = {
     slug: OrgSlug.make('test-org'),
+    emoji: '🏥',
     frontendConfig: {
       fhirServer: {
         _tag: 'not_implemented' as const,
@@ -149,6 +150,7 @@ describe('OrgContextProvider', () => {
   it('should not render children when org is not in user orgs', async () => {
     const unauthorizedOrg: Org = {
       slug: OrgSlug.make('unauthorized-org'),
+      emoji: '🏢',
       frontendConfig: {
         fhirServer: { _tag: 'not_implemented' as const },
         videoCallClient: { _tag: 'not_implemented' as const },

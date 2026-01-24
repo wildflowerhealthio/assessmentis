@@ -13,7 +13,10 @@ export class AuthRepository extends Effect.Service<AuthRepository>()(
       // Get refresh token
       const getRefreshToken = (
         userId: UserId
-      ): Effect.Effect<string, UnhandledError | NotFoundError> =>
+      ): Effect.Effect<
+        string,
+        UnhandledError | NotFoundError<'RefreshToken', { userId: UserId }>
+      > =>
         Effect.gen(function* () {
           const docSnapshot = yield* Effect.tryPromise({
             try: () =>

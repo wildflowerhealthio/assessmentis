@@ -25,7 +25,13 @@ export const defaultOrg = (): Org => ({
 /**
  * Mock implementations for DocumentStore methods
  */
-export const mockDocumentStoreImplementations = {
+export const mockDocumentStoreImplementations: {
+  [k in keyof DocumentStoreService]: Record<
+    string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (...args: readonly any[]) => DocumentStoreService[k]
+  >
+} = {
   get: {
     /**
      * Returns NotFoundError for all paths
@@ -35,8 +41,8 @@ export const mockDocumentStoreImplementations = {
       (...path: readonly string[]) =>
         Effect.fail(
           new NotFoundError({
-            resourceType: path[0],
-            params: { path: path.join('/') },
+            resourceType: 'Document',
+            params: { path: path },
           })
         ),
 
@@ -62,8 +68,8 @@ export const mockDocumentStoreImplementations = {
 
         return Effect.fail(
           new NotFoundError({
-            resourceType: path[0],
-            params: { path: path.join('/') },
+            resourceType: 'Document',
+            params: { path: path },
           })
         )
       },

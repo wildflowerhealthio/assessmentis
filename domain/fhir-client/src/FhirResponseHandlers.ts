@@ -11,12 +11,15 @@ import { failIf } from '@assessmentis/util'
  * A set of handlers to coerce FHIR responses of a given type into the right shape
  */
 export interface FhirResponseHandlers<T, R extends T, S extends R> {
-  handleReadResponse: (
+  handleReadResponse: <ResourceType extends string>(
     response: R,
-    params: { resourceType: string; id: string }
+    params: { resourceType: ResourceType; id: string }
   ) => Effect.Effect<
     S,
-    AuthError | AuthzError | UnhandledError | NotFoundError,
+    | AuthError
+    | AuthzError
+    | UnhandledError
+    | NotFoundError<ResourceType, { id: string }>,
     never
   >
   handleSearchResponse: (
@@ -25,22 +28,29 @@ export interface FhirResponseHandlers<T, R extends T, S extends R> {
   handleCreateResponse: (
     response: R
   ) => Effect.Effect<S, AuthError | AuthzError | UnhandledError, never>
-  handleUpdateResponse: (
+  handleUpdateResponse: <ResourceType extends string>(
     response: R,
-    params: { resourceType: string; id: string }
+    params: { resourceType: ResourceType; id: string }
   ) => Effect.Effect<
     S,
-    AuthError | AuthzError | UnhandledError | NotFoundError,
+    | AuthError
+    | AuthzError
+    | UnhandledError
+    | NotFoundError<ResourceType, { id: string }>,
     never
   >
-  handleDeleteResponse: (
+  handleDeleteResponse: <ResourceType extends string>(
     response: R,
-    params: { resourceType: string; id: string }
+    params: { resourceType: ResourceType; id: string }
   ) => Effect.Effect<
     S,
-    AuthError | AuthzError | UnhandledError | NotFoundError,
+    | AuthError
+    | AuthzError
+    | UnhandledError
+    | NotFoundError<ResourceType, { id: string }>,
     never
   >
+
   handleExecuteBundleResponse: (
     response: R
   ) => Effect.Effect<S, AuthError | AuthzError | UnhandledError, never>
@@ -78,11 +88,11 @@ export const createFhirResponseHandlers = <
       })
   )
 
-  const handleNotFoundErr = ({
+  const handleNotFoundErr = <ResourceType extends string>({
     resourceType,
     id,
   }: {
-    resourceType: string
+    resourceType: ResourceType
     id: string
   }) =>
     failIf(
@@ -100,15 +110,15 @@ export const createFhirResponseHandlers = <
       ? Effect.succeed(resp)
       : Effect.fail(
           new UnhandledError({
-            message: 'Expected failure but got success response',
+            message: `The FHIR response was not successful '${String(resp)}'`,
           })
         )
   )
 
   return {
-    handleReadResponse: (
+    handleReadResponse: <ResourceType extends string>(
       response: R,
-      { resourceType, id }: { resourceType: string; id: string }
+      { resourceType, id }: { resourceType: ResourceType; id: string }
     ) =>
       Effect.succeed(response).pipe(
         Effect.flatMap(handleAuthErr),
@@ -131,9 +141,9 @@ export const createFhirResponseHandlers = <
         succeedOrUnhandled
       ),
 
-    handleUpdateResponse: (
+    handleUpdateResponse: <ResourceType extends string>(
       response: R,
-      { resourceType, id }: { resourceType: string; id: string }
+      { resourceType, id }: { resourceType: ResourceType; id: string }
     ) =>
       Effect.succeed(response).pipe(
         Effect.flatMap(handleAuthErr),
@@ -142,9 +152,9 @@ export const createFhirResponseHandlers = <
         succeedOrUnhandled
       ),
 
-    handleDeleteResponse: (
+    handleDeleteResponse: <ResourceType extends string>(
       response: R,
-      { resourceType, id }: { resourceType: string; id: string }
+      { resourceType, id }: { resourceType: ResourceType; id: string }
     ) =>
       Effect.succeed(response).pipe(
         Effect.flatMap(handleAuthErr),

@@ -1,0 +1,93 @@
+.NavBurger__nav {
+  display: flex;
+}
+
+.NavBurger__button {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+  height: var(--space-11);
+  width: var(--space-11);
+
+  &::before,
+  &::after {
+    content: '';
+    transform: rotate(var(--rotate));
+    transition: all 300ms ease-in-out;
+    position: absolute;
+  }
+
+  &::before {
+    top: var(--space-2);
+  }
+
+  &::after {
+    bottom: var(--space-2);
+  }
+
+  & div,
+  &::before,
+  &::after {
+    width: var(--space-8);
+    height: var(--space-1);
+    background: var(--neutral-1);
+    border-radius: var(--radius-1);
+  }
+
+  &.show div {
+    display: none;
+  }
+
+  &.show::before,
+  &.show::after {
+    top: var(--space-5);
+    bottom: var(--space-5);
+  }
+
+  &.show::before {
+    --rotate: 45deg;
+  }
+  &.show::after {
+    --rotate: -45deg;
+  }
+}
+
+.NavBurger__hr {
+  margin-block: var(--space-3);
+}
+
+.NavBurger__menu {
+  width: var(--space-16);
+  list-style: none;
+  position: absolute;
+  /* calc(42px + var(--space-6)) */
+  top: calc(var(--space-1) + var(--header-height));
+  right: 0;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-8);
+  border-radius: var(--radius-2);
+  box-shadow: var(--space-2) var(--space-1) var(--space-3) var(--space-1)
+    rgba(0, 0, 0, 0.1);
+}
+
+.NavBurger__link {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+
+  border: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+@media (prefers-reduced-motion) {
+  button {
+    transition: none;
+  }
+}
