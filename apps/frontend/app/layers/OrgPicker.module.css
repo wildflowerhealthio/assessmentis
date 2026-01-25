@@ -51,10 +51,6 @@
   }
 }
 
-/* .OrgPicker__buttonWithError {
-  color: var(--red-, red);
-} */
-
 .OrgPicker__errorTooltip {
   display: block;
   color: var(--red-7, red);

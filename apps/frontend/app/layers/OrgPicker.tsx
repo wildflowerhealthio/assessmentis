@@ -2,12 +2,14 @@ import { usePromiseOrDefault, useStream, cn } from '@assessmentis/react-util'
 import { pipe, Scope, Stream } from 'effect'
 import { Effect, Either, Option } from 'effect'
 import React, { useMemo, useCallback } from 'react'
-import { NoSelectedOrgError } from '../../../../domain/platform-domain/src/hostedServices'
-import { OrgSlug } from '../../../../domain/platform-domain/src/models/IdTypes'
+import {
+  NoSelectedOrgError,
+  OrgSlug,
+  Org,
+  User,
+} from '@assessmentis/platform-domain'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import classes from './OrgPicker.module.css'
-import { Org } from '../../../../domain/platform-domain/src/models/Org'
-import { User } from '../../../../domain/platform-domain/src/models/User'
 import {
   AuthError,
   BadDataError,
@@ -33,7 +35,7 @@ const ObjBullets = ({ obj }: { obj: object }) => (
   </ul>
 )
 
-const defaultUserOrgs = Either.right([])
+const defaultUserOrgs = Either.right({ lastOrg: undefined, orgs: [] })
 
 export const OrgPicker = ({
   activeOrgStream,
@@ -75,9 +77,10 @@ export const OrgPicker = ({
     () =>
       userStream.pipe(
         Stream.map(
-          Either.map((user) =>
-            Object.keys(user.org_roles).map((k) => OrgSlug.make(k))
-          )
+          Either.map((user) => ({
+            lastOrg: user.lastOrg,
+            orgs: Object.keys(user.org_roles).map((k) => OrgSlug.make(k)),
+          }))
         )
       ),
     [userStream]
@@ -98,16 +101,6 @@ export const OrgPicker = ({
     [setActiveOrgSlug]
   )
 
-  const org = useMemo(
-    () =>
-      pipe(
-        Option.fromNullable(orgOrErr),
-        Option.flatMap(Either.getRight),
-        Option.getOrElse(() => ({ slug: '', emoji: '◌' }))
-      ),
-    [orgOrErr]
-  )
-
   const error = useMemo(
     () =>
       pipe(
@@ -120,37 +113,58 @@ export const OrgPicker = ({
     [userOrgsEither, orgOrErr]
   )
 
-  if (error instanceof AuthError || error instanceof UnhandledError) {
+  if (
+    error instanceof AuthError ||
+    error instanceof UnhandledError ||
+    error instanceof BadDataError ||
+    error instanceof NotFoundError
+  ) {
     throw error
   }
 
   const hasError = error != undefined && !(error instanceof NoSelectedOrgError)
 
+  const org = useMemo(
+    () =>
+      pipe(
+        Option.fromNullable(orgOrErr),
+        Option.flatMap(Either.getRight),
+        Option.getOrElse(() => ({ slug: '', emoji: '◌' }))
+      ),
+    [orgOrErr]
+  )
+
+  const label =
+    error instanceof NoSelectedOrgError ? 'Select Organization' : org.emoji
+
+  const user = Option.getOrElse(Either.getRight(userOrgsEither), () => ({
+    lastOrg: undefined,
+    orgs: [],
+  }))
+
   return (
     <Menu>
       <div className={classes.OrgPicker}>
         <MenuButton
+          style={error instanceof NoSelectedOrgError ? { width: 'unset' } : {}}
           className={cn(
             'element-button button-1 ghost',
-            classes.OrgPicker__button,
-            hasError && classes.OrgPicker__buttonWithError
+            classes.OrgPicker__button
           )}
         >
-          {org.emoji}
+          {label}
         </MenuButton>
         <MenuItems className={classes.OrgPicker__menu}>
-          {Option.getOrElse(Either.getRight(userOrgsEither), () => []).map(
-            (orgSlug) => (
-              <MenuItem key={orgSlug}>
-                <button
-                  className={cn('heading-2', classes.OrgPicker__link)}
-                  onClick={() => setPickedOrg(orgSlug)}
-                >
-                  {orgSlug}
-                </button>
-              </MenuItem>
-            )
-          )}
+          {user.orgs.map((orgSlug) => (
+            <MenuItem key={orgSlug}>
+              <button
+                className={cn('heading-2', classes.OrgPicker__link)}
+                onClick={() => setPickedOrg(orgSlug)}
+              >
+                {orgSlug}
+              </button>
+            </MenuItem>
+          ))}
           {hasError && (
             <div className={classes.OrgPicker__errorTooltip}>
               {String(error)} <ObjBullets obj={error} />

@@ -44,9 +44,7 @@ describe('OrgContextProvider', () => {
   it('should show org picker when no org selected', async () => {
     vi.mocked(usePlatformContext).mockReturnValue(
       createMockPlatformContext({
-        activeOrgStream: Stream.succeed(
-          Either.left(new NoSelectedOrgError({}))
-        ),
+        activeOrgStream: Stream.succeed(Either.left(new NoSelectedOrgError())),
         activeOrg: Effect.succeed(null),
         userOrgs: { 'test-org': 'admin', 'another-org': 'member' },
       })
@@ -117,9 +115,7 @@ describe('OrgContextProvider', () => {
 
     vi.mocked(usePlatformContext).mockReturnValue(
       createMockPlatformContext({
-        activeOrgStream: Stream.succeed(
-          Either.left(new NoSelectedOrgError({}))
-        ),
+        activeOrgStream: Stream.succeed(Either.left(new NoSelectedOrgError())),
         activeOrg: Effect.succeed(null),
         userOrgs: { 'test-org': 'admin', 'another-org': 'member' },
         setActiveOrgSlug: mockSetActiveOrgSlug,

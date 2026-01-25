@@ -15,6 +15,7 @@ export const HeaderBreadcrumbs = () => {
 
   return (
     <>
+      {/* Before the crumbs will be the org picker */}
       {allBreadcrumbs.map((segment, index) => {
         const isLast = index === allBreadcrumbs.length - 1
 

@@ -12,6 +12,7 @@ type DocumentStoreService = Context.Tag.Service<typeof DocumentStore>
  */
 export const defaultOrg = (): Org => ({
   slug: OrgSlug.make('test-org'),
+  emoji: '🏢',
   frontendConfig: {
     fhirServer: {
       _tag: 'not_implemented' as const,

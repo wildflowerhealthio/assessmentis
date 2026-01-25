@@ -1,4 +1,4 @@
-import { Effect, Schedule, Scope, Option } from 'effect'
+import { Effect, Schedule, Scope } from 'effect'
 import {
   FhirR4Client,
   buildFhirStoreParent,

@@ -4,7 +4,7 @@ import {
   PractitionerRepository,
 } from '@assessmentis/clinical-domain/administration'
 import { UnhandledError } from '@assessmentis/ontology'
-import type { Route } from './+types/_resource.Practitioner.$practitionerId._index'
+import type { Route } from './+types/Practitioner.$practitionerId._index'
 import { runEffectSync } from '../runEffectSync'
 import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
 import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'

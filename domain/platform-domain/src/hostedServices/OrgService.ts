@@ -47,7 +47,14 @@ export const createOrgPubSub = PubSub.sliding<
 
 export class NoSelectedOrgError extends Data.TaggedError(
   'NoSelectedOrgError'
-)<object> {}
+)<object> {
+  constructor() {
+    super({})
+    this.name = 'NoSelectedOrgError'
+    this.message = 'No organization is currently selected.'
+    this.stack = new Error().stack
+  }
+}
 
 export class OrgService extends Context.Tag('OrgService')<
   OrgService,
@@ -115,8 +122,7 @@ export const startOrgService = (
 
     yield* orgSlugPubSub.publish(
       // TODO: Replace with last selected org slug from persistent storage
-      // Take.of(Either.left(new NoSelectedOrgError({})))
-      Take.of(Either.right(OrgSlug.make('localhost')))
+      Take.of(Either.left(new NoSelectedOrgError()))
     )
 
     const orgPubSubFiber = yield* Effect.forkDaemon(
@@ -217,7 +223,7 @@ export const startOrgService = (
         return orgSlugPubSub
           .publish(
             Option.match(maybeOrgSlug, {
-              onNone: () => Take.of(Either.left(new NoSelectedOrgError({}))),
+              onNone: () => Take.of(Either.left(new NoSelectedOrgError())),
               onSome: (slug) => Take.of(Either.right(slug)),
             })
           )

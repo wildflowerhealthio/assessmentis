@@ -1,5 +1,5 @@
 import { useCompositionCollection } from '../modules/resources/Composition/hooks/useCompositionCollection'
-import type { Route } from './+types/_resource.Composition._index'
+import type { Route } from './+types/Composition._index'
 import { ResourceListPage } from '../modules/common/components/ResourceListPage/ResourceListPage'
 import { CompositionListItem } from '../modules/resources/Composition/components/CompositionListItem/CompositionListItem'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'

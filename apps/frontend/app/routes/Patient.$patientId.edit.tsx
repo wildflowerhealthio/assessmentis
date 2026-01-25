@@ -9,7 +9,7 @@ import {
   PatientRepository,
 } from '@assessmentis/clinical-domain/administration'
 import { UnhandledError } from '@assessmentis/ontology'
-import type { Route } from './+types/_resource.Patient.$patientId.edit'
+import type { Route } from './+types/Patient.$patientId.edit'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { getPatientDisplayName } from '../modules/resources/Patient/utils/patientDisplay'
 import { extractReferenceId } from 'app/modules/common/utils/fhirDisplay'

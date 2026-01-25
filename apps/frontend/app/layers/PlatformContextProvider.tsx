@@ -1,4 +1,4 @@
-import { Effect, Layer, Scope, Stream } from 'effect'
+import { Effect, Layer, Scope } from 'effect'
 import { Suspense, useMemo } from 'react'
 import { PlatformContext } from './PlatformContext'
 import {
@@ -27,11 +27,16 @@ import {
 } from './FhirR4ClientService'
 import { ClinicalDataRepositoryService } from './ClinicalDataRepositoriesService'
 import { startExternalVideoCallClientService } from './ExternalVideoCallClientService'
-import { Await } from 'react-router'
+import { Await, useAsyncError } from 'react-router'
 import { useEffectTs } from '@assessmentis/react-util'
-import NavHeader from '../modules/global/components/NavHeader/NavHeader'
-import ErrorHandlerPage from '../routes/_resource'
+import NavHeader, {
+  EmptyHeader,
+  NavHeaderErrorHandler,
+  TextHeader,
+} from '../modules/global/components/NavHeader/NavHeader'
 import { PageLoader } from '../modules/common/components/PageLoader/PageLoader'
+import { InnerErrorHandlerPage } from '../modules/common/components/ErrorHandlerPage'
+import { ErrorBoundary } from 'react-error-boundary'
 
 const platformEffect = Effect.gen(function* () {
   const authDataPubSub = yield* createAuthDataPubSub
@@ -86,20 +91,17 @@ const platformEffect = Effect.gen(function* () {
   )
 )
 
-const EmptyHeader = () => (
-  <NavHeader
-    activeOrgStream={Stream.never}
-    userStream={Stream.never}
-    setActiveOrgSlug={() => Effect.void}
-  />
-)
-
-const ErrorFallback = () => (
-  <div>
-    <EmptyHeader />
-    <ErrorHandlerPage />
-  </div>
-)
+const ErrorFallback = ({ error }: { error?: unknown }) => {
+  const asyncError = useAsyncError()
+  return (
+    <div>
+      <NavHeaderErrorHandler error={error ?? asyncError}>
+        <EmptyHeader />
+      </NavHeaderErrorHandler>
+      <InnerErrorHandlerPage error={error ?? asyncError} />
+    </div>
+  )
+}
 
 export const PlatformContextProvider: React.FC<
   React.PropsWithChildren<object>
@@ -123,23 +125,25 @@ export const PlatformContextProvider: React.FC<
             overflowY: 'hidden',
           }}
         >
-          <EmptyHeader />
+          <TextHeader title="Loading..." />
           <PageLoader />
         </div>
       }
     >
-      <Await resolve={platformPromise} errorElement={<ErrorFallback />}>
-        {(platform) => (
-          <PlatformContext.Provider value={platform}>
-            <NavHeader
-              activeOrgStream={platform.orgService.activeOrgStream}
-              userStream={platform.userService.userStream}
-              setActiveOrgSlug={platform.orgService.setActiveOrgSlug}
-            />
-            {children}
-          </PlatformContext.Provider>
-        )}
-      </Await>
+      <ErrorBoundary fallbackRender={ErrorFallback}>
+        <Await resolve={platformPromise} errorElement={<ErrorFallback />}>
+          {(platform) => (
+            <PlatformContext.Provider value={platform}>
+              <NavHeader
+                activeOrgStream={platform.orgService.activeOrgStream}
+                userStream={platform.userService.userStream}
+                setActiveOrgSlug={platform.orgService.setActiveOrgSlug}
+              />
+              {children}
+            </PlatformContext.Provider>
+          )}
+        </Await>
+      </ErrorBoundary>
     </Suspense>
   )
 }

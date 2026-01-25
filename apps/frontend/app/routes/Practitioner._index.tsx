@@ -1,5 +1,5 @@
 import { usePractitionerCollection } from '../modules/resources/Practitioner/hooks/usePractitionerCollection'
-import type { Route } from './+types/_resource.Practitioner._index'
+import type { Route } from './+types/Practitioner._index'
 import { ResourceListPage } from '../modules/common/components/ResourceListPage/ResourceListPage'
 import { PractitionerListItem } from '../modules/resources/Practitioner/components/PractitionerListItem/PractitionerListItem'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'

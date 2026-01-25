@@ -1,10 +1,10 @@
 import { ComponentType, ReactNode, Suspense } from 'react'
-import { Await, Link, useAsyncError } from 'react-router'
+import { Await, Link } from 'react-router'
 import { cn } from '@assessmentis/react-util'
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 import classes from './ResourceListPage.module.css'
-import { InnerErrorHandlerPage } from '../ErrorHandlerPage'
+import { ErrorHandlerPage } from '../ErrorHandlerPage'
 
 interface ResourceListPageProps<T extends { id?: string }> {
   // Page metadata
@@ -29,7 +29,7 @@ interface ResourceListPageProps<T extends { id?: string }> {
   emptyMessage?: string
 
   // Error rendering
-  ErrorBody?: React.FC<{ error: unknown }>
+  ErrorBody?: React.FC<object>
 
   // Optional filtering
   filterSlot?: ReactNode
@@ -53,14 +53,13 @@ const Body = <T extends { id?: string | undefined }>({
   skeletonCount: number
   emptyMessage: string
   onDelete: (id: T['id']) => Promise<void>
-  ErrorBody?: React.FC<{ error: unknown }>
+  ErrorBody?: React.FC<object>
   ItemComponent: ComponentType<{
     item: T
     onDelete: () => void
     loading: boolean
   }>
 }) => {
-  const error = useAsyncError()
   return (
     <Suspense
       fallback={
@@ -79,13 +78,7 @@ const Body = <T extends { id?: string | undefined }>({
     >
       <Await
         resolve={collectionPromise}
-        errorElement={
-          ErrorBody ? (
-            <ErrorBody error={error} />
-          ) : (
-            <InnerErrorHandlerPage error={error} />
-          )
-        }
+        errorElement={ErrorBody ? <ErrorBody /> : <ErrorHandlerPage />}
       >
         {(items) =>
           items.length === 0 ? (

@@ -43,7 +43,7 @@ export const OrgContextProvider: React.FC<React.PropsWithChildren> = ({
               Either.flatMap(orgEither, (org) =>
                 org != null && Object.keys(user.org_roles).includes(org.slug)
                   ? Either.right(org)
-                  : Either.left(new NoSelectedOrgError({}))
+                  : Either.left(new NoSelectedOrgError())
               )
             )
           )

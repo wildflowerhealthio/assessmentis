@@ -4,7 +4,7 @@ import {
   ObservationRepository,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { UnhandledError } from '@assessmentis/ontology'
-import type { Route } from './+types/_resource.Observation.$observationId._index'
+import type { Route } from './+types/Observation.$observationId._index'
 import { runEffectSync } from '../runEffectSync'
 import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
 import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'

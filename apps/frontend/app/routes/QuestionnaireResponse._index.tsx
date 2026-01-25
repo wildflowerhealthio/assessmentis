@@ -5,7 +5,7 @@ import {
   QuestionnaireRepository,
   QuestionnaireResponseRepository,
 } from '@assessmentis/clinical-domain/content-management'
-import type { Route } from './+types/_resource.QuestionnaireResponse._index'
+import type { Route } from './+types/QuestionnaireResponse._index'
 import { QuestionnaireResponseListItem } from '../modules/resources/Questionnaire/components/QuestionnaireResponseListItem/QuestionnaireResponseListItem'
 import { ResourceListPage } from '../modules/common/components/ResourceListPage/ResourceListPage'
 import {

@@ -9,14 +9,11 @@ import {
   PropertyBuilder,
   StringProperty,
   useModeController,
-  type PropertyOrBuilder,
 } from '@firecms/core'
-import { Match, Schema, SchemaAST } from 'effect'
+import { SchemaAST } from 'effect'
 
 import { Org } from '@assessmentis/platform-domain'
-import { RadioGroup } from '@firecms/ui'
 import { EditableJsonView } from './EditableJsonView'
-import { typeAST } from 'effect/SchemaAST'
 
 type PropertySets =
   | MapProperty

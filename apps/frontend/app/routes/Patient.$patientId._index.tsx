@@ -4,7 +4,7 @@ import {
   PatientRepository,
 } from '@assessmentis/clinical-domain/administration'
 import { UnhandledError } from '@assessmentis/ontology'
-import type { Route } from './+types/_resource.Patient.$patientId._index'
+import type { Route } from './+types/Patient.$patientId._index'
 import { runEffectSync } from '../runEffectSync'
 import { useMemo, Suspense } from 'react'
 import Skeleton from 'react-loading-skeleton'

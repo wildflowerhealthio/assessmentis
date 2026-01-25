@@ -9,7 +9,7 @@ import {
   PractitionerRepository,
 } from '@assessmentis/clinical-domain/administration'
 import { NotFoundError } from '@assessmentis/ontology'
-import type { Route } from './+types/_resource.Practitioner.$practitionerId.edit'
+import type { Route } from './+types/Practitioner.$practitionerId.edit'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { getPractitionerDisplayName } from '../modules/resources/Practitioner/utils/practitionerDisplay'
 import { useMemo } from 'react'

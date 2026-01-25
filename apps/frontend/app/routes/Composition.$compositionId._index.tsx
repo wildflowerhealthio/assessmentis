@@ -4,7 +4,7 @@ import {
   CompositionRepository,
 } from '@assessmentis/clinical-domain/content-management'
 import { UnhandledError } from '@assessmentis/ontology'
-import type { Route } from './+types/_resource.Composition.$compositionId._index'
+import type { Route } from './+types/Composition.$compositionId._index'
 import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
 import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
 import {

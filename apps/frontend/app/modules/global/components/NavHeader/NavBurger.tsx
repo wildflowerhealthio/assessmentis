@@ -6,26 +6,26 @@ import { LoginButton } from '../LoginButton'
 import classes from './NavBurger.module.css'
 
 export const NavBurger = () => {
-  const [showMenu, setShowMenu] = useState(false)
+  const [menuShowing, setMenuShowing] = useState(false)
 
   const navRef = useRef<HTMLElement | null>(null)
   useOutsideClickHandler(navRef, () => {
-    setShowMenu(false)
+    setMenuShowing(false)
   })
   return (
     <nav ref={navRef} className={classes.NavBurger__nav}>
       <button
-        aria-label={showMenu ? 'Show menu' : 'Hide menu'}
+        aria-label={menuShowing ? 'Show menu' : 'Hide menu'}
         className={cn(
           'element-button button-1 ghost',
-          showMenu && 'show',
+          menuShowing && 'show',
           classes.NavBurger__button
         )}
-        onClick={() => setShowMenu((showMenu) => !showMenu)}
+        onClick={() => setMenuShowing((showing) => !showing)}
       >
         <div></div>
       </button>
-      {showMenu ? (
+      {menuShowing ? (
         <menu className={classes.NavBurger__menu}>
           <Link
             className={cn('heading-2', classes.NavBurger__link)}

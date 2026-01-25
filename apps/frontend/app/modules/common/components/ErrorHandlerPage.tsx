@@ -4,19 +4,20 @@ import {
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
-import React, { JSX } from 'react'
-import { Outlet, useAsyncError } from 'react-router'
+import React, { JSX, PropsWithChildren } from 'react'
+import { useAsyncError } from 'react-router'
 import { AuthError } from '@assessmentis/ontology'
 import { LoginButton } from '../../global/components/LoginButton'
 import { Generic404Content } from './Generic404Content'
+import { NoSelectedOrgError } from '@assessmentis/platform-domain'
 
 interface IProps {
   error: unknown
 }
 
-export const ErrorHandlerPage = () => {
+export const ErrorHandlerPage = ({ children }: PropsWithChildren<object>) => {
   const error = useAsyncError()
-  return <InnerErrorHandlerPage error={error} />
+  return <InnerErrorHandlerPage error={error}>{children}</InnerErrorHandlerPage>
 }
 
 const asCaughtError = (error: unknown) => {
@@ -55,11 +56,18 @@ const asCaughtError = (error: unknown) => {
     } as const
   }
 
+  if (error instanceof NoSelectedOrgError) {
+    return {
+      type: 'NoSelectedOrgError',
+      error,
+    } as const
+  }
+
   return null
 }
 
 export class InnerErrorHandlerPage extends React.Component<
-  IProps,
+  PropsWithChildren<IProps>,
   {
     error:
       | null
@@ -82,6 +90,10 @@ export class InnerErrorHandlerPage extends React.Component<
       | {
           type: 'BadDataError'
           error: BadDataError
+        }
+      | {
+          type: 'NoSelectedOrgError'
+          error: NoSelectedOrgError
         }
   }
 > {
@@ -116,22 +128,11 @@ export class InnerErrorHandlerPage extends React.Component<
     }
   }
 
-  // TODO: Delete
-  // componentDidUpdate(_prevProps: IProps, _prevState: object) {
-  //   if (this.state.error === null) return
-
-  //   switch (this.state.error.type) {
-  //     case 'AuthError':
-  //       if (this.props.loadedRuntime._tag == 'loaded') {
-  //         this.setState({ error: null })
-  //       }
-  //       return
-  //   }
-  // }
-
   render() {
     if (this.state.error === null) {
-      return <Outlet />
+      return this.props.children
+    } else if (this.state.error?.type == 'NoSelectedOrgError') {
+      return this.props.children
     }
 
     let errorContent: JSX.Element

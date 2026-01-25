@@ -1,5 +1,5 @@
-import { Effect, Schedule } from 'effect'
-import { AuthError, ExternalAssertionError } from '@assessmentis/ontology'
+import { Effect } from 'effect'
+import { ExternalAssertionError } from '@assessmentis/ontology'
 import { LoadedGapiClient } from './LoadedGapiClient'
 
 export type GapiHealthcareClient = typeof gapi.client.healthcare
@@ -12,7 +12,7 @@ export class LoadedGapiHealthcareClient extends Effect.Service<LoadedGapiHealthc
     dependencies: [],
     effect: Effect.gen(function* () {
       const client = yield* yield* LoadedGapiClient
-      const localClient = client
+
       return yield* Effect.tryPromise<
         GapiHealthcareClient,
         ExternalAssertionError

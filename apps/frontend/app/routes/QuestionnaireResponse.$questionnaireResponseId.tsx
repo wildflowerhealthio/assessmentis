@@ -12,7 +12,7 @@ import {
   QuestionnaireResponseRepository,
 } from '@assessmentis/clinical-domain/content-management'
 
-import type { Route } from './+types/_resource.QuestionnaireResponse.$questionnaireResponseId'
+import type { Route } from './+types/QuestionnaireResponse.$questionnaireResponseId'
 import QuestionnaireForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/QuestionnaireForm'
 import { updateEncounterRecordingsAndTranscripts } from '../modules/resources/Encounter/actions/updateEncounterRecordingsAndTranscripts'
 import { getEncounterRecordings } from '../modules/resources/Encounter/actions/getEncounterRecordings'

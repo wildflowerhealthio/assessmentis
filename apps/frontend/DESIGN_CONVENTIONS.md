@@ -11,6 +11,7 @@ This document establishes design conventions and best practices for the Assessme
 **Rationale**: Provides good readability without wasting space. Strikes a balance between information density and visual comfort.
 
 **Implementation**:
+
 - Use `var(--space-4)` for section gaps
 - Use `var(--space-3)` for component gaps
 - Use `var(--space-5)` to `var(--space-6)` for separating major page sections
@@ -29,6 +30,7 @@ Use Tundra CSS typography classes consistently:
 - **Form Labels**: `label-3` class
 
 **Example**:
+
 ```tsx
 <h1 className="heading-6">Patients</h1>
 <h2 className="heading-4">Demographics</h2>
@@ -41,11 +43,13 @@ Use Tundra CSS typography classes consistently:
 ### Color Usage
 
 **Text Colors**:
+
 - **Primary Text**: Default (inherits from Tundra)
 - **Secondary Text**: `var(--color-text-secondary)` or `var(--neutral-6)`
 - **Error Text**: `var(--red-8)`
 
 **UI Colors**:
+
 - **Borders**: `var(--color-border)` or `var(--neutral-8)`
 - **Backgrounds**: `var(--color-background)` or `var(--neutral-1)`
 - **Destructive Actions**: `var(--red-6)` for text, `var(--red-8)` for backgrounds
@@ -69,6 +73,7 @@ Tundra provides `--space-1` through `--space-10`:
 **Layout**: Vertical stack with header, actions, and list
 
 **Structure**:
+
 1. Page title (`heading-1`)
 2. Create action button (`button-2 blue`)
 3. List of items with border separators
@@ -76,6 +81,7 @@ Tundra provides `--space-1` through `--space-10`:
 **Empty State**: Helpful text with primary action
 
 **Example**:
+
 ```tsx
 <h1 className="heading-1">Patients</h1>
 <Link to="/Patient/new" className="button-2 blue">
@@ -89,18 +95,20 @@ Tundra provides `--space-1` through `--space-10`:
 ```
 
 **Item Style**:
+
 - Bordered rows with subtle separators
 - Left-aligned content
 - Metadata as secondary text
 - Actions in a dropdown menu (View, Edit, Delete) using Headless UI
 
-**See**: [_resource.Patient._index.tsx](apps/frontend/app/routes/_resource.Patient._index.tsx)
+**See**: [\_resource.Patient.\_index.tsx](apps/frontend/app/routes/.Patient._index.tsx)
 
 ### Detail Pages
 
 **Layout**: Actions top-left, then title, then sectioned content
 
 **Structure**:
+
 1. Actions bar (back button - NO inline edit actions)
 2. Page title with optional subtitle
 3. Sections separated by headings
@@ -111,12 +119,14 @@ Tundra provides `--space-1` through `--space-10`:
 **Sections**: Use `heading-3` for section titles, separated by `margin-top`
 
 **Actions**:
+
 - Back button: `button-3 ghost`
 - Edit button: `button-2 blue`
 
 **Debug Data**: Use `shouldShowRawData(data)` helper function instead of `import.meta.env.DEV`
 
 **Example**:
+
 ```tsx
 <DetailPageActions backTo="/Patient" editTo={`/Patient/${id}/edit`} />
 <h1 className="heading-6">{displayName}</h1>
@@ -142,6 +152,7 @@ Tundra provides `--space-1` through `--space-10`:
 **Layout**: Vertical stack, max-width 600px
 
 **Structure**:
+
 1. Page title
 2. Form fields (full-width with labels above inputs)
 3. Submit button at bottom
@@ -153,6 +164,7 @@ Tundra provides `--space-1` through `--space-10`:
 **Errors**: Red background panel at top with list of errors
 
 **Example**:
+
 ```tsx
 <h1 className="heading-6">Create Patient</h1>
 <form>
@@ -177,18 +189,35 @@ Tundra provides `--space-1` through `--space-10`:
 - **Inline Destructive**: `button-3 ghost` with red text (Delete in lists)
 
 **Examples**:
+
 ```tsx
-{/* Primary action */}
-<Link to="/Patient/new" className="button-2 blue">Create New Patient</Link>
+{
+  /* Primary action */
+}
+;<Link to="/Patient/new" className="button-2 blue">
+  Create New Patient
+</Link>
 
-{/* Secondary action */}
-<Link to="/Patient" className="button-3 ghost">← Back</Link>
+{
+  /* Secondary action */
+}
+;<Link to="/Patient" className="button-3 ghost">
+  ← Back
+</Link>
 
-{/* Destructive action */}
-<button className="button-2 red" onClick={handleDelete}>Delete Patient</button>
+{
+  /* Destructive action */
+}
+;<button className="button-2 red" onClick={handleDelete}>
+  Delete Patient
+</button>
 
-{/* Inline delete (in lists) */}
-<button className="button-3 ghost" onClick={handleDelete}>×</button>
+{
+  /* Inline delete (in lists) */
+}
+;<button className="button-3 ghost" onClick={handleDelete}>
+  ×
+</button>
 ```
 
 ### Empty States
@@ -196,10 +225,12 @@ Tundra provides `--space-1` through `--space-10`:
 **Approach**: Helpful text with actions
 
 **Structure**:
+
 1. Clear explanation of why empty
 2. Primary button to create first item
 
 **Example**:
+
 ```tsx
 <p className="body-3">
   No patients found. Create your first patient to get started.
@@ -224,38 +255,44 @@ Avoid obtrusive loading indicators. Use subtle visual feedback that doesn't inte
 **IMPORTANT**: Do NOT use `<PageLoader />` for component pages. Use skeleton items instead so users know what to expect.
 
 **Example - List Page**:
+
 ```tsx
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 
-{LoadedResult.handle(collection, {
-  onLoading: () => (
-    <ul>
-      {[...Array(5)].map((_, i) => (
-        <li key={i} className={classes.ListPage__item}>
-          <Skeleton width={40} height={20} />
-          <div style={{ flex: 1 }}>
-            <Skeleton width="60%" height={20} />
-            <Skeleton width="80%" height={16} style={{ marginTop: 4 }} />
-          </div>
-        </li>
-      ))}
-    </ul>
-  ),
-  onSuccess: (data) => <PatientList patients={data} />
-})}
+{
+  LoadedResult.handle(collection, {
+    onLoading: () => (
+      <ul>
+        {[...Array(5)].map((_, i) => (
+          <li key={i} className={classes.ListPage__item}>
+            <Skeleton width={40} height={20} />
+            <div style={{ flex: 1 }}>
+              <Skeleton width="60%" height={20} />
+              <Skeleton width="80%" height={16} style={{ marginTop: 4 }} />
+            </div>
+          </li>
+        ))}
+      </ul>
+    ),
+    onSuccess: (data) => <PatientList patients={data} />,
+  })
+}
 ```
 
 **Example - Detail Page**:
+
 ```tsx
-{loadedData._tag === 'loading' ? (
-  <div>
-    <Skeleton width={200} height={40} />
-    <Skeleton width="100%" height={20} count={3} style={{ marginTop: 16 }} />
-  </div>
-) : (
-  <ResourceDetailPage {...props} />
-)}
+{
+  loadedData._tag === 'loading' ? (
+    <div>
+      <Skeleton width={200} height={40} />
+      <Skeleton width="100%" height={20} count={3} style={{ marginTop: 16 }} />
+    </div>
+  ) : (
+    <ResourceDetailPage {...props} />
+  )
+}
 ```
 
 ### List Item Loading
@@ -263,19 +300,24 @@ import 'react-loading-skeleton/dist/skeleton.css'
 **When**: Optimistic updates, deletes, or mutations on specific items
 
 **Approach**:
+
 - Reduce opacity to 50%
 - Disable interactive elements
 - **NO per-item spinners**
 
 **Example**:
+
 ```tsx
 <li className={loading ? classes['ListItem--loading'] : ''}>
   <span>{patient.name}</span>
-  <button disabled={loading} onClick={handleDelete}>Delete</button>
+  <button disabled={loading} onClick={handleDelete}>
+    Delete
+  </button>
 </li>
 ```
 
 **CSS**:
+
 ```css
 .ListItem--loading {
   opacity: 0.5;
@@ -288,11 +330,13 @@ import 'react-loading-skeleton/dist/skeleton.css'
 **When**: Form submission in progress
 
 **Approach**:
+
 - Disable all inputs and buttons
 - Change button text to "Saving..." (no spinner)
 - Optionally reduce form opacity
 
 **Example**:
+
 ```tsx
 <input disabled={loading} />
 <button type="submit" disabled={loading} className="button-2 blue">
@@ -305,11 +349,13 @@ import 'react-loading-skeleton/dist/skeleton.css'
 **When**: Subsequent data loads (refreshing already-loaded data)
 
 **Approach**:
+
 - Show previous data with reduced opacity
 - Disable interactions
 - Smooth transition when new data arrives
 
 **Example**:
+
 ```tsx
 <div className={refreshing ? classes['Content--refreshing'] : ''}>
   {/* Previous data still visible */}
@@ -333,6 +379,7 @@ import 'react-loading-skeleton/dist/skeleton.css'
 ### Button Classes
 
 **Standard combinations**:
+
 - `button-2 blue` - Primary actions
 - `button-2 red` - Destructive primary actions
 - `button-3 ghost` - Secondary actions
@@ -354,6 +401,7 @@ import 'react-loading-skeleton/dist/skeleton.css'
 ### Color Variables
 
 **Prefer semantic names**:
+
 ```css
 /* ✅ Good - semantic */
 .DetailPage__subtitle {
@@ -367,6 +415,7 @@ import 'react-loading-skeleton/dist/skeleton.css'
 ```
 
 **Common semantic variables** (when available):
+
 - `var(--color-text-primary)` - Default text
 - `var(--color-text-secondary)` - Muted text
 - `var(--color-background)` - Background color
@@ -375,6 +424,7 @@ import 'react-loading-skeleton/dist/skeleton.css'
 - `var(--color-error)` - Error state color
 
 **Fallback to scale** when semantic names don't exist:
+
 - Text: `var(--neutral-6)` for secondary
 - Borders: `var(--neutral-8)`
 - Backgrounds: `var(--neutral-9)` for subtle
@@ -391,6 +441,7 @@ import 'react-loading-skeleton/dist/skeleton.css'
 ### When to Use Inline Styles
 
 **NEVER** - Inline styles should be eliminated in favor of:
+
 1. Tundra utility classes
 2. CSS module classes
 3. Composition of both using `cn()`
@@ -400,12 +451,14 @@ import 'react-loading-skeleton/dist/skeleton.css'
 **File naming**: `ComponentName.module.css`
 
 **Class naming** (BEM convention):
+
 - Root class: `.ComponentName`
 - Child elements: `.ComponentName__element`
 - Modifiers: `.ComponentName--modifier`
 - States: `.ComponentName__element--state`
 
 **Example**:
+
 ```css
 .ResourceDetail {
   padding: var(--space-6);
@@ -474,7 +527,7 @@ Use the `cn()` utility to combine classes:
 import { cn } from '@assessmentis/react-util'
 import classes from './PatientList.module.css'
 
-<div className={cn('body-3', classes.PatientList__content)}>
+;<div className={cn('body-3', classes.PatientList__content)}>
   {/* Tundra typography + custom layout */}
 </div>
 ```
@@ -487,13 +540,19 @@ import classes from './PatientList.module.css'
 
 ```tsx
 // ✅ Good - explicit ternary
-{condition ? <Component /> : undefined}
+{
+  condition ? <Component /> : undefined
+}
 
 // ✅ Good - with else case
-{condition ? <ComponentA /> : <ComponentB />}
+{
+  condition ? <ComponentA /> : <ComponentB />
+}
 
 // ❌ Bad - avoid &&
-{condition && <Component />}
+{
+  condition && <Component />
+}
 ```
 
 **Rationale**: Explicit ternaries make the intent clear and avoid potential issues with falsy values (0, '', etc.) being rendered.
@@ -526,20 +585,24 @@ export function PatientContactInfo({ patient }: { patient: Patient }) {
 
 ```tsx
 // ✅ Good - use helper
-{shouldShowRawData(data) ? (
-  <details>
-    <summary className="heading-4">Raw Data</summary>
-    <pre>{JSON.stringify(data, null, 2)}</pre>
-  </details>
-) : undefined}
+{
+  shouldShowRawData(data) ? (
+    <details>
+      <summary className="heading-4">Raw Data</summary>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
+    </details>
+  ) : undefined
+}
 
 // ❌ Bad - direct env check with &&
-{import.meta.env.DEV && (
-  <details>
-    <summary className="heading-3">Raw Data</summary>
-    <pre>{JSON.stringify(data, null, 2)}</pre>
-  </details>
-)}
+{
+  import.meta.env.DEV && (
+    <details>
+      <summary className="heading-3">Raw Data</summary>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
+    </details>
+  )
+}
 ```
 
 ### Development-Only Controls
@@ -547,9 +610,9 @@ export function PatientContactInfo({ patient }: { patient: Patient }) {
 Use `shouldShowRawData` or direct `import.meta.env.DEV` checks for features not intended for production:
 
 ```tsx
-{import.meta.env.DEV && (
-  <button onClick={resetDatabase}>Reset Database</button>
-)}
+{
+  import.meta.env.DEV && <button onClick={resetDatabase}>Reset Database</button>
+}
 ```
 
 ## Accessibility Guidelines
@@ -566,6 +629,7 @@ Use appropriate semantic elements:
 - `<main>` for main content area
 
 **Example**:
+
 ```tsx
 <main>
   <nav>
@@ -589,6 +653,7 @@ Use appropriate semantic elements:
 - Ensure form inputs have associated labels (via `<label>` or `aria-label`)
 
 **Example**:
+
 ```tsx
 <button aria-label="Delete patient" onClick={handleDelete}>
   ×
@@ -603,18 +668,21 @@ Use appropriate semantic elements:
 ### Route Files
 
 **Should contain**: Minimal orchestration logic only
+
 - Data loading (`clientLoader`)
 - Hook calls
 - Component composition
 - Navigation
 
 **Should NOT contain**:
+
 - Inline styles (use CSS modules)
 - Complex rendering logic (extract to components)
 - Data transformation logic (extract to utilities)
 - Style definitions
 
 **Example**:
+
 ```tsx
 // ✅ Good
 export default function PatientPage() {
@@ -630,9 +698,7 @@ export default function PatientPage() {
     : 'Unnamed'
 
   return (
-    <div style={{ padding: 'var(--space-6)' }}>
-      {/* Lots of inline JSX */}
-    </div>
+    <div style={{ padding: 'var(--space-6)' }}>{/* Lots of inline JSX */}</div>
   )
 }
 ```
@@ -640,6 +706,7 @@ export default function PatientPage() {
 ### Resource Modules
 
 **Directory structure**:
+
 ```
 modules/resources/Patient/
   actions/
@@ -662,6 +729,7 @@ modules/resources/Patient/
 ### Common Components
 
 **Directory structure**:
+
 ```
 modules/common/components/
   ResourceListPage/
@@ -679,7 +747,7 @@ modules/common/components/
 
 ### List Page Example
 
-See: [apps/frontend/app/routes/_resource.Patient._index.tsx](apps/frontend/app/routes/_resource.Patient._index.tsx)
+See: [apps/frontend/app/routes/.Patient.\_index.tsx](apps/frontend/app/routes/.Patient._index.tsx)
 
 ### Detail Page Example
 
@@ -687,7 +755,7 @@ See: Patient detail page implementation
 
 ### Form Page Example
 
-See: [apps/frontend/app/routes/_resource.Patient.new.tsx](apps/frontend/app/routes/_resource.Patient.new.tsx)
+See: [apps/frontend/app/routes/.Patient.new.tsx](apps/frontend/app/routes/.Patient.new.tsx)
 
 ### Resource Form Example
 
@@ -730,7 +798,7 @@ export function formatPatientDemographics(patient: Patient) {
 }
 
 // Use with DetailGrid
-<DetailGrid items={formatPatientDemographics(patient)} />
+;<DetailGrid items={formatPatientDemographics(patient)} />
 ```
 
 ### Error Handling
@@ -738,15 +806,17 @@ export function formatPatientDemographics(patient: Patient) {
 Use consistent error display patterns:
 
 ```tsx
-{LoadedResult.handle(data, {
-  onLoading: () => <PageLoader message="Loading..." />,
-  onError: (error) => (
-    <p className={cn('body-3', classes.ErrorMessage)}>
-      Error: {String(error)}
-    </p>
-  ),
-  onSuccess: (data) => <Content data={data} />
-})}
+{
+  LoadedResult.handle(data, {
+    onLoading: () => <PageLoader message="Loading..." />,
+    onError: (error) => (
+      <p className={cn('body-3', classes.ErrorMessage)}>
+        Error: {String(error)}
+      </p>
+    ),
+    onSuccess: (data) => <Content data={data} />,
+  })
+}
 ```
 
 ## Anti-Patterns to Avoid
