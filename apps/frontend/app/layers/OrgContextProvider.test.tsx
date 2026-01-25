@@ -1,6 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach, Mock } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { Either, Effect, Stream } from 'effect'
 import { OrgContextProvider } from './OrgContextProvider'
 import { usePlatformContext } from './PlatformContext'
@@ -27,21 +26,17 @@ describe('OrgContextProvider', () => {
     },
   }
 
-  let mockSetActiveOrgSlug: Mock<() => Effect.Effect<undefined, never, never>>
-
   beforeEach(() => {
     vi.clearAllMocks()
     vi.spyOn(console, 'log').mockImplementation(() => {})
     vi.spyOn(console, 'error').mockImplementation(() => {})
-
-    mockSetActiveOrgSlug = vi.fn(() => Effect.succeed(undefined))
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
   })
 
-  it('should show org picker when no org selected', async () => {
+  it('should show message when no org selected', async () => {
     vi.mocked(usePlatformContext).mockReturnValue(
       createMockPlatformContext({
         activeOrgStream: Stream.succeed(Either.left(new NoSelectedOrgError())),
@@ -57,13 +52,13 @@ describe('OrgContextProvider', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('Select Organization')).toBeDefined()
+      expect(
+        screen.getByText("You'll need to pick an organization")
+      ).toBeDefined()
     })
-
-    expect(screen.getByRole('combobox')).toBeDefined()
   })
 
-  it('should show org picker with error when org load fails', async () => {
+  it('should show message when org load fails with unrecognized error', async () => {
     const mockError = new Error('Failed to load org')
 
     vi.mocked(usePlatformContext).mockReturnValue(
@@ -80,12 +75,12 @@ describe('OrgContextProvider', () => {
       </OrgContextProvider>
     )
 
+    // Should show the message to pick an organization (since the error causes a left)
     await waitFor(() => {
-      expect(screen.getByText('Select Organization')).toBeDefined()
+      expect(
+        screen.getByText("You'll need to pick an organization")
+      ).toBeDefined()
     })
-
-    // Should show the error message
-    expect(screen.getByText(/Failed to load org/)).toBeDefined()
   })
 
   it('should render children when org is selected', async () => {
@@ -108,39 +103,6 @@ describe('OrgContextProvider', () => {
     })
 
     expect(screen.getByText('Children Content')).toBeDefined()
-  })
-
-  it('should call setActiveOrgSlug when org is picked from selector', async () => {
-    const user = userEvent.setup()
-
-    vi.mocked(usePlatformContext).mockReturnValue(
-      createMockPlatformContext({
-        activeOrgStream: Stream.succeed(Either.left(new NoSelectedOrgError())),
-        activeOrg: Effect.succeed(null),
-        userOrgs: { 'test-org': 'admin', 'another-org': 'member' },
-        setActiveOrgSlug: mockSetActiveOrgSlug,
-      })
-    )
-
-    render(
-      <OrgContextProvider>
-        <div>Children</div>
-      </OrgContextProvider>
-    )
-
-    await waitFor(() => {
-      expect(screen.getByText('Select Organization')).toBeDefined()
-    })
-
-    const select = screen.getByRole('combobox')
-
-    // Select an org
-    await user.selectOptions(select, 'another-org')
-
-    // Should have called setActiveOrgSlug
-    await waitFor(() => {
-      expect(mockSetActiveOrgSlug).toHaveBeenCalled()
-    })
   })
 
   it('should not render children when org is not in user orgs', async () => {
@@ -168,7 +130,9 @@ describe('OrgContextProvider', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('Select Organization')).toBeDefined()
+      expect(
+        screen.getByText("You'll need to pick an organization")
+      ).toBeDefined()
     })
 
     // Children should not be rendered
