@@ -22,6 +22,7 @@
     "global/react-util",
     "global/util",
     "global/ontology",
+    "global/daily-co-components",
     "domain/platform-domain",
     "domain/clinical-domain",
     "domain/config-domain",

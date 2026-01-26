@@ -746,11 +746,12 @@ The project uses Tundra CSS variables:
 - **@assessmentis/google-fhir-web-infrastructure**: Browser-side FHIR client
 - **@assessmentis/firebase-web-infrastructure**: Browser-side Firestore via Firebase SDK
 - **@assessmentis/firebase-server-infrastructure**: Server-side Firestore via Admin SDK
-- **@assessmentis/daily-co-infrastructure**: Daily.co video call implementation
+- **@assessmentis/daily-co-infrastructure**: Daily.co Effect-TS layer for video call services
 
 **Global packages** (shared utilities):
 
 - **@assessmentis/react-util**: Shared React hooks, components, utilities
+- **@assessmentis/daily-co-components**: Daily.co React UI components for video calls
 - **@assessmentis/ontology**: Shared types and utilities
 - **@assessmentis/eslint-config**: Import in `eslint.config.js`
 - **@assessmentis/prettier-config**: Set in `package.json` "prettier" field

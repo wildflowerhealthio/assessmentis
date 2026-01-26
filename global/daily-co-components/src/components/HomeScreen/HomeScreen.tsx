@@ -21,7 +21,7 @@ export default function HomeScreen({
         Click to start a call
       </button>
       <p className="small">
-        Select “Allow” to use your camera and mic for this call if prompted
+        Select "Allow" to use your camera and mic for this call if prompted
       </p>
     </div>
   )

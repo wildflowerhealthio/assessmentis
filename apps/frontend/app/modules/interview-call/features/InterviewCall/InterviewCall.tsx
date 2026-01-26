@@ -10,7 +10,7 @@ import {
   Call,
   HairCheck,
   Tray,
-} from '@assessmentis/daily-co-infrastructure/components'
+} from '@assessmentis/daily-co-components/components'
 import { FullEncounter } from 'app/modules/interview-call/actions/getFullEncounter'
 import QuestionnaireForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/QuestionnaireForm'
 import { useNavigate } from 'react-router'

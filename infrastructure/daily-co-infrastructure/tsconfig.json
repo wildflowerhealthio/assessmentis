@@ -1,12 +1,8 @@
 {
-  "extends": "@assessmentis/typescript-config/vite.json",
+  "extends": "@assessmentis/typescript-config/base.json",
   "include": ["src/**/*"],
   "exclude": ["node_modules"],
   "compilerOptions": {
-    "outDir": "dist", 
-    "jsx": "react-jsx",
-    "plugins": [
-      { "name": "typescript-plugin-css-modules" }
-    ]
+    "outDir": "dist"
   }
 }
