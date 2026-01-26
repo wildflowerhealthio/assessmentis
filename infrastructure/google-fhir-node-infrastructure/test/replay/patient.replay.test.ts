@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from 'vitest'
 import { Effect, Exit, Cause, pipe, Option, Layer } from 'effect'
 import { FhirR4Client } from '@assessmentis/fhir-client'
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
@@ -35,10 +35,17 @@ describe('Patient CRUD (Replay)', () => {
     Layer.provide(MockFirebaseAdminLayer)
   )
 
+  beforeAll(() => {
+    // Starts requests interception
+    mswServer.listen()
+  })
+
   beforeEach(() => {
     // Reset handlers before each test
     mswServer.resetHandlers()
   })
+
+  afterAll(() => mswServer.close())
 
   describe('read', () => {
     it('should read a patient successfully', async () => {
@@ -87,10 +94,7 @@ describe('Patient CRUD (Replay)', () => {
       const fixture = loadFixture('patient', 'read-not-found')
 
       mswServer.use(
-        createNotFoundHandler(
-          fixture.request.resourceType,
-          fixture.request.id!
-        )
+        createNotFoundHandler(fixture.request.resourceType, fixture.request.id!)
       )
 
       const program = Effect.gen(function* () {

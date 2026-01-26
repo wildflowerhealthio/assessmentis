@@ -2,14 +2,14 @@
   "request": {
     "method": "DELETE",
     "resourceType": "Patient",
-    "id": "95643fcf-9440-4487-90db-4780ca80d8c5"
+    "id": "9b8743e7-bda0-48cd-a876-2b7c834d564d"
   },
   "response": {
     "status": 200,
     "body": null
   },
   "metadata": {
-    "recordedAt": "2026-01-26T17:01:49.484Z",
+    "recordedAt": "2026-01-26T17:24:54.249Z",
     "description": "Delete Patient - success response"
   }
 }

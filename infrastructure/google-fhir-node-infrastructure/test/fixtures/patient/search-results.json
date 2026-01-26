@@ -243,7 +243,7 @@
         },
         {
           "relation": "next",
-          "url": "https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/?_count=10&_page_token=Ad86NAQEUOU7zC0tQvD8ufccbsgn2NQEd8X5uV6RWBCfVHmiFlLbMpHBzPsXrSC_ypvbINvhiQRat3SnOTAAj0j8T0h6OO8oWwKBE7Znts11tTNrMrZdjSVVepwrXO6Ib9GvXKiQmfO7y-tE_IMJ86QFoKq6nLUdIifnrU_czmVrGv390QQF21n8JnEo8up7zhObTBM9Qo4dZeHkOC6funlv_pP5UEWI1DiP9eax93dHCL2yUcGBX9LAvNu9M7SRbQfoIjwe9W5gdTMo_bntza8EPYq6bEJ6qWUzvMtHpcDS"
+          "url": "https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/?_count=10&_page_token=Ad86NAR3hl24qD4DxEUZq1Ydqf3TzSA47OsvyVuvXDYqSKahvMW3Pg1KKNgj7rd0MEdKBE3YOJPma_61d8L08MKA1K1NyHQyxdTK2Rj0CvIQ3IoVzpNczTGzYPxkOOMrMKUW2QXCiD1m3VpFJ_0Fn3nndjXztG3bGmk1I47UrXLY7ijSfLIM31wwgs53_L55ZfN5fjFygZxotb9f7G1zytsRXXJGbhVVXxSrjsbJB3zL1IwE6SKXst_4oQbjX66FM3ftXP6VBEmz-ogMclK9I-R15mgtSjzjjSG7nD37y6JXJPA%3D"
         },
         {
           "relation": "first",
@@ -260,7 +260,7 @@
     }
   },
   "metadata": {
-    "recordedAt": "2026-01-26T17:01:50.010Z",
+    "recordedAt": "2026-01-26T17:24:54.720Z",
     "description": "Search Patient - searchset bundle response"
   }
 }
