@@ -1,0 +1,30 @@
+{
+  "request": {
+    "method": "GET",
+    "resourceType": "Patient",
+    "id": "b5a44286-9a43-4250-91d0-67fd8b57399c"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "id": "b5a44286-9a43-4250-91d0-67fd8b57399c",
+      "meta": {
+        "lastUpdated": "2026-01-26T17:01:46.671974+00:00",
+        "versionId": "MTc2OTQ0NjkwNjY3MTk3NDAwMA"
+      },
+      "name": [
+        {
+          "family": "Patient",
+          "given": [
+            "ReadTest"
+          ]
+        }
+      ],
+      "resourceType": "Patient"
+    }
+  },
+  "metadata": {
+    "recordedAt": "2026-01-26T17:01:46.697Z",
+    "description": "Read Patient - success response"
+  }
+}

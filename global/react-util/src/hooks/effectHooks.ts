@@ -19,7 +19,7 @@ export const useStream = <A, E>(
     fiber.addObserver(
       Exit.match({
         onSuccess(a) {
-          console.log('Stream completed successfully:', a)
+          // console.log('Stream completed successfully:', a)
         },
         onFailure(cause) {
           if (Cause.isInterrupted(cause)) {

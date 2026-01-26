@@ -1,0 +1,42 @@
+{
+  "request": {
+    "method": "POST",
+    "resourceType": "Patient",
+    "body": {
+      "resourceType": "Patient",
+      "name": [
+        {
+          "given": [
+            "Live"
+          ],
+          "family": "TestPatient"
+        }
+      ],
+      "active": true
+    }
+  },
+  "response": {
+    "status": 201,
+    "body": {
+      "active": true,
+      "id": "591aaa9e-14cb-471a-86b7-ecd48645efa6",
+      "meta": {
+        "lastUpdated": "2026-01-26T17:01:45.281253+00:00",
+        "versionId": "MTc2OTQ0NjkwNTI4MTI1MzAwMA"
+      },
+      "name": [
+        {
+          "family": "TestPatient",
+          "given": [
+            "Live"
+          ]
+        }
+      ],
+      "resourceType": "Patient"
+    }
+  },
+  "metadata": {
+    "recordedAt": "2026-01-26T17:01:45.223Z",
+    "description": "Create Patient - success response"
+  }
+}

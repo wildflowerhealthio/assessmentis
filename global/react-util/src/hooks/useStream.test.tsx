@@ -390,11 +390,6 @@ describe('useStream', () => {
       await act(async () => {
         await new Promise((r) => setTimeout(r, 100))
       })
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Stream completed successfully:',
-        undefined
-      )
     })
   })
 })

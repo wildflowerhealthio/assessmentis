@@ -1,0 +1,266 @@
+{
+  "request": {
+    "method": "GET",
+    "resourceType": "Patient",
+    "params": {
+      "_count": "10"
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "entry": [
+        {
+          "fullUrl": "https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/b70ef31d-1928-4d67-971f-c2b533ac2cbe",
+          "resource": {
+            "active": true,
+            "id": "b70ef31d-1928-4d67-971f-c2b533ac2cbe",
+            "meta": {
+              "lastUpdated": "2026-01-26T16:48:15.340440+00:00",
+              "versionId": "MTc2OTQ0NjA5NTM0MDQ0MDAwMA"
+            },
+            "name": [
+              {
+                "family": "TestPatient",
+                "given": [
+                  "Live"
+                ]
+              }
+            ],
+            "resourceType": "Patient"
+          },
+          "search": {
+            "mode": "match"
+          }
+        },
+        {
+          "fullUrl": "https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/a9702bce-96ff-480b-a896-ef225c1c7a3e",
+          "resource": {
+            "active": true,
+            "id": "a9702bce-96ff-480b-a896-ef225c1c7a3e",
+            "meta": {
+              "lastUpdated": "2026-01-26T16:44:19.803126+00:00",
+              "versionId": "MTc2OTQ0NTg1OTgwMzEyNjAwMA"
+            },
+            "name": [
+              {
+                "family": "TestPatient",
+                "given": [
+                  "Live"
+                ]
+              }
+            ],
+            "resourceType": "Patient"
+          },
+          "search": {
+            "mode": "match"
+          }
+        },
+        {
+          "fullUrl": "https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/5b103314-7939-48d6-8655-6feedd8676e3",
+          "resource": {
+            "active": true,
+            "id": "5b103314-7939-48d6-8655-6feedd8676e3",
+            "meta": {
+              "lastUpdated": "2026-01-26T16:34:37.270108+00:00",
+              "versionId": "MTc2OTQ0NTI3NzI3MDEwODAwMA"
+            },
+            "name": [
+              {
+                "family": "TestPatient",
+                "given": [
+                  "Live"
+                ]
+              }
+            ],
+            "resourceType": "Patient"
+          },
+          "search": {
+            "mode": "match"
+          }
+        },
+        {
+          "fullUrl": "https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/b79f07e4-41a6-4e1d-9705-c3fa0badba6f",
+          "resource": {
+            "active": true,
+            "id": "b79f07e4-41a6-4e1d-9705-c3fa0badba6f",
+            "meta": {
+              "lastUpdated": "2026-01-26T16:27:56.835245+00:00",
+              "versionId": "MTc2OTQ0NDg3NjgzNTI0NTAwMA"
+            },
+            "name": [
+              {
+                "family": "TestPatient",
+                "given": [
+                  "Live"
+                ]
+              }
+            ],
+            "resourceType": "Patient"
+          },
+          "search": {
+            "mode": "match"
+          }
+        },
+        {
+          "fullUrl": "https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/af689ec3-87a7-4fe0-a42c-13e98b1dd1af",
+          "resource": {
+            "id": "af689ec3-87a7-4fe0-a42c-13e98b1dd1af",
+            "meta": {
+              "lastUpdated": "2026-01-26T16:22:59.411191+00:00",
+              "versionId": "MTc2OTQ0NDU3OTQxMTE5MTAwMA"
+            },
+            "name": [
+              {
+                "family": "Test",
+                "given": [
+                  "Bundle"
+                ]
+              }
+            ],
+            "resourceType": "Patient"
+          },
+          "search": {
+            "mode": "match"
+          }
+        },
+        {
+          "fullUrl": "https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/64a65ead-5ca4-4ec4-b4ff-5aad3777cf42",
+          "resource": {
+            "id": "64a65ead-5ca4-4ec4-b4ff-5aad3777cf42",
+            "meta": {
+              "lastUpdated": "2026-01-26T16:22:58.195483+00:00",
+              "versionId": "MTc2OTQ0NDU3ODE5NTQ4MzAwMA"
+            },
+            "name": [
+              {
+                "family": "Patient",
+                "given": [
+                  "ToDelete"
+                ]
+              }
+            ],
+            "resourceType": "Patient"
+          },
+          "search": {
+            "mode": "match"
+          }
+        },
+        {
+          "fullUrl": "https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/b99f15ec-f7ca-407e-bd85-a0af93fcc088",
+          "resource": {
+            "id": "b99f15ec-f7ca-407e-bd85-a0af93fcc088",
+            "meta": {
+              "lastUpdated": "2026-01-26T16:22:56.566958+00:00",
+              "versionId": "MTc2OTQ0NDU3NjU2Njk1ODAwMA"
+            },
+            "name": [
+              {
+                "family": "Update",
+                "given": [
+                  "Before"
+                ]
+              }
+            ],
+            "resourceType": "Patient"
+          },
+          "search": {
+            "mode": "match"
+          }
+        },
+        {
+          "fullUrl": "https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/f85e9536-aa32-4c63-a168-06b9a228b190",
+          "resource": {
+            "id": "f85e9536-aa32-4c63-a168-06b9a228b190",
+            "meta": {
+              "lastUpdated": "2026-01-26T16:22:55.063542+00:00",
+              "versionId": "MTc2OTQ0NDU3NTA2MzU0MjAwMA"
+            },
+            "name": [
+              {
+                "family": "Patient",
+                "given": [
+                  "ReadTest"
+                ]
+              }
+            ],
+            "resourceType": "Patient"
+          },
+          "search": {
+            "mode": "match"
+          }
+        },
+        {
+          "fullUrl": "https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/58f9a4d5-bfc9-48db-ba29-dffc1d174ca9",
+          "resource": {
+            "active": true,
+            "id": "58f9a4d5-bfc9-48db-ba29-dffc1d174ca9",
+            "meta": {
+              "lastUpdated": "2026-01-26T16:22:54.573124+00:00",
+              "versionId": "MTc2OTQ0NDU3NDU3MzEyNDAwMA"
+            },
+            "name": [
+              {
+                "family": "TestPatient",
+                "given": [
+                  "Live"
+                ]
+              }
+            ],
+            "resourceType": "Patient"
+          },
+          "search": {
+            "mode": "match"
+          }
+        },
+        {
+          "fullUrl": "https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/e2af9d79-456a-4be8-923e-0464f17dffd3",
+          "resource": {
+            "id": "e2af9d79-456a-4be8-923e-0464f17dffd3",
+            "meta": {
+              "lastUpdated": "2026-01-26T16:15:59.716173+00:00",
+              "versionId": "MTc2OTQ0NDE1OTcxNjE3MzAwMA"
+            },
+            "name": [
+              {
+                "family": "Test",
+                "given": [
+                  "Bundle"
+                ]
+              }
+            ],
+            "resourceType": "Patient"
+          },
+          "search": {
+            "mode": "match"
+          }
+        }
+      ],
+      "link": [
+        {
+          "relation": "search",
+          "url": "https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/?_count=10"
+        },
+        {
+          "relation": "next",
+          "url": "https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/?_count=10&_page_token=Ad86NAQEUOU7zC0tQvD8ufccbsgn2NQEd8X5uV6RWBCfVHmiFlLbMpHBzPsXrSC_ypvbINvhiQRat3SnOTAAj0j8T0h6OO8oWwKBE7Znts11tTNrMrZdjSVVepwrXO6Ib9GvXKiQmfO7y-tE_IMJ86QFoKq6nLUdIifnrU_czmVrGv390QQF21n8JnEo8up7zhObTBM9Qo4dZeHkOC6funlv_pP5UEWI1DiP9eax93dHCL2yUcGBX9LAvNu9M7SRbQfoIjwe9W5gdTMo_bntza8EPYq6bEJ6qWUzvMtHpcDS"
+        },
+        {
+          "relation": "first",
+          "url": "https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/?_count=10"
+        },
+        {
+          "relation": "self",
+          "url": "https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/?_count=10"
+        }
+      ],
+      "resourceType": "Bundle",
+      "total": 14,
+      "type": "searchset"
+    }
+  },
+  "metadata": {
+    "recordedAt": "2026-01-26T17:01:50.010Z",
+    "description": "Search Patient - searchset bundle response"
+  }
+}
