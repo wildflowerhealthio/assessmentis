@@ -43,13 +43,26 @@ const parseObjectFromResponse = (
 
   if (typeof data === 'object') {
     if ('text' in data && typeof data.text === 'function') {
-      return Effect.promise(() =>
-        (data as Blob).text().then((text) => JSON.parse(text))
-      )
+      return Effect.tryPromise({
+        try: () =>
+          (data as Blob).text().then((text) => JSON.parse(text as string)),
+        catch: (error) =>
+          new UnhandledError({
+            message: 'Failed to parse JSON response from Blob',
+            cause: error,
+          }),
+      })
     }
     return Effect.succeed(data)
   } else if (typeof data === 'string') {
-    return Effect.succeed(JSON.parse(data))
+    return Effect.try({
+      try: () => JSON.parse(data),
+      catch: (error) =>
+        new UnhandledError({
+          message: 'Failed to parse JSON response from string',
+          cause: error,
+        }),
+    })
   } else
     return Effect.fail(
       new UnhandledError({
