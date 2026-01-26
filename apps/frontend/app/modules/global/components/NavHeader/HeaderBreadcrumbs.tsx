@@ -4,7 +4,7 @@ import Skeleton from 'react-loading-skeleton'
 import { Await, Link } from 'react-router'
 import { useBreadcrumbContext } from '../../contexts/BreadcrumbContext'
 
-import classes from './HeaderBreadCrumbs.module.css'
+import classes from './HeaderBreadcrumbs.module.css'
 
 export const HeaderBreadcrumbs = () => {
   const { breadcrumbs } = useBreadcrumbContext()

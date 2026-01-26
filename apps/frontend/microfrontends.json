@@ -1,0 +1,24 @@
+{
+  "$schema": "https://turborepo.dev/microfrontends/schema.json",
+  "applications": {
+    "@assessmentis/frontend": {
+      "development": {
+        "local": {
+          "port": 5173
+        }
+      }
+    },
+    "@assessmentis/firecms": {
+      "development": {
+        "local": {
+          "port": 5175
+        }
+      },
+      "routing": [
+        {
+          "paths": ["/admin", "/admin/:path*"]
+        }
+      ]
+    }
+  }
+}
