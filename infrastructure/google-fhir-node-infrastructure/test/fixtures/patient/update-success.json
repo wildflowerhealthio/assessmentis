@@ -1,0 +1,34 @@
+{
+  "request": {
+    "method": "PUT",
+    "resourceType": "Patient",
+    "id": "f9f7d295-3e77-4c9f-9ec7-7259250db765",
+    "body": {
+      "resourceType": "Patient",
+      "id": "f9f7d295-3e77-4c9f-9ec7-7259250db765"
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "id": "f9f7d295-3e77-4c9f-9ec7-7259250db765",
+      "meta": {
+        "lastUpdated": "2026-01-26T17:24:53.255082+00:00",
+        "versionId": "MTc2OTQ0ODI5MzI1NTA4MjAwMA"
+      },
+      "name": [
+        {
+          "family": "Update",
+          "given": [
+            "After"
+          ]
+        }
+      ],
+      "resourceType": "Patient"
+    }
+  },
+  "metadata": {
+    "recordedAt": "2026-01-26T17:24:53.182Z",
+    "description": "Update Patient - success response"
+  }
+}

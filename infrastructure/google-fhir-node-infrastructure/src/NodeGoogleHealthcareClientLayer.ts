@@ -9,9 +9,9 @@ import {
   createFhirResponseHandlers,
 } from '@assessmentis/fhir-client'
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
-import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
 import { UnknownException } from 'effect/Cause'
 import { UnhandledError } from '@assessmentis/ontology'
+import { GCloudAccessToken } from './GCloudAccessToken'
 
 const recoverGaxiosError: <A, E, R>(
   eff: Effect.Effect<A, E | UnknownException, R>
@@ -35,15 +35,65 @@ const markExceptionUnhandled = <A, E, R>(
       : error
   )
 
+const parseObjectFromResponse = (
+  result: GaxiosResponseWithHTTP2<unknown>
+): Effect.Effect<unknown, UnhandledError, never> => {
+  const data = result.data
+  if (data == null || data == undefined) return Effect.succeed(data)
+
+  if (typeof data === 'object') {
+    if ('text' in data && typeof data.text === 'function') {
+      return Effect.tryPromise({
+        try: () =>
+          (data as Blob).text().then((text) => JSON.parse(text as string)),
+        catch: (error) =>
+          new UnhandledError({
+            message: 'Failed to parse JSON response from Blob',
+            cause: error,
+          }),
+      })
+    }
+    return Effect.succeed(data)
+  } else if (typeof data === 'string') {
+    return Effect.try({
+      try: () => JSON.parse(data),
+      catch: (error) =>
+        new UnhandledError({
+          message: 'Failed to parse JSON response from string',
+          cause: error,
+        }),
+    })
+  } else
+    return Effect.fail(
+      new UnhandledError({
+        message: 'Google response is not an object, Blob, or string',
+        cause: data,
+      })
+    )
+}
+
 export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
   FhirR4Client,
   Effect.gen(function* () {
-    const _ = yield* FirebaseAdmin
+    // Check for optional access token (useful for local dev with gcloud CLI)
+    const accessTokenOption = yield* Effect.serviceOption(GCloudAccessToken)
+
+    // Create auth - use access token if provided, otherwise use ADC
+    const auth = Option.match(accessTokenOption, {
+      onNone: () =>
+        new google.auth.GoogleAuth({
+          scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+        }),
+      onSome: ({ token }) => {
+        const oauth2Client = new google.auth.OAuth2()
+        oauth2Client.setCredentials({ access_token: token })
+        return oauth2Client
+      },
+    })
+
     const healthcare = google.healthcare({
       version: 'v1',
-      auth: new google.auth.GoogleAuth({
-        scopes: ['https://www.googleapis.com/auth/cloud-platform'],
-      }),
+      auth,
     })
 
     const { projectId, dataset, region, storeId } =
@@ -98,7 +148,7 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
           })
         ),
         markExceptionUnhandled,
-        Effect.map((response) => response.data)
+        Effect.flatMap(parseObjectFromResponse)
       )
 
     const search: (typeof FhirR4Client.Service)['search'] = (params) => {
@@ -125,7 +175,7 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
         (a) => a,
         Effect.flatMap((response) => handlers.handleSearchResponse(response)),
         markExceptionUnhandled,
-        Effect.map((response) => response.data)
+        Effect.flatMap(parseObjectFromResponse)
       )
     }
 
@@ -144,7 +194,7 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
         (a) => a,
         Effect.flatMap((response) => handlers.handleCreateResponse(response)),
         markExceptionUnhandled,
-        Effect.map((response) => response.data)
+        Effect.flatMap(parseObjectFromResponse)
       )
 
     const update: (typeof FhirR4Client.Service)['update'] = ({
@@ -166,7 +216,7 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
           handlers.handleUpdateResponse(response, { resourceType: type, id })
         ),
         markExceptionUnhandled,
-        Effect.map((response) => response.data)
+        Effect.flatMap(parseObjectFromResponse)
       )
 
     const deleteResource: (typeof FhirR4Client.Service)['delete'] = ({
@@ -200,7 +250,7 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
           handlers.handleExecuteBundleResponse(response)
         ),
         markExceptionUnhandled,
-        Effect.map((response) => response.data)
+        Effect.flatMap(parseObjectFromResponse)
       )
 
     return {

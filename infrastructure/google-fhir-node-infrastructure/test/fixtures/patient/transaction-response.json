@@ -1,0 +1,30 @@
+{
+  "request": {
+    "method": "POST",
+    "resourceType": "Bundle",
+    "body": {
+      "type": "transaction"
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "entry": [
+        {
+          "response": {
+            "etag": "W/\"MTc2OTQ0ODI5NTI0MDY1NDAwMA\"",
+            "lastModified": "2026-01-26T17:24:55.240654+00:00",
+            "location": "https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/f247ed9c-ab55-4f9d-99da-04b555037410/_history/MTc2OTQ0ODI5NTI0MDY1NDAwMA",
+            "status": "201 Created"
+          }
+        }
+      ],
+      "resourceType": "Bundle",
+      "type": "transaction-response"
+    }
+  },
+  "metadata": {
+    "recordedAt": "2026-01-26T17:24:55.174Z",
+    "description": "Execute Bundle - transaction response"
+  }
+}
