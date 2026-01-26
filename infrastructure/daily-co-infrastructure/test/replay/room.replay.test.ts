@@ -155,7 +155,7 @@ describe('Daily.co Room Operations (Replay)', () => {
 
   describe('error scenarios', () => {
     it('should handle 401 Unauthorized as AuthError', async () => {
-      mswServer.use(createUnauthorizedHandler('rooms'))
+      mswServer.use(createUnauthorizedHandler('rooms', 'POST'))
 
       const program = Effect.gen(function* () {
         const client = yield* ExternalVideoCallClient
@@ -184,7 +184,7 @@ describe('Daily.co Room Operations (Replay)', () => {
     })
 
     it('should handle 403 Forbidden', async () => {
-      mswServer.use(createForbiddenHandler('rooms'))
+      mswServer.use(createForbiddenHandler('rooms', 'POST'))
 
       const program = Effect.gen(function* () {
         const client = yield* ExternalVideoCallClient

@@ -80,10 +80,13 @@ export const createNotFoundHandler = (endpoint: string) => {
 /**
  * Create a 401 unauthorized handler
  */
-export const createUnauthorizedHandler = (endpoint: string) => {
+export const createUnauthorizedHandler = (
+  endpoint: string,
+  method: 'GET' | 'POST' = 'GET'
+) => {
   const path = `${DAILYCO_API_BASE}/${endpoint}`
 
-  return http.get(path, () => {
+  const handler = () => {
     return HttpResponse.json(
       {
         error: 'unauthorized',
@@ -91,16 +94,21 @@ export const createUnauthorizedHandler = (endpoint: string) => {
       },
       { status: 401 }
     )
-  })
+  }
+
+  return method === 'POST' ? http.post(path, handler) : http.get(path, handler)
 }
 
 /**
  * Create a 403 forbidden handler
  */
-export const createForbiddenHandler = (endpoint: string) => {
+export const createForbiddenHandler = (
+  endpoint: string,
+  method: 'GET' | 'POST' = 'GET'
+) => {
   const path = `${DAILYCO_API_BASE}/${endpoint}`
 
-  return http.get(path, () => {
+  const handler = () => {
     return HttpResponse.json(
       {
         error: 'forbidden',
@@ -108,5 +116,7 @@ export const createForbiddenHandler = (endpoint: string) => {
       },
       { status: 403 }
     )
-  })
+  }
+
+  return method === 'POST' ? http.post(path, handler) : http.get(path, handler)
 }
