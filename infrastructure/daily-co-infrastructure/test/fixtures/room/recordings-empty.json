@@ -1,0 +1,20 @@
+{
+  "request": {
+    "method": "GET",
+    "endpoint": "recordings",
+    "params": {
+      "room_name": "mock-room-name"
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "total_count": 0,
+      "data": []
+    }
+  },
+  "metadata": {
+    "recordedAt": "2026-01-26T00:00:00.000Z",
+    "description": "Get Recordings - empty response"
+  }
+}

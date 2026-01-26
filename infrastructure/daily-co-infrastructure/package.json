@@ -17,16 +17,20 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"./src/**/*\"",
     "lint:fix": "eslint --fix \"./src/**/*\"",
-    "test": "echo \"No tests in this package\"",
+    "test": "vitest run",
+    "test:live": "vitest run --config vitest.live.config.ts",
+    "test:live:record": "RECORD_FIXTURES=true vitest run --config vitest.live.config.ts",
     "preview": "vite preview"
   },
   "dependencies": {
     "@assessmentis/clinical-domain": "*",
     "@assessmentis/config-domain": "*",
     "@assessmentis/ontology": "*",
+    "@assessmentis/platform-domain": "*",
     "@assessmentis/video-call-domain": "*",
     "@daily-co/daily-js": "^0.85.0",
     "@daily-co/daily-react": "^0.24.0",
+    "effect": "^3.19.8",
     "temporal-polyfill": "0.3.0"
   },
   "devDependencies": {
@@ -39,13 +43,16 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
     "babel-plugin-react-compiler": "^1.0.0",
+    "dotenv": "^16.4.7",
     "eslint": "^9.39.1",
     "globals": "^16.5.0",
+    "msw": "^2.7.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.48.0",
     "typescript-plugin-css-modules": "^5.2.0",
     "vite": "*",
-    "vite-plugin-dts": "^4.5.4"
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^4.0.15"
   },
   "peerDependencies": {
     "jotai": "^2",

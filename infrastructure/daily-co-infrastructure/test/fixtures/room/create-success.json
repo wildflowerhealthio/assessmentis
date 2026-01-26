@@ -1,0 +1,24 @@
+{
+  "request": {
+    "method": "POST",
+    "endpoint": "rooms",
+    "body": {
+      "properties": {
+        "exp": 1234567890,
+        "enable_chat": false
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "id": "mock-room-id-123",
+      "name": "mock-room-name-123",
+      "url": "https://assessmentis.daily.co/mock-room-name-123"
+    }
+  },
+  "metadata": {
+    "recordedAt": "2026-01-26T00:00:00.000Z",
+    "description": "Create Room - success response"
+  }
+}
