@@ -15,12 +15,15 @@ export class FhirR4Client extends Context.Tag('BareFhirR4Client')<
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       bundle: DeepReadonly<typeof Bundle<any, any>>
     ) => Effect.Effect<unknown, AuthError | AuthzError | UnhandledError, never>
-    read: (params: {
-      resourceType: string
+    read: <ResourceType extends string>(params: {
+      resourceType: ResourceType
       id: string
     }) => Effect.Effect<
       unknown,
-      AuthError | AuthzError | UnhandledError | NotFoundError,
+      | AuthError
+      | AuthzError
+      | UnhandledError
+      | NotFoundError<ResourceType, { id: string }>,
       never
     >
     search: (
@@ -32,22 +35,28 @@ export class FhirR4Client extends Context.Tag('BareFhirR4Client')<
       resource: unknown
     }) => Effect.Effect<unknown, AuthError | AuthzError | UnhandledError, never>
 
-    update: (params: {
+    update: <ResourceType extends string>(params: {
       id: string
-      type: string
+      type: ResourceType
       resource: unknown
     }) => Effect.Effect<
       unknown,
-      AuthError | AuthzError | UnhandledError | NotFoundError,
+      | AuthError
+      | AuthzError
+      | UnhandledError
+      | NotFoundError<ResourceType, { id: string }>,
       never
     >
 
-    delete: (params: {
+    delete: <ResourceType extends string>(params: {
       id: string
-      type: string
+      type: ResourceType
     }) => Effect.Effect<
       void,
-      AuthError | AuthzError | UnhandledError | NotFoundError,
+      | AuthError
+      | AuthzError
+      | UnhandledError
+      | NotFoundError<ResourceType, { id: string }>,
       never
     >
   }

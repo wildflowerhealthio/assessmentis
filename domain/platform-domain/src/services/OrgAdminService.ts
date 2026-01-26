@@ -42,7 +42,10 @@ export class OrgAdminService extends Context.Tag('OrgAdminService')<
       userId: UserId
     ) => Effect.Effect<
       ReadonlyArray<string>,
-      AuthError | AuthzError | NotFoundError | UnhandledError
+      | AuthError
+      | AuthzError
+      | NotFoundError<'User', { userId: UserId }>
+      | UnhandledError
     >
 
     /**
@@ -53,7 +56,10 @@ export class OrgAdminService extends Context.Tag('OrgAdminService')<
       userId: UserId
     ) => Effect.Effect<
       User,
-      AuthError | AuthzError | NotFoundError | UnhandledError
+      | AuthError
+      | AuthzError
+      | NotFoundError<'User', { userId: UserId }>
+      | UnhandledError
     >
   }
 >() {}
@@ -67,7 +73,16 @@ export const OrgAdminServiceLayer = Layer.effect(
     // Get user from Firestore
     const getUser: typeof OrgAdminService.Service.getUser = (userId) =>
       Effect.gen(function* () {
-        const data = yield* documentStore.get('users', userId)
+        const data = yield* documentStore.get('users', userId).pipe(
+          Effect.mapError((cause) =>
+            cause instanceof NotFoundError
+              ? new NotFoundError({
+                  resourceType: 'User',
+                  params: { userId },
+                })
+              : cause
+          )
+        )
         if (data == undefined) {
           return yield* Effect.fail(
             new NotFoundError({
@@ -93,7 +108,18 @@ export const OrgAdminServiceLayer = Layer.effect(
       userId
     ) =>
       Effect.gen(function* () {
-        const data = yield* documentStore.get('orgs', orgSlug, 'users', userId)
+        const data = yield* documentStore
+          .get('orgs', orgSlug, 'users', userId)
+          .pipe(
+            Effect.mapError((cause) =>
+              cause instanceof NotFoundError
+                ? new NotFoundError({
+                    resourceType: 'User',
+                    params: { userId },
+                  })
+                : cause
+            )
+          )
         if (data == undefined) {
           return yield* Effect.fail(
             new NotFoundError({

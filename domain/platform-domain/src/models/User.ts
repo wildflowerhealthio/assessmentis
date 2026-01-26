@@ -4,6 +4,7 @@ import { UserId } from './UserId'
 
 export const User = Schema.Struct({
   uid: UserId,
+  lastOrg: Schema.optional(Schema.String),
   org_roles: Schema.Record({
     key: OrgSlug,
     value: Schema.Array(Role),

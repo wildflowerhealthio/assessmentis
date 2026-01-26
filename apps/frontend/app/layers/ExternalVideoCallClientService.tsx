@@ -1,6 +1,7 @@
 import { DailyCoExternalVideoCallClientLayer } from '@assessmentis/daily-co-infrastructure'
 import {
   AuthError,
+  BadDataError,
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
@@ -11,6 +12,7 @@ import {
   Org,
   AuthDataService,
   NoSelectedOrgError,
+  OrgSlug,
 } from '@assessmentis/platform-domain'
 
 export class ExternalVideoCallClientService extends Context.Tag(
@@ -20,7 +22,7 @@ export class ExternalVideoCallClientService extends Context.Tag(
   {
     client: Effect.Effect<
       typeof ExternalVideoCallClient.Service,
-      AuthError | UnhandledError | NotFoundError | NoSelectedOrgError,
+      AuthError | UnhandledError | NoSelectedOrgError,
       never
     >
   }
@@ -30,7 +32,11 @@ export const startExternalVideoCallClientService = (
   authDataService: typeof AuthDataService.Service,
   org: Effect.Effect<
     Org,
-    AuthError | UnhandledError | NotFoundError | NoSelectedOrgError
+    | AuthError
+    | UnhandledError
+    | NoSelectedOrgError
+    | BadDataError
+    | NotFoundError<'Org', { orgSlug: OrgSlug }>
   >
 ) =>
   Effect.succeed({
@@ -52,6 +58,11 @@ export const startExternalVideoCallClientService = (
           ),
           Match.exhaustive
         )
+      ),
+      Effect.mapError((e) =>
+        e instanceof BadDataError || e instanceof NotFoundError
+          ? e.asUnhandledError()
+          : e
       )
     ),
   })

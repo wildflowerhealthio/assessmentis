@@ -13,7 +13,11 @@ import {
   Either,
 } from 'effect'
 import { DocumentStore, Org, OrgSlug } from '@assessmentis/platform-domain'
-import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
+import {
+  BadDataError,
+  NotFoundError,
+  UnhandledError,
+} from '@assessmentis/ontology'
 import {
   pubsubAsPerpetualStream,
   takeOneFromPubSubOrDie,
@@ -28,7 +32,13 @@ export const createOrgSlugPubSub = PubSub.sliding<
 
 export const createOrgPubSub = PubSub.sliding<
   Take.Take<
-    Either.Either<Org, NoSelectedOrgError | NotFoundError | UnhandledError>
+    Either.Either<
+      Org,
+      | NoSelectedOrgError
+      | NotFoundError<'Org', { orgSlug: OrgSlug }>
+      | BadDataError
+      | UnhandledError
+    >
   >
 >({
   capacity: 1,
@@ -37,7 +47,14 @@ export const createOrgPubSub = PubSub.sliding<
 
 export class NoSelectedOrgError extends Data.TaggedError(
   'NoSelectedOrgError'
-)<object> {}
+)<object> {
+  constructor() {
+    super({})
+    this.name = 'NoSelectedOrgError'
+    this.message = 'No organization is currently selected.'
+    this.stack = new Error().stack
+  }
+}
 
 export class OrgService extends Context.Tag('OrgService')<
   OrgService,
@@ -52,13 +69,22 @@ export class OrgService extends Context.Tag('OrgService')<
       Scope.Scope
     >
     activeOrgStream: Stream.Stream<
-      Either.Either<Org, NoSelectedOrgError | NotFoundError | UnhandledError>,
+      Either.Either<
+        Org,
+        | NoSelectedOrgError
+        | NotFoundError<'Org', { orgSlug: OrgSlug }>
+        | BadDataError
+        | UnhandledError
+      >,
       never,
       Scope.Scope
     >
     activeOrg: Effect.Effect<
       Org,
-      NoSelectedOrgError | NotFoundError | UnhandledError
+      | NoSelectedOrgError
+      | NotFoundError<'Org', { orgSlug: OrgSlug }>
+      | BadDataError
+      | UnhandledError
     >
     shutdown: Effect.Effect<void, never, never>
   }
@@ -68,7 +94,7 @@ const decodeOrg = (data: unknown) =>
   Schema.decodeUnknown(Org)(data).pipe(
     Effect.mapError(
       (cause) =>
-        new UnhandledError({
+        new BadDataError({
           message: "The org model couldn't be parsed",
           cause,
         })
@@ -81,7 +107,13 @@ export const startOrgService = (
   >,
   orgPubSub: PubSub.PubSub<
     Take.Take<
-      Either.Either<Org, NoSelectedOrgError | NotFoundError | UnhandledError>
+      Either.Either<
+        Org,
+        | NoSelectedOrgError
+        | NotFoundError<'Org', { orgSlug: OrgSlug }>
+        | BadDataError
+        | UnhandledError
+      >
     >
   >
 ) =>
@@ -90,8 +122,7 @@ export const startOrgService = (
 
     yield* orgSlugPubSub.publish(
       // TODO: Replace with last selected org slug from persistent storage
-      // Take.of(Either.left(new NoSelectedOrgError({})))
-      Take.of(Either.right(OrgSlug.make('localhost')))
+      Take.of(Either.left(new NoSelectedOrgError()))
     )
 
     const orgPubSubFiber = yield* Effect.forkDaemon(
@@ -110,10 +141,23 @@ export const startOrgService = (
                 ): Stream.Stream<
                   Either.Either<
                     Org,
-                    NoSelectedOrgError | NotFoundError | UnhandledError
+                    | NoSelectedOrgError
+                    | NotFoundError<'Org', { orgSlug: OrgSlug }>
+                    | BadDataError
+                    | UnhandledError
                   >
                 > {
                   return documentStore.subscribeTo('orgs', orgSlug).pipe(
+                    Stream.map(
+                      Either.mapLeft((cause) =>
+                        cause instanceof NotFoundError
+                          ? new NotFoundError<'Org', { orgSlug: OrgSlug }>({
+                              resourceType: 'Org',
+                              params: { orgSlug },
+                            })
+                          : cause
+                      )
+                    ),
                     Stream.mapEffect((e) =>
                       Either.match(e, {
                         onRight(
@@ -121,7 +165,10 @@ export const startOrgService = (
                         ): Effect.Effect<
                           Either.Either<
                             Org,
-                            NoSelectedOrgError | NotFoundError | UnhandledError
+                            | NoSelectedOrgError
+                            | NotFoundError<'Org', { orgSlug: OrgSlug }>
+                            | BadDataError
+                            | UnhandledError
                           >
                         > {
                           return Effect.either(decodeOrg(data))
@@ -131,7 +178,10 @@ export const startOrgService = (
                         ): Effect.Effect<
                           Either.Either<
                             Org,
-                            NoSelectedOrgError | NotFoundError | UnhandledError
+                            | NoSelectedOrgError
+                            | NotFoundError<'Org', { orgSlug: OrgSlug }>
+                            | BadDataError
+                            | UnhandledError
                           >
                         > {
                           return Effect.succeed(Either.left(err))
@@ -145,7 +195,10 @@ export const startOrgService = (
                 ): Stream.Stream<
                   Either.Either<
                     Org,
-                    NoSelectedOrgError | NotFoundError | UnhandledError
+                    | NoSelectedOrgError
+                    | NotFoundError<'Org', { orgSlug: OrgSlug }>
+                    | BadDataError
+                    | UnhandledError
                   >
                 > {
                   return Stream.succeed(Either.left(left))
@@ -170,7 +223,7 @@ export const startOrgService = (
         return orgSlugPubSub
           .publish(
             Option.match(maybeOrgSlug, {
-              onNone: () => Take.of(Either.left(new NoSelectedOrgError({}))),
+              onNone: () => Take.of(Either.left(new NoSelectedOrgError())),
               onSome: (slug) => Take.of(Either.right(slug)),
             })
           )

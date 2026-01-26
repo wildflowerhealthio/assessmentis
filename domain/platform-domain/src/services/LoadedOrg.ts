@@ -13,7 +13,10 @@ const decodeOrg = (orgSlug: OrgSlug, data: unknown | undefined) =>
   Effect.gen(function* () {
     if (data == undefined) {
       return yield* Effect.fail(
-        new NotFoundError({ resourceType: 'orgs', params: { orgSlug } })
+        new NotFoundError<'Org', { orgSlug: OrgSlug }>({
+          resourceType: 'Org',
+          params: { orgSlug },
+        })
       )
     }
     return yield* Schema.decodeUnknownEither(Org)(data).pipe(
@@ -30,8 +33,11 @@ const decodeOrg = (orgSlug: OrgSlug, data: unknown | undefined) =>
 export const LiteralLoadedOrgLayer = (
   orgSlug: OrgSlug,
   data: unknown
-): Layer.Layer<LoadedOrg, NotFoundError | UnhandledError, never> =>
-  Layer.effect(LoadedOrg, decodeOrg(orgSlug, data))
+): Layer.Layer<
+  LoadedOrg,
+  NotFoundError<'Org', { orgSlug: OrgSlug }> | UnhandledError,
+  never
+> => Layer.effect(LoadedOrg, decodeOrg(orgSlug, data))
 
 export const LoadedOrgLayer = Layer.effect(
   LoadedOrg,

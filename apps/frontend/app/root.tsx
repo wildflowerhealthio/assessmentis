@@ -18,11 +18,9 @@ import {
 } from '@assessmentis/ontology'
 import * as firebase from 'app/firebase'
 import * as auth from './FirebaseWebLayer'
-import NavHeader from './modules/global/components/NavHeader/NavHeader'
 import { BreadcrumbProvider } from './modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
 import { shouldShowRawData } from './util/debugHelpers'
 import { PageLoader } from './modules/common/components/PageLoader/PageLoader'
-import { OrgContextProvider } from './layers/OrgContextProvider'
 import { PlatformContextProvider } from './layers/PlatformContextProvider'
 // HydrateFallback is rendered while the client loader is running
 export function HydrateFallback() {
@@ -45,29 +43,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
       </head>
       <body>
-        <PlatformContextProvider>
-          <OrgContextProvider>
-            <BreadcrumbProvider>
-              <NavHeader />
-              <div
-                style={{
-                  width: '100%',
-                  margin: '0 auto',
-                  flexGrow: 1,
-                  flexShrink: 1,
-                  flexDirection: 'column',
-                  overflowY: 'hidden',
+        <BreadcrumbProvider>
+          <PlatformContextProvider>
+            <div
+              style={{
+                width: '100%',
+                margin: '0 auto',
+                flexGrow: 1,
+                flexShrink: 1,
+                flexDirection: 'column',
+                overflowY: 'hidden',
 
-                  paddingBlock: 'var(--space-4)',
-                  paddingInline: 'var(--space-8)',
-                  marginInline: 'auto',
-                }}
-              >
-                {children}
-              </div>
-            </BreadcrumbProvider>
-          </OrgContextProvider>
-        </PlatformContextProvider>
+                paddingBlock: 'var(--space-4)',
+                paddingInline: 'var(--space-8)',
+                marginInline: 'auto',
+              }}
+            >
+              {children}
+            </div>
+          </PlatformContextProvider>
+        </BreadcrumbProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

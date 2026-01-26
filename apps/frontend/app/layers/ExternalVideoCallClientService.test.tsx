@@ -69,7 +69,7 @@ describe('ExternalVideoCallClientService', () => {
     await fc.assert(
       fc.asyncProperty(
         fc.constantFrom(
-          new NoSelectedOrgError({ message: 'No org' }),
+          new NoSelectedOrgError(),
           new UnhandledError({ message: 'Unhandled' })
         ),
         async (orgError) => {

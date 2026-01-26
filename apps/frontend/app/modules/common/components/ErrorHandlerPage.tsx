@@ -1,56 +1,73 @@
 import {
+  BadDataError,
   ExternalAssertionError,
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
-import React, { JSX } from 'react'
-import { Outlet } from 'react-router'
-import { LoginButton } from '../modules/global/components/LoginButton'
-import { Generic404Content } from '../modules/common/components/Generic404Content'
+import React, { JSX, PropsWithChildren } from 'react'
+import { useAsyncError } from 'react-router'
 import { AuthError } from '@assessmentis/ontology'
+import { LoginButton } from '../../global/components/LoginButton'
+import { Generic404Content } from './Generic404Content'
+import { NoSelectedOrgError } from '@assessmentis/platform-domain'
 
-type IProps = object
-
-const ResourcePage = () => {
-  return <InnerResourcePage />
+interface IProps {
+  error: unknown
 }
 
-export default ResourcePage
+export const ErrorHandlerPage = ({ children }: PropsWithChildren<object>) => {
+  const error = useAsyncError()
+  return <InnerErrorHandlerPage error={error}>{children}</InnerErrorHandlerPage>
+}
 
 const asCaughtError = (error: unknown) => {
   if (error instanceof AuthError) {
     return {
       type: 'AuthError',
       error,
-    }
+    } as const
   }
 
   if (error instanceof ExternalAssertionError) {
     return {
       type: 'ExternalAssertionError',
       error,
-    }
+    } as const
   }
 
   if (error instanceof UnhandledError) {
     return {
       type: 'UnhandledError',
       error,
-    }
+    } as const
+  }
+
+  if (error instanceof BadDataError) {
+    return {
+      type: 'BadDataError',
+      error,
+    } as const
   }
 
   if (error instanceof NotFoundError) {
     return {
       type: 'NotFoundError',
       error,
-    }
+    } as const
   }
 
-  return undefined
+  if (error instanceof NoSelectedOrgError) {
+    return {
+      type: 'NoSelectedOrgError',
+      error,
+    } as const
+  }
+
+  return null
 }
 
-class InnerResourcePage extends React.Component<
-  IProps,
+export class InnerErrorHandlerPage extends React.Component<
+  PropsWithChildren<IProps>,
   {
     error:
       | null
@@ -68,13 +85,25 @@ class InnerResourcePage extends React.Component<
         }
       | {
           type: 'NotFoundError'
-          error: NotFoundError
+          error: NotFoundError<string, Record<string, unknown>>
+        }
+      | {
+          type: 'BadDataError'
+          error: BadDataError
+        }
+      | {
+          type: 'NoSelectedOrgError'
+          error: NoSelectedOrgError
         }
   }
 > {
   constructor(props: IProps) {
     super(props)
-    this.state = { error: null }
+    if (props.error) {
+      this.state = { error: asCaughtError(props.error) }
+    } else {
+      this.state = { error: null }
+    }
   }
 
   static getDerivedStateFromError(error: unknown) {
@@ -99,22 +128,11 @@ class InnerResourcePage extends React.Component<
     }
   }
 
-  // TODO: Delete
-  // componentDidUpdate(_prevProps: IProps, _prevState: object) {
-  //   if (this.state.error === null) return
-
-  //   switch (this.state.error.type) {
-  //     case 'AuthError':
-  //       if (this.props.loadedRuntime._tag == 'loaded') {
-  //         this.setState({ error: null })
-  //       }
-  //       return
-  //   }
-  // }
-
   render() {
     if (this.state.error === null) {
-      return <Outlet />
+      return this.props.children
+    } else if (this.state.error?.type == 'NoSelectedOrgError') {
+      return this.props.children
     }
 
     let errorContent: JSX.Element

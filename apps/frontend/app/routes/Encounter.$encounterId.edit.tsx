@@ -10,7 +10,7 @@ import {
   EncounterRepository,
 } from '@assessmentis/clinical-domain/administration'
 import { NotFoundError } from '@assessmentis/ontology'
-import type { Route } from './+types/_resource.Encounter.$encounterId.edit'
+import type { Route } from './+types/Encounter.$encounterId.edit'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { getEncounterDisplayName } from '../modules/resources/Encounter/utils/encounterDisplay'
 import {

@@ -31,10 +31,16 @@ export function DetailGrid({
             (item, index) =>
               !item.hidden && (
                 <Fragment key={index}>
-                  <dt className={cn('body-3', classes.DetailGrid__label)}>
+                  <dt
+                    key={`dt-${index}`}
+                    className={cn('body-3', classes.DetailGrid__label)}
+                  >
                     {item.label}
                   </dt>
-                  <dd className={cn('body-3', classes.DetailGrid__value)}>
+                  <dd
+                    key={`dd-${index}`}
+                    className={cn('body-3', classes.DetailGrid__value)}
+                  >
                     {item.value}
                   </dd>
                 </Fragment>

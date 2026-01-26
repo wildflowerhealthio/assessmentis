@@ -16,7 +16,9 @@ import { makeServerRuntime } from '../util/BaseLayer'
  */
 export const refreshGoogleOAuthTokenEffect: Effect.Effect<
   Record<string, never>,
-  AuthError | NotFoundError | UnhandledError,
+  | AuthError
+  | NotFoundError<'RefreshToken', { userId: string }>
+  | UnhandledError,
   AuthRepository | CurrentUserId
 > = Effect.gen(function* () {
   const authRepository = yield* AuthRepository
@@ -70,13 +72,17 @@ export const refreshGoogleOAuthToken = onRequest(
         Exit.match({
           onSuccess: () => response.status(200).json({ success: true }),
           onFailure: (error) => {
-            handleError(error, response, (err: NotFoundError) => {
-              if (err instanceof NotFoundError) {
-                response.status(404).json({ message: 'Token not found' })
-                return true
+            handleError(
+              error,
+              response,
+              (err: NotFoundError<'RefreshToken', { userId: string }>) => {
+                if (err instanceof NotFoundError) {
+                  response.status(404).json({ message: 'Token not found' })
+                  return true
+                }
+                return false
               }
-              return false
-            })
+            )
           },
         })
       )

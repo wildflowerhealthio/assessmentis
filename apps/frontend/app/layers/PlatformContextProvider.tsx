@@ -1,5 +1,5 @@
 import { Effect, Layer, Scope } from 'effect'
-import { Suspense, useEffect, useRef, useState } from 'react'
+import { Suspense, useMemo } from 'react'
 import { PlatformContext } from './PlatformContext'
 import {
   FirebaseWebDocumentStoreLayer,
@@ -27,8 +27,16 @@ import {
 } from './FhirR4ClientService'
 import { ClinicalDataRepositoryService } from './ClinicalDataRepositoriesService'
 import { startExternalVideoCallClientService } from './ExternalVideoCallClientService'
+import { Await, useAsyncError } from 'react-router'
+import { useEffectTs } from '@assessmentis/react-util'
+import NavHeader, {
+  EmptyHeader,
+  NavHeaderErrorHandler,
+  TextHeader,
+} from '../modules/global/components/NavHeader/NavHeader'
+import { PageLoader } from '../modules/common/components/PageLoader/PageLoader'
+import { InnerErrorHandlerPage } from '../modules/common/components/ErrorHandlerPage'
 import { ErrorBoundary } from 'react-error-boundary'
-import { Await } from 'react-router'
 
 const platformEffect = Effect.gen(function* () {
   const authDataPubSub = yield* createAuthDataPubSub
@@ -83,46 +91,59 @@ const platformEffect = Effect.gen(function* () {
   )
 )
 
+const ErrorFallback = ({ error }: { error?: unknown }) => {
+  const asyncError = useAsyncError()
+  return (
+    <div>
+      <NavHeaderErrorHandler error={error ?? asyncError}>
+        <EmptyHeader />
+      </NavHeaderErrorHandler>
+      <InnerErrorHandlerPage error={error ?? asyncError} />
+    </div>
+  )
+}
+
 export const PlatformContextProvider: React.FC<
   React.PropsWithChildren<object>
 > = ({ children }) => {
-  const startedRef = useRef(false)
-  const [platformPromise, setPlatformPromise] = useState<
-    Promise<PlatformContext>
-  >(new Promise<PlatformContext>(() => {}))
-
-  useEffect(() => {
-    if (startedRef.current) return
-    startedRef.current = true
-
+  const thisPlatformEffect = useMemo(() => {
     const scope = Effect.runSync(Scope.make())
-    const controller = new AbortController()
-    const signal = controller.signal
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setPlatformPromise(
-      Effect.runPromise(
-        platformEffect.pipe(Effect.provideService(Scope.Scope, scope)),
-        { signal }
-      )
-    )
-    return () => controller.abort()
+    return platformEffect.pipe(Effect.provideService(Scope.Scope, scope))
   }, [])
+  const platformPromise = useEffectTs(thisPlatformEffect)
 
   return (
-    <ErrorBoundary
-      fallbackRender={({ error }) => (
-        <div>Failed to load platform: {String(error)}</div>
-      )}
+    <Suspense
+      fallback={
+        <div
+          style={{
+            width: '100%',
+            margin: '0 auto',
+            flexGrow: 1,
+            flexShrink: 1,
+            flexDirection: 'column',
+            overflowY: 'hidden',
+          }}
+        >
+          <TextHeader title="Loading..." />
+          <PageLoader />
+        </div>
+      }
     >
-      <Suspense fallback={<div>Loading PlatformContextProvider...</div>}>
-        <Await resolve={platformPromise}>
+      <ErrorBoundary fallbackRender={ErrorFallback}>
+        <Await resolve={platformPromise} errorElement={<ErrorFallback />}>
           {(platform) => (
             <PlatformContext.Provider value={platform}>
+              <NavHeader
+                activeOrgStream={platform.orgService.activeOrgStream}
+                userStream={platform.userService.userStream}
+                setActiveOrgSlug={platform.orgService.setActiveOrgSlug}
+              />
               {children}
             </PlatformContext.Provider>
           )}
         </Await>
-      </Suspense>
-    </ErrorBoundary>
+      </ErrorBoundary>
+    </Suspense>
   )
 }

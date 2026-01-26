@@ -1,4 +1,4 @@
-import type { Route } from './+types/_resource.Observation._index'
+import type { Route } from './+types/Observation._index'
 import { useSearchParams } from 'react-router'
 import { useMemo } from 'react'
 import { useObservationCollection } from '../modules/resources/Observation/hooks/useObservationCollection'

@@ -26,7 +26,7 @@ export const getEncounterRecordings = (
   | ExternalAssertionError
   | AuthError
   | AuthzError
-  | NotFoundError,
+  | NotFoundError<'Encounter', { id: EncounterId }>,
   MediaRepository
 > => {
   return Effect.gen(function* () {

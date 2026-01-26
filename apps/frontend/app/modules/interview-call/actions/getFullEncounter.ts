@@ -31,7 +31,7 @@ export const getFullEncounter = (
   | UnhandledError
   | AuthError
   | AuthzError
-  | NotFoundError
+  | NotFoundError<'Encounter', { id: EncounterId | undefined }>
   | ExternalAssertionError
   | NoSelectedOrgError,
   ClinicalDataRepositoryService

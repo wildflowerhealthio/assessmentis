@@ -52,7 +52,7 @@ export function createResourceCollectionHook<
       TResource,
       | UnhandledError
       | ExternalAssertionError
-      | NotFoundError
+      | NotFoundError<TResource['resourceType'], { id: TResource['id'] }>
       | NoSelectedOrgError
       | AuthError
     >(repoEffect, resourcesPromise)

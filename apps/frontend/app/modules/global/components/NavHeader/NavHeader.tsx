@@ -1,184 +1,125 @@
-import { Await, Link, useNavigate } from 'react-router'
+import { OrgPicker } from '../../../../layers/OrgPicker'
+import { HeaderBreadcrumbs } from './HeaderBreadcrumbs'
+import { NavBurger } from './NavBurger'
+import { OptionalBackButton } from './OptionalBackButton'
+import { Effect, Either, Stream, Scope, Option } from 'effect'
+import {
+  Org,
+  User,
+  OrgSlug,
+  UserId,
+  NoSelectedOrgError,
+} from '@assessmentis/platform-domain'
 import classes from './NavHeader.module.css'
-import { cn } from '@assessmentis/react-util'
-import { Suspense, useRef, useState } from 'react'
-import { useOutsideClickHandler } from '@assessmentis/react-util/hooks'
-import { LoginButton } from '../LoginButton'
-import { useBreadcrumbContext } from '../../contexts/BreadcrumbContext'
-import Skeleton from 'react-loading-skeleton'
-import 'react-loading-skeleton/dist/skeleton.css'
+import {
+  AuthError,
+  BadDataError,
+  NotFoundError,
+  UnhandledError,
+} from '@assessmentis/ontology'
+import { cn } from '../../../../../../../global/react-util/src/functions'
+import React, { PropsWithChildren } from 'react'
+import { useAsyncError } from 'react-router'
+import { signIn } from '../../../../firebase'
 
-const NavHeader = () => {
-  const [showMenu, setShowMenu] = useState(false)
-  const { breadcrumbs } = useBreadcrumbContext()
-  const navigate = useNavigate()
+export const EmptyHeader = () => (
+  <NavHeader
+    activeOrgStream={Stream.never}
+    userStream={Stream.never}
+    setActiveOrgSlug={() => Effect.void}
+  />
+)
 
-  const navRef = useRef<HTMLElement | null>(null)
-  useOutsideClickHandler(navRef, () => {
-    setShowMenu(false)
-  })
-
-  const renderBreadcrumbs = () => {
-    // Always include home breadcrumb at the start
-    const allBreadcrumbs =
-      breadcrumbs.length > 0
-        ? [{ label: '𝐴', href: '/' }, ...breadcrumbs]
-        : [{ label: '𝐴ssessment.is', href: '/' }]
-
-    return (
-      <div
-        className={cn('text-alt-heading-3', classes.NavHeader__breadcrumbs)}
-        style={{ marginRight: 'var(--space-5)' }}
-      >
-        {allBreadcrumbs.map((segment, index) => {
-          const isLast = index === allBreadcrumbs.length - 1
-
-          if (segment instanceof Promise) {
-            return (
-              <span
-                key={index}
-                className={classes.NavHeader__breadcrumbSegment}
-              >
-                {index > 0 && (
-                  <span className={classes.NavHeader__breadcrumbSeparator}>
-                    {' / '}
-                  </span>
-                )}
-                <Suspense fallback={<Skeleton width={120} />} key={index}>
-                  <Await resolve={segment}>
-                    {(segment) =>
-                      segment.href && !isLast ? (
-                        <Link
-                          to={segment.href}
-                          className={classes.NavHeader__breadcrumbLink}
-                        >
-                          {segment.label}
-                        </Link>
-                      ) : (
-                        <span className={classes.NavHeader__breadcrumbCurrent}>
-                          {segment.label}
-                        </span>
-                      )
-                    }
-                  </Await>
-                </Suspense>
-              </span>
-            )
-          }
-
-          return (
-            <span key={index} className={classes.NavHeader__breadcrumbSegment}>
-              {index > 0 && (
-                <span className={classes.NavHeader__breadcrumbSeparator}>
-                  {' / '}
-                </span>
-              )}
-              {'loading' in segment && segment.loading ? (
-                <Skeleton width={120} />
-              ) : segment.href && !isLast ? (
-                <Link
-                  to={segment.href}
-                  className={classes.NavHeader__breadcrumbLink}
-                >
-                  {segment.label}
-                </Link>
-              ) : (
-                <span className={classes.NavHeader__breadcrumbCurrent}>
-                  {segment.label}
-                </span>
-              )}
-            </span>
-          )
-        })}
-      </div>
-    )
+export const NavHeaderErrorHandler = ({
+  error,
+  children,
+}: PropsWithChildren<{ error: unknown }>) => {
+  if (error instanceof AuthError) {
+    return <TextHeader title="Please Login" onClick={signIn} />
+  } else if (error instanceof BadDataError || error instanceof NotFoundError) {
+    return <TextHeader title="Data Error - Contact Support" />
+  } else if (error instanceof NoSelectedOrgError) {
+    return <TextHeader title={'Please Select an Organization'} />
+  } else if (error instanceof UnhandledError) {
+    // Keep
   }
+
+  return children
+}
+
+const NavHeader = (props: {
+  activeOrgStream: Stream.Stream<
+    Either.Either<
+      Org,
+      | NoSelectedOrgError
+      | UnhandledError
+      | AuthError
+      | BadDataError
+      | NotFoundError<'Org', { orgSlug: OrgSlug }>
+    >,
+    never,
+    Scope.Scope
+  >
+  userStream: Stream.Stream<
+    Either.Either<
+      User,
+      | UnhandledError
+      | AuthError
+      | BadDataError
+      | NotFoundError<'User', { userId: UserId }>
+    >,
+    never,
+    Scope.Scope
+  >
+  setActiveOrgSlug: (
+    maybeOrgSlug: Option.Option<OrgSlug>
+  ) => Effect.Effect<void, never, never>
+}) => {
+  const error = useAsyncError()
+
+  return (
+    <NavHeaderErrorHandler error={error}>
+      <header className={classes.NavHeader}>
+        <OptionalBackButton />
+        <OrgPicker {...props} />
+        <HeaderBreadcrumbs />
+        <NavBurger />
+      </header>
+    </NavHeaderErrorHandler>
+  )
+}
+
+export const TextHeader = (props: {
+  title: React.ReactNode
+  onClick?: () => void
+}) => {
+  const title = props.onClick ? (
+    <button
+      onClick={props.onClick}
+      className={cn(
+        'element-button',
+        'button-1',
+        'ghost',
+        'text-alt-heading-3'
+      )}
+    >
+      {' '}
+      {props.title}
+    </button>
+  ) : (
+    <span
+      className={'text-alt-heading-3'}
+      style={{ color: 'var(--neutral-1)' }}
+    >
+      {props.title}
+    </span>
+  )
 
   return (
     <header className={classes.NavHeader}>
-      <div className={classes.NavHeader__leftSection}>
-        <button
-          onClick={() => navigate(-1)}
-          className={cn('text-alt-heading-3', classes.NavHeader__backButton)}
-          aria-label="Go back"
-        >
-          ←
-        </button>
-        {renderBreadcrumbs()}
-      </div>
-      <nav ref={navRef} className={classes.NavHeader__nav}>
-        <button
-          aria-label={showMenu ? 'Show menu' : 'Hide menu'}
-          className={cn(
-            'element-button button-1 ghost',
-            showMenu && 'show',
-            classes.NavHeader__button
-          )}
-          onClick={() => setShowMenu((showMenu) => !showMenu)}
-        >
-          <div></div>
-        </button>
-        {showMenu ? (
-          <menu className={classes.NavHeader__menu}>
-            <Link
-              className={cn('heading-2', classes.NavHeader__link)}
-              to="/Encounter"
-            >
-              Encounters
-            </Link>
-
-            <Link
-              className={cn('heading-2', classes.NavHeader__link)}
-              to="/Patient"
-            >
-              Patients
-            </Link>
-
-            <hr />
-
-            <Link
-              className={cn('heading-2', classes.NavHeader__link)}
-              to="/Composition"
-            >
-              Compositions
-            </Link>
-
-            <Link
-              className={cn('heading-2', classes.NavHeader__link)}
-              to="/Observation"
-            >
-              Observations
-            </Link>
-
-            <hr />
-
-            <Link
-              className={cn('heading-2', classes.NavHeader__link)}
-              to="/Questionnaire"
-            >
-              Questionnaires
-            </Link>
-
-            <Link
-              className={cn('heading-2', classes.NavHeader__link)}
-              to="/QuestionnaireResponse"
-            >
-              Questionnaire Responses
-            </Link>
-
-            <hr />
-
-            <Link
-              className={cn('heading-2', classes.NavHeader__link)}
-              to="/Practitioner"
-            >
-              Practitioners
-            </Link>
-
-            <LoginButton className={cn('heading-2', classes.NavHeader__link)} />
-          </menu>
-        ) : undefined}
-      </nav>
+      <OptionalBackButton />
+      {title}
+      <NavBurger />
     </header>
   )
 }

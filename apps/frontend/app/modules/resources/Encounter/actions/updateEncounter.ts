@@ -23,7 +23,7 @@ export const updateEncounter = (
   | AuthError
   | AuthzError
   | ExternalAssertionError
-  | NotFoundError,
+  | NotFoundError<'Encounter', { id: EncounterId }>,
   EncounterRepository
 > => {
   return Effect.gen(function* () {

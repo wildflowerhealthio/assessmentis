@@ -23,7 +23,6 @@ import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
 import {
   AuthError,
   ExternalAssertionError,
-  NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
 import { FhirR4ClientService } from './FhirR4ClientService'
@@ -38,11 +37,7 @@ export type GoogleFhirWebLayer<Key extends keyof typeof Schemas> = Layer.Layer<
 export type ClinicalDataRepositoryServiceType = {
   [Key in keyof typeof Schemas]: Effect.Effect<
     ClinicalDataRepository<Schema.Schema.Type<(typeof Schemas)[Key]>>,
-    | AuthError
-    | NoSelectedOrgError
-    | NotFoundError
-    | UnhandledError
-    | ExternalAssertionError
+    AuthError | NoSelectedOrgError | UnhandledError
   >
 }
 
@@ -62,17 +57,16 @@ export class ClinicalDataRepositoryService extends Effect.Service<ClinicalDataRe
         resourceType: ResourceType
       ): Effect.Effect<
         ClinicalDataRepository<A>,
-        | AuthError
-        | NoSelectedOrgError
-        | NotFoundError
-        | UnhandledError
-        | ExternalAssertionError,
+        AuthError | NoSelectedOrgError | UnhandledError,
         never
       > =>
         Effect.map(clientService.client, (fhirClient) =>
           makeClinicalDataRepository(fhirClient, resourceType, schema)
+        ).pipe(
+          Effect.mapError((e) =>
+            e instanceof ExternalAssertionError ? e.asUnhandledError() : e
+          )
         )
-
       return {
         Composition: clientConstructor(Composition, 'Composition'),
         Encounter: clientConstructor(Encounter, 'Encounter'),
@@ -97,11 +91,7 @@ export class ClinicalDataRepositoryService extends Effect.Service<ClinicalDataRe
     resourceType: TResource['resourceType']
   ): Effect.Effect<
     ClinicalDataRepository<TResource>,
-    | AuthError
-    | NoSelectedOrgError
-    | NotFoundError
-    | UnhandledError
-    | ExternalAssertionError,
+    AuthError | NoSelectedOrgError | UnhandledError,
     never
   > {
     return Effect.gen(function* () {

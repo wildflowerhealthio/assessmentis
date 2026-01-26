@@ -1,0 +1,10 @@
+.OptionalBackButton {
+  padding: 0;
+  color: var(--app-accent);
+  cursor: pointer;
+  text-decoration: none;
+  aspect-ratio: 1;
+  border-radius: 1000px;
+  width: 40px;
+  height: 40px;
+}

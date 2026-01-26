@@ -184,7 +184,7 @@ formatTimelessDate(dateString)
 
 **Purpose**: Display a list of resources with link to create page and delete functionality
 
-**Template**: [\_resource.Patient.\_index.tsx](app/routes/_resource.Patient._index.tsx)
+**Template**: [\_resource.Patient.\_index.tsx](app/routes/.Patient._index.tsx)
 
 **Standard structure**:
 
@@ -193,7 +193,7 @@ import { Link } from 'react-router'
 import { LoadedResult } from '@assessmentis/ontology'
 import ResourceList from '../modules/resources/Resource/components/ResourceList'
 import { useResourceCollection } from '../modules/resources/Resource/hooks/useResourceCollection'
-import type { Route } from './+types/_resource.Resource._index'
+import type { Route } from './+types/Resource._index'
 
 const emptyFilters = {}
 
@@ -265,7 +265,7 @@ const handleFilterChange = (id: string | undefined) => {
 
 **Purpose**: Display comprehensive details of a single resource with navigation to edit
 
-**Template**: [\_resource.Patient.$patientId.\_index.tsx](app/routes/_resource.Patient.$patientId._index.tsx)
+**Template**: [\_resource.Patient.$patientId.\_index.tsx](app/routes/.Patient.$patientId._index.tsx)
 
 **Standard structure**:
 
@@ -279,7 +279,7 @@ import {
   ResourceRepository,
 } from '@assessmentis/clinical-domain/...'
 import { NotFoundError } from '@assessmentis/ontology'
-import type { Route } from './+types/_resource.Resource.$resourceId._index'
+import type { Route } from './+types/Resource.$resourceId._index'
 
 const tryDecodeResourceId = Schema.decodeOption(ResourceId)
 
@@ -343,7 +343,7 @@ export default function ResourceDetailPage({ loaderData }: Route.ComponentProps)
 
 **Purpose**: Form page for creating new resources
 
-**Template**: [\_resource.Patient.new.tsx](app/routes/_resource.Patient.new.tsx)
+**Template**: [\_resource.Patient.new.tsx](app/routes/.Patient.new.tsx)
 
 **Standard structure**:
 
@@ -387,7 +387,7 @@ export default function CreateResourcePage() {
 
 **Purpose**: Form page for editing existing resources
 
-**Template**: [\_resource.Patient.$patientId.edit.tsx](app/routes/_resource.Patient.$patientId.edit.tsx)
+**Template**: [\_resource.Patient.$patientId.edit.tsx](app/routes/.Patient.$patientId.edit.tsx)
 
 **Standard structure**:
 
@@ -406,7 +406,7 @@ import {
   ResourceRepository,
 } from '@assessmentis/clinical-domain/...'
 import { NotFoundError } from '@assessmentis/ontology'
-import type { Route } from './+types/_resource.Resource.$resourceId.edit'
+import type { Route } from './+types/Resource.$resourceId.edit'
 
 const tryDecodeResourceId = Schema.decodeOption(ResourceId)
 
@@ -1300,10 +1300,10 @@ Use the picker pattern and export in `BasePicker/index.ts`.
 ### Complete Reference Implementations
 
 - **Patient**: Full CRUD with all patterns implemented
-  - [List](app/routes/_resource.Patient._index.tsx)
-  - [Detail](app/routes/_resource.Patient.$patientId._index.tsx)
-  - [Create](app/routes/_resource.Patient.new.tsx)
-  - [Edit](app/routes/_resource.Patient.$patientId.edit.tsx)
+  - [List](app/routes/.Patient._index.tsx)
+  - [Detail](app/routes/.Patient.$patientId._index.tsx)
+  - [Create](app/routes/.Patient.new.tsx)
+  - [Edit](app/routes/.Patient.$patientId.edit.tsx)
   - [Form](app/modules/resources/Patient/components/PatientForm.tsx)
   - [Actions](app/modules/resources/Patient/actions/)
   - [Hook](app/modules/resources/Patient/hooks/usePatientCollection.ts)

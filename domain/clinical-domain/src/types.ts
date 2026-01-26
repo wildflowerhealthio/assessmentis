@@ -29,9 +29,11 @@ export type ClinicalDataRepositoryErrors =
   | AuthzError
   | ExternalAssertionError
 
-export type ClinicalDataRepositoryErrorsWithNotFound =
+export type ClinicalDataRepositoryErrorsWithNotFound<
+  T extends { resourceType: string; id?: string | undefined },
+> =
   | ClinicalDataRepositoryErrors
-  | NotFoundError
+  | NotFoundError<T['resourceType'], { id: NonNullable<T['id']> }>
 
 /**
  * Filter type for getMany operations on clinical data repositories
@@ -45,13 +47,19 @@ export type RepositoryFilters<TResource> = {
     : TResource[key]
 }
 
-export interface ClinicalDataRepository<T extends { id?: string | undefined }> {
+export interface ClinicalDataRepository<
+  T extends { resourceType: string; id?: string | undefined },
+> {
   /**
    * Retrieve a single resource by ID
    */
   get: (
     id: NonNullable<T['id']>
-  ) => Effect.Effect<WithId<T>, ClinicalDataRepositoryErrorsWithNotFound, never>
+  ) => Effect.Effect<
+    WithId<T>,
+    ClinicalDataRepositoryErrorsWithNotFound<T>,
+    never
+  >
 
   /**
    * Retrieve all resources matching the given parameters
@@ -91,12 +99,16 @@ export interface ClinicalDataRepository<T extends { id?: string | undefined }> {
    */
   update: (
     resource: WithId<T>
-  ) => Effect.Effect<WithId<T>, ClinicalDataRepositoryErrorsWithNotFound, never>
+  ) => Effect.Effect<
+    WithId<T>,
+    ClinicalDataRepositoryErrorsWithNotFound<T>,
+    never
+  >
 
   /**
    * Delete a resource by ID
    */
   delete(
     id: NonNullable<T['id']>
-  ): Effect.Effect<void, ClinicalDataRepositoryErrorsWithNotFound, never>
+  ): Effect.Effect<void, ClinicalDataRepositoryErrorsWithNotFound<T>, never>
 }

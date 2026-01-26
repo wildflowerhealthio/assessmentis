@@ -34,21 +34,23 @@ export class LoadedGapiHealthcareClient extends Effect.Service<LoadedGapiHealthc
           })
         },
       }).pipe(
-        Effect.flatMap((healthcare) => {
-          if (healthcare) return Effect.succeed(healthcare)
+        Effect.flatMap((healthcare) =>
+          Effect.gen(function* () {
+            if (healthcare) return healthcare
 
-          return Effect.flatMap(Effect.flatten(LoadedGapiClient), (client) =>
-            client.healthcare
-              ? Effect.succeed(client.healthcare)
-              : Effect.fail(
-                  new ExternalAssertionError({
-                    expected:
-                      'Google Healthcare API client to be present after loading',
-                    cause: null,
-                  })
-                )
-          )
-        })
+            const client = yield* Effect.flatten(LoadedGapiClient)
+
+            if (!client.healthcare)
+              return yield* Effect.fail(
+                new ExternalAssertionError({
+                  expected:
+                    'Google Healthcare API client to be present after loading',
+                  cause: null,
+                })
+              )
+            return client.healthcare
+          })
+        )
       )
     }),
   }

@@ -14,7 +14,12 @@ export class DocumentStore extends Context.Tag('DocumentStore')<
         1: string
         length: 2 | 4 | 6
       }
-    ): Effect.Effect<DocumentData, NotFoundError | UnhandledError, never>
+    ): Effect.Effect<
+      DocumentData,
+      | NotFoundError<'Document', { path: ReadonlyArray<string> }>
+      | UnhandledError,
+      never
+    >
 
     subscribeTo(
       ...path: ReadonlyArray<string> & {
@@ -22,6 +27,14 @@ export class DocumentStore extends Context.Tag('DocumentStore')<
         1: string
         length: 2 | 4 | 6
       }
-    ): Stream.Stream<Either.Either<DocumentData, NotFoundError>, never, never>
+    ): Stream.Stream<
+      Either.Either<
+        DocumentData,
+        | NotFoundError<'Document', { path: ReadonlyArray<string> }>
+        | UnhandledError
+      >,
+      never,
+      never
+    >
   }
 >() {}

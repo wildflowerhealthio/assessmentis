@@ -13,6 +13,7 @@ import {
 } from '@assessmentis/clinical-domain/administration'
 import {
   Media,
+  MediaId,
   MediaRepository,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { AuthError, AuthzError } from '@assessmentis/ontology'
@@ -31,7 +32,8 @@ export const updateEncounterRecordingsAndTranscripts = (
   | AuthError
   | AuthzError
   | ExternalAssertionError
-  | NotFoundError,
+  | NotFoundError<'Encounter', { id: EncounterId }>
+  | NotFoundError<'Media', { id: MediaId }>,
   EncounterRepository | ExternalVideoCallClient | MediaRepository
 > => {
   return Effect.gen(function* () {

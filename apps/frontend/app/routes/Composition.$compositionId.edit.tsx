@@ -12,7 +12,7 @@ import {
   CompositionId,
 } from '@assessmentis/clinical-domain/content-management'
 import { NotFoundError } from '@assessmentis/ontology'
-import type { Route } from './+types/_resource.Composition.$compositionId.edit'
+import type { Route } from './+types/Composition.$compositionId.edit'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { getCompositionDisplayName } from '../modules/resources/Composition/utils/compositionDisplay'
 import { extractReferenceId } from 'app/modules/common/utils/fhirDisplay'
@@ -35,7 +35,13 @@ export default function EditCompositionPage({ params }: Route.ComponentProps) {
   const compositionEffect = useMemo(() => {
     return pipe(
       tryDecodeCompositionId(params.compositionId),
-      Option.match<Effect.Effect<CompositionId, NotFoundError>, CompositionId>({
+      Option.match<
+        Effect.Effect<
+          CompositionId,
+          NotFoundError<'Composition', { id: string }>
+        >,
+        CompositionId
+      >({
         onSome: Effect.succeed,
         onNone: () =>
           Effect.fail(

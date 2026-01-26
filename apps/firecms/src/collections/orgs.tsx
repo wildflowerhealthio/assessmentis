@@ -9,12 +9,10 @@ import {
   PropertyBuilder,
   StringProperty,
   useModeController,
-  type PropertyOrBuilder,
 } from '@firecms/core'
-import { Match, Schema, SchemaAST } from 'effect'
+import { SchemaAST } from 'effect'
 
 import { Org } from '@assessmentis/platform-domain'
-import { RadioGroup } from '@firecms/ui'
 import { EditableJsonView } from './EditableJsonView'
 
 type PropertySets =
@@ -77,7 +75,11 @@ const asFireCmsProperty = (name: string, s: SchemaAST.AST): PropertySets => {
 
     if (
       s.types.length == 2 &&
-      s.types.some((t) => SchemaAST.isUndefinedKeyword(t))
+      s.types.some(
+        (t) =>
+          SchemaAST.isUndefinedKeyword(t) ||
+          (SchemaAST.isLiteral(t) && t.literal == null)
+      )
     ) {
       const definedType = s.types.find((t) => !SchemaAST.isUndefinedKeyword(t))!
       return asFireCmsProperty(name, definedType)
@@ -95,7 +97,9 @@ const asFireCmsProperty = (name: string, s: SchemaAST.AST): PropertySets => {
         }
         throw new Error('Expected union member to have a _tag literal')
       } else {
-        throw new Error('Expected union member to be a type literal')
+        throw new Error(
+          `Expected union member to be a type literal ${name} is an ${typeAst._tag}`
+        )
       }
     })
 

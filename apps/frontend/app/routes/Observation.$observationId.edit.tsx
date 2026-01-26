@@ -10,7 +10,7 @@ import {
   ObservationRepository,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { NotFoundError } from '@assessmentis/ontology'
-import type { Route } from './+types/_resource.Observation.$observationId.edit'
+import type { Route } from './+types/Observation.$observationId.edit'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { getObservationDisplayName } from '../modules/resources/Observation/utils/observationDisplay'
 import { extractReferenceId } from 'app/modules/common/utils/fhirDisplay'

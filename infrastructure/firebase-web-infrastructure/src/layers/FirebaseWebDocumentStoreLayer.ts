@@ -6,21 +6,15 @@ import { doc, getDoc, onSnapshot } from 'firebase/firestore'
 import { unsubscribableCallbackAsStream } from '@assessmentis/util'
 
 const resourceTypeFromPath = (path: ReadonlyArray<string>) =>
-  path
-    .slice(0, path.length - 1)
-    .reduce(
-      (acc, segment, i) => (i % 2 == 0 ? `${acc}/${segment}` : `${acc}/*`),
-      ''
-    )
-
-const paramsFromPath = (path: ReadonlyArray<string>) =>
-  path
-    .slice(1)
-    .reduce(
-      (acc, segment, i) =>
-        i % 2 == 0 ? acc : { ...acc, [path[i - 1]]: segment },
-      {} as Record<string, string>
-    )
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (import.meta as any).env.DEV
+    ? path.join('/')
+    : path
+        .slice(0, path.length - 1)
+        .reduce(
+          (acc, segment, i) => (i % 2 == 0 ? `${acc}/${segment}` : `${acc}/*`),
+          ''
+        ) + '/:id'
 
 export const FirebaseWebDocumentStoreLayer: Layer.Layer<
   DocumentStore,
@@ -29,7 +23,7 @@ export const FirebaseWebDocumentStoreLayer: Layer.Layer<
 > = Layer.effect(
   DocumentStore,
   Effect.gen(function* () {
-    const { firestore } = yield* FirebaseWeb
+    const { firestore, auth } = yield* FirebaseWeb
 
     const get: typeof DocumentStore.Service.get = (...path) =>
       Effect.gen(function* () {
@@ -40,7 +34,7 @@ export const FirebaseWebDocumentStoreLayer: Layer.Layer<
           try: () => getDoc(docRef),
           catch: (cause) =>
             new UnhandledError({
-              message: `Error reading ${resourceTypeFromPath(path)} document`,
+              message: `Error calling getDoc for ${resourceTypeFromPath(path)} for ${auth.currentUser?.displayName ?? 'unknown user'}`,
               cause,
             }),
         })
@@ -49,8 +43,8 @@ export const FirebaseWebDocumentStoreLayer: Layer.Layer<
         if (data == undefined) {
           return yield* Effect.fail(
             new NotFoundError({
-              resourceType: resourceTypeFromPath(path),
-              params: paramsFromPath(path),
+              resourceType: 'Document',
+              params: { path },
             })
           )
         }
@@ -63,27 +57,61 @@ export const FirebaseWebDocumentStoreLayer: Layer.Layer<
         const docRef = doc(firestore, collection, ...restPath)
 
         return unsubscribableCallbackAsStream<
-          Either.Either<DocumentData, NotFoundError>,
+          Either.Either<
+            DocumentData,
+            | UnhandledError
+            | NotFoundError<'Document', { path: ReadonlyArray<string> }>
+          >,
           never
-        >((onData) =>
-          onSnapshot(docRef, (documentSnapshot) => {
-            const data = documentSnapshot.data()
-            if (data == undefined) {
-              onData(
-                Effect.succeed(
-                  Either.left(
-                    new NotFoundError({
-                      resourceType: resourceTypeFromPath(path),
-                      params: paramsFromPath(path),
-                    })
+        >((onData) => {
+          try {
+            return onSnapshot(
+              docRef,
+              (documentSnapshot) => {
+                const data = documentSnapshot.data()
+
+                if (data == undefined) {
+                  onData(
+                    Effect.succeed(
+                      Either.left(
+                        new NotFoundError({
+                          resourceType: 'Document',
+                          params: { path },
+                        })
+                      )
+                    )
+                  )
+                } else {
+                  onData(Effect.succeed(Either.right(data)))
+                }
+              },
+              (cause) => {
+                onData(
+                  Effect.succeed(
+                    Either.left(
+                      new UnhandledError({
+                        message: `Error getting ${resourceTypeFromPath(path)} document data for ${auth.currentUser?.displayName ?? 'unknown user'}`,
+                        cause,
+                      })
+                    )
                   )
                 )
+              }
+            )
+          } catch (cause) {
+            onData(
+              Effect.succeed(
+                Either.left(
+                  new UnhandledError({
+                    message: `Error calling onSnapshot for ${resourceTypeFromPath(path)} for ${auth.currentUser?.displayName ?? 'unknown user'}`,
+                    cause,
+                  })
+                )
               )
-            } else {
-              onData(Effect.succeed(Either.right(data)))
-            }
-          })
-        )
+            )
+            return () => {}
+          }
+        })
       }).pipe(Stream.unwrap)
 
     return { get, subscribeTo }

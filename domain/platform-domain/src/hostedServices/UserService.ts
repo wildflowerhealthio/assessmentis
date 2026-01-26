@@ -7,6 +7,7 @@ import {
   Effect,
   Either,
   Fiber,
+  pipe,
   PubSub,
   Schema,
   Scope,
@@ -15,17 +16,19 @@ import {
 } from 'effect'
 import {
   AuthError,
-  UnhandledError,
   NotFoundError,
+  BadDataError,
+  UnhandledError,
 } from '@assessmentis/ontology'
 import { User } from '../models/User'
 import { AuthDataService, DocumentStore } from '../tagClasses'
+import { UserId } from '../models/UserId'
 
 const decodeUser = (data: unknown) =>
   Schema.decodeUnknown(User)(data).pipe(
     Effect.mapError(
       (cause) =>
-        new UnhandledError({
+        new BadDataError({
           message: "The user model couldn't be parsed",
           cause,
         })
@@ -34,7 +37,13 @@ const decodeUser = (data: unknown) =>
 
 export const createUserPubSub = PubSub.sliding<
   Take.Take<
-    Either.Either<User, AuthError | NotFoundError | UnhandledError>,
+    Either.Either<
+      User,
+      | AuthError
+      | NotFoundError<'User', { userId: UserId }>
+      | BadDataError
+      | UnhandledError
+    >,
     never
   >
 >({
@@ -47,11 +56,20 @@ export class UserService extends Context.Tag('UserService')<
   {
     user: Effect.Effect<
       User,
-      AuthError | NotFoundError | UnhandledError,
+      | AuthError
+      | NotFoundError<'User', { userId: UserId }>
+      | BadDataError
+      | UnhandledError,
       Scope.Scope
     >
     userStream: Stream.Stream<
-      Either.Either<User, AuthError | NotFoundError | UnhandledError>,
+      Either.Either<
+        User,
+        | AuthError
+        | NotFoundError<'User', { userId: UserId }>
+        | BadDataError
+        | UnhandledError
+      >,
       never,
       Scope.Scope
     >
@@ -62,7 +80,13 @@ export class UserService extends Context.Tag('UserService')<
 export const startUserService = (
   userPubSub: PubSub.PubSub<
     Take.Take<
-      Either.Either<User, AuthError | NotFoundError | UnhandledError>,
+      Either.Either<
+        User,
+        | AuthError
+        | NotFoundError<'User', { userId: UserId }>
+        | BadDataError
+        | UnhandledError
+      >,
       never
     >
   >
@@ -72,7 +96,13 @@ export const startUserService = (
     const documentStore = yield* DocumentStore
 
     const userStream: Stream.Stream<
-      Either.Either<User, AuthError | NotFoundError | UnhandledError>,
+      Either.Either<
+        User,
+        | AuthError
+        | NotFoundError<'User', { userId: UserId }>
+        | BadDataError
+        | UnhandledError
+      >,
       never,
       Scope.Scope
     > = authDataStream.pipe(
@@ -80,19 +110,37 @@ export const startUserService = (
         (
           e
         ): Stream.Stream<
-          Either.Either<User, AuthError | NotFoundError | UnhandledError>,
+          Either.Either<
+            User,
+            | AuthError
+            | NotFoundError<'User', { userId: UserId }>
+            | BadDataError
+            | UnhandledError
+          >,
           never,
           never
         > =>
           Either.match(e, {
             onLeft: (authError) =>
               Stream.succeed(
-                Either.left<AuthError | NotFoundError | UnhandledError>(
-                  authError
-                )
+                Either.left<
+                  | AuthError
+                  | NotFoundError<'User', { userId: UserId }>
+                  | BadDataError
+                >(authError)
               ),
             onRight: (authData) =>
               documentStore.subscribeTo('users', authData.userId).pipe(
+                Stream.map(
+                  Either.mapLeft((err) =>
+                    err instanceof NotFoundError
+                      ? new NotFoundError<'User', { userId: UserId }>({
+                          resourceType: 'User',
+                          params: { userId: authData.userId },
+                        })
+                      : err
+                  )
+                ),
                 Stream.mapEffect((e) =>
                   Either.match(e, {
                     onRight(
@@ -100,25 +148,37 @@ export const startUserService = (
                     ): Effect.Effect<
                       Either.Either<
                         User,
-                        AuthError | NotFoundError | UnhandledError
+                        | AuthError
+                        | NotFoundError<'User', { userId: UserId }>
+                        | BadDataError
                       >,
                       never
                     > {
-                      return Effect.either(decodeUser(u))
+                      return pipe(
+                        decodeUser(u),
+                        Effect.mapError((err) => err),
+                        Effect.either
+                      )
                     },
                     onLeft(
                       err
                     ): Effect.Effect<
                       Either.Either<
                         User,
-                        AuthError | NotFoundError | UnhandledError
+                        | AuthError
+                        | NotFoundError<'User', { userId: UserId }>
+                        | BadDataError
+                        | UnhandledError
                       >,
                       never
                     > {
                       return Effect.succeed(
-                        Either.left<AuthError | NotFoundError | UnhandledError>(
-                          err
-                        )
+                        Either.left<
+                          | AuthError
+                          | NotFoundError<'User', { userId: UserId }>
+                          | BadDataError
+                          | UnhandledError
+                        >(err)
                       )
                     },
                   })

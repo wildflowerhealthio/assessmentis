@@ -13,7 +13,10 @@ const decodeUser = (userId: UserId, data: unknown | undefined) =>
   Effect.gen(function* () {
     if (data == undefined) {
       return yield* Effect.fail(
-        new NotFoundError({ resourceType: 'users', params: { userId } })
+        new NotFoundError<'User', { userId: UserId }>({
+          resourceType: 'User',
+          params: { userId },
+        }).asUnhandledError()
       )
     }
     return yield* Schema.decodeUnknownEither(User)(data).pipe(
@@ -30,7 +33,7 @@ const decodeUser = (userId: UserId, data: unknown | undefined) =>
 export const LiteralLoadedUserLayer = (
   userId: UserId,
   data: undefined | unknown
-): Layer.Layer<LoadedUser, NotFoundError | UnhandledError, never> =>
+): Layer.Layer<LoadedUser, UnhandledError, never> =>
   Layer.effect(LoadedUser, decodeUser(userId, data))
 
 export const LoadedUserLayer = Layer.effect(
