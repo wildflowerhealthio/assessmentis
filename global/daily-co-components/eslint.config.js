@@ -5,7 +5,7 @@ import tsParser from "@typescript-eslint/parser";
 export default defineConfig([
 	...baseConfig,
   {
-    ignores: ["eslint.config.cjs"],
+    ignores: ["eslint.config.js"],
     // extends: [baseConfig],
     languageOptions: {
       parser: tsParser,
