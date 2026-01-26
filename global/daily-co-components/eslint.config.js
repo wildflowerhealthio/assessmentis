@@ -6,7 +6,6 @@ export default defineConfig([
 	...baseConfig,
   {
     ignores: ["eslint.config.js"],
-    // extends: [baseConfig],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
