@@ -18,10 +18,15 @@ export const getGcloudToken = (): string => {
       throw new Error('Empty token returned')
     }
     return token
-  } catch {
+  } catch (error) {
+    const originalMessage =
+      error instanceof Error ? error.message : String(error)
     throw new Error(
       'Failed to get gcloud access token. Ensure you are authenticated with:\n' +
-        '  gcloud auth login'
+        '  gcloud auth login' +
+        '\nOriginal error: ' +
+        originalMessage,
+      { cause: error }
     )
   }
 }

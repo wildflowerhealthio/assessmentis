@@ -1,6 +1,6 @@
 import { setupServer } from 'msw/node'
-import { http, HttpResponse, passthrough } from 'msw'
-import { beforeAll, afterAll, afterEach, vi } from 'vitest'
+import { http, HttpResponse } from 'msw'
+import { beforeAll, afterAll, afterEach } from 'vitest'
 
 // Google metadata headers required for authentication
 const metadataHeaders = {

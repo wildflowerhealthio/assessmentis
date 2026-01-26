@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, beforeAll, afterAll } from 'vitest'
 import { Effect, Exit, Cause, pipe, Option, Layer } from 'effect'
 import { FhirR4Client } from '@assessmentis/fhir-client'
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
-import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
 import { NodeGoogleHealthcareFhirR4ClientLayer } from '../../src/NodeGoogleHealthcareClientLayer'
 import { mswServer } from '../setup/replay.setup'
 import { loadFixture } from '../helpers/fixture-loader'
@@ -23,16 +22,8 @@ import { testConfig } from '../setup/test-config'
  * that the implementation correctly handles API responses.
  */
 describe('Patient CRUD (Replay)', () => {
-  // Mock FirebaseAdmin for replay tests
-  const MockFirebaseAdminLayer = Layer.succeed(FirebaseAdmin, {
-    app: {} as never,
-    auth: {} as never,
-    firestore: {} as never,
-  })
-
   const ReplayTestLayer = NodeGoogleHealthcareFhirR4ClientLayer.pipe(
-    Layer.provide(Layer.succeed(LoadedGoogleFhirConfig, testConfig)),
-    Layer.provide(MockFirebaseAdminLayer)
+    Layer.provide(Layer.succeed(LoadedGoogleFhirConfig, testConfig))
   )
 
   beforeAll(() => {
