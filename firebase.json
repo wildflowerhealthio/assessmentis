@@ -47,6 +47,13 @@
         }
       },
       {
+        "source": "/api/sync-video-call-recordings",
+        "function": {
+          "functionId": "syncVideoCallRecordingsOnDemand",
+          "region": "northamerica-northeast2"
+        }
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }

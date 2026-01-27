@@ -76,6 +76,26 @@ export const FirebaseAdminDocumentStoreLayer = Layer.effect(
         })
       )
 
-    return { get, subscribeTo }
+    const set: typeof DocumentStore.Service.set = (data, ...path) =>
+      Effect.tryPromise({
+        try: () => doc(db, path).set(data),
+        catch: (cause) =>
+          new UnhandledError({
+            message: `Error setting ${resourceType(path)} document`,
+            cause,
+          }),
+      }).pipe(Effect.asVoid)
+
+    const update: typeof DocumentStore.Service.update = (data, ...path) =>
+      Effect.tryPromise({
+        try: () => doc(db, path).set(data, { merge: true }),
+        catch: (cause) =>
+          new UnhandledError({
+            message: `Error updating ${resourceType(path)} document`,
+            cause,
+          }),
+      }).pipe(Effect.asVoid)
+
+    return { get, subscribeTo, set, update }
   })
 ).pipe(Layer.provide(FirebaseAdmin.Default))

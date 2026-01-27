@@ -31,8 +31,8 @@ import { DailyCoProxyConfig } from '@assessmentis/config-domain/dailyCo'
 const config = Schema.decodeUnknownSync(GoogleFhirConfig)(envVars)
 
 // Daily.co configuration with optional S3 recordings bucket
-const dailyConfig: DailyCoProxyConfig = {
-  _tag: 'daily_co_proxy',
+const dailyConfig: DailyCoConfig = {
+  _tag: 'daily_co',
   dailyCoProxyUrl: 'https://api.daily.co/proxy',
   recordingsBucket: {
     bucket_name: 'my-recordings-bucket',

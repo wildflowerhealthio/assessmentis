@@ -1,8 +1,5 @@
 import { Schema } from 'effect'
-import {
-  DailyCoProxyConfig,
-  GoogleFhirConfig,
-} from '@assessmentis/config-domain'
+import { DailyCoConfig, GoogleFhirConfig } from '@assessmentis/config-domain'
 
 /**
  * The public parts of an org's configuration that are provided to clients.
@@ -15,7 +12,7 @@ export const FrontendConfig = Schema.Struct({
     Schema.TaggedStruct('not_implemented', {})
   ),
   videoCallClient: Schema.Union(
-    Schema.TaggedStruct('daily_co_proxy', DailyCoProxyConfig.fields),
+    Schema.TaggedStruct('daily_co', DailyCoConfig.fields),
     Schema.TaggedStruct('not_implemented', {})
   ),
 })

@@ -6,7 +6,7 @@ import {
 } from '@assessmentis/platform-domain'
 import { FhirR4ClientService } from './FhirR4ClientService'
 import { ClinicalDataRepositoryService } from './ClinicalDataRepositoriesService'
-import { ExternalVideoCallClientService } from './ExternalVideoCallClientService'
+import { VideoCallClientService } from './VideoCallClientService'
 
 export interface PlatformContext {
   authDataService: typeof AuthDataService.Service
@@ -14,7 +14,7 @@ export interface PlatformContext {
   userService: typeof UserService.Service
   fhirR4ClientService: typeof FhirR4ClientService.Service
   clinicalDataRepositoryService: typeof ClinicalDataRepositoryService.Service
-  externalVideoCallClientService: typeof ExternalVideoCallClientService.Service
+  VideoCallClientService: typeof VideoCallClientService.Service
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

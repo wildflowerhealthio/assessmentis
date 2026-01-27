@@ -32,7 +32,7 @@ import SplitPane from '../modules/common/components/SplitPane/SplitPane'
 import { gad7 } from '@assessmentis/questionnaire-entities'
 import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
-import { ExternalVideoCallClient } from '@assessmentis/video-call-domain'
+import { VideoCallClient } from '@assessmentis/video-call-domain'
 import { useEffectTs } from '@assessmentis/react-util'
 
 import { usePlatformContext } from '../layers/PlatformContext'
@@ -145,7 +145,7 @@ const ResponsePage = ({
   observations,
 }: typeof QuestionnaireResponseWithQuestionnaire.Type) => {
   const navigate = useNavigate()
-  const { clinicalDataRepositoryService, externalVideoCallClientService } =
+  const { clinicalDataRepositoryService, VideoCallClientService } =
     usePlatformContext()
 
   const [highlightLinks, setHighlightLinks] = useState<
@@ -221,8 +221,8 @@ const ResponsePage = ({
         clinicalDataRepositoryService.Media
       ),
       Effect.provideServiceEffect(
-        ExternalVideoCallClient,
-        externalVideoCallClientService.client
+        VideoCallClient,
+        VideoCallClientService.client
       ),
       Effect.provideServiceEffect(
         EncounterRepository,

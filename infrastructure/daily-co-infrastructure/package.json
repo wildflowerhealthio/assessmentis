@@ -24,8 +24,8 @@
     "@assessmentis/ontology": "*",
     "@assessmentis/platform-domain": "*",
     "@assessmentis/video-call-domain": "*",
-    "@effect/platform": "*",
-    "effect": "*"
+    "@effect/platform": "^0.94.0",
+    "effect": "^3.19.15"
   },
   "devDependencies": {
     "@assessmentis/eslint-config": "*",

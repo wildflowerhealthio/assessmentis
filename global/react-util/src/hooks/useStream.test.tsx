@@ -382,7 +382,6 @@ describe('useStream', () => {
     })
 
     it('should log successful completion', async () => {
-      const consoleSpy = vi.spyOn(console, 'log')
       const testStream = Stream.make(1)
 
       renderHook(() => useStream(testStream))

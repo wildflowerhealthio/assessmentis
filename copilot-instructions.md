@@ -63,7 +63,7 @@ PlatformContextProvider (root)
 ├── UserService           # User data and roles
 ├── FhirR4ClientService   # FHIR client for clinical data
 ├── ClinicalDataRepositoryService  # Repository factory
-└── ExternalVideoCallClientService # Video call client
+└── VideoCallClientService # Video call client
     │
     └── OrgContextProvider (child)
         └── Selected Org context for route components
@@ -158,7 +158,7 @@ apps/frontend/app/
 │   ├── OrgContextProvider.tsx # Org selection and validation
 │   ├── FhirR4ClientService.tsx       # FHIR client service
 │   ├── ClinicalDataRepositoriesService.ts  # Repository factory
-│   └── ExternalVideoCallClientService.tsx  # Video call client
+│   └── VideoCallClientService.tsx  # Video call client
 ├── modules/                    # Feature modules
 │   ├── encounters/
 │   │   └── actions/           # Business logic for encounters

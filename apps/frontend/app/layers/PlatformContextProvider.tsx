@@ -26,7 +26,7 @@ import {
   startFhirR4ClientService,
 } from './FhirR4ClientService'
 import { ClinicalDataRepositoryService } from './ClinicalDataRepositoriesService'
-import { startExternalVideoCallClientService } from './ExternalVideoCallClientService'
+import { startVideoCallClientService } from './VideoCallClientService'
 import { Await, useAsyncError } from 'react-router'
 import { useEffectTs } from '@assessmentis/react-util'
 import NavHeader, {
@@ -66,11 +66,10 @@ const platformEffect = Effect.gen(function* () {
       )
     )
 
-  const externalVideoCallClientService =
-    yield* startExternalVideoCallClientService(
-      authDataService,
-      orgService.activeOrg
-    )
+  const VideoCallClientService = yield* startVideoCallClientService(
+    authDataService,
+    orgService.activeOrg
+  )
 
   return {
     authDataService,
@@ -78,7 +77,7 @@ const platformEffect = Effect.gen(function* () {
     userService,
     fhirR4ClientService,
     clinicalDataRepositoryService,
-    externalVideoCallClientService,
+    VideoCallClientService,
   }
 }).pipe(
   Effect.provide(FirebaseWebDocumentStoreLayer),

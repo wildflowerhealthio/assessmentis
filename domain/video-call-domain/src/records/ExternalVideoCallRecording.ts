@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 import { ExternalVideoCallRecordingId } from './VideoCallRecording'
-import { ExternalVideoCallRoomName } from './VideoCallRoom'
+import { VideoCallRoomName } from './VideoCallRoom'
 import { DateTimeUtc, DurationFromMillis } from 'effect/Schema'
 
 export const ExternalVideoCallRecordingUri = Schema.String.pipe(
@@ -19,7 +19,7 @@ export type ExternalVideoCallRecordingFileUrl =
 
 export const ExternalVideoCallRecording = Schema.Struct({
   externalVideoCallRecordingId: ExternalVideoCallRecordingId,
-  externalVideoCallRoomName: ExternalVideoCallRoomName,
+  VideoCallRoomName: VideoCallRoomName,
   startedAt: DateTimeUtc,
   duration: DurationFromMillis,
   uri: ExternalVideoCallRecordingUri,

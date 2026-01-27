@@ -3,8 +3,7 @@ import { Schema, Either } from 'effect'
 import * as fc from 'fast-check'
 import {
   VideoCallRoomId,
-  ExternalVideoCallRoomId,
-  ExternalVideoCallRoomName,
+  VideoCallRoomName,
   VideoCallRoom,
 } from './VideoCallRoom'
 
@@ -66,11 +65,11 @@ describe('VideoCallRoom Models', () => {
     })
   })
 
-  describe('ExternalVideoCallRoomId', () => {
+  describe('VideoCallRoomId', () => {
     test('property: all strings decode successfully', () => {
       fc.assert(
         fc.property(fc.string(), (str) => {
-          const decode = Schema.decodeUnknownEither(ExternalVideoCallRoomId)
+          const decode = Schema.decodeUnknownEither(VideoCallRoomId)
           const result = decode(str)
           expect(Either.isRight(result)).toBe(true)
           if (Either.isRight(result)) {
@@ -85,7 +84,7 @@ describe('VideoCallRoom Models', () => {
         fc.property(
           fc.oneof(fc.integer(), fc.boolean(), fc.object(), fc.constant(null)),
           (value) => {
-            const decode = Schema.decodeUnknownEither(ExternalVideoCallRoomId)
+            const decode = Schema.decodeUnknownEither(VideoCallRoomId)
             const result = decode(value)
             expect(Either.isLeft(result)).toBe(true)
           }
@@ -94,11 +93,11 @@ describe('VideoCallRoom Models', () => {
     })
   })
 
-  describe('ExternalVideoCallRoomName', () => {
+  describe('VideoCallRoomName', () => {
     test('property: all strings decode successfully', () => {
       fc.assert(
         fc.property(fc.string(), (str) => {
-          const decode = Schema.decodeUnknownEither(ExternalVideoCallRoomName)
+          const decode = Schema.decodeUnknownEither(VideoCallRoomName)
           const result = decode(str)
           expect(Either.isRight(result)).toBe(true)
           if (Either.isRight(result)) {
@@ -113,7 +112,7 @@ describe('VideoCallRoom Models', () => {
         fc.property(
           fc.oneof(fc.integer(), fc.boolean(), fc.object(), fc.constant(null)),
           (value) => {
-            const decode = Schema.decodeUnknownEither(ExternalVideoCallRoomName)
+            const decode = Schema.decodeUnknownEither(VideoCallRoomName)
             const result = decode(value)
             expect(Either.isLeft(result)).toBe(true)
           }
@@ -141,8 +140,8 @@ describe('VideoCallRoom Models', () => {
             const room = {
               videoCallRoomId,
               encounterId,
-              externalVideoCallRoomId: externalRoomId,
-              externalVideoCallRoomName: externalRoomName,
+              VideoCallRoomId: externalRoomId,
+              VideoCallRoomName: externalRoomName,
               url,
             }
             const decode = Schema.decodeUnknownEither(VideoCallRoom)
@@ -160,11 +159,11 @@ describe('VideoCallRoom Models', () => {
           fc.uuid(),
           fc.string(),
           (videoCallRoomId, encounterId, externalRoomId) => {
-            // Missing externalVideoCallRoomName and url
+            // Missing VideoCallRoomName and url
             const room = {
               videoCallRoomId,
               encounterId,
-              externalVideoCallRoomId: externalRoomId,
+              VideoCallRoomId: externalRoomId,
             }
             const decode = Schema.decodeUnknownEither(VideoCallRoom)
             const result = decode(room)
@@ -192,8 +191,8 @@ describe('VideoCallRoom Models', () => {
             const room = {
               videoCallRoomId,
               encounterId,
-              externalVideoCallRoomId: externalRoomId,
-              externalVideoCallRoomName: externalRoomName,
+              VideoCallRoomId: externalRoomId,
+              VideoCallRoomName: externalRoomName,
               url,
             }
             const decode = Schema.decodeUnknownEither(VideoCallRoom)

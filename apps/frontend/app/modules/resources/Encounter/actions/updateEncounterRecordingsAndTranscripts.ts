@@ -1,5 +1,5 @@
 import { Effect } from 'effect'
-import { ExternalVideoCallClient } from '@assessmentis/video-call-domain'
+import { VideoCallClient } from '@assessmentis/video-call-domain'
 import { EncounterRepository } from '@assessmentis/clinical-domain/administration'
 import {
   UnhandledError,
@@ -33,12 +33,13 @@ export const updateEncounterRecordingsAndTranscripts = (
   | AuthzError
   | ExternalAssertionError
   | NotFoundError<'Encounter', { id: EncounterId }>
-  | NotFoundError<'Media', { id: MediaId }>,
-  EncounterRepository | ExternalVideoCallClient | MediaRepository
+  | NotFoundError<'Media', { id: MediaId }>
+  | NotFoundError<'Recording', { id: string }>,
+  EncounterRepository | VideoCallClient | MediaRepository
 > => {
   return Effect.gen(function* () {
     const encounterRepository = yield* EncounterRepository
-    const videoCalls = yield* ExternalVideoCallClient
+    const videoCalls = yield* VideoCallClient
     const mediaRepository = yield* MediaRepository
 
     // Get the current encounter

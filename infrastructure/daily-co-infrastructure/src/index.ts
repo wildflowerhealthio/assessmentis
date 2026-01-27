@@ -1,1 +1,1 @@
-export * from './DailyCoExternalVideoCallClientLayer'
+export * from './DailyCoVideoCallClientLayer'

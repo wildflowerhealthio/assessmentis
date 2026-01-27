@@ -1,7 +1,6 @@
 import { Context, Effect, Layer, Schema } from 'effect'
 import { User } from '../models/User'
 import { UserId } from '../models/UserId'
-import { ClientRuntimeContext } from '../UserPlatformService'
 import {
   AuthError,
   AuthzError,
@@ -9,9 +8,6 @@ import {
   UnhandledError,
 } from '@assessmentis/ontology'
 import { CurrentOrg, DocumentStore } from '../tagClasses'
-
-// Reuse ClientRuntimeContext for server (includes all repositories)
-export type ServerRuntimeContext = ClientRuntimeContext
 
 // OAuth token schema
 export const OAuthTokens = Schema.Struct({

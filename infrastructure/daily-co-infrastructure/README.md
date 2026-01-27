@@ -10,9 +10,9 @@ Effect-TS layer implementation providing Daily.co video call service integration
 
 ## What This Package Does
 
-- Provides `DailyCoExternalVideoCallClientLayer` Effect-TS layer
+- Provides `DailyCoVideoCallClientLayer` Effect-TS layer
 - Integrates with Daily.co API via proxy service
-- Implements `ExternalVideoCallClient` interface from video-call-domain
+- Implements `VideoCallClient` interface from video-call-domain
 - Manages video room creation and configuration
 - Fetches recording metadata and access links
 - Supports optional AWS S3 recordings bucket configuration
@@ -28,6 +28,7 @@ Daily.co rooms can be configured to store recordings in a custom AWS S3 bucket. 
 - API access to recordings can be controlled via the `allow_api_access` flag
 
 Configuration requires:
+
 - `bucket_name`: Name of the S3 bucket
 - `bucket_region`: AWS region where the bucket exists
 - `assume_role_arn`: ARN of the IAM role for Daily.co to assume
