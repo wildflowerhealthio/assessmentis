@@ -1,5 +1,5 @@
 {
-  "cSpell.words": ["Codeable", "firestore", "gapi", "northamerica"],
+  "cSpell.words": ["Codeable", "firestore", "gapi", "northamerica", "talkback"],
   "typescript.preferences.importModuleSpecifier": "relative",
 
   // ESLint configuration for monorepo

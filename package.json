@@ -23,6 +23,7 @@
     "global/util",
     "global/ontology",
     "global/daily-co-components",
+    "global/vcr-js",
     "domain/platform-domain",
     "domain/clinical-domain",
     "domain/config-domain",

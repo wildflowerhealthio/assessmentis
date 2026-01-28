@@ -1,0 +1,64 @@
+{
+    meta: {
+        createdAt: '2026-01-28T22:39:54.730Z',
+        host: 'https://healthcare.googleapis.com',
+        resHumanReadable: true,
+    },
+    req: {
+        url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/5dcf4447-1d9e-469d-ae0b-4918e6cb4de2',
+        method: 'GET',
+        headers: {},
+        body: '',
+    },
+    res: {
+        status: 410,
+        headers: {
+            'content-type': [
+                'application/fhir+json;charset=utf-8',
+            ],
+            etag: [
+                'W/"MTc2OTYzOTk5NDc2OTMwMzAwMA"',
+            ],
+            vary: [
+                'Origin, X-Origin, Referer',
+            ],
+            date: [
+                'Wed, 28 Jan 2026 22:39:54 GMT',
+            ],
+            server: [
+                'ESF',
+            ],
+            'content-length': [
+                '232',
+            ],
+            'x-xss-protection': [
+                '0',
+            ],
+            'x-frame-options': [
+                'SAMEORIGIN',
+            ],
+            'x-content-type-options': [
+                'nosniff',
+            ],
+            'alt-svc': [
+                'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
+            ],
+            connection: [
+                'close',
+            ],
+        },
+        body: {
+            issue: [
+                {
+                    code: 'no-store',
+                    details: {
+                        text: 'storage_error',
+                    },
+                    diagnostics: 'resource has been deleted',
+                    severity: 'error',
+                },
+            ],
+            resourceType: 'OperationOutcome',
+        },
+    },
+}

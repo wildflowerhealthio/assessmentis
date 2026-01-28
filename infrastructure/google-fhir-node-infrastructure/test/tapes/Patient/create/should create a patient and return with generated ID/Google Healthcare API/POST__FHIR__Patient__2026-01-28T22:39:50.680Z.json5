@@ -1,0 +1,78 @@
+{
+    meta: {
+        createdAt: '2026-01-28T22:39:50.419Z',
+        host: 'https://healthcare.googleapis.com',
+        resHumanReadable: true,
+        resUncompressed: true,
+    },
+    req: {
+        url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient',
+        method: 'POST',
+        headers: {},
+        body: 'ewogICJyZXNvdXJjZVR5cGUiOiAiUGF0aWVudCIsCiAgIm5hbWUiOiBbCiAgICB7CiAgICAgICJnaXZlbiI6IFsKICAgICAgICAiTGl2ZSIKICAgICAgXSwKICAgICAgImZhbWlseSI6ICJUZXN0UGF0aWVudCIKICAgIH0KICBdLAogICJhY3RpdmUiOiB0cnVlCn0=',
+    },
+    res: {
+        status: 201,
+        headers: {
+            etag: [
+                'W/"MTc2OTYzOTk5MDcyMTcwNjAwMA"',
+            ],
+            'content-type': [
+                'application/fhir+json;charset=utf-8',
+            ],
+            'last-modified': [
+                'Wed, 28 Jan 2026 22:39:50 UTC',
+            ],
+            'content-encoding': [
+                'gzip',
+            ],
+            location: [
+                'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/0e71fc7b-af62-495a-8b56-2bd203e353ad/_history/MTc2OTYzOTk5MDcyMTcwNjAwMA',
+            ],
+            vary: [
+                'Origin, X-Origin, Referer',
+            ],
+            date: [
+                'Wed, 28 Jan 2026 22:39:50 GMT',
+            ],
+            server: [
+                'ESF',
+            ],
+            'x-xss-protection': [
+                '0',
+            ],
+            'x-frame-options': [
+                'SAMEORIGIN',
+            ],
+            'x-content-type-options': [
+                'nosniff',
+            ],
+            'alt-svc': [
+                'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
+            ],
+            connection: [
+                'close',
+            ],
+            'transfer-encoding': [
+                'chunked',
+            ],
+        },
+        body: {
+            active: true,
+            id: '0e71fc7b-af62-495a-8b56-2bd203e353ad',
+            meta: {
+                lastUpdated: '2026-01-28T22:39:50.721706+00:00',
+                versionId: 'MTc2OTYzOTk5MDcyMTcwNjAwMA',
+            },
+            name: [
+                {
+                    family: 'TestPatient',
+                    given: [
+                        'Live',
+                    ],
+                },
+            ],
+            resourceType: 'Patient',
+        },
+    },
+}

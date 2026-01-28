@@ -1,0 +1,77 @@
+{
+    meta: {
+        createdAt: '2026-01-28T22:39:53.451Z',
+        host: 'https://healthcare.googleapis.com',
+        resHumanReadable: true,
+        resUncompressed: true,
+    },
+    req: {
+        url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/6123eea4-1295-4622-8e14-f70aa9082ab9',
+        method: 'PUT',
+        headers: {},
+        body: 'ewogICJyZXNvdXJjZVR5cGUiOiAiUGF0aWVudCIsCiAgImlkIjogIjYxMjNlZWE0LTEyOTUtNDYyMi04ZTE0LWY3MGFhOTA4MmFiOSIsCiAgIm5hbWUiOiBbCiAgICB7CiAgICAgICJnaXZlbiI6IFsKICAgICAgICAiQWZ0ZXIiCiAgICAgIF0sCiAgICAgICJmYW1pbHkiOiAiVXBkYXRlIgogICAgfQogIF0KfQ==',
+    },
+    res: {
+        status: 200,
+        headers: {
+            etag: [
+                'W/"MTc2OTYzOTk5MzYyMDkyMjAwMA"',
+            ],
+            'content-encoding': [
+                'gzip',
+            ],
+            'last-modified': [
+                'Wed, 28 Jan 2026 22:39:53 UTC',
+            ],
+            location: [
+                'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/6123eea4-1295-4622-8e14-f70aa9082ab9/_history/MTc2OTYzOTk5MzYyMDkyMjAwMA',
+            ],
+            'content-type': [
+                'application/fhir+json;charset=utf-8',
+            ],
+            vary: [
+                'Origin, X-Origin, Referer',
+            ],
+            date: [
+                'Wed, 28 Jan 2026 22:39:53 GMT',
+            ],
+            server: [
+                'ESF',
+            ],
+            'x-xss-protection': [
+                '0',
+            ],
+            'x-frame-options': [
+                'SAMEORIGIN',
+            ],
+            'x-content-type-options': [
+                'nosniff',
+            ],
+            'alt-svc': [
+                'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
+            ],
+            connection: [
+                'close',
+            ],
+            'transfer-encoding': [
+                'chunked',
+            ],
+        },
+        body: {
+            id: '6123eea4-1295-4622-8e14-f70aa9082ab9',
+            meta: {
+                lastUpdated: '2026-01-28T22:39:53.620922+00:00',
+                versionId: 'MTc2OTYzOTk5MzYyMDkyMjAwMA',
+            },
+            name: [
+                {
+                    family: 'Update',
+                    given: [
+                        'After',
+                    ],
+                },
+            ],
+            resourceType: 'Patient',
+        },
+    },
+}

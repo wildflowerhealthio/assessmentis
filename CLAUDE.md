@@ -3,7 +3,7 @@
 This file provides Claude Code-specific guidance for the Assessment.is project. For comprehensive documentation, see:
 - [CONTRIBUTING.md](./CONTRIBUTING.md) - Development setup, code style, testing patterns
 - [copilot-instructions.md](./copilot-instructions.md) - Detailed architecture documentation
-- [TESTING.md](./TESTING.md) - Testing philosophy and patterns
+- [Testing docs](./docs/testing/testing.md) - Testing philosophy and patterns
 
 ## Essential Commands
 
@@ -89,7 +89,7 @@ Key principles:
 - Keep tests MECE (Mutually Exclusive, Completely Exhaustive)
 - Helper identity tests: verify `get(with(x)) === x`
 
-For comprehensive patterns, see [TESTING.md](./TESTING.md).
+For comprehensive patterns, see [docs/testing/](./docs/testing/testing.md).
 
 ## Common Claude Code Workflows
 
