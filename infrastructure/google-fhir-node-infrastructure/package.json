@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@assessmentis/prettier-config": "*",
+    "@effect/vitest": "^0.27.0",
     "@types/node": "^22.10.5",
     "dotenv": "^16.4.7",
     "msw": "^2.7.0",

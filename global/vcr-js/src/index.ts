@@ -32,9 +32,9 @@ export const setupInterceptServer = async <TSetupApi>({
           process.env.RECORD === 'true'
             ? talkback.Options.RecordMode.NEW
             : talkback.Options.RecordMode.DISABLED,
-        silent,
-        summary,
-        debug,
+        silent: silent ?? true,
+        summary: summary ?? false,
+        debug: debug ?? false,
         allowHeaders: [], // Don't use headers when matching tapes
         tapeNameGenerator(tapeNumber, tape) {
           const contentsName = [
