@@ -1,6 +1,10 @@
 {
   "extends": "@assessmentis/typescript-config/base.json",
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*",
+    "test/**/*",
+    "../../domain/video-call-domain/src/VideoCallClient.interface.test.ts"
+  ],
   "exclude": ["node_modules"],
   "compilerOptions": {
     "outDir": "dist"

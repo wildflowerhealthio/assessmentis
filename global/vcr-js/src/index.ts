@@ -1,9 +1,7 @@
 import talkback from 'talkback/es6'
 import 'dotenv/config'
-import { http, HttpHandler, HttpResponse, passthrough, SetupApi } from 'msw'
+import { http, HttpHandler, HttpResponse, passthrough } from 'msw'
 import { expect } from 'vitest'
-import { setupServer, SetupServerApi } from 'msw/node'
-import { SetupWorker, setupWorker } from 'msw/browser'
 
 import RequestHandler from 'talkback/request-handler'
 
@@ -12,7 +10,13 @@ export const setupInterceptServer = async <TSetupApi>({
   tapePath,
   handlers,
   hosts,
+  silent,
+  summary,
+  debug,
 }: {
+  silent?: boolean
+  summary?: boolean
+  debug?: boolean
   mswSetup: (...handlers: Array<HttpHandler>) => TSetupApi
   tapePath: string
   handlers: HttpHandler[]
@@ -28,7 +32,9 @@ export const setupInterceptServer = async <TSetupApi>({
           process.env.RECORD === 'true'
             ? talkback.Options.RecordMode.NEW
             : talkback.Options.RecordMode.DISABLED,
-        debug: false,
+        silent,
+        summary,
+        debug,
         allowHeaders: [], // Don't use headers when matching tapes
         tapeNameGenerator(tapeNumber, tape) {
           const contentsName = [
@@ -39,7 +45,7 @@ export const setupInterceptServer = async <TSetupApi>({
             tape.req.url
           )
 
-          let path = expect.getState().currentTestName?.split(' > ') ?? []
+          const path = expect.getState().currentTestName?.split(' > ') ?? []
           const fileName = `${tape.req.method}__${contentsName}__${new Date(tapeNumber).toISOString()}`
           return [...path, name, fileName].join('/')
         },

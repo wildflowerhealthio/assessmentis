@@ -88,6 +88,33 @@ const postRequestFromHeaders =
       })
     )
 
+const deleteRequestFromHeaders =
+  (
+    httpClient: HttpClient,
+    url: URL,
+    options: Parameters<HttpClient['del']>[1]
+  ) =>
+  <E, R>(
+    effect: Effect.Effect<Record<string, string>, E, R>
+  ): Effect.Effect<
+    HttpClientResponse,
+    E | UnhandledError | HttpClientError.HttpClientError,
+    R
+  > =>
+    effect.pipe(
+      Effect.flatMap((authHeaders) => {
+        return httpClient.del(url, {
+          ...options,
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            ...(options?.headers ?? {}),
+            ...authHeaders,
+          },
+        })
+      })
+    )
+
 const handleHttpClientError =
   (message: string) =>
   <A, E, R>(resp: Effect.Effect<A, HttpClientError.HttpClientError | E, R>) =>
@@ -120,7 +147,6 @@ const assertStatus =
   <E, R>(resp: Effect.Effect<HttpClientResponse, E, R>) =>
     Effect.flatMap(resp, (resp) => {
       if (allowedStatuses.includes(resp.status)) return Effect.succeed(resp)
-
       return Effect.fail(
         new UnhandledError({
           message: `Unexpected HTTP status: ${resp.status}, expected one of: ${allowedStatuses.join(', ')}`,
@@ -134,14 +160,27 @@ const parseAs =
   <E, R2>(resp: Effect.Effect<HttpClientResponse, E, R2>) =>
     pipe(
       resp,
-      Effect.flatMap((resp) => resp.json),
-      Effect.flatMap(Schema.decodeUnknown(schema)),
-      Effect.mapError(
-        (cause) =>
-          new ExternalAssertionError({
-            expected: 'Valid JSON response matching schema',
-            cause,
-          })
+      Effect.flatMap((resp) =>
+        Effect.catchAll(resp.json, (cause) =>
+          Effect.fail(
+            new ExternalAssertionError({
+              expected: 'Valid JSON response',
+              cause,
+            })
+          )
+        )
+      ),
+      Effect.flatMap((json) =>
+        Schema.decodeUnknown(schema)(json).pipe(
+          Effect.catchAll((cause) =>
+            Effect.fail(
+              new ExternalAssertionError({
+                expected: 'response matching schema',
+                cause,
+              })
+            )
+          )
+        )
       )
     )
 
@@ -218,7 +257,7 @@ export const DailyCoVideoCallClientLayer: Layer.Layer<
     const extractRoomNameFromUrl: typeof VideoCallClient.Service.extractRoomNameFromUrl =
       (url: string): VideoCallRoomName | undefined => {
         const urlParts = url.split('/')
-        if (urlParts.length === 0) return undefined
+        if (urlParts.length <= 1) return undefined
 
         return VideoCallRoomName.make(urlParts[urlParts.length - 1])
       }
@@ -432,6 +471,22 @@ export const DailyCoVideoCallClientLayer: Layer.Layer<
         }
       })
 
+    const deleteRoom: typeof VideoCallClient.Service.deleteRoom = (
+      roomName: VideoCallRoomName
+    ) =>
+      pipe(
+        headersEffect,
+        deleteRequestFromHeaders(
+          httpClient,
+          new URL(`${baseUrl}/rooms/${roomName}`),
+          {}
+        ),
+        handleHttpClientError('HTTP Client Error while deleting room'),
+        handle404('Room', { name: roomName }),
+        assertStatus(200),
+        Effect.asVoid
+      )
+
     const getRoom: typeof VideoCallClient.Service.getRoom = (
       roomName: VideoCallRoomName
     ) =>
@@ -460,6 +515,7 @@ export const DailyCoVideoCallClientLayer: Layer.Layer<
       listAllRecordings,
       listAllTranscripts,
       getRoom,
+      deleteRoom,
     }
   })
 )

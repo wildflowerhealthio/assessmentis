@@ -102,7 +102,10 @@ const syncSingleOrgInner = (
       roomName: VideoCallRoomName
     ): Effect.Effect<
       string,
-      UnhandledError | ExternalAssertionError | AuthError
+      | UnhandledError
+      | ExternalAssertionError
+      | AuthError
+      | NotFoundError<'Room', { name: VideoCallRoomName }>
     > => {
       const cached = roomUrlCache.get(roomName)
       if (cached) return Effect.succeed(cached)
@@ -188,11 +191,18 @@ const syncMediaToFhir = (
     roomName: VideoCallRoomName
   ) => Effect.Effect<
     string,
-    UnhandledError | ExternalAssertionError | AuthError
+    | UnhandledError
+    | ExternalAssertionError
+    | AuthError
+    | NotFoundError<'Room', { name: VideoCallRoomName }>
   >
 ): Effect.Effect<
   boolean,
-  UnhandledError | ExternalAssertionError | AuthError
+  | UnhandledError
+  | ExternalAssertionError
+  | AuthError
+  | NotFoundError<'Room', { name: VideoCallRoomName }>
+  | NotFoundError<'Encounter', { id: string }>
 > =>
   Effect.gen(function* () {
     const { media, roomName } = mediaWithRoom

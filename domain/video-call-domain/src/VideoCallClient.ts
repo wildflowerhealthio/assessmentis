@@ -41,6 +41,16 @@ export class VideoCallClient extends Context.Tag('VideoCallClient')<
       UnhandledError | ExternalAssertionError | AuthError
     >
 
+    deleteRoom: (
+      roomName: VideoCallRoomName
+    ) => Effect.Effect<
+      void,
+      | UnhandledError
+      | ExternalAssertionError
+      | AuthError
+      | NotFoundError<'Room', { name: VideoCallRoomName }>
+    >
+
     extractRoomNameFromUrl: (url: string) => VideoCallRoomName | undefined
 
     listAllRecordings: (
@@ -67,7 +77,10 @@ export class VideoCallClient extends Context.Tag('VideoCallClient')<
       roomName: VideoCallRoomName
     ) => Effect.Effect<
       ExternalVideoCallRoom,
-      UnhandledError | ExternalAssertionError | AuthError
+      | UnhandledError
+      | ExternalAssertionError
+      | AuthError
+      | NotFoundError<'Room', { name: VideoCallRoomName }>
     >
   }
 >() {}

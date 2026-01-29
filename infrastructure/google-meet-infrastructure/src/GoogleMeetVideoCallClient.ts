@@ -55,6 +55,16 @@ export const GoogleMeetVideoCallClientLayer = Layer.effect(
           )
         )
 
+      const deleteRoom: typeof VideoCallClient.Service.deleteRoom = (
+        _roomName: VideoCallRoomName
+      ) =>
+        Effect.fail(
+          new UnhandledError({
+            cause: 'not-implemented',
+            message: 'Google Meet room deletion not yet implemented',
+          })
+        )
+
       const extractRoomNameFromUrl: typeof VideoCallClient.Service.extractRoomNameFromUrl =
         (url: string): VideoCallRoomName | undefined => {
           const urlParts = url.split('/')
@@ -98,6 +108,7 @@ export const GoogleMeetVideoCallClientLayer = Layer.effect(
         listAllRecordings,
         listAllTranscripts,
         getRoom,
+        deleteRoom,
       }
     })()
   )
