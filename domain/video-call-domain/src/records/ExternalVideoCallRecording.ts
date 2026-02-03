@@ -19,7 +19,7 @@ export type ExternalVideoCallRecordingFileUrl =
 
 export const ExternalVideoCallRecording = Schema.Struct({
   externalVideoCallRecordingId: ExternalVideoCallRecordingId,
-  VideoCallRoomName: VideoCallRoomName,
+  videoCallRoomName: VideoCallRoomName,
   startedAt: DateTimeUtc,
   duration: DurationFromMillis,
   uri: ExternalVideoCallRecordingUri,

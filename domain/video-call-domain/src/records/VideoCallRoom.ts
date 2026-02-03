@@ -16,7 +16,7 @@ export type VideoCallRoomName = typeof VideoCallRoomName.Type
 export const VideoCallRoom = Schema.Struct({
   encounterId: EncounterId,
   videoCallRoomId: VideoCallRoomId,
-  VideoCallRoomName: VideoCallRoomName,
+  videoCallRoomName: VideoCallRoomName,
   url: Schema.String,
 })
 

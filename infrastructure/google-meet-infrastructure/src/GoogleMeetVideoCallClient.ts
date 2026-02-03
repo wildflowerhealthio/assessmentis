@@ -68,7 +68,7 @@ export const GoogleMeetVideoCallClientLayer = Layer.effect(
       const extractRoomNameFromUrl: typeof VideoCallClient.Service.extractRoomNameFromUrl =
         (url: string): VideoCallRoomName | undefined => {
           const urlParts = url.split('/')
-          if (urlParts.length === 0) return undefined
+          if (urlParts.length <= 1) return undefined
 
           return VideoCallRoomName.make(urlParts[urlParts.length - 1])
         }

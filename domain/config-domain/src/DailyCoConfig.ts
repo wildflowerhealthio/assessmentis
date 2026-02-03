@@ -19,7 +19,7 @@ export const DailyCoConfig = Schema.TaggedStruct('daily_co', {
 })
 export type DailyCoConfig = typeof DailyCoConfig.Type
 
-export class DailyCoContext extends Context.Tag('LoadedDailyCoProxyConfig')<
+export class DailyCoContext extends Context.Tag('DailyCoContext')<
   DailyCoContext,
   {
     config: DailyCoConfig

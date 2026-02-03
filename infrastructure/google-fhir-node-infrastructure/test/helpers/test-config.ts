@@ -1,6 +1,5 @@
 import 'dotenv/config'
 import { http, HttpResponse } from 'msw'
-import { beforeAll, afterAll, afterEach } from 'vitest'
 import { execSync } from 'node:child_process'
 import { Layer } from 'effect'
 import { setupNodeIntercepting } from '@assessmentis/testing-utils/vcr-js/node'

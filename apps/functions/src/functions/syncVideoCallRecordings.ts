@@ -58,6 +58,9 @@ export const syncVideoCallRecordingsOnDemand = onRequest(
     region: 'northamerica-northeast2',
   },
   async (_request, response) => {
+    response.status(403).json({ status: 'error', message: 'Not Authorized' })
+    return
+
     info('Starting on-demand video call recordings sync')
 
     const runtime = makeSyncRuntime()

@@ -236,7 +236,7 @@ export const describeAsVideoCallClient = (
     })
 
     describe('listAllRecordings', () => {
-      it('should return an array of recordings', () =>
+      it.effect('should return an array of recordings', () =>
         Effect.gen(function* () {
           const client = yield* VideoCallClient
 
@@ -249,7 +249,8 @@ export const describeAsVideoCallClient = (
           expect(first.media.resourceType).toBe('Media')
           expect(first.media.status).toBe('completed')
           expect(typeof first.roomName).toBe('string')
-        }).pipe(Effect.provide(VideoCallClientLayer)))
+        }).pipe(Effect.provide(VideoCallClientLayer))
+      )
     })
 
     describe('listAllTranscripts', () => {

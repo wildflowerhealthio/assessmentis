@@ -9,39 +9,6 @@ import {
 
 describe('VideoCallRoom Models', () => {
   describe('VideoCallRoomId', () => {
-    test('property: valid UUIDs decode successfully', () => {
-      fc.assert(
-        fc.property(fc.uuid(), (uuid) => {
-          const decode = Schema.decodeUnknownEither(VideoCallRoomId)
-          const result = decode(uuid)
-          expect(Either.isRight(result)).toBe(true)
-          if (Either.isRight(result)) {
-            expect(result.right).toBe(uuid)
-          }
-        })
-      )
-    })
-
-    test('property: encode is inverse of decode', () => {
-      fc.assert(
-        fc.property(fc.uuid(), (uuid) => {
-          const decode = Schema.decodeUnknownEither(VideoCallRoomId)
-          const encode = Schema.encodeUnknownEither(VideoCallRoomId)
-
-          const decoded = decode(uuid)
-          if (Either.isRight(decoded)) {
-            const encoded = encode(decoded.right)
-            expect(Either.isRight(encoded)).toBe(true)
-            if (Either.isRight(encoded)) {
-              expect(encoded.right).toBe(uuid)
-            }
-          }
-        })
-      )
-    })
-  })
-
-  describe('VideoCallRoomId', () => {
     test('property: all strings decode successfully', () => {
       fc.assert(
         fc.property(fc.string(), (str) => {
@@ -109,7 +76,7 @@ describe('VideoCallRoom Models', () => {
             const room = {
               videoCallRoomId,
               encounterId,
-              VideoCallRoomName: externalRoomName,
+              videoCallRoomName: externalRoomName,
               url,
             }
             const decode = Schema.decodeUnknownEither(VideoCallRoom)
@@ -160,7 +127,7 @@ describe('VideoCallRoom Models', () => {
               videoCallRoomId,
               encounterId,
               VideoCallRoomId: externalRoomId,
-              VideoCallRoomName: externalRoomName,
+              videoCallRoomName: externalRoomName,
               url,
             }
             const decode = Schema.decodeUnknownEither(VideoCallRoom)
