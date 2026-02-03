@@ -18,12 +18,19 @@ jobs:
     if: ${{ github.event.pull_request.head.repo.full_name == github.repository && contains(github.event.pull_request.labels.*.name, 'preview') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - run: |
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22' # or an exact version like '20.10.0'
+      - name: Install and Build
+        run: |
           NODE_ENV=development npm ci --include=dev
           npm ci --workspaces
           npm run build # With Turbo
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+      - name: Firebase Preview Deploy
+        uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ASSESSMENTIS }}

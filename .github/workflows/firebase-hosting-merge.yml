@@ -10,8 +10,12 @@ jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run:  |
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22' # or an exact version like '20.10.0'
+      - name: Install and Build
+        run: |
           NODE_ENV=development npm ci --include=dev
           npm ci --workspaces
           npm run build # With Turbo
