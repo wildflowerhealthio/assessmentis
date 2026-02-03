@@ -1,15 +1,8 @@
-import { describe, expect, beforeAll } from 'vitest'
+import { describe, expect } from 'vitest'
 import { it } from '@effect/vitest'
 import { Effect } from 'effect'
-import {
-  VideoCallClient,
-  VideoCallRoomName,
-} from '@assessmentis/video-call-domain'
-import { describeAsVideoCallClient } from '@assessmentis/video-call-domain/interface-tests'
-import {
-  LiveTestLayer,
-  verifyDailyCoAuth,
-} from '../test/helpers/integration-setup'
+import { VideoCallClient } from '@assessmentis/video-call-domain'
+import { LiveTestLayer } from '../test/helpers/integration-setup'
 
 /**
  * Integration tests for Daily.co VideoCallClient operations.

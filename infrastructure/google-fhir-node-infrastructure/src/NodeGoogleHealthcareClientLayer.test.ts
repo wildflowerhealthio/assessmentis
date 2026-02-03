@@ -219,7 +219,7 @@ describe('NodeGoogleHealthcareClientLayer', () => {
 
   const testLayer = NodeGoogleHealthcareFhirR4ClientLayer.pipe(
     Layer.provide(Layer.succeed(LoadedGoogleFhirConfig, testConfig)),
-    Layer.provide(Layer.succeed(FirebaseAdmin, {}))
+    Layer.provide(Layer.succeed(FirebaseAdmin, vi.mocked({} as any)))
   )
 
   it.effect(

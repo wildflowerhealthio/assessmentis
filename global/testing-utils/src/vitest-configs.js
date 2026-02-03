@@ -8,6 +8,7 @@ const base = defineConfig(({ mode }) => ({
   test: {
     globals: true,
     plugins: [tsconfigPaths()],
+    // eslint-disable-next-line no-undef
     env: loadEnv(mode, process.cwd(), ''),
   },
 }))
@@ -71,6 +72,7 @@ const jsdom = defineConfig(() => ({
   },
 }))
 
+/** @type {ViteUserConfigFnObject} */
 export const browserUnit = defineConfig((configEnv) =>
   mergeConfig(
     mergeConfig(
@@ -83,6 +85,7 @@ export const browserUnit = defineConfig((configEnv) =>
   )
 )
 
+/** @type {ViteUserConfigFnObject} */
 export const browserIntegration = defineConfig((configEnv) =>
   mergeConfig(
     mergeConfig(
@@ -95,6 +98,7 @@ export const browserIntegration = defineConfig((configEnv) =>
   )
 )
 
+/** @type {ViteUserConfigFnObject} */
 export const browserE2e = defineConfig((configEnv) =>
   mergeConfig(
     mergeConfig(
@@ -107,6 +111,7 @@ export const browserE2e = defineConfig((configEnv) =>
   )
 )
 
+/** @type {ViteUserConfigFnObject} */
 export const nodeUnit = defineConfig((configEnv) =>
   mergeConfig(
     mergeConfig(mergeConfig(base(configEnv), node(configEnv)), unit(configEnv)),
@@ -116,6 +121,7 @@ export const nodeUnit = defineConfig((configEnv) =>
   )
 )
 
+/** @type {ViteUserConfigFnObject} */
 export const nodeIntegration = defineConfig((configEnv) =>
   mergeConfig(
     mergeConfig(
@@ -128,6 +134,7 @@ export const nodeIntegration = defineConfig((configEnv) =>
   )
 )
 
+/** @type {ViteUserConfigFnObject} */
 export const jsdomUnit = defineConfig((configEnv) =>
   mergeConfig(
     mergeConfig(
@@ -140,6 +147,7 @@ export const jsdomUnit = defineConfig((configEnv) =>
   )
 )
 
+/** @type {ViteUserConfigFnObject} */
 export const jsdomIntegration = defineConfig((configEnv) =>
   mergeConfig(
     mergeConfig(

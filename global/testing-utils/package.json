@@ -8,7 +8,10 @@
   "prettier": "@assessmentis/prettier-config",
   "exports": {
     ".": "./src/index.ts",
-    "./vitest-configs": "./src/vitest-configs.js",
+    "./vitest-configs": {
+      "import": "./src/vitest-configs.js",
+      "types": "./src/vitest-configs.d.ts"
+    },
     "./vcr-js": "./src/vcr-js/index.ts",
     "./vcr-js/node": "./src/vcr-js/node.ts",
     "./vcr-js/browser": "./src/vcr-js/browser.ts"
