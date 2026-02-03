@@ -10,7 +10,7 @@ import { defaultHttpOptions, oauth2Client } from '../util/functionContext'
 import { handleError } from '../util/handleError'
 import { UnhandledError } from '@assessmentis/ontology'
 import { AuthRepository } from '@assessmentis/firebase-server-infrastructure'
-import { makeServerRuntime } from '../util/BaseLayer'
+import { makeRequestRuntime } from '../util/BaseLayer'
 
 /**
  * Process OAuth callback with authorization code
@@ -89,7 +89,7 @@ export const oAuthCallback = onRequest(
   defaultHttpOptions,
   async (request: Request, response: Response) => {
     info('Received request to refresh Google OAuth token')
-    const runtime = makeServerRuntime(AuthRepository.Default, { request })
+    const runtime = makeRequestRuntime(AuthRepository.Default, { request })
     await runtime
       .runPromiseExit(oAuthCallbackEffect(request.query))
       .then((exit) =>

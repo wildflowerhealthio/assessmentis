@@ -1,25 +1,11 @@
 import { onSchedule } from 'firebase-functions/v2/scheduler'
 import { onRequest } from 'firebase-functions/v2/https'
 import { info, error as logError } from 'firebase-functions/logger'
-import { Exit, Layer, ManagedRuntime } from 'effect'
-import { FetchHttpClient } from '@effect/platform'
-import {
-  FirebaseAdmin,
-  FirebaseAdminDocumentStoreLayer,
-} from '@assessmentis/firebase-server-infrastructure'
+import { Effect, Exit, Layer } from 'effect'
+import { AuthzError } from '@assessmentis/ontology'
+import { CurrentUserId } from '@assessmentis/platform-domain'
 import { syncVideoCallRecordingsEffect } from '../effects/syncVideoCallRecordingsEffect'
-
-/**
- * Runtime for sync functions (no FunctionsContext/auth needed).
- */
-const makeSyncRuntime = () =>
-  ManagedRuntime.make(
-    Layer.mergeAll(
-      FetchHttpClient.layer,
-      FirebaseAdminDocumentStoreLayer,
-      FirebaseAdmin.Default
-    )
-  )
+import { makeAdminRuntime, makeAuthedRequestRuntime } from '../util/BaseLayer'
 
 /**
  * Scheduled trigger: runs every 24 hours.
@@ -32,8 +18,7 @@ export const syncVideoCallRecordingsScheduled = onSchedule(
   },
   async () => {
     info('Starting scheduled video call recordings sync')
-
-    const runtime = makeSyncRuntime()
+    const runtime = makeAdminRuntime(Layer.empty)
     const exit = await runtime.runPromiseExit(syncVideoCallRecordingsEffect)
 
     Exit.match(exit, {
@@ -57,14 +42,26 @@ export const syncVideoCallRecordingsOnDemand = onRequest(
     timeoutSeconds: 540,
     region: 'northamerica-northeast2',
   },
-  async (_request, response) => {
-    response.status(403).json({ status: 'error', message: 'Not Authorized' })
-    return
-
+  async (request, response) => {
     info('Starting on-demand video call recordings sync')
 
-    const runtime = makeSyncRuntime()
-    const exit = await runtime.runPromiseExit(syncVideoCallRecordingsEffect)
+    const runtime = makeAuthedRequestRuntime(Layer.empty, { request })
+
+    const exit = await runtime.runPromiseExit(
+      Effect.gen(function* () {
+        const { userId } = yield* CurrentUserId
+        if (userId != 'NYHqWb9dcRg1v2XxijROridZOur2') {
+          return yield* Effect.fail(
+            new AuthzError({
+              message:
+                'Unauthorized: only global admins can trigger this function',
+            })
+          )
+        }
+        const results = yield* syncVideoCallRecordingsEffect
+        return results
+      })
+    )
 
     Exit.match(exit, {
       onSuccess: (results) => {
