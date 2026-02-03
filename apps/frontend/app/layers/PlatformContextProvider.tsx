@@ -111,6 +111,10 @@ export const PlatformContextProvider: React.FC<
   }, [])
   const platformPromise = useEffectTs(thisPlatformEffect)
 
+  if (typeof window === 'undefined') {
+    return <TextHeader title="Loading..." />
+  }
+
   return (
     <Suspense
       fallback={

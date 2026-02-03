@@ -21,6 +21,7 @@ import { cn } from '../../../../../../../global/react-util/src/functions'
 import React, { PropsWithChildren } from 'react'
 import { useAsyncError } from 'react-router'
 import { signIn } from '../../../../firebase'
+import { ErrorBoundary } from 'react-error-boundary'
 
 export const EmptyHeader = () => (
   <NavHeader
@@ -40,8 +41,8 @@ export const NavHeaderErrorHandler = ({
     return <TextHeader title="Data Error - Contact Support" />
   } else if (error instanceof NoSelectedOrgError) {
     return <TextHeader title={'Please Select an Organization'} />
-  } else if (error instanceof UnhandledError) {
-    // Keep
+  } else if (error) {
+    throw error
   }
 
   return children
@@ -78,14 +79,18 @@ const NavHeader = (props: {
   const error = useAsyncError()
 
   return (
-    <NavHeaderErrorHandler error={error}>
-      <header className={classes.NavHeader}>
-        <OptionalBackButton />
-        <OrgPicker {...props} />
-        <HeaderBreadcrumbs />
-        <NavBurger />
-      </header>
-    </NavHeaderErrorHandler>
+    <ErrorBoundary
+      fallbackRender={({ error }) => <NavHeaderErrorHandler error={error} />}
+    >
+      <NavHeaderErrorHandler error={error}>
+        <header className={classes.NavHeader}>
+          <OptionalBackButton />
+          <OrgPicker {...props} />
+          <HeaderBreadcrumbs />
+          <NavBurger />
+        </header>
+      </NavHeaderErrorHandler>
+    </ErrorBoundary>
   )
 }
 
