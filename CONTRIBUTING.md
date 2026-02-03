@@ -128,7 +128,7 @@ For comprehensive testing documentation, see [docs/testing/](./docs/testing/test
 - Use **Vitest** for all packages
 - Test files alongside source: `*.test.ts`
 - **Property-based testing first** with `fast-check` and `Arbitrary.make(Schema)`
-- Use `@assessmentis/vcr-js` for HTTP record/playback in integration testing against external APIs
+- Use `@assessmentis/testing-utils/vcr-js` for HTTP record/playback in integration testing against external APIs
 
 ## Package-Specific Guidelines
 

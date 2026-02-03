@@ -83,33 +83,35 @@ export const describeAsFhirR4ResourceClient = (
   cases: FhirR4ResourceCases,
   fn?: SuiteFactory<object>
 ): SuiteCollector<object> => {
-  // Internal resource tracking for cleanup
-  let resourcesToDelete: Array<{ type: string; id: string }> = []
-
-  beforeEach(() => {
-    resourcesToDelete = []
-  })
-
-  afterEach(() =>
-    Effect.runPromise(
-      Effect.gen(function* () {
-        const client = yield* FhirR4Client
-        for (const { type, id } of resourcesToDelete) {
-          const exit = yield* Effect.exit(client.delete({ type, id }))
-          if (Exit.isFailure(exit)) {
-            yield* Console.warn(`Failed to delete ${type}/${id} during cleanup`)
-          }
-        }
-      }).pipe(Effect.provide(FhirR4ClientLayer))
-    )
-  )
-
-  const trackForCleanup = (type: string, id: string) => {
-    resourcesToDelete.push({ type, id })
-  }
-
   return describe(`complies with FhirR4Client interface for ${resourceType}`, (testApi) => {
     fn?.(testApi)
+
+    // Internal resource tracking for cleanup
+    let resourcesToDelete: Array<{ type: string; id: string }> = []
+
+    const trackForCleanup = (type: string, id: string) => {
+      resourcesToDelete.push({ type, id })
+    }
+
+    beforeEach(() => {
+      resourcesToDelete = []
+    })
+
+    afterEach(() =>
+      Effect.runPromise(
+        Effect.gen(function* () {
+          const client = yield* FhirR4Client
+          for (const { type, id } of resourcesToDelete) {
+            const exit = yield* Effect.exit(client.delete({ type, id }))
+            if (Exit.isFailure(exit)) {
+              yield* Console.warn(
+                `Failed to delete ${type}/${id} during cleanup`
+              )
+            }
+          }
+        }).pipe(Effect.provide(FhirR4ClientLayer))
+      )
+    )
 
     describe('read (not found)', () => {
       it.effect('should return NotFoundError for non-existent resource', () =>

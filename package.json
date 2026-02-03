@@ -10,7 +10,8 @@
     "dev": "npm exec turbo run dev",
     "lint": "npm exec turbo run lint",
     "typecheck": "npm exec turbo run typecheck",
-    "test": "vitest",
+    "test": "vitest --project=\"*:unit\"",
+    "test:all": "vitest",
     "format": "npm exec prettier --write \"**/*.{ts,tsx,md}\""
   },
   "author": "Ruth Marks",
@@ -23,7 +24,7 @@
     "global/util",
     "global/ontology",
     "global/daily-co-components",
-    "global/vcr-js",
+    "global/testing-utils",
     "domain/platform-domain",
     "domain/clinical-domain",
     "domain/config-domain",

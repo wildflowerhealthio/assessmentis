@@ -16,7 +16,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"./src/**/*\"",
     "lint:fix": "eslint --fix \"./src/**/*\"",
-    "test": "vitest run"
+    "test:integration": "RECORD=true vitest run test --config vitest.integration.config.ts",
+    "test:unit": "vitest run test --project \"*:unit\" --project \"*:integration\""
   },
   "dependencies": {
     "@assessmentis/clinical-domain": "*",
@@ -32,7 +33,7 @@
     "@assessmentis/eslint-config": "*",
     "@assessmentis/prettier-config": "*",
     "@assessmentis/typescript-config": "*",
-    "@assessmentis/vcr-js": "*",
+    "@assessmentis/testing-utils": "*",
     "@eslint/js": "^9.39.1",
     "@types/node": "^24.10.1",
     "dotenv": "^16.4.7",

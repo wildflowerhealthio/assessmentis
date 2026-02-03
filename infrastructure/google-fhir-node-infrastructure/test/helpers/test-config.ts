@@ -1,13 +1,12 @@
 import 'dotenv/config'
 import { http, HttpResponse } from 'msw'
 import { beforeAll, afterAll, afterEach } from 'vitest'
-import { setupServer } from 'msw/node'
 import { execSync } from 'node:child_process'
 import { Layer } from 'effect'
+import { setupNodeIntercepting } from '@assessmentis/testing-utils/vcr-js/node'
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
 import { NodeGoogleHealthcareFhirR4ClientLayer } from '../../src/NodeGoogleHealthcareClientLayer'
 import { GCloudAccessToken } from '../../src/GCloudAccessToken'
-import { setupInterceptServer } from '@assessmentis/vcr-js'
 
 export const testConfig = {
   _tag: 'google_fhir_store' as const,
@@ -36,6 +35,9 @@ export const buildApiPath = (resourceType?: string, id?: string) => {
  * Get access token from gcloud CLI
  */
 export const getGcloudToken = (): string => {
+  if (import.meta.env.VITE_RECORD != 'true') {
+    return 'mock-access-token-for-testing'
+  }
   try {
     const token = execSync('gcloud auth print-access-token', {
       encoding: 'utf-8',
@@ -126,37 +128,30 @@ const authHandlers = [
   }),
 ]
 
-const mswServer = await setupInterceptServer({
-  mswSetup: setupServer,
-  tapePath: __dirname + '/../tapes/',
-  handlers: authHandlers,
-  hosts: [
-    {
-      name: 'Google Healthcare API',
-      host: 'https://healthcare.googleapis.com',
-      urlSubstitutions: [
-        [
-          /\/v1\/projects\/assessmentis\/locations\/[^\/]*\/datasets\/[^\/]*\/fhirStores\/[^\/]*\/fhir/,
-          'FHIR',
-        ],
-        [
-          /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/gi,
-          ':uuid',
-        ],
-      ],
-    },
-  ],
-})
-
 // Setup hooks for MSW
-beforeAll(async () => {
+export const setMswContext = async () => {
+  const mswServer = await setupNodeIntercepting({
+    tapePath: __dirname + '/../tapes/',
+    handlers: authHandlers,
+    hosts: [
+      {
+        name: 'Google Healthcare API',
+        destinationHost: 'https://healthcare.googleapis.com',
+        urlSubstitutions: [
+          [
+            /\/v1\/projects\/assessmentis\/locations\/[^/]*\/datasets\/[^/]*\/fhirStores\/[^/]*\/fhir/,
+            'FHIR',
+          ],
+          [
+            /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/gi,
+            ':uuid',
+          ],
+        ],
+      },
+    ],
+  })
+
   mswServer.listen({ onUnhandledRequest: 'error' })
-})
 
-afterEach(() => {
-  mswServer.resetHandlers()
-})
-
-afterAll(() => {
-  mswServer.close()
-})
+  return () => mswServer.close()
+}

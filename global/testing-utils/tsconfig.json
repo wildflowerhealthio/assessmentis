@@ -5,6 +5,7 @@
   "compilerOptions": {
     "baseUrl": "",
     "rootDir": "src",
-    "outDir": "dist"
+    "outDir": "dist",
+    "lib": ["ES2024", "DOM"]
   }
 }

@@ -1,11 +1,10 @@
 import 'dotenv/config'
 import { http } from 'msw'
 import { beforeAll, afterAll, afterEach } from 'vitest'
-import { setupServer } from 'msw/node'
 import { Effect, Layer, TestContext } from 'effect'
 import { DailyCoContext, DailyCoConfig } from '@assessmentis/config-domain'
 import { FetchHttpClient } from '@effect/platform'
-import { setupInterceptServer } from '@assessmentis/vcr-js'
+import { setupNodeIntercepting } from '@assessmentis/testing-utils/vcr-js/node'
 import { DailyCoVideoCallClientLayer } from '../../src/DailyCoVideoCallClientLayer'
 
 export const DAILY_CO_API_BASE = 'https://api.daily.co'
@@ -66,15 +65,14 @@ export const LiveTestLayer = DailyCoVideoCallClientLayer.pipe(
 // Create mock handlers for any endpoints that should be mocked rather than recorded
 const mockHandlers: Parameters<typeof http.get>[] = []
 
-const mswServer = await setupInterceptServer({
+const mswServer = await setupNodeIntercepting({
   summary: true,
-  mswSetup: setupServer,
   tapePath: __dirname + '/../tapes/',
   handlers: mockHandlers.map(([path, handler]) => http.get(path, handler)),
   hosts: [
     {
       name: 'Daily.co API',
-      host: 'https://api.daily.co',
+      destinationHost: 'https://api.daily.co',
       urlSubstitutions: [
         // Replace room IDs (alphanumeric with dashes)
         [/\/rooms\/[a-zA-Z0-9-]+(?=\/|$)/g, '/rooms/:roomName'],

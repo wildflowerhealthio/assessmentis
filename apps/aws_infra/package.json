@@ -12,12 +12,13 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"./lib/**/*\" \"./bin/**/*\" \"./test/**/*\"",
     "lint:fix": "eslint --fix \"./lib/**/*\" \"./bin/**/*\" \"./test/**/*\"",
-    "test": "vitest run",
+    "test": "vitest --project aws_infra:unit",
     "cdk": "cdk"
   },
   "devDependencies": {
     "@assessmentis/eslint-config": "*",
     "@assessmentis/prettier-config": "*",
+    "@assessmentis/testing-utils": "*",
     "@assessmentis/typescript-config": "*",
     "@types/node": "^24",
     "@types/prettier": "2.6.0",

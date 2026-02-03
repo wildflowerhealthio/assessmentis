@@ -6,7 +6,10 @@ import {
   VideoCallRoomName,
 } from '@assessmentis/video-call-domain'
 import { describeAsVideoCallClient } from '@assessmentis/video-call-domain/interface-tests'
-import { LiveTestLayer, verifyDailyCoAuth } from '../test/helpers/test-config'
+import {
+  LiveTestLayer,
+  verifyDailyCoAuth,
+} from '../test/helpers/integration-setup'
 
 /**
  * Integration tests for Daily.co VideoCallClient operations.
@@ -20,22 +23,6 @@ import { LiveTestLayer, verifyDailyCoAuth } from '../test/helpers/test-config'
  * - DAILY_CO_API_KEY environment variable set
  */
 describe('DailyCoVideoCallClientLayer', () => {
-  beforeAll(() => {
-    // Verify Daily.co API key is configured before running tests
-    verifyDailyCoAuth()
-    console.log('Testing against Daily.co API')
-  })
-
-  describeAsVideoCallClient(LiveTestLayer, {
-    roomDomain: 'daily.co',
-    testRooms: [
-      {
-        roomName: VideoCallRoomName.make('n8zIE2Jc19YU1q54LQzz'),
-        recordings: 1,
-      },
-    ],
-  })
-
   describe('extractRoomNameFromUrl', () => {
     it.effect('should extract room name from Daily.co URL', () =>
       Effect.gen(function* () {

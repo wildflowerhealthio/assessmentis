@@ -14,7 +14,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"./src/**/*\"",
     "lint:fix": "eslint --fix \"./src/**/*\"",
-    "test": "vitest run"
+    "test": "vitest --project video-call-domain:unit",
+    "test:all": "vitest"
   },
   "dependencies": {
     "effect": "^3.19.8",

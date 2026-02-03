@@ -1,13 +1,17 @@
 {
-  "name": "@assessmentis/vcr-js",
+  "name": "@assessmentis/testing-utils",
   "version": "0.0.1",
-  "description": "VCR-style HTTP record/integration testing library built on MSW",
+  "description": "Testing utilities for Assessment.is projects",
   "author": "Ruth Marks",
   "license": "UNLICENSED",
   "type": "module",
   "prettier": "@assessmentis/prettier-config",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./vitest-configs": "./src/vitest-configs.js",
+    "./vcr-js": "./src/vcr-js/index.ts",
+    "./vcr-js/node": "./src/vcr-js/node.ts",
+    "./vcr-js/browser": "./src/vcr-js/browser.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

@@ -11,8 +11,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"./src/**/*\"",
     "lint:fix": "eslint --fix \"./src/**/*\"",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "vitest run test --project react-util:unit",
     "preview": "vite preview"
   },
   "exports": {
