@@ -78,6 +78,28 @@ const NavHeader = (props: {
 }) => {
   const error = useAsyncError()
 
+  if (error instanceof NoSelectedOrgError) {
+    return (
+      <ErrorBoundary
+        fallbackRender={({ error }) => <NavHeaderErrorHandler error={error} />}
+      >
+        <NavHeaderErrorHandler error={error}>
+          <header className={classes.NavHeader}>
+            <OptionalBackButton />
+            <OrgPicker {...props} />
+            <span
+              className={'text-alt-heading-3'}
+              style={{ color: 'var(--neutral-1)' }}
+            >
+              Please Select an Organization
+            </span>
+            <NavBurger />
+          </header>
+        </NavHeaderErrorHandler>
+      </ErrorBoundary>
+    )
+  }
+
   return (
     <ErrorBoundary
       fallbackRender={({ error }) => <NavHeaderErrorHandler error={error} />}

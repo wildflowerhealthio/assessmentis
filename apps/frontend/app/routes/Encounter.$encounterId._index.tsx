@@ -1,18 +1,32 @@
-import { Effect, Schema } from 'effect'
+import { Either, Option, Schema, Scope, Stream } from 'effect'
 import { EncounterId } from '@assessmentis/clinical-domain/administration'
-import { getFullEncounter } from 'app/modules/interview-call/actions/getFullEncounter'
+import {
+  FullEncounter,
+  getFullEncounter,
+} from 'app/modules/interview-call/actions/getFullEncounter'
 import InterviewCall from 'app/modules/interview-call/features/InterviewCall/InterviewCall'
 import type { Route } from './+types/Encounter.$encounterId._index'
-import { runEffectSync } from '../runEffectSync'
+import { runEffectSync, runEffectSyncFlat } from '../runEffectSync'
 import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
 import { getEncounterDisplayName } from '../modules/resources/Encounter/utils/encounterDisplay'
 import { Suspense, useMemo } from 'react'
-import { NotFoundError } from '@assessmentis/ontology'
+import {
+  AuthError,
+  AuthzError,
+  ExternalAssertionError,
+  NotFoundError,
+  UnhandledError,
+} from '@assessmentis/ontology'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
-import { useEffectTs } from '@assessmentis/react-util'
+import {
+  useEffectTs,
+  useEitherStream,
+  useStream,
+} from '@assessmentis/react-util'
 import { ClinicalDataRepositoryService } from '../layers/ClinicalDataRepositoriesService'
 import { usePlatformContext } from '../layers/PlatformContext'
 import { Await, useAsyncError } from 'react-router'
+import { NoSelectedOrgError } from '../../../../domain/platform-domain/src/hostedServices'
 
 const tryDecodeEncounterId = Schema.decodeOption(EncounterId)
 
@@ -27,18 +41,47 @@ const EncounterError = () => {
 export default function EncounterPage({ params }: Route.ComponentProps) {
   const { clinicalDataRepositoryService } = usePlatformContext()
 
-  const encounterEffect = useMemo(() => {
+  const encounterStream = useMemo(() => {
     const encounterIdStr = params.encounterId
     const encounterIdMaybe = tryDecodeEncounterId(encounterIdStr)
-    return getFullEncounter(encounterIdMaybe).pipe(
-      Effect.provideService(
-        ClinicalDataRepositoryService,
-        clinicalDataRepositoryService
-      )
-    )
+    return Option.match<
+      EncounterId,
+      Stream.Stream<
+        Either.Either<
+          FullEncounter,
+          | UnhandledError
+          | AuthError
+          | AuthzError
+          | NotFoundError<'Encounter', { id: EncounterId }>
+          | ExternalAssertionError
+          | NoSelectedOrgError
+        >,
+        never,
+        Scope.Scope
+      >
+    >(encounterIdMaybe, {
+      onSome(encounterId) {
+        return getFullEncounter(encounterId).pipe(
+          Stream.provideService(
+            ClinicalDataRepositoryService,
+            clinicalDataRepositoryService
+          )
+        )
+      },
+      onNone() {
+        return Stream.succeed(
+          Either.left(
+            new NotFoundError({
+              resourceType: 'Encounter',
+              params: { id: EncounterId.make(encounterIdStr) },
+            })
+          )
+        )
+      },
+    })
   }, [params.encounterId, clinicalDataRepositoryService])
 
-  const encounterPromise = useEffectTs(encounterEffect)
+  const encounterPromise = useEitherStream(encounterStream)
 
   const breadcrumbs = useMemo(() => {
     return [

@@ -41,8 +41,8 @@ describe('ClinicalDataRepositoryService', () => {
 
         const program = Effect.gen(function* () {
           const service = yield* ClinicalDataRepositoryService
-          expect(service[resourceType]).toBeDefined()
-          expect(Effect.isEffect(service[resourceType])).toBe(true)
+          expect(service.effect[resourceType]).toBeDefined()
+          expect(Effect.isEffect(service.effect[resourceType])).toBe(true)
         }).pipe(
           Effect.provide(
             ClinicalDataRepositoryService.Default.pipe(
@@ -113,7 +113,7 @@ describe('ClinicalDataRepositoryService', () => {
 
             // All repositories should exist regardless of client state
             resourceTypes.forEach((type) => {
-              expect(service[type]).toBeDefined()
+              expect(service.effect[type]).toBeDefined()
             })
           }).pipe(
             Effect.provide(

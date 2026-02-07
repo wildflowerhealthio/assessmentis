@@ -1,4 +1,4 @@
-import { Effect, Layer, Schema } from 'effect'
+import { Effect, Either, Layer, Schema, Scope, Stream } from 'effect'
 import {
   Schemas,
   ClinicalDomainRepositoryTagClass,
@@ -35,10 +35,23 @@ export type GoogleFhirWebLayer<Key extends keyof typeof Schemas> = Layer.Layer<
 >
 
 export type ClinicalDataRepositoryServiceType = {
-  [Key in keyof typeof Schemas]: Effect.Effect<
-    ClinicalDataRepository<Schema.Schema.Type<(typeof Schemas)[Key]>>,
-    AuthError | NoSelectedOrgError | UnhandledError
-  >
+  effect: {
+    [Key in keyof typeof Schemas]: Effect.Effect<
+      ClinicalDataRepository<Schema.Schema.Type<(typeof Schemas)[Key]>>,
+      AuthError | NoSelectedOrgError | UnhandledError
+    >
+  }
+
+  stream: {
+    [Key in keyof typeof Schemas]: Stream.Stream<
+      Either.Either<
+        ClinicalDataRepository<Schema.Schema.Type<(typeof Schemas)[Key]>>,
+        AuthError | NoSelectedOrgError | UnhandledError
+      >,
+      never,
+      Scope.Scope
+    >
+  }
 }
 
 export class ClinicalDataRepositoryService extends Effect.Service<ClinicalDataRepositoryService>()(
@@ -48,7 +61,7 @@ export class ClinicalDataRepositoryService extends Effect.Service<ClinicalDataRe
     effect: Effect.gen(function* () {
       const clientService = yield* FhirR4ClientService
 
-      const clientConstructor = <
+      const clientEffect = <
         const ResourceType extends string,
         A extends { id?: string | undefined; resourceType: ResourceType },
         I extends { id?: string | undefined; resourceType: ResourceType },
@@ -67,18 +80,62 @@ export class ClinicalDataRepositoryService extends Effect.Service<ClinicalDataRe
             e instanceof ExternalAssertionError ? e.asUnhandledError() : e
           )
         )
+
+      const clientStream = <
+        const ResourceType extends string,
+        A extends { id?: string | undefined; resourceType: ResourceType },
+        I extends { id?: string | undefined; resourceType: ResourceType },
+      >(
+        schema: Schema.Schema<A, I, never>,
+        resourceType: ResourceType
+      ): Stream.Stream<
+        Either.Either<
+          ClinicalDataRepository<A>,
+          AuthError | NoSelectedOrgError | UnhandledError
+        >,
+        never,
+        Scope.Scope
+      > =>
+        Stream.map(
+          clientService.clientStream,
+          Either.map((fhirClient) =>
+            makeClinicalDataRepository(fhirClient, resourceType, schema)
+          )
+        ).pipe(
+          Stream.map(
+            Either.mapLeft((e) =>
+              e instanceof ExternalAssertionError ? e.asUnhandledError() : e
+            )
+          )
+        )
+
       return {
-        Composition: clientConstructor(Composition, 'Composition'),
-        Encounter: clientConstructor(Encounter, 'Encounter'),
-        Media: clientConstructor(Media, 'Media'),
-        Observation: clientConstructor(Observation, 'Observation'),
-        Patient: clientConstructor(Patient, 'Patient'),
-        Practitioner: clientConstructor(Practitioner, 'Practitioner'),
-        Questionnaire: clientConstructor(Questionnaire, 'Questionnaire'),
-        QuestionnaireResponse: clientConstructor(
-          QuestionnaireResponse,
-          'QuestionnaireResponse'
-        ),
+        effect: {
+          Composition: clientEffect(Composition, 'Composition'),
+          Encounter: clientEffect(Encounter, 'Encounter'),
+          Media: clientEffect(Media, 'Media'),
+          Observation: clientEffect(Observation, 'Observation'),
+          Patient: clientEffect(Patient, 'Patient'),
+          Practitioner: clientEffect(Practitioner, 'Practitioner'),
+          Questionnaire: clientEffect(Questionnaire, 'Questionnaire'),
+          QuestionnaireResponse: clientEffect(
+            QuestionnaireResponse,
+            'QuestionnaireResponse'
+          ),
+        },
+        stream: {
+          Composition: clientStream(Composition, 'Composition'),
+          Encounter: clientStream(Encounter, 'Encounter'),
+          Media: clientStream(Media, 'Media'),
+          Observation: clientStream(Observation, 'Observation'),
+          Patient: clientStream(Patient, 'Patient'),
+          Practitioner: clientStream(Practitioner, 'Practitioner'),
+          Questionnaire: clientStream(Questionnaire, 'Questionnaire'),
+          QuestionnaireResponse: clientStream(
+            QuestionnaireResponse,
+            'QuestionnaireResponse'
+          ),
+        },
       } satisfies ClinicalDataRepositoryServiceType
     }),
   }
@@ -97,7 +154,7 @@ export class ClinicalDataRepositoryService extends Effect.Service<ClinicalDataRe
     return Effect.gen(function* () {
       const repoService = yield* ClinicalDataRepositoryService
 
-      const repository = (yield* repoService[
+      const repository = (yield* repoService.effect[
         resourceType
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ]) satisfies ClinicalDataRepository<any>

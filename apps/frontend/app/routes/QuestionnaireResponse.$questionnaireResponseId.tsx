@@ -111,7 +111,7 @@ export default function QuestionnaireResponseDetailsPage({
 
   const pageEffect = useMemo(() => {
     const { Media, Observation, Questionnaire, QuestionnaireResponse } =
-      clinicalDataRepositoryService
+      clinicalDataRepositoryService.effect
     return questionnaireEffect(params.questionnaireResponseId).pipe(
       Effect.provideServiceEffect(
         QuestionnaireResponseRepository,
@@ -160,7 +160,7 @@ const ResponsePage = ({
   const repoEffect = useMemo(() => {
     return Effect.gen(function* () {
       const repoService = yield* ClinicalDataRepositoryService
-      const repository = yield* repoService.Media
+      const repository = yield* repoService.effect.Media
 
       return repository
     }).pipe(
@@ -195,7 +195,7 @@ const ResponsePage = ({
         Effect.flatMap((o) => o.createMany(observations)),
         Effect.provideServiceEffect(
           ObservationRepository,
-          clinicalDataRepositoryService.Observation
+          clinicalDataRepositoryService.effect.Observation
         )
       )
     )
@@ -218,7 +218,7 @@ const ResponsePage = ({
     ).pipe(
       Effect.provideServiceEffect(
         MediaRepository,
-        clinicalDataRepositoryService.Media
+        clinicalDataRepositoryService.effect.Media
       ),
       Effect.provideServiceEffect(
         VideoCallClient,
@@ -226,7 +226,7 @@ const ResponsePage = ({
       ),
       Effect.provideServiceEffect(
         EncounterRepository,
-        clinicalDataRepositoryService.Encounter
+        clinicalDataRepositoryService.effect.Encounter
       )
     )
 

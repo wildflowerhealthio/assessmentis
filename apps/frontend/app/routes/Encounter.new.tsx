@@ -59,11 +59,11 @@ export default function CreateEncounterPage() {
       }).pipe(
         Effect.provideServiceEffect(
           QuestionnaireResponseRepository,
-          clinicalDataRepositoryService.QuestionnaireResponse
+          clinicalDataRepositoryService.effect.QuestionnaireResponse
         ),
         Effect.provideServiceEffect(
           EncounterRepository,
-          clinicalDataRepositoryService.Encounter
+          clinicalDataRepositoryService.effect.Encounter
         ),
         Effect.provideServiceEffect(
           VideoCallClient,

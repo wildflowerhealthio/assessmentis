@@ -1,11 +1,8 @@
-import { Effect, Option, Schema } from 'effect'
-import {
-  PractitionerId,
-  PractitionerRepository,
-} from '@assessmentis/clinical-domain/administration'
+import { Effect, Either, Option, Schema, Stream } from 'effect'
+import { PractitionerId } from '@assessmentis/clinical-domain/administration'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/Practitioner.$practitionerId._index'
-import { runEffectSync } from '../runEffectSync'
+import { runEffectSyncFlat } from '../runEffectSync'
 import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
 import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
 import {
@@ -19,7 +16,7 @@ import { PractitionerLanguages } from '../modules/resources/Practitioner/compone
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { Suspense, useMemo } from 'react'
 import Skeleton from 'react-loading-skeleton'
-import { useEffectTs } from '@assessmentis/react-util'
+import { useEitherStream } from '@assessmentis/react-util'
 import { usePlatformContext } from '../layers/PlatformContext'
 import { Await } from 'react-router'
 
@@ -30,31 +27,28 @@ export default function PractitionerDetailPage({
 }: Route.ComponentProps) {
   const { clinicalDataRepositoryService } = usePlatformContext()
 
-  const practitionerEffect = useMemo(() => {
+  const practitionerStream = useMemo(() => {
     const practitionerIdMaybe = tryDecodePractitionerId(params.practitionerId)
 
-    return Effect.gen(function* () {
-      const repository = yield* PractitionerRepository
-
-      const practitionerId = yield* practitionerIdMaybe.pipe(
-        Option.map(Effect.succeed),
-        Option.getOrElse(() =>
-          Effect.fail(
+    return Option.match(practitionerIdMaybe, {
+      onSome: (practitionerId) =>
+        clinicalDataRepositoryService.stream.Practitioner.pipe(
+          Stream.mapEffect((repoEither) =>
+            Effect.either(
+              Effect.flatMap(repoEither, (repo) => repo.get(practitionerId))
+            )
+          )
+        ),
+      onNone: () =>
+        Stream.succeed(
+          Either.left(
             new UnhandledError({ message: 'Practitioner ID not found' })
           )
-        )
-      )
+        ),
+    })
+  }, [clinicalDataRepositoryService, params.practitionerId])
 
-      return yield* repository.get(practitionerId)
-    }).pipe(
-      Effect.provideServiceEffect(
-        PractitionerRepository,
-        clinicalDataRepositoryService.Practitioner
-      )
-    )
-  }, [clinicalDataRepositoryService.Practitioner, params.practitionerId])
-
-  const practitionerPromise = useEffectTs(practitionerEffect)
+  const practitionerPromise = useEitherStream(practitionerStream)
 
   const breadcrumbs = useMemo(
     () => [
@@ -106,7 +100,7 @@ export default function PractitionerDetailPage({
                 title: 'Demographics',
                 content: (
                   <DetailGrid
-                    items={runEffectSync(
+                    items={runEffectSyncFlat(
                       formatPractitionerDemographics(practitioner)
                     )}
                   />

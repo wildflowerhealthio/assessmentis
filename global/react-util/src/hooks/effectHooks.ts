@@ -1,5 +1,32 @@
-import { Cause, Chunk, Effect, Exit, Fiber, pipe, Scope, Stream } from 'effect'
+import {
+  Cause,
+  Chunk,
+  Effect,
+  Either,
+  Exit,
+  Fiber,
+  pipe,
+  Scope,
+  Stream,
+} from 'effect'
 import { useState, useEffect, useRef, useMemo } from 'react'
+
+export const useEitherStream = <A, E>(
+  stream: Stream.Stream<Either.Either<A, E>, never, Scope.Scope>
+): Promise<A> => {
+  const eitherPromise = useStream(stream)
+
+  return eitherPromise.then(
+    Either.match({
+      onRight(right) {
+        return right
+      },
+      onLeft(left) {
+        throw left
+      },
+    })
+  )
+}
 
 export const useStream = <A, E>(
   stream: Stream.Stream<A, E, Scope.Scope>
