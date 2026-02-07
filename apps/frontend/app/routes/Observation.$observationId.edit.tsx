@@ -1,4 +1,5 @@
 import { DateTime, Effect, Either, Option, Schema, Stream } from 'effect'
+import { StreamEither } from '@assessmentis/util'
 import { useNavigate } from 'react-router'
 import { useEitherStream } from '@assessmentis/react-util'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
@@ -26,11 +27,7 @@ export default function EditObservationPage({ params }: Route.ComponentProps) {
     return Option.match(observationIdMaybe, {
       onSome: (observationId) =>
         clinicalDataRepositoryService.stream.Observation.pipe(
-          Stream.mapEffect((repoEither) =>
-            Effect.either(
-              Effect.flatMap(repoEither, (repo) => repo.get(observationId))
-            )
-          )
+          StreamEither.mapEffect((repo) => repo.get(observationId))
         ),
       onNone: () =>
         Stream.succeed(

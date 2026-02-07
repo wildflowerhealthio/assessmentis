@@ -7,30 +7,15 @@ import {
   Stream,
 } from 'effect'
 import { pipeArguments } from 'effect/Pipeable'
+import { unwrap } from './StreamEither'
 
 export const subscriptionRefToSubscribable = <A, E>(
   ref: SubscriptionRef.SubscriptionRef<Either.Either<A, E>>
 ): Subscribable.Subscribable<A, E> => ({
   [Subscribable.TypeId]: Subscribable.TypeId,
   [Readable.TypeId]: Readable.TypeId,
-  get: Effect.flatMap(ref.get, (either) =>
-    either.pipe(
-      Either.match({
-        onRight: (a) => Effect.succeed(a),
-        onLeft: (e) => Effect.fail(e),
-      })
-    )
-  ),
-  changes: ref.changes.pipe(
-    Stream.flatMap((either) =>
-      either.pipe(
-        Either.match({
-          onRight: (a) => Stream.succeed(a),
-          onLeft: (e) => Stream.fail(e),
-        })
-      )
-    )
-  ),
+  get: Effect.flatMap(ref.get, (either) => either),
+  changes: unwrap(ref.changes),
   pipe() {
     // eslint-disable-next-line prefer-rest-params
     return pipeArguments(this, arguments)

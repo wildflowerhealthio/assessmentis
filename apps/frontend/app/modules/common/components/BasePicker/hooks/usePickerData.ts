@@ -1,4 +1,5 @@
 import { Effect, Either, Schema, Scope, Stream } from 'effect'
+import { StreamEither } from '@assessmentis/util'
 import { useState, useMemo } from 'react'
 import { PickerItem } from '../types/PickerTypes'
 import {
@@ -59,13 +60,9 @@ export function usePickerData<
                 Scope.Scope
               >
               return repoStream.pipe(
-                Stream.mapEffect((repoEither) =>
-                  Effect.either(
-                    Effect.flatMap(repoEither, (repo) =>
-                      Effect.map(repo.getMany(), (resources) =>
-                        resources.map(transform)
-                      )
-                    )
+                StreamEither.mapEffect((repo) =>
+                  Effect.map(repo.getMany(), (resources) =>
+                    resources.map(transform)
                   )
                 )
               )

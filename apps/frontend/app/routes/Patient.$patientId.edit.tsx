@@ -1,4 +1,5 @@
 import { Effect, Either, Option, Schema, Stream } from 'effect'
+import { StreamEither } from '@assessmentis/util'
 import { useNavigate } from 'react-router'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { PatientForm } from 'app/modules/resources/Patient/components/PatientForm'
@@ -26,11 +27,7 @@ export default function EditPatientPage({ params }: Route.ComponentProps) {
     return Option.match(patientIdMaybe, {
       onSome: (patientId) =>
         clinicalDataRepositoryService.stream.Patient.pipe(
-          Stream.mapEffect((repoEither) =>
-            Effect.either(
-              Effect.flatMap(repoEither, (repo) => repo.get(patientId))
-            )
-          )
+          StreamEither.mapEffect((repo) => repo.get(patientId))
         ),
       onNone: () =>
         Stream.succeed(

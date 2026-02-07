@@ -1,4 +1,5 @@
-import { Effect, Either, Option, Schema, Stream } from 'effect'
+import { Either, Option, Schema, Stream } from 'effect'
+import { StreamEither } from '@assessmentis/util'
 import { ObservationId } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/Observation.$observationId._index'
@@ -33,11 +34,7 @@ export default function ObservationDetailPage({
     return Option.match(observationIdMaybe, {
       onSome: (observationId) =>
         clinicalDataRepositoryService.stream.Observation.pipe(
-          Stream.mapEffect((repoEither) =>
-            Effect.either(
-              Effect.flatMap(repoEither, (repo) => repo.get(observationId))
-            )
-          )
+          StreamEither.mapEffect((repo) => repo.get(observationId))
         ),
       onNone: () =>
         Stream.succeed(

@@ -1,4 +1,5 @@
 import { Effect, Either, Option, Schema, DateTime, Stream } from 'effect'
+import { StreamEither } from '@assessmentis/util'
 import { useNavigate } from 'react-router'
 import { runEffectSyncFlat } from 'app/runEffectSync'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
@@ -32,11 +33,7 @@ export default function EditEncounterPage({ params }: Route.ComponentProps) {
     return Option.match(encounterIdMaybe, {
       onSome: (encounterId) =>
         clinicalDataRepositoryService.stream.Encounter.pipe(
-          Stream.mapEffect((repoEither) =>
-            Effect.either(
-              Effect.flatMap(repoEither, (repo) => repo.get(encounterId))
-            )
-          )
+          StreamEither.mapEffect((repo) => repo.get(encounterId))
         ),
       onNone: () =>
         Stream.succeed(

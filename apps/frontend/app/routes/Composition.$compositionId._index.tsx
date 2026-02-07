@@ -1,6 +1,7 @@
-import { Effect, Either, Option, Schema, Scope, Stream } from 'effect'
+import { Either, Option, Schema, Stream } from 'effect'
+import { StreamEither } from '@assessmentis/util'
 import { CompositionId } from '@assessmentis/clinical-domain/content-management'
-import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
+import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/Composition.$compositionId._index'
 import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
 import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
@@ -28,18 +29,13 @@ export default function CompositionDetailsPage({
     return Option.match(compositionIdMaybe, {
       onSome: (compositionId) =>
         clinicalDataRepositoryService.stream.Composition.pipe(
-          Stream.mapEffect((repoEither) =>
-            Effect.either(
-              Effect.flatMap(repoEither, (repo) => repo.get(compositionId))
-            )
-          )
+          StreamEither.mapEffect((repo) => repo.get(compositionId))
         ),
       onNone: () =>
         Stream.succeed(
           Either.left(
-            new NotFoundError({
-              resourceType: 'Composition',
-              params: { id: params.compositionId },
+            new UnhandledError({
+              message: 'Composition ID not found',
             })
           )
         ),

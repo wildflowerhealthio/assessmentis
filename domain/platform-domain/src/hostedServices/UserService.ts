@@ -1,5 +1,6 @@
 import {
   pubsubAsPerpetualStream,
+  StreamEither,
   takeOneFromPubSubOrDie,
 } from '@assessmentis/util'
 import {
@@ -7,7 +8,6 @@ import {
   Effect,
   Either,
   Fiber,
-  pipe,
   PubSub,
   Schema,
   Scope,
@@ -95,96 +95,20 @@ export const startUserService = (
     const { authDataStream } = yield* AuthDataService
     const documentStore = yield* DocumentStore
 
-    const userStream: Stream.Stream<
-      Either.Either<
-        User,
-        | AuthError
-        | NotFoundError<'User', { userId: UserId }>
-        | BadDataError
-        | UnhandledError
-      >,
-      never,
-      Scope.Scope
-    > = authDataStream.pipe(
-      Stream.flatMap(
-        (
-          e
-        ): Stream.Stream<
-          Either.Either<
-            User,
-            | AuthError
-            | NotFoundError<'User', { userId: UserId }>
-            | BadDataError
-            | UnhandledError
-          >,
-          never,
-          never
-        > =>
-          Either.match(e, {
-            onLeft: (authError) =>
-              Stream.succeed(
-                Either.left<
-                  | AuthError
-                  | NotFoundError<'User', { userId: UserId }>
-                  | BadDataError
-                >(authError)
-              ),
-            onRight: (authData) =>
-              documentStore.subscribeTo('users', authData.userId).pipe(
-                Stream.map(
-                  Either.mapLeft((err) =>
-                    err instanceof NotFoundError
-                      ? new NotFoundError<'User', { userId: UserId }>({
-                          resourceType: 'User',
-                          params: { userId: authData.userId },
-                        })
-                      : err
-                  )
-                ),
-                Stream.mapEffect((e) =>
-                  Either.match(e, {
-                    onRight(
-                      u
-                    ): Effect.Effect<
-                      Either.Either<
-                        User,
-                        | AuthError
-                        | NotFoundError<'User', { userId: UserId }>
-                        | BadDataError
-                      >,
-                      never
-                    > {
-                      return pipe(
-                        decodeUser(u),
-                        Effect.mapError((err) => err),
-                        Effect.either
-                      )
-                    },
-                    onLeft(
-                      err
-                    ): Effect.Effect<
-                      Either.Either<
-                        User,
-                        | AuthError
-                        | NotFoundError<'User', { userId: UserId }>
-                        | BadDataError
-                        | UnhandledError
-                      >,
-                      never
-                    > {
-                      return Effect.succeed(
-                        Either.left<
-                          | AuthError
-                          | NotFoundError<'User', { userId: UserId }>
-                          | BadDataError
-                          | UnhandledError
-                        >(err)
-                      )
-                    },
+    const userStream = authDataStream.pipe(
+      StreamEither.flatMap(
+        (authData) =>
+          documentStore.subscribeTo('users', authData.userId).pipe(
+            StreamEither.mapLeft((err) =>
+              err instanceof NotFoundError
+                ? new NotFoundError<'User', { userId: UserId }>({
+                    resourceType: 'User',
+                    params: { userId: authData.userId },
                   })
-                )
-              ),
-          }),
+                : err
+            ),
+            StreamEither.mapEffect((u) => decodeUser(u))
+          ),
         { switch: true }
       )
     )

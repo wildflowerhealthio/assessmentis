@@ -1,4 +1,5 @@
 import { Effect, Either, Option, Scope, Stream } from 'effect'
+import { StreamEither } from '@assessmentis/util'
 import {
   Encounter,
   EncounterId,
@@ -54,29 +55,16 @@ export const getFullEncounter = (
       yield* Effect.logDebug('encounterEffect started')
 
       const encounterStream = encounterRepositoryStream.pipe(
-        Stream.mapEffect((encounterRepoEither) =>
-          Effect.either(
-            Effect.flatMap(encounterRepoEither, (encounterRepository) =>
-              encounterRepository.get(encounterId)
-            )
-          )
-        )
+        StreamEither.mapEffect((repo) => repo.get(encounterId))
       )
 
-      const responseStream = Stream.zipLatest(
+      const responseStream = StreamEither.zipLatest(
         questionnaireRepositoryStream,
         questionnaireResponseRepositoryStream
       ).pipe(
-        Stream.mapEffect(
-          ([
-            eitherQuestionnaireRepository,
-            eitherQuestionnaireResponseRepository,
-          ]) =>
+        StreamEither.mapEffect(
+          ([questionnaireRepository, questionnaireResponseRepository]) =>
             Effect.gen(function* () {
-              const questionnaireRepository =
-                yield* eitherQuestionnaireRepository
-              const questionnaireResponseRepository =
-                yield* eitherQuestionnaireResponseRepository
               const allQuestionnaires = yield* questionnaireRepository.getMany()
               const responses = yield* questionnaireResponseRepository.getMany({
                 encounter: `Encounter/${encounterId}`,
@@ -111,23 +99,17 @@ export const getFullEncounter = (
                     )
                 )
               )
-            }).pipe(Effect.either)
+            })
         )
       )
 
-      return Stream.zipLatestWith(
+      return StreamEither.zipLatestWith(
         encounterStream,
         responseStream,
-        (encounterEither, questionnaireResponsesEither) =>
-          Either.all([
-            encounterEither,
-            questionnaireResponsesEither,
-          ] as const).pipe(
-            Either.map(([encounter, questionnaireResponses]) => ({
-              ...encounter,
-              questionnaireResponses,
-            }))
-          )
+        (encounter, questionnaireResponses) => ({
+          ...encounter,
+          questionnaireResponses,
+        })
       )
     })
   )

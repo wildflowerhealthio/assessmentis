@@ -1,4 +1,5 @@
-import { Effect, Either, Option, Schema, Stream } from 'effect'
+import { Either, Option, Schema, Stream } from 'effect'
+import { StreamEither } from '@assessmentis/util'
 import { PractitionerId } from '@assessmentis/clinical-domain/administration'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/Practitioner.$practitionerId._index'
@@ -33,11 +34,7 @@ export default function PractitionerDetailPage({
     return Option.match(practitionerIdMaybe, {
       onSome: (practitionerId) =>
         clinicalDataRepositoryService.stream.Practitioner.pipe(
-          Stream.mapEffect((repoEither) =>
-            Effect.either(
-              Effect.flatMap(repoEither, (repo) => repo.get(practitionerId))
-            )
-          )
+          StreamEither.mapEffect((repo) => repo.get(practitionerId))
         ),
       onNone: () =>
         Stream.succeed(
