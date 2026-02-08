@@ -1,10 +1,7 @@
 import { Effect, Either, Scope, Stream } from 'effect'
 import { AuthData, DocumentStore } from '@assessmentis/platform-domain'
 import { LoadedGapiClient } from '../services/LoadedGapiClient'
-import {
-  AuthError,
-  NotFoundError,
-} from '@assessmentis/ontology'
+import { AuthError, NotFoundError } from '@assessmentis/ontology'
 import { StreamEither } from '@assessmentis/util'
 
 export const startAccessTokenSyncer = (
@@ -70,10 +67,7 @@ export const startAccessTokenSyncer = (
                   : null
 
               if (!(token && expiresAt)) {
-                console.error(
-                  'No access token found for user',
-                  data?.expiresAt
-                )
+                console.error('No access token found for user', data?.expiresAt)
                 return
               }
               const expiresInMillis = expiresAt?.getTime() - Date.now()
@@ -85,13 +79,7 @@ export const startAccessTokenSyncer = (
               if (shouldSyncInMillis > 0) {
                 client.setToken({ access_token: token })
                 authTokenRefreshTimeout = setTimeout(
-                  () =>
-                    syncToken(
-                      authToken,
-                      token,
-                      expiresAt,
-                      expiresInMillis
-                    ),
+                  () => syncToken(authToken, token, expiresAt, expiresInMillis),
                   shouldSyncInMillis
                 )
               } else {

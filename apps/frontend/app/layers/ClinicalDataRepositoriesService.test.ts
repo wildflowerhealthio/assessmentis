@@ -1,15 +1,17 @@
 import { describe, it, expect, test } from 'vitest'
-import { Effect, Layer } from 'effect'
+import { Effect, Either, Layer, Stream } from 'effect'
 import * as fc from 'fast-check'
 import { ClinicalDataRepositoryService } from './ClinicalDataRepositoriesService'
 import { FhirR4ClientService } from './FhirR4ClientService'
 import { FhirR4Client } from '@assessmentis/fhir-client'
 
 describe('ClinicalDataRepositoryService', () => {
+  const mockFhirClient = {} as typeof FhirR4Client.Service
+
   const createMockFhirR4ClientService =
     (): typeof FhirR4ClientService.Service => ({
-      client: Effect.succeed({} as typeof FhirR4Client.Service),
-      clientStream: {} as any,
+      client: Effect.succeed(mockFhirClient),
+      clientStream: Stream.succeed(Either.right(mockFhirClient)),
       shutdown: Effect.void,
     })
 
@@ -98,8 +100,12 @@ describe('ClinicalDataRepositoryService', () => {
           const mockClientService: typeof FhirR4ClientService.Service = {
             client: shouldFail
               ? Effect.fail(new Error('Client unavailable') as any)
-              : Effect.succeed({} as typeof FhirR4Client.Service),
-            clientStream: {} as any,
+              : Effect.succeed(mockFhirClient),
+            clientStream: shouldFail
+              ? Stream.succeed(
+                  Either.left(new Error('Client unavailable') as any)
+                )
+              : Stream.succeed(Either.right(mockFhirClient)),
             shutdown: Effect.void,
           }
 

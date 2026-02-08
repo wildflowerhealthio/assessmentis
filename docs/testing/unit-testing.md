@@ -1,13 +1,54 @@
 # Unit Testing
 
-Property-based testing is the default approach. Describe the general properties of your code rather than checking specific input/output pairs.
+Case-based tests for specific scenarios: regressions, documentation, error paths, and domain rules. For property-based testing, see [property-testing.md](./property-testing.md).
 
-**Exception:** Use example-based tests for regression testing (reproducing a specific bug) or documentation (showing a clear usage example).
+## When to Write Cases
+
+Use case-based tests when:
+
+- **Reproducing a bug** — pin the exact input that triggered it
+- **Documenting behavior** — show a human-readable example of how an API works
+- **Testing error paths** — specific invalid inputs that should fail in specific ways
+- **Domain rules** — business logic with a finite, enumerable set of states (e.g., status transitions, permission checks)
+
+If you find yourself writing more than ~5 cases for the same function, consider whether a property test would cover them all.
 
 ## File Organization
 
 - **Colocate** test files next to the source: `MyModule.test.ts` beside `MyModule.ts`
 - Complex domains may split into focused sub-files (e.g., `CompositionAttester.test.ts`)
+
+## Writing Clear Cases
+
+Each test name should state the scenario and expected outcome. A failing test name alone should tell you what broke.
+
+```typescript
+describe('parseDate', () => {
+  it('parses ISO 8601 date strings', () => { /* ... */ })
+  it('returns None for empty strings', () => { /* ... */ })
+  it('returns None for malformed dates', () => { /* ... */ })
+})
+```
+
+Avoid generic names like "works correctly" or "handles edge cases". Name the edge case.
+
+## `it.each` for Tabular Cases
+
+When multiple inputs share the same assertion logic, use `it.each` to express them as a table. This keeps tests DRY without hiding what's being tested.
+
+```typescript
+it.each([
+  { input: '2024-01-15', expected: { year: 2024, month: 1, day: 15 } },
+  { input: '2024-12-31', expected: { year: 2024, month: 12, day: 31 } },
+  { input: '2024-02-29', expected: { year: 2024, month: 2, day: 29 } },
+])('parses "$input" correctly', ({ input, expected }) => {
+  expect(parseDate(input)).toEqual(expected)
+})
+```
+
+Use named object fields (`{ input, expected }`) over positional tuples — they read better and survive reordering. Include the varying value in the test name with `$input` interpolation so failures identify which row broke.
+
+When `it.each` rows start needing different assertion logic, split them into separate `describe` blocks instead.
 
 ## MECE Test Structure
 
@@ -18,14 +59,25 @@ Structure test suites to be **Mutually Exclusive, Completely Exhaustive**:
 - Ensure every possible state falls into exactly one bucket
 - A failing test should immediately indicate which logical branch is broken
 
-## Algebraic Properties
+## Testing Effects
 
-Test for mathematical truths in your code:
+Use stubbed contexts to run Effects with known inputs.
 
-- **Round-tripping:** `decode(encode(x)) === x` -- the gold standard for schemas and data types
-- **Idempotence:** `f(f(x)) === f(x)`
-- **Invariants:** "The list size never decreases" or "The total value remains constant"
-- **Helper identity:** `get(with(x, val)) === val`
+### Exit/Error Handling
+
+Use functional composition with `pipe` instead of nested conditionals:
+
+```typescript
+const exit = await Effect.runPromiseExit(program)
+expect(Exit.isFailure(exit)).toBe(true)
+const error = pipe(
+  exit,
+  Exit.causeOption,
+  Option.flatMap(Cause.failureOption),
+  Option.getOrThrow
+)
+expect(error._tag).toBe('SomeError')
+```
 
 ## Clinical Domain (FHIR Resources)
 
@@ -49,71 +101,8 @@ const compositionArb = Arbitrary.make(Composition)
 fc.assert(
   fc.property(compositionArb, (val) => {
     const encoded = Schema.encodeSync(Composition)(val)
-    const decoded = Schema.decodeSync(Composition)(encoded)
+    const decoded = Schema.decodeSync(Composition)(decoded)
     expect(decoded).toEqual(val)
   })
 )
 ```
-
-## Testing Effects
-
-Use stubbed contexts to run Effects with known inputs.
-
-### Exit/Error Handling
-
-Use functional composition with `pipe` instead of nested conditionals:
-
-```typescript
-// Preferred: Functional pipe pattern
-const exit = await Effect.runPromiseExit(program)
-expect(Exit.isFailure(exit)).toBe(true)
-const error = pipe(
-  exit,
-  Exit.causeOption,
-  Option.flatMap(Cause.failureOption),
-  Option.getOrThrow
-)
-expect(error._tag).toBe('SomeError')
-```
-
-### Schema Arbitraries
-
-Use `Arbitrary.make(Schema)` to generate test data. Prefer it over object literals for more compact, generalized tests.
-
-```typescript
-import { Arbitrary } from 'effect'
-import { Org } from '@assessmentis/platform-domain'
-
-const orgArb = Arbitrary.make(Org)
-
-it('property: handles any valid org', async () => {
-  await fc.assert(
-    fc.asyncProperty(orgArb, async (org) => {
-      const result = await Effect.runPromise(myService(org))
-      expect(result).toBeDefined()
-    })
-  )
-})
-```
-
-## Property Test Arbitraries
-
-Prefer specific arbitraries over generic ones:
-
-```typescript
-// Avoid: fc.anything()
-// Prefer:
-fc.integer()
-fc.string({ minLength: 1, maxLength: 100 })
-fc.webUrl()
-```
-
-Use `fc.constantFrom()` only when testing specific behavior variations (like error types), not for general data generation. For data generation, use `Arbitrary.make(Schema)`.
-
-## Concise Tests
-
-Quality over quantity. A single powerful property test is better than 10 trivial ones.
-
-- If the round-trip property passes, the structure is covered -- don't test every field individually
-- Focus on helper functions that transform data: verify `get(with(x, val)) === val`
-- If a test file is growing large, ask: "Am I testing implementation details or behavior?"

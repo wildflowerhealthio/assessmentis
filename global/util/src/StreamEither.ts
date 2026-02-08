@@ -80,18 +80,19 @@ export const flatMap: {
   ): Stream.Stream<Either.Either<B, E | E2>, never, R | R2>
 } = dual(
   (args: IArguments) =>
-    Stream.StreamTypeId in (args[0] as object) ||
-    Effect.EffectTypeId in (args[0] as object),
+    typeof args[0] === 'object' &&
+    args[0] !== null &&
+    (Stream.StreamTypeId in args[0] || Effect.EffectTypeId in args[0]),
   <A, B, E, E2, R, R2>(
     self: Stream.Stream<Either.Either<A, E>, never, R>,
-    f: (a: A) => Stream.Stream<Either.Either<B, E2>, never, R2>,
+    f: (a: A) => Stream.Stream<Either.Either<B, E | E2>, never, R2>,
     options?: { readonly switch?: boolean; readonly concurrency?: number }
   ): Stream.Stream<Either.Either<B, E | E2>, never, R | R2> =>
     Stream.flatMap(
       self,
       (either) =>
         Either.match(either, {
-          onRight: (a) => f(a) as Stream.Stream<Either.Either<B, E | E2>, never, R2>,
+          onRight: (a) => f(a),
           onLeft: (e) => Stream.succeed(Either.left<E | E2>(e)),
         }),
       options
@@ -123,7 +124,7 @@ export const mapEffect: {
       self,
       (either): Effect.Effect<Either.Either<B, E | E2>, never, R2> =>
         Either.match(either, {
-          onRight: (a) => Effect.either(f(a)) as Effect.Effect<Either.Either<B, E | E2>, never, R2>,
+          onRight: (a) => Effect.either(f(a)),
           onLeft: (e) => Effect.succeed(Either.left<E | E2>(e)),
         })
     )
@@ -154,8 +155,7 @@ export const tapRight: {
   ): Stream.Stream<Either.Either<A, E>, StreamErr, R | R2> =>
     Stream.mapEffect(self, (either) =>
       Either.match(either, {
-        onRight: (a) =>
-          Effect.as(f(a), Either.right(a) as Either.Either<A, E>),
+        onRight: (a) => Effect.as(f(a), Either.right(a) as Either.Either<A, E>),
         onLeft: (e) => Effect.succeed(Either.left(e) as Either.Either<A, E>),
       })
     )
@@ -180,12 +180,13 @@ export const tapLeft: {
     self: Stream.Stream<Either.Either<A, E>, StreamErr, R>,
     f: (e: E) => Effect.Effect<X, never, R2>
   ): Stream.Stream<Either.Either<A, E>, StreamErr, R | R2> =>
-    Stream.mapEffect(self, (either) =>
-      Either.match(either, {
-        onRight: (a) => Effect.succeed(Either.right(a) as Either.Either<A, E>),
-        onLeft: (e) =>
-          Effect.as(f(e), Either.left(e) as Either.Either<A, E>),
-      })
+    Stream.mapEffect(
+      self,
+      (either): Effect.Effect<Either.Either<A, E>, never, R2> =>
+        Either.match(either, {
+          onRight: (a) => Effect.succeed(Either.right(a)),
+          onLeft: (e) => Effect.as(f(e), Either.left(e)),
+        })
     )
 )
 
@@ -212,9 +213,7 @@ export const zipLatest: {
     left: Stream.Stream<Either.Either<A, E>, never, R>,
     right: Stream.Stream<Either.Either<B, E2>, never, R2>
   ): Stream.Stream<Either.Either<readonly [A, B], E | E2>, never, R | R2> =>
-    Stream.zipLatestWith(left, right, (a, b) =>
-      Either.all([a, b] as const) as Either.Either<readonly [A, B], E | E2>
-    )
+    Stream.zipLatestWith(left, right, (a, b) => Either.all([a, b] as const))
 )
 
 /**
@@ -240,9 +239,7 @@ export const zipLatestWith: {
     f: (a: A, b: B) => C
   ): Stream.Stream<Either.Either<C, E | E2>, never, R | R2> =>
     Stream.zipLatestWith(left, right, (a, b) =>
-      (Either.all([a, b] as const) as Either.Either<readonly [A, B], E | E2>).pipe(
-        Either.map(([a, b]) => f(a, b))
-      )
+      Either.all([a, b] as const).pipe(Either.map(([a, b]) => f(a, b)))
     )
 )
 

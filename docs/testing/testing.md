@@ -4,11 +4,12 @@ This project uses **Vitest** across all packages and prioritizes **property-base
 
 ## When to Use Each Approach
 
-| Approach                                        | Use When                                                        |
-| ----------------------------------------------- | --------------------------------------------------------------- |
-| [Unit testing](./unit-testing.md)               | Testing pure domain logic, schemas, helpers, and Effect-TS code |
-| [React unit testing](./react-unit-testing.md)   | Testing React components, hooks, and UI behavior                |
-| [Integration testing](./integration-testing.md) | Testing code that calls external HTTP APIs (FHIR, OAuth, etc.)  |
+| Approach                                        | Use When                                                           |
+| ----------------------------------------------- | ------------------------------------------------------------------ |
+| [Property testing](./property-testing.md)       | Arbitraries, verified mocks, MECE assertions, algebraic properties |
+| [Unit testing](./unit-testing.md)               | Testing pure domain logic, schemas, helpers, and Effect-TS code    |
+| [React unit testing](./react-unit-testing.md)   | Testing React components, hooks, and UI behavior                   |
+| [Integration testing](./integration-testing.md) | Testing code that calls external HTTP APIs (FHIR, OAuth, etc.)     |
 
 ## Key Principles
 

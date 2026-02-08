@@ -6,7 +6,7 @@ import {
 } from 'app/modules/interview-call/actions/getFullEncounter'
 import InterviewCall from 'app/modules/interview-call/features/InterviewCall/InterviewCall'
 import type { Route } from './+types/Encounter.$encounterId._index'
-import { runEffectSync, runEffectSyncFlat } from '../runEffectSync'
+import { runEffectSync } from '../runEffectSync'
 import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
 import { getEncounterDisplayName } from '../modules/resources/Encounter/utils/encounterDisplay'
 import { Suspense, useMemo } from 'react'
@@ -18,11 +18,7 @@ import {
   UnhandledError,
 } from '@assessmentis/ontology'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
-import {
-  useEffectTs,
-  useEitherStream,
-  useStream,
-} from '@assessmentis/react-util'
+import { useEitherStream } from '@assessmentis/react-util'
 import { ClinicalDataRepositoryService } from '../layers/ClinicalDataRepositoriesService'
 import { usePlatformContext } from '../layers/PlatformContext'
 import { Await, useAsyncError } from 'react-router'
