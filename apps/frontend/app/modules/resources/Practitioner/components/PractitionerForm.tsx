@@ -1,9 +1,9 @@
 import { applyPartialProps } from '@assessmentis/react-util'
 import {
   ResourceForm,
-  SelectField,
   TextField,
 } from 'app/modules/common/components/ResourceForm'
+import { GenderPicker } from './GenderPicker'
 import {
   PractitionerFormSchema,
   type PractitionerFormData,
@@ -39,16 +39,10 @@ export function PractitionerForm({
           name: 'qualification',
           label: 'Qualification',
         }),
-        gender: applyPartialProps(SelectField, {
+        gender: applyPartialProps(GenderPicker, {
           name: 'gender',
           label: 'Gender',
-          options: [
-            { value: 'male', label: 'Male' },
-            { value: 'female', label: 'Female' },
-            { value: 'other', label: 'Other' },
-            { value: 'unknown', label: 'Unknown' },
-          ],
-        } as const),
+        }),
       }}
       fieldOrder={['givenName', 'familyName', 'gender', 'qualification']}
       onSubmit={onSubmit}

@@ -1,4 +1,4 @@
-import React, { FormEvent, useState } from 'react'
+import React, { FormEvent, startTransition, useState } from 'react'
 import { Either, Schema } from 'effect'
 import { cn } from '@assessmentis/react-util'
 import { FormError } from './types/FormTypes'
@@ -15,6 +15,11 @@ export type CommonFieldProps<T> = {
   value: Promise<T | undefined>
   onChange: (data: T) => void
 }
+
+// Stable promise identity for fields with no value yet.
+// Avoids creating a new Promise.resolve(undefined) each render,
+// which would cause unnecessary suspension with React's use().
+const UNDEFINED_PROMISE: Promise<undefined> = Promise.resolve(undefined)
 
 interface ResourceFormProps<A extends object, E extends object> {
   schema: Schema.Schema<A, E, never>
@@ -82,10 +87,17 @@ export function ResourceForm<A extends object, E extends object>({
     const fieldError = getFieldError(formErrors, name)
 
     const onChange = (data: E[N]) =>
-      setContent((content) => ({ ...content, [name]: Promise.resolve(data) }))
+      startTransition(() => {
+        setContent((content) => ({
+          ...content,
+          [name]: Promise.resolve(data),
+        }))
+      })
     return (
       <FieldComponent
-        value={content[name] ?? Promise.resolve(undefined)}
+        value={
+          content[name] ?? (UNDEFINED_PROMISE as Promise<E[N] | undefined>)
+        }
         onChange={onChange}
         error={fieldError}
       />

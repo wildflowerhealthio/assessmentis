@@ -17,16 +17,14 @@ export const cn = (
 
 export const applyPartialProps =
   <Outer extends object, Inner extends object>(
-    Component: React.FC<Outer & Inner>,
+    Component: React.ComponentType<Outer & Inner>,
     outerProps: Outer
   ): React.FC<Inner> =>
-  (innerProps: Inner) =>
-    Component({ ...outerProps, ...innerProps })
+  (innerProps: Inner) => <Component {...outerProps} {...innerProps} />
 
 export const transformProps =
   <Outer extends object, Inner extends object>(
-    Component: React.FC<Inner>,
+    Component: React.ComponentType<Inner>,
     transform: (outer: Outer) => Inner
   ): React.FC<Outer> =>
-  (outerProps: Outer) =>
-    Component({ ...transform(outerProps) })
+  (outerProps: Outer) => <Component {...transform(outerProps)} />

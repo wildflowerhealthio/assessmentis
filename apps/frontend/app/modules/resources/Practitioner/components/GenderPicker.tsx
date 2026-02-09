@@ -1,32 +1,38 @@
-import { type ComponentType } from 'react'
+import type { AdministrativeGender } from '@assessmentis/clinical-domain/administration'
 import { cn, withPromisedValue } from '@assessmentis/react-util'
-import classes from '../ResourceForm.module.css'
+import classes from 'app/modules/common/components/ResourceForm/ResourceForm.module.css'
 
-export interface SelectFieldSyncProps<T extends string = string> {
+export interface GenderPickerSyncProps {
   name: string
   label?: string
   required?: boolean
-  options: ReadonlyArray<{ value: T; label: string }>
   error?: string | undefined
-  value: T | undefined
+  value: AdministrativeGender | undefined
   loading: boolean
   valueError: unknown
-  onChange: (data: T | undefined) => void
-  defaultValue?: T | undefined
+  onChange: (data: AdministrativeGender | undefined) => void
 }
 
-export function SelectFieldSync<T extends string>({
+const genderOptions: ReadonlyArray<{
+  value: AdministrativeGender
+  label: string
+}> = [
+  { value: 'male', label: 'Male' },
+  { value: 'female', label: 'Female' },
+  { value: 'other', label: 'Other' },
+  { value: 'unknown', label: 'Unknown' },
+]
+
+export function GenderPickerSync({
   name,
   label,
   required,
-  options,
   error,
   value,
   loading,
   valueError,
-  onChange = () => {},
-  defaultValue,
-}: SelectFieldSyncProps<T>) {
+  onChange,
+}: GenderPickerSyncProps) {
   return (
     <div className={classes.FormField}>
       {label && (
@@ -44,15 +50,14 @@ export function SelectFieldSync<T extends string>({
         className={cn('input-2', error && classes['FormField__input--error'])}
         required={required}
         disabled={loading || valueError != null}
-        value={value}
+        value={value ?? ''}
         onChange={(e) => {
-          const selectedValue = e.target.value as T
-          onChange(selectedValue)
+          const selected = e.target.value
+          onChange(selected ? (selected as AdministrativeGender) : undefined)
         }}
-        defaultValue={defaultValue}
       >
-        <option value={undefined}>Select {label || 'option'}...</option>
-        {options.map((option) => (
+        <option value="">Select {label || 'gender'}...</option>
+        {genderOptions.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>
@@ -65,6 +70,5 @@ export function SelectFieldSync<T extends string>({
   )
 }
 
-export const SelectField = withPromisedValue(
-  SelectFieldSync as ComponentType<SelectFieldSyncProps<string>>
-)
+export const GenderPicker =
+  withPromisedValue<GenderPickerSyncProps>(GenderPickerSync)

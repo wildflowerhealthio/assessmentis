@@ -21,6 +21,7 @@
   "peerDependencies": {
     "react": "19.x",
     "react-dom": "19.x",
+    "react-error-boundary": "^6.0.0",
     "uuid": "13.x"
   },
   "devDependencies": {

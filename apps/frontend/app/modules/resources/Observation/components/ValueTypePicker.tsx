@@ -1,32 +1,37 @@
-import { type ComponentType } from 'react'
+import type { ValueTypeEnum } from '../schemas/ObservationFormSchema'
 import { cn, withPromisedValue } from '@assessmentis/react-util'
-import classes from '../ResourceForm.module.css'
+import classes from 'app/modules/common/components/ResourceForm/ResourceForm.module.css'
 
-export interface SelectFieldSyncProps<T extends string = string> {
+type ValueType = typeof ValueTypeEnum.Type
+
+export interface ValueTypePickerSyncProps {
   name: string
   label?: string
   required?: boolean
-  options: ReadonlyArray<{ value: T; label: string }>
   error?: string | undefined
-  value: T | undefined
+  value: ValueType | undefined
   loading: boolean
   valueError: unknown
-  onChange: (data: T | undefined) => void
-  defaultValue?: T | undefined
+  onChange: (data: ValueType | undefined) => void
 }
 
-export function SelectFieldSync<T extends string>({
+const valueTypeOptions: ReadonlyArray<{ value: ValueType; label: string }> = [
+  { value: 'valueString', label: 'Text (String)' },
+  { value: 'valueDecimal', label: 'Decimal Number' },
+  { value: 'valueQuantity', label: 'Quantity (with Unit)' },
+  { value: 'valueCodeableConcept', label: 'Coded Concept' },
+]
+
+export function ValueTypePickerSync({
   name,
   label,
   required,
-  options,
   error,
   value,
   loading,
   valueError,
-  onChange = () => {},
-  defaultValue,
-}: SelectFieldSyncProps<T>) {
+  onChange,
+}: ValueTypePickerSyncProps) {
   return (
     <div className={classes.FormField}>
       {label && (
@@ -44,15 +49,14 @@ export function SelectFieldSync<T extends string>({
         className={cn('input-2', error && classes['FormField__input--error'])}
         required={required}
         disabled={loading || valueError != null}
-        value={value}
+        value={value ?? ''}
         onChange={(e) => {
-          const selectedValue = e.target.value as T
-          onChange(selectedValue)
+          const selected = e.target.value
+          onChange(selected ? (selected as ValueType) : undefined)
         }}
-        defaultValue={defaultValue}
       >
-        <option value={undefined}>Select {label || 'option'}...</option>
-        {options.map((option) => (
+        <option value="">Select {label || 'value type'}...</option>
+        {valueTypeOptions.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>
@@ -65,6 +69,5 @@ export function SelectFieldSync<T extends string>({
   )
 }
 
-export const SelectField = withPromisedValue(
-  SelectFieldSync as ComponentType<SelectFieldSyncProps<string>>
-)
+export const ValueTypePicker =
+  withPromisedValue<ValueTypePickerSyncProps>(ValueTypePickerSync)

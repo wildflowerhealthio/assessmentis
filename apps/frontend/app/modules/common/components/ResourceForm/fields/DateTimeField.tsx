@@ -1,23 +1,27 @@
 import { DateTime, Option } from 'effect'
-import { cn, useLoadingPromise } from '@assessmentis/react-util'
+import { cn, withPromisedValue } from '@assessmentis/react-util'
 import classes from '../ResourceForm.module.css'
 
-export interface DateTimeFieldProps {
+export interface DateTimeFieldSyncProps {
   name: string
   label?: string
   required?: boolean
   error?: string
-  value: Promise<DateTime.Zoned | undefined>
+  value: DateTime.Zoned | undefined
+  loading: boolean
+  valueError: unknown
   onChange: (data: DateTime.Zoned | undefined) => void
 }
 
 /**
- * Convert Effect DateTime to ISO string for datetime-local input
+ * Convert Effect DateTime to ISO string for datetime-local input.
+ * datetime-local requires exactly YYYY-MM-DDTHH:mm format.
  */
 function dateTimeToInputValue(dateTime: DateTime.Zoned | undefined): string {
   if (dateTime == undefined) return ''
-  // datetime-local input expects format: YYYY-MM-DDTHH:mm
-  return DateTime.formatLocal(dateTime).slice(0, 16)
+  const date = new Date(Number(DateTime.toEpochMillis(dateTime)))
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
 /**
@@ -32,20 +36,16 @@ function inputValueToDateTime(value: string): DateTime.Zoned | undefined {
   }).pipe(Option.getOrThrow)
 }
 
-export function DateTimeField({
+export function DateTimeFieldSync({
   name,
   label,
   required,
   error,
   value,
+  loading,
+  valueError,
   onChange,
-}: DateTimeFieldProps) {
-  const {
-    value: resolvedValue,
-    loading,
-    error: loadingError,
-  } = useLoadingPromise(value)
-
+}: DateTimeFieldSyncProps) {
   return (
     <div className={classes.FormField}>
       {label && (
@@ -63,8 +63,8 @@ export function DateTimeField({
         name={name}
         className={cn('input-2', error && classes['FormField__input--error'])}
         required={required}
-        disabled={loading || !!loadingError}
-        value={dateTimeToInputValue(resolvedValue)}
+        disabled={loading || valueError != null}
+        value={dateTimeToInputValue(value)}
         onChange={(e) => {
           onChange(inputValueToDateTime(e.target.value))
         }}
@@ -75,3 +75,6 @@ export function DateTimeField({
     </div>
   )
 }
+
+export const DateTimeField =
+  withPromisedValue<DateTimeFieldSyncProps>(DateTimeFieldSync)

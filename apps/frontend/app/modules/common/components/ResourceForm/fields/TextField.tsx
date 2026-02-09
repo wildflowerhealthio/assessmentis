@@ -1,19 +1,20 @@
-import { cn, useLoadingPromise } from '@assessmentis/react-util'
+import { cn, withPromisedValue } from '@assessmentis/react-util'
 import classes from '../ResourceForm.module.css'
-import { FC } from 'react'
 
-export interface TextFieldProps {
+export interface TextFieldSyncProps {
   name: string
   label?: string
   required?: boolean
   placeholder?: string
   error?: string | undefined
   defaultValue?: string | undefined
-  value: Promise<string | undefined>
+  value: string | undefined
+  loading: boolean
+  valueError: unknown
   onChange: (value: string) => void
 }
 
-export const TextField: FC<TextFieldProps> = ({
+export function TextFieldSync({
   name,
   label,
   required,
@@ -21,13 +22,10 @@ export const TextField: FC<TextFieldProps> = ({
   error,
   defaultValue,
   value,
+  loading,
+  valueError,
   onChange,
-}: TextFieldProps) => {
-  const {
-    value: resolvedValue,
-    loading,
-    error: valueError,
-  } = useLoadingPromise(value)
+}: TextFieldSyncProps) {
   return (
     <div className={classes.FormField}>
       {label && (
@@ -47,9 +45,9 @@ export const TextField: FC<TextFieldProps> = ({
         placeholder={placeholder}
         required={required}
         defaultValue={defaultValue}
-        value={resolvedValue}
+        value={value}
         onChange={(e) => onChange(e.target.value)}
-        disabled={loading || valueError !== undefined}
+        disabled={loading || valueError != null}
       />
       {error && (
         <div className={cn('body-3', classes.FormField__error)}>{error}</div>
@@ -57,3 +55,5 @@ export const TextField: FC<TextFieldProps> = ({
     </div>
   )
 }
+
+export const TextField = withPromisedValue<TextFieldSyncProps>(TextFieldSync)

@@ -19,7 +19,6 @@ describe('useLoadingPromise', () => {
     expect(result.current.value).toBe('test-value')
     expect(result.current.error).toBeUndefined()
   })
-
   it('should transition to error state on rejection', async () => {
     const error = new Error('test error')
     const promise = Promise.reject(error)

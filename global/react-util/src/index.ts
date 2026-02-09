@@ -1,4 +1,3 @@
 export * from './functions'
-export { default as allowPropAsPromise } from './components/allowPropAsPromise'
-export { default as suspenseWithDefault } from './components/suspenseWithDefault'
+export { withPromisedValue } from './components/withPromisedValue'
 export * from './hooks/index'

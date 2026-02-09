@@ -1,12 +1,14 @@
-import { cn, useLoadingPromise } from '@assessmentis/react-util'
+import { cn, withPromisedValue } from '@assessmentis/react-util'
 import classes from '../ResourceForm.module.css'
 
-export interface DateFieldProps {
+export interface DateFieldSyncProps {
   name: string
   label?: string
   required?: boolean
   error?: string
-  value: Promise<Date | undefined>
+  value: Date | undefined
+  loading: boolean
+  valueError: unknown
   onChange: (data: Date | undefined) => void
 }
 
@@ -32,19 +34,16 @@ function inputValueToDate(value: string): Date | undefined {
   return new Date(year, month - 1, day)
 }
 
-export function DateField({
+export function DateFieldSync({
   name,
   label,
   required,
   error,
   value,
+  loading,
+  valueError,
   onChange,
-}: DateFieldProps) {
-  const {
-    value: resolvedValue,
-    loading,
-    error: valueError,
-  } = useLoadingPromise(value)
+}: DateFieldSyncProps) {
   return (
     <div className={classes.FormField}>
       {label && (
@@ -62,8 +61,8 @@ export function DateField({
         name={name}
         className={cn('input-2', error && classes['FormField__input--error'])}
         required={required}
-        disabled={loading || valueError !== undefined}
-        value={dateToInputValue(resolvedValue)}
+        disabled={loading || valueError != null}
+        value={dateToInputValue(value)}
         onChange={(e) => {
           onChange(inputValueToDate(e.target.value))
         }}
@@ -74,3 +73,5 @@ export function DateField({
     </div>
   )
 }
+
+export const DateField = withPromisedValue<DateFieldSyncProps>(DateFieldSync)
