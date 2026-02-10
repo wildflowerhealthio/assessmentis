@@ -71,7 +71,7 @@ const useBestError = ({
           return
         }
 
-        if (Either.isRight(userEither) && error instanceof AuthError) {
+        if (Either.isRight(userEither) && error == AuthError.Unauthenticated) {
           resetErrorBoundary()
         } else if (
           Either.isRight(orgEither) &&

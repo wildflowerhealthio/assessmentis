@@ -164,7 +164,7 @@ const useDailyCall = (roomUrl: string | undefined) => {
           state: 'started' as const,
           action: () => {
             callObject?.stopRecording()
-            callObject?.stopTranscription({})
+            callObject?.stopTranscription()
             setRecordingState('stopped')
           },
         },
