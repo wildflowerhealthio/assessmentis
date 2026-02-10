@@ -6,7 +6,7 @@ import {
   ComboboxOption,
   ComboboxOptions,
 } from '@headlessui/react'
-import { cn, useLoadingPromise } from '@assessmentis/react-util'
+import { cn } from '@assessmentis/react-util'
 import { BasePickerProps, PromisedPickerProps } from './types/PickerTypes'
 import { usePickerFilter } from './hooks/usePickerFilter'
 import { usePickerSelection } from './hooks/usePickerSelection'
@@ -58,6 +58,7 @@ export function PromisedDataPicker<T>({
 }: PromisedPickerProps<T>) {
   return (
     <ErrorBoundary
+      resetKeys={[itemsPromise]}
       fallbackRender={({ error }) => (
         <BasePicker {...commonProps} items={[]} error={String(error)} />
       )}
@@ -92,19 +93,14 @@ export function BasePicker<T>(props: BasePickerProps<T>) {
   const { selectedItems, handleSelect, handleSelectMany, isSelected } =
     usePickerSelection<T>(items, picking)
 
-  const {
-    value: loadedValue,
-    loading: loadingValue,
-    error: loadingError,
-  } = useLoadingPromise<Awaited<typeof picking.value>>(picking.value)
   // Create placeholder items while loading if we have a value but no matching items
   const displayItems = useMemo(() => {
     if (selectedItems.length > 0) {
       return selectedItems
     }
     // If we have a value but no selectedItems (items still loading), show placeholder
-    if (loadedValue && loading) {
-      const ids = Array.isArray(loadedValue) ? loadedValue : [loadedValue]
+    if (picking.value && loading) {
+      const ids = Array.isArray(picking.value) ? picking.value : [picking.value]
       return ids.map((id) => ({
         id,
         displayName: 'Loading...',
@@ -113,7 +109,7 @@ export function BasePicker<T>(props: BasePickerProps<T>) {
     }
 
     return selectedItems
-  }, [selectedItems, loadedValue, loading])
+  }, [selectedItems, picking.value, loading])
 
   return (
     <div className={cn(classes.Picker, className)}>
@@ -131,7 +127,7 @@ export function BasePicker<T>(props: BasePickerProps<T>) {
           }
         }}
         multiple={props.picking.multiple}
-        disabled={disabled || loading || loadingValue || !!loadingError}
+        disabled={disabled || loading}
         immediate={immediate}
       >
         <div className={classes.Picker__container}>

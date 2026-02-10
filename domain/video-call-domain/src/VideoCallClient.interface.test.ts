@@ -216,13 +216,9 @@ export const describeAsVideoCallClient = (
         }).pipe(Effect.provide(VideoCallClientLayer))
       )
 
-      it.effect.each(
-        testRooms.map(
-          ({ recordings, roomName }) => [recordings, roomName] as const
-        )
-      )(
-        'should should return %i recordings for %s',
-        ([expectedRecordings, roomName]) =>
+      it.effect.each(testRooms)(
+        'should should return $recordings recordings for %s',
+        ({ recordings: expectedRecordings, roomName }) =>
           Effect.gen(function* () {
             const client = yield* VideoCallClient
 

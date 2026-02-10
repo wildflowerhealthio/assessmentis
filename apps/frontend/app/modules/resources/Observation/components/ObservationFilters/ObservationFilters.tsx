@@ -25,7 +25,7 @@ export function ObservationFilters({
       <div className={classes.Filters__grid}>
         <PatientPicker
           picking={{
-            value: Promise.resolve(patientId ?? undefined),
+            value: patientId ?? undefined,
             onChange: onPatientChange,
             multiple: false,
           }}
@@ -34,7 +34,7 @@ export function ObservationFilters({
         />
         <EncounterPicker
           picking={{
-            value: Promise.resolve(selectedEncounterIds),
+            value: selectedEncounterIds,
             onChange: onEncounterChange,
             multiple: true,
           }}

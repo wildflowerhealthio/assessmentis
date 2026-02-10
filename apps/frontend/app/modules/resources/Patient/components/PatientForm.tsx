@@ -11,7 +11,6 @@ import {
   PatientFormSchema,
   type PatientFormData,
 } from '../schemas/PatientFormSchema'
-import { promiseFieldsFromPromise } from '@assessmentis/util'
 
 interface PatientFormProps {
   onSubmit: (data: PatientFormData) => void | Promise<void>
@@ -68,7 +67,7 @@ export function PatientForm({
       ]}
       onSubmit={onSubmit}
       submitLabel={submitLabel}
-      initialValues={promiseFieldsFromPromise(initialValues)}
+      initialValues={initialValues}
     />
   )
 }

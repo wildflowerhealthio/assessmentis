@@ -1,17 +1,15 @@
 import type { ValueTypeEnum } from '../schemas/ObservationFormSchema'
-import { cn, withPromisedValue } from '@assessmentis/react-util'
+import { cn } from '@assessmentis/react-util'
 import classes from 'app/modules/common/components/ResourceForm/ResourceForm.module.css'
 
 type ValueType = typeof ValueTypeEnum.Type
 
-export interface ValueTypePickerSyncProps {
+export interface ValueTypePickerProps {
   name: string
   label?: string
   required?: boolean
   error?: string | undefined
   value: ValueType | undefined
-  loading: boolean
-  valueError: unknown
   onChange: (data: ValueType | undefined) => void
 }
 
@@ -22,16 +20,14 @@ const valueTypeOptions: ReadonlyArray<{ value: ValueType; label: string }> = [
   { value: 'valueCodeableConcept', label: 'Coded Concept' },
 ]
 
-export function ValueTypePickerSync({
+export function ValueTypePicker({
   name,
   label,
   required,
   error,
   value,
-  loading,
-  valueError,
   onChange,
-}: ValueTypePickerSyncProps) {
+}: ValueTypePickerProps) {
   return (
     <div className={classes.FormField}>
       {label && (
@@ -48,7 +44,6 @@ export function ValueTypePickerSync({
         name={name}
         className={cn('input-2', error && classes['FormField__input--error'])}
         required={required}
-        disabled={loading || valueError != null}
         value={value ?? ''}
         onChange={(e) => {
           const selected = e.target.value
@@ -68,6 +63,3 @@ export function ValueTypePickerSync({
     </div>
   )
 }
-
-export const ValueTypePicker =
-  withPromisedValue<ValueTypePickerSyncProps>(ValueTypePickerSync)

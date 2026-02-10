@@ -1,31 +1,29 @@
-import { cn, withPromisedValue } from '@assessmentis/react-util'
+import { cn } from '@assessmentis/react-util'
 import classes from '../ResourceForm.module.css'
 
-export interface TextFieldSyncProps {
+export interface TextFieldProps {
   name: string
   label?: string
   required?: boolean
   placeholder?: string
+  type?: string
+  helpText?: string
   error?: string | undefined
-  defaultValue?: string | undefined
   value: string | undefined
-  loading: boolean
-  valueError: unknown
   onChange: (value: string) => void
 }
 
-export function TextFieldSync({
+export function TextField({
   name,
   label,
   required,
   placeholder,
+  type = 'text',
+  helpText,
   error,
-  defaultValue,
   value,
-  loading,
-  valueError,
   onChange,
-}: TextFieldSyncProps) {
+}: TextFieldProps) {
   return (
     <div className={classes.FormField}>
       {label && (
@@ -38,22 +36,21 @@ export function TextFieldSync({
         </label>
       )}
       <input
-        type="text"
+        type={type}
         id={name}
         name={name}
         className={cn('input-2', error && classes['FormField__input--error'])}
         placeholder={placeholder}
         required={required}
-        defaultValue={defaultValue}
-        value={value}
+        value={value ?? ''}
         onChange={(e) => onChange(e.target.value)}
-        disabled={loading || valueError != null}
       />
+      {helpText && (
+        <div className={cn('body-3', classes.FormField__help)}>{helpText}</div>
+      )}
       {error && (
         <div className={cn('body-3', classes.FormField__error)}>{error}</div>
       )}
     </div>
   )
 }
-
-export const TextField = withPromisedValue<TextFieldSyncProps>(TextFieldSync)

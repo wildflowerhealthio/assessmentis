@@ -8,7 +8,6 @@ import {
   PractitionerFormSchema,
   type PractitionerFormData,
 } from '../schemas/PractitionerFormSchema'
-import { promiseFieldsFromPromise } from '@assessmentis/util'
 
 interface PractitionerFormProps {
   onSubmit: (data: PractitionerFormData) => void | Promise<void>
@@ -47,7 +46,7 @@ export function PractitionerForm({
       fieldOrder={['givenName', 'familyName', 'gender', 'qualification']}
       onSubmit={onSubmit}
       submitLabel={submitLabel}
-      initialValues={promiseFieldsFromPromise(initialValues)}
+      initialValues={initialValues}
     />
   )
 }

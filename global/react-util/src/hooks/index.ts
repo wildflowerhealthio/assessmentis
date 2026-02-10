@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { useStatePromise } from './effectHooks'
 
 export * from './effectHooks'
+export * from './useStream'
 export * from './useLoadingPromise'
 export * from './usePromiseOrDefault'
 

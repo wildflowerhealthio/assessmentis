@@ -1,15 +1,13 @@
 import type { AdministrativeGender } from '@assessmentis/clinical-domain/administration'
-import { cn, withPromisedValue } from '@assessmentis/react-util'
+import { cn } from '@assessmentis/react-util'
 import classes from 'app/modules/common/components/ResourceForm/ResourceForm.module.css'
 
-export interface GenderPickerSyncProps {
+export interface GenderPickerProps {
   name: string
   label?: string
   required?: boolean
   error?: string | undefined
   value: AdministrativeGender | undefined
-  loading: boolean
-  valueError: unknown
   onChange: (data: AdministrativeGender | undefined) => void
 }
 
@@ -23,16 +21,14 @@ const genderOptions: ReadonlyArray<{
   { value: 'unknown', label: 'Unknown' },
 ]
 
-export function GenderPickerSync({
+export function GenderPicker({
   name,
   label,
   required,
   error,
   value,
-  loading,
-  valueError,
   onChange,
-}: GenderPickerSyncProps) {
+}: GenderPickerProps) {
   return (
     <div className={classes.FormField}>
       {label && (
@@ -49,7 +45,6 @@ export function GenderPickerSync({
         name={name}
         className={cn('input-2', error && classes['FormField__input--error'])}
         required={required}
-        disabled={loading || valueError != null}
         value={value ?? ''}
         onChange={(e) => {
           const selected = e.target.value
@@ -69,6 +64,3 @@ export function GenderPickerSync({
     </div>
   )
 }
-
-export const GenderPicker =
-  withPromisedValue<GenderPickerSyncProps>(GenderPickerSync)

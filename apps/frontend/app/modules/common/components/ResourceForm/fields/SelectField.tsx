@@ -1,32 +1,25 @@
-import { type ComponentType } from 'react'
-import { cn, withPromisedValue } from '@assessmentis/react-util'
+import { cn } from '@assessmentis/react-util'
 import classes from '../ResourceForm.module.css'
 
-export interface SelectFieldSyncProps<T extends string = string> {
+export interface SelectFieldProps<T extends string = string> {
   name: string
   label?: string
   required?: boolean
   options: ReadonlyArray<{ value: T; label: string }>
   error?: string | undefined
   value: T | undefined
-  loading: boolean
-  valueError: unknown
   onChange: (data: T | undefined) => void
-  defaultValue?: T | undefined
 }
 
-export function SelectFieldSync<T extends string>({
+export function SelectField<T extends string>({
   name,
   label,
   required,
   options,
   error,
   value,
-  loading,
-  valueError,
   onChange = () => {},
-  defaultValue,
-}: SelectFieldSyncProps<T>) {
+}: SelectFieldProps<T>) {
   return (
     <div className={classes.FormField}>
       {label && (
@@ -43,15 +36,13 @@ export function SelectFieldSync<T extends string>({
         name={name}
         className={cn('input-2', error && classes['FormField__input--error'])}
         required={required}
-        disabled={loading || valueError != null}
-        value={value}
+        value={value ?? ''}
         onChange={(e) => {
           const selectedValue = e.target.value as T
-          onChange(selectedValue)
+          onChange(selectedValue || undefined)
         }}
-        defaultValue={defaultValue}
       >
-        <option value={undefined}>Select {label || 'option'}...</option>
+        <option value="">Select {label || 'option'}...</option>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
@@ -64,7 +55,3 @@ export function SelectFieldSync<T extends string>({
     </div>
   )
 }
-
-export const SelectField = withPromisedValue(
-  SelectFieldSync as ComponentType<SelectFieldSyncProps<string>>
-)

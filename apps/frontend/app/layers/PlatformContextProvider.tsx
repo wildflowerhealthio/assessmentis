@@ -27,16 +27,15 @@ import {
 } from './FhirR4ClientService'
 import { ClinicalDataRepositoryService } from './ClinicalDataRepositoriesService'
 import { startVideoCallClientService } from './VideoCallClientService'
-import { Await, useAsyncError } from 'react-router'
+import { Await } from 'react-router'
 import { useEffectTs } from '@assessmentis/react-util'
-import NavHeader, {
-  EmptyHeader,
-  NavHeaderErrorHandler,
+import NavHeaderContainer, {
   TextHeader,
 } from '../modules/global/components/NavHeader/NavHeader'
 import { PageLoader } from '../modules/common/components/PageLoader/PageLoader'
-import { InnerErrorHandlerPage } from '../modules/common/components/ErrorHandlerPage'
 import { ErrorBoundary } from 'react-error-boundary'
+import { PlatformlessErrorFallback } from './PlatformAwareErrorFallback'
+import { ErrorHandlerBody } from '../modules/common/components/ErrorHandlerBody'
 
 const platformEffect = Effect.gen(function* () {
   const authDataPubSub = yield* createAuthDataPubSub
@@ -80,27 +79,32 @@ const platformEffect = Effect.gen(function* () {
     VideoCallClientService,
   }
 }).pipe(
-  Effect.provide(FirebaseWebDocumentStoreLayer),
-  Effect.provide(FirebaseWebLayer),
   Effect.provide(
-    Layer.provideMerge(
-      LoadedGapiHealthcareClient.Default,
-      LoadedGapiClient.Default
+    Layer.mergeAll(
+      Layer.provideMerge(FirebaseWebDocumentStoreLayer, FirebaseWebLayer),
+      Layer.provideMerge(
+        LoadedGapiHealthcareClient.Default,
+        LoadedGapiClient.Default
+      )
     )
   )
 )
 
-const ErrorFallback = ({ error }: { error?: unknown }) => {
-  const asyncError = useAsyncError()
-  return (
-    <div>
-      <NavHeaderErrorHandler error={error ?? asyncError}>
-        <EmptyHeader />
-      </NavHeaderErrorHandler>
-      <InnerErrorHandlerPage error={error ?? asyncError} />
-    </div>
-  )
-}
+const LoaderPage = ({ title }: { title?: string }) => (
+  <div
+    style={{
+      width: '100%',
+      margin: '0 auto',
+      flexGrow: 1,
+      flexShrink: 1,
+      flexDirection: 'column',
+      overflowY: 'hidden',
+    }}
+  >
+    <TextHeader title={title ?? 'Loading...'} />
+    <PageLoader />
+  </div>
+)
 
 export const PlatformContextProvider: React.FC<
   React.PropsWithChildren<object>
@@ -109,40 +113,36 @@ export const PlatformContextProvider: React.FC<
     const scope = Effect.runSync(Scope.make())
     return platformEffect.pipe(Effect.provideService(Scope.Scope, scope))
   }, [])
+
   const platformPromise = useEffectTs(thisPlatformEffect)
 
   if (typeof window === 'undefined') {
-    return <TextHeader title="Loading..." />
+    return <LoaderPage title="Loading Without Window" />
   }
 
   return (
-    <Suspense
-      fallback={
-        <div
-          style={{
-            width: '100%',
-            margin: '0 auto',
-            flexGrow: 1,
-            flexShrink: 1,
-            flexDirection: 'column',
-            overflowY: 'hidden',
-          }}
-        >
-          <TextHeader title="Loading..." />
-          <PageLoader />
-        </div>
-      }
-    >
-      <ErrorBoundary fallbackRender={ErrorFallback}>
-        <Await resolve={platformPromise} errorElement={<ErrorFallback />}>
+    <Suspense fallback={<LoaderPage />}>
+      <ErrorBoundary FallbackComponent={PlatformlessErrorFallback}>
+        <Await resolve={platformPromise}>
           {(platform) => (
             <PlatformContext.Provider value={platform}>
-              <NavHeader
+              <NavHeaderContainer
                 activeOrgStream={platform.orgService.activeOrgStream}
                 userStream={platform.userService.userStream}
                 setActiveOrgSlug={platform.orgService.setActiveOrgSlug}
               />
-              {children}
+              <ErrorBoundary
+                fallbackRender={({ error, resetErrorBoundary }) => (
+                  <ErrorHandlerBody
+                    error={error}
+                    resetErrorBoundary={resetErrorBoundary}
+                    activeOrgStream={platform.orgService.activeOrgStream}
+                    userStream={platform.userService.userStream}
+                  />
+                )}
+              >
+                {children}
+              </ErrorBoundary>
             </PlatformContext.Provider>
           )}
         </Await>

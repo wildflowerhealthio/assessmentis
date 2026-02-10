@@ -1,17 +1,17 @@
-export { TextFieldSync, TextField } from './TextField'
-export type { TextFieldSyncProps } from './TextField'
+export { TextField } from './TextField'
+export type { TextFieldProps } from './TextField'
 
 export { TextAreaField } from './TextAreaField'
 export type { TextAreaFieldProps } from './TextAreaField'
 
-export { SelectFieldSync, SelectField } from './SelectField'
-export type { SelectFieldSyncProps } from './SelectField'
+export { SelectField } from './SelectField'
+export type { SelectFieldProps } from './SelectField'
 
-export { DateFieldSync, DateField } from './DateField'
-export type { DateFieldSyncProps } from './DateField'
+export { DateField } from './DateField'
+export type { DateFieldProps } from './DateField'
 
-export { DateTimeFieldSync, DateTimeField } from './DateTimeField'
-export type { DateTimeFieldSyncProps } from './DateTimeField'
+export { DateTimeField } from './DateTimeField'
+export type { DateTimeFieldProps } from './DateTimeField'
 
 export { CheckboxField } from './CheckboxField'
 export type { CheckboxFieldProps } from './CheckboxField'

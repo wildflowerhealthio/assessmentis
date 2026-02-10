@@ -12,7 +12,6 @@ import {
   EncounterFormSchema,
   type EncounterFormData,
 } from '../schemas/EncounterFormSchema'
-import { promiseFieldsFromPromise } from '@assessmentis/util'
 
 interface EncounterFormProps {
   onSubmit: (data: EncounterFormData) => void | Promise<void>
@@ -47,30 +46,15 @@ const encounterFormFields = {
       placeholder: 'Select practitioner(s)...',
     })
   ),
-  periodStart: applyPartialProps<
-    Pick<React.ComponentProps<typeof DateTimeField>, 'name' | 'label'>,
-    Omit<React.ComponentProps<typeof DateTimeField>, 'name' | 'label'>
-  >(DateTimeField, {
+  periodStart: applyPartialProps(DateTimeField, {
     name: 'periodStart',
     label: 'Start Date/Time',
   }),
-  periodEnd: applyPartialProps<
-    Pick<React.ComponentProps<typeof DateTimeField>, 'name' | 'label'>,
-    Omit<React.ComponentProps<typeof DateTimeField>, 'name' | 'label'>
-  >(DateTimeField, {
+  periodEnd: applyPartialProps(DateTimeField, {
     name: 'periodEnd',
     label: 'End Date/Time',
   }),
-  locationDisplay: applyPartialProps<
-    Pick<
-      React.ComponentProps<typeof TextField>,
-      'name' | 'label' | 'placeholder'
-    >,
-    Omit<
-      React.ComponentProps<typeof TextField>,
-      'name' | 'label' | 'placeholder'
-    >
-  >(TextField, {
+  locationDisplay: applyPartialProps(TextField, {
     name: 'locationDisplay',
     label: 'Location',
     placeholder: 'e.g., Room 101, Virtual Meeting Room',
@@ -115,7 +99,7 @@ export function EncounterForm({
       fieldOrder={fieldOrder}
       onSubmit={onSubmit}
       submitLabel={submitLabel}
-      initialValues={promiseFieldsFromPromise(initialValues)}
+      initialValues={initialValues}
     />
   )
 }

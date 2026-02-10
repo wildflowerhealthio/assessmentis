@@ -1,15 +1,13 @@
 import { DateTime, Option } from 'effect'
-import { cn, withPromisedValue } from '@assessmentis/react-util'
+import { cn } from '@assessmentis/react-util'
 import classes from '../ResourceForm.module.css'
 
-export interface DateTimeFieldSyncProps {
+export interface DateTimeFieldProps {
   name: string
   label?: string
   required?: boolean
   error?: string
   value: DateTime.Zoned | undefined
-  loading: boolean
-  valueError: unknown
   onChange: (data: DateTime.Zoned | undefined) => void
 }
 
@@ -29,23 +27,20 @@ function dateTimeToInputValue(dateTime: DateTime.Zoned | undefined): string {
  */
 function inputValueToDateTime(value: string): DateTime.Zoned | undefined {
   if (!value) return undefined
-  // Append seconds and timezone to make it a complete ISO string
   return DateTime.makeZoned(`${value}:00`, {
     adjustForTimeZone: true,
     timeZone: DateTime.zoneMakeLocal(),
   }).pipe(Option.getOrThrow)
 }
 
-export function DateTimeFieldSync({
+export function DateTimeField({
   name,
   label,
   required,
   error,
   value,
-  loading,
-  valueError,
   onChange,
-}: DateTimeFieldSyncProps) {
+}: DateTimeFieldProps) {
   return (
     <div className={classes.FormField}>
       {label && (
@@ -63,7 +58,6 @@ export function DateTimeFieldSync({
         name={name}
         className={cn('input-2', error && classes['FormField__input--error'])}
         required={required}
-        disabled={loading || valueError != null}
         value={dateTimeToInputValue(value)}
         onChange={(e) => {
           onChange(inputValueToDateTime(e.target.value))
@@ -75,6 +69,3 @@ export function DateTimeFieldSync({
     </div>
   )
 }
-
-export const DateTimeField =
-  withPromisedValue<DateTimeFieldSyncProps>(DateTimeFieldSync)

@@ -32,7 +32,20 @@ export const HeaderBreadcrumbs = () => {
               {' / '}
             </span>
             <Suspense fallback={<Skeleton width={120} />} key={index}>
-              <Await resolve={segment}>
+              <Await
+                resolve={segment}
+                errorElement={
+                  <span
+                    className={cn(
+                      'text-alt-heading-3',
+                      classes.HeaderBreadcrumbs__current
+                    )}
+                    key={`label-${index}`}
+                  >
+                    Error
+                  </span>
+                }
+              >
                 {(segment) =>
                   segment.href && !isLast ? (
                     <Link

@@ -445,8 +445,18 @@ export const DailyCoVideoCallClientLayer: Layer.Layer<
             exp,
             enable_chat: params.enableChat ?? false,
             enable_recording: params.enableRecording ? 'cloud' : undefined,
+            enable_transcription_storage: params.enableRecording ?? false,
+            auto_transcription_settings: params.enableRecording
+              ? { punctuate: true, model: 'nova-3-medical' }
+              : undefined,
             ...(dailyCoConf.recordingsBucket && {
               recordings_bucket: {
+                bucket_name: dailyCoConf.recordingsBucket.bucket_name,
+                bucket_region: dailyCoConf.recordingsBucket.bucket_region,
+                assume_role_arn: dailyCoConf.recordingsBucket.assume_role_arn,
+                allow_api_access: dailyCoConf.recordingsBucket.allow_api_access,
+              },
+              transcription_bucket: {
                 bucket_name: dailyCoConf.recordingsBucket.bucket_name,
                 bucket_region: dailyCoConf.recordingsBucket.bucket_region,
                 assume_role_arn: dailyCoConf.recordingsBucket.assume_role_arn,

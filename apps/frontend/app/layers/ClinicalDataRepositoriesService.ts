@@ -1,4 +1,4 @@
-import { Effect, Either, Layer, Schema, Scope, Stream } from 'effect'
+import { Effect, Either, Layer, pipe, Schema, Scope, Stream } from 'effect'
 import {
   Schemas,
   ClinicalDomainRepositoryTagClass,
@@ -161,5 +161,46 @@ export class ClinicalDataRepositoryService extends Effect.Service<ClinicalDataRe
 
       return repository as ClinicalDataRepository<TResource>
     }).pipe(Effect.provideService(ClinicalDataRepositoryService, this))
+  }
+
+  repositoryStream<
+    TResource extends Schema.Schema.Type<
+      (typeof Schemas)[keyof typeof Schemas]
+    >,
+  >(
+    resourceType: TResource['resourceType']
+  ): Stream.Stream<
+    Either.Either<
+      ClinicalDataRepository<TResource>,
+      AuthError | NoSelectedOrgError | UnhandledError
+    >,
+    never,
+    Scope.Scope
+  > {
+    return pipe(
+      Effect.map(
+        ClinicalDataRepositoryService,
+        (service) =>
+          service.stream[resourceType] satisfies Stream.Stream<
+            Either.Either<
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ClinicalDataRepository<any>,
+              AuthError | NoSelectedOrgError | UnhandledError
+            >,
+            never,
+            Scope.Scope
+          > as Stream.Stream<
+            Either.Either<
+              ClinicalDataRepository<TResource>,
+              AuthError | NoSelectedOrgError | UnhandledError
+            >,
+            never,
+            Scope.Scope
+          >
+      ),
+      (a) => a,
+      Effect.provideService(ClinicalDataRepositoryService, this),
+      Stream.unwrap
+    )
   }
 }
