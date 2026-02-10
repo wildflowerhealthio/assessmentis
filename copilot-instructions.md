@@ -63,7 +63,7 @@ PlatformContextProvider (root)
 ├── UserService           # User data and roles
 ├── FhirR4ClientService   # FHIR client for clinical data
 ├── ClinicalDataRepositoryService  # Repository factory
-└── ExternalVideoCallClientService # Video call client
+└── VideoCallClientService # Video call client
     │
     └── OrgContextProvider (child)
         └── Selected Org context for route components
@@ -158,7 +158,7 @@ apps/frontend/app/
 │   ├── OrgContextProvider.tsx # Org selection and validation
 │   ├── FhirR4ClientService.tsx       # FHIR client service
 │   ├── ClinicalDataRepositoriesService.ts  # Repository factory
-│   └── ExternalVideoCallClientService.tsx  # Video call client
+│   └── VideoCallClientService.tsx  # Video call client
 ├── modules/                    # Feature modules
 │   ├── encounters/
 │   │   └── actions/           # Business logic for encounters
@@ -746,11 +746,12 @@ The project uses Tundra CSS variables:
 - **@assessmentis/google-fhir-web-infrastructure**: Browser-side FHIR client
 - **@assessmentis/firebase-web-infrastructure**: Browser-side Firestore via Firebase SDK
 - **@assessmentis/firebase-server-infrastructure**: Server-side Firestore via Admin SDK
-- **@assessmentis/daily-co-infrastructure**: Daily.co video call implementation
+- **@assessmentis/daily-co-infrastructure**: Daily.co Effect-TS layer for video call services
 
 **Global packages** (shared utilities):
 
 - **@assessmentis/react-util**: Shared React hooks, components, utilities
+- **@assessmentis/daily-co-components**: Daily.co React UI components for video calls
 - **@assessmentis/ontology**: Shared types and utilities
 - **@assessmentis/eslint-config**: Import in `eslint.config.js`
 - **@assessmentis/prettier-config**: Set in `package.json` "prettier" field

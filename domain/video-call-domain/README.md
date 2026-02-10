@@ -18,7 +18,7 @@ This package provides domain models and repository interfaces for video call fun
 ```
 src/
 ├── index.ts                              # Main exports
-├── ExternalVideoCallClient.ts            # Abstract client for external video providers
+├── VideoCallClient.ts            # Abstract client for external video providers
 ├── VideoCallRepository.ts                # Repository for video call room data
 └── models/
     ├── VideoCallRoom.ts                  # Internal video call room model
@@ -47,11 +47,11 @@ Effect.gen(function* () {
 ### External Video Call Client
 
 ```typescript
-import { ExternalVideoCallClient } from '@assessmentis/video-call-domain'
+import { VideoCallClient } from '@assessmentis/video-call-domain'
 import { Effect } from 'effect'
 
 Effect.gen(function* () {
-  const client = yield* ExternalVideoCallClient
+  const client = yield* VideoCallClient
   const room = yield* client.createRoom({
     enableRecording: true,
     enableChat: false,

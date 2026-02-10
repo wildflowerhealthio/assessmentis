@@ -1,0 +1,77 @@
+{
+    meta: {
+        createdAt: '2026-01-29T21:36:17.944Z',
+        host: 'https://healthcare.googleapis.com',
+        resHumanReadable: true,
+        resUncompressed: true,
+    },
+    req: {
+        url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient',
+        method: 'POST',
+        headers: {},
+        body: 'ewogICJyZXNvdXJjZVR5cGUiOiAiUGF0aWVudCIsCiAgIm5hbWUiOiBbCiAgICB7CiAgICAgICJnaXZlbiI6IFsKICAgICAgICAiVG9EZWxldGUiCiAgICAgIF0sCiAgICAgICJmYW1pbHkiOiAiUGF0aWVudCIKICAgIH0KICBdCn0=',
+    },
+    res: {
+        status: 201,
+        headers: {
+            'last-modified': [
+                'Thu, 29 Jan 2026 21:36:18 UTC',
+            ],
+            etag: [
+                'W/"MTc2OTcyMjU3ODEwMTAzNjAwMA"',
+            ],
+            'content-encoding': [
+                'gzip',
+            ],
+            location: [
+                'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/1d70bdc3-80a0-4ada-8b2b-d489f0b7bba6/_history/MTc2OTcyMjU3ODEwMTAzNjAwMA',
+            ],
+            'content-type': [
+                'application/fhir+json;charset=utf-8',
+            ],
+            vary: [
+                'Origin, X-Origin, Referer',
+            ],
+            date: [
+                'Thu, 29 Jan 2026 21:36:18 GMT',
+            ],
+            server: [
+                'ESF',
+            ],
+            'x-xss-protection': [
+                '0',
+            ],
+            'x-frame-options': [
+                'SAMEORIGIN',
+            ],
+            'x-content-type-options': [
+                'nosniff',
+            ],
+            'alt-svc': [
+                'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
+            ],
+            connection: [
+                'close',
+            ],
+            'transfer-encoding': [
+                'chunked',
+            ],
+        },
+        body: {
+            id: '1d70bdc3-80a0-4ada-8b2b-d489f0b7bba6',
+            meta: {
+                lastUpdated: '2026-01-29T21:36:18.101036+00:00',
+                versionId: 'MTc2OTcyMjU3ODEwMTAzNjAwMA',
+            },
+            name: [
+                {
+                    family: 'Patient',
+                    given: [
+                        'ToDelete',
+                    ],
+                },
+            ],
+            resourceType: 'Patient',
+        },
+    },
+}

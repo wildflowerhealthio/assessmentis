@@ -137,6 +137,16 @@ jobs:
           filter_mode: diff_context
           workdir: global/ontology
 
+      - name: Lint global/daily-co-components
+        uses: reviewdog/action-eslint@v1
+        continue-on-error: true
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_level: error
+          filter_mode: diff_context
+          workdir: global/daily-co-components
+
       - name: Lint infrastructure/daily-co-infrastructure
         uses: reviewdog/action-eslint@v1
         continue-on-error: true

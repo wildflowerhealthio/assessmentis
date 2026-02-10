@@ -1,11 +1,9 @@
-import { Effect, Option, Schema } from 'effect'
-import {
-  PatientId,
-  PatientRepository,
-} from '@assessmentis/clinical-domain/administration'
+import { Either, Option, Schema, Stream } from 'effect'
+import { StreamEither } from '@assessmentis/util'
+import { PatientId } from '@assessmentis/clinical-domain/administration'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/Patient.$patientId._index'
-import { runEffectSync } from '../runEffectSync'
+import { runEffectSyncFlat } from '../runEffectSync'
 import { useMemo, Suspense } from 'react'
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
@@ -18,7 +16,7 @@ import {
   formatPatientDemographics,
 } from '../modules/resources/Patient/utils/patientDisplay'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
-import { useEffectTs } from '@assessmentis/react-util'
+import { useEitherStream } from '@assessmentis/react-util'
 import { usePlatformContext } from '../layers/PlatformContext'
 import { Await } from 'react-router'
 
@@ -27,28 +25,22 @@ const tryDecodePatientId = Schema.decodeOption(PatientId)
 export default function PatientDetailPage({ params }: Route.ComponentProps) {
   const { clinicalDataRepositoryService } = usePlatformContext()
 
-  const patientEffect = useMemo(() => {
-    return Effect.gen(function* () {
-      const patientIdMaybe = tryDecodePatientId(params.patientId)
-      const repository = yield* PatientRepository
+  const patientStream = useMemo(() => {
+    const patientIdMaybe = tryDecodePatientId(params.patientId)
 
-      const patientId = yield* patientIdMaybe.pipe(
-        Option.map(Effect.succeed),
-        Option.getOrElse(() =>
-          Effect.fail(new UnhandledError({ message: 'Patient ID not found' }))
-        )
-      )
+    return Option.match(patientIdMaybe, {
+      onSome: (patientId) =>
+        clinicalDataRepositoryService.stream.Patient.pipe(
+          StreamEither.mapEffect((repo) => repo.get(patientId))
+        ),
+      onNone: () =>
+        Stream.succeed(
+          Either.left(new UnhandledError({ message: 'Patient ID not found' }))
+        ),
+    })
+  }, [clinicalDataRepositoryService, params.patientId])
 
-      return yield* repository.get(patientId)
-    }).pipe(
-      Effect.provideServiceEffect(
-        PatientRepository,
-        clinicalDataRepositoryService.Patient
-      )
-    )
-  }, [clinicalDataRepositoryService.Patient, params.patientId])
-
-  const patientPromise = useEffectTs(patientEffect)
+  const patientPromise = useEitherStream(patientStream)
 
   const breadcrumbs = useMemo(
     () => [
@@ -83,7 +75,7 @@ export default function PatientDetailPage({ params }: Route.ComponentProps) {
       <Await resolve={patientPromise}>
         {(patient) => {
           const displayName = getPatientDisplayName(patient)
-          const patientDemographicItems = runEffectSync(
+          const patientDemographicItems = runEffectSyncFlat(
             formatPatientDemographics(patient)
           )
 

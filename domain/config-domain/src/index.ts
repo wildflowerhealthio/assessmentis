@@ -1,2 +1,2 @@
-export * from './DailyCoProxyConfig'
+export * from './DailyCoConfig'
 export * from './GoogleFhirConfig'

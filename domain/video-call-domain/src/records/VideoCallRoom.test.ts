@@ -3,41 +3,29 @@ import { Schema, Either } from 'effect'
 import * as fc from 'fast-check'
 import {
   VideoCallRoomId,
-  ExternalVideoCallRoomId,
-  ExternalVideoCallRoomName,
+  VideoCallRoomName,
   VideoCallRoom,
 } from './VideoCallRoom'
 
 describe('VideoCallRoom Models', () => {
   describe('VideoCallRoomId', () => {
-    test('property: valid UUIDs decode successfully', () => {
+    test('property: all strings decode successfully', () => {
       fc.assert(
-        fc.property(fc.uuid(), (uuid) => {
+        fc.property(fc.string(), (str) => {
           const decode = Schema.decodeUnknownEither(VideoCallRoomId)
-          const result = decode(uuid)
+          const result = decode(str)
           expect(Either.isRight(result)).toBe(true)
           if (Either.isRight(result)) {
-            expect(result.right).toBe(uuid)
+            expect(result.right).toBe(str)
           }
         })
       )
     })
 
-    test('property: invalid UUIDs fail to decode', () => {
+    test('property: non-strings fail to decode', () => {
       fc.assert(
         fc.property(
-          fc.oneof(
-            fc
-              .string()
-              .filter(
-                (s) =>
-                  !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-                    s
-                  )
-              ),
-            fc.integer(),
-            fc.boolean()
-          ),
+          fc.oneof(fc.integer(), fc.boolean(), fc.object(), fc.constant(null)),
           (value) => {
             const decode = Schema.decodeUnknownEither(VideoCallRoomId)
             const result = decode(value)
@@ -46,31 +34,13 @@ describe('VideoCallRoom Models', () => {
         )
       )
     })
-
-    test('property: encode is inverse of decode', () => {
-      fc.assert(
-        fc.property(fc.uuid(), (uuid) => {
-          const decode = Schema.decodeUnknownEither(VideoCallRoomId)
-          const encode = Schema.encodeUnknownEither(VideoCallRoomId)
-
-          const decoded = decode(uuid)
-          if (Either.isRight(decoded)) {
-            const encoded = encode(decoded.right)
-            expect(Either.isRight(encoded)).toBe(true)
-            if (Either.isRight(encoded)) {
-              expect(encoded.right).toBe(uuid)
-            }
-          }
-        })
-      )
-    })
   })
 
-  describe('ExternalVideoCallRoomId', () => {
+  describe('VideoCallRoomName', () => {
     test('property: all strings decode successfully', () => {
       fc.assert(
         fc.property(fc.string(), (str) => {
-          const decode = Schema.decodeUnknownEither(ExternalVideoCallRoomId)
+          const decode = Schema.decodeUnknownEither(VideoCallRoomName)
           const result = decode(str)
           expect(Either.isRight(result)).toBe(true)
           if (Either.isRight(result)) {
@@ -85,35 +55,7 @@ describe('VideoCallRoom Models', () => {
         fc.property(
           fc.oneof(fc.integer(), fc.boolean(), fc.object(), fc.constant(null)),
           (value) => {
-            const decode = Schema.decodeUnknownEither(ExternalVideoCallRoomId)
-            const result = decode(value)
-            expect(Either.isLeft(result)).toBe(true)
-          }
-        )
-      )
-    })
-  })
-
-  describe('ExternalVideoCallRoomName', () => {
-    test('property: all strings decode successfully', () => {
-      fc.assert(
-        fc.property(fc.string(), (str) => {
-          const decode = Schema.decodeUnknownEither(ExternalVideoCallRoomName)
-          const result = decode(str)
-          expect(Either.isRight(result)).toBe(true)
-          if (Either.isRight(result)) {
-            expect(result.right).toBe(str)
-          }
-        })
-      )
-    })
-
-    test('property: non-strings fail to decode', () => {
-      fc.assert(
-        fc.property(
-          fc.oneof(fc.integer(), fc.boolean(), fc.object(), fc.constant(null)),
-          (value) => {
-            const decode = Schema.decodeUnknownEither(ExternalVideoCallRoomName)
+            const decode = Schema.decodeUnknownEither(VideoCallRoomName)
             const result = decode(value)
             expect(Either.isLeft(result)).toBe(true)
           }
@@ -126,23 +68,15 @@ describe('VideoCallRoom Models', () => {
     test('property: valid VideoCallRoom structures decode successfully', () => {
       fc.assert(
         fc.property(
-          fc.uuid(),
-          fc.uuid(),
           fc.string(),
           fc.string(),
-          fc.webUrl(),
-          (
-            videoCallRoomId,
-            encounterId,
-            externalRoomId,
-            externalRoomName,
-            url
-          ) => {
+          fc.string(),
+          fc.webUrl({}),
+          (videoCallRoomId, encounterId, externalRoomName, url) => {
             const room = {
               videoCallRoomId,
               encounterId,
-              externalVideoCallRoomId: externalRoomId,
-              externalVideoCallRoomName: externalRoomName,
+              videoCallRoomName: externalRoomName,
               url,
             }
             const decode = Schema.decodeUnknownEither(VideoCallRoom)
@@ -160,11 +94,11 @@ describe('VideoCallRoom Models', () => {
           fc.uuid(),
           fc.string(),
           (videoCallRoomId, encounterId, externalRoomId) => {
-            // Missing externalVideoCallRoomName and url
+            // Missing VideoCallRoomName and url
             const room = {
               videoCallRoomId,
               encounterId,
-              externalVideoCallRoomId: externalRoomId,
+              VideoCallRoomId: externalRoomId,
             }
             const decode = Schema.decodeUnknownEither(VideoCallRoom)
             const result = decode(room)
@@ -192,8 +126,8 @@ describe('VideoCallRoom Models', () => {
             const room = {
               videoCallRoomId,
               encounterId,
-              externalVideoCallRoomId: externalRoomId,
-              externalVideoCallRoomName: externalRoomName,
+              VideoCallRoomId: externalRoomId,
+              videoCallRoomName: externalRoomName,
               url,
             }
             const decode = Schema.decodeUnknownEither(VideoCallRoom)

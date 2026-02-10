@@ -1,8 +1,6 @@
-import { Effect, Option, Schema } from 'effect'
-import {
-  CompositionId,
-  CompositionRepository,
-} from '@assessmentis/clinical-domain/content-management'
+import { Either, Option, Schema, Stream } from 'effect'
+import { StreamEither } from '@assessmentis/util'
+import { CompositionId } from '@assessmentis/clinical-domain/content-management'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/Composition.$compositionId._index'
 import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
@@ -15,7 +13,7 @@ import { CompositionSections } from '../modules/resources/Composition/components
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { Suspense, useMemo } from 'react'
 import Skeleton from 'react-loading-skeleton'
-import { useEffectTs } from '@assessmentis/react-util'
+import { useEitherStream } from '@assessmentis/react-util'
 import { usePlatformContext } from '../layers/PlatformContext'
 import { Await } from 'react-router'
 
@@ -25,29 +23,26 @@ export default function CompositionDetailsPage({
   params,
 }: Route.ComponentProps) {
   const { clinicalDataRepositoryService } = usePlatformContext()
-  const compositionEffect = useMemo(() => {
+  const compositionStream = useMemo(() => {
     const compositionIdMaybe = tryDecodeCompositionId(params.compositionId)
 
-    return Effect.gen(function* () {
-      const repository = yield* CompositionRepository
+    return Option.match(compositionIdMaybe, {
+      onSome: (compositionId) =>
+        clinicalDataRepositoryService.stream.Composition.pipe(
+          StreamEither.mapEffect((repo) => repo.get(compositionId))
+        ),
+      onNone: () =>
+        Stream.succeed(
+          Either.left(
+            new UnhandledError({
+              message: 'Composition ID not found',
+            })
+          )
+        ),
+    })
+  }, [params.compositionId, clinicalDataRepositoryService])
 
-      const compositionId = yield* compositionIdMaybe.pipe(
-        Option.map(Effect.succeed),
-        Option.getOrElse(() =>
-          Effect.fail(new UnhandledError({ message: 'Composition not found' }))
-        )
-      )
-
-      return yield* repository.get(compositionId)
-    }).pipe(
-      Effect.provideServiceEffect(
-        CompositionRepository,
-        clinicalDataRepositoryService.Composition
-      )
-    )
-  }, [params.compositionId, clinicalDataRepositoryService.Composition])
-
-  const compositionLoader = useEffectTs(compositionEffect)
+  const compositionLoader = useEitherStream(compositionStream)
 
   const crumbs = useMemo(
     () => [

@@ -41,7 +41,7 @@ export const WithValue: Story = {
   args: {
     name: 'birthDate',
     label: 'Birth Date',
-    value: Promise.resolve(new Date('1990-01-15')),
+    value: new Date('1990-01-15'),
   },
 }
 
@@ -76,6 +76,6 @@ export const Disabled: Story = {
   args: {
     name: 'birthDate',
     label: 'Birth Date',
-    value: Promise.resolve(new Date('1990-01-15')),
+    value: new Date('1990-01-15'),
   },
 }

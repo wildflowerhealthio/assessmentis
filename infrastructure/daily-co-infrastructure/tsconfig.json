@@ -1,12 +1,12 @@
 {
-  "extends": "@assessmentis/typescript-config/vite.json",
-  "include": ["src/**/*"],
+  "extends": "@assessmentis/typescript-config/base.json",
+  "include": [
+    "src/**/*",
+    "test/**/*",
+    "../../domain/video-call-domain/src/VideoCallClient.interface.test.ts"
+  ],
   "exclude": ["node_modules"],
   "compilerOptions": {
-    "outDir": "dist", 
-    "jsx": "react-jsx",
-    "plugins": [
-      { "name": "typescript-plugin-css-modules" }
-    ]
+    "outDir": "dist"
   }
 }

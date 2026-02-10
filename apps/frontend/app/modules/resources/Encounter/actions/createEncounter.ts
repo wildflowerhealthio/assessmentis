@@ -1,5 +1,5 @@
 import { Effect, Schema } from 'effect'
-import { ExternalVideoCallClient } from '@assessmentis/video-call-domain'
+import { VideoCallClient } from '@assessmentis/video-call-domain'
 import {
   QuestionnaireResponse,
   QuestionnaireResponseRepository,
@@ -41,15 +41,13 @@ export const createEncounter = (
 ): Effect.Effect<
   CreateEncounterResponse,
   UnhandledError | AuthError | AuthzError | ExternalAssertionError,
-  | EncounterRepository
-  | QuestionnaireResponseRepository
-  | ExternalVideoCallClient
+  EncounterRepository | QuestionnaireResponseRepository | VideoCallClient
 > => {
   return Effect.gen(function* () {
     const encounterRepository = yield* EncounterRepository
     const questionnaireResponseRepository =
       yield* QuestionnaireResponseRepository
-    const videoCalls = yield* ExternalVideoCallClient
+    const videoCalls = yield* VideoCallClient
 
     const externalVideoCallRoom = yield* videoCalls.createRoom({
       enableRecording: true,

@@ -13,7 +13,7 @@ import {
 import { defaultHttpOptions } from '../util/functionContext'
 import { handleError } from '../util/handleError'
 import { DailyCoSecretLayerLive } from '../layers/orgSecretLayers'
-import { makeServerRuntime } from '../util/BaseLayer'
+import { makeRequestRuntime } from '../util/BaseLayer'
 import { CurrentOrgLayerLive } from '../layers/CurrentOrgLayerLive'
 import { CurrentUserIdLayerLive } from '../layers/CurrentUserIdLayerLive'
 
@@ -106,7 +106,7 @@ export const dailyco = onRequest(
 
     const [_, orgSlugStr, destination] = urlMatch
     const orgSlug = OrgSlug.make(orgSlugStr)
-    const runtime = makeServerRuntime(
+    const runtime = makeRequestRuntime(
       Layer.mergeAll(OrgUserServiceLayer, DailyCoSecretLayerLive).pipe(
         Layer.provide(CurrentOrgLayerLive),
         Layer.provide(CurrentUserIdLayerLive)

@@ -9,7 +9,9 @@ import {
   FirebaseAdmin,
   FirebaseAdminDocumentStoreLayer,
 } from '@assessmentis/firebase-server-infrastructure'
-import { DocumentStore } from '@assessmentis/platform-domain'
+import { CurrentUserId, DocumentStore } from '@assessmentis/platform-domain'
+import { CurrentUserIdLayerLive } from '../layers/CurrentUserIdLayerLive'
+import { AuthError } from '@assessmentis/ontology'
 
 const NodeSdkLive = NodeSdk.layer(() => ({
   resource: { serviceName: 'assessmentis-functions' },
@@ -22,7 +24,38 @@ export const BaseLayer = Layer.mergeAll(
   NodeSdkLive
 ).pipe(Layer.annotateSpans('NODE_ENV', process.env.NODE_ENV))
 
-export const makeServerRuntime = <C, E>(
+export const makeAuthedRequestRuntime = <C, E>(
+  layer: Layer.Layer<
+    C,
+    E,
+    | Layer.Layer.Context<typeof BaseLayer>
+    | CurrentUserId
+    | FirebaseAdmin
+    | FunctionsContext
+    | DocumentStore
+  >,
+  context: typeof FunctionsContext.Service
+): ManagedRuntime.ManagedRuntime<
+  C | FunctionsContext | DocumentStore | FirebaseAdmin | CurrentUserId,
+  E | AuthError
+> => {
+  return ManagedRuntime.make(
+    Layer.merge(BaseLayer, layer).pipe(
+      Layer.provideMerge(
+        Layer.provideMerge(
+          CurrentUserIdLayerLive,
+          Layer.mergeAll(
+            Layer.succeed(FunctionsContext, context),
+            FirebaseAdminDocumentStoreLayer,
+            FirebaseAdmin.Default
+          )
+        )
+      )
+    )
+  )
+}
+
+export const makeRequestRuntime = <C, E>(
   layer: Layer.Layer<
     C,
     E,
@@ -32,15 +65,34 @@ export const makeServerRuntime = <C, E>(
     | DocumentStore
   >,
   context: typeof FunctionsContext.Service
-): ManagedRuntime.ManagedRuntime<C, E> => {
+): ManagedRuntime.ManagedRuntime<
+  C | FunctionsContext | DocumentStore | FirebaseAdmin,
+  E
+> => {
   return ManagedRuntime.make(
     Layer.merge(BaseLayer, layer).pipe(
-      Layer.provide(
+      Layer.provideMerge(
         Layer.mergeAll(
           Layer.succeed(FunctionsContext, context),
           FirebaseAdminDocumentStoreLayer,
           FirebaseAdmin.Default
         )
+      )
+    )
+  )
+}
+
+export const makeAdminRuntime = <C, E>(
+  layer: Layer.Layer<
+    C,
+    E,
+    Layer.Layer.Context<typeof BaseLayer> | FirebaseAdmin | DocumentStore
+  >
+): ManagedRuntime.ManagedRuntime<C | DocumentStore | FirebaseAdmin, E> => {
+  return ManagedRuntime.make(
+    Layer.merge(BaseLayer, layer).pipe(
+      Layer.provideMerge(
+        Layer.mergeAll(FirebaseAdminDocumentStoreLayer, FirebaseAdmin.Default)
       )
     )
   )

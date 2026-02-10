@@ -85,8 +85,8 @@ vi.mock('./ClinicalDataRepositoriesService', () => ({
   Default: Layer.empty,
 }))
 
-vi.mock('./ExternalVideoCallClientService', () => ({
-  startExternalVideoCallClientService: vi.fn(() =>
+vi.mock('./VideoCallClientService', () => ({
+  startVideoCallClientService: vi.fn(() =>
     Effect.succeed({
       client: {},
     })

@@ -97,7 +97,7 @@ export const startGapiGoogleHealthcareClient: Effect.Effect<
       if (token) {
         return Effect.succeed(void 0)
       }
-      return Effect.fail(AuthError.Unauthenticated())
+      return Effect.fail(AuthError.Unauthenticated)
     }),
     Schedule.addDelay(Schedule.recurs(10), () => '100 millis')
   )
@@ -169,13 +169,11 @@ export const startGapiGoogleHealthcareClient: Effect.Effect<
     resource: unknown
   }) =>
     Effect.tryPromise(() =>
-      gapi.client.healthcare.projects.locations.datasets.fhirStores.fhir.create(
-        {
-          parent,
-          type,
-          resource: resource as gapi.client.healthcare.HttpBody,
-        }
-      )
+      healthcare.projects.locations.datasets.fhirStores.fhir.create({
+        parent,
+        type,
+        resource: resource as gapi.client.healthcare.HttpBody,
+      })
     ).pipe(
       recoverGapiHttpError,
       Effect.flatMap((resp) => handlers.handleCreateResponse(resp)),
@@ -219,11 +217,9 @@ export const startGapiGoogleHealthcareClient: Effect.Effect<
     type: ResourceType
   }) =>
     Effect.tryPromise(() =>
-      gapi.client.healthcare.projects.locations.datasets.fhirStores.fhir.delete(
-        {
-          name: buildFhirResourcePath(parent, type, id),
-        }
-      )
+      healthcare.projects.locations.datasets.fhirStores.fhir.delete({
+        name: buildFhirResourcePath(parent, type, id),
+      })
     ).pipe(
       recoverGapiHttpError,
       Effect.flatMap((resp) =>
@@ -239,12 +235,10 @@ export const startGapiGoogleHealthcareClient: Effect.Effect<
     bundle
   ) =>
     Effect.tryPromise(() =>
-      gapi.client.healthcare.projects.locations.datasets.fhirStores.fhir.executeBundle(
-        {
-          parent,
-          resource: bundle as gapi.client.healthcare.HttpBody,
-        }
-      )
+      healthcare.projects.locations.datasets.fhirStores.fhir.executeBundle({
+        parent,
+        resource: bundle as gapi.client.healthcare.HttpBody,
+      })
     ).pipe(
       recoverGapiHttpError,
       Effect.flatMap((resp) => handlers.handleExecuteBundleResponse(resp)),

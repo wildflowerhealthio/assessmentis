@@ -1,19 +1,17 @@
-import { Effect, Option, Schema } from 'effect'
+import { Effect, Either, Option, Schema, Stream } from 'effect'
+import { StreamEither } from '@assessmentis/util'
 import { useNavigate } from 'react-router'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { PractitionerForm } from 'app/modules/resources/Practitioner/components/PractitionerForm'
 import { updatePractitioner } from 'app/modules/resources/Practitioner/actions/updatePractitioner'
 import { PractitionerFormData } from 'app/modules/resources/Practitioner/schemas/PractitionerFormSchema'
-import {
-  PractitionerId,
-  PractitionerRepository,
-} from '@assessmentis/clinical-domain/administration'
-import { NotFoundError } from '@assessmentis/ontology'
+import { PractitionerId } from '@assessmentis/clinical-domain/administration'
+import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/Practitioner.$practitionerId.edit'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { getPractitionerDisplayName } from '../modules/resources/Practitioner/utils/practitionerDisplay'
 import { useMemo } from 'react'
-import { useEffectTs } from '@assessmentis/react-util'
+import { useEitherStream } from '@assessmentis/react-util'
 import { usePlatformContext } from '../layers/PlatformContext'
 import { ClinicalDataRepositoryService } from '../layers/ClinicalDataRepositoriesService'
 
@@ -22,34 +20,24 @@ const tryDecodePractitionerId = Schema.decodeOption(PractitionerId)
 export default function EditPractitionerPage({ params }: Route.ComponentProps) {
   const { clinicalDataRepositoryService } = usePlatformContext()
 
-  const practitionerEffect = useMemo(() => {
+  const practitionerStream = useMemo(() => {
     const practitionerIdMaybe = tryDecodePractitionerId(params.practitionerId)
 
-    return Effect.gen(function* () {
-      const repository = yield* PractitionerRepository
-
-      const practitionerId = yield* practitionerIdMaybe.pipe(
-        Option.map(Effect.succeed),
-        Option.getOrElse(() =>
-          Effect.fail(
-            new NotFoundError({
-              resourceType: 'Practitioner',
-              params: { id: params.practitionerId },
-            })
+    return Option.match(practitionerIdMaybe, {
+      onSome: (practitionerId) =>
+        clinicalDataRepositoryService.stream.Practitioner.pipe(
+          StreamEither.mapEffect((repo) => repo.get(practitionerId))
+        ),
+      onNone: () =>
+        Stream.succeed(
+          Either.left(
+            new UnhandledError({ message: 'Practitioner ID not found' })
           )
-        )
-      )
+        ),
+    })
+  }, [clinicalDataRepositoryService, params.practitionerId])
 
-      return yield* repository.get(practitionerId)
-    }).pipe(
-      Effect.provideServiceEffect(
-        PractitionerRepository,
-        clinicalDataRepositoryService.Practitioner
-      )
-    )
-  }, [clinicalDataRepositoryService.Practitioner, params.practitionerId])
-
-  const practitionerPromise = useEffectTs(practitionerEffect)
+  const practitionerPromise = useEitherStream(practitionerStream)
 
   const navigate = useNavigate()
 

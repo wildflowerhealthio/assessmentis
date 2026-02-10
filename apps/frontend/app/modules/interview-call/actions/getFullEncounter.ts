@@ -1,4 +1,5 @@
-import { Effect, Option } from 'effect'
+import { Effect, Either, Option, Scope, Stream } from 'effect'
+import { StreamEither } from '@assessmentis/util'
 import {
   Encounter,
   EncounterId,
@@ -25,90 +26,96 @@ export type FullEncounter = WithId<Encounter> & {
 }
 
 export const getFullEncounter = (
-  encounterIdMaybe: Option.Option<EncounterId>
-): Effect.Effect<
-  FullEncounter,
-  | UnhandledError
-  | AuthError
-  | AuthzError
-  | NotFoundError<'Encounter', { id: EncounterId | undefined }>
-  | ExternalAssertionError
-  | NoSelectedOrgError,
-  ClinicalDataRepositoryService
-> => {
-  return Effect.gen(function* () {
-    const encounterId = yield* encounterIdMaybe.pipe(
-      Option.map(Effect.succeed),
-      Option.getOrElse(() =>
-        Effect.fail(
-          new NotFoundError({
-            resourceType: 'Encounter',
-            params: { id: Option.getOrUndefined(encounterIdMaybe) },
-          })
-        )
+  encounterId: EncounterId
+): Stream.Stream<
+  Either.Either<
+    FullEncounter,
+    | UnhandledError
+    | AuthError
+    | AuthzError
+    | NotFoundError<'Encounter', { id: EncounterId }>
+    | ExternalAssertionError
+    | NoSelectedOrgError
+  >,
+  never,
+  ClinicalDataRepositoryService | Scope.Scope
+> =>
+  Stream.unwrap(
+    Effect.gen(function* () {
+      const clinicalDataRepositoryService = yield* ClinicalDataRepositoryService
+      const encounterRepositoryStream =
+        clinicalDataRepositoryService.stream.Encounter
+
+      const questionnaireRepositoryStream =
+        clinicalDataRepositoryService.stream.Questionnaire
+      const questionnaireResponseRepositoryStream =
+        clinicalDataRepositoryService.stream.QuestionnaireResponse
+      yield* Effect.logDebug('Getting full encounter with ID ', encounterId)
+
+      yield* Effect.logDebug('encounterEffect started')
+
+      const encounterStream = encounterRepositoryStream.pipe(
+        StreamEither.mapEffect((repo) => repo.get(encounterId))
       )
-    )
 
-    const clinicalDataRepositoryService = yield* ClinicalDataRepositoryService
-    const encounterRepository = yield* clinicalDataRepositoryService.Encounter
-    const questionnaireRepository =
-      yield* clinicalDataRepositoryService.Questionnaire
-    const questionnaireResponseRepository =
-      yield* clinicalDataRepositoryService.QuestionnaireResponse
-    yield* Effect.logDebug('Getting full encounter with ID ', encounterId)
+      const responseStream = StreamEither.zipLatest(
+        questionnaireRepositoryStream,
+        questionnaireResponseRepositoryStream
+      ).pipe(
+        StreamEither.mapEffect(
+          ([questionnaireRepository, questionnaireResponseRepository]) =>
+            Effect.gen(function* () {
+              const allQuestionnaires = yield* questionnaireRepository.getMany()
+              const responses = yield* questionnaireResponseRepository.getMany({
+                encounter: `Encounter/${encounterId}`,
+              })
 
-    yield* Effect.logDebug('encounterEffect started')
-
-    const encounterEffect = encounterRepository.get(encounterId)
-
-    const questionnaireResponseGroupEffect = Effect.gen(function* () {
-      const allQuestionnaires = yield* questionnaireRepository.getMany()
-      const responses = yield* questionnaireResponseRepository.getMany({
-        encounter: `Encounter/${encounterId}`,
-      })
-
-      return yield* Effect.all(
-        responses.map(
-          (
-            qr
-          ): Effect.Effect<
-            FullEncounter['questionnaireResponses'][0],
-            UnhandledError
-          > =>
-            Option.fromNullable<Questionnaire | undefined>(
-              allQuestionnaires.find(({ id }) => id == qr.questionnaire)
-            ).pipe(
-              Option.map((_questionnaire: Questionnaire) =>
-                Effect.succeed<FullEncounter['questionnaireResponses'][0]>({
-                  ...qr,
-                  _questionnaire,
-                })
-              ),
-              Option.getOrElse(() =>
-                Effect.fail(
-                  new UnhandledError({
-                    message: `Questionnaire Response's Questionnaire '${qr.questionnaire}' could not be found`,
-                  })
+              return yield* Effect.all(
+                responses.map(
+                  (
+                    qr
+                  ): Effect.Effect<
+                    FullEncounter['questionnaireResponses'][0],
+                    UnhandledError
+                  > =>
+                    Option.fromNullable<Questionnaire | undefined>(
+                      allQuestionnaires.find(({ id }) => id == qr.questionnaire)
+                    ).pipe(
+                      Option.map((_questionnaire: Questionnaire) =>
+                        Effect.succeed<
+                          FullEncounter['questionnaireResponses'][0]
+                        >({
+                          ...qr,
+                          _questionnaire,
+                        })
+                      ),
+                      Option.getOrElse(() =>
+                        Effect.fail(
+                          new UnhandledError({
+                            message: `Questionnaire Response's Questionnaire '${qr.questionnaire}' could not be found`,
+                          })
+                        )
+                      )
+                    )
                 )
               )
-            )
+            })
         )
       )
+
+      return StreamEither.zipLatestWith(
+        encounterStream,
+        responseStream,
+        (encounter, questionnaireResponses) => ({
+          ...encounter,
+          questionnaireResponses,
+        })
+      )
     })
+  )
 
-    const [encounter, questionnaireResponses] = yield* Effect.all([
-      encounterEffect,
-      questionnaireResponseGroupEffect,
-    ])
-
-    const encounterRes: FullEncounter = {
-      ...encounter,
-      questionnaireResponses,
-    }
-
-    return encounterRes
-  }).pipe(
-    Effect.catchSome((err) =>
+/*
+Effect.catchSome((err) =>
       err._tag == 'NotFoundError' && err.resourceType == 'Encounter'
         ? Option.some(
             Effect.fail(
@@ -124,7 +131,5 @@ export const getFullEncounter = (
             )
           )
         : Option.none()
-    ),
-    Effect.withSpan('getFullEncounter')
-  )
-}
+    )
+        */

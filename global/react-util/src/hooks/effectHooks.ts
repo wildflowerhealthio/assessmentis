@@ -1,58 +1,36 @@
-import { Cause, Chunk, Effect, Exit, Fiber, pipe, Scope, Stream } from 'effect'
+import {
+  Cause,
+  Chunk,
+  Effect,
+  Either,
+  Exit,
+  Fiber,
+  pipe,
+  Scope,
+  Stream,
+} from 'effect'
 import { useState, useEffect, useRef, useMemo } from 'react'
+import { useStream } from './useStream'
 
-export const useStream = <A, E>(
-  stream: Stream.Stream<A, E, Scope.Scope>
+export const useEitherStream = <A, E>(
+  stream: Stream.Stream<Either.Either<A, E>, never, Scope.Scope>
 ): Promise<A> => {
-  const [promise, { resolve, reject, reset }] = useStatePromise<A>()
+  const eitherPromise = useStream(stream)
 
-  useEffect(() => {
-    reset()
-
-    const s = Stream.runForEach(stream, (e) =>
-      Effect.sync(() => {
-        resolve(e)
-      })
-    ).pipe(Effect.scoped)
-    const fiber = Effect.runFork(s)
-
-    fiber.addObserver(
-      Exit.match({
-        onSuccess(_) {
-          // No action needed on successful completion
-        },
-        onFailure(cause) {
-          if (Cause.isInterrupted(cause)) {
-            return
-          }
-
-          const failures = Chunk.toArray(Cause.failures(cause))
-
-          if (failures.length == 1) {
-            reject(failures[0])
-            return
-          } else if (failures.length > 1) {
-            reject(new AggregateError(failures, 'Multiple failures occurred'))
-            return
-          }
-
-          const defects = Chunk.toArray(Cause.defects(cause))
-
-          if (defects.length > 0) {
-            reject(new AggregateError(defects, 'Multiple defects occurred'))
-            return
-          }
-          console.error('Stream failed with cause:', cause)
-        },
-      })
-    )
-
-    return () => {
-      Effect.runPromise(Fiber.interrupt(fiber))
-    }
-  }, [reject, reset, resolve, stream])
-
-  return promise
+  return useMemo(
+    () =>
+      eitherPromise.then(
+        Either.match({
+          onRight(right) {
+            return right
+          },
+          onLeft(left) {
+            throw left
+          },
+        })
+      ),
+    [eitherPromise]
+  )
 }
 
 export const useStatePromise = <A>() => {

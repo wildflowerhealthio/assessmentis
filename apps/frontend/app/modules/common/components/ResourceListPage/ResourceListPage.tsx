@@ -4,7 +4,6 @@ import { cn } from '@assessmentis/react-util'
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 import classes from './ResourceListPage.module.css'
-import { ErrorHandlerPage } from '../ErrorHandlerPage'
 
 interface ResourceListPageProps<T extends { id?: string }> {
   // Page metadata
@@ -78,7 +77,7 @@ const Body = <T extends { id?: string | undefined }>({
     >
       <Await
         resolve={collectionPromise}
-        errorElement={ErrorBody ? <ErrorBody /> : <ErrorHandlerPage />}
+        errorElement={ErrorBody ? <ErrorBody /> : undefined}
       >
         {(items) =>
           items.length === 0 ? (

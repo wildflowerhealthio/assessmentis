@@ -1,5 +1,7 @@
 import React, { useMemo, Suspense } from 'react'
-import { Either, Effect, Stream } from 'effect'
+import { Either, Effect } from 'effect'
+import { StreamEither } from '@assessmentis/util'
+
 import { NoSelectedOrgError, Org } from '@assessmentis/platform-domain'
 
 import { OrgContext } from './OrgContext'
@@ -21,31 +23,24 @@ export const OrgContextProvider: React.FC<React.PropsWithChildren> = ({
 
   const stream = useMemo(() => {
     return orgService.activeOrgStream.pipe(
-      Stream.map(
-        Either.mapLeft((e) =>
-          e instanceof NotFoundError ||
-          e instanceof UnhandledError ||
-          e instanceof BadDataError
-            ? e.asUnhandledError()
-            : e
-        )
+      StreamEither.mapLeft((e) =>
+        e instanceof NotFoundError ||
+        e instanceof UnhandledError ||
+        e instanceof BadDataError
+          ? e.asUnhandledError()
+          : e
       ),
-      Stream.mapEffect((orgEither) =>
+      StreamEither.mapEffect((org) =>
         userService.user.pipe(
           Effect.mapError((e) =>
             e instanceof BadDataError || e instanceof NotFoundError
               ? e.asUnhandledError()
               : e
           ),
-          Effect.either,
-          Effect.map((user) =>
-            Either.flatMap(user, (user) =>
-              Either.flatMap(orgEither, (org) =>
-                org != null && Object.keys(user.org_roles).includes(org.slug)
-                  ? Either.right(org)
-                  : Either.left(new NoSelectedOrgError())
-              )
-            )
+          Effect.flatMap((user) =>
+            org != null && Object.keys(user.org_roles).includes(org.slug)
+              ? Effect.succeed(org)
+              : Effect.fail(new NoSelectedOrgError())
           )
         )
       )

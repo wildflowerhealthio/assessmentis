@@ -1,11 +1,9 @@
-import { Effect, Option, Schema } from 'effect'
-import {
-  ObservationId,
-  ObservationRepository,
-} from '@assessmentis/clinical-domain/diagnostic-medicine'
+import { Either, Option, Schema, Stream } from 'effect'
+import { StreamEither } from '@assessmentis/util'
+import { ObservationId } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/Observation.$observationId._index'
-import { runEffectSync } from '../runEffectSync'
+import { runEffectSyncFlat } from '../runEffectSync'
 import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
 import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
 import {
@@ -19,7 +17,7 @@ import { ObservationAdditionalDetails } from '../modules/resources/Observation/c
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { Suspense, useMemo } from 'react'
 import Skeleton from 'react-loading-skeleton'
-import { useEffectTs } from '@assessmentis/react-util'
+import { useEitherStream } from '@assessmentis/react-util'
 import { usePlatformContext } from '../layers/PlatformContext'
 import { Await } from 'react-router'
 
@@ -30,31 +28,24 @@ export default function ObservationDetailPage({
 }: Route.ComponentProps) {
   const { clinicalDataRepositoryService } = usePlatformContext()
 
-  const observationEffect = useMemo(() => {
+  const observationStream = useMemo(() => {
     const observationIdMaybe = tryDecodeObservationId(params.observationId)
 
-    return Effect.gen(function* () {
-      const repository = yield* ObservationRepository
-
-      const observationId = yield* observationIdMaybe.pipe(
-        Option.map(Effect.succeed),
-        Option.getOrElse(() =>
-          Effect.fail(
+    return Option.match(observationIdMaybe, {
+      onSome: (observationId) =>
+        clinicalDataRepositoryService.stream.Observation.pipe(
+          StreamEither.mapEffect((repo) => repo.get(observationId))
+        ),
+      onNone: () =>
+        Stream.succeed(
+          Either.left(
             new UnhandledError({ message: 'Observation ID not found' })
           )
-        )
-      )
+        ),
+    })
+  }, [clinicalDataRepositoryService, params.observationId])
 
-      return yield* repository.get(observationId)
-    }).pipe(
-      Effect.provideServiceEffect(
-        ObservationRepository,
-        clinicalDataRepositoryService.Observation
-      )
-    )
-  }, [clinicalDataRepositoryService.Observation, params.observationId])
-
-  const observationPromise = useEffectTs(observationEffect)
+  const observationPromise = useEitherStream(observationStream)
 
   const breadcrumbs = useMemo(
     () => [
@@ -102,7 +93,7 @@ export default function ObservationDetailPage({
       <Await resolve={observationPromise}>
         {(observation) => {
           const displayName = getObservationDisplayName(observation)
-          const observationDetails = runEffectSync(
+          const observationDetails = runEffectSyncFlat(
             formatObservationDetails(observation)
           )
 

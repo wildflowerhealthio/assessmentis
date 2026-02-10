@@ -1,13 +1,11 @@
-import { Effect, Option, Schema } from 'effect'
+import { Effect, Either, Option, Schema, Stream } from 'effect'
+import { StreamEither } from '@assessmentis/util'
 import { useNavigate } from 'react-router'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { PatientForm } from 'app/modules/resources/Patient/components/PatientForm'
 import { updatePatient } from 'app/modules/resources/Patient/actions/updatePatient'
 import { PatientFormData } from 'app/modules/resources/Patient/schemas/PatientFormSchema'
-import {
-  PatientId,
-  PatientRepository,
-} from '@assessmentis/clinical-domain/administration'
+import { PatientId } from '@assessmentis/clinical-domain/administration'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/Patient.$patientId.edit'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
@@ -16,36 +14,29 @@ import { extractReferenceId } from 'app/modules/common/utils/fhirDisplay'
 import { useMemo } from 'react'
 import { ClinicalDataRepositoryService } from '../layers/ClinicalDataRepositoriesService'
 import { usePlatformContext } from '../layers/PlatformContext'
-import { useEffectTs } from '@assessmentis/react-util'
+import { useEitherStream } from '@assessmentis/react-util'
 
 const tryDecodePatientId = Schema.decodeOption(PatientId)
 
 export default function EditPatientPage({ params }: Route.ComponentProps) {
   const { clinicalDataRepositoryService } = usePlatformContext()
 
-  const patientEffect = useMemo(() => {
+  const patientStream = useMemo(() => {
     const patientIdMaybe = tryDecodePatientId(params.patientId)
 
-    return Effect.gen(function* () {
-      const repository = yield* PatientRepository
+    return Option.match(patientIdMaybe, {
+      onSome: (patientId) =>
+        clinicalDataRepositoryService.stream.Patient.pipe(
+          StreamEither.mapEffect((repo) => repo.get(patientId))
+        ),
+      onNone: () =>
+        Stream.succeed(
+          Either.left(new UnhandledError({ message: 'Patient ID not found' }))
+        ),
+    })
+  }, [clinicalDataRepositoryService, params.patientId])
 
-      const patientId = yield* patientIdMaybe.pipe(
-        Option.map(Effect.succeed),
-        Option.getOrElse(() =>
-          Effect.fail(new UnhandledError({ message: 'Patient ID not found' }))
-        )
-      )
-
-      return yield* repository.get(patientId)
-    }).pipe(
-      Effect.provideServiceEffect(
-        PatientRepository,
-        clinicalDataRepositoryService.Patient
-      )
-    )
-  }, [clinicalDataRepositoryService.Patient, params.patientId])
-
-  const patientPromise = useEffectTs(patientEffect)
+  const patientPromise = useEitherStream(patientStream)
 
   const navigate = useNavigate()
 

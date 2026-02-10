@@ -1,4 +1,4 @@
-import { cn, useLoadingPromise } from '@assessmentis/react-util'
+import { cn } from '@assessmentis/react-util'
 import classes from '../ResourceForm.module.css'
 
 export interface DateFieldProps {
@@ -6,7 +6,7 @@ export interface DateFieldProps {
   label?: string
   required?: boolean
   error?: string
-  value: Promise<Date | undefined>
+  value: Date | undefined
   onChange: (data: Date | undefined) => void
 }
 
@@ -15,7 +15,6 @@ export interface DateFieldProps {
  */
 function dateToInputValue(date: Date | undefined): string {
   if (!date) return ''
-  // Get the date in local timezone and format as YYYY-MM-DD
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
@@ -27,7 +26,6 @@ function dateToInputValue(date: Date | undefined): string {
  */
 function inputValueToDate(value: string): Date | undefined {
   if (!value) return undefined
-  // Parse as YYYY-MM-DD and create date in local timezone
   const [year, month, day] = value.split('-').map(Number)
   return new Date(year, month - 1, day)
 }
@@ -40,11 +38,6 @@ export function DateField({
   value,
   onChange,
 }: DateFieldProps) {
-  const {
-    value: resolvedValue,
-    loading,
-    error: valueError,
-  } = useLoadingPromise(value)
   return (
     <div className={classes.FormField}>
       {label && (
@@ -62,8 +55,7 @@ export function DateField({
         name={name}
         className={cn('input-2', error && classes['FormField__input--error'])}
         required={required}
-        disabled={loading || valueError !== undefined}
-        value={dateToInputValue(resolvedValue)}
+        value={dateToInputValue(value)}
         onChange={(e) => {
           onChange(inputValueToDate(e.target.value))
         }}

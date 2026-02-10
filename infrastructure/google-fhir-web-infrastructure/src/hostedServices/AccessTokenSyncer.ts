@@ -1,11 +1,8 @@
 import { Effect, Either, Scope, Stream } from 'effect'
-import { AuthData, DocumentStore, UserId } from '@assessmentis/platform-domain'
+import { AuthData, DocumentStore } from '@assessmentis/platform-domain'
 import { LoadedGapiClient } from '../services/LoadedGapiClient'
-import {
-  AuthError,
-  NotFoundError,
-  UnhandledError,
-} from '@assessmentis/ontology'
+import { AuthError, NotFoundError } from '@assessmentis/ontology'
+import { StreamEither } from '@assessmentis/util'
 
 export const startAccessTokenSyncer = (
   userStream: Stream.Stream<
@@ -43,93 +40,53 @@ export const startAccessTokenSyncer = (
     }
 
     const accessTokenStream = userStream.pipe(
-      Stream.flatMap(
-        Either.match({
-          onRight({
-            userId,
-            authToken,
-          }): Stream.Stream<
-            Either.Either<
-              void,
-              | AuthError
-              | NotFoundError<'GoogleOAuthAccessToken', { userId: UserId }>
-              | UnhandledError
-            >,
-            never
-          > {
-            return documentStore
-              .subscribeTo('users', userId, 'tokens', 'googleOAuthAccessToken')
-              .pipe(
-                Stream.map(
-                  Either.mapLeft((err) =>
-                    err instanceof NotFoundError
-                      ? new NotFoundError({
-                          resourceType: 'GoogleOAuthAccessToken',
-                          params: { userId },
-                        })
-                      : err
-                  )
-                ),
-                Stream.map(
-                  Either.map((data) => {
-                    const token =
-                      data && typeof data.token == 'string' ? data.token : null
-                    const expiresAt =
-                      data &&
-                      'expiresAt' in data &&
-                      typeof data.expiresAt == 'object' &&
-                      data.expiresAt !== null &&
-                      'toDate' in data.expiresAt &&
-                      typeof data.expiresAt.toDate == 'function' &&
-                      'toDate' in data.expiresAt
-                        ? data.expiresAt.toDate()
-                        : null
-
-                    if (!(token && expiresAt)) {
-                      console.error(
-                        'No access token found for user',
-                        data?.expiresAt
-                      )
-                      return
-                    }
-                    const expiresInMillis = expiresAt?.getTime() - Date.now()
-                    if (authTokenRefreshTimeout) {
-                      clearTimeout(authTokenRefreshTimeout)
-                    }
-                    const shouldSyncInMillis = expiresInMillis - 5 * 60 * 1000
-
-                    if (shouldSyncInMillis > 0) {
-                      client.setToken({ access_token: token })
-                      authTokenRefreshTimeout = setTimeout(
-                        () =>
-                          syncToken(
-                            authToken,
-                            token,
-                            expiresAt,
-                            expiresInMillis
-                          ),
-                        shouldSyncInMillis
-                      )
-                    } else {
-                      syncToken(authToken, token, expiresAt, expiresInMillis)
-                    }
+      StreamEither.flatMap(({ userId, authToken }) =>
+        documentStore
+          .subscribeTo('users', userId, 'tokens', 'googleOAuthAccessToken')
+          .pipe(
+            StreamEither.mapLeft((err) =>
+              err instanceof NotFoundError
+                ? new NotFoundError({
+                    resourceType: 'GoogleOAuthAccessToken',
+                    params: { userId },
                   })
+                : err
+            ),
+            StreamEither.map((data) => {
+              const token =
+                data && typeof data.token == 'string' ? data.token : null
+              const expiresAt =
+                data &&
+                'expiresAt' in data &&
+                typeof data.expiresAt == 'object' &&
+                data.expiresAt !== null &&
+                'toDate' in data.expiresAt &&
+                typeof data.expiresAt.toDate == 'function' &&
+                'toDate' in data.expiresAt
+                  ? data.expiresAt.toDate()
+                  : null
+
+              if (!(token && expiresAt)) {
+                console.error('No access token found for user', data?.expiresAt)
+                return
+              }
+              const expiresInMillis = expiresAt?.getTime() - Date.now()
+              if (authTokenRefreshTimeout) {
+                clearTimeout(authTokenRefreshTimeout)
+              }
+              const shouldSyncInMillis = expiresInMillis - 5 * 60 * 1000
+
+              if (shouldSyncInMillis > 0) {
+                client.setToken({ access_token: token })
+                authTokenRefreshTimeout = setTimeout(
+                  () => syncToken(authToken, token, expiresAt, expiresInMillis),
+                  shouldSyncInMillis
                 )
-              )
-          },
-          onLeft(
-            left
-          ): Stream.Stream<
-            Either.Either<
-              void,
-              | AuthError
-              | NotFoundError<'GoogleOAuthAccessToken', { userId: UserId }>
-            >,
-            never
-          > {
-            return Stream.succeed(Either.left(left))
-          },
-        })
+              } else {
+                syncToken(authToken, token, expiresAt, expiresInMillis)
+              }
+            })
+          )
       )
     )
     return yield* Effect.forkDaemon(

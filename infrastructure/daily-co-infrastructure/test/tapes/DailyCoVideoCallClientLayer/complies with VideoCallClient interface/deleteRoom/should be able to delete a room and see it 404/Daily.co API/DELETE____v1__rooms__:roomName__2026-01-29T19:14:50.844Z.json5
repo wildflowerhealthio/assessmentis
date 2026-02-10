@@ -1,0 +1,49 @@
+{
+    meta: {
+        createdAt: '2026-01-29T19:14:50.494Z',
+        host: 'https://api.daily.co',
+        resHumanReadable: true,
+    },
+    req: {
+        url: '/v1/rooms/icOlkXG7XnQZ6JSBPsko',
+        method: 'DELETE',
+        headers: {},
+        body: '',
+    },
+    res: {
+        status: 200,
+        headers: {
+            date: [
+                'Thu, 29 Jan 2026 19:14:50 GMT',
+            ],
+            'content-type': [
+                'application/json; charset=utf-8',
+            ],
+            'content-length': [
+                '46',
+            ],
+            connection: [
+                'close',
+            ],
+            'strict-transport-security': [
+                'max-age=31536000 ; includeSubDomains',
+            ],
+            'access-control-allow-origin': [
+                '*',
+            ],
+            'access-control-allow-headers': [
+                'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Invite-Token, X-DailySessionId, X-DailyJoinToken, X-DailyAboutClient, Traceparent, Tracestate, Request-Id',
+            ],
+            'access-control-allow-methods': [
+                'OPTIONS,HEAD,GET,POST,PUT,PATCH,DELETE',
+            ],
+            etag: [
+                'W/"2e-nFD1/cVCwYxGv1P98Bkyz8tHLRs"',
+            ],
+        },
+        body: {
+            deleted: true,
+            name: 'icOlkXG7XnQZ6JSBPsko',
+        },
+    },
+}

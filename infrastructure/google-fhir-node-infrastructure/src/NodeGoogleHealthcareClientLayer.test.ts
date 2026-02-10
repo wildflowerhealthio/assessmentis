@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from 'vitest'
-import { Effect, Exit, Layer } from 'effect'
+import { describe, expect, vi } from 'vitest'
+import { Effect, Layer } from 'effect'
+import { it } from '@effect/vitest'
 import * as fc from 'fast-check'
 import { FhirR4Client, buildFhirStoreParent } from '@assessmentis/fhir-client'
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
@@ -147,6 +148,8 @@ import { NodeGoogleHealthcareFhirR4ClientLayer } from './NodeGoogleHealthcareCli
  * to verify the layer works with various input combinations.
  */
 describe('NodeGoogleHealthcareClientLayer', () => {
+  // beforeAll(setMswContext)
+
   // Arbitraries for property-based testing
   const fhirResourceTypeArb = fc.constantFrom(
     'Patient',
@@ -216,200 +219,197 @@ describe('NodeGoogleHealthcareClientLayer', () => {
 
   const testLayer = NodeGoogleHealthcareFhirR4ClientLayer.pipe(
     Layer.provide(Layer.succeed(LoadedGoogleFhirConfig, testConfig)),
-    Layer.provide(FirebaseAdmin.Default)
+    Layer.provide(Layer.succeed(FirebaseAdmin, vi.mocked({} as any)))
   )
 
-  it('provides FhirR4Client that correctly constructs API paths for all operations', async () => {
-    const program = Effect.gen(function* () {
-      const client = yield* FhirR4Client
+  it.effect(
+    'provides FhirR4Client that correctly constructs API paths for all operations',
+    () =>
+      Effect.gen(function* () {
+        const client = yield* FhirR4Client
 
-      const results: Array<{
-        operation: string
-        input: any
-        success: boolean
-      }> = []
+        const results: Array<{
+          operation: string
+          input: any
+          success: boolean
+        }> = []
 
-      // Test each generated input set
-      for (const input of testInputs) {
-        // Test read
-        const readResult = yield* client.read({
-          resourceType: input.readResource.resourceType,
-          id: input.readResource.id,
-        })
-        results.push({
-          operation: 'read',
-          input: input.readResource,
-          success:
-            readResult !== null &&
-            typeof readResult === 'object' &&
-            'resourceType' in readResult,
-        })
+        // Test each generated input set
+        for (const input of testInputs) {
+          // Test read
+          const readResult = yield* client.read({
+            resourceType: input.readResource.resourceType,
+            id: input.readResource.id,
+          })
+          results.push({
+            operation: 'read',
+            input: input.readResource,
+            success:
+              readResult !== null &&
+              typeof readResult === 'object' &&
+              'resourceType' in readResult,
+          })
 
-        // Test search without params
-        yield* client.search({ resourceType: input.searchResourceType })
-        results.push({
-          operation: 'searchWithoutParams',
-          input: { resourceType: input.searchResourceType },
-          success: true,
-        })
+          // Test search without params
+          yield* client.search({ resourceType: input.searchResourceType })
+          results.push({
+            operation: 'searchWithoutParams',
+            input: { resourceType: input.searchResourceType },
+            success: true,
+          })
 
-        // Test search with params
-        yield* client.search({
-          resourceType: input.searchWithParams.resourceType,
-          ...input.searchWithParams.params,
-        })
-        results.push({
-          operation: 'searchWithParams',
-          input: input.searchWithParams,
-          success: true,
-        })
+          // Test search with params
+          yield* client.search({
+            resourceType: input.searchWithParams.resourceType,
+            ...input.searchWithParams.params,
+          })
+          results.push({
+            operation: 'searchWithParams',
+            input: input.searchWithParams,
+            success: true,
+          })
 
-        // Test create
-        const resource = {
-          resourceType: input.createResource.resourceType,
-          name: [{ given: ['Test'] }],
+          // Test create
+          const resource = {
+            resourceType: input.createResource.resourceType,
+            name: [{ given: ['Test'] }],
+          }
+          const createResult = yield* client.create({
+            type: input.createResource.resourceType,
+            resource,
+          })
+          results.push({
+            operation: 'create',
+            input: input.createResource,
+            success:
+              createResult !== null &&
+              typeof createResult === 'object' &&
+              'id' in createResult,
+          })
+
+          // Test update
+          const updateResource = {
+            resourceType: input.updateResource.resourceType,
+            id: input.updateResource.id,
+          }
+          yield* client.update({
+            id: input.updateResource.id,
+            type: input.updateResource.resourceType,
+            resource: updateResource,
+          })
+          results.push({
+            operation: 'update',
+            input: input.updateResource,
+            success: true,
+          })
+
+          // Test delete
+          yield* client.delete({
+            id: input.deleteResource.id,
+            type: input.deleteResource.resourceType,
+          })
+          results.push({
+            operation: 'delete',
+            input: input.deleteResource,
+            success: true,
+          })
+
+          // Test executeBundle
+          const bundle = {
+            resourceType: 'Bundle' as const,
+            type: 'transaction' as const,
+            entry: input.bundleResourceTypes.map((rt) => ({
+              request: { method: 'POST', url: rt },
+              resource: { resourceType: rt },
+            })),
+          }
+          const bundleResult = yield* client.executeBundle(bundle as any)
+          results.push({
+            operation: 'executeBundle',
+            input: { resourceTypes: input.bundleResourceTypes },
+            success:
+              bundleResult !== null &&
+              typeof bundleResult === 'object' &&
+              'type' in bundleResult &&
+              (bundleResult as any).type === 'transaction-response',
+          })
         }
-        const createResult = yield* client.create({
-          type: input.createResource.resourceType,
-          resource,
-        })
-        results.push({
-          operation: 'create',
-          input: input.createResource,
-          success:
-            createResult !== null &&
-            typeof createResult === 'object' &&
-            'id' in createResult,
-        })
 
-        // Test update
-        const updateResource = {
-          resourceType: input.updateResource.resourceType,
-          id: input.updateResource.id,
+        // Verify all operations succeeded
+        for (const r of results) {
+          expect(r.success).toBe(true)
         }
-        yield* client.update({
-          id: input.updateResource.id,
-          type: input.updateResource.resourceType,
-          resource: updateResource,
-        })
-        results.push({
-          operation: 'update',
-          input: input.updateResource,
-          success: true,
-        })
 
-        // Test delete
-        yield* client.delete({
-          id: input.deleteResource.id,
-          type: input.deleteResource.resourceType,
-        })
-        results.push({
-          operation: 'delete',
-          input: input.deleteResource,
-          success: true,
-        })
+        // Verify API paths were constructed correctly for each test input
+        for (const input of testInputs) {
+          // Verify read path
+          expect(mockRead).toHaveBeenCalledWith({
+            name: `${expectedParent}/fhir/${input.readResource.resourceType}/${input.readResource.id}`,
+          })
 
-        // Test executeBundle
-        const bundle = {
-          resourceType: 'Bundle' as const,
-          type: 'transaction' as const,
-          entry: input.bundleResourceTypes.map((rt) => ({
-            request: { method: 'POST', url: rt },
-            resource: { resourceType: rt },
-          })),
+          // Verify search without params
+          expect(mockSearchType).toHaveBeenCalledWith(
+            { parent: expectedParent, resourceType: input.searchResourceType },
+            undefined
+          )
+
+          // Verify search with params
+          expect(mockSearchType).toHaveBeenCalledWith(
+            {
+              parent: expectedParent,
+              resourceType: input.searchWithParams.resourceType,
+              requestBody: {
+                resourceType: input.searchWithParams.resourceType,
+              },
+            },
+            { params: input.searchWithParams.params }
+          )
+
+          // Verify create
+          expect(mockCreate).toHaveBeenCalledWith({
+            parent: expectedParent,
+            type: input.createResource.resourceType,
+            requestBody: {
+              resourceType: input.createResource.resourceType,
+              name: [{ given: ['Test'] }],
+            },
+          })
+
+          // Verify update path
+          expect(mockUpdate).toHaveBeenCalledWith({
+            name: `${expectedParent}/fhir/${input.updateResource.resourceType}/${input.updateResource.id}`,
+            requestBody: {
+              resourceType: input.updateResource.resourceType,
+              id: input.updateResource.id,
+            },
+          })
+
+          // Verify delete path
+          expect(mockDelete).toHaveBeenCalledWith({
+            name: `${expectedParent}/fhir/${input.deleteResource.resourceType}/${input.deleteResource.id}`,
+          })
+
+          // Verify executeBundle
+          expect(mockExecuteBundle).toHaveBeenCalledWith({
+            parent: expectedParent,
+            requestBody: {
+              resourceType: 'Bundle',
+              type: 'transaction',
+              entry: input.bundleResourceTypes.map((rt) => ({
+                request: { method: 'POST', url: rt },
+                resource: { resourceType: rt },
+              })),
+            },
+          })
         }
-        const bundleResult = yield* client.executeBundle(bundle as any)
-        results.push({
-          operation: 'executeBundle',
-          input: { resourceTypes: input.bundleResourceTypes },
-          success:
-            bundleResult !== null &&
-            typeof bundleResult === 'object' &&
-            'type' in bundleResult &&
-            (bundleResult as any).type === 'transaction-response',
-        })
-      }
 
-      return results
-    }).pipe(Effect.provide(testLayer))
-
-    const result = await Effect.runPromiseExit(program)
-
-    expect(Exit.isSuccess(result)).toBe(true)
-    if (Exit.isSuccess(result)) {
-      // Verify all operations succeeded
-      for (const r of result.value) {
-        expect(r.success).toBe(true)
-      }
-    }
-
-    // Verify API paths were constructed correctly for each test input
-    for (const input of testInputs) {
-      // Verify read path
-      expect(mockRead).toHaveBeenCalledWith({
-        name: `${expectedParent}/fhir/${input.readResource.resourceType}/${input.readResource.id}`,
-      })
-
-      // Verify search without params
-      expect(mockSearchType).toHaveBeenCalledWith(
-        { parent: expectedParent, resourceType: input.searchResourceType },
-        undefined
-      )
-
-      // Verify search with params
-      expect(mockSearchType).toHaveBeenCalledWith(
-        {
-          parent: expectedParent,
-          resourceType: input.searchWithParams.resourceType,
-          requestBody: { resourceType: input.searchWithParams.resourceType },
-        },
-        { params: input.searchWithParams.params }
-      )
-
-      // Verify create
-      expect(mockCreate).toHaveBeenCalledWith({
-        parent: expectedParent,
-        type: input.createResource.resourceType,
-        requestBody: {
-          resourceType: input.createResource.resourceType,
-          name: [{ given: ['Test'] }],
-        },
-      })
-
-      // Verify update path
-      expect(mockUpdate).toHaveBeenCalledWith({
-        name: `${expectedParent}/fhir/${input.updateResource.resourceType}/${input.updateResource.id}`,
-        requestBody: {
-          resourceType: input.updateResource.resourceType,
-          id: input.updateResource.id,
-        },
-      })
-
-      // Verify delete path
-      expect(mockDelete).toHaveBeenCalledWith({
-        name: `${expectedParent}/fhir/${input.deleteResource.resourceType}/${input.deleteResource.id}`,
-      })
-
-      // Verify executeBundle
-      expect(mockExecuteBundle).toHaveBeenCalledWith({
-        parent: expectedParent,
-        requestBody: {
-          resourceType: 'Bundle',
-          type: 'transaction',
-          entry: input.bundleResourceTypes.map((rt) => ({
-            request: { method: 'POST', url: rt },
-            resource: { resourceType: rt },
-          })),
-        },
-      })
-    }
-
-    // Verify total call counts match expected (20 inputs × operations)
-    expect(mockRead).toHaveBeenCalledTimes(20)
-    expect(mockSearchType).toHaveBeenCalledTimes(40) // 2 per input
-    expect(mockCreate).toHaveBeenCalledTimes(20)
-    expect(mockUpdate).toHaveBeenCalledTimes(20)
-    expect(mockDelete).toHaveBeenCalledTimes(20)
-    expect(mockExecuteBundle).toHaveBeenCalledTimes(20)
-  })
+        // Verify total call counts match expected (20 inputs × operations)
+        expect(mockRead).toHaveBeenCalledTimes(20)
+        expect(mockSearchType).toHaveBeenCalledTimes(40) // 2 per input
+        expect(mockCreate).toHaveBeenCalledTimes(20)
+        expect(mockUpdate).toHaveBeenCalledTimes(20)
+        expect(mockDelete).toHaveBeenCalledTimes(20)
+        expect(mockExecuteBundle).toHaveBeenCalledTimes(20)
+      }).pipe(Effect.provide(testLayer))
+  )
 })

@@ -2,7 +2,7 @@ import { DocumentData, DocumentStore } from '@assessmentis/platform-domain'
 import { Effect, Either, Layer, Stream } from 'effect'
 import { FirebaseWeb } from '../tagClasses'
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
-import { doc, getDoc, onSnapshot } from 'firebase/firestore'
+import { doc, getDoc, onSnapshot, setDoc } from 'firebase/firestore'
 import { unsubscribableCallbackAsStream } from '@assessmentis/util'
 
 const resourceTypeFromPath = (path: ReadonlyArray<string>) =>
@@ -114,6 +114,36 @@ export const FirebaseWebDocumentStoreLayer: Layer.Layer<
         })
       }).pipe(Stream.unwrap)
 
-    return { get, subscribeTo }
+    const set: typeof DocumentStore.Service.set = (data, ...path) =>
+      Effect.gen(function* () {
+        const [collection, ...restPath] = path
+        const docRef = doc(firestore, collection, ...restPath)
+
+        yield* Effect.tryPromise({
+          try: () => setDoc(docRef, data),
+          catch: (cause) =>
+            new UnhandledError({
+              message: `Error setting ${resourceTypeFromPath(path)} document for ${auth.currentUser?.displayName ?? 'unknown user'}`,
+              cause,
+            }),
+        })
+      })
+
+    const update: typeof DocumentStore.Service.update = (data, ...path) =>
+      Effect.gen(function* () {
+        const [collection, ...restPath] = path
+        const docRef = doc(firestore, collection, ...restPath)
+
+        yield* Effect.tryPromise({
+          try: () => setDoc(docRef, data, { merge: true }),
+          catch: (cause) =>
+            new UnhandledError({
+              message: `Error updating ${resourceTypeFromPath(path)} document for ${auth.currentUser?.displayName ?? 'unknown user'}`,
+              cause,
+            }),
+        })
+      })
+
+    return { get, subscribeTo, set, update }
   })
 )

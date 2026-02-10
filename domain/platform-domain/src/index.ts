@@ -1,5 +1,4 @@
 export * from './hostedServices'
-export * from './UserPlatformService'
 export * from './models/FrontendConfig'
 export * from './models/OrgRole'
 export * from './models/IdTypes'

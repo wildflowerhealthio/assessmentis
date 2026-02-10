@@ -5,6 +5,7 @@ import { Await, Link } from 'react-router'
 import { useBreadcrumbContext } from '../../contexts/BreadcrumbContext'
 
 import classes from './HeaderBreadcrumbs.module.css'
+import React from 'react'
 
 export const HeaderBreadcrumbs = () => {
   const { breadcrumbs } = useBreadcrumbContext()
@@ -14,13 +15,13 @@ export const HeaderBreadcrumbs = () => {
       : [{ label: 'Assessment.is', href: '/' }]
 
   return (
-    <>
+    <React.Fragment key="header-breadcrumbs">
       {/* Before the crumbs will be the org picker */}
       {allBreadcrumbs.map((segment, index) => {
         const isLast = index === allBreadcrumbs.length - 1
 
         return (
-          <>
+          <React.Fragment key={index}>
             <span
               key={`slash-${index}`}
               className={cn(
@@ -31,7 +32,20 @@ export const HeaderBreadcrumbs = () => {
               {' / '}
             </span>
             <Suspense fallback={<Skeleton width={120} />} key={index}>
-              <Await resolve={segment}>
+              <Await
+                resolve={segment}
+                errorElement={
+                  <span
+                    className={cn(
+                      'text-alt-heading-3',
+                      classes.HeaderBreadcrumbs__current
+                    )}
+                    key={`label-${index}`}
+                  >
+                    Error
+                  </span>
+                }
+              >
                 {(segment) =>
                   segment.href && !isLast ? (
                     <Link
@@ -58,9 +72,9 @@ export const HeaderBreadcrumbs = () => {
                 }
               </Await>
             </Suspense>
-          </>
+          </React.Fragment>
         )
       })}
-    </>
+    </React.Fragment>
   )
 }

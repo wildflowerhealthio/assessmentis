@@ -20,6 +20,7 @@ import {
 } from '@assessmentis/ontology'
 import {
   pubsubAsPerpetualStream,
+  StreamEither,
   takeOneFromPubSubOrDie,
 } from '@assessmentis/util'
 
@@ -133,77 +134,19 @@ export const startOrgService = (
               console.log('Org slug:', slug)
             })
           ),
-          Stream.flatMap(
-            (e) =>
-              Either.match(e, {
-                onRight(
-                  orgSlug
-                ): Stream.Stream<
-                  Either.Either<
-                    Org,
-                    | NoSelectedOrgError
-                    | NotFoundError<'Org', { orgSlug: OrgSlug }>
-                    | BadDataError
-                    | UnhandledError
-                  >
-                > {
-                  return documentStore.subscribeTo('orgs', orgSlug).pipe(
-                    Stream.map(
-                      Either.mapLeft((cause) =>
-                        cause instanceof NotFoundError
-                          ? new NotFoundError<'Org', { orgSlug: OrgSlug }>({
-                              resourceType: 'Org',
-                              params: { orgSlug },
-                            })
-                          : cause
-                      )
-                    ),
-                    Stream.mapEffect((e) =>
-                      Either.match(e, {
-                        onRight(
-                          data
-                        ): Effect.Effect<
-                          Either.Either<
-                            Org,
-                            | NoSelectedOrgError
-                            | NotFoundError<'Org', { orgSlug: OrgSlug }>
-                            | BadDataError
-                            | UnhandledError
-                          >
-                        > {
-                          return Effect.either(decodeOrg(data))
-                        },
-                        onLeft(
-                          err
-                        ): Effect.Effect<
-                          Either.Either<
-                            Org,
-                            | NoSelectedOrgError
-                            | NotFoundError<'Org', { orgSlug: OrgSlug }>
-                            | BadDataError
-                            | UnhandledError
-                          >
-                        > {
-                          return Effect.succeed(Either.left(err))
-                        },
+          StreamEither.flatMap(
+            (orgSlug) =>
+              documentStore.subscribeTo('orgs', orgSlug).pipe(
+                StreamEither.mapLeft((cause) =>
+                  cause instanceof NotFoundError
+                    ? new NotFoundError<'Org', { orgSlug: OrgSlug }>({
+                        resourceType: 'Org',
+                        params: { orgSlug },
                       })
-                    )
-                  )
-                },
-                onLeft(
-                  left
-                ): Stream.Stream<
-                  Either.Either<
-                    Org,
-                    | NoSelectedOrgError
-                    | NotFoundError<'Org', { orgSlug: OrgSlug }>
-                    | BadDataError
-                    | UnhandledError
-                  >
-                > {
-                  return Stream.succeed(Either.left(left))
-                },
-              }),
+                    : cause
+                ),
+                StreamEither.mapEffect((data) => decodeOrg(data))
+              ),
             { switch: true }
           )
         ),

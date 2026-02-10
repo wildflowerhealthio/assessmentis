@@ -117,84 +117,18 @@ Order imports as follows:
 
 ## Testing Guidelines
 
-### Unit Tests
+For comprehensive testing documentation, see [docs/testing/](./docs/testing/testing.md).
+
+- [Unit testing](./docs/testing/unit-testing.md) -- Property-based testing, Effect patterns, FHIR schemas
+- [React unit testing](./docs/testing/react-unit-testing.md) -- Components, hooks, mocking
+- [Integration testing](./docs/testing/integration-testing.md) -- VCR-style HTTP record/integration
+
+### Quick Summary
 
 - Use **Vitest** for all packages
 - Test files alongside source: `*.test.ts`
-- Test both happy paths and edge cases
-
-### Testing Patterns
-
-```typescript
-import { describe, it, expect } from 'vitest'
-
-describe('MyFunction', () => {
-  it('should handle valid input', () => {
-    const result = myFunction(validInput)
-    expect(result).toBe(expectedOutput)
-  })
-
-  it('should handle invalid input', () => {
-    expect(() => myFunction(invalidInput)).toThrow()
-  })
-})
-```
-
-### Property-Based Testing with fast-check
-
-Use **property-based testing** to validate code against a wide range of inputs. Keep properties focused and concise.
-
-```typescript
-import { fc } from 'fast-check'
-import { Schema } from 'effect'
-
-// Effect Schemas can be used as fast-check arbitraries
-const MySchemaArbitrary = Schema.arbitrary(MySchema)(fc)
-
-it('should maintain property for all valid inputs', () => {
-  fc.assert(
-    fc.property(MySchemaArbitrary, (data) => {
-      const result = myFunction(data)
-      // Test a useful property (e.g., idempotence, invariant preservation)
-      expect(myFunction(result)).toEqual(result)
-    })
-  )
-})
-```
-
-**Guidelines for property-based testing:**
-
-- Focus on **useful properties**: idempotence, reversibility, invariants
-- Keep tests **concise** - one property per test
-- Use Effect Schemas as arbitraries with `Schema.arbitrary(MySchema)(fc)`
-- Test edge cases explicitly, use property tests for general behavior
-
-### Schema Testing
-
-Schema tests validate both encoding/decoding and serve as property-based tests:
-
-```typescript
-import { Schema } from 'effect'
-import { fc } from 'fast-check'
-
-it('should encode and decode correctly', () => {
-  const encoded = Schema.encodeSync(MySchema)(data)
-  const decoded = Schema.decodeSync(MySchema)(encoded)
-  expect(decoded).toEqual(data)
-})
-
-// Property-based test using schema as arbitrary
-it('should round-trip for all valid data', () => {
-  fc.assert(
-    fc.property(Schema.arbitrary(MySchema)(fc), (data) => {
-      const decoded = Schema.decodeSync(MySchema)(
-        Schema.encodeSync(MySchema)(data)
-      )
-      expect(decoded).toEqual(data)
-    })
-  )
-})
-```
+- **Property-based testing first** with `fast-check` and `Arbitrary.make(Schema)`
+- Use `@assessmentis/testing-utils/vcr-js` for HTTP record/playback in integration testing against external APIs
 
 ## Package-Specific Guidelines
 

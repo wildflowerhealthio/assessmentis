@@ -1,15 +1,14 @@
-import { cn, useLoadingPromise } from '@assessmentis/react-util'
+import { cn } from '@assessmentis/react-util'
 import classes from '../ResourceForm.module.css'
 
-export interface SelectFieldProps<T extends string> {
+export interface SelectFieldProps<T extends string = string> {
   name: string
   label?: string
   required?: boolean
   options: ReadonlyArray<{ value: T; label: string }>
   error?: string | undefined
-  value: Promise<T | undefined>
+  value: T | undefined
   onChange: (data: T | undefined) => void
-  defaultValue?: T | undefined
 }
 
 export function SelectField<T extends string>({
@@ -18,11 +17,9 @@ export function SelectField<T extends string>({
   required,
   options,
   error,
-  value: promiseValue,
+  value,
   onChange = () => {},
-  defaultValue,
 }: SelectFieldProps<T>) {
-  const { value, loading, error: valueError } = useLoadingPromise(promiseValue)
   return (
     <div className={classes.FormField}>
       {label && (
@@ -39,15 +36,13 @@ export function SelectField<T extends string>({
         name={name}
         className={cn('input-2', error && classes['FormField__input--error'])}
         required={required}
-        disabled={loading || valueError !== undefined}
-        value={value}
+        value={value ?? ''}
         onChange={(e) => {
           const selectedValue = e.target.value as T
-          onChange(selectedValue)
+          onChange(selectedValue || undefined)
         }}
-        defaultValue={defaultValue}
       >
-        <option value={undefined}>Select {label || 'option'}...</option>
+        <option value="">Select {label || 'option'}...</option>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}

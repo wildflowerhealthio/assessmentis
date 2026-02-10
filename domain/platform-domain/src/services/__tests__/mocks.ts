@@ -85,6 +85,26 @@ export const mockDocumentStoreImplementations: {
       (..._path: readonly string[]) =>
         Stream.never,
   },
+
+  set: {
+    /**
+     * No-op set that always succeeds
+     */
+    noop:
+      () =>
+      (..._args: readonly unknown[]) =>
+        Effect.void,
+  },
+
+  update: {
+    /**
+     * No-op update that always succeeds
+     */
+    noop:
+      () =>
+      (..._args: readonly unknown[]) =>
+        Effect.void,
+  },
 }
 
 /**
@@ -100,5 +120,7 @@ export const mockDocumentStore = (
   subscribeTo: vi.fn(
     mockDocumentStoreImplementations.subscribeTo.emptyStream()
   ),
+  set: vi.fn(mockDocumentStoreImplementations.set.noop()),
+  update: vi.fn(mockDocumentStoreImplementations.update.noop()),
   ...impl,
 })

@@ -1,5 +1,5 @@
 import { auth, db, FirebaseWebLayer } from 'app/FirebaseWebLayer'
-import { DailyCoProxyConfig } from '@assessmentis/config-domain'
+import { DailyCoConfig } from '@assessmentis/config-domain'
 import { DocumentStore, FrontendConfig } from '@assessmentis/platform-domain'
 import { Route } from './+types/orgs.$orgSlug'
 import { Form } from 'react-router'
@@ -21,7 +21,7 @@ const frontendConfig = (): FrontendConfig => {
 
   return FrontendConfig.make({
     fhirServer: fhirStore,
-    videoCallClient: DailyCoProxyConfig.make({ dailyCoProxyUrl: '' }),
+    videoCallClient: DailyCoConfig.make({ dailyCoProxyUrl: '' }),
   } as const)
 }
 

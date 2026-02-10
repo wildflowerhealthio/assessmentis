@@ -2,16 +2,15 @@ import { applyPartialProps, transformProps } from '@assessmentis/react-util'
 import {
   DateField,
   ResourceForm,
-  SelectField,
   TextField,
 } from 'app/modules/common/components/ResourceForm'
 import { PractitionerPicker } from 'app/modules/resources/Practitioner/components/PractitionerPicker'
+import { GenderPicker } from 'app/modules/resources/Practitioner/components/GenderPicker'
 import { CommonFieldProps } from 'app/modules/common/components/ResourceForm/ResourceForm'
 import {
   PatientFormSchema,
   type PatientFormData,
 } from '../schemas/PatientFormSchema'
-import { promiseFieldsFromPromise } from '@assessmentis/util'
 
 interface PatientFormProps {
   onSubmit: (data: PatientFormData) => void | Promise<void>
@@ -38,16 +37,10 @@ export function PatientForm({
           label: 'Family Name',
           required: true,
         }),
-        gender: applyPartialProps(SelectField, {
+        gender: applyPartialProps(GenderPicker, {
           name: 'gender',
           label: 'Gender',
-          options: [
-            { value: 'male', label: 'Male' },
-            { value: 'female', label: 'Female' },
-            { value: 'other', label: 'Other' },
-            { value: 'unknown', label: 'Unknown' },
-          ],
-        } as const),
+        }),
         birthDate: applyPartialProps(DateField, {
           name: 'birthDate',
           label: 'Birth Date',
@@ -74,7 +67,7 @@ export function PatientForm({
       ]}
       onSubmit={onSubmit}
       submitLabel={submitLabel}
-      initialValues={promiseFieldsFromPromise(initialValues)}
+      initialValues={initialValues}
     />
   )
 }

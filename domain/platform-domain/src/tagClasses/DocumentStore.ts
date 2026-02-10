@@ -5,15 +5,17 @@ export interface DocumentData {
   [field: string]: unknown
 }
 
+export type DocumentPath = ReadonlyArray<string> & {
+  0: string
+  1: string
+  length: 2 | 4 | 6
+}
+
 export class DocumentStore extends Context.Tag('DocumentStore')<
   DocumentStore,
   {
     get(
-      ...path: ReadonlyArray<string> & {
-        0: string
-        1: string
-        length: 2 | 4 | 6
-      }
+      ...path: DocumentPath
     ): Effect.Effect<
       DocumentData,
       | NotFoundError<'Document', { path: ReadonlyArray<string> }>
@@ -22,11 +24,7 @@ export class DocumentStore extends Context.Tag('DocumentStore')<
     >
 
     subscribeTo(
-      ...path: ReadonlyArray<string> & {
-        0: string
-        1: string
-        length: 2 | 4 | 6
-      }
+      ...path: DocumentPath
     ): Stream.Stream<
       Either.Either<
         DocumentData,
@@ -36,5 +34,24 @@ export class DocumentStore extends Context.Tag('DocumentStore')<
       never,
       never
     >
+
+    /**
+     * Set a document at the given path, creating it if it doesn't exist
+     * or completely overwriting it if it does.
+     */
+    set(
+      data: DocumentData,
+      ...path: DocumentPath
+    ): Effect.Effect<void, UnhandledError, never>
+
+    /**
+     * Update a document at the given path with the given data.
+     * Only the fields specified in data will be updated; other fields remain unchanged.
+     * If the document doesn't exist, it will be created.
+     */
+    update(
+      data: Partial<DocumentData>,
+      ...path: DocumentPath
+    ): Effect.Effect<void, UnhandledError, never>
   }
 >() {}

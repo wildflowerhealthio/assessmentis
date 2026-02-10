@@ -81,4 +81,5 @@ app/
 - `@assessmentis/clinical-domain`: Core types and interfaces
 - `@assessmentis/react-util`: Shared React utilities
 - `@assessmentis/firebase-web-infrastructure`: Firebase integration
-- `@assessmentis/daily-co-infrastructure`: Video calls
+- `@assessmentis/daily-co-infrastructure`: Video call service layer
+- `@assessmentis/daily-co-components`: Video call UI components

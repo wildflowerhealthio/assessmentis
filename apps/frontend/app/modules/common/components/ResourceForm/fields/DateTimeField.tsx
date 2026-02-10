@@ -1,5 +1,5 @@
 import { DateTime, Option } from 'effect'
-import { cn, useLoadingPromise } from '@assessmentis/react-util'
+import { cn } from '@assessmentis/react-util'
 import classes from '../ResourceForm.module.css'
 
 export interface DateTimeFieldProps {
@@ -7,17 +7,19 @@ export interface DateTimeFieldProps {
   label?: string
   required?: boolean
   error?: string
-  value: Promise<DateTime.Zoned | undefined>
+  value: DateTime.Zoned | undefined
   onChange: (data: DateTime.Zoned | undefined) => void
 }
 
 /**
- * Convert Effect DateTime to ISO string for datetime-local input
+ * Convert Effect DateTime to ISO string for datetime-local input.
+ * datetime-local requires exactly YYYY-MM-DDTHH:mm format.
  */
 function dateTimeToInputValue(dateTime: DateTime.Zoned | undefined): string {
   if (dateTime == undefined) return ''
-  // datetime-local input expects format: YYYY-MM-DDTHH:mm
-  return DateTime.formatLocal(dateTime).slice(0, 16)
+  const date = new Date(Number(DateTime.toEpochMillis(dateTime)))
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
 /**
@@ -25,7 +27,6 @@ function dateTimeToInputValue(dateTime: DateTime.Zoned | undefined): string {
  */
 function inputValueToDateTime(value: string): DateTime.Zoned | undefined {
   if (!value) return undefined
-  // Append seconds and timezone to make it a complete ISO string
   return DateTime.makeZoned(`${value}:00`, {
     adjustForTimeZone: true,
     timeZone: DateTime.zoneMakeLocal(),
@@ -40,12 +41,6 @@ export function DateTimeField({
   value,
   onChange,
 }: DateTimeFieldProps) {
-  const {
-    value: resolvedValue,
-    loading,
-    error: loadingError,
-  } = useLoadingPromise(value)
-
   return (
     <div className={classes.FormField}>
       {label && (
@@ -63,8 +58,7 @@ export function DateTimeField({
         name={name}
         className={cn('input-2', error && classes['FormField__input--error'])}
         required={required}
-        disabled={loading || !!loadingError}
-        value={dateTimeToInputValue(resolvedValue)}
+        value={dateTimeToInputValue(value)}
         onChange={(e) => {
           onChange(inputValueToDateTime(e.target.value))
         }}

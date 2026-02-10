@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { Cause, Effect, Queue, Stream } from 'effect'
-import { useStream } from './effectHooks'
+import { useStream } from './useStream'
 
 describe('useStream', () => {
   beforeEach(() => {
@@ -43,7 +43,7 @@ describe('useStream', () => {
               interrupted = true
             })
           )
-          yield* Effect.never
+          return yield* Effect.never
         })
       )
 
@@ -382,7 +382,6 @@ describe('useStream', () => {
     })
 
     it('should log successful completion', async () => {
-      const consoleSpy = vi.spyOn(console, 'log')
       const testStream = Stream.make(1)
 
       renderHook(() => useStream(testStream))

@@ -1,5 +1,5 @@
 {
-  "cSpell.words": ["Codeable", "firestore", "gapi", "northamerica"],
+  "cSpell.words": ["Codeable", "firestore", "gapi", "northamerica", "talkback"],
   "typescript.preferences.importModuleSpecifier": "relative",
 
   // ESLint configuration for monorepo
@@ -52,5 +52,7 @@
   "prettier.requireConfig": true,
   "debug.allowBreakpointsEverywhere": true,
   "typescript.tsserver.enableTracing": true,
-  "typescript.tsserver.experimental.enableProjectDiagnostics": true
+  "typescript.tsserver.experimental.enableProjectDiagnostics": true,
+  "typescript.tsdk": "./node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true
 }

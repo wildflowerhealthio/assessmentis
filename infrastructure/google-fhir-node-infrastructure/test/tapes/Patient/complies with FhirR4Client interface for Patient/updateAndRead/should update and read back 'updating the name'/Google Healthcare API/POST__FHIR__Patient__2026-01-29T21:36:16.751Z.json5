@@ -1,0 +1,77 @@
+{
+    meta: {
+        createdAt: '2026-01-29T21:36:16.621Z',
+        host: 'https://healthcare.googleapis.com',
+        resHumanReadable: true,
+        resUncompressed: true,
+    },
+    req: {
+        url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient',
+        method: 'POST',
+        headers: {},
+        body: 'ewogICJyZXNvdXJjZVR5cGUiOiAiUGF0aWVudCIsCiAgIm5hbWUiOiBbCiAgICB7CiAgICAgICJnaXZlbiI6IFsKICAgICAgICAiQmVmb3JlIgogICAgICBdLAogICAgICAiZmFtaWx5IjogIlVwZGF0ZSIKICAgIH0KICBdCn0=',
+    },
+    res: {
+        status: 201,
+        headers: {
+            'last-modified': [
+                'Thu, 29 Jan 2026 21:36:16 UTC',
+            ],
+            'content-encoding': [
+                'gzip',
+            ],
+            etag: [
+                'W/"MTc2OTcyMjU3Njc5NTI1MTAwMA"',
+            ],
+            'content-type': [
+                'application/fhir+json;charset=utf-8',
+            ],
+            location: [
+                'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/a1101b68-1987-4011-9cb0-44e624d9114e/_history/MTc2OTcyMjU3Njc5NTI1MTAwMA',
+            ],
+            vary: [
+                'Origin, X-Origin, Referer',
+            ],
+            date: [
+                'Thu, 29 Jan 2026 21:36:16 GMT',
+            ],
+            server: [
+                'ESF',
+            ],
+            'x-xss-protection': [
+                '0',
+            ],
+            'x-frame-options': [
+                'SAMEORIGIN',
+            ],
+            'x-content-type-options': [
+                'nosniff',
+            ],
+            'alt-svc': [
+                'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
+            ],
+            connection: [
+                'close',
+            ],
+            'transfer-encoding': [
+                'chunked',
+            ],
+        },
+        body: {
+            id: 'a1101b68-1987-4011-9cb0-44e624d9114e',
+            meta: {
+                lastUpdated: '2026-01-29T21:36:16.795251+00:00',
+                versionId: 'MTc2OTcyMjU3Njc5NTI1MTAwMA',
+            },
+            name: [
+                {
+                    family: 'Update',
+                    given: [
+                        'Before',
+                    ],
+                },
+            ],
+            resourceType: 'Patient',
+        },
+    },
+}

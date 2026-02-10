@@ -11,8 +11,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"./src/**/*\"",
     "lint:fix": "eslint --fix \"./src/**/*\"",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "vitest --project react-util:unit",
     "preview": "vite preview"
   },
   "exports": {
@@ -22,6 +21,7 @@
   "peerDependencies": {
     "react": "19.x",
     "react-dom": "19.x",
+    "react-error-boundary": "^6.0.0",
     "uuid": "13.x"
   },
   "devDependencies": {

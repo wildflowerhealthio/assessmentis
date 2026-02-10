@@ -27,7 +27,6 @@
     "@assessmentis/platform-domain": "*",
     "@assessmentis/ontology": "*",
     "@assessmentis/video-call-domain": "*",
-    "@effect/opentelemetry": "^0.59.2",
     "effect": "^3.19.9",
     "firebase": "^12.6.0"
   }

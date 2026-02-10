@@ -1,0 +1,57 @@
+{
+    meta: {
+        createdAt: '2026-01-29T00:43:48.710Z',
+        host: 'https://api.daily.co',
+        resHumanReadable: true,
+    },
+    req: {
+        url: '/v1/rooms',
+        method: 'POST',
+        headers: {},
+        body: 'ewogICJwcm9wZXJ0aWVzIjogewogICAgImV4cCI6IDE3NzAwOTMwMDAsCiAgICAiZW5hYmxlX2NoYXQiOiBmYWxzZQogIH0KfQ==',
+    },
+    res: {
+        status: 200,
+        headers: {
+            date: [
+                'Thu, 29 Jan 2026 00:43:49 GMT',
+            ],
+            'content-type': [
+                'application/json; charset=utf-8',
+            ],
+            'content-length': [
+                '256',
+            ],
+            connection: [
+                'close',
+            ],
+            'strict-transport-security': [
+                'max-age=31536000 ; includeSubDomains',
+            ],
+            'access-control-allow-origin': [
+                '*',
+            ],
+            'access-control-allow-headers': [
+                'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Invite-Token, X-DailySessionId, X-DailyJoinToken, X-DailyAboutClient, Traceparent, Tracestate, Request-Id',
+            ],
+            'access-control-allow-methods': [
+                'OPTIONS,HEAD,GET,POST,PUT,PATCH,DELETE',
+            ],
+            etag: [
+                'W/"100-305Qa/mMV0vcLg6jlTKGGiUzCH0"',
+            ],
+        },
+        body: {
+            id: 'bc716d53-867b-422a-8b93-1fac27930aaa',
+            name: 'j71X9gkEnVsCyJDQHknY',
+            api_created: true,
+            privacy: 'public',
+            url: 'https://diamante.daily.co/j71X9gkEnVsCyJDQHknY',
+            created_at: '2026-01-29T00:43:48.000Z',
+            config: {
+                exp: 1770093000,
+                enable_chat: false,
+            },
+        },
+    },
+}

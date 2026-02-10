@@ -3,7 +3,7 @@ import { UnhandledError } from '@assessmentis/ontology'
 
 type SyncContext = DateTime.CurrentTimeZone
 
-export const runEffectSync = <A, E>(
+export const runEffectSyncFlat = <A, E>(
   effect: Effect.Effect<A, E, SyncContext>
 ): A | E => {
   return Effect.runSyncExit(effect.pipe(DateTime.withCurrentZoneLocal)).pipe(
@@ -18,3 +18,6 @@ export const runEffectSync = <A, E>(
     })
   )
 }
+export const runEffectSync = <A, E>(
+  effect: Effect.Effect<A, E, SyncContext>
+): A => Effect.runSync(effect.pipe(DateTime.withCurrentZoneLocal))

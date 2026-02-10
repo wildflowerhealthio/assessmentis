@@ -110,6 +110,7 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
       GaxiosResponseWithHTTP2<any>
     >({
       isNotFound(resp) {
+        // 404 not found, 410 gone
         return resp.status === 404 || resp.status == 410
       },
       isUnauthenticated(resp) {

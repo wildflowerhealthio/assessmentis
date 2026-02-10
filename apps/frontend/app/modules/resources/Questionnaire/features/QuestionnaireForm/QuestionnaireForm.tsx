@@ -40,7 +40,7 @@ const QuestionnaireForm = ({
         }).pipe(
           Effect.provideServiceEffect(
             QuestionnaireResponseRepository,
-            clinicalDataRepositoryService.QuestionnaireResponse
+            clinicalDataRepositoryService.effect.QuestionnaireResponse
           )
         )
       )

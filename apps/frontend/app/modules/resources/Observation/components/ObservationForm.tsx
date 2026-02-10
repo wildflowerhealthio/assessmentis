@@ -3,8 +3,8 @@ import {
   ResourceForm,
   DateTimeField,
   TextField,
-  SelectField,
 } from 'app/modules/common/components/ResourceForm'
+import { ValueTypePicker } from './ValueTypePicker'
 import { PatientPicker } from 'app/modules/resources/Patient/components/PatientPicker'
 import { EncounterPicker } from 'app/modules/resources/Encounter/components/EncounterPicker'
 import { CommonFieldProps } from 'app/modules/common/components/ResourceForm/ResourceForm'
@@ -12,7 +12,7 @@ import {
   ObservationFormSchema,
   type ObservationFormData,
 } from '../schemas/ObservationFormSchema'
-import { promiseFieldsFromPromise } from '@assessmentis/util'
+
 interface ObservationFormProps {
   onSubmit: (data: ObservationFormData) => void | Promise<void>
   submitLabel: string
@@ -58,17 +58,11 @@ export function ObservationForm({
           placeholder: 'e.g., Blood Pressure, Heart Rate, Temperature',
           required: true,
         }),
-        valueType: applyPartialProps(SelectField, {
+        valueType: applyPartialProps(ValueTypePicker, {
           name: 'valueType',
           label: 'Value Type',
           required: true,
-          options: [
-            { value: 'valueString', label: 'Text (String)' },
-            { value: 'valueDecimal', label: 'Decimal Number' },
-            { value: 'valueQuantity', label: 'Quantity (with Unit)' },
-            { value: 'valueCodeableConcept', label: 'Coded Concept' },
-          ],
-        } as const),
+        }),
         valueString: applyPartialProps(TextField, {
           name: 'valueString',
           label: 'Value (Text)',
@@ -145,7 +139,7 @@ export function ObservationForm({
       ]}
       onSubmit={onSubmit}
       submitLabel={submitLabel}
-      initialValues={promiseFieldsFromPromise(initialValues)}
+      initialValues={initialValues}
     />
   )
 }

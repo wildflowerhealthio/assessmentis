@@ -9,7 +9,7 @@ import { CurrentUserIdLayerLive } from '../layers/CurrentUserIdLayerLive'
 import { handleError } from '../util/handleError'
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
 import { AuthRepository } from '@assessmentis/firebase-server-infrastructure'
-import { makeServerRuntime } from '../util/BaseLayer'
+import { makeRequestRuntime } from '../util/BaseLayer'
 
 /**
  * Refresh Google OAuth access token for a verified user
@@ -63,7 +63,7 @@ export const refreshGoogleOAuthToken = onRequest(
   defaultHttpOptions,
   async (request: Request, response: Response) => {
     info('Received request to refresh Google OAuth token')
-    const runtime = makeServerRuntime(
+    const runtime = makeRequestRuntime(
       Layer.merge(AuthRepository.Default, CurrentUserIdLayerLive),
       { request }
     )

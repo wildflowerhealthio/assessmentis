@@ -1,9 +1,9 @@
-import { Effect, Schema } from 'effect'
+import { Effect, Schema, Stream, Option } from 'effect'
 import { useMemo } from 'react'
 import { RepositoryFilters, Schemas } from '@assessmentis/clinical-domain'
 
 import { useClinicalDataCollectionPromise } from '../hooks/useClinicalDataCollection'
-import { useEffectTs } from '@assessmentis/react-util'
+import { useEitherStream } from '@assessmentis/react-util'
 import { usePlatformContext } from '../../../layers/PlatformContext'
 import {
   AuthError,
@@ -12,6 +12,7 @@ import {
   UnhandledError,
 } from '@assessmentis/ontology'
 import { NoSelectedOrgError } from '@assessmentis/platform-domain'
+import { StreamEither } from '@assessmentis/util'
 
 /**
  * Creates a resource collection hook with standardized behavior
@@ -34,19 +35,26 @@ export function createResourceCollectionHook<
   return (filters?: RepositoryFilters<TResource>) => {
     const { clinicalDataRepositoryService } = usePlatformContext()
 
-    const repoEffect = useMemo(() => {
-      return clinicalDataRepositoryService.repositoryEffect<TResource>(
-        config.resourceType
-      )
+    const repoStream = useMemo(() => {
+      return clinicalDataRepositoryService.repositoryStream(config.resourceType)
     }, [clinicalDataRepositoryService])
 
-    const resourcesEffect = useMemo(() => {
-      return Effect.flatMap(repoEffect, (repository) =>
+    const repoEffect = useMemo(
+      () =>
+        Stream.runHead(repoStream).pipe(
+          Effect.flatMap(Option.getOrThrow),
+          Effect.scoped
+        ),
+      [repoStream]
+    )
+
+    const resourcesStream = useMemo(() => {
+      return StreamEither.mapEffect(repoStream, (repository) =>
         repository.getMany(filters)
       )
-    }, [repoEffect, filters])
+    }, [repoStream, filters])
 
-    const resourcesPromise = useEffectTs(resourcesEffect)
+    const resourcesPromise = useEitherStream(resourcesStream)
 
     return useClinicalDataCollectionPromise<
       TResource,

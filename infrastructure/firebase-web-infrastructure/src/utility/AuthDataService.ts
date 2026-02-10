@@ -28,7 +28,7 @@ const AuthDataStream = Effect.gen(function* () {
               authToken: await user.getIdToken(),
             })),
           onNone: (): Effect.Effect<AuthData, AuthError> =>
-            Effect.fail(AuthError.Unauthenticated()),
+            Effect.fail(AuthError.Unauthenticated),
         }),
         Effect.either,
         onData

@@ -1,0 +1,53 @@
+{
+    meta: {
+        createdAt: '2026-01-29T00:35:07.295Z',
+        host: 'https://api.daily.co',
+        resHumanReadable: true,
+    },
+    req: {
+        url: '/v1/recordings/51703fe9-7ef2-4222-96f7-6ffca77c353b/access-link',
+        method: 'GET',
+        headers: {},
+        body: '',
+    },
+    res: {
+        status: 200,
+        headers: {
+            date: [
+                'Thu, 29 Jan 2026 00:35:07 GMT',
+            ],
+            'content-type': [
+                'application/json; charset=utf-8',
+            ],
+            'content-length': [
+                '492',
+            ],
+            connection: [
+                'close',
+            ],
+            'strict-transport-security': [
+                'max-age=31536000 ; includeSubDomains',
+            ],
+            'access-control-allow-origin': [
+                '*',
+            ],
+            'access-control-allow-headers': [
+                'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Invite-Token, X-DailySessionId, X-DailyJoinToken, X-DailyAboutClient, Traceparent, Tracestate, Request-Id',
+            ],
+            'access-control-allow-methods': [
+                'OPTIONS,HEAD,GET,POST,PUT,PATCH,DELETE',
+            ],
+            etag: [
+                'W/"1ec-55M6no1QpeFkx67EABU+YKSSR4k"',
+            ],
+        },
+        body: {
+            download_link: 'https://daily-meeting-recordings.s3.us-west-2.amazonaws.com/diamante/n8zIE2Jc19YU1q54LQzz/1765683154971?AWSAccessKeyId=AKIAUH5HEOJG7QWV44X2&Expires=1769650507&Signature=FJp83L3hr%2F9UDjvKzjDwWeJAJl8%3D&response-content-disposition=attachment%3B%20filename%3D%22diamante%2Fn8zIE2Jc19YU1q54LQzz%2F1765683154971.mp4%22',
+            expires: 1769650507,
+            s3_bucket: 'daily-meeting-recordings',
+            s3_region: 'us-west-2',
+            s3_key: 'diamante/n8zIE2Jc19YU1q54LQzz/1765683154971',
+            data_outputs: {},
+        },
+    },
+}

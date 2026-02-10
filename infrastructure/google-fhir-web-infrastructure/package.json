@@ -4,22 +4,36 @@
   "description": "Infrastructure for Google's FHIR store",
   "author": "Ruth Marks",
   "license": "UNLICENSED",
+  "type": "module",
   "prettier": "@assessmentis/prettier-config",
   "scripts": {
     "lint": "eslint \"./src/**/*\"",
     "lint:fix": "eslint --fix \"./src/**/*\"",
     "typecheck": "tsc --noEmit",
-    "test": "echo \"No tests in this package\""
+    "test:integration": "VITE_GCLOUD_TOKEN=$(gcloud auth print-access-token) vitest --project google-fhir-web-infrastructure:integration"
   },
   "exports": {
     ".": "./src/index.ts"
   },
   "devDependencies": {
     "@assessmentis/prettier-config": "*",
+    "@assessmentis/testing-utils": "*",
+    "@effect/vitest": "^0.27.0",
+    "@testing-library/dom": "^10.4.1",
     "@types/fhir": "^0.0.41",
-    "typescript": "^5.9.3",
+    "@types/gapi": "^0.0.47",
     "@types/gapi.client.healthcare-v1": "^0.0.4",
-    "@types/gapi": "^0.0.47"
+    "@types/node": "^22.10.5",
+    "@vitest/browser-playwright": "^4.0.18",
+    "@vitest/browser-preview": "^4.0.18",
+    "dotenv": "^16.4.7",
+    "jsdom": "^27.4.0",
+    "msw": "^2.7.0",
+    "playwright": "^1.58.0",
+    "typescript": "^5.9.3",
+    "undici-types": "^7.19.2",
+    "vite-plugin-node-polyfills": "^0.24.0",
+    "vitest": "^4.0.18"
   },
   "dependencies": {
     "@assessmentis/clinical-domain": "*",
@@ -29,6 +43,7 @@
     "@assessmentis/ontology": "*",
     "@assessmentis/platform-domain": "*",
     "@assessmentis/util": "*",
+    "@mswjs/interceptors": "^0.40.0",
     "effect": "^3.19.8",
     "temporal-polyfill": "^0.3.0"
   }

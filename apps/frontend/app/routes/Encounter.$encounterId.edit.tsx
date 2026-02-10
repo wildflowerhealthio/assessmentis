@@ -1,6 +1,7 @@
-import { Effect, Option, Schema, DateTime } from 'effect'
+import { Effect, Either, Option, Schema, DateTime, Stream } from 'effect'
+import { StreamEither } from '@assessmentis/util'
 import { useNavigate } from 'react-router'
-import { runEffectSync } from 'app/runEffectSync'
+import { runEffectSyncFlat } from 'app/runEffectSync'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { EncounterForm } from 'app/modules/resources/Encounter/components/EncounterForm'
 import { updateEncounter } from 'app/modules/resources/Encounter/actions/updateEncounter'
@@ -9,7 +10,7 @@ import {
   EncounterId,
   EncounterRepository,
 } from '@assessmentis/clinical-domain/administration'
-import { NotFoundError } from '@assessmentis/ontology'
+import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/Encounter.$encounterId.edit'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { getEncounterDisplayName } from '../modules/resources/Encounter/utils/encounterDisplay'
@@ -18,7 +19,7 @@ import {
   extractReferenceIds,
 } from 'app/modules/common/utils/fhirDisplay'
 import { useMemo } from 'react'
-import { useEffectTs } from '@assessmentis/react-util'
+import { useEitherStream } from '@assessmentis/react-util'
 import { usePlatformContext } from '../layers/PlatformContext'
 
 const tryDecodeEncounterId = Schema.decodeOption(EncounterId)
@@ -26,34 +27,22 @@ const tryDecodeEncounterId = Schema.decodeOption(EncounterId)
 export default function EditEncounterPage({ params }: Route.ComponentProps) {
   const { clinicalDataRepositoryService } = usePlatformContext()
 
-  const encounterEffect = useMemo(() => {
+  const encounterStream = useMemo(() => {
     const encounterIdMaybe = tryDecodeEncounterId(params.encounterId)
 
-    return Effect.gen(function* () {
-      const repository = yield* EncounterRepository
+    return Option.match(encounterIdMaybe, {
+      onSome: (encounterId) =>
+        clinicalDataRepositoryService.stream.Encounter.pipe(
+          StreamEither.mapEffect((repo) => repo.get(encounterId))
+        ),
+      onNone: () =>
+        Stream.succeed(
+          Either.left(new UnhandledError({ message: 'Encounter ID not found' }))
+        ),
+    })
+  }, [clinicalDataRepositoryService, params.encounterId])
 
-      const encounterId = yield* encounterIdMaybe.pipe(
-        Option.map(Effect.succeed),
-        Option.getOrElse(() =>
-          Effect.fail(
-            new NotFoundError({
-              resourceType: 'Encounter',
-              params: { id: params.encounterId },
-            })
-          )
-        )
-      )
-
-      return yield* repository.get(encounterId)
-    }).pipe(
-      Effect.provideServiceEffect(
-        EncounterRepository,
-        clinicalDataRepositoryService.Encounter
-      )
-    )
-  }, [clinicalDataRepositoryService.Encounter, params.encounterId])
-
-  const encounterPromise = useEffectTs(encounterEffect)
+  const encounterPromise = useEitherStream(encounterStream)
 
   const navigate = useNavigate()
 
@@ -61,7 +50,7 @@ export default function EditEncounterPage({ params }: Route.ComponentProps) {
     () => [
       { label: 'Encounters', href: '/Encounter' },
       encounterPromise.then((e) => ({
-        label: runEffectSync(getEncounterDisplayName(e)),
+        label: runEffectSyncFlat(getEncounterDisplayName(e)),
         href: `/Encounter/${params.encounterId}`,
       })),
       { label: 'Edit' },
@@ -112,7 +101,7 @@ export default function EditEncounterPage({ params }: Route.ComponentProps) {
       updateEncounter(encounter.id, encounter, data).pipe(
         Effect.provideServiceEffect(
           EncounterRepository,
-          clinicalDataRepositoryService.Encounter
+          clinicalDataRepositoryService.effect.Encounter
         )
       )
     )

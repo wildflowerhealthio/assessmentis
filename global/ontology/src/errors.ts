@@ -103,9 +103,9 @@ export class AuthError extends Data.TaggedError('AuthError')<{
   message: string
   cause?: unknown
 }> {
-  static Unauthenticated() {
-    return new AuthError({ message: 'User is not authenticated' })
-  }
+  static Unauthenticated = new AuthError({
+    message: 'User is not authenticated',
+  })
 
   asUnhandledError() {
     return new UnhandledError({

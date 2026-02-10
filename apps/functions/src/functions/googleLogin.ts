@@ -13,7 +13,7 @@ import { handleError } from '../util/handleError'
 import { UnhandledError } from '@assessmentis/ontology'
 import { AuthRepository } from '@assessmentis/firebase-server-infrastructure'
 import { LoadedUserLayerLive } from '../layers/LoadedUserLayerLive'
-import { makeServerRuntime } from '../util/BaseLayer'
+import { makeRequestRuntime } from '../util/BaseLayer'
 import { CurrentUserIdLayerLive } from '../layers/CurrentUserIdLayerLive'
 
 /**
@@ -42,7 +42,7 @@ export const googleLogin = onRequest(
   defaultHttpOptions,
   async (request: Request, response: Response) => {
     info('Received request for Google OAuth login')
-    const runtime = makeServerRuntime(
+    const runtime = makeRequestRuntime(
       AuthRepository.Default.pipe(
         Layer.provide(LoadedUserLayerLive),
         Layer.provideMerge(CurrentUserIdLayerLive)

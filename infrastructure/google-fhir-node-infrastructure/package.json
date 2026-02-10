@@ -13,9 +13,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"./src/**/*\"",
     "lint:fix": "eslint --fix \"./src/**/*\"",
-    "test": "vitest run",
-    "test:live": "vitest run --config vitest.live.config.ts",
-    "test:live:record": "RECORD_FIXTURES=true vitest run --config vitest.live.config.ts"
+    "test:integration": "vitest --project google-fhir-node-infrastructure:integration",
+    "test": "vitest --project google-fhir-node-infrastructure:unit"
   },
   "dependencies": {
     "@assessmentis/clinical-domain": "*",
@@ -32,10 +31,12 @@
   },
   "devDependencies": {
     "@assessmentis/prettier-config": "*",
+    "@effect/vitest": "^0.27.0",
     "@types/node": "^22.10.5",
     "dotenv": "^16.4.7",
     "msw": "^2.7.0",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.15"
+    "vitest": "^4.0.15",
+    "talkback": "^4.2.0"
   }
 }

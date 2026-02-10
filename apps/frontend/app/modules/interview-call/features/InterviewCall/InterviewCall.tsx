@@ -10,7 +10,7 @@ import {
   Call,
   HairCheck,
   Tray,
-} from '@assessmentis/daily-co-infrastructure/components'
+} from '@assessmentis/daily-co-components/components'
 import { FullEncounter } from 'app/modules/interview-call/actions/getFullEncounter'
 import QuestionnaireForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/QuestionnaireForm'
 import { useNavigate } from 'react-router'
@@ -164,12 +164,14 @@ const useDailyCall = (roomUrl: string | undefined) => {
           state: 'started' as const,
           action: () => {
             callObject?.stopRecording()
+            callObject?.stopTranscription()
             setRecordingState('stopped')
           },
         },
         stopped: {
           state: 'stopped' as const,
           action: () => {
+            callObject?.startTranscription({})
             callObject?.startRecording({
               width: 1280,
               height: 720,

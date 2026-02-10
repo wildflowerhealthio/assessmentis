@@ -11,7 +11,7 @@ import {
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { EncounterRepository } from '@assessmentis/clinical-domain/administration'
 import { usePlatformContext } from '../layers/PlatformContext'
-import { ExternalVideoCallClient } from '@assessmentis/video-call-domain'
+import { VideoCallClient } from '@assessmentis/video-call-domain'
 
 const decodeQuestionnaireId = Schema.decodeUnknownSync(QuestionnaireId)
 
@@ -27,7 +27,7 @@ const defaultValues: Promise<typeof EncounterFormSchema.Encoded> =
   })
 
 export default function CreateEncounterPage() {
-  const { clinicalDataRepositoryService, externalVideoCallClientService } =
+  const { clinicalDataRepositoryService, VideoCallClientService } =
     usePlatformContext()
   const navigate = useNavigate()
 
@@ -59,15 +59,15 @@ export default function CreateEncounterPage() {
       }).pipe(
         Effect.provideServiceEffect(
           QuestionnaireResponseRepository,
-          clinicalDataRepositoryService.QuestionnaireResponse
+          clinicalDataRepositoryService.effect.QuestionnaireResponse
         ),
         Effect.provideServiceEffect(
           EncounterRepository,
-          clinicalDataRepositoryService.Encounter
+          clinicalDataRepositoryService.effect.Encounter
         ),
         Effect.provideServiceEffect(
-          ExternalVideoCallClient,
-          externalVideoCallClientService.client
+          VideoCallClient,
+          VideoCallClientService.client
         )
       )
     )

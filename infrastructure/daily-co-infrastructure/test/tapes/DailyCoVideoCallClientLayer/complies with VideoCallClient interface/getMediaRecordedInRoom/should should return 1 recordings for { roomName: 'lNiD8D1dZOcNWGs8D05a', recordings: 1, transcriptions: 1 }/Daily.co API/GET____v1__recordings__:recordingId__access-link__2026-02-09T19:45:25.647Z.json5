@@ -1,0 +1,52 @@
+{
+    meta: {
+        createdAt: '2026-02-09T19:45:24.988Z',
+        host: 'https://api.daily.co',
+        resHumanReadable: true,
+    },
+    req: {
+        url: '/v1/recordings/030ff430-3c8f-46d4-87af-51158d4f5dd4/access-link',
+        method: 'GET',
+        headers: {},
+        body: '',
+    },
+    res: {
+        status: 200,
+        headers: {
+            date: [
+                'Mon, 09 Feb 2026 19:45:25 GMT',
+            ],
+            'content-type': [
+                'application/json; charset=utf-8',
+            ],
+            'content-length': [
+                '1548',
+            ],
+            connection: [
+                'close',
+            ],
+            'strict-transport-security': [
+                'max-age=31536000 ; includeSubDomains',
+            ],
+            'access-control-allow-origin': [
+                '*',
+            ],
+            'access-control-allow-headers': [
+                'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Invite-Token, X-DailySessionId, X-DailyJoinToken, X-DailyAboutClient, Traceparent, Tracestate, Request-Id',
+            ],
+            'access-control-allow-methods': [
+                'OPTIONS,HEAD,GET,POST,PUT,PATCH,DELETE',
+            ],
+            etag: [
+                'W/"60c-D93RZ1EcqHbhWxuKFwPMXr6InXc"',
+            ],
+        },
+        body: {
+            download_link: 'https://assessmentis-daily-recordings.s3.ca-central-1.amazonaws.com/diamante/lNiD8D1dZOcNWGs8D05a/1770665798071?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIA5XMWTWLSQHEWBWE7%2F20260209%2Fca-central-1%2Fs3%2Faws4_request&X-Amz-Date=20260209T194525Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEMz%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDGNhLWNlbnRyYWwtMSJHMEUCIDyluIWovYvGFP%2BB2QcsBAzEe9iWgwUfzH%2BOLr8b3Wv6AiEAv59hWviTNckHKyKGxPBau%2Fc6KGzAMzWjuEnJI0wQb9cqrAIIlf%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARAAGgw5NDM1OTgwNTYxNjUiDAk1dqnn7saiO%2B6t%2FCqAAsoiz1hnaTGu2cuaAOFNXwSS0K4GxwWF%2FViKNShahcT08Jw4D%2F19vGxxypFbCMyEkrkTFnq0Sq9muyafQP%2B5NFi2xJecSHwp09hyBkgH%2BXMuzuIUfdy7EJFdVJxdMjx7CLSb8CRuHGXrZh0WD%2FYk4YH4DLrShAlAh%2B%2FrDhLb7LP7H3xYhJItCepGLp%2FR5sjTyh5OUCpDrmWeWNI3WaUSJFgSlr1CpykG0y0fQFckfg8emiRdwjsvwb1uVTVEMh11ph%2BUdcAvd%2BTRE2w9oRfI1HQWhO%2FGNuHvk%2FIvwVjdFXOeu3VV54Z7Ha7vMvkVL2YRr4ToB%2FhL1Tj9A93TNLa%2BGeMw1fKozAY6nQF54DU2XNJ8HiVIKwmkc6ugSML87IuahMEiZJY0wo%2Ba%2BdHsOZm5ggh7zcPsjGVaRQpJbaBcE8sCgIVvj2OCfcl1%2Bl6i7GCXTSF%2BfHY2Eion6Lif3zybsm46CydokFb6WvPzGjnNYwV7KUnLPJxrqKFl5HcEfBI5Xxl0DligI9H2UDt02zgbbC19CY4kZncmReBx%2F%2F%2FhS2YkiDC7O3x9&X-Amz-Signature=e8cc943fecfb942d7f9f12be9ee845432b2d409638ea8d7632059a2c1d17ad93&X-Amz-SignedHeaders=host&response-content-disposition=attachment%3B%20filename%3D%22diamante%2FlNiD8D1dZOcNWGs8D05a%2F1770665798071.mp4%22',
+            expires: 1770669925,
+            s3_bucket: 'assessmentis-daily-recordings',
+            s3_region: 'ca-central-1',
+            s3_key: 'diamante/lNiD8D1dZOcNWGs8D05a/1770665798071',
+        },
+    },
+}
