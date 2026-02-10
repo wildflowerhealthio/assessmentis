@@ -1,25 +1,7 @@
 import { FallbackProps } from 'react-error-boundary'
 import { ErrorHandlerBody } from '../modules/common/components/ErrorHandlerBody'
-import NavHeaderContainer, {
-  TextHeader,
-} from '../modules/global/components/NavHeader/NavHeader'
-import { PlatformContext, usePlatformContext } from './PlatformContext'
-import { useStream } from '@assessmentis/react-util'
-import { Effect, Either, Scope, Stream } from 'effect'
-import { useEffect, useMemo, useState } from 'react'
-import {
-  NoSelectedOrgError,
-  Org,
-  OrgSlug,
-  User,
-  UserId,
-} from '@assessmentis/platform-domain'
-import {
-  AuthError,
-  BadDataError,
-  NotFoundError,
-  UnhandledError,
-} from '@assessmentis/ontology'
+import { TextHeader } from '../modules/global/components/NavHeader/NavHeader'
+import { Stream } from 'effect'
 
 export const PlatformlessErrorFallback = ({
   error,

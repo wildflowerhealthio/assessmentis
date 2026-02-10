@@ -6,7 +6,7 @@ import { auth } from 'app/FirebaseWebLayer'
 export const LoginButton = (props: {
   className: string
   style?: React.CSSProperties
-  onLogin: () => void
+  onLogin?: () => void
 }) => {
   const [[label, action, disabled], setLabelAndAction] = useState<
     [string, undefined | (() => void), boolean]
@@ -27,7 +27,7 @@ export const LoginButton = (props: {
           'Login',
           async () => {
             await signIn()
-            props.onLogin()
+            props.onLogin?.()
           },
           false,
         ])

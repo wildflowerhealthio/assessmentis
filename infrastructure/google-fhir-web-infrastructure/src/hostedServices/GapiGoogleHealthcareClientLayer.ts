@@ -97,7 +97,7 @@ export const startGapiGoogleHealthcareClient: Effect.Effect<
       if (token) {
         return Effect.succeed(void 0)
       }
-      return Effect.fail(AuthError.Unauthenticated())
+      return Effect.fail(AuthError.Unauthenticated)
     }),
     Schedule.addDelay(Schedule.recurs(10), () => '100 millis')
   )

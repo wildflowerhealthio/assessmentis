@@ -129,9 +129,9 @@ export class AuthError extends Schema.TaggedClass<AuthError>()('AuthError', {
   message: Schema.String,
   cause: Schema.optional(Schema.Unknown),
 }) {
-  static Unauthenticated() {
-    return new AuthError({ message: 'User is not authenticated' })
-  }
+  static Unauthenticated = new AuthError({
+    message: 'User is not authenticated',
+  })
 }
 
 // Authorization error - user lacks permissions (but IS authenticated)
@@ -142,6 +142,7 @@ export class AuthzError extends Schema.TaggedClass<AuthzError>()('AuthzError', {
 ```
 
 **When to use each:**
+
 - `AuthError` → User session invalid/expired, redirect to login
 - `AuthzError` → User authenticated but lacks role/permission, show "Access Denied"
 
@@ -166,8 +167,12 @@ export class CurrentOrg extends Context.Tag('CurrentOrg')<
 export class DocumentStore extends Context.Tag('DocumentStore')<
   DocumentStore,
   {
-    get: (...path: string[]) => Effect.Effect<DocumentData, NotFoundError | UnhandledError>
-    subscribeTo: (...path: string[]) => Stream.Stream<Either<DocumentData, NotFoundError>>
+    get: (
+      ...path: string[]
+    ) => Effect.Effect<DocumentData, NotFoundError | UnhandledError>
+    subscribeTo: (
+      ...path: string[]
+    ) => Stream.Stream<Either<DocumentData, NotFoundError>>
   }
 >() {}
 ```
@@ -178,7 +183,11 @@ Pre-load and validate domain objects for downstream services:
 
 ```typescript
 import { Context, Layer, Effect } from 'effect'
-import { LoadedOrg, LoadedOrgLayer, LiteralLoadedOrgLayer } from '@assessmentis/platform-domain'
+import {
+  LoadedOrg,
+  LoadedOrgLayer,
+  LiteralLoadedOrgLayer,
+} from '@assessmentis/platform-domain'
 
 // LoadedOrg is a Context.Tag providing a validated Org object
 export class LoadedOrg extends Context.Tag('LoadedOrg')<LoadedOrg, Org>() {}
@@ -186,14 +195,14 @@ export class LoadedOrg extends Context.Tag('LoadedOrg')<LoadedOrg, Org>() {}
 // Two ways to create the layer:
 
 // 1. From DocumentStore + CurrentOrg (production)
-const prodLayer = LoadedOrgLayer  // requires DocumentStore, CurrentOrg
+const prodLayer = LoadedOrgLayer // requires DocumentStore, CurrentOrg
 
 // 2. From literal data (testing)
 const testLayer = LiteralLoadedOrgLayer(orgSlug, mockOrgData)
 
 // Use in downstream services
 const myService = Effect.gen(function* () {
-  const org = yield* LoadedOrg  // Already validated Org object
+  const org = yield* LoadedOrg // Already validated Org object
   return org.name
 })
 ```
@@ -203,7 +212,10 @@ const myService = Effect.gen(function* () {
 Use `OrgUserService` for permission checks:
 
 ```typescript
-import { OrgUserService, OrgUserServiceLayer } from '@assessmentis/platform-domain'
+import {
+  OrgUserService,
+  OrgUserServiceLayer,
+} from '@assessmentis/platform-domain'
 
 const protectedOperation = Effect.gen(function* () {
   const orgUserService = yield* OrgUserService
