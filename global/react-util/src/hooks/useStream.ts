@@ -51,7 +51,7 @@ export const useStream = <A, E>(
     return () => {
       Effect.runPromise(Fiber.interrupt(fiber))
     }
-  }, [])
+  }, [reject, reset, resolve, stream])
 
   return promise
 }

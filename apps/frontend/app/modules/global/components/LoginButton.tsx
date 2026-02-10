@@ -33,7 +33,7 @@ export const LoginButton = (props: {
         ])
       }
     })
-  }, [])
+  }, [props])
 
   return (
     <button
