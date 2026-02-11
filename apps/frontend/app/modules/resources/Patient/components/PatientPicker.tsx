@@ -1,4 +1,4 @@
-import { Patient } from '@assessmentis/clinical-domain/administration'
+import type { Patient } from '@assessmentis/clinical-domain/administration'
 import {
   formatGender,
   formatHumanName,

@@ -1,5 +1,5 @@
 import { useMemo, useCallback } from 'react'
-import { PickerItem } from '../types/PickerTypes'
+import type { PickerItem } from '../types/PickerTypes'
 
 export interface SinglePickerProps {
   multiple: false

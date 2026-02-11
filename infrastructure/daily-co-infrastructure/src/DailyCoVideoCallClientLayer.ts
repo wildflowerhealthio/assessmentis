@@ -1,15 +1,17 @@
-import { HttpBody, HttpClientError } from '@effect/platform'
+import type { HttpClientError } from '@effect/platform'
+import { HttpBody } from '@effect/platform'
 import { HttpClient } from '@effect/platform/HttpClient'
 import { DateTime, Effect, Layer, pipe, Schema } from 'effect'
+import type { ExternalVideoCallRoom } from '@assessmentis/video-call-domain'
 import {
   VideoCallRoomId,
   VideoCallRoomName,
-  ExternalVideoCallRoom,
+  MeetingTokenString,
 } from '@assessmentis/video-call-domain'
 import { Media } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { Code } from '@assessmentis/clinical-domain/data-types'
+import type { AuthError } from '@assessmentis/ontology'
 import {
-  AuthError,
   UnhandledError,
   ExternalAssertionError,
   NotFoundError,
@@ -20,13 +22,15 @@ import { ApiDailyCoTranscriptSchema } from './models/ApiDailyCoTranscriptSchema'
 import { ApiDailyCoTranscriptLinkSchema } from './models/ApiDailyCoTranscriptLinkSchema'
 import { ApiDailyCoRecordingLinkSchema } from './models/ApiDailyCoRecordingLinkSchema'
 import { ApiDailyCoRoomSchema } from './models/ApiDailyCoRoomSchema'
-import { HttpClientResponse } from '@effect/platform/HttpClientResponse'
+import { ApiDailyCoMeetingTokenSchema } from './models/ApiDailyCoMeetingTokenSchema'
+import { DailyCoMeetingTokenPayloadSchema } from './models/DailyCoMeetingTokenPayloadSchema'
+import type { HttpClientResponse } from '@effect/platform/HttpClientResponse'
 import { isHttpClientError } from '@effect/platform/HttpClientError'
-import {
-  VideoCallClient,
+import type {
   MediaWithRoom,
   RoomCreationParams,
 } from '../../../domain/video-call-domain/src/VideoCallClient'
+import { VideoCallClient } from '../../../domain/video-call-domain/src/VideoCallClient'
 
 const getRequestFromHeaders =
   (
@@ -147,11 +151,23 @@ const assertStatus =
   <E, R>(resp: Effect.Effect<HttpClientResponse, E, R>) =>
     Effect.flatMap(resp, (resp) => {
       if (allowedStatuses.includes(resp.status)) return Effect.succeed(resp)
-      return Effect.fail(
-        new UnhandledError({
-          message: `Unexpected HTTP status: ${resp.status}, expected one of: ${allowedStatuses.join(', ')}`,
-          cause: resp,
-        })
+      return Effect.flatMap(
+        resp.text.pipe(
+          Effect.mapError(
+            (cause) =>
+              new UnhandledError({
+                cause,
+                message: `Unexpected HTTP status: ${resp.status}, expected one of: ${allowedStatuses.join(', ')} AND an error reading body text`,
+              })
+          )
+        ),
+        (body) =>
+          Effect.fail(
+            new UnhandledError({
+              message: `Unexpected HTTP status: ${resp.status}, expected one of: ${allowedStatuses.join(', ')}`,
+              cause: { resp, body },
+            })
+          )
       )
     })
 
@@ -259,7 +275,7 @@ export const DailyCoVideoCallClientLayer: Layer.Layer<
         const urlParts = url.split('/')
         if (urlParts.length <= 1) return undefined
 
-        return VideoCallRoomName.make(urlParts[urlParts.length - 1])
+        return VideoCallRoomName.make(urlParts[urlParts.length - 1]!)
       }
 
     const getMediaRecordedInRoom: typeof VideoCallClient.Service.getMediaRecordedInRoom =
@@ -350,7 +366,7 @@ export const DailyCoVideoCallClientLayer: Layer.Layer<
             if (page.data.length < 100) {
               hasMore = false
             } else {
-              const lastRec = page.data[page.data.length - 1]
+              const lastRec = page.data[page.data.length - 1]!
               cursor = lastRec.id
             }
           }
@@ -417,7 +433,7 @@ export const DailyCoVideoCallClientLayer: Layer.Layer<
             if (page.data.length < 100) {
               hasMore = false
             } else {
-              const lastTranscript = page.data[page.data.length - 1]
+              const lastTranscript = page.data[page.data.length - 1]!
               cursor = lastTranscript.transcriptId
             }
           }
@@ -518,6 +534,75 @@ export const DailyCoVideoCallClientLayer: Layer.Layer<
         }))
       )
 
+    const createRoomToken: typeof VideoCallClient.Service.createRoomToken = (
+      options
+    ) =>
+      pipe(
+        headersEffect,
+        postRequestFromHeaders(
+          httpClient,
+          new URL(`${baseUrl}/meeting-tokens`),
+          {
+            properties: {
+              room_name: options.roomName,
+              is_owner: options.is_owner ?? false,
+            },
+          },
+          {}
+        ),
+        handleHttpClientError('HTTP Client Error while creating meeting token'),
+        assertStatus(200),
+        parseAs(ApiDailyCoMeetingTokenSchema),
+        Effect.map((response) => MeetingTokenString.make(response.token))
+      )
+
+    const parseMeetingToken: typeof VideoCallClient.Service.parseMeetingToken =
+      (token: MeetingTokenString) =>
+        Effect.gen(function* () {
+          const parts = token.split('.')
+          if (parts.length !== 3) {
+            return yield* new ExternalAssertionError({
+              expected: 'JWT with 3 dot-separated segments',
+              cause: token,
+            })
+          }
+          const [_header, payloadString, _signature] = parts as [
+            string,
+            string,
+            string,
+          ]
+
+          const payloadJson = yield* Effect.try({
+            try: () => {
+              const base64 = payloadString.replace(/-/g, '+').replace(/_/g, '/')
+              const json = atob(base64)
+              return JSON.parse(json) as unknown
+            },
+            catch: (cause) =>
+              new ExternalAssertionError({
+                expected: 'Valid base64-encoded JSON payload',
+                cause,
+              }),
+          })
+
+          const payload = yield* Schema.decodeUnknown(
+            DailyCoMeetingTokenPayloadSchema
+          )(payloadJson).pipe(
+            Effect.mapError(
+              (cause) =>
+                new ExternalAssertionError({
+                  expected: 'Meeting token payload matching schema',
+                  cause,
+                })
+            )
+          )
+
+          return {
+            roomName: VideoCallRoomName.make(payload.r),
+            isOwner: payload.o,
+          }
+        })
+
     return {
       createRoom,
       getMediaRecordedInRoom,
@@ -526,6 +611,8 @@ export const DailyCoVideoCallClientLayer: Layer.Layer<
       listAllTranscripts,
       getRoom,
       deleteRoom,
+      createRoomToken,
+      parseMeetingToken,
     }
   })
 )

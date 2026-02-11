@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { EncounterForm } from 'app/modules/resources/Encounter/components/EncounterForm'
 import { createEncounter } from 'app/modules/resources/Encounter/actions/createEncounter'
-import { EncounterFormSchema } from 'app/modules/resources/Encounter/schemas/EncounterFormSchema'
+import type { EncounterFormSchema } from 'app/modules/resources/Encounter/schemas/EncounterFormSchema'
 import { DateTime, Effect, Schema } from 'effect'
 import {
   QuestionnaireId,

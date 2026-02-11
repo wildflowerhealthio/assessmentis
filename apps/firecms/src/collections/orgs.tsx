@@ -11,6 +11,7 @@ import {
   useModeController,
 } from '@firecms/core'
 import { SchemaAST } from 'effect'
+import { IdentifierAnnotationId } from 'effect/SchemaAST'
 
 import { Org } from '@assessmentis/platform-domain'
 import { EditableJsonView } from './EditableJsonView'
@@ -176,6 +177,15 @@ const asFireCmsProperty = (name: string, s: SchemaAST.AST): PropertySets => {
   } else if (SchemaAST.isBooleanKeyword(s)) {
     return buildProperty({
       dataType: 'boolean',
+      name: name,
+    })
+  } else if (
+    SchemaAST.isTransformation(s) &&
+    (s.annotations[IdentifierAnnotationId] == 'DateTimeUtc' ||
+      s.annotations[IdentifierAnnotationId] == 'DateTime')
+  ) {
+    return buildProperty({
+      dataType: 'string',
       name: name,
     })
   }

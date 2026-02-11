@@ -1,8 +1,8 @@
 import { Effect, Layer, Schema } from 'effect'
 import { info, error as logError } from 'firebase-functions/logger'
+import type { VideoCallRoomName } from '@assessmentis/video-call-domain'
 import {
   VideoCallClient,
-  VideoCallRoomName,
   type MediaWithRoom,
 } from '@assessmentis/video-call-domain'
 import { FhirR4Client } from '@assessmentis/fhir-client'
@@ -13,12 +13,8 @@ import {
   Org,
   OrgSlug,
 } from '@assessmentis/platform-domain'
-import {
-  UnhandledError,
-  ExternalAssertionError,
-  AuthError,
-  NotFoundError,
-} from '@assessmentis/ontology'
+import type { ExternalAssertionError, AuthError } from '@assessmentis/ontology'
+import { UnhandledError, NotFoundError } from '@assessmentis/ontology'
 import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
 import { Media } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { VideoCallClientLayerFromOrg } from '../layers/VideoCallClientService'

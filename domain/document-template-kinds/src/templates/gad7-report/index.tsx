@@ -1,15 +1,13 @@
-import { ComponentFamily } from '../../types'
-import {
-  Observation,
-  ObservationRepository,
-} from '@assessmentis/clinical-domain/diagnostic-medicine'
+import type { ComponentFamily } from '../../types'
+import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import { ObservationRepository } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { Effect } from 'effect'
-import {
+import type {
   Reference,
-  referenceAsString,
   WithId,
 } from '@assessmentis/clinical-domain/data-types'
-import { JSX } from 'react'
+import { referenceAsString } from '@assessmentis/clinical-domain/data-types'
+import type { JSX } from 'react'
 import { gad7 } from '@assessmentis/questionnaire-entities'
 
 export const gad7Report = (

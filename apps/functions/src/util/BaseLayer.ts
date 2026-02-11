@@ -9,9 +9,12 @@ import {
   FirebaseAdmin,
   FirebaseAdminDocumentStoreLayer,
 } from '@assessmentis/firebase-server-infrastructure'
-import { CurrentUserId, DocumentStore } from '@assessmentis/platform-domain'
+import type {
+  CurrentUserId,
+  DocumentStore,
+} from '@assessmentis/platform-domain'
 import { CurrentUserIdLayerLive } from '../layers/CurrentUserIdLayerLive'
-import { AuthError } from '@assessmentis/ontology'
+import type { AuthError } from '@assessmentis/ontology'
 
 const NodeSdkLive = NodeSdk.layer(() => ({
   resource: { serviceName: 'assessmentis-functions' },

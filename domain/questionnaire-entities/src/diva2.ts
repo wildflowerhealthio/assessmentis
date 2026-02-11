@@ -1,12 +1,14 @@
+import type {
+  QuestionnaireItem,
+  Questionnaire,
+} from '@assessmentis/clinical-domain/content-management'
 import {
   QuestionnaireItemType,
   QuestionnaireItemUIControlCode,
   QuestionnaireItemUiDisplayLevel,
-  QuestionnaireItem,
   QuestionnaireItemLink,
   questionnaireItemUiControlCodeExtension,
   questionnaireItemUiDisplayLevelExtension,
-  Questionnaire,
 } from '@assessmentis/clinical-domain/content-management'
 
 const sluggify = (s: string): QuestionnaireItemLink =>

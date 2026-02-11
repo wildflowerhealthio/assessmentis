@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import classes from './FormPage.module.css'
 
 interface FormPageProps {

@@ -1,14 +1,14 @@
-import { Context, Effect } from 'effect'
-import {
+import type { Context, Effect } from 'effect'
+import type {
   AuthError,
   AuthzError,
   ExternalAssertionError,
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
-import { WithId } from './data-types/base/Element'
-import { Reference } from './data-types/complex/IdentifierAndReference'
-import Schemas from './Schemas'
+import type { WithId } from './data-types/base/Element'
+import type { Reference } from './data-types/complex/IdentifierAndReference'
+import type Schemas from './Schemas'
 
 export type ClinicalDomainRepositoryTagClass<
   Key extends keyof typeof Schemas,

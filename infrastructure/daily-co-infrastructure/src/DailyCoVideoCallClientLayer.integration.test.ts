@@ -33,8 +33,9 @@ describe('DailyCoVideoCallClientLayer', () => {
     roomDomain: 'daily.co',
     testRooms: [
       {
-        roomName: VideoCallRoomName.make('n8zIE2Jc19YU1q54LQzz'),
+        roomName: VideoCallRoomName.make('IhjpnXa6CHtPtoo41elH'),
         recordings: 1,
+        transcriptions: 1,
       },
     ],
   })

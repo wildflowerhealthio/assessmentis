@@ -1,8 +1,6 @@
 import { useState } from 'react'
-import {
-  BreadcrumbContext,
-  BreadcrumbSegment,
-} from '../../contexts/BreadcrumbContext'
+import type { BreadcrumbSegment } from '../../contexts/BreadcrumbContext'
+import { BreadcrumbContext } from '../../contexts/BreadcrumbContext'
 
 // Deep equality check for breadcrumb segments
 const areBreadcrumbsEqual = (

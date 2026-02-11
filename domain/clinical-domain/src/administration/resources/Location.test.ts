@@ -2,8 +2,8 @@ import { expect, test, describe } from 'vitest'
 import { Location } from './Location'
 import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
-import { DeepReadonly } from '@assessmentis/util'
-import { Location as FhirLocation } from 'fhir/r4'
+import type { DeepReadonly } from '@assessmentis/util'
+import type { Location as FhirLocation } from 'fhir/r4'
 
 // Compile-time check that Encoded schema matches FHIR R4
 const _locationEncoded: DeepReadonly<FhirLocation> = Location.Encoded

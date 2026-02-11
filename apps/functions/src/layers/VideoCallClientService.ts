@@ -1,6 +1,6 @@
 import { DailyCoVideoCallClientLayer } from '@assessmentis/daily-co-infrastructure'
 import { UnhandledError } from '@assessmentis/ontology'
-import { VideoCallClient } from '@assessmentis/video-call-domain'
+import type { VideoCallClient } from '@assessmentis/video-call-domain'
 import { Effect, Layer, Match } from 'effect'
 import { LoadedDailyCoSecret } from '@assessmentis/platform-domain'
 import { LoadedOrg } from '@assessmentis/platform-domain'

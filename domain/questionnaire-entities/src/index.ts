@@ -1,4 +1,4 @@
-import { Questionnaire } from '@assessmentis/clinical-domain/content-management'
+import type { Questionnaire } from '@assessmentis/clinical-domain/content-management'
 
 import * as gad7 from './gad7'
 import * as diva2 from './diva2'

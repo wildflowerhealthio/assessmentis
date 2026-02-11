@@ -7,7 +7,7 @@ import {
 import { ValueTypePicker } from './ValueTypePicker'
 import { PatientPicker } from 'app/modules/resources/Patient/components/PatientPicker'
 import { EncounterPicker } from 'app/modules/resources/Encounter/components/EncounterPicker'
-import { CommonFieldProps } from 'app/modules/common/components/ResourceForm/ResourceForm'
+import type { CommonFieldProps } from 'app/modules/common/components/ResourceForm/ResourceForm'
 import {
   ObservationFormSchema,
   type ObservationFormData,

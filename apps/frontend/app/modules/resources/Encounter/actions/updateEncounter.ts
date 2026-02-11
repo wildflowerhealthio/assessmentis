@@ -1,17 +1,17 @@
 import { DateTime, Effect } from 'effect'
-import {
+import type {
   Encounter,
   EncounterId,
-  EncounterRepository,
 } from '@assessmentis/clinical-domain/administration'
-import {
+import { EncounterRepository } from '@assessmentis/clinical-domain/administration'
+import type {
   ExternalAssertionError,
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
-import { WithId } from '@assessmentis/clinical-domain/data-types'
-import { EncounterFormData } from '../schemas/EncounterFormSchema'
-import { AuthError, AuthzError } from '@assessmentis/ontology'
+import type { WithId } from '@assessmentis/clinical-domain/data-types'
+import type { EncounterFormData } from '../schemas/EncounterFormSchema'
+import type { AuthError, AuthzError } from '@assessmentis/ontology'
 
 export const updateEncounter = (
   id: EncounterId,

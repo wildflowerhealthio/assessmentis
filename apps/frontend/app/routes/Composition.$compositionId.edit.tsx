@@ -3,14 +3,12 @@ import { useNavigate } from 'react-router'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { CompositionForm } from 'app/modules/resources/Composition/components/CompositionForm'
 import { updateComposition } from 'app/modules/resources/Composition/actions/updateComposition'
-import {
+import type {
   CompositionFormData,
   CompositionFormSchema,
 } from 'app/modules/resources/Composition/schemas/CompositionFormSchema'
-import {
-  Composition,
-  CompositionId,
-} from '@assessmentis/clinical-domain/content-management'
+import type { Composition } from '@assessmentis/clinical-domain/content-management'
+import { CompositionId } from '@assessmentis/clinical-domain/content-management'
 import { NotFoundError } from '@assessmentis/ontology'
 import type { Route } from './+types/Composition.$compositionId.edit'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'

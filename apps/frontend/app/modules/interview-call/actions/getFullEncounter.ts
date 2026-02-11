@@ -1,22 +1,23 @@
-import { Effect, Either, Option, Scope, Stream } from 'effect'
+import type { Either, Scope } from 'effect'
+import { Effect, Option, Stream } from 'effect'
 import { StreamEither } from '@assessmentis/util'
-import {
+import type {
   Encounter,
   EncounterId,
 } from '@assessmentis/clinical-domain/administration'
-import {
+import type {
   AuthError,
   AuthzError,
-  UnhandledError,
   NotFoundError,
   ExternalAssertionError,
 } from '@assessmentis/ontology'
-import {
+import { UnhandledError } from '@assessmentis/ontology'
+import type {
   Questionnaire,
   QuestionnaireResponse,
 } from '@assessmentis/clinical-domain/content-management'
-import { WithId } from '@assessmentis/clinical-domain/data-types'
-import { NoSelectedOrgError } from '@assessmentis/platform-domain'
+import type { WithId } from '@assessmentis/clinical-domain/data-types'
+import type { NoSelectedOrgError } from '@assessmentis/platform-domain'
 import { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
 
 export type FullEncounter = WithId<Encounter> & {

@@ -5,11 +5,12 @@ import {
   beforeEach,
   describe,
   expect,
-  SuiteCollector,
-  SuiteFactory,
+  type SuiteCollector,
+  type SuiteFactory,
 } from 'vitest'
 import { it } from '@effect/vitest'
-import { Effect, Exit, Cause, pipe, Option, Layer, Console } from 'effect'
+import type { Layer } from 'effect'
+import { Effect, Exit, Cause, pipe, Option, Console } from 'effect'
 import { FhirR4Client } from './FhirR4Client'
 
 /**

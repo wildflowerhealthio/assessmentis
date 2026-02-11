@@ -9,8 +9,8 @@ import {
 } from './content-management'
 import { CompositionRepository } from './content-management'
 import { MediaRepository, ObservationRepository } from './diagnostic-medicine'
-import Schemas from './Schemas'
-import { ClinicalDomainRepositoryTagClass } from './types'
+import type Schemas from './Schemas'
+import type { ClinicalDomainRepositoryTagClass } from './types'
 
 const Repositories = {
   Composition: CompositionRepository,

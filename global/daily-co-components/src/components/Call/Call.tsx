@@ -4,7 +4,8 @@ import {
   useParticipantIds,
   useScreenShare,
 } from '@daily-co/daily-react'
-import { JSX, useCallback, useState } from 'react'
+import type { JSX } from 'react'
+import { useCallback, useState } from 'react'
 
 import styles from './Call.module.css'
 import Tile from '../Tile/Tile'
@@ -50,7 +51,14 @@ export default function Call() {
     )
   } else {
     focus = (
-      <div className={styles.Call__info}>
+      <div
+        className={styles.Call__info}
+        style={{
+          aspectRatio: 'calc(16/9)',
+          margin: 'auto',
+          maxWidth: '100%',
+        }}
+      >
         <h2 className="heading-3">Waiting for others</h2>
         <p>Invite someone by sharing this link:</p>
         <span className="room-url">{window.location.href}</span>

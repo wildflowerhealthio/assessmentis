@@ -1,5 +1,8 @@
 import { Schema } from 'effect'
-import { ValueElement, ValueElementEncoded } from '../primitive/ValueElement'
+import {
+  ValueElement,
+  type ValueElementEncoded,
+} from '../primitive/ValueElement'
 
 export type Extension = {
   url: string

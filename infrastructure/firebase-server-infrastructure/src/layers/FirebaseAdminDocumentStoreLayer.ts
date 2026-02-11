@@ -1,19 +1,22 @@
 import { UnhandledError, NotFoundError } from '@assessmentis/ontology'
-import { DocumentData, DocumentStore } from '@assessmentis/platform-domain'
+import type { DocumentData, DocumentPath } from '@assessmentis/platform-domain'
+import { DocumentStore } from '@assessmentis/platform-domain'
 import { Layer, Effect, Either } from 'effect'
 import { FirebaseAdmin } from '../services'
-import { Firestore } from 'firebase-admin/firestore'
+import type { Firestore } from 'firebase-admin/firestore'
 import { unsubscribableCallbackAsStream } from '@assessmentis/util'
 
-const doc = (db: Firestore, path: ReadonlyArray<string>) => {
+const doc = (db: Firestore, path: DocumentPath) => {
   let doc = db.collection(path[0]).doc(path[1])
-  for (let i = 2; i < path.length; i += 2) {
-    doc = doc.collection(path[i]).doc(path[i + 1])
+  for (let i = 2; i + 1 < path.length; i += 2) {
+    const subCollection = path[i] as string
+    const docId = path[i + 1] as string
+    doc = doc.collection(subCollection).doc(docId)
   }
   return doc
 }
 
-const resourceType = (path: ReadonlyArray<string>) =>
+const resourceType = (path: DocumentPath) =>
   path
     .slice(0, path.length - 1)
     .reduce(

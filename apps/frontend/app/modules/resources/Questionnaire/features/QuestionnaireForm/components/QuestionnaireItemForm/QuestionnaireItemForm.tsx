@@ -1,12 +1,14 @@
 'use client'
 
-import {
-  getUiControlCode,
-  QuestionnaireItemType,
+import type {
   QuestionnaireItemUIControlCode,
   QuestionnaireResponseItem,
   QuestionnaireItem,
   QuestionnaireItemLink,
+} from '@assessmentis/clinical-domain/content-management'
+import {
+  getUiControlCode,
+  QuestionnaireItemType,
 } from '@assessmentis/clinical-domain/content-management'
 import DisplayQuestionnaireItemForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/components/DisplayQuestionnaireItemForm/DisplayQuestionnaireItemForm'
 import RadioQuestionnaireItemForm, {

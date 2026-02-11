@@ -2,12 +2,12 @@
 
 import { type ChangeEventHandler, type SetStateAction } from 'react'
 import classes from './TextQuestionnaireItemForm.module.css'
-import {
+import type {
   QuestionnaireItem,
   QuestionnaireItemUIControlCode,
   QuestionnaireResponseItem,
-  withAnsweredAt,
 } from '@assessmentis/clinical-domain/content-management'
+import { withAnsweredAt } from '@assessmentis/clinical-domain/content-management'
 import { cn } from '@assessmentis/react-util'
 import { DateTime, Effect } from 'effect'
 

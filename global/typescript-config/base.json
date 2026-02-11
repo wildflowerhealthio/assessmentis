@@ -17,6 +17,7 @@
     "preserveWatchOutput": true,
     "skipLibCheck": true,
     "strict": true,
+    "verbatimModuleSyntax": true,
     "plugins": [
       {
         "name": "@effect/language-service"

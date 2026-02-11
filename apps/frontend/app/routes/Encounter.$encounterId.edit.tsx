@@ -5,7 +5,7 @@ import { runEffectSyncFlat } from 'app/runEffectSync'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { EncounterForm } from 'app/modules/resources/Encounter/components/EncounterForm'
 import { updateEncounter } from 'app/modules/resources/Encounter/actions/updateEncounter'
-import { EncounterFormSchema } from 'app/modules/resources/Encounter/schemas/EncounterFormSchema'
+import type { EncounterFormSchema } from 'app/modules/resources/Encounter/schemas/EncounterFormSchema'
 import {
   EncounterId,
   EncounterRepository,

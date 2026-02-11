@@ -1,4 +1,5 @@
-import { Schema, DateTime } from 'effect'
+import type { DateTime } from 'effect'
+import { Schema } from 'effect'
 import { type BackboneElement } from '../../data-types/base/BackboneElement'
 
 export const questionnaireItemAnsweredAtUrl =

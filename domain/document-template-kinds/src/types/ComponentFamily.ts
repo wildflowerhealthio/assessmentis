@@ -1,5 +1,5 @@
-import { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { Coding } from '@assessmentis/clinical-domain/data-types'
+import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import type { Coding } from '@assessmentis/clinical-domain/data-types'
 
 import { type WithId } from '@assessmentis/clinical-domain/data-types'
 

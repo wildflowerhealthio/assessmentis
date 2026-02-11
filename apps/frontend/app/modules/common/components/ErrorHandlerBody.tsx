@@ -4,18 +4,15 @@ import {
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
-import React, { JSX, useEffect, useState } from 'react'
+import type { JSX } from 'react'
+import React, { useEffect, useState } from 'react'
 import { AuthError } from '@assessmentis/ontology'
 import { LoginButton } from '../../global/components/LoginButton'
 import { Generic404Content } from './Generic404Content'
-import { Either, Scope, Stream } from 'effect'
-import {
-  NoSelectedOrgError,
-  OrgSlug,
-  Org,
-  UserId,
-  User,
-} from '@assessmentis/platform-domain'
+import type { Scope, Stream } from 'effect'
+import { Either } from 'effect'
+import type { OrgSlug, Org, UserId, User } from '@assessmentis/platform-domain'
+import { NoSelectedOrgError } from '@assessmentis/platform-domain'
 import { useStream } from '@assessmentis/react-util'
 
 const useBestError = ({

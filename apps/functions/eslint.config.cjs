@@ -1,11 +1,11 @@
-const { defineConfig } = require("eslint/config");
-const baseConfig = require("@assessmentis/eslint-config");
-const tsParser = require("@typescript-eslint/parser");
+const { defineConfig } = require('eslint/config')
+const baseConfig = require('@assessmentis/eslint-config')
+const tsParser = require('@typescript-eslint/parser')
 
 module.exports = defineConfig([
   ...baseConfig,
   {
-    ignores: ["./eslint.config.cjs"],
+    ignores: ['./eslint.config.cjs', 'dist'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -13,4 +13,4 @@ module.exports = defineConfig([
       },
     },
   },
-]);
+])

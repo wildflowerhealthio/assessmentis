@@ -1,5 +1,6 @@
-import { Effect, Either, Layer, pipe, Schema, Scope, Stream } from 'effect'
-import {
+import type { Layer, Schema, Scope } from 'effect'
+import { Effect, Either, pipe, Stream } from 'effect'
+import type {
   Schemas,
   ClinicalDomainRepositoryTagClass,
   ClinicalDataRepository,
@@ -19,14 +20,11 @@ import {
   Media,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { makeClinicalDataRepository } from '@assessmentis/clinical-domain/assessmentis'
-import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
-import {
-  AuthError,
-  ExternalAssertionError,
-  UnhandledError,
-} from '@assessmentis/ontology'
+import type { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
+import type { AuthError, UnhandledError } from '@assessmentis/ontology'
+import { ExternalAssertionError } from '@assessmentis/ontology'
 import { FhirR4ClientService } from './FhirR4ClientService'
-import { NoSelectedOrgError } from '@assessmentis/platform-domain'
+import type { NoSelectedOrgError } from '@assessmentis/platform-domain'
 
 export type GoogleFhirWebLayer<Key extends keyof typeof Schemas> = Layer.Layer<
   ClinicalDomainRepositoryTagClass<Key>,

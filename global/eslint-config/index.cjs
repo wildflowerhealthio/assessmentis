@@ -23,6 +23,10 @@ module.exports = defineConfig([
       },
     },
     rules: {
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        { fixStyle: 'separate-type-imports', prefer: 'type-imports' },
+      ],
       '@typescript-eslint/no-unused-vars': [
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },

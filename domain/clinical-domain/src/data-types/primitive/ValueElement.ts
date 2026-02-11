@@ -1,7 +1,11 @@
-import { DateTime, Schema } from 'effect'
+import type { DateTime } from 'effect'
+import { Schema } from 'effect'
 import { Code, Coding } from '../complex/Coding'
-import { Reference, ReferenceEncoded } from '../complex/IdentifierAndReference'
-import { Extension, ExtensionEncoded } from '../special-purpose/Extension'
+import {
+  Reference,
+  type ReferenceEncoded,
+} from '../complex/IdentifierAndReference'
+import { Extension, type ExtensionEncoded } from '../special-purpose/Extension'
 import { CodeableConcept } from '../complex'
 
 const Attachment = Schema.Struct({ contentType: Schema.optional(Code) })

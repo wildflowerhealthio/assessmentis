@@ -1,11 +1,11 @@
 import { useState, type SetStateAction } from 'react'
-import {
+import type {
   Questionnaire,
   QuestionnaireItemLink,
   QuestionnaireResponse,
   QuestionnaireResponseItem,
-  QuestionnaireResponseRepository,
 } from '@assessmentis/clinical-domain/content-management'
+import { QuestionnaireResponseRepository } from '@assessmentis/clinical-domain/content-management'
 import QuestionnaireItemForm from './components/QuestionnaireItemForm/QuestionnaireItemForm'
 import { Effect } from 'effect'
 import { hasId } from '@assessmentis/clinical-domain/data-types'

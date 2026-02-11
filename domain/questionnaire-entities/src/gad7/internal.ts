@@ -1,5 +1,5 @@
-import { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { CodeableConcept } from '@assessmentis/clinical-domain/data-types'
+import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import type { CodeableConcept } from '@assessmentis/clinical-domain/data-types'
 import { Code } from '@assessmentis/clinical-domain/data-types'
 import { literalOf } from '../../../../global/util/src/addLiteralSupportToBrandedSchema'
 

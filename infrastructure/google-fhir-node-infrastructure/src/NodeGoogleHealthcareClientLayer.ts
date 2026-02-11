@@ -1,7 +1,8 @@
 import { Effect, Layer, Option } from 'effect'
-import { healthcare_v1 } from '@googleapis/healthcare'
+import type { healthcare_v1 } from '@googleapis/healthcare'
 import { google } from 'googleapis'
-import { GaxiosResponseWithHTTP2, GaxiosError } from 'googleapis-common'
+import type { GaxiosResponseWithHTTP2 } from 'googleapis-common'
+import { GaxiosError } from 'googleapis-common'
 import {
   FhirR4Client,
   buildFhirStoreParent,

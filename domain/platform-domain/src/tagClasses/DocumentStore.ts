@@ -1,5 +1,6 @@
-import { Context, Effect, Either, Stream } from 'effect'
-import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
+import type { Effect, Either, Stream } from 'effect'
+import { Context } from 'effect'
+import type { NotFoundError, UnhandledError } from '@assessmentis/ontology'
 
 export interface DocumentData {
   [field: string]: unknown

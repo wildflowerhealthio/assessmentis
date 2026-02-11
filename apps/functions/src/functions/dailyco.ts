@@ -48,7 +48,9 @@ export const dailycoEffect = (
 
     // Build Daily.co API URL
     const queryParams = new URLSearchParams(
-      Object.entries(inbound.query).map(([key, value]) => [key, String(value)])
+      Object.entries(inbound.query).map(
+        ([key, value]) => [key, String(value)] as const
+      )
     )
     const url = `https://api.daily.co/v1/${destination}?${queryParams}`
 
@@ -86,6 +88,11 @@ export const dailycoEffect = (
     return { externalRes }
   })
 
+const isMatch = (
+  value: null | string[]
+): value is [string, string, string, ...string[]] =>
+  value != null && value.length >= 3
+
 export const dailyco = onRequest(
   defaultHttpOptions,
   async (request: Request, response: Response) => {
@@ -96,7 +103,7 @@ export const dailyco = onRequest(
       /^\/api\/daily-co-proxies\/([^/]+)\/(.*)$/
     )
 
-    if (urlMatch == null || urlMatch.length < 3) {
+    if (!isMatch(urlMatch)) {
       error('Invalid URL')
       response.status(400).json({
         message: 'Bad Request, URL did not start with /api/daily-co-proxies',

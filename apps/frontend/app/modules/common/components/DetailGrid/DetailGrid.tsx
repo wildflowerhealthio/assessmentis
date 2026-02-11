@@ -1,4 +1,5 @@
-import { ReactNode, Fragment, JSX } from 'react'
+import type { ReactNode, JSX } from 'react'
+import { Fragment } from 'react'
 import { cn } from '@assessmentis/react-util'
 import classes from './DetailGrid.module.css'
 import React from 'react'

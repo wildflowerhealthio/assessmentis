@@ -1,14 +1,16 @@
 import { Effect } from 'effect'
-import {
+import type {
   Questionnaire,
   QuestionnaireResponse,
+} from '@assessmentis/clinical-domain/content-management'
+import {
   QuestionnaireRepository,
   QuestionnaireResponseRepository,
 } from '@assessmentis/clinical-domain/content-management'
 import type { Route } from './+types/QuestionnaireResponse._index'
 import { QuestionnaireResponseListItem } from '../modules/resources/Questionnaire/components/QuestionnaireResponseListItem/QuestionnaireResponseListItem'
 import { ResourceListPage } from '../modules/common/components/ResourceListPage/ResourceListPage'
-import {
+import type {
   ExternalAssertionError,
   UnhandledError,
   AuthError,

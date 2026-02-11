@@ -1,5 +1,5 @@
-import { CompositionSection } from '@assessmentis/clinical-domain/content-management'
-import React from 'react'
+import type { CompositionSection } from '@assessmentis/clinical-domain/content-management'
+import type React from 'react'
 
 export interface JsxCompositionSection {
   jsx: React.JSX.Element

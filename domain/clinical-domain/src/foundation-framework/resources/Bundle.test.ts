@@ -2,8 +2,8 @@ import { expect, test, describe } from 'vitest'
 import { Bundle } from './Bundle'
 import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
-import { DeepReadonly } from '@assessmentis/util'
-import { Bundle as FhirBundle } from 'fhir/r4'
+import type { DeepReadonly } from '@assessmentis/util'
+import type { Bundle as FhirBundle } from 'fhir/r4'
 
 // Create a concrete Bundle type for testing
 const TestBundle = Bundle(Schema.String)

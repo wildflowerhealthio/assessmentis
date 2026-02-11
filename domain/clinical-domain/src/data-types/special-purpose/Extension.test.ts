@@ -2,8 +2,8 @@ import { expect, test, describe } from 'vitest'
 import { Extension } from './Extension'
 import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
-import { DeepReadonly } from '@assessmentis/util'
-import { Extension as FhirExtension } from 'fhir/r4'
+import type { DeepReadonly } from '@assessmentis/util'
+import type { Extension as FhirExtension } from 'fhir/r4'
 
 // Compile-time check that Encoded schema matches FHIR R4
 const _extensionEncoded: DeepReadonly<FhirExtension> = Extension.Encoded

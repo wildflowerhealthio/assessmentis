@@ -4,7 +4,8 @@ import {
   LoadedDailyCoSecret,
   DailyCoSecret,
 } from '@assessmentis/platform-domain'
-import { Context, Effect, Layer, Schema } from 'effect'
+import type { Context } from 'effect'
+import { Effect, Layer, Schema } from 'effect'
 import { UnhandledError } from '@assessmentis/ontology'
 
 const makeOrgSecretLayer = <Label, A, E>(

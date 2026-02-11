@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { CompositionForm } from 'app/modules/resources/Composition/components/CompositionForm'
 import { createComposition } from 'app/modules/resources/Composition/actions/createComposition'
-import {
+import type {
   CompositionFormData,
   CompositionFormSchema,
 } from 'app/modules/resources/Composition/schemas/CompositionFormSchema'

@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest'
 import { FastCheck } from 'effect'
-import { DeepReadonly } from './DeepReadonly'
+import type { DeepReadonly } from './DeepReadonly'
 import { property } from 'effect/FastCheck'
 import * as fc from 'fast-check'
 

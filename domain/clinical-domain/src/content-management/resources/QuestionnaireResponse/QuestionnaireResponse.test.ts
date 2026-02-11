@@ -5,8 +5,8 @@ import {
 } from './QuestionnaireResponse'
 import { Arbitrary, Schema, DateTime } from 'effect'
 import * as fc from 'fast-check'
-import { DeepReadonly } from '@assessmentis/util'
-import { QuestionnaireResponse as FhirQuestionnaireResponse } from 'fhir/r4'
+import type { DeepReadonly } from '@assessmentis/util'
+import type { QuestionnaireResponse as FhirQuestionnaireResponse } from 'fhir/r4'
 
 // Compile-time check that Encoded schema matches FHIR R4
 const _questionnaireResponseEncoded: DeepReadonly<FhirQuestionnaireResponse> =

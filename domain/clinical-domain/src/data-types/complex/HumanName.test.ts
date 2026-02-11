@@ -1,7 +1,7 @@
 import { expect, test, describe } from 'vitest'
 import { HumanName } from './HumanName'
-import { DeepReadonly } from '@assessmentis/util'
-import { HumanName as FhirHumanName } from 'fhir/r4'
+import type { DeepReadonly } from '@assessmentis/util'
+import type { HumanName as FhirHumanName } from 'fhir/r4'
 import { Schema, Arbitrary } from 'effect'
 import * as fc from 'fast-check'
 
