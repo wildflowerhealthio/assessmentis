@@ -12,7 +12,10 @@
         "firebase-debug.*.log",
         "*.local"
       ],
-      "predeploy": ["npm run lint", "npm run build"]
+      "predeploy": [
+        "npm run lint --prefix apps/functions",
+        "npm run build --prefix apps/functions"
+      ]
     }
   ],
   "hosting": {

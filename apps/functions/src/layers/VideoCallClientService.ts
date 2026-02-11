@@ -27,7 +27,7 @@ export const VideoCallClientLayerLive: Layer.Layer<
         const contextLayer = Layer.succeed(DailyCoContext, {
           config: dailyCoConf,
           authHeadersEffect: Effect.sync(() => ({
-            Authorization: `Bearer ${dailyCoSecret}`,
+            Authorization: `Bearer ${dailyCoSecret.apiKey}`,
           })),
         })
 

@@ -154,9 +154,14 @@ const assertStatus =
       return Effect.flatMap(
         resp.text.pipe(
           Effect.mapError(
-            (cause) =>
+            (responseError) =>
               new UnhandledError({
-                cause,
+                cause: {
+                  status: resp.status,
+                  allowedStatuses,
+                  responseError,
+                  url: resp.request.url,
+                },
                 message: `Unexpected HTTP status: ${resp.status}, expected one of: ${allowedStatuses.join(', ')} AND an error reading body text`,
               })
           )
@@ -165,7 +170,12 @@ const assertStatus =
           Effect.fail(
             new UnhandledError({
               message: `Unexpected HTTP status: ${resp.status}, expected one of: ${allowedStatuses.join(', ')}`,
-              cause: { resp, body },
+              cause: {
+                status: resp.status,
+                allowedStatuses,
+                url: resp.request.url,
+                body,
+              },
             })
           )
       )
@@ -239,7 +249,7 @@ export const DailyCoVideoCallClientLayer: Layer.Layer<
         handleHttpClientError(
           'HTTP Client Error while fetching recording link'
         ),
-        handle404('Recording', { id: recordingId }),
+        handle404('Recording', { id: recordingId, baseUrl }),
         assertStatus(200),
         parseAs(ApiDailyCoRecordingLinkSchema),
         Effect.map((linkData) => linkData.download_link)
@@ -264,7 +274,7 @@ export const DailyCoVideoCallClientLayer: Layer.Layer<
         handleHttpClientError(
           'HTTP Client Error while fetching transcript link'
         ),
-        handle404('Transcript', { id: transcriptId }),
+        handle404('Transcript', { id: transcriptId, baseUrl }),
         assertStatus(200),
         parseAs(ApiDailyCoTranscriptLinkSchema),
         Effect.map((linkData) => linkData.link)
@@ -508,7 +518,7 @@ export const DailyCoVideoCallClientLayer: Layer.Layer<
           {}
         ),
         handleHttpClientError('HTTP Client Error while deleting room'),
-        handle404('Room', { name: roomName }),
+        handle404('Room', { name: roomName, baseUrl }),
         assertStatus(200),
         Effect.asVoid
       )
@@ -524,7 +534,7 @@ export const DailyCoVideoCallClientLayer: Layer.Layer<
           {}
         ),
         handleHttpClientError('HTTP Client Error while fetching room'),
-        handle404('Room', { name: roomName }),
+        handle404('Room', { name: roomName, baseUrl }),
         assertStatus(200),
         parseAs(ApiDailyCoRoomSchema),
         Effect.map((apiDailyCoRoom) => ({

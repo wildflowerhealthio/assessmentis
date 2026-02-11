@@ -34,7 +34,9 @@ export const oAuthCallbackEffect = (q: {
       error('Error:' + q.error)
       const errorMessage = String(q.error)
 
-      return yield* Effect.fail(new AuthError({ message: errorMessage }))
+      return yield* Effect.fail(
+        new AuthError({ message: errorMessage, cause: q.error })
+      )
     }
 
     const code = q.code?.toString() ?? ''
