@@ -5,7 +5,7 @@ import type {
 } from '@assessmentis/clinical-domain/administration'
 import {
   EncounterRepository,
-  isVirtualLocation,
+  Location,
 } from '@assessmentis/clinical-domain/administration'
 import type {
   ExternalAssertionError,
@@ -56,7 +56,7 @@ export const updateEncounter = (
       location: [
         // Keep existing virtual location entries (video room)
         ...(currentEncounter.location?.filter((l) =>
-          isVirtualLocation(l)
+          Location.isVirtualLocation(l)
         ) ?? []),
         // Add user-selected physical location if provided
         ...(formData.locationId

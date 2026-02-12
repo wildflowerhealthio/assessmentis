@@ -1,5 +1,5 @@
 import { expect, test, describe } from 'vitest'
-import { Location, isVirtualLocation } from './Location'
+import { Location, LocationFromFhirR4 } from './Location'
 import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
 import type { DeepReadonly } from '@assessmentis/util'
@@ -7,29 +7,29 @@ import type { Location as FhirLocation } from 'fhir/r4'
 import { Code } from '../../data-types'
 
 // Compile-time check that Encoded schema matches FHIR R4
-const _locationEncoded: DeepReadonly<FhirLocation> = Location.Encoded
+const _locationEncoded: DeepReadonly<FhirLocation> = LocationFromFhirR4.Encoded
 
-const locationArb = Arbitrary.make(Location)
+const locationArb = Arbitrary.make(LocationFromFhirR4)
 
 describe('Location resource', () => {
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(locationArb, (location) => {
-        const encoded = Schema.encodeSync(Location)(location)
-        const decoded = Schema.decodeSync(Location)(encoded)
+        const encoded = Schema.encodeSync(LocationFromFhirR4)(location)
+        const decoded = Schema.decodeSync(LocationFromFhirR4)(encoded)
         expect(decoded).toEqual(location)
       })
     )
   })
 
-  describe('isVirtualLocation', () => {
+  describe('Location.isVirtualLocation', () => {
     test('returns true for location with virtual physical type code', () => {
       const virtualLocation = {
         physicalType: {
           coding: [{ code: Code.make('vi') }],
         },
       }
-      expect(isVirtualLocation(virtualLocation)).toBe(true)
+      expect(Location.isVirtualLocation(virtualLocation)).toBe(true)
     })
 
     test('returns false for location without virtual physical type code', () => {
@@ -38,12 +38,12 @@ describe('Location resource', () => {
           coding: [{ code: Code.make('ro') }],
         },
       }
-      expect(isVirtualLocation(physicalLocation)).toBe(false)
+      expect(Location.isVirtualLocation(physicalLocation)).toBe(false)
     })
 
     test('returns false for location without physicalType', () => {
       const location = {}
-      expect(isVirtualLocation(location)).toBe(false)
+      expect(Location.isVirtualLocation(location)).toBe(false)
     })
 
     test('returns false for location with empty coding array', () => {
@@ -52,7 +52,7 @@ describe('Location resource', () => {
           coding: [],
         },
       }
-      expect(isVirtualLocation(location)).toBe(false)
+      expect(Location.isVirtualLocation(location)).toBe(false)
     })
 
     test('returns true if any coding has virtual code', () => {
@@ -61,7 +61,7 @@ describe('Location resource', () => {
           coding: [{ code: Code.make('ro') }, { code: Code.make('vi') }],
         },
       }
-      expect(isVirtualLocation(location)).toBe(true)
+      expect(Location.isVirtualLocation(location)).toBe(true)
     })
   })
 })

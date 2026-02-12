@@ -1,4 +1,4 @@
-import { Schema } from 'effect'
+import { Data, Schema } from 'effect'
 import { DomainResource } from '../../data-types/base/DomainResource'
 import {
   Address,
@@ -15,11 +15,14 @@ import { LocationStatus } from '../value-sets/LocationStatus'
 export const LocationId = Schema.String.pipe(Schema.brand('LocationId'))
 
 export type LocationId = typeof LocationId.Type
-/**
- * Details and position information for a physical place where services are provided and resources and participants may be stored, found, contained, or accommodated.
- */
 
-export const Location = Schema.Struct({
+/**
+ * Schema for transforming between Location Data objects and FHIR R4 Location resources.
+ *
+ * Details and position information for a physical place where services are provided
+ * and resources and participants may be stored, found, contained, or accommodated.
+ */
+export const LocationFromFhirR4 = Schema.Struct({
   ...DomainResource(LocationId).fields,
   resourceType: Schema.Literal('Location'),
   /**
@@ -83,21 +86,35 @@ export const Location = Schema.Struct({
   partOf: Schema.optional(Schema.suspend(() => Reference)),
 })
 
-export type Location = typeof Location.Type
+/**
+ * Location Data type
+ */
+export type Location = typeof LocationFromFhirR4.Type
 
 /**
- * Checks if a location entry represents a virtual location (e.g., video room).
- * Virtual locations are identified by a physical type coding with code 'vi'.
- *
- * @param locationEntry - An object with an optional physicalType field
- * @returns true if the location is virtual, false otherwise
+ * Location namespace providing factory and utility functions
  */
-export const isVirtualLocation = (locationEntry: {
-  physicalType?: { coding?: ReadonlyArray<{ code?: Code }> }
-}): boolean => {
-  return (
-    locationEntry.physicalType?.coding?.some(
-      (c) => c.code === Code.make('vi')
-    ) ?? false
-  )
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const Location = {
+  /**
+   * Create a new Location instance
+   */
+  make: Data.case<Location>(),
+
+  /**
+   * Checks if a location entry represents a virtual location (e.g., video room).
+   * Virtual locations are identified by a physical type coding with code 'vi'.
+   *
+   * @param locationEntry - An object with an optional physicalType field
+   * @returns true if the location is virtual, false otherwise
+   */
+  isVirtualLocation: (locationEntry: {
+    physicalType?: { coding?: ReadonlyArray<{ code?: Code }> }
+  }): boolean => {
+    return (
+      locationEntry.physicalType?.coding?.some(
+        (c) => c.code === Code.make('vi')
+      ) ?? false
+    )
+  },
 }
