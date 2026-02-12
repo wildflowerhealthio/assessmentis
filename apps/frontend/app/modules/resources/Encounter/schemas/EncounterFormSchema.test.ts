@@ -36,6 +36,6 @@ describe('EncounterFormSchema', () => {
     expect(result.practitionerIds).toBeUndefined()
     expect(result.periodStart).toBeUndefined()
     expect(result.periodEnd).toBeUndefined()
-    expect(result.locationDisplay).toBeUndefined()
+    expect(result.locationId).toBeUndefined()
   })
 })

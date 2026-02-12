@@ -49,19 +49,23 @@ export const updateEncounter = (
               end: formData.periodEnd?.pipe(DateTime.toUtc),
             }
           : undefined,
-      // Update location display (preserve video room location if it exists)
-      location: formData.locationDisplay
-        ? [
-            // Keep existing video room location if it exists
-            ...(currentEncounter.location ?? []),
-            // Add/update the display location
-            {
-              location: {
-                display: formData.locationDisplay,
+      // Update location references (preserve virtual/video room locations)
+      location: [
+        // Keep existing virtual location entries (video room)
+        ...(currentEncounter.location?.filter((l) =>
+          l.physicalType?.coding?.some((c) => c.code === 'vi')
+        ) ?? []),
+        // Add user-selected physical location if provided
+        ...(formData.locationId
+          ? [
+              {
+                location: {
+                  reference: `Location/${formData.locationId}`,
+                },
               },
-            },
-          ]
-        : currentEncounter.location,
+            ]
+          : []),
+      ],
     }
 
     return yield* repository.update(updatedEncounter)

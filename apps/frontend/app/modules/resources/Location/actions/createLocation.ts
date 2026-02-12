@@ -1,4 +1,4 @@
-import { Location } from '@assessmentis/clinical-domain/administration'
+import type { Location } from '@assessmentis/clinical-domain/administration'
 import {
   type LocationFormData,
   transformToLocation,

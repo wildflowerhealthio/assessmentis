@@ -73,10 +73,11 @@ export default function EditEncounterPage({ params }: Route.ComponentProps) {
             .map((p) => p.individual) ?? []
         )
 
-        // Extract location display (first location's display or identifier value)
-        const locationDisplay =
-          encounter.location?.[0]?.location?.display ||
-          encounter.location?.[0]?.location?.identifier?.value
+        // Extract user-selected location ID (non-virtual location entry)
+        const userLocation = encounter.location?.find(
+          (l) => !l.physicalType?.coding?.some((c) => c.code === 'vi')
+        )
+        const locationId = extractReferenceId(userLocation?.location)
 
         return {
           patientId: extractReferenceId(encounter.subject),
@@ -88,7 +89,7 @@ export default function EditEncounterPage({ params }: Route.ComponentProps) {
           periodEnd: encounter.period?.end?.pipe(
             DateTime.setZone(DateTime.zoneMakeLocal())
           ),
-          locationDisplay,
+          locationId,
         }
       }),
     [encounterPromise]

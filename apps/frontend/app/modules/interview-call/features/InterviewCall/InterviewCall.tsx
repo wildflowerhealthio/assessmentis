@@ -11,8 +11,16 @@ interface IProps {
   encounter: FullEncounter
 }
 
+const VIDEO_CALL_ROOM_SYSTEM = 'http://assessment.is/fhir/video-call-room-name'
+
 function InterviewCall({ encounter }: IProps) {
-  const roomUrl = encounter.location?.[0].location?.identifier?.value
+  // Find the video room URL from resolved Location resources
+  const videoRoomLocation = encounter._locations.find((loc) =>
+    loc.identifier?.some((id) => id.system === VIDEO_CALL_ROOM_SYSTEM)
+  )
+  const roomUrl = videoRoomLocation?.identifier?.find(
+    (id) => id.system === VIDEO_CALL_ROOM_SYSTEM
+  )?.value
 
   return (
     <SplitPane

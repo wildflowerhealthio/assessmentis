@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 import {
-  Location,
+  type Location,
   LocationMode,
   LocationStatus,
 } from '@assessmentis/clinical-domain/administration'

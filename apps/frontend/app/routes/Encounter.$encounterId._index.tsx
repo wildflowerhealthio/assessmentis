@@ -1,5 +1,6 @@
 import type { Scope } from 'effect'
 import { Either, Option, Schema, Stream } from 'effect'
+import type { LocationId } from '@assessmentis/clinical-domain/administration'
 import { EncounterId } from '@assessmentis/clinical-domain/administration'
 import type { FullEncounter } from 'app/modules/interview-call/actions/getFullEncounter'
 import { getFullEncounter } from 'app/modules/interview-call/actions/getFullEncounter'
@@ -48,6 +49,7 @@ export default function EncounterPage({ params }: Route.ComponentProps) {
           | AuthError
           | AuthzError
           | NotFoundError<'Encounter', { id: EncounterId }>
+          | NotFoundError<'Location', { id: LocationId }>
           | ExternalAssertionError
           | NoSelectedOrgError
         >,

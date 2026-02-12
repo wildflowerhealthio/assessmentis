@@ -8,7 +8,7 @@ export const EncounterFormSchema = Schema.Struct({
   questionnaireIds: Schema.Array(Schema.String), // Required
   periodStart: Schema.optional(Schema.DateTimeZonedFromSelf),
   periodEnd: Schema.optional(Schema.DateTimeZonedFromSelf),
-  locationDisplay: Schema.optional(Schema.String),
+  locationId: Schema.optional(Schema.String),
 })
 
 export type EncounterFormData = typeof EncounterFormSchema.Type
