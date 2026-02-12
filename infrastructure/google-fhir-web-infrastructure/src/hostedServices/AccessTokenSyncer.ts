@@ -3,7 +3,7 @@ import { Effect, Stream } from 'effect'
 import type { AuthData } from '@assessmentis/platform-domain'
 import { DocumentStore } from '@assessmentis/platform-domain'
 import { LoadedGapiClient } from '../services/LoadedGapiClient'
-import type { AuthError } from '@assessmentis/ontology'
+import { AuthError } from '@assessmentis/ontology'
 import { NotFoundError } from '@assessmentis/ontology'
 import { StreamEither } from '@assessmentis/util'
 
@@ -31,6 +31,10 @@ export const startAccessTokenSyncer = (
         body: JSON.stringify({}),
       }).catch(function (error) {
         console.log('failed to fetch ' + error)
+        throw new AuthError({
+          message: 'Failed to refresh Google OAuth token',
+          cause: error,
+        })
       })
       console.log('Finished refreshing token')
     }

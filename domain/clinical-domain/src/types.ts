@@ -64,13 +64,9 @@ export interface ClinicalDataRepository<
   /**
    * Retrieve all resources matching the given parameters
    */
-  getMany: (params?: {
-    [key in Exclude<keyof T, 'resourceType'>]?: T[key] extends
-      | Reference
-      | undefined
-      ? string
-      : T[key]
-  }) => Effect.Effect<
+  getMany: (
+    params?: RepositoryFilters<T>
+  ) => Effect.Effect<
     ReadonlyArray<WithId<T>>,
     ClinicalDataRepositoryErrors,
     never

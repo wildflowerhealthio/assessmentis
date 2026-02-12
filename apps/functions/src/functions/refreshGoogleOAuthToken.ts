@@ -61,7 +61,7 @@ export const refreshGoogleOAuthTokenEffect: Effect.Effect<
 })
 
 export const refreshGoogleOAuthToken = onRequest(
-  defaultHttpOptions,
+  { ...defaultHttpOptions, memory: '512MiB' },
   async (request: Request, response: Response) => {
     info('Received request to refresh Google OAuth token')
     const runtime = makeRequestRuntime(
