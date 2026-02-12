@@ -95,7 +95,7 @@ graph TB
 
 ## Repository Structure
 
-```
+```plaintext
 assessmentis/
 ├── apps/
 │   ├── frontend/           # React SPA (React Router v7)
@@ -196,9 +196,13 @@ npm run format            # Format with Prettier
 
 ## Documentation
 
-- **[CONTRIBUTING.md](./CONTRIBUTING.md)**: Development guidelines, patterns, and conventions
-- **[copilot-instructions.md](./copilot-instructions.md)**: Detailed architecture and AI assistant guidance
-- **Package READMEs**: Each package has its own README with specific guidelines
+- **[Architecture Explanation](./docs/Architecture/Explanation.md)**: Platform services, layered architecture, key technology choices
+- **[Architecture Reference](./docs/Architecture/Reference.md)**: Package inventory, dependency rules, tech stack
+- **[CONTRIBUTING.md](./CONTRIBUTING.md)**: Development setup, code style, testing guidelines
+- **[Effect Patterns Reference](./docs/Effect/Patterns%20Reference.md)**: Repository pattern, generators, error wrappers, Layers
+- **[docs/Testing/](./docs/Testing/Testing%20Reference.md)**: Property, unit, React, and integration testing
+
+Documentation follows the [four-kinds convention](./docs/Documentation/Explanation.md). See [Documentation How-To](./docs/Documentation/How-To.md) for how to write and maintain docs.
 
 ## Architecture Principles
 

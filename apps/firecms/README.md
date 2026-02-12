@@ -1,4 +1,4 @@
-## FireCMS starter template
+# FireCMS starter template
 
 Welcome to FireCMS!
 
@@ -14,7 +14,7 @@ create a web app and copy the configuration to the `firebase_config.ts`.
 
 Then simply run:
 
-### Running the project
+## Running the project
 
 ```bash
 yarn dev

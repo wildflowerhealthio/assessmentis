@@ -8,7 +8,7 @@ daily's recordings to an s3 bucket.
 - Run `npm install`.
 - [Setup your AWS credentials](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html) on your development machine.
 
-## Instructions
+### Instructions
 
 - `npx cdk bootstrap --context dailySubdomain=[daily_subdomain] --context s3bucketName=[bucket_name] --context s3bucketRegion=[bucket_region]`
 - `npx cdk deploy --context dailySubdomain=[daily_subdomain] --context s3bucketName=[bucket_name] --context s3bucketRegion=[bucket_region]`
@@ -18,7 +18,7 @@ s3 bucket and the IAM role configured for Daily.
 You'll use these to configure your Daily domain and/or rooms for
 outputting recordings.
 
-# Connecting Daily to s3
+## Connecting Daily to s3
 
 This code accomplishes everything from the [store daily call recordings in a custom Amazon S3 bucket](https://docs.daily.co/guides/products/live-streaming-recording/storing-recordings-in-a-custom-s3-bucket) article. The last step is to send a POST request to enable Daily to write to an s3 bucket.
 
@@ -42,7 +42,6 @@ curl --request POST \
     }
   }'
 ```
-
 
 ## Note
 

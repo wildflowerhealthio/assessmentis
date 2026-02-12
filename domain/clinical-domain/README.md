@@ -6,6 +6,8 @@
 
 This is the **core domain package** for Assessment.is, containing all FHIR-based clinical models, schemas, and repository interfaces. This package is the foundation of the entire application's data model.
 
+See [FHIR Modeling Reference.md](FHIR%20Modeling%20Reference.md) for schema conventions and common resource patterns.
+
 ## What This Package Does
 
 - Define FHIR R4 resource types and schemas
@@ -15,7 +17,7 @@ This is the **core domain package** for Assessment.is, containing all FHIR-based
 
 ## Project Structure
 
-```
+```plaintext
 src/
 ├── index.ts                   # Main exports
 ├── administration/            # Encounter resource and repository

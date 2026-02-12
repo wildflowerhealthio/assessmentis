@@ -14,7 +14,7 @@ This package provides domain-agnostic utility functions used throughout Assessme
 
 ## Exports
 
-```
+```plaintext
 . - Main utilities
 ./LoadedResult - LoadedResult type and utilities
 ```

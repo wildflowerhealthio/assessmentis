@@ -27,6 +27,10 @@ jobs:
           NODE_ENV=development npm ci --include=dev
           npm ci --workspaces
 
+      - uses: DavidAnson/markdownlint-cli2-action@v22
+        with:
+          config: .markdownlint-cli2.mjs
+
       - name: Lint apps/frontend
         uses: reviewdog/action-eslint@v1
         continue-on-error: true
@@ -77,16 +81,6 @@ jobs:
           filter_mode: diff_context
           workdir: domain/platform-domain
 
-      - name: Lint domain/questionnaire-domain
-        uses: reviewdog/action-eslint@v1
-        continue-on-error: true
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          fail_level: error
-          filter_mode: diff_context
-          workdir: domain/questionnaire-domain
-
       - name: Lint domain/video-call-domain
         uses: reviewdog/action-eslint@v1
         continue-on-error: true
@@ -96,16 +90,6 @@ jobs:
           fail_level: error
           filter_mode: diff_context
           workdir: domain/video-call-domain
-
-      - name: Lint domain/document-domain
-        uses: reviewdog/action-eslint@v1
-        continue-on-error: true
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          fail_level: error
-          filter_mode: diff_context
-          workdir: domain/document-domain
 
       - name: Lint global/react-util
         uses: reviewdog/action-eslint@v1
@@ -206,14 +190,3 @@ jobs:
           fail_level: error
           filter_mode: diff_context
           workdir: infrastructure/document-template-instances
-
-# -
-# -
-# -
-# -
-# -
-# -
-# -
-# -
-# -
-# -

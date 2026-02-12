@@ -14,7 +14,7 @@ This package contains predefined questionnaire templates used by Assessment.is. 
 
 ## Project Structure
 
-```
+```plaintext
 src/
 ├── index.ts           # Exports all questionnaire templates
 ├── diva2.ts          # DIVA-2 ADHD assessment questionnaire
@@ -25,7 +25,11 @@ src/
 ## Usage
 
 ```typescript
-import { diva2, gad7, questionnaireTemplates } from '@assessmentis/questionnaire-domain'
+import {
+  diva2,
+  gad7,
+  questionnaireTemplates,
+} from '@assessmentis/questionnaire-domain'
 
 const adhd = diva2
 const all = questionnaireTemplates

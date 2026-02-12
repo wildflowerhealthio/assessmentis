@@ -100,5 +100,5 @@ it('should calculate age correctly for all birth dates', () => {
 
 ## See Also
 
-- [TESTING.md](../TESTING.md) - Testing philosophy and patterns
-- [CONTRIBUTING.md](../CONTRIBUTING.md) - Git workflow guidelines
+- [TESTING.md](../../TESTING.md) - Testing philosophy and patterns
+- [CONTRIBUTING.md](../../CONTRIBUTING.md) - Git workflow guidelines

@@ -1,6 +1,6 @@
-# React Unit Testing
+# React Testing Reference
 
-Guidelines for testing React components and hooks with Vitest and Testing Library.
+Patterns and pitfalls for testing React components and hooks with Vitest and Testing Library.
 
 ## Environment Setup
 
@@ -17,11 +17,9 @@ import { renderHook, act } from '@testing-library/react'
 
 ## Console Mocking
 
-Suppress console noise in tests to keep output clean:
+Suppress console noise in tests:
 
 ```typescript
-import { vi, beforeEach, afterEach } from 'vitest'
-
 beforeEach(() => {
   vi.spyOn(console, 'log').mockImplementation(() => {})
   vi.spyOn(console, 'error').mockImplementation(() => {})
@@ -34,7 +32,7 @@ afterEach(() => {
 
 ## Testing with waitFor
 
-Do NOT wrap `waitFor` in `act()`. The `waitFor` function from `@testing-library/react` already handles `act()` internally. Double-wrapping causes timing issues.
+Do NOT wrap `waitFor` in `act()` — it handles `act()` internally. Double-wrapping causes timing issues.
 
 ```typescript
 // Avoid: Double-wrapping
@@ -44,15 +42,15 @@ await act(async () => {
   })
 })
 
-// Correct: waitFor handles act() internally
+// Correct
 await waitFor(() => {
   expect(screen.getByText('Content')).toBeDefined()
 })
 ```
 
-## Reducing Mock Duplication
+## Mock Helper Factories
 
-Create helper factories to reduce boilerplate in tests with complex mocks:
+Create factories to reduce boilerplate for complex mocks:
 
 ```typescript
 const createMockPlatformContext = (
@@ -74,26 +72,13 @@ const createMockPlatformContext = (
     }),
   } as any,
 })
-
-// Usage
-it('should show org picker when no org selected', async () => {
-  vi.mocked(usePlatformContext).mockReturnValue(
-    createMockPlatformContext({
-      activeOrgStream: Stream.succeed(Either.left(new NoSelectedOrgError({}))),
-      userOrgs: { 'test-org': 'admin', 'another-org': 'member' },
-    })
-  )
-  // ... test body
-})
 ```
 
 ## Testing Hooks with Effects
 
-For hooks that use Effect-TS, wrap state transitions in `act()`:
+Wrap state transitions in `act()`:
 
 ```typescript
-import { renderHook, act } from '@testing-library/react'
-
 it('should resolve effect correctly', async () => {
   const { result, unmount } = renderHook(() => useEffectTs(Effect.succeed(42)))
 

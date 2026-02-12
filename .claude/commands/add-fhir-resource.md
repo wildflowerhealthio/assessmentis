@@ -6,7 +6,7 @@ Add a new FHIR R4 resource type to clinical-domain with proper validation and te
 
 ## Steps
 
-1. Reference FHIR R4 specification: https://hl7.org/fhir/R4/$ARGUMENTS.html
+1. Reference FHIR R4 specification: [https://hl7.org/fhir/R4/$ARGUMENTS.html](https://hl7.org/fhir/R4/$ARGUMENTS.html)
 2. Create resource schema in `domain/clinical-domain/src/resources/$ARGUMENTS.ts`
 3. Define schema using Effect Schema following FHIR R4 structure exactly
 4. Add JSDoc comments documenting resource purpose
@@ -31,7 +31,7 @@ export const $ARGUMENTS = Schema.Struct({
   meta: Schema.optional(
     Schema.Struct({
       versionId: Schema.optional(Schema.String),
-      lastUpdated: Schema.optional(Schema.DateFromString)
+      lastUpdated: Schema.optional(Schema.DateFromString),
     })
   ),
   // ... follow FHIR R4 spec exactly
