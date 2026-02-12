@@ -7,6 +7,7 @@
 This is the **core domain package** for Assessment.is, containing all FHIR-based clinical models, schemas, and repository interfaces. This package is the foundation of the entire application's data model.
 
 See [FHIR Modeling Reference.md](FHIR%20Modeling%20Reference.md) for schema conventions and common resource patterns.
+See [docs/Adding Resource Types How-To.md](docs/Adding%20Resource%20Types%20How-To.md) for the Clinical Resource workflow in this package.
 
 ## What This Package Does
 
@@ -67,6 +68,7 @@ Effect.gen(function* () {
 
 - Questionnaire & QuestionnaireResponse
 - Encounter
+- Location
 - Composition
 - General-purpose types (Element, Resource, Reference, etc.)
 - Observation, Media, DiagnosticReport

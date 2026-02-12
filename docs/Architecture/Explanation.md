@@ -61,5 +61,6 @@ Both implement the same interface, enabling shared domain logic between client a
 ## See Also
 
 - [Architecture Reference](./Reference.md) — Package inventory and dependency rules
+- [Adding Clinical Resource Types How-To](./Adding%20Clinical%20Resource%20Types%20How-To.md) — End-to-end workflow for adding a Clinical Resource
 - [Effect Patterns Reference](../Effect/Patterns%20Reference.md) — Effect-TS conventions used here
 - [Platform Services Explanation](../../domain/platform-domain/Platform%20Domain%20Explanation.md) — Auth, authorization, and org context details

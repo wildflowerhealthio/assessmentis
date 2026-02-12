@@ -248,6 +248,7 @@ const CatchallErrorActions = ({
             borderRadius: 'var(--radius-2)',
             overflow: 'auto',
             maxWidth: 1024,
+            whiteSpace: 'pre-wrap',
           }}
         >
           {JSON.stringify(error, null, 2)}

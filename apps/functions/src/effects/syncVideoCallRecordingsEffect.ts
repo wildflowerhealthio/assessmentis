@@ -163,7 +163,7 @@ const syncSingleOrgInner = (
     }
 
     // Update sync timestamps
-    const now = Date.now()
+    const now = new Date(Date.now())
     yield* documentStore.update(
       {
         lastRecordingSyncTimestamp: now,

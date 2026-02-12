@@ -41,6 +41,13 @@ export const NavBurger = () => {
             Patients
           </Link>
 
+          <Link
+            className={cn('heading-2', classes.NavBurger__link)}
+            to="/Location"
+          >
+            Locations
+          </Link>
+
           <hr />
 
           <Link

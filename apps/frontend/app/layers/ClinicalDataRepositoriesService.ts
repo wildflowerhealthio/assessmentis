@@ -12,6 +12,7 @@ import {
 } from '@assessmentis/clinical-domain/content-management'
 import {
   Encounter,
+  Location,
   Patient,
   Practitioner,
 } from '@assessmentis/clinical-domain/administration'
@@ -111,6 +112,7 @@ export class ClinicalDataRepositoryService extends Effect.Service<ClinicalDataRe
         effect: {
           Composition: clientEffect(Composition, 'Composition'),
           Encounter: clientEffect(Encounter, 'Encounter'),
+          Location: clientEffect(Location, 'Location'),
           Media: clientEffect(Media, 'Media'),
           Observation: clientEffect(Observation, 'Observation'),
           Patient: clientEffect(Patient, 'Patient'),
@@ -124,6 +126,7 @@ export class ClinicalDataRepositoryService extends Effect.Service<ClinicalDataRe
         stream: {
           Composition: clientStream(Composition, 'Composition'),
           Encounter: clientStream(Encounter, 'Encounter'),
+          Location: clientStream(Location, 'Location'),
           Media: clientStream(Media, 'Media'),
           Observation: clientStream(Observation, 'Observation'),
           Patient: clientStream(Patient, 'Patient'),

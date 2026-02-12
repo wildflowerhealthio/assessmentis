@@ -1,4 +1,4 @@
-import { Encounter, Patient, Practitioner } from './administration'
+import { Encounter, Location, Patient, Practitioner } from './administration'
 import {
   Composition,
   Questionnaire,
@@ -9,6 +9,7 @@ import { Media, Observation } from './diagnostic-medicine'
 const Schemas = {
   Composition,
   Encounter,
+  Location,
   Media,
   Observation,
   Patient,
