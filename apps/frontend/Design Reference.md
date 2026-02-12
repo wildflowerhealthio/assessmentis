@@ -1,6 +1,6 @@
 # Design Reference
 
-Design system lookup tables and page structure conventions. For full CRUD implementation, see [Resource CRUD How-To](./app//modules/resources//Resource%20CRUD%20How-To.md).
+Design system lookup tables and page structure conventions. For full CRUD implementation, see [Resource CRUD How-To](./app/modules/resources/Resource%20CRUD%20How-To.md).
 
 ## Typography
 
