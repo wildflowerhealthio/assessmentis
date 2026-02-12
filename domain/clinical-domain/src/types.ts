@@ -36,14 +36,15 @@ export type ClinicalDataRepositoryErrorsWithNotFound<
   | NotFoundError<T['resourceType'], { id: NonNullable<T['id']> }>
 
 /**
- * Filter type for getMany operations on clinical data repositories
- * Allows filtering by resource properties, converting Reference types to strings
+ * Filter type for getMany operations on clinical data repositories.
+ * Allows filtering by resource properties, converting Reference types to strings.
+ * Reference fields also accept `readonly string[]` for FHIR OR-style searching.
  */
 export type RepositoryFilters<TResource> = {
   [key in Exclude<keyof TResource, 'resourceType'>]?: TResource[key] extends
     | Reference
     | undefined
-    ? string
+    ? string | readonly string[]
     : TResource[key]
 }
 

@@ -1,0 +1,61 @@
+{
+    meta: {
+        createdAt: '2026-02-12T20:30:32.697Z',
+        host: 'https://healthcare.googleapis.com',
+        resHumanReadable: true,
+    },
+    req: {
+        url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/non-existent-location-id-12345',
+        method: 'GET',
+        headers: {},
+        body: '',
+    },
+    res: {
+        status: 404,
+        headers: {
+            'content-type': [
+                'application/fhir+json;charset=utf-8',
+            ],
+            vary: [
+                'Origin, X-Origin, Referer',
+            ],
+            date: [
+                'Thu, 12 Feb 2026 20:30:33 GMT',
+            ],
+            server: [
+                'ESF',
+            ],
+            'content-length': [
+                '266',
+            ],
+            'x-xss-protection': [
+                '0',
+            ],
+            'x-frame-options': [
+                'SAMEORIGIN',
+            ],
+            'x-content-type-options': [
+                'nosniff',
+            ],
+            'alt-svc': [
+                'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
+            ],
+            connection: [
+                'close',
+            ],
+        },
+        body: {
+            issue: [
+                {
+                    code: 'no-store',
+                    details: {
+                        text: 'storage_error',
+                    },
+                    diagnostics: 'resource not found: Location/non-existent-location-id-12345',
+                    severity: 'error',
+                },
+            ],
+            resourceType: 'OperationOutcome',
+        },
+    },
+}

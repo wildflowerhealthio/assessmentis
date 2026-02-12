@@ -1,0 +1,77 @@
+{
+    meta: {
+        createdAt: '2026-02-12T20:30:42.586Z',
+        host: 'https://healthcare.googleapis.com',
+        resHumanReadable: true,
+        resUncompressed: true,
+    },
+    req: {
+        url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location',
+        method: 'POST',
+        headers: {},
+        body: 'ewogICJyZXNvdXJjZVR5cGUiOiAiTG9jYXRpb24iLAogICJuYW1lIjogIlNlYXJjaCBMb2NhdGlvbiBHYW1tYSIsCiAgInN0YXR1cyI6ICJhY3RpdmUiLAogICJpZGVudGlmaWVyIjogWwogICAgewogICAgICAic3lzdGVtIjogImh0dHA6Ly9leGFtcGxlLmNvbS9sb2NhdGlvbnMiLAogICAgICAidmFsdWUiOiAic2VhcmNoLWxvYy1nYW1tYSIKICAgIH0KICBdCn0=',
+    },
+    res: {
+        status: 201,
+        headers: {
+            'content-type': [
+                'application/fhir+json;charset=utf-8',
+            ],
+            'content-encoding': [
+                'gzip',
+            ],
+            'last-modified': [
+                'Thu, 12 Feb 2026 20:30:42 UTC',
+            ],
+            etag: [
+                'W/"MTc3MDkyODI0Mjc0ODg0MDAwMA"',
+            ],
+            location: [
+                'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/c29ff9fd-0fe4-4c84-8c6d-fcdefbe81d70/_history/MTc3MDkyODI0Mjc0ODg0MDAwMA',
+            ],
+            vary: [
+                'Origin, X-Origin, Referer',
+            ],
+            date: [
+                'Thu, 12 Feb 2026 20:30:42 GMT',
+            ],
+            server: [
+                'ESF',
+            ],
+            'x-xss-protection': [
+                '0',
+            ],
+            'x-frame-options': [
+                'SAMEORIGIN',
+            ],
+            'x-content-type-options': [
+                'nosniff',
+            ],
+            'alt-svc': [
+                'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
+            ],
+            connection: [
+                'close',
+            ],
+            'transfer-encoding': [
+                'chunked',
+            ],
+        },
+        body: {
+            id: 'c29ff9fd-0fe4-4c84-8c6d-fcdefbe81d70',
+            identifier: [
+                {
+                    system: 'http://example.com/locations',
+                    value: 'search-loc-gamma',
+                },
+            ],
+            meta: {
+                lastUpdated: '2026-02-12T20:30:42.748840+00:00',
+                versionId: 'MTc3MDkyODI0Mjc0ODg0MDAwMA',
+            },
+            name: 'Search Location Gamma',
+            resourceType: 'Location',
+            status: 'active',
+        },
+    },
+}

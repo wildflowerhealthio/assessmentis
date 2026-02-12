@@ -139,9 +139,7 @@ export const startGapiGoogleHealthcareClient: Effect.Effect<
       Effect.map((response) => response.result)
     )
 
-  const search: (typeof FhirR4Client.Service)['search'] = (
-    params: Record<string, string | undefined> & { resourceType: string }
-  ) => {
+  const search: (typeof FhirR4Client.Service)['search'] = (params) => {
     const { resourceType, ...searchParams } = params
     return Effect.tryPromise(() =>
       client.request({

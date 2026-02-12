@@ -60,7 +60,9 @@ export class FhirR4Client extends Context.Tag('BareFhirR4Client')<
     ) => Effect.Effect<unknown, AuthError | AuthzError | UnhandledError, never>
 
     search: (
-      params: Record<string, string | undefined> & { resourceType: string }
+      params: Record<string, string | readonly string[] | undefined> & {
+        resourceType: string
+      }
     ) => Effect.Effect<unknown, AuthError | AuthzError | UnhandledError, never>
   }
 >() {}

@@ -9,6 +9,7 @@ import {
   buildFhirResourcePath,
   createFhirResponseHandlers,
 } from '@assessmentis/fhir-client'
+import { flattenSearchParams } from '@assessmentis/util'
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
 import { UnknownException } from 'effect/Cause'
 import { UnhandledError } from '@assessmentis/ontology'
@@ -155,21 +156,24 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
 
     const search: (typeof FhirR4Client.Service)['search'] = (params) => {
       const { resourceType, ...searchParams } = params
+      // Flatten array values to comma-separated strings for FHIR OR semantics
+      // (gaxios would repeat keys for arrays, which is not FHIR-compliant)
+      const flatParams = flattenSearchParams(searchParams)
 
       return Effect.tryPromise(() =>
         healthcare.projects.locations.datasets.fhirStores.fhir.searchType(
           {
             parent,
             resourceType,
-            ...(Object.keys(searchParams).length > 0 && {
+            ...(Object.keys(flatParams).length > 0 && {
               requestBody: {
                 resourceType,
               },
             }),
           },
-          Object.keys(searchParams).length > 0
+          Object.keys(flatParams).length > 0
             ? {
-                params: searchParams,
+                params: flatParams,
               }
             : undefined
         )

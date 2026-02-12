@@ -14,13 +14,12 @@ export function ObservationFiltersBridge({
   const encounterId = searchParams.get('encounterId')
 
   useEffect(() => {
-    const filter: { subject?: string; encounter?: string } = {}
+    const filter: RepositoryFilters<Observation> = {}
     if (patientId) filter.subject = `Patient/${patientId}`
     if (encounterId) {
       filter.encounter = encounterId
         .split(',')
         .map((id) => `Encounter/${id.trim()}`)
-        .join(',')
     }
     handleFiltersChange(filter)
   }, [patientId, encounterId, handleFiltersChange])

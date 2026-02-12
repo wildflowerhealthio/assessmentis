@@ -1,0 +1,71 @@
+{
+    meta: {
+        createdAt: '2026-02-12T20:30:38.863Z',
+        host: 'https://healthcare.googleapis.com',
+        resHumanReadable: true,
+        resUncompressed: true,
+    },
+    req: {
+        url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location',
+        method: 'POST',
+        headers: {},
+        body: 'ewogICJyZXNvdXJjZVR5cGUiOiAiTG9jYXRpb24iLAogICJuYW1lIjogIkJlZm9yZSBVcGRhdGUgTG9jYXRpb24iLAogICJzdGF0dXMiOiAiYWN0aXZlIgp9',
+    },
+    res: {
+        status: 201,
+        headers: {
+            'content-type': [
+                'application/fhir+json;charset=utf-8',
+            ],
+            location: [
+                'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/3e1c5803-3226-4158-be3d-4eb5a003a514/_history/MTc3MDkyODIzOTAzOTQ5MzAwMA',
+            ],
+            'last-modified': [
+                'Thu, 12 Feb 2026 20:30:39 UTC',
+            ],
+            'content-encoding': [
+                'gzip',
+            ],
+            etag: [
+                'W/"MTc3MDkyODIzOTAzOTQ5MzAwMA"',
+            ],
+            vary: [
+                'Origin, X-Origin, Referer',
+            ],
+            date: [
+                'Thu, 12 Feb 2026 20:30:39 GMT',
+            ],
+            server: [
+                'ESF',
+            ],
+            'x-xss-protection': [
+                '0',
+            ],
+            'x-frame-options': [
+                'SAMEORIGIN',
+            ],
+            'x-content-type-options': [
+                'nosniff',
+            ],
+            'alt-svc': [
+                'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
+            ],
+            connection: [
+                'close',
+            ],
+            'transfer-encoding': [
+                'chunked',
+            ],
+        },
+        body: {
+            id: '3e1c5803-3226-4158-be3d-4eb5a003a514',
+            meta: {
+                lastUpdated: '2026-02-12T20:30:39.039493+00:00',
+                versionId: 'MTc3MDkyODIzOTAzOTQ5MzAwMA',
+            },
+            name: 'Before Update Location',
+            resourceType: 'Location',
+            status: 'active',
+        },
+    },
+}

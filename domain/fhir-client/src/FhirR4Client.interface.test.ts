@@ -68,7 +68,7 @@ export interface FhirR4ResourceCases {
     cases: {
       name: string
       /** Search parameters to use */
-      params: Record<string, string | undefined>
+      params: Record<string, string | readonly string[] | undefined>
       /** Assertion function called with search result Bundle */
       assertion: (result: unknown) => void
     }[]
