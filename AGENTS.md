@@ -26,6 +26,14 @@ All docs follow the [four-kinds convention](./docs/Documentation/Explanation.md)
 - [docs/Testing/](./docs/Testing/Testing%20Reference.md) — Property testing, unit testing, React testing, integration testing
 - [Documentation Reference](./docs/Documentation/Reference.md) — Naming rules for docs
 
+## Agent Index
+
+- [apps/frontend/app/layers/Platform Services Reference.md](apps/frontend/app/layers/Platform%20Services%20Reference.md) — Frontend platform services wiring
+- [global/ontology/Error Mapping Reference.md](global/ontology/Error%20Mapping%20Reference.md) — Cross-layer error taxonomy and mapping
+- [domain/clinical-domain/FHIR Modeling Reference.md](domain/clinical-domain/FHIR%20Modeling%20Reference.md) — FHIR R4 modeling conventions
+- [apps/frontend/app/routes/React Router Data APIs Reference.md](apps/frontend/app/routes/React%20Router%20Data%20APIs%20Reference.md) — Route module data APIs
+- [apps/frontend/e2e/E2E Testing Reference.md](apps/frontend/e2e/E2E%20Testing%20Reference.md) — Playwright test layout
+
 ## Commands
 
 ```bash

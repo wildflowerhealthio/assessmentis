@@ -14,3 +14,4 @@ Concrete implementations of domain interfaces. Talks to external services.
 - [Layer Implementation How-To](./Layer%20Implementation%20How-To.md) — Creating layers, error mapping, server-side infrastructure
 - [Effect Patterns Reference](../docs/Effect/Patterns%20Reference.md) — Repository pattern, Layer composition
 - [Architecture Explanation](../docs/Architecture/Explanation.md) — Why the domain/infrastructure split exists
+- [Error Mapping Reference](../global/ontology/Error%20Mapping%20Reference.md) — Canonical error taxonomy and mapping rules

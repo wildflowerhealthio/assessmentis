@@ -12,7 +12,9 @@ React Router v7 SPA with Tundra CSS and Effect-TS.
 ## References
 
 - [Design Reference](./Design%20Reference.md) — Typography, colors, spacing, CSS module naming
-- [Design Reference](./Design%20Reference.md) — Typography, colors, spacing, page structures, loading states
+- [Platform Services Reference](./app/layers/Platform%20Services%20Reference.md) — Frontend platform service wiring
+- [React Router Data APIs Reference](./app/routes/React%20Router%20Data%20APIs%20Reference.md) — Route module data APIs
+- [E2E Testing Reference](./e2e/E2E%20Testing%20Reference.md) — Playwright test layout
 - [Resource CRUD How-To](./app/modules/resources/Resource%20CRUD%20How-To.md) — Full resource CRUD implementation
 
 ## Commands
