@@ -18,6 +18,7 @@ import {
 import { WithId } from '@assessmentis/clinical-domain/data-types'
 import { NoSelectedOrgError } from '@assessmentis/platform-domain'
 import { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
+import { ClinicalStoreService } from '@assessmentis/clinical-store'
 
 export type FullEncounter = WithId<Encounter> & {
   questionnaireResponses: Array<
@@ -25,6 +26,80 @@ export type FullEncounter = WithId<Encounter> & {
   >
 }
 
+/**
+ * Get a full encounter with embedded questionnaire responses and questionnaires.
+ * This version uses ClinicalStoreService for automatic batching and caching.
+ */
+export const getFullEncounterWithStore = (
+  encounterId: EncounterId
+): Effect.Effect<
+  FullEncounter,
+  | UnhandledError
+  | AuthError
+  | AuthzError
+  | NotFoundError<'Encounter', { id: EncounterId }>
+  | ExternalAssertionError
+  | NoSelectedOrgError,
+  ClinicalStoreService
+> =>
+  Effect.gen(function* () {
+    const clinicalStoreService = yield* ClinicalStoreService
+
+    yield* Effect.logDebug('Getting full encounter with ID ', encounterId)
+
+    // Get the encounter
+    const encounter = yield* clinicalStoreService.get('Encounter', encounterId)
+
+    // Get all questionnaires (will be cached)
+    const allQuestionnaires = yield* clinicalStoreService.search('Questionnaire')
+
+    // Get questionnaire responses for this encounter
+    const responses = yield* clinicalStoreService.search(
+      'QuestionnaireResponse',
+      {
+        encounter: `Encounter/${encounterId}`,
+      }
+    )
+
+    // Attach questionnaires to responses
+    const questionnaireResponses = yield* Effect.all(
+      responses.map(
+        (
+          qr
+        ): Effect.Effect<
+          FullEncounter['questionnaireResponses'][0],
+          UnhandledError
+        > =>
+          Option.fromNullable<Questionnaire | undefined>(
+            allQuestionnaires.find(({ id }) => id == qr.questionnaire)
+          ).pipe(
+            Option.map((_questionnaire: Questionnaire) =>
+              Effect.succeed<FullEncounter['questionnaireResponses'][0]>({
+                ...qr,
+                _questionnaire,
+              })
+            ),
+            Option.getOrElse(() =>
+              Effect.fail(
+                new UnhandledError({
+                  message: `Questionnaire Response's Questionnaire '${qr.questionnaire}' could not be found`,
+                })
+              )
+            )
+          )
+      )
+    )
+
+    return {
+      ...encounter,
+      questionnaireResponses,
+    }
+  })
+
+/**
+ * Original stream-based version using ClinicalDataRepositoryService.
+ * Kept for backwards compatibility during migration.
+ */
 export const getFullEncounter = (
   encounterId: EncounterId
 ): Stream.Stream<
