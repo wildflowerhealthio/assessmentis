@@ -29,9 +29,9 @@ This reference documents how FHIR R4 resources are modeled in clinical-domain.
 
 ## Most-used code locations
 
-- Resource base types: [domain/clinical-domain/src/data-types/base](domain/clinical-domain/src/data-types/base)
-- DomainResource base: [domain/clinical-domain/src/data-types/base/DomainResource.ts](domain/clinical-domain/src/data-types/base/DomainResource.ts)
-- Example resource: [domain/clinical-domain/src/administration/resources/Patient.ts](domain/clinical-domain/src/administration/resources/Patient.ts)
-- Resource registry: [domain/clinical-domain/src/Schemas.ts](domain/clinical-domain/src/Schemas.ts)
-- Repository factory: [domain/clinical-domain/src/assessmentis/makeClinicalDataRepository.ts](domain/clinical-domain/src/assessmentis/makeClinicalDataRepository.ts)
-- Resource tests: [domain/clinical-domain/src/administration/resources](domain/clinical-domain/src/administration/resources)
+- Resource base types: [src/data-types/base](src/data-types/base)
+- DomainResource base: [src/data-types/base/DomainResource.ts](src/data-types/base/DomainResource.ts)
+- Example resource: [src/administration/resources/Patient.ts](src/administration/resources/Patient.ts)
+- Resource registry: [src/Schemas.ts](src/Schemas.ts)
+- Repository factory: [src/assessmentis/makeClinicalDataRepository.ts](src/assessmentis/makeClinicalDataRepository.ts)
+- Resource tests: [src/administration/resources](src/administration/resources)

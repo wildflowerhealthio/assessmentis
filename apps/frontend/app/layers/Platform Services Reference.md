@@ -33,11 +33,11 @@ This reference describes the client-side platform service graph used by the fron
 
 ## Most-used code locations
 
-- Platform context wiring: [apps/frontend/app/layers/PlatformContextProvider.tsx](apps/frontend/app/layers/PlatformContextProvider.tsx)
-- Context interface: [apps/frontend/app/layers/PlatformContext.tsx](apps/frontend/app/layers/PlatformContext.tsx)
-- Org context provider: [apps/frontend/app/layers/OrgContextProvider.tsx](apps/frontend/app/layers/OrgContextProvider.tsx)
-- Auth stream tag + pubsub: [domain/platform-domain/src/tagClasses/AuthDataService.ts](domain/platform-domain/src/tagClasses/AuthDataService.ts)
-- Hosted services: [domain/platform-domain/src/hostedServices](domain/platform-domain/src/hostedServices)
-- FHIR client service: [apps/frontend/app/layers/FhirR4ClientService.tsx](apps/frontend/app/layers/FhirR4ClientService.tsx)
-- Clinical repository service: [apps/frontend/app/layers/ClinicalDataRepositoriesService.ts](apps/frontend/app/layers/ClinicalDataRepositoriesService.ts)
-- Video call client service: [apps/frontend/app/layers/VideoCallClientService.tsx](apps/frontend/app/layers/VideoCallClientService.tsx)
+- Platform context wiring: [PlatformContextProvider.tsx](PlatformContextProvider.tsx)
+- Context interface: [PlatformContext.tsx](PlatformContext.tsx)
+- Org context provider: [OrgContextProvider.tsx](OrgContextProvider.tsx)
+- Auth stream tag + pubsub: [../../../../domain/platform-domain/src/tagClasses/AuthDataService.ts](../../../../domain/platform-domain/src/tagClasses/AuthDataService.ts)
+- Hosted services: [../../../../domain/platform-domain/src/hostedServices](../../../../domain/platform-domain/src/hostedServices)
+- FHIR client service: [FhirR4ClientService.tsx](FhirR4ClientService.tsx)
+- Clinical repository service: [ClinicalDataRepositoriesService.ts](ClinicalDataRepositoriesService.ts)
+- Video call client service: [VideoCallClientService.tsx](VideoCallClientService.tsx)

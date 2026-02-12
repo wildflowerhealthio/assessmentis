@@ -18,6 +18,6 @@ This reference describes how route modules use React Router v7 data APIs in this
 
 ## Most-used code locations
 
-- Example route module: [apps/frontend/app/routes/orgs.$orgSlug.tsx](apps/frontend/app/routes/orgs.$orgSlug.tsx)
-- Route type generation: [apps/frontend/react-router.config.ts](apps/frontend/react-router.config.ts)
-- Route components root: [apps/frontend/app/routes](apps/frontend/app/routes)
+- Example route module: [orgs.$orgSlug.tsx](orgs.$orgSlug.tsx)
+- Route type generation: [../../react-router.config.ts](../../react-router.config.ts)
+- Route components root: [.](.)

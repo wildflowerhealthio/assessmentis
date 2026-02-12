@@ -206,14 +206,10 @@ jobs:
           fail_level: error
           filter_mode: diff_context
           workdir: infrastructure/document-template-instances
-
-# -
-# -
-# -
-# -
-# -
-# -
-# -
-# -
-# -
-# -
+      - name: Lint all Markdown files
+        uses: reviewdog/action-markdownlint@v0.26.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_level: error
+          filter_mode: diff_context
