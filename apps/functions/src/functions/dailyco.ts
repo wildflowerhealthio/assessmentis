@@ -88,7 +88,7 @@ export const dailycoEffect = (
     return { externalRes }
   })
 
-const isMatch = (
+const hasMinimumUrlCaptures = (
   value: null | string[]
 ): value is [string, string, string, ...string[]] =>
   value != null && value.length >= 3
@@ -103,7 +103,7 @@ export const dailyco = onRequest(
       /^\/api\/daily-co-proxies\/([^/]+)\/(.*)$/
     )
 
-    if (!isMatch(urlMatch)) {
+    if (!hasMinimumUrlCaptures(urlMatch)) {
       error('Invalid URL')
       response.status(400).json({
         message: 'Bad Request, URL did not start with /api/daily-co-proxies',

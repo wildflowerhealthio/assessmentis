@@ -298,6 +298,11 @@ export const describeAsVideoCallClient = (
           expect(Array.isArray(transcripts)).toBe(true)
 
           // If there are transcripts, verify structure
+          if (transcripts.length === 0) {
+            return expect.fail(
+              'No transcripts found, cannot verify structure of transcript objects'
+            )
+          }
           const first = transcripts[0]
           expect(first.media.resourceType).toBe('Media')
           expect(first.media.status).toBe('completed')
