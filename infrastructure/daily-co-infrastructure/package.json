@@ -14,8 +14,8 @@
   "prettier": "@assessmentis/prettier-config",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "lint": "eslint \"./src/**/*\"",
-    "lint:fix": "eslint --fix \"./src/**/*\"",
+    "lint": "eslint \"./{src,test}/**/*\"",
+    "lint:fix": "eslint --fix \"./{src,test}/**/*\"",
     "test:integration": "RECORD=true vitest run test --config vitest.integration.config.ts",
     "test": "vitest run test --project \"*:unit\" --project \"*:integration\""
   },

@@ -1,7 +1,4 @@
-import { describe, expect, afterEach, beforeAll } from 'vitest'
-import { it } from '@effect/vitest'
-import { Effect } from 'effect'
-import { FhirR4Client } from '@assessmentis/fhir-client'
+import { describe, beforeAll } from 'vitest'
 import { describeAsFhirR4LocationClient } from '@assessmentis/fhir-client/interface-tests'
 import {
   LiveTestLayer,
