@@ -26,6 +26,8 @@ import {
   startFhirR4ClientService,
 } from './FhirR4ClientService'
 import { ClinicalDataRepositoryService } from './ClinicalDataRepositoriesService'
+import { ClinicalStoreService } from '@assessmentis/clinical-store'
+import { FhirR4Client } from '@assessmentis/fhir-client'
 import { startVideoCallClientService } from './VideoCallClientService'
 import { Await } from 'react-router'
 import { useEffectTs } from '@assessmentis/react-util'
@@ -65,6 +67,17 @@ const platformEffect = Effect.gen(function* () {
       )
     )
 
+  // Get the actual FhirR4Client from the service
+  const fhirClient = yield* fhirR4ClientService.client
+
+  const clinicalStoreService = yield* ClinicalStoreService.pipe(
+    Effect.provide(
+      ClinicalStoreService.Default.pipe(
+        Layer.provide(Layer.succeed(FhirR4Client, fhirClient))
+      )
+    )
+  )
+
   const VideoCallClientService = yield* startVideoCallClientService(
     authDataService,
     orgService.activeOrg
@@ -76,6 +89,7 @@ const platformEffect = Effect.gen(function* () {
     userService,
     fhirR4ClientService,
     clinicalDataRepositoryService,
+    clinicalStoreService,
     VideoCallClientService,
   }
 }).pipe(

@@ -6,6 +6,7 @@ import {
 } from '@assessmentis/platform-domain'
 import { FhirR4ClientService } from './FhirR4ClientService'
 import { ClinicalDataRepositoryService } from './ClinicalDataRepositoriesService'
+import { ClinicalStoreService } from '@assessmentis/clinical-store'
 import { VideoCallClientService } from './VideoCallClientService'
 
 export interface PlatformContext {
@@ -14,6 +15,7 @@ export interface PlatformContext {
   userService: typeof UserService.Service
   fhirR4ClientService: typeof FhirR4ClientService.Service
   clinicalDataRepositoryService: typeof ClinicalDataRepositoryService.Service
+  clinicalStoreService: typeof ClinicalStoreService.Service
   VideoCallClientService: typeof VideoCallClientService.Service
 }
 

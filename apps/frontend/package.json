@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@assessmentis/clinical-domain": "*",
+    "@assessmentis/clinical-store": "*",
     "@assessmentis/daily-co-components": "*",
     "@assessmentis/daily-co-infrastructure": "*",
     "@assessmentis/google-fhir-web-infrastructure": "*",
