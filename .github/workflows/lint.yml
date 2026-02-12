@@ -77,16 +77,6 @@ jobs:
           filter_mode: diff_context
           workdir: domain/platform-domain
 
-      - name: Lint domain/questionnaire-domain
-        uses: reviewdog/action-eslint@v1
-        continue-on-error: true
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          fail_level: error
-          filter_mode: diff_context
-          workdir: domain/questionnaire-domain
-
       - name: Lint domain/video-call-domain
         uses: reviewdog/action-eslint@v1
         continue-on-error: true
@@ -96,16 +86,6 @@ jobs:
           fail_level: error
           filter_mode: diff_context
           workdir: domain/video-call-domain
-
-      - name: Lint domain/document-domain
-        uses: reviewdog/action-eslint@v1
-        continue-on-error: true
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          fail_level: error
-          filter_mode: diff_context
-          workdir: domain/document-domain
 
       - name: Lint global/react-util
         uses: reviewdog/action-eslint@v1
@@ -208,4 +188,4 @@ jobs:
           workdir: infrastructure/document-template-instances
       - uses: DavidAnson/markdownlint-cli2-action@v22
         with:
-          config: .markdownlint-cli2.base.mjs
+          config: .base.markdownlint-cli2.mjs

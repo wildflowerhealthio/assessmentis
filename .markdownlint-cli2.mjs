@@ -1,4 +1,4 @@
-import baseConfig from './.markdownlint-cli2.base.mjs'
+import baseConfig from './.base.markdownlint-cli2.mjs'
 import relativeLinksRule from 'markdownlint-rule-relative-links'
 
 const config = {
