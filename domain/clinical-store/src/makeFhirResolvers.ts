@@ -74,8 +74,8 @@ const makeBundleDecoder = <
   const DataBundle = Bundle(schema)
   const rawDecodeBundle = Schema.decodeUnknown(DataBundle)
 
-  return (encodedBundle: unknown) =>
-    rawDecodeBundle(encodedBundle).pipe(
+  return (rawBundle: unknown) =>
+    rawDecodeBundle(rawBundle).pipe(
       Effect.mapError(
         (cause) =>
           new ExternalAssertionError({

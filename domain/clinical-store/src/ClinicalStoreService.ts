@@ -87,6 +87,9 @@ export class ClinicalStoreService extends Effect.Service<ClinicalStoreService>()
   > {
     return Effect.gen(function* () {
       const service = yield* ClinicalStoreService
+      // Using `as any` here is safe: TypeScript can't properly type-index through
+      // the resolvers record with a computed key, but we know at runtime the
+      // resourceType key will match. The public API maintains type safety.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const resolver = (service.resolvers as any)[resourceType].get
 
