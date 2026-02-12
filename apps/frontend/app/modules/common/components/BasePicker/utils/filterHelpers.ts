@@ -1,4 +1,4 @@
-import { PickerItem } from '../types/PickerTypes'
+import type { PickerItem } from '../types/PickerTypes'
 
 export function defaultFilter<T>(item: PickerItem<T>, query: string): boolean {
   const lowerQuery = query.toLowerCase()

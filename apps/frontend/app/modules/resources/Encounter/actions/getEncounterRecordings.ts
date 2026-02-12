@@ -1,16 +1,14 @@
 import { Effect } from 'effect'
-import {
+import type {
   UnhandledError,
   ExternalAssertionError,
   NotFoundError,
 } from '@assessmentis/ontology'
-import { WithId } from '@assessmentis/clinical-domain/data-types'
-import { EncounterId } from '@assessmentis/clinical-domain/administration'
-import {
-  Media,
-  MediaRepository,
-} from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { AuthError, AuthzError } from '@assessmentis/ontology'
+import type { WithId } from '@assessmentis/clinical-domain/data-types'
+import type { EncounterId } from '@assessmentis/clinical-domain/administration'
+import type { Media } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import { MediaRepository } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import type { AuthError, AuthzError } from '@assessmentis/ontology'
 
 /**
  * Fetches Media resources (recordings) linked to an encounter.

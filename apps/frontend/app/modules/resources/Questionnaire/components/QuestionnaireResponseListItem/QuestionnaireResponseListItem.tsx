@@ -1,7 +1,5 @@
-import { Link } from 'react-router'
 import type { QuestionnaireResponse } from '@assessmentis/clinical-domain/content-management'
-import { ResourceItemActions } from 'app/modules/common/components/ResourceItemActions/ResourceItemActions'
-import classes from './QuestionnaireResponseListItem.module.css'
+import { ResourceListItem } from '../../../ResourcePages/ResourceListItem/ResourceListItem'
 
 interface QuestionnaireResponseListItemProps {
   item: QuestionnaireResponse
@@ -20,24 +18,13 @@ export function QuestionnaireResponseListItem({
     : null
 
   return (
-    <>
-      <Link
-        to={`/QuestionnaireResponse/${item.id}`}
-        className={classes.QuestionnaireResponseListItem__content}
-      >
-        <strong>{displayName}</strong>
-        {lastUpdated ? (
-          <span className={classes.QuestionnaireResponseListItem__metadata}>
-            Updated: {lastUpdated}
-          </span>
-        ) : undefined}
-      </Link>
-      <ResourceItemActions
-        viewPath={`/QuestionnaireResponse/${item.id}`}
-        editPath={`/QuestionnaireResponse/${item.id}`}
-        onDelete={onDelete}
-        disabled={loading}
-      />
-    </>
+    <ResourceListItem
+      displayName={displayName}
+      summaryItems={lastUpdated ? [`Updated: ${lastUpdated}`] : []}
+      viewPath={`/QuestionnaireResponse/${item.id}`}
+      editPath={`/QuestionnaireResponse/${item.id}`}
+      onDelete={onDelete}
+      loading={loading}
+    />
   )
 }

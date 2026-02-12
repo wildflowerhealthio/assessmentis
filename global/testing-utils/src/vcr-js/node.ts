@@ -1,7 +1,9 @@
 import talkback from 'talkback/es6'
 import { http, passthrough, HttpResponse } from 'msw'
-import { SetupServerApi, setupServer } from 'msw/node'
-import { VcrOpts, vcrOptsTalkbackOptions, VcrServerOpts } from './types'
+import type { SetupServerApi } from 'msw/node'
+import { setupServer } from 'msw/node'
+import { vcrOptsTalkbackOptions } from './types'
+import type { VcrOpts, VcrServerOpts } from './types'
 export type { VcrServerOpts } from './types'
 
 export const startProxyServer = async (opts: VcrServerOpts) => {

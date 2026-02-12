@@ -1,5 +1,6 @@
 import codings from './codings'
-import { baseChoiceObservation, ObservationTemplate } from './internal'
+import type { ObservationTemplate } from './internal'
+import { baseChoiceObservation } from './internal'
 
 export const totalScore = {
   ...baseChoiceObservation,

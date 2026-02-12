@@ -1,4 +1,4 @@
-import { Questionnaire } from '@assessmentis/clinical-domain/content-management'
+import type { Questionnaire } from '@assessmentis/clinical-domain/content-management'
 import { createResourcePicker } from '../../../../common/utils/createResourcePicker'
 import { humanizeDateTimeForLocalReader } from '../../../../common/utils/dateUtils'
 

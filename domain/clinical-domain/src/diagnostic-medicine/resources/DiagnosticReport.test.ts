@@ -1,7 +1,7 @@
 import { expect, test, describe } from 'vitest'
 import { DiagnosticReport } from './DiagnosticReport'
-import { DeepReadonly } from '@assessmentis/util'
-import { DiagnosticReport as FhirDiagnosticReport } from 'fhir/r4'
+import type { DeepReadonly } from '@assessmentis/util'
+import type { DiagnosticReport as FhirDiagnosticReport } from 'fhir/r4'
 import { Arbitrary, Either, Schema } from 'effect'
 import * as fc from 'fast-check'
 

@@ -1,6 +1,6 @@
 import { DailyVideo } from '@daily-co/daily-react'
 import Username from '../Username/Username'
-import { CSSProperties } from 'react'
+import type { CSSProperties } from 'react'
 
 export default function Tile({
   id,

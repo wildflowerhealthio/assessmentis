@@ -1,14 +1,10 @@
 import { OrgPicker } from '../../../../layers/OrgPicker'
 import { NavBurger } from './NavBurger'
 import { OptionalBackButton } from './OptionalBackButton'
-import { Effect, Either, Stream, Scope, Option } from 'effect'
-import {
-  Org,
-  User,
-  OrgSlug,
-  UserId,
-  NoSelectedOrgError,
-} from '@assessmentis/platform-domain'
+import type { Effect, Scope } from 'effect'
+import { Either, Stream, Option } from 'effect'
+import type { Org, User, OrgSlug, UserId } from '@assessmentis/platform-domain'
+import { NoSelectedOrgError } from '@assessmentis/platform-domain'
 import classes from './NavHeader.module.css'
 import {
   AuthError,

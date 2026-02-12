@@ -1,12 +1,13 @@
-import {
+import type {
   ClinicalDataRepositoryErrors,
   ClinicalDataRepositoryErrorsWithNotFound,
   Schemas,
 } from '@assessmentis/clinical-domain'
-import { WithId } from '@assessmentis/clinical-domain/data-types'
-import { Effect, Schema } from 'effect'
+import type { WithId } from '@assessmentis/clinical-domain/data-types'
+import type { Schema } from 'effect'
+import { Effect } from 'effect'
 import { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
-import { NoSelectedOrgError } from '../../../../../../domain/platform-domain/src/hostedServices'
+import type { NoSelectedOrgError } from '../../../../../../domain/platform-domain/src/hostedServices'
 
 /**
  * Creates a generic create action for a resource

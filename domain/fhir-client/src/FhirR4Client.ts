@@ -1,12 +1,13 @@
-import { Context, Effect } from 'effect'
-import {
+import type { Effect } from 'effect'
+import { Context } from 'effect'
+import type {
   NotFoundError,
   UnhandledError,
   AuthError,
   AuthzError,
 } from '@assessmentis/ontology'
-import { Bundle } from '@assessmentis/clinical-domain/foundation-framework'
-import { DeepReadonly } from '@assessmentis/util'
+import type { Bundle } from '@assessmentis/clinical-domain/foundation-framework'
+import { type DeepReadonly } from '@assessmentis/util'
 
 export class FhirR4Client extends Context.Tag('BareFhirR4Client')<
   FhirR4Client,
@@ -59,7 +60,9 @@ export class FhirR4Client extends Context.Tag('BareFhirR4Client')<
     ) => Effect.Effect<unknown, AuthError | AuthzError | UnhandledError, never>
 
     search: (
-      params: Record<string, string | undefined> & { resourceType: string }
+      params: Record<string, string | readonly string[] | undefined> & {
+        resourceType: string
+      }
     ) => Effect.Effect<unknown, AuthError | AuthzError | UnhandledError, never>
   }
 >() {}

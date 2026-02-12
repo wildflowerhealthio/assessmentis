@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { Arbitrary, Schema, FastCheck } from 'effect'
+import type { ObservationFormData } from './ObservationFormSchema'
 import {
   ObservationFormSchema,
-  ObservationFormData,
   transformToObservation,
 } from './ObservationFormSchema'
 

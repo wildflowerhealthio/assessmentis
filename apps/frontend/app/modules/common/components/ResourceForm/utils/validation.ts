@@ -1,5 +1,5 @@
 import { ParseResult } from 'effect'
-import { FormError } from '../types/FormTypes'
+import type { FormError } from '../types/FormTypes'
 
 export function extractFormErrors(
   parseError: ParseResult.ParseError

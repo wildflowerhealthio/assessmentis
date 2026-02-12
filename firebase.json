@@ -3,6 +3,7 @@
     {
       "source": "apps/functions",
       "codebase": "default",
+      "runtime": "nodejs22",
       "disallowLegacyRuntimeConfig": true,
       "ignore": [
         "node_modules",
@@ -11,7 +12,10 @@
         "firebase-debug.*.log",
         "*.local"
       ],
-      "predeploy": ["npm run lint", "npm run build"]
+      "predeploy": [
+        "npm run lint --prefix apps/functions",
+        "npm run build --prefix apps/functions"
+      ]
     }
   ],
   "hosting": {
@@ -22,35 +26,35 @@
         "source": "/api/daily-co-proxies/**",
         "function": {
           "functionId": "dailyco",
-          "region": "northamerica-northeast2"
+          "region": "northamerica-northeast1"
         }
       },
       {
         "source": "/api/googleLogin",
         "function": {
           "functionId": "googleLogin",
-          "region": "northamerica-northeast2"
+          "region": "northamerica-northeast1"
         }
       },
       {
         "source": "/api/authed",
         "function": {
           "functionId": "oAuthCallback",
-          "region": "northamerica-northeast2"
+          "region": "northamerica-northeast1"
         }
       },
       {
         "source": "/api/refreshGoogleOAuthToken",
         "function": {
           "functionId": "refreshGoogleOAuthToken",
-          "region": "northamerica-northeast2"
+          "region": "northamerica-northeast1"
         }
       },
       {
         "source": "/api/sync-video-call-recordings",
         "function": {
           "functionId": "syncVideoCallRecordingsOnDemand",
-          "region": "northamerica-northeast2"
+          "region": "northamerica-northeast1"
         }
       },
       {

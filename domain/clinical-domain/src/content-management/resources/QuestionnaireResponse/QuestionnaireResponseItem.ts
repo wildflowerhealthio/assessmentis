@@ -1,10 +1,8 @@
 import { Schema } from 'effect'
 import { QuestionnaireItemLink } from '../Questionnaire/Questionnaire'
 import { BackboneElement } from '../../../data-types/base/BackboneElement'
-import {
-  ValueElement,
-  ValueElementEncoded,
-} from '../../../data-types/primitive/ValueElement'
+import type { ValueElementEncoded } from '../../../data-types/primitive/ValueElement'
+import { ValueElement } from '../../../data-types/primitive/ValueElement'
 
 export const QuestionnaireResponseItemId = Schema.String.pipe(
   Schema.brand('QuestionnaireResponseItemId')

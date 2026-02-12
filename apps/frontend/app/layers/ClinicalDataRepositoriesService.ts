@@ -1,5 +1,6 @@
-import { Effect, Either, Layer, pipe, Schema, Scope, Stream } from 'effect'
-import {
+import type { Layer, Schema, Scope } from 'effect'
+import { Effect, Either, pipe, Stream } from 'effect'
+import type {
   Schemas,
   ClinicalDomainRepositoryTagClass,
   ClinicalDataRepository,
@@ -11,6 +12,7 @@ import {
 } from '@assessmentis/clinical-domain/content-management'
 import {
   Encounter,
+  LocationFromFhirR4,
   Patient,
   Practitioner,
 } from '@assessmentis/clinical-domain/administration'
@@ -19,14 +21,11 @@ import {
   Media,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { makeClinicalDataRepository } from '@assessmentis/clinical-domain/assessmentis'
-import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
-import {
-  AuthError,
-  ExternalAssertionError,
-  UnhandledError,
-} from '@assessmentis/ontology'
+import type { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
+import type { AuthError, UnhandledError } from '@assessmentis/ontology'
+import { ExternalAssertionError } from '@assessmentis/ontology'
 import { FhirR4ClientService } from './FhirR4ClientService'
-import { NoSelectedOrgError } from '@assessmentis/platform-domain'
+import type { NoSelectedOrgError } from '@assessmentis/platform-domain'
 
 export type GoogleFhirWebLayer<Key extends keyof typeof Schemas> = Layer.Layer<
   ClinicalDomainRepositoryTagClass<Key>,
@@ -113,6 +112,7 @@ export class ClinicalDataRepositoryService extends Effect.Service<ClinicalDataRe
         effect: {
           Composition: clientEffect(Composition, 'Composition'),
           Encounter: clientEffect(Encounter, 'Encounter'),
+          Location: clientEffect(LocationFromFhirR4, 'Location'),
           Media: clientEffect(Media, 'Media'),
           Observation: clientEffect(Observation, 'Observation'),
           Patient: clientEffect(Patient, 'Patient'),
@@ -126,6 +126,7 @@ export class ClinicalDataRepositoryService extends Effect.Service<ClinicalDataRe
         stream: {
           Composition: clientStream(Composition, 'Composition'),
           Encounter: clientStream(Encounter, 'Encounter'),
+          Location: clientStream(LocationFromFhirR4, 'Location'),
           Media: clientStream(Media, 'Media'),
           Observation: clientStream(Observation, 'Observation'),
           Patient: clientStream(Patient, 'Patient'),

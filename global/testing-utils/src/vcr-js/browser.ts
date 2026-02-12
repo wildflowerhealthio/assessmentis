@@ -1,7 +1,7 @@
 import { http, bypass, getResponse } from 'msw'
 import { setupWorker } from 'msw/browser'
 import { XMLHttpRequestInterceptor } from '@mswjs/interceptors/XMLHttpRequest'
-import { VcrOpts } from './types'
+import type { VcrOpts } from './types'
 import { IS_PATCHED_MODULE } from '@mswjs/interceptors'
 export type { VcrOpts } from './types'
 

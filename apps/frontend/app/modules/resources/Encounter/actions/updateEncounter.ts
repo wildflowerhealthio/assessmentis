@@ -1,17 +1,20 @@
 import { DateTime, Effect } from 'effect'
-import {
+import type {
   Encounter,
   EncounterId,
-  EncounterRepository,
 } from '@assessmentis/clinical-domain/administration'
 import {
+  EncounterRepository,
+  Location,
+} from '@assessmentis/clinical-domain/administration'
+import type {
   ExternalAssertionError,
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
-import { WithId } from '@assessmentis/clinical-domain/data-types'
-import { EncounterFormData } from '../schemas/EncounterFormSchema'
-import { AuthError, AuthzError } from '@assessmentis/ontology'
+import type { WithId } from '@assessmentis/clinical-domain/data-types'
+import type { EncounterFormData } from '../schemas/EncounterFormSchema'
+import type { AuthError, AuthzError } from '@assessmentis/ontology'
 
 export const updateEncounter = (
   id: EncounterId,
@@ -49,19 +52,23 @@ export const updateEncounter = (
               end: formData.periodEnd?.pipe(DateTime.toUtc),
             }
           : undefined,
-      // Update location display (preserve video room location if it exists)
-      location: formData.locationDisplay
-        ? [
-            // Keep existing video room location if it exists
-            ...(currentEncounter.location ?? []),
-            // Add/update the display location
-            {
-              location: {
-                display: formData.locationDisplay,
+      // Update location references (preserve virtual/video room locations)
+      location: [
+        // Keep existing virtual location entries (video room)
+        ...(currentEncounter.location?.filter((l) =>
+          Location.isVirtualLocation(l)
+        ) ?? []),
+        // Add user-selected physical location if provided
+        ...(formData.locationId
+          ? [
+              {
+                location: {
+                  reference: `Location/${formData.locationId}`,
+                },
               },
-            },
-          ]
-        : currentEncounter.location,
+            ]
+          : []),
+      ],
     }
 
     return yield* repository.update(updatedEncounter)

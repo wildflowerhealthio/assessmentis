@@ -7,7 +7,7 @@ import {
   ComboboxOptions,
 } from '@headlessui/react'
 import { cn } from '@assessmentis/react-util'
-import { BasePickerProps, PromisedPickerProps } from './types/PickerTypes'
+import type { BasePickerProps, PromisedPickerProps } from './types/PickerTypes'
 import { usePickerFilter } from './hooks/usePickerFilter'
 import { usePickerSelection } from './hooks/usePickerSelection'
 import classes from './BasePicker.module.css'

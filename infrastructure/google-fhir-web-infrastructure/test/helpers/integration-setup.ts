@@ -1,8 +1,6 @@
 import { Effect, Layer, pipe } from 'effect'
-import {
-  GoogleFhirConfig,
-  LoadedGoogleFhirConfig,
-} from '@assessmentis/config-domain'
+import type { GoogleFhirConfig } from '@assessmentis/config-domain'
+import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
 
 import {
   LoadedGapiClient,

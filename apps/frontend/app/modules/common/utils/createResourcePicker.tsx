@@ -1,11 +1,11 @@
-import { Schema } from 'effect'
+import type { Schema } from 'effect'
 import { PromisedDataPicker } from '../components/BasePicker/BasePicker'
 import { usePickerData } from '../components/BasePicker/hooks/usePickerData'
-import {
+import type {
   BasePickerProps,
   PickerItem,
 } from '../components/BasePicker/types/PickerTypes'
-import { Schemas } from '@assessmentis/clinical-domain'
+import type { Schemas } from '@assessmentis/clinical-domain'
 
 /**
  * Configuration for creating a resource picker component

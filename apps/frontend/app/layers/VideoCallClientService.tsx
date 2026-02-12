@@ -1,6 +1,6 @@
 import { DailyCoVideoCallClientLayer } from '@assessmentis/daily-co-infrastructure'
+import type { AuthError } from '@assessmentis/ontology'
 import {
-  AuthError,
   BadDataError,
   NotFoundError,
   UnhandledError,
@@ -8,7 +8,7 @@ import {
 import { VideoCallClient } from '@assessmentis/video-call-domain'
 import { Context, Effect, Match } from 'effect'
 
-import {
+import type {
   Org,
   AuthDataService,
   NoSelectedOrgError,

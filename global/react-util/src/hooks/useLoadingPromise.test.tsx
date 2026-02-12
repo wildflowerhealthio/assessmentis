@@ -1,7 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
 import * as fc from 'fast-check'
-import { useLoadingPromise, LoadingPromiseState } from './useLoadingPromise'
+import {
+  useLoadingPromise,
+  type LoadingPromiseState,
+} from './useLoadingPromise'
 
 describe('useLoadingPromise', () => {
   it('should start in loading state and transition to resolved', async () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { Effect, Exit, Cause } from 'effect'
-import { UserId } from '@assessmentis/platform-domain'
+import type { UserId } from '@assessmentis/platform-domain'
 import { createMockFirestore } from './__tests__/mocks'
 
 // Mock firebase-admin modules before imports

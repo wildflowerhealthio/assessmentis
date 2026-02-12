@@ -8,6 +8,7 @@ Read [AGENTS Explanation](./docs/Agents/Explanation.md) for what this file is an
 - **Domain packages must be pure** — no side effects, no HTTP, no DB, no file I/O
 - **Changes MUST include corresponding test updates**
 - **This project is picky about testing** — Read [docs/Testing/](./docs/Testing/Testing%20Reference.md)
+- **Clarify before building** — Before starting any task, pause and think about the request, then ask ~5 clarifying questions to minimize guessing and confirm shared understanding. Finish with: "Do you think I understand well enough, or should I ask more questions?" If the user says to ask more, do another think-and-ask cycle. Err on the side of asking too many questions.
 
 ## Branch Naming
 

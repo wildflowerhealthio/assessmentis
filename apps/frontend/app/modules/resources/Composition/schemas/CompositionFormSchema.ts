@@ -1,5 +1,5 @@
 import { Schema, DateTime, Effect } from 'effect'
-import { Composition } from '@assessmentis/clinical-domain/content-management'
+import type { Composition } from '@assessmentis/clinical-domain/content-management'
 
 export const CompositionFormSchema = Schema.Struct({
   title: Schema.String,

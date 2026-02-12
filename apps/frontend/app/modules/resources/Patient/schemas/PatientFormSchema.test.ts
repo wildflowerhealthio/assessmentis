@@ -1,11 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { Schema, FastCheck } from 'effect'
-import {
-  PatientFormSchema,
-  transformToPatient,
-  PatientFormData,
-} from './PatientFormSchema'
-import { AdministrativeGender } from '@assessmentis/clinical-domain/administration'
+import type { PatientFormData } from './PatientFormSchema'
+import { PatientFormSchema, transformToPatient } from './PatientFormSchema'
+import type { AdministrativeGender } from '@assessmentis/clinical-domain/administration'
 
 // NOTE: This test requires vitest to be installed
 // Run: npm install --save-dev vitest @effect/vitest

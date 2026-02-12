@@ -1,0 +1,48 @@
+{
+    meta: {
+        createdAt: '2026-02-10T21:24:35.056Z',
+        host: 'https://api.daily.co',
+        resHumanReadable: true,
+    },
+    req: {
+        url: '/v1/meeting-tokens',
+        method: 'POST',
+        headers: {},
+        body: 'ewogICJwcm9wZXJ0aWVzIjogewogICAgInJvb21fbmFtZSI6ICJ0dGI4WVJ1a0pRWWdua0tmQW1ZaCIsCiAgICAiaXNfb3duZXIiOiB0cnVlCiAgfQp9',
+    },
+    res: {
+        status: 200,
+        headers: {
+            date: [
+                'Tue, 10 Feb 2026 21:24:35 GMT',
+            ],
+            'content-type': [
+                'application/json; charset=utf-8',
+            ],
+            'content-length': [
+                '223',
+            ],
+            connection: [
+                'close',
+            ],
+            'strict-transport-security': [
+                'max-age=31536000 ; includeSubDomains',
+            ],
+            'access-control-allow-origin': [
+                '*',
+            ],
+            'access-control-allow-headers': [
+                'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Invite-Token, X-DailySessionId, X-DailyJoinToken, X-DailyAboutClient, Traceparent, Tracestate, Request-Id',
+            ],
+            'access-control-allow-methods': [
+                'OPTIONS,HEAD,GET,POST,PUT,PATCH,DELETE',
+            ],
+            etag: [
+                'W/"df-w1OW5Ntr8BtraDMyOB554suQr9E"',
+            ],
+        },
+        body: {
+            token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyIjoidHRiOFlSdWtKUVlnbmtLZkFtWWgiLCJvIjp0cnVlLCJkIjoiYmYzYjcxZWEtNGUzZC00NDE0LTkxMTYtZWE5Zjg4MGI4NjYwIiwiaWF0IjoxNzcwNzU4Njc1fQ.L2ynEQSae8x04rXQdF1DkdIbplCqmJ3MbE3AvKdyBGo',
+        },
+    },
+}

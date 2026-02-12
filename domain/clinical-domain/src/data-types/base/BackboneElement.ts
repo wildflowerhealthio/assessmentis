@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
-import { Element, ElementEncoded } from '../base/Element'
-import { Extension, ExtensionEncoded } from '../special-purpose/Extension'
+import { Element, type ElementEncoded } from '../base/Element'
+import { Extension, type ExtensionEncoded } from '../special-purpose/Extension'
 
 export interface BackboneElement<
   TypeId extends string,

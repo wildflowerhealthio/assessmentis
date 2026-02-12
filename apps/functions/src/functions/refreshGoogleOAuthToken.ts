@@ -7,7 +7,8 @@ import { AuthError } from '@assessmentis/ontology'
 import { defaultHttpOptions, oauth2Client } from '../util/functionContext'
 import { CurrentUserIdLayerLive } from '../layers/CurrentUserIdLayerLive'
 import { handleError } from '../util/handleError'
-import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
+import type { UnhandledError } from '@assessmentis/ontology'
+import { NotFoundError } from '@assessmentis/ontology'
 import { AuthRepository } from '@assessmentis/firebase-server-infrastructure'
 import { makeRequestRuntime } from '../util/BaseLayer'
 
@@ -60,7 +61,7 @@ export const refreshGoogleOAuthTokenEffect: Effect.Effect<
 })
 
 export const refreshGoogleOAuthToken = onRequest(
-  defaultHttpOptions,
+  { ...defaultHttpOptions, memory: '512MiB' },
   async (request: Request, response: Response) => {
     info('Received request to refresh Google OAuth token')
     const runtime = makeRequestRuntime(

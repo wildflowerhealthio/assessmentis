@@ -3,26 +3,13 @@ import {
   StreamEither,
   takeOneFromPubSubOrDie,
 } from '@assessmentis/util'
-import {
-  Context,
-  Effect,
-  Either,
-  Fiber,
-  PubSub,
-  Schema,
-  Scope,
-  Stream,
-  Take,
-} from 'effect'
-import {
-  AuthError,
-  NotFoundError,
-  BadDataError,
-  UnhandledError,
-} from '@assessmentis/ontology'
+import type { Either, Scope, Take } from 'effect'
+import { Context, Effect, Fiber, PubSub, Schema, Stream } from 'effect'
+import type { AuthError, UnhandledError } from '@assessmentis/ontology'
+import { NotFoundError, BadDataError } from '@assessmentis/ontology'
 import { User } from '../models/User'
 import { AuthDataService, DocumentStore } from '../tagClasses'
-import { UserId } from '../models/UserId'
+import type { UserId } from '../models/UserId'
 
 const decodeUser = (data: unknown) =>
   Schema.decodeUnknown(User)(data).pipe(

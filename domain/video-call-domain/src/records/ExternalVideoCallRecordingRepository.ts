@@ -1,7 +1,7 @@
-import { Effect } from 'effect'
-import { UnknownException } from 'effect/Cause'
-import { ExternalVideoCallRecording } from './ExternalVideoCallRecording'
-import { VideoCallRoomName } from './VideoCallRoom'
+import type { Effect } from 'effect'
+import type { UnknownException } from 'effect/Cause'
+import type { ExternalVideoCallRecording } from './ExternalVideoCallRecording'
+import type { VideoCallRoomName } from './VideoCallRoom'
 
 export abstract class ExternalVideoCallRecordingRepository {
   abstract fetchRecordingsByRoomName(

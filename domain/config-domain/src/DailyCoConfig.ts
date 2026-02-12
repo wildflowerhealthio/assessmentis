@@ -1,5 +1,6 @@
-import { Context, Effect, Schema } from 'effect'
-import {
+import type { Effect } from 'effect'
+import { Context, Schema } from 'effect'
+import type {
   UnhandledError,
   ExternalAssertionError,
   AuthError,

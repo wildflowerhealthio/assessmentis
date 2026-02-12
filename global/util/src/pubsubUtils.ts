@@ -1,13 +1,5 @@
-import {
-  Effect,
-  PubSub,
-  Take,
-  Stream,
-  Scope,
-  Chunk,
-  Option,
-  Either,
-} from 'effect'
+import type { PubSub, Scope, Either } from 'effect'
+import { Effect, Take, Stream, Chunk, Option } from 'effect'
 
 export const pubsubAsPerpetualStream = <A, E>(
   pubSub: PubSub.PubSub<Take.Take<Either.Either<A, E>>>

@@ -1,13 +1,15 @@
 import { Data, DateTime, Effect, Equal, Match } from 'effect'
 import { type ChangeEventHandler, type SetStateAction } from 'react'
 import classes from './RadioQuestionnaireItemForm.module.css'
-import {
+import type {
   QuestionnaireItem,
-  QuestionnaireItemUIControlCode,
   QuestionnaireResponseItem,
+} from '@assessmentis/clinical-domain/content-management'
+import {
+  QuestionnaireItemUIControlCode,
   withAnsweredAt,
 } from '@assessmentis/clinical-domain/content-management'
-import { ValueElement } from '@assessmentis/clinical-domain/data-types'
+import type { ValueElement } from '@assessmentis/clinical-domain/data-types'
 import { cn } from '@assessmentis/react-util'
 
 export interface IProps {

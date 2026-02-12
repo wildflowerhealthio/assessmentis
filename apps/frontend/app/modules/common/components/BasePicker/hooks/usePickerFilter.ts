@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { PickerItem } from '../types/PickerTypes'
+import type { PickerItem } from '../types/PickerTypes'
 import { defaultFilter } from '../utils/filterHelpers'
 
 export function usePickerFilter<T>(

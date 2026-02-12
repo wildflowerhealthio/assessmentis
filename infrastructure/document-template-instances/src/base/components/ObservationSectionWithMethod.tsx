@@ -1,4 +1,4 @@
-import { ObservationSectionWithMethodComponent } from '@assessmentis/document-template-kinds'
+import type { ObservationSectionWithMethodComponent } from '@assessmentis/document-template-kinds'
 
 export const ObservationSectionWithMethod: ObservationSectionWithMethodComponent =
   ({ observation }) => {

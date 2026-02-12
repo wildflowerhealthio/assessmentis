@@ -1,23 +1,8 @@
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  SuiteCollector,
-  SuiteFactory,
-} from 'vitest'
+import type { SuiteCollector, SuiteFactory } from 'vitest'
+import { afterEach, beforeEach, describe, expect } from 'vitest'
 import { it } from '@effect/vitest'
-import {
-  Effect,
-  Exit,
-  Cause,
-  pipe,
-  Option,
-  TestClock,
-  Layer,
-  DateTime,
-  Console,
-} from 'effect'
+import type { Layer, DateTime } from 'effect'
+import { Effect, Exit, Cause, pipe, Option, TestClock, Console } from 'effect'
 import {
   VideoCallClient,
   VideoCallRoomName,
@@ -44,6 +29,7 @@ export interface DescribeAsVideoCallClientOptions {
   testRooms: {
     roomName: VideoCallRoomName
     recordings: number
+    transcriptions: number
   }[]
 }
 
@@ -51,7 +37,7 @@ export const describeAsVideoCallClient = (
   VideoCallClientLayer: Layer.Layer<VideoCallClient, never, never>,
   {
     roomDomain = null,
-    testTime = '2026-02-03T04:00:00.000Z',
+    testTime = '2029-02-03T04:00:00.000Z',
     testRooms = [],
     nonExistentRoomName = VideoCallRoomName.make('non-existent-room-ccf5e9ad'),
   }: DescribeAsVideoCallClientOptions,
@@ -249,6 +235,59 @@ export const describeAsVideoCallClient = (
       )
     })
 
+    describe('createRoomToken + parseMeetingToken', () => {
+      it.effect('should create and parse a non-owner token for a room', () =>
+        Effect.gen(function* () {
+          const client = yield* VideoCallClient
+          yield* TestClock.setTime(testTime)
+
+          const room = yield* client.createRoom({
+            enableChat: false,
+            enableRecording: false,
+          })
+          deleteRoomAfterTest(room.roomName)
+
+          const token = yield* client.createRoomToken({
+            roomName: room.roomName,
+          })
+
+          expect(token).toBeTypeOf('string')
+          expect(token.length).toBeGreaterThan(0)
+
+          const parsed = yield* client.parseMeetingToken(token)
+
+          expect(parsed.roomName).toBe(room.roomName)
+          expect(parsed.isOwner).toBe(false)
+        }).pipe(Effect.provide(VideoCallClientLayer))
+      )
+
+      it.effect('should create and parse an owner token for a room', () =>
+        Effect.gen(function* () {
+          const client = yield* VideoCallClient
+          yield* TestClock.setTime(testTime)
+
+          const room = yield* client.createRoom({
+            enableChat: false,
+            enableRecording: false,
+          })
+          deleteRoomAfterTest(room.roomName)
+
+          const token = yield* client.createRoomToken({
+            roomName: room.roomName,
+            is_owner: true,
+          })
+
+          expect(token).toBeTypeOf('string')
+          expect(token.length).toBeGreaterThan(0)
+
+          const parsed = yield* client.parseMeetingToken(token)
+
+          expect(parsed.roomName).toBe(room.roomName)
+          expect(parsed.isOwner).toBe(true)
+        }).pipe(Effect.provide(VideoCallClientLayer))
+      )
+    })
+
     describe('listAllTranscripts', () => {
       it.effect('should return an array of transcripts', () =>
         Effect.gen(function* () {
@@ -259,12 +298,15 @@ export const describeAsVideoCallClient = (
           expect(Array.isArray(transcripts)).toBe(true)
 
           // If there are transcripts, verify structure
-          if (transcripts.length > 0) {
-            const first = transcripts[0]
-            expect(first.media.resourceType).toBe('Media')
-            expect(first.media.status).toBe('completed')
-            expect(typeof first.roomName).toBe('string')
+          if (transcripts.length === 0) {
+            return expect.fail(
+              'No transcripts found, cannot verify structure of transcript objects'
+            )
           }
+          const first = transcripts[0]
+          expect(first.media.resourceType).toBe('Media')
+          expect(first.media.status).toBe('completed')
+          expect(typeof first.roomName).toBe('string')
         }).pipe(Effect.provide(VideoCallClientLayer))
       )
     })

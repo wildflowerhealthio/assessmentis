@@ -1,7 +1,10 @@
-import { Effect, Either, Scope, Stream } from 'effect'
-import { AuthData, DocumentStore } from '@assessmentis/platform-domain'
+import type { Either, Scope } from 'effect'
+import { Effect, Stream } from 'effect'
+import type { AuthData } from '@assessmentis/platform-domain'
+import { DocumentStore } from '@assessmentis/platform-domain'
 import { LoadedGapiClient } from '../services/LoadedGapiClient'
-import { AuthError, NotFoundError } from '@assessmentis/ontology'
+import { AuthError } from '@assessmentis/ontology'
+import { NotFoundError } from '@assessmentis/ontology'
 import { StreamEither } from '@assessmentis/util'
 
 export const startAccessTokenSyncer = (
@@ -16,12 +19,7 @@ export const startAccessTokenSyncer = (
     const documentStore = yield* DocumentStore
     let authTokenRefreshTimeout: ReturnType<typeof setTimeout> | null = null
 
-    const syncToken = async (
-      authToken: string,
-      token: string,
-      expiresAt: Date,
-      expiresInMillis: number
-    ) => {
+    const syncToken = async (authToken: string) => {
       authTokenRefreshTimeout = null
 
       await fetch('/api/refreshGoogleOAuthToken', {
@@ -33,10 +31,12 @@ export const startAccessTokenSyncer = (
         body: JSON.stringify({}),
       }).catch(function (error) {
         console.log('failed to fetch ' + error)
+        throw new AuthError({
+          message: 'Failed to refresh Google OAuth token',
+          cause: error,
+        })
       })
-
-      console.log(`Got Token it expires at ${expiresAt}, in ${expiresInMillis}`)
-      client.setToken({ access_token: token })
+      console.log('Finished refreshing token')
     }
 
     const accessTokenStream = userStream.pipe(
@@ -75,15 +75,20 @@ export const startAccessTokenSyncer = (
                 clearTimeout(authTokenRefreshTimeout)
               }
               const shouldSyncInMillis = expiresInMillis - 5 * 60 * 1000
-
+              console.log('New token loaded from firebase', {
+                shouldSyncInMillis,
+                token,
+                expiresAt,
+                expiresInMillis,
+              })
               if (shouldSyncInMillis > 0) {
                 client.setToken({ access_token: token })
                 authTokenRefreshTimeout = setTimeout(
-                  () => syncToken(authToken, token, expiresAt, expiresInMillis),
+                  () => syncToken(authToken),
                   shouldSyncInMillis
                 )
               } else {
-                syncToken(authToken, token, expiresAt, expiresInMillis)
+                syncToken(authToken)
               }
             })
           )

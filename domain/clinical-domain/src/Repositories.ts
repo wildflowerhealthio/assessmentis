@@ -1,5 +1,6 @@
 import {
   EncounterRepository,
+  LocationRepository,
   PatientRepository,
   PractitionerRepository,
 } from './administration'
@@ -9,12 +10,13 @@ import {
 } from './content-management'
 import { CompositionRepository } from './content-management'
 import { MediaRepository, ObservationRepository } from './diagnostic-medicine'
-import Schemas from './Schemas'
-import { ClinicalDomainRepositoryTagClass } from './types'
+import type Schemas from './Schemas'
+import type { ClinicalDomainRepositoryTagClass } from './types'
 
 const Repositories = {
   Composition: CompositionRepository,
   Encounter: EncounterRepository,
+  Location: LocationRepository,
   Media: MediaRepository,
   Observation: ObservationRepository,
   Patient: PatientRepository,
@@ -27,6 +29,7 @@ const Repositories = {
 export interface RepositoriesType {
   Composition: typeof CompositionRepository
   Encounter: typeof EncounterRepository
+  Location: typeof LocationRepository
   Media: typeof MediaRepository
   Observation: typeof ObservationRepository
   Patient: typeof PatientRepository

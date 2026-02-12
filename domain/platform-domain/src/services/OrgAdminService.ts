@@ -1,12 +1,8 @@
 import { Context, Effect, Layer, Schema } from 'effect'
 import { User } from '../models/User'
-import { UserId } from '../models/UserId'
-import {
-  AuthError,
-  AuthzError,
-  NotFoundError,
-  UnhandledError,
-} from '@assessmentis/ontology'
+import type { UserId } from '../models/UserId'
+import type { AuthError, AuthzError } from '@assessmentis/ontology'
+import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
 import { CurrentOrg, DocumentStore } from '../tagClasses'
 
 // OAuth token schema

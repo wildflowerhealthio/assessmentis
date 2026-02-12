@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Effect, Either, Stream } from 'effect'
+import type { Either } from 'effect'
+import { Effect, Stream } from 'effect'
 import type { Org, NoSelectedOrgError } from '@assessmentis/platform-domain'
 import { neverUsedMock } from '@assessmentis/util'
 import type { PlatformContext } from './layers/PlatformContext'

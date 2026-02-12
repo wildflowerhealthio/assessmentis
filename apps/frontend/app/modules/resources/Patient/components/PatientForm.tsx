@@ -6,7 +6,7 @@ import {
 } from 'app/modules/common/components/ResourceForm'
 import { PractitionerPicker } from 'app/modules/resources/Practitioner/components/PractitionerPicker'
 import { GenderPicker } from 'app/modules/resources/Practitioner/components/GenderPicker'
-import { CommonFieldProps } from 'app/modules/common/components/ResourceForm/ResourceForm'
+import type { CommonFieldProps } from 'app/modules/common/components/ResourceForm/ResourceForm'
 import {
   PatientFormSchema,
   type PatientFormData,

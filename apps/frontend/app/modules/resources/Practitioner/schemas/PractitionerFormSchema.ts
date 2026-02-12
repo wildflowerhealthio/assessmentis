@@ -1,8 +1,6 @@
 import { Schema } from 'effect'
-import {
-  Practitioner,
-  AdministrativeGender,
-} from '@assessmentis/clinical-domain/administration'
+import type { Practitioner } from '@assessmentis/clinical-domain/administration'
+import { AdministrativeGender } from '@assessmentis/clinical-domain/administration'
 
 export const PractitionerFormSchema = Schema.Struct({
   givenName: Schema.String,

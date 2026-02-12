@@ -1,4 +1,5 @@
-import { Chunk, Effect, Option, Stream, StreamEmit } from 'effect'
+import type { StreamEmit } from 'effect'
+import { Chunk, Effect, Option, Stream } from 'effect'
 
 export const unsubscribableCallbackAsStream = <A, E>(
   subscribe: (onElement: (e: Effect.Effect<A, E>) => void) => () => void

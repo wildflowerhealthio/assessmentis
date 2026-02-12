@@ -7,8 +7,10 @@ import {
 import {
   EncounterRepository,
   Encounter,
+  LocationRepository,
+  Location,
 } from '@assessmentis/clinical-domain/administration'
-import {
+import type {
   AuthError,
   AuthzError,
   UnhandledError,
@@ -41,17 +43,54 @@ export const createEncounter = (
 ): Effect.Effect<
   CreateEncounterResponse,
   UnhandledError | AuthError | AuthzError | ExternalAssertionError,
-  EncounterRepository | QuestionnaireResponseRepository | VideoCallClient
+  | EncounterRepository
+  | QuestionnaireResponseRepository
+  | VideoCallClient
+  | LocationRepository
 > => {
   return Effect.gen(function* () {
     const encounterRepository = yield* EncounterRepository
     const questionnaireResponseRepository =
       yield* QuestionnaireResponseRepository
+    const locationRepository = yield* LocationRepository
     const videoCalls = yield* VideoCallClient
 
     const externalVideoCallRoom = yield* videoCalls.createRoom({
       enableRecording: true,
     })
+
+    // Create a standalone Location resource for the video room
+    const videoRoomLocation = yield* locationRepository.create({
+      resourceType: 'Location',
+      name: 'Video Room',
+      identifier: [
+        {
+          system: 'http://assessment.is/fhir/video-call-room-name',
+          value: externalVideoCallRoom.url,
+        },
+      ],
+      status: 'active',
+      mode: 'instance',
+    })
+
+    // Build location array with proper references
+    const videoRoomEntry = {
+      location: { reference: `Location/${videoRoomLocation.id}` },
+      physicalType: {
+        coding: [
+          {
+            system:
+              'http://terminology.hl7.org/CodeSystem/location-physical-type',
+            code: Code.make('vi'),
+            display: 'Virtual',
+          },
+        ],
+      },
+    }
+
+    // Add user-selected physical location if provided
+    const userLocationEntries =
+      args.location?.filter((l) => !Location.isVirtualLocation(l)) ?? []
 
     const encounterData = {
       resourceType: 'Encounter',
@@ -60,18 +99,9 @@ export const createEncounter = (
         system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
         code: Code.make('VR'),
       },
-      location: [
-        {
-          location: {
-            identifier: {
-              system: 'http://assessment.is/fhir/video-call-room-name',
-              value: externalVideoCallRoom.url,
-            },
-          },
-        },
-      ],
       status: 'planned',
       ...args,
+      location: [videoRoomEntry, ...userLocationEntries],
     } as const
 
     const createdEncounter = yield* encounterRepository.create(encounterData)

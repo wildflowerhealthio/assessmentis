@@ -1,12 +1,12 @@
 import {
   CfnOutput,
   Stack,
-  StackProps,
+  type StackProps,
   Duration,
   aws_s3,
   aws_iam,
 } from 'aws-cdk-lib'
-import { Construct } from 'constructs'
+import type { Construct } from 'constructs'
 
 export class DailyRecordingBucket extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {

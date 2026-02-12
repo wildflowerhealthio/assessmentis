@@ -1,7 +1,7 @@
 import { expect, test, describe } from 'vitest'
 import { ContactPoint } from './ContactPoint'
-import { DeepReadonly } from '@assessmentis/util'
-import { ContactPoint as FhirContactPoint } from 'fhir/r4'
+import type { DeepReadonly } from '@assessmentis/util'
+import type { ContactPoint as FhirContactPoint } from 'fhir/r4'
 import { Schema, Arbitrary } from 'effect'
 import * as fc from 'fast-check'
 

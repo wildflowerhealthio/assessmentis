@@ -1,4 +1,4 @@
-import { VideoCallRoomId, VideoCallRoomName } from './VideoCallRoom'
+import type { VideoCallRoomId, VideoCallRoomName } from './VideoCallRoom'
 
 export interface ExternalVideoCallRoom {
   id: VideoCallRoomId

@@ -1,0 +1,52 @@
+{
+    meta: {
+        createdAt: '2026-02-12T20:30:38.106Z',
+        host: 'https://healthcare.googleapis.com',
+        resHumanReadable: true,
+    },
+    req: {
+        url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/7ac54d6f-e878-465a-8797-657fa99a8b73',
+        method: 'DELETE',
+        headers: {},
+        body: '',
+    },
+    res: {
+        status: 200,
+        headers: {
+            etag: [
+                'W/"MTc3MDkyODIzODI4ODc0MjAwMA"',
+            ],
+            'content-type': [
+                'application/fhir+json;charset=utf-8',
+            ],
+            vary: [
+                'Origin, X-Origin, Referer',
+            ],
+            date: [
+                'Thu, 12 Feb 2026 20:30:38 GMT',
+            ],
+            server: [
+                'ESF',
+            ],
+            'content-length': [
+                '2',
+            ],
+            'x-xss-protection': [
+                '0',
+            ],
+            'x-frame-options': [
+                'SAMEORIGIN',
+            ],
+            'x-content-type-options': [
+                'nosniff',
+            ],
+            'alt-svc': [
+                'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
+            ],
+            connection: [
+                'close',
+            ],
+        },
+        body: {},
+    },
+}

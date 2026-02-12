@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { cn } from '@assessmentis/react-util'
 import { shouldShowRawData } from 'app/util/debugHelpers'
@@ -6,7 +6,7 @@ import classes from './ResourceDetailPage.module.css'
 
 interface ResourceDetailSection {
   id: string
-  title: string
+  title: ReactNode
   content: ReactNode
   hidden?: boolean
 }
@@ -59,7 +59,11 @@ export function ResourceDetailPage({
         : sections.map((section) =>
             !section.hidden ? (
               <section key={section.id} className={classes.DetailPage__section}>
-                <h2 className="heading-4">{section.title}</h2>
+                {typeof section.title == 'string' ? (
+                  <h2 className="heading-4">{section.title}</h2>
+                ) : (
+                  section.title
+                )}
                 <div className={classes.DetailPage__sectionContent}>
                   {section.content}
                 </div>

@@ -1,7 +1,7 @@
 import { Schema, Option } from 'effect'
+import type { Extension } from '@assessmentis/clinical-domain/data-types'
 import {
   type BackboneElement,
-  Extension,
   Code,
 } from '@assessmentis/clinical-domain/data-types'
 

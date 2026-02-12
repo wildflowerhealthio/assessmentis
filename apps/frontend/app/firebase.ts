@@ -1,4 +1,4 @@
-import { FirebaseError } from 'firebase/app'
+import type { FirebaseError } from 'firebase/app'
 import {
   GoogleAuthProvider,
   getAuth,

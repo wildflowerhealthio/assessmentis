@@ -1,28 +1,28 @@
-import { Either, Option, Schema, Scope, Stream } from 'effect'
+import type { Scope } from 'effect'
+import { Either, Option, Schema, Stream } from 'effect'
+import type { LocationId } from '@assessmentis/clinical-domain/administration'
 import { EncounterId } from '@assessmentis/clinical-domain/administration'
-import {
-  FullEncounter,
-  getFullEncounter,
-} from 'app/modules/interview-call/actions/getFullEncounter'
+import type { FullEncounter } from 'app/modules/interview-call/actions/getFullEncounter'
+import { getFullEncounter } from 'app/modules/interview-call/actions/getFullEncounter'
 import InterviewCall from 'app/modules/interview-call/features/InterviewCall/InterviewCall'
 import type { Route } from './+types/Encounter.$encounterId._index'
 import { runEffectSync } from '../runEffectSync'
 import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
 import { getEncounterDisplayName } from '../modules/resources/Encounter/utils/encounterDisplay'
 import { Suspense, useMemo } from 'react'
-import {
+import type {
   AuthError,
   AuthzError,
   ExternalAssertionError,
-  NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
+import { NotFoundError } from '@assessmentis/ontology'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { useEitherStream } from '@assessmentis/react-util'
 import { ClinicalDataRepositoryService } from '../layers/ClinicalDataRepositoriesService'
 import { usePlatformContext } from '../layers/PlatformContext'
 import { Await, useAsyncError } from 'react-router'
-import { NoSelectedOrgError } from '../../../../domain/platform-domain/src/hostedServices'
+import type { NoSelectedOrgError } from '../../../../domain/platform-domain/src/hostedServices'
 
 const tryDecodeEncounterId = Schema.decodeOption(EncounterId)
 
@@ -49,6 +49,7 @@ export default function EncounterPage({ params }: Route.ComponentProps) {
           | AuthError
           | AuthzError
           | NotFoundError<'Encounter', { id: EncounterId }>
+          | NotFoundError<'Location', { id: LocationId }>
           | ExternalAssertionError
           | NoSelectedOrgError
         >,
@@ -97,11 +98,10 @@ export default function EncounterPage({ params }: Route.ComponentProps) {
           <ResourceDetailPage
             editTo={`/Encounter/${encounterData.id}/edit`}
             title={runEffectSync(getEncounterDisplayName(encounterData))}
-            subtitle={`Encounter ID: ${encounterData.id}`}
             sections={[
               {
                 id: 'interview',
-                title: 'Interview Call',
+                title: undefined,
                 content: <InterviewCall encounter={encounterData} />,
               },
             ]}

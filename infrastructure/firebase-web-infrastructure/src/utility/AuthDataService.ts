@@ -1,4 +1,5 @@
-import { Effect, Either, Fiber, Option, PubSub, Stream, Take } from 'effect'
+import type { Either, PubSub, Take } from 'effect'
+import { Effect, Fiber, Option, Stream } from 'effect'
 import { UserId } from '@assessmentis/platform-domain'
 import { AuthError } from '@assessmentis/ontology'
 import { onIdTokenChanged } from 'firebase/auth'
@@ -8,7 +9,7 @@ import {
   takeOneFromPubSubOrDie,
   pubsubAsPerpetualStream,
 } from '@assessmentis/util'
-import { AuthData, AuthDataService } from '@assessmentis/platform-domain'
+import type { AuthData, AuthDataService } from '@assessmentis/platform-domain'
 
 const AuthDataStream = Effect.gen(function* () {
   const { auth } = yield* FirebaseWeb

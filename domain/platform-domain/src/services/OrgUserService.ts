@@ -1,6 +1,6 @@
 import { Context, Effect, Layer } from 'effect'
+import type { AuthError } from '@assessmentis/ontology'
 import {
-  AuthError,
   AuthzError,
   NotFoundError,
   UnhandledError,

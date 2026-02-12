@@ -1,17 +1,18 @@
-import { Effect, Schema, Stream, Option } from 'effect'
+import type { Schema } from 'effect'
+import { Effect, Stream, Option } from 'effect'
 import { useMemo } from 'react'
-import { RepositoryFilters, Schemas } from '@assessmentis/clinical-domain'
+import type { RepositoryFilters, Schemas } from '@assessmentis/clinical-domain'
 
 import { useClinicalDataCollectionPromise } from '../hooks/useClinicalDataCollection'
 import { useEitherStream } from '@assessmentis/react-util'
 import { usePlatformContext } from '../../../layers/PlatformContext'
-import {
+import type {
   AuthError,
   ExternalAssertionError,
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
-import { NoSelectedOrgError } from '@assessmentis/platform-domain'
+import type { NoSelectedOrgError } from '@assessmentis/platform-domain'
 import { StreamEither } from '@assessmentis/util'
 
 /**

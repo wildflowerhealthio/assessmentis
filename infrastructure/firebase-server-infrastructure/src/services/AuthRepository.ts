@@ -1,4 +1,4 @@
-import { OAuthTokens, UserId } from '@assessmentis/platform-domain'
+import type { OAuthTokens, UserId } from '@assessmentis/platform-domain'
 import { Effect } from 'effect'
 import { FirebaseAdmin } from './FirebaseAdmin'
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'

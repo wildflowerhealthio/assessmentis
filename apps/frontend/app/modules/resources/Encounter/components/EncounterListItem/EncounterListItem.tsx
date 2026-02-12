@@ -1,13 +1,11 @@
-import { Link } from 'react-router'
 import type { Encounter } from '@assessmentis/clinical-domain/administration'
-import { ResourceItemActions } from 'app/modules/common/components/ResourceItemActions/ResourceItemActions'
 import {
   getEncounterDisplayName,
   getEncounterStatus,
   getEncounterPeriodDisplay,
 } from '../../utils/encounterDisplay'
-import baseListItemClasses from 'app/modules/common/components/BaseListItem/BaseListItem.module.css'
 import { runEffectSyncFlat } from '../../../../../runEffectSync'
+import { ResourceListItem } from '../../../ResourcePages/ResourceListItem/ResourceListItem'
 
 interface EncounterListItemProps {
   item: Encounter
@@ -25,22 +23,13 @@ export function EncounterListItem({
   const periodDisplay = runEffectSyncFlat(getEncounterPeriodDisplay(encounter))
 
   return (
-    <>
-      <Link
-        to={`/Encounter/${encounter.id}`}
-        className={baseListItemClasses.content}
-      >
-        <strong>{displayName}</strong>
-        <span className={baseListItemClasses.metadata}>
-          {status} • {periodDisplay}
-        </span>
-      </Link>
-      <ResourceItemActions
-        viewPath={`/Encounter/${encounter.id}`}
-        editPath={`/Encounter/${encounter.id}/edit`}
-        onDelete={onDelete}
-        disabled={loading}
-      />
-    </>
+    <ResourceListItem
+      displayName={displayName}
+      summaryItems={[status, periodDisplay].filter(Boolean) as string[]}
+      viewPath={`/Encounter/${encounter.id}`}
+      editPath={`/Encounter/${encounter.id}/edit`}
+      onDelete={onDelete}
+      loading={loading}
+    />
   )
 }

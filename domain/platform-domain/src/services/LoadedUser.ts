@@ -1,8 +1,8 @@
+import type { UserId } from '@assessmentis/platform-domain'
 import {
   CurrentUserId,
   DocumentStore,
   User,
-  UserId,
 } from '@assessmentis/platform-domain'
 import { Context, Effect, Either, Layer, Schema } from 'effect'
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'

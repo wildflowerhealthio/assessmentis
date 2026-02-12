@@ -1,6 +1,6 @@
 # Design Reference
 
-Design system lookup tables and page structure conventions. For full CRUD implementation, see [Resource CRUD How-To](./app/modules/resources/Resource%20CRUD%20How-To.md).
+Design system lookup tables and page structure conventions. For full CRUD implementation, see [Resource CRUD Reference](./app/modules/resources/Resource%20CRUD%20Reference.md).
 
 ## Typography
 
@@ -138,4 +138,4 @@ Title → fields (full-width, labels above) → submit. Max-width 600px. Errors 
 
 ## See Also
 
-- [Resource CRUD How-To](./app/modules/resources/Resource%20CRUD%20How-To.md) — Full CRUD implementation guide
+- [Resource CRUD Reference](./app/modules/resources/Resource%20CRUD%20Reference.md) — Full CRUD implementation reference

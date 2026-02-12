@@ -2,13 +2,14 @@ import React, { useMemo, Suspense } from 'react'
 import { Either, Effect } from 'effect'
 import { StreamEither } from '@assessmentis/util'
 
-import { NoSelectedOrgError, Org } from '@assessmentis/platform-domain'
+import type { Org } from '@assessmentis/platform-domain'
+import { NoSelectedOrgError } from '@assessmentis/platform-domain'
 
 import { OrgContext } from './OrgContext'
 import { usePlatformContext } from './PlatformContext'
 import { useStream } from '@assessmentis/react-util'
+import type { AuthError } from '@assessmentis/ontology'
 import {
-  AuthError,
   BadDataError,
   NotFoundError,
   UnhandledError,
