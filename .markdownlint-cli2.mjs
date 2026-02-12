@@ -1,12 +1,16 @@
-import baseConfig from './.base.markdownlint-cli2.mjs'
-import relativeLinksRule from 'markdownlint-rule-relative-links'
-
 const config = {
-  ...baseConfig,
-  outputFormatters: [
-    ['markdownlint-cli2-formatter-pretty', { appendLink: true }],
-  ],
-  customRules: [relativeLinksRule],
+  config: {
+    default: true,
+    'line-length': false,
+    'relative-links': {
+      root_path: '.',
+    },
+    'no-trailing-punctuation': {
+      punctuation: '.',
+    },
+  },
+  globs: ['**/*.md'],
+  ignores: ['**/node_modules'],
 }
 
 export default config

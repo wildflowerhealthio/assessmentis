@@ -8,8 +8,9 @@
   "scripts": {
     "build": "npm exec turbo run build",
     "dev": "npm exec turbo run dev",
-    "lint": "npm exec turbo run lint",
-    "lint:docs": "npm exec markdownlint-cli2",
+    "lint": "npm run lint:projects && npm run lint:docs",
+    "lint:projects": "npm exec turbo run lint",
+    "lint:docs": "npm exec markdownlint-cli2 -- --config .local.markdownlint-cli2.mjs",
     "typecheck": "npm exec turbo run typecheck",
     "test": "vitest --project=\"*:unit\"",
     "test:all": "vitest",
