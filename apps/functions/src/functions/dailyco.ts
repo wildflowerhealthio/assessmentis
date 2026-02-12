@@ -49,7 +49,7 @@ export const dailycoEffect = (
     // Build Daily.co API URL
     const queryParams = new URLSearchParams(
       Object.entries(inbound.query).map(
-        ([key, value]) => [key, String(value)] as const
+        ([key, value]) => [key, String(value)] as [string, string]
       )
     )
     const url = `https://api.daily.co/v1/${destination}?${queryParams}`
