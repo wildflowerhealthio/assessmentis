@@ -8,6 +8,7 @@ import {
   EncounterRepository,
   Encounter,
   LocationRepository,
+  isVirtualLocation,
 } from '@assessmentis/clinical-domain/administration'
 import type {
   AuthError,
@@ -89,9 +90,7 @@ export const createEncounter = (
 
     // Add user-selected physical location if provided
     const userLocationEntries =
-      args.location?.filter(
-        (l) => !l.physicalType?.coding?.some((c) => c.code === Code.make('vi'))
-      ) ?? []
+      args.location?.filter((l) => !isVirtualLocation(l)) ?? []
 
     const encounterData = {
       resourceType: 'Encounter',

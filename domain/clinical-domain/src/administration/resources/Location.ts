@@ -7,6 +7,7 @@ import {
   ContactPoint,
   Identifier,
   Reference,
+  Code,
 } from '../../data-types'
 import { LocationMode } from '../value-sets/LocationMode'
 import { LocationStatus } from '../value-sets/LocationStatus'
@@ -83,3 +84,20 @@ export const Location = Schema.Struct({
 })
 
 export type Location = typeof Location.Type
+
+/**
+ * Checks if a location entry represents a virtual location (e.g., video room).
+ * Virtual locations are identified by a physical type coding with code 'vi'.
+ *
+ * @param locationEntry - An object with an optional physicalType field
+ * @returns true if the location is virtual, false otherwise
+ */
+export const isVirtualLocation = (locationEntry: {
+  physicalType?: { coding?: ReadonlyArray<{ code?: Code }> }
+}): boolean => {
+  return (
+    locationEntry.physicalType?.coding?.some(
+      (c) => c.code === Code.make('vi')
+    ) ?? false
+  )
+}
