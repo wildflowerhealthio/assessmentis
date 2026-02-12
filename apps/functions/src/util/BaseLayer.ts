@@ -44,16 +44,10 @@ export const makeAuthedRequestRuntime = <C, E>(
 > => {
   return ManagedRuntime.make(
     Layer.merge(BaseLayer, layer).pipe(
-      Layer.provideMerge(
-        Layer.provideMerge(
-          CurrentUserIdLayerLive,
-          Layer.mergeAll(
-            Layer.succeed(FunctionsContext, context),
-            FirebaseAdminDocumentStoreLayer,
-            FirebaseAdmin.Default
-          )
-        )
-      )
+      Layer.provideMerge(FirebaseAdminDocumentStoreLayer),
+      Layer.provideMerge(CurrentUserIdLayerLive),
+      Layer.provideMerge(Layer.succeed(FunctionsContext, context)),
+      Layer.provideMerge(FirebaseAdmin.Default)
     )
   )
 }
@@ -74,10 +68,10 @@ export const makeRequestRuntime = <C, E>(
 > => {
   return ManagedRuntime.make(
     Layer.merge(BaseLayer, layer).pipe(
+      Layer.provideMerge(FirebaseAdminDocumentStoreLayer),
       Layer.provideMerge(
         Layer.mergeAll(
           Layer.succeed(FunctionsContext, context),
-          FirebaseAdminDocumentStoreLayer,
           FirebaseAdmin.Default
         )
       )
@@ -94,9 +88,8 @@ export const makeAdminRuntime = <C, E>(
 ): ManagedRuntime.ManagedRuntime<C | DocumentStore | FirebaseAdmin, E> => {
   return ManagedRuntime.make(
     Layer.merge(BaseLayer, layer).pipe(
-      Layer.provideMerge(
-        Layer.mergeAll(FirebaseAdminDocumentStoreLayer, FirebaseAdmin.Default)
-      )
+      Layer.provideMerge(FirebaseAdminDocumentStoreLayer),
+      Layer.provideMerge(FirebaseAdmin.Default)
     )
   )
 }

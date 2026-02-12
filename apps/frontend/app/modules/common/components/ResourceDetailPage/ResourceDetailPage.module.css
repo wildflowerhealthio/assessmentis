@@ -35,6 +35,7 @@
 
 .DetailPage__sectionContent {
   margin-top: var(--space-3);
+  height: 100%;
 }
 
 .DetailPage__debug {

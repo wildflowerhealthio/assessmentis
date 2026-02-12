@@ -118,6 +118,7 @@ export const dailyco = onRequest(
         Layer.provide(CurrentOrgLayerLive),
         Layer.provide(CurrentUserIdLayerLive)
       ),
+
       { request, orgSlug }
     )
     await runtime

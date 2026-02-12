@@ -101,4 +101,4 @@ export const FirebaseAdminDocumentStoreLayer = Layer.effect(
 
     return { get, subscribeTo, set, update }
   })
-).pipe(Layer.provide(FirebaseAdmin.Default))
+)
