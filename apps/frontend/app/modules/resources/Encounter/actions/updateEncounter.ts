@@ -3,7 +3,10 @@ import type {
   Encounter,
   EncounterId,
 } from '@assessmentis/clinical-domain/administration'
-import { EncounterRepository } from '@assessmentis/clinical-domain/administration'
+import {
+  EncounterRepository,
+  Location,
+} from '@assessmentis/clinical-domain/administration'
 import type {
   ExternalAssertionError,
   NotFoundError,
@@ -53,7 +56,7 @@ export const updateEncounter = (
       location: [
         // Keep existing virtual location entries (video room)
         ...(currentEncounter.location?.filter((l) =>
-          l.physicalType?.coding?.some((c) => c.code === 'vi')
+          Location.isVirtualLocation(l)
         ) ?? []),
         // Add user-selected physical location if provided
         ...(formData.locationId
