@@ -117,11 +117,12 @@ Order imports as follows:
 
 ## Testing Guidelines
 
-For comprehensive testing documentation, see [docs/testing/](./docs/testing/testing.md).
+For comprehensive testing documentation, see [docs/Testing/](./docs/Testing/Testing%20Reference.md).
 
-- [Unit testing](./docs/testing/unit-testing.md) -- Property-based testing, Effect patterns, FHIR schemas
-- [React unit testing](./docs/testing/react-unit-testing.md) -- Components, hooks, mocking
-- [Integration testing](./docs/testing/integration-testing.md) -- VCR-style HTTP record/integration
+- [Unit Testing How-To](./docs/Testing/Unit%20Testing%20How-To.md) — Case-based tests, Effect patterns, FHIR schemas
+- [Property Testing Reference](./docs/Testing/Property%20Testing%20Reference.md) — Arbitraries, verified mocks, MECE assertions
+- [React Testing Reference](./docs/Testing/React%20Testing%20Reference.md) — Components, hooks, mocking
+- [Integration Testing How-To](./docs/Testing/Integration%20Testing%20How-To.md) — VCR-style HTTP record/integration
 
 ### Quick Summary
 
@@ -132,158 +133,18 @@ For comprehensive testing documentation, see [docs/testing/](./docs/testing/test
 
 ## Package-Specific Guidelines
 
-### Domain Packages
+See [Architecture Reference](./docs/Architecture/Reference.md) for the full package inventory and dependency rules between layers.
 
-**Purpose**: Pure business logic, types, and repository interfaces
+Each layer directory has its own AGENTS.md with specific rules. In brief:
 
-✅ **DO**:
-
-- Use Effect-TS for all business logic
-- Define repository interfaces as Effect Tags
-- Use Effect Schema for data validation
-- Keep packages pure (no side effects)
-- Write comprehensive tests
-
-❌ **DON'T**:
-
-- Add infrastructure implementations
-- Make HTTP calls or database queries
-
-### Infrastructure Packages
-
-**Purpose**: Concrete implementations of domain interfaces
-
-✅ **DO**:
-
-- Implement repository interfaces from domain packages
-- Use Effect Layers for dependency injection
-- Handle external API calls
-- Provide service implementations
-- Most infrastructure should be accessed through interfaces defined in the domain
-
-❌ **DON'T**:
-
-- Add business logic (belongs in domain)
-- Add UI components
-- Duplicate domain logic
-- Manage configuration (belongs in domain packages)
-
-### App Packages
-
-**Purpose**: End-user applications
-
-✅ **DO**:
-
-- Compose domain and infrastructure layers
-- Handle user interaction
-- Manage routing and navigation
-- Integrate with external services
-
-❌ **DON'T**:
-
-- Duplicate logic from domain packages
-- Bypass domain repositories
-- Add domain models (use domain packages)
-
-### Global Packages
-
-**Purpose**: Project and domain agnostic shared configurations and utilities
-
-✅ **DO**:
-
-- Keep utilities project and domain agnostic -- This folder should be immediately copy-pastable to an entirely no project, in a different area
-- Provide reusable configurations
-- Document usage clearly
-
-❌ **DON'T**:
-
-- Add business logic
-- Add application-specific code
+- **domain/**: Pure business logic. No side effects. Define interfaces as Effect Tags.
+- **infrastructure/**: Implement domain interfaces via Effect Layers. Map external errors to domain errors.
+- **apps/**: Compose domain + infrastructure. No business logic.
+- **global/**: Project-agnostic utilities. Immediately copy-pastable to another project.
 
 ## Effect-TS Patterns
 
-This project follows specific Effect-TS conventions. These are patterns that have emerged in this codebase.
-
-### Error Wrappers
-
-This project uses **unique error wrappers** to distinguish between different failure modes, even when the underlying error is the same type. This allows for more precise error handling at boundaries.
-
-**Why we use error wrappers:**
-
-- Enable targeted error handling at application boundaries
-- Make error flows explicit in type signatures
-- Allow different recovery strategies for the same underlying error type
-
-```typescript
-// Define specific error wrappers
-export class QuestionnaireNotFoundError extends Data.TaggedError(
-  'QuestionnaireNotFoundError'
-)<{
-  questionnaireId: string
-  cause?: unknown
-}> {}
-
-export class UnhandledError extends Data.TaggedError('UnhandledError')<{
-  cause?: unknown
-}> {}
-
-// Use in repository interfaces
-export class QuestionnaireRepository extends Context.Tag(
-  'QuestionnaireRepository'
-)<
-  QuestionnaireRepository,
-  {
-    get: (
-      id: QuestionnaireId
-    ) => Effect.Effect<
-      Questionnaire,
-      QuestionnaireNotFoundError | UnhandledError,
-      never
-    >
-  }
->() {}
-```
-
-### Repository Pattern
-
-Define interfaces in domain packages, implement in infrastructure:
-
-```typescript
-// Domain: interface only
-export class MyRepository extends Context.Tag('MyRepository')<
-  MyRepository,
-  {
-    get: (id: Id) => Effect.Effect<Data, NotFoundError | UnhandledError, never>
-  }
->() {}
-
-// Infrastructure: concrete implementation
-export const MyRepositoryLive = Layer.effect(
-  MyRepository,
-  Effect.gen(function* () {
-    const config = yield* ConfigService
-    return {
-      get: (id) =>
-        Effect.gen(function* () {
-          // Implementation
-        }),
-    }
-  })
-)
-```
-
-### Effect Generators
-
-Use generator syntax for Effect composition:
-
-```typescript
-export const myOperation = (arg: Arg) =>
-  Effect.gen(function* () {
-    const repo = yield* MyRepository
-    const data = yield* repo.get(arg.id)
-    return transform(data)
-  })
-```
+See [Effect Patterns Reference](./docs/Effect/Patterns%20Reference.md) for repository pattern, generators, error wrappers, and Layer composition.
 
 ## Dependency Management
 
@@ -327,8 +188,8 @@ Ensure all checks pass before merging.
 
 ## Questions?
 
-- Check package-specific README files for detailed guidelines
-- Review `copilot-instructions.md` for architecture details
+- Check package-specific AGENTS.md files for layer-specific guidelines
+- See [Architecture Explanation](./docs/Architecture/Explanation.md) for architecture details
 - Consult FHIR R4 specification for clinical data models
 
 ## Summary

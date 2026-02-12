@@ -14,7 +14,7 @@ This package provides configuration models and schemas for infrastructure compon
 
 ## Project Structure
 
-```
+```plaintext
 src/
 ├── index.ts              # Main exports
 ├── googleFhir/           # Google FHIR infrastructure config

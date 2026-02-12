@@ -49,6 +49,7 @@ Create a new domain package with proper structure and configuration.
 ## Domain Package Rules
 
 Remember:
+
 - ⚠️ Keep packages PURE (no side effects, no HTTP calls, no infrastructure)
 - ✅ Use Effect-TS for all business logic
 - ✅ Define repository interfaces as Effect Tags

@@ -48,9 +48,9 @@ npm run deploy
 
 ## Project Structure
 
-See `copilot-instructions.md` for detailed architecture and patterns.
+See [Architecture Explanation](../../docs/Architecture/Explanation.md) for detailed architecture.
 
-```
+```plaintext
 app/
 ├── root.tsx           # Root layout and error boundary
 ├── routes/            # File-based routing

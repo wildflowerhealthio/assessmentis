@@ -14,7 +14,7 @@ This package models the Assessment.is platform itself, providing abstractions an
 
 ## Project Structure
 
-```
+```plaintext
 src/
 ├── index.ts              # Main exports
 ├── PlatformService.ts    # Core platform service definition

@@ -15,7 +15,7 @@ Firebase Cloud Functions for Assessment.is backend operations.
 
 ## Project Structure
 
-```
+```plaintext
 src/
 ├── index.ts           # Cloud Functions exports
 └── ...                # Function implementations

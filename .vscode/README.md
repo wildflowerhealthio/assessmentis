@@ -19,11 +19,13 @@ When you open this workspace in VS Code, you'll be prompted to install the recom
 ## How It Works
 
 ### ESLint
+
 - ESLint is configured using the new flat config format (`eslint.config.js`)
 - Each project/package has its own `eslint.config.js` that extends the shared config from `@assessmentis/eslint-config`
 - The VS Code ESLint extension automatically detects workspace folders and uses the appropriate config
 
 ### Prettier
+
 - Prettier configuration is shared via `@assessmentis/prettier-config`
 - Each project references it in their `package.json` with: `"prettier": "@assessmentis/prettier-config"`
 - The VS Code Prettier extension automatically picks up this configuration
@@ -34,7 +36,7 @@ If format-on-save or ESLint annotations aren't working:
 
 1. **Install the recommended extensions**: Accept the prompt when opening the workspace, or manually install from the Extensions view
 2. **Reload VS Code**: Sometimes a reload is needed after installing extensions (Cmd/Ctrl + Shift + P → "Developer: Reload Window")
-3. **Check the Output panel**: 
+3. **Check the Output panel**:
    - View → Output → Select "ESLint" or "Prettier" from the dropdown to see any errors
 4. **Verify workspace detection**: Open a file in a project and check the status bar - you should see ESLint and Prettier indicators
 

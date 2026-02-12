@@ -15,7 +15,7 @@ This package defines document generation logic and models for Assessment.is. It 
 
 ## Project Structure
 
-```
+```plaintext
 src/
 ├── index.ts           # Main exports
 ├── gad7.ts           # GAD-7 document generation and scoring

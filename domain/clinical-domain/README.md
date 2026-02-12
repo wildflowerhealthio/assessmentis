@@ -15,7 +15,7 @@ This is the **core domain package** for Assessment.is, containing all FHIR-based
 
 ## Project Structure
 
-```
+```plaintext
 src/
 ├── index.ts                   # Main exports
 ├── administration/            # Encounter resource and repository

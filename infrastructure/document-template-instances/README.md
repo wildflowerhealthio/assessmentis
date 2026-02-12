@@ -14,7 +14,7 @@ This package provides React-based document templates for rendering assessment do
 
 ## Project Structure
 
-```
+```plaintext
 src/
 ├── index.ts           # Main exports
 └── plain/

@@ -15,7 +15,7 @@ This package provides domain models and repository interfaces for video call fun
 
 ## Project Structure
 
-```
+```plaintext
 src/
 ├── index.ts                              # Main exports
 ├── VideoCallClient.ts            # Abstract client for external video providers

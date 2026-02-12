@@ -16,6 +16,7 @@ Shared React components, hooks, and utilities used across Assessment.is React ap
 ## Dependencies
 
 This package requires:
+
 - **React 19.x** - Core React library
 - **React DOM 19.x** - React DOM rendering
 - **Effect-TS** - Functional effect system (provided by consuming applications)
@@ -32,6 +33,7 @@ Subscribe to an Effect Stream and get the latest emitted value as a Promise. The
 **Use case:** Integrating Effect streams into React components for real-time data updates.
 
 **Example:**
+
 ```typescript
 import { useStream } from '@assessmentis/react-util'
 import { Stream, Effect } from 'effect'
@@ -39,10 +41,10 @@ import { Stream, Effect } from 'effect'
 function DataComponent() {
   // Simple stream of static data values
   const dataStream = Stream.make(1, 2, 3, 4, 5)
-  
+
   // Get the latest value as a Promise
   const dataPromise = useStream(dataStream)
-  
+
   return <Suspense fallback="Loading...">
     {use(dataPromise)}
   </Suspense>
@@ -50,6 +52,7 @@ function DataComponent() {
 ```
 
 **Key features:**
+
 - Automatically resets promise when stream dependency changes
 - Handles stream interruption on unmount
 - Converts Effect failures and defects to Promise rejections
@@ -64,6 +67,7 @@ Run an Effect and get the result as a Promise. The effect is automatically scope
 **Use case:** Running Effect-based computations in React components.
 
 **Example:**
+
 ```typescript
 import { useEffectTs } from '@assessmentis/react-util'
 import { Effect } from 'effect'
@@ -71,9 +75,9 @@ import { Effect } from 'effect'
 function UserProfile({ userId }: { userId: string }) {
   // Effect that fetches user data
   const fetchUserEffect = Effect.succeed({ name: 'John', id: userId })
-  
+
   const userPromise = useEffectTs(fetchUserEffect)
-  
+
   return <Suspense fallback="Loading user...">
     {use(userPromise).name}
   </Suspense>
@@ -81,6 +85,7 @@ function UserProfile({ userId }: { userId: string }) {
 ```
 
 **Key features:**
+
 - Automatically interrupts effect on unmount
 - Converts Effect failures to Promise rejections
 - Handles AggregateError for multiple failures/defects
@@ -95,12 +100,13 @@ Create a controllable promise with explicit resolve/reject/reset capabilities. T
 **Use case:** Managing asynchronous state that needs to be controlled imperatively.
 
 **Example:**
+
 ```typescript
 import { useStatePromise } from '@assessmentis/react-util'
 
 function UserForm() {
   const [userPromise, { resolve, reject, reset }] = useStatePromise<User>()
-  
+
   const handleSubmit = async (data: UserData) => {
     try {
       const user = await createUser(data)
@@ -109,11 +115,11 @@ function UserForm() {
       reject(error) // Rejects the promise
     }
   }
-  
+
   const handleCancel = () => {
     reset() // Creates a new pending promise
   }
-  
+
   return (
     <form onSubmit={handleSubmit}>
       <Suspense fallback="Submitting...">
@@ -125,12 +131,14 @@ function UserForm() {
 ```
 
 **API:**
+
 - `resolve(value: A)` - Resolves the promise with a value
 - `reject(reason: unknown)` - Rejects the promise with an error
 - `reset()` - Creates a new pending promise (only if current promise is resolved)
 - `map(fn: (a: A) => A)` - Transform the resolved value
 
 **Key features:**
+
 - Promise can be resolved/rejected multiple times (creates new promise each time)
 - `map` allows transforming the value before resolution
 - Prevents duplicate resets if promise is still pending
@@ -144,6 +152,7 @@ function UserForm() {
 Track the state of a promise, providing loading, value, and error states. This is essential for displaying loading indicators and error messages.
 
 **Type:**
+
 ```typescript
 type LoadingPromiseState<T> =
   | { value: T; loading: false; error: undefined }
@@ -154,13 +163,14 @@ type LoadingPromiseState<T> =
 **Use case:** Displaying loading states, values, and errors for asynchronous operations.
 
 **Example:**
+
 ```typescript
 import { useLoadingPromise } from '@assessmentis/react-util'
 
 function UserProfile({ userId }: { userId: string }) {
   const fetchUserPromise = fetchUser(userId)
   const { value, loading, error } = useLoadingPromise(fetchUserPromise)
-  
+
   if (loading) return <Spinner />
   if (error) return <ErrorMessage error={error} />
   if (value) return <UserDetails user={value} />
@@ -168,6 +178,7 @@ function UserProfile({ userId }: { userId: string }) {
 ```
 
 **Key features:**
+
 - Type-safe discriminated union for state
 - Automatically resets to loading when promise changes
 - Cancels state updates if component unmounts
@@ -182,6 +193,7 @@ Use a promise value with a fallback default. Returns the default value while the
 **Use case:** Providing a safe fallback value for promises.
 
 **Example:**
+
 ```typescript
 import { usePromiseOrDefault } from '@assessmentis/react-util'
 
@@ -190,12 +202,13 @@ function UserGreeting({ userId }: { userId: string }) {
     fetchUserName(userId),
     'Guest' // Default value shown while loading or on error
   )
-  
+
   return <h1>Welcome, {userName}!</h1>
 }
 ```
 
 **Key features:**
+
 - Returns default value immediately
 - Updates to promise value when resolved
 - Falls back to default on rejection
@@ -212,6 +225,7 @@ Manage a collection with optimistic updates for create/delete operations. Uses l
 **Use case:** Managing lists of items with create/delete operations and loading states.
 
 **Example:**
+
 ```typescript
 import { useCollection } from '@assessmentis/react-util'
 
@@ -233,7 +247,7 @@ function TodoList() {
     },
     [] // Initial empty collection
   )
-  
+
   return (
     <div>
       {collection.map(({ data, loading }) => (
@@ -251,11 +265,13 @@ function TodoList() {
 ```
 
 **API:**
+
 - `collection: Array<{ data: T, loading: boolean }>` - Current collection state
 - `createItem(item: T)` - Optimistically create item (generates UUID if no id)
 - `deleteItem(id: string)` - Optimistically delete item
 
 **Key features:**
+
 - Optimistic updates with loading indicators
 - Automatic rollback on API failure
 - UUID generation for new items without ids
@@ -270,6 +286,7 @@ Like `useCollection`, but accepts an initial promise instead of a value. Useful 
 **Use case:** Managing collections that need to be fetched on mount.
 
 **Example:**
+
 ```typescript
 import { useCollectionPromise } from '@assessmentis/react-util'
 
@@ -281,10 +298,10 @@ function TodoList() {
     },
     fetch('/api/todos').then(r => r.json()) // Initial load from API
   )
-  
+
   return (
     <Suspense fallback="Loading todos...">
-      <TodoListView 
+      <TodoListView
         collection={use(collectionPromise)}
         onDelete={deleteItem}
         onCreate={createItem}
@@ -295,11 +312,13 @@ function TodoList() {
 ```
 
 **API:**
+
 - `collectionPromise: Promise<Array<{ data: T, loading: boolean }>>` - Promise of collection state
 - `createItem(item: T)` - Optimistically create item
 - `deleteItem(id: string)` - Optimistically delete item
 
 **Key features:**
+
 - Same optimistic updates as `useCollection`
 - Works with React Suspense
 - Promise-based API for async initialization
@@ -315,6 +334,7 @@ Detect clicks outside a referenced element and call a handler. Useful for closin
 **Use case:** Closing UI elements when clicking outside them.
 
 **Example:**
+
 ```typescript
 import { useOutsideClickHandler } from '@assessmentis/react-util'
 import { useRef, useState } from 'react'
@@ -322,10 +342,10 @@ import { useRef, useState } from 'react'
 function Dropdown() {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
-  
+
   // Close dropdown when clicking outside
   useOutsideClickHandler(dropdownRef, () => setIsOpen(false))
-  
+
   return (
     <div ref={dropdownRef}>
       <button onClick={() => setIsOpen(!isOpen)}>Toggle</button>
@@ -341,6 +361,7 @@ function Dropdown() {
 ```
 
 **Key features:**
+
 - Listens to `mousedown` events on document
 - Automatically cleans up event listener on unmount
 - Checks if click target is within referenced element
@@ -358,12 +379,14 @@ This package follows the project's property-based testing philosophy. For compre
 ### Testing Hooks
 
 When testing React hooks:
+
 1. Use property-based tests to verify hook behavior across many inputs
 2. Test cleanup behavior (unmount, dependency changes)
 3. Test error cases and edge conditions
 4. Ensure promises/effects are properly cancelled on unmount
 
 **Example property test pattern:**
+
 ```typescript
 import { renderHook } from '@testing-library/react'
 import { fc } from 'fast-check'

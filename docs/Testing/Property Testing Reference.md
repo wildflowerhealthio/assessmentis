@@ -1,6 +1,6 @@
-# Property-Based Testing
+# Property Testing Reference
 
-Property-based testing is the default approach. Describe the general properties of your code rather than checking specific input/output pairs. Use example-based tests only for regression testing (reproducing a specific bug) or documentation (showing a clear usage example).
+Property-based testing is the default approach. Describe the general properties of your code rather than checking specific input/output pairs. Use example-based tests only for regression testing or documentation.
 
 Reference implementation: `global/util/src/StreamEither.test.ts`
 
@@ -10,13 +10,18 @@ Generate opaque, branded values instead of concrete data. This forces tests to v
 
 ```typescript
 type A = unknown & Brand.Brand<'A'>
-const arbitraryA: fc.Arbitrary<A> = fc.anything().map((a) => vi.mockObject(a) as A)
+const arbitraryA: fc.Arbitrary<A> = fc
+  .anything()
+  .map((a) => vi.mockObject(a) as A)
 ```
 
 Compose arbitraries to match the shape your code consumes:
 
 ```typescript
-const eitherArb = fc.oneof(arbitraryA.map(Either.right), arbitraryE.map(Either.left))
+const eitherArb = fc.oneof(
+  arbitraryA.map(Either.right),
+  arbitraryE.map(Either.left)
+)
 const streamEitherArb = fc.array(eitherArb).map(Stream.fromIterable)
 ```
 
@@ -55,8 +60,6 @@ const applyAndCollect = <A, B>(
   })
 ```
 
-This enables element-wise if/else assertion chains (see below).
-
 ## MECE Assertion Chains
 
 For each input/output pair, enumerate every valid case and fail on anything else. Every element must fall into exactly one branch.
@@ -74,11 +77,11 @@ for (const [input, out] of cases) {
 }
 ```
 
-The `assert.fail` branch makes the exhaustiveness check explicit. If a code change introduces an unexpected case, the test names the violation.
+The `assert.fail` branch makes the exhaustiveness check explicit.
 
 ## Describe Blocks for Input Classes
 
-When a function's behavior depends on a parameter (e.g., whether `f` succeeds or fails), use separate `describe` blocks. Each block gets its own property test with a mock tailored to that class.
+When behavior depends on a parameter (e.g., whether `f` succeeds or fails), use separate `describe` blocks with tailored mocks:
 
 ```typescript
 describe('mapEffect', () => {
@@ -87,14 +90,16 @@ describe('mapEffect', () => {
       Effect.gen(function* () {
         const f = vi.fn((a: A) => Effect.succeed({ mappedFrom: a }))
         // ...
-      }))
+      })
+    )
   })
   describe('with an effectful function that fails', () => {
     it.effect.prop('...', { stream: streamEitherArb }, ({ stream }) =>
       Effect.gen(function* () {
         const f = vi.fn((a: A) => Effect.fail({ mappedFrom: a }))
         // ...
-      }))
+      })
+    )
   })
 })
 ```

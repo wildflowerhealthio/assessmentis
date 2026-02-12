@@ -7,13 +7,15 @@ Verify UI implementation matches requirements using Playwright MCP.
 ## Steps
 
 1. **Start the dev server:**
+
    ```bash
    npm run dev
    ```
-   Wait for server to start on http://localhost:5173
+
+   Wait for server to start on [http://localhost:5173](http://localhost:5173)
 
 2. **Use Playwright MCP to open browser:**
-   - Say: "Open http://localhost:5173 in Playwright"
+   - Say: "Open http://localhost:5173 in Playwright" <!-- markdownlint-disable-line MD034 -->
    - Claude Code will launch a visible browser window
 
 3. **Navigate to the feature:**
@@ -63,36 +65,42 @@ Verify UI implementation matches requirements using Playwright MCP.
 ## Visual Verification Checklist
 
 **Layout & Spacing:**
+
 - [ ] Margins and padding are consistent
 - [ ] Grid/flex layouts align properly
 - [ ] No overlapping elements
 - [ ] Whitespace matches design
 
 **Typography:**
+
 - [ ] Font families are correct
 - [ ] Font sizes match design (use Tundra CSS utilities)
 - [ ] Line heights are readable
 - [ ] Text colors have sufficient contrast
 
 **Colors:**
+
 - [ ] Brand colors match design system
 - [ ] Background colors are correct
 - [ ] Button colors match Tundra CSS theme
 - [ ] Error/success states use appropriate colors
 
 **Interactive Elements:**
+
 - [ ] Buttons have hover/active states
 - [ ] Form inputs show focus states
 - [ ] Links are visually distinct
 - [ ] Loading states are indicated
 
 **Responsiveness:**
+
 - [ ] Layout adapts to mobile (< 640px)
 - [ ] Layout works on tablet (640px - 1024px)
 - [ ] Layout works on desktop (> 1024px)
 - [ ] No horizontal scrolling on mobile
 
 **Accessibility:**
+
 - [ ] Buttons have aria-label or text
 - [ ] Form inputs have labels
 - [ ] Icons have aria-hidden or aria-label
@@ -101,7 +109,7 @@ Verify UI implementation matches requirements using Playwright MCP.
 
 ## Example Workflow
 
-```
+```plaintext
 1. User: "verify-ui the encounter creation form"
 
 2. Claude Code Response:
@@ -124,7 +132,8 @@ Verify UI implementation matches requirements using Playwright MCP.
 ## Playwright MCP Commands
 
 Use natural language to interact with the browser:
-- "Open http://localhost:5173"
+
+- "Open http://localhost:5173" <!-- markdownlint-disable-line MD034 -->
 - "Click the button with text 'Create'"
 - "Fill in the input named 'patientId' with 'patient-123'"
 - "Take a screenshot"
