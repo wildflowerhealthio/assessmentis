@@ -208,5 +208,4 @@ jobs:
           workdir: infrastructure/document-template-instances
       - uses: DavidAnson/markdownlint-cli2-action@v22
         with:
-          config: '.markdownlint-cli2.mjs'
-          globs: '**/*.md'
+          config: .markdownlint-cli2.mjs

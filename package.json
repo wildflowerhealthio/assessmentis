@@ -58,6 +58,7 @@
     "eslint": "^9.39.1",
     "markdownlint": "^0.40.0",
     "markdownlint-cli2": "^0.20.0",
+    "markdownlint-cli2-formatter-pretty": "^0.0.9",
     "markdownlint-rule-relative-links": "^5.0.1",
     "turbo": "^2.6.1"
   }

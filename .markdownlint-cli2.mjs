@@ -11,6 +11,9 @@ const config = {
       punctuation: '.',
     },
   },
+  outputFormatters: [
+    ['markdownlint-cli2-formatter-pretty', { appendLink: true }],
+  ],
   globs: ['**/*.md'],
   ignores: ['**/node_modules'],
   customRules: [relativeLinksRule],
