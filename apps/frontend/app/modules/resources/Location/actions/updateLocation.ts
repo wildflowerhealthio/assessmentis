@@ -1,6 +1,6 @@
 import { Location } from '@assessmentis/clinical-domain/administration'
 import {
-  LocationFormData,
+  type LocationFormData,
   transformToLocation,
 } from '../schemas/LocationFormSchema'
 import { createResourceUpdateAction } from '../../../common/actions/createResourceActions'

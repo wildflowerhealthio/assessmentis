@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { Schema } from 'effect'
 import {
-  LocationFormData,
+  type LocationFormData,
   LocationFormSchema,
   transformToLocation,
 } from './LocationFormSchema'

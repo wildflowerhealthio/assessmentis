@@ -26,35 +26,35 @@
         "source": "/api/daily-co-proxies/**",
         "function": {
           "functionId": "dailyco",
-          "region": "northamerica-northeast2"
+          "region": "northamerica-northeast1"
         }
       },
       {
         "source": "/api/googleLogin",
         "function": {
           "functionId": "googleLogin",
-          "region": "northamerica-northeast2"
+          "region": "northamerica-northeast1"
         }
       },
       {
         "source": "/api/authed",
         "function": {
           "functionId": "oAuthCallback",
-          "region": "northamerica-northeast2"
+          "region": "northamerica-northeast1"
         }
       },
       {
         "source": "/api/refreshGoogleOAuthToken",
         "function": {
           "functionId": "refreshGoogleOAuthToken",
-          "region": "northamerica-northeast2"
+          "region": "northamerica-northeast1"
         }
       },
       {
         "source": "/api/sync-video-call-recordings",
         "function": {
           "functionId": "syncVideoCallRecordingsOnDemand",
-          "region": "northamerica-northeast2"
+          "region": "northamerica-northeast1"
         }
       },
       {

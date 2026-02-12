@@ -11,7 +11,7 @@ import type {
   LocationStatus,
 } from '@assessmentis/clinical-domain/administration'
 import {
-  LocationFormData,
+  type LocationFormData,
   LocationFormSchema,
 } from '../schemas/LocationFormSchema'
 

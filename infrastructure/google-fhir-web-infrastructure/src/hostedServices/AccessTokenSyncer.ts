@@ -19,12 +19,7 @@ export const startAccessTokenSyncer = (
     const documentStore = yield* DocumentStore
     let authTokenRefreshTimeout: ReturnType<typeof setTimeout> | null = null
 
-    const syncToken = async (
-      authToken: string,
-      token: string,
-      expiresAt: Date,
-      expiresInMillis: number
-    ) => {
+    const syncToken = async (authToken: string) => {
       authTokenRefreshTimeout = null
 
       await fetch('/api/refreshGoogleOAuthToken', {
@@ -37,9 +32,7 @@ export const startAccessTokenSyncer = (
       }).catch(function (error) {
         console.log('failed to fetch ' + error)
       })
-
-      console.log(`Got Token it expires at ${expiresAt}, in ${expiresInMillis}`)
-      client.setToken({ access_token: token })
+      console.log('Finished refreshing token')
     }
 
     const accessTokenStream = userStream.pipe(
@@ -78,15 +71,20 @@ export const startAccessTokenSyncer = (
                 clearTimeout(authTokenRefreshTimeout)
               }
               const shouldSyncInMillis = expiresInMillis - 5 * 60 * 1000
-
+              console.log('New token loaded from firebase', {
+                shouldSyncInMillis,
+                token,
+                expiresAt,
+                expiresInMillis,
+              })
               if (shouldSyncInMillis > 0) {
                 client.setToken({ access_token: token })
                 authTokenRefreshTimeout = setTimeout(
-                  () => syncToken(authToken, token, expiresAt, expiresInMillis),
+                  () => syncToken(authToken),
                   shouldSyncInMillis
                 )
               } else {
-                syncToken(authToken, token, expiresAt, expiresInMillis)
+                syncToken(authToken)
               }
             })
           )

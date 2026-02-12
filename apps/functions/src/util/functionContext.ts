@@ -25,6 +25,7 @@ export const oauth2Client = new google.auth.OAuth2(
 export const defaultHttpOptions = {
   timeoutSeconds: 60,
   ingressSettings: 'ALLOW_ALL',
+  region: 'northamerica-northeast1',
   cors: [
     /^http:\/\/localhost:5173$/,
     /assessment\.is$/,
