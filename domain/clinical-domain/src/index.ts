@@ -1,3 +1,5 @@
 export { default as Schemas } from './Schemas'
 export { default as Repositories, type RepositoriesType } from './Repositories'
+export type { default as ResourceDataTypes } from './ResourceDataTypes'
+export type { default as FhirResourceDataTypes } from './FhirResourceDataTypes'
 export * from './types'

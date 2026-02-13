@@ -1,212 +1,316 @@
 import { Schema } from 'effect'
+import type {
+  Encounter as FhirEncounter,
+  EncounterStatusHistory as FhirEncounterStatusHistory,
+  EncounterClassHistory as FhirEncounterClassHistory,
+  EncounterParticipant as FhirEncounterParticipant,
+  EncounterDiagnosis as FhirEncounterDiagnosis,
+  EncounterHospitalization as FhirEncounterHospitalization,
+  EncounterLocation as FhirEncounterLocation,
+} from 'fhir/r4'
 import { Coding } from '../../data-types/complex/Coding'
-import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
-import { DomainResource } from '../../data-types/base/DomainResource'
-import {
+import type { CodeableConcept } from '../../data-types/complex/CodeableConcept'
+import { CodeableConceptFromFhirR4 } from '../../data-types/complex/CodeableConcept'
+import type { DomainResource } from '../../data-types/base/DomainResource'
+import { DomainResourceFromFhirR4 } from '../../data-types/base/DomainResource'
+import type { BackboneElement } from '../../data-types/base/BackboneElement'
+import { BackboneElementFromFhirR4 } from '../../data-types/base/BackboneElement'
+import type {
   Reference,
   Identifier,
 } from '../../data-types/complex/IdentifierAndReference'
-import { Period } from '../../data-types/complex/Period'
+import {
+  ReferenceFromFhirR4,
+  IdentifierFromFhirR4,
+} from '../../data-types/complex/IdentifierAndReference'
+import type { Period } from '../../data-types/complex/Period'
+import { PeriodFromFhirR4 } from '../../data-types/complex/Period'
 import { SimpleQuantity } from '../../data-types/complex/SimpleQuantity'
-import { BackboneElement } from '../../data-types/base/BackboneElement'
+import type { DeepReadonly } from '@assessmentis/util'
 
 export const EncounterId = Schema.String.pipe(Schema.brand('EncounterId'))
 
 export type EncounterId = typeof EncounterId.Type
 
-/**
- * Status history component
- */
+// --- Shared value sets ---
+
+const EncounterStatus = Schema.Union(
+  Schema.Literal('planned'),
+  Schema.Literal('arrived'),
+  Schema.Literal('triaged'),
+  Schema.Literal('in-progress'),
+  Schema.Literal('onleave'),
+  Schema.Literal('finished'),
+  Schema.Literal('cancelled'),
+  Schema.Literal('entered-in-error'),
+  Schema.Literal('unknown')
+)
+type EncounterStatus = typeof EncounterStatus.Type
+
+const EncounterLocationStatus = Schema.Union(
+  Schema.Literal('planned'),
+  Schema.Literal('active'),
+  Schema.Literal('reserved'),
+  Schema.Literal('completed')
+)
+type EncounterLocationStatus = typeof EncounterLocationStatus.Type
+
+// --- Sub-component IDs ---
+
 const StatusHistoryId = Schema.String.pipe(Schema.brand('StatusHistoryId'))
-const EncounterStatusHistory = Schema.Struct({
-  ...BackboneElement(StatusHistoryId).fields,
-  status: Schema.Union(
-    Schema.Literal('planned'),
-    Schema.Literal('arrived'),
-    Schema.Literal('triaged'),
-    Schema.Literal('in-progress'),
-    Schema.Literal('onleave'),
-    Schema.Literal('finished'),
-    Schema.Literal('cancelled'),
-    Schema.Literal('entered-in-error'),
-    Schema.Literal('unknown')
-  ),
-  period: Period,
-})
+type StatusHistoryId = typeof StatusHistoryId.Type
 
-/**
- * Class history component
- */
 const ClassHistoryId = Schema.String.pipe(Schema.brand('ClassHistoryId'))
-const EncounterClassHistory = Schema.Struct({
-  ...BackboneElement(ClassHistoryId).fields,
-  class: Coding,
-  period: Period,
-})
+type ClassHistoryId = typeof ClassHistoryId.Type
 
-/**
- * Participant component
- */
 const ParticipantId = Schema.String.pipe(Schema.brand('ParticipantId'))
-const EncounterParticipant = Schema.Struct({
-  ...BackboneElement(ParticipantId).fields,
-  type: Schema.optional(Schema.Array(CodeableConcept)),
-  period: Schema.optional(Period),
-  individual: Schema.optional(Reference),
-})
+type ParticipantId = typeof ParticipantId.Type
 
-/**
- * Diagnosis component
- */
 const DiagnosisId = Schema.String.pipe(Schema.brand('DiagnosisId'))
-const EncounterDiagnosis = Schema.Struct({
-  ...BackboneElement(DiagnosisId).fields,
-  condition: Reference,
-  use: Schema.optional(CodeableConcept),
-  rank: Schema.optional(Schema.Int.pipe(Schema.positive())),
-})
+type DiagnosisId = typeof DiagnosisId.Type
 
-/**
- * Location component
- */
-const LocationId = Schema.String.pipe(Schema.brand('LocationId'))
-const EncounterLocation = Schema.Struct({
-  ...BackboneElement(LocationId).fields,
-  location: Reference,
-  status: Schema.optional(
-    Schema.Union(
-      Schema.Literal('planned'),
-      Schema.Literal('active'),
-      Schema.Literal('reserved'),
-      Schema.Literal('completed')
-    )
-  ),
-  physicalType: Schema.optional(CodeableConcept),
-  period: Schema.optional(Period),
-})
+const EncounterLocationId = Schema.String.pipe(
+  Schema.brand('EncounterLocationId')
+)
+type EncounterLocationId = typeof EncounterLocationId.Type
 
-/**
- * Hospitalization component
- */
 const HospitalizationId = Schema.String.pipe(Schema.brand('HospitalizationId'))
-const EncounterHospitalization = Schema.Struct({
-  ...BackboneElement(HospitalizationId).fields,
-  preAdmissionIdentifier: Schema.optional(Identifier),
-  origin: Schema.optional(Reference),
-  admitSource: Schema.optional(CodeableConcept),
-  reAdmission: Schema.optional(CodeableConcept),
-  dietPreference: Schema.optional(Schema.Array(CodeableConcept)),
-  specialCourtesy: Schema.optional(Schema.Array(CodeableConcept)),
-  specialArrangement: Schema.optional(Schema.Array(CodeableConcept)),
-  destination: Schema.optional(Reference),
-  dischargeDisposition: Schema.optional(CodeableConcept),
-})
+type HospitalizationId = typeof HospitalizationId.Type
 
-export const Encounter = Schema.Struct({
-  ...DomainResource(EncounterId).fields,
-  resourceType: Schema.Literal('Encounter'),
-  /**
-   * Identifier(s) by which this encounter is known
-   */
-  identifier: Schema.optional(Schema.Array(Identifier)),
-  /**
-   * Note that internal business rules will determine the appropriate transitions that may occur between statuses (and also classes).
-   */
-  status: Schema.Union(
-    Schema.Literal('planned'),
-    Schema.Literal('arrived'),
-    Schema.Literal('triaged'),
-    Schema.Literal('in-progress'),
-    Schema.Literal('onleave'),
-    Schema.Literal('finished'),
-    Schema.Literal('cancelled'),
-    Schema.Literal('entered-in-error'),
-    Schema.Literal('unknown')
-  ),
-  /**
-   * The status history permits the encounter resource to contain the status history without needing to read through the historical versions of the resource, or even have the server store them.
-   */
-  statusHistory: Schema.optional(Schema.Array(EncounterStatusHistory)),
-  /**
-   * Concepts representing classification of patient encounter such as ambulatory (outpatient), inpatient, emergency, home health or others due to local variations.
-   */
-  class: Coding,
-  /**
-   * The class history permits the tracking of the encounters transitions without needing to go through the resource history. This would be used for a case where an admission starts of as an emergency encounter, then transitions into an inpatient scenario.
-   */
-  classHistory: Schema.optional(Schema.Array(EncounterClassHistory)),
-  /**
-   * Specific type of encounter (e.g. e-mail consultation, surgical day-care, skilled nursing, rehabilitation).
-   */
-  type: Schema.optional(Schema.Array(CodeableConcept)),
-  /**
-   * Broad categorization of the service that is to be provided (e.g. cardiology).
-   */
-  serviceType: Schema.optional(CodeableConcept),
-  /**
-   * Indicates the urgency of the encounter.
-   */
-  priority: Schema.optional(CodeableConcept),
-  /**
-   * The patient or group present at the encounter.
-   */
-  subject: Schema.optional(Reference),
-  /**
-   * Where a specific encounter should be classified as a part of a specific episode(s) of care this field should be used. This association can facilitate grouping of related encounters together for a specific purpose, such as government reporting, issue tracking, association via a common problem.
-   */
-  episodeOfCare: Schema.optional(Schema.Array(Reference)),
-  /**
-   * The request this encounter satisfies (e.g. incoming referral or procedure request).
-   */
-  basedOn: Schema.optional(Schema.Array(Reference)),
-  /**
-   * The list of people responsible for providing the service.
-   */
-  participant: Schema.optional(Schema.Array(EncounterParticipant)),
-  /**
-   * The appointment that scheduled this encounter.
-   */
-  appointment: Schema.optional(Schema.Array(Reference)),
-  /**
-   * The start and end time of the encounter.
-   */
-  period: Schema.optional(Period),
-  /**
-   * Quantity of time the encounter lasted. This excludes the time during leaves of absence.
-   */
-  length: Schema.optional(SimpleQuantity),
-  /**
-   * Reason the encounter takes place, expressed as a code. For admissions, this can be used for a coded admission diagnosis.
-   */
-  reasonCode: Schema.optional(Schema.Array(CodeableConcept)),
-  /**
-   * Reason the encounter takes place, expressed as a reference to a Condition, Procedure, Observation, or ImmunizationRecommendation.
-   */
-  reasonReference: Schema.optional(Schema.Array(Reference)),
-  /**
-   * The list of diagnosis relevant to this encounter.
-   */
-  diagnosis: Schema.optional(Schema.Array(EncounterDiagnosis)),
-  /**
-   * The set of accounts that may be used for billing for this Encounter.
-   */
-  account: Schema.optional(Schema.Array(Reference)),
-  /**
-   * Details about the admission to a healthcare service.
-   */
-  hospitalization: Schema.optional(EncounterHospitalization),
-  /**
-   * List of locations where the patient has been during this encounter.
-   */
-  location: Schema.optional(Schema.Array(EncounterLocation)),
-  /**
-   * The organization that is primarily responsible for this Encounter's services. This MAY be the same as the organization on the Patient record, however it could be different, such as if the actor performing the services was from an external organization (which may be billed seperately) for an external consultation.
-   */
-  serviceProvider: Schema.optional(Reference),
-  /**
-   * Another Encounter of which this encounter is a part of (administratively or in time).
-   */
-  partOf: Schema.optional(Reference),
-})
+// --- Sub-component interfaces ---
 
-export type Encounter = typeof Encounter.Type
+interface EncounterStatusHistory extends BackboneElement<StatusHistoryId> {
+  status: EncounterStatus
+  period: Period
+}
+
+interface EncounterClassHistory extends BackboneElement<ClassHistoryId> {
+  class: Coding
+  period: Period
+}
+
+interface EncounterParticipant extends BackboneElement<ParticipantId> {
+  type?: ReadonlyArray<CodeableConcept>
+  period?: Period
+  individual?: Reference
+}
+
+interface EncounterDiagnosis extends BackboneElement<DiagnosisId> {
+  condition: Reference
+  use?: CodeableConcept
+  rank?: number
+}
+
+interface EncounterHospitalization extends BackboneElement<HospitalizationId> {
+  preAdmissionIdentifier?: Identifier
+  origin?: Reference
+  admitSource?: CodeableConcept
+  reAdmission?: CodeableConcept
+  dietPreference?: ReadonlyArray<CodeableConcept>
+  specialCourtesy?: ReadonlyArray<CodeableConcept>
+  specialArrangement?: ReadonlyArray<CodeableConcept>
+  destination?: Reference
+  dischargeDisposition?: CodeableConcept
+}
+
+interface EncounterLocation extends BackboneElement<EncounterLocationId> {
+  location: Reference
+  status?: EncounterLocationStatus
+  physicalType?: CodeableConcept
+  period?: Period
+}
+
+// --- Sub-component schemas ---
+
+const EncounterStatusHistoryFromFhirR4: Schema.Schema<
+  EncounterStatusHistory,
+  DeepReadonly<FhirEncounterStatusHistory>,
+  never
+> = Schema.extend(
+  BackboneElementFromFhirR4(StatusHistoryId),
+  Schema.Struct({
+    status: EncounterStatus,
+    period: Schema.suspend(() => PeriodFromFhirR4),
+  })
+)
+
+const EncounterClassHistoryFromFhirR4: Schema.Schema<
+  EncounterClassHistory,
+  DeepReadonly<FhirEncounterClassHistory>,
+  never
+> = Schema.extend(
+  BackboneElementFromFhirR4(ClassHistoryId),
+  Schema.Struct({
+    class: Schema.suspend(() => Coding),
+    period: Schema.suspend(() => PeriodFromFhirR4),
+  })
+)
+
+const EncounterParticipantFromFhirR4: Schema.Schema<
+  EncounterParticipant,
+  DeepReadonly<FhirEncounterParticipant>,
+  never
+> = Schema.extend(
+  BackboneElementFromFhirR4(ParticipantId),
+  Schema.Struct({
+    type: Schema.optional(
+      Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+    ),
+    period: Schema.optional(Schema.suspend(() => PeriodFromFhirR4)),
+    individual: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
+  })
+)
+
+const EncounterDiagnosisFromFhirR4: Schema.Schema<
+  EncounterDiagnosis,
+  DeepReadonly<FhirEncounterDiagnosis>,
+  never
+> = Schema.extend(
+  BackboneElementFromFhirR4(DiagnosisId),
+  Schema.Struct({
+    condition: Schema.suspend(() => ReferenceFromFhirR4),
+    use: Schema.optional(Schema.suspend(() => CodeableConceptFromFhirR4)),
+    rank: Schema.optional(Schema.Int.pipe(Schema.positive())),
+  })
+)
+
+const EncounterHospitalizationFromFhirR4: Schema.Schema<
+  EncounterHospitalization,
+  DeepReadonly<FhirEncounterHospitalization>,
+  never
+> = Schema.extend(
+  BackboneElementFromFhirR4(HospitalizationId),
+  Schema.Struct({
+    preAdmissionIdentifier: Schema.optional(
+      Schema.suspend(() => IdentifierFromFhirR4)
+    ),
+    origin: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
+    admitSource: Schema.optional(
+      Schema.suspend(() => CodeableConceptFromFhirR4)
+    ),
+    reAdmission: Schema.optional(
+      Schema.suspend(() => CodeableConceptFromFhirR4)
+    ),
+    dietPreference: Schema.optional(
+      Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+    ),
+    specialCourtesy: Schema.optional(
+      Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+    ),
+    specialArrangement: Schema.optional(
+      Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+    ),
+    destination: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
+    dischargeDisposition: Schema.optional(
+      Schema.suspend(() => CodeableConceptFromFhirR4)
+    ),
+  })
+)
+
+const EncounterLocationFromFhirR4: Schema.Schema<
+  EncounterLocation,
+  DeepReadonly<FhirEncounterLocation>,
+  never
+> = Schema.extend(
+  BackboneElementFromFhirR4(EncounterLocationId),
+  Schema.Struct({
+    location: Schema.suspend(() => ReferenceFromFhirR4),
+    status: Schema.optional(EncounterLocationStatus),
+    physicalType: Schema.optional(
+      Schema.suspend(() => CodeableConceptFromFhirR4)
+    ),
+    period: Schema.optional(Schema.suspend(() => PeriodFromFhirR4)),
+  })
+)
+
+// --- Encounter ---
+
+/**
+ * An interaction between a patient and healthcare provider(s) for the purpose of
+ * providing healthcare service(s) or assessing the health status of a patient.
+ */
+export interface Encounter extends DomainResource<EncounterId> {
+  resourceType: 'Encounter'
+  identifier?: ReadonlyArray<Identifier>
+  status: EncounterStatus
+  statusHistory?: ReadonlyArray<EncounterStatusHistory>
+  class: Coding
+  classHistory?: ReadonlyArray<EncounterClassHistory>
+  type?: ReadonlyArray<CodeableConcept>
+  serviceType?: CodeableConcept
+  priority?: CodeableConcept
+  subject?: Reference
+  episodeOfCare?: ReadonlyArray<Reference>
+  basedOn?: ReadonlyArray<Reference>
+  participant?: ReadonlyArray<EncounterParticipant>
+  appointment?: ReadonlyArray<Reference>
+  period?: Period
+  length?: SimpleQuantity
+  reasonCode?: ReadonlyArray<CodeableConcept>
+  reasonReference?: ReadonlyArray<Reference>
+  diagnosis?: ReadonlyArray<EncounterDiagnosis>
+  account?: ReadonlyArray<Reference>
+  hospitalization?: EncounterHospitalization
+  location?: ReadonlyArray<EncounterLocation>
+  serviceProvider?: Reference
+  partOf?: Reference
+}
+
+/**
+ * Schema for transforming between Encounter Data objects and FHIR R4 Encounter resources.
+ */
+export const EncounterFromFhirR4: Schema.Schema<
+  Encounter,
+  DeepReadonly<FhirEncounter>,
+  never
+> = Schema.extend(
+  DomainResourceFromFhirR4(EncounterId),
+  Schema.Struct({
+    resourceType: Schema.Literal('Encounter'),
+    identifier: Schema.optional(
+      Schema.Array(Schema.suspend(() => IdentifierFromFhirR4))
+    ),
+    status: EncounterStatus,
+    statusHistory: Schema.optional(
+      Schema.Array(EncounterStatusHistoryFromFhirR4)
+    ),
+    class: Schema.suspend(() => Coding),
+    classHistory: Schema.optional(
+      Schema.Array(EncounterClassHistoryFromFhirR4)
+    ),
+    type: Schema.optional(
+      Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+    ),
+    serviceType: Schema.optional(
+      Schema.suspend(() => CodeableConceptFromFhirR4)
+    ),
+    priority: Schema.optional(Schema.suspend(() => CodeableConceptFromFhirR4)),
+    subject: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
+    episodeOfCare: Schema.optional(
+      Schema.Array(Schema.suspend(() => ReferenceFromFhirR4))
+    ),
+    basedOn: Schema.optional(
+      Schema.Array(Schema.suspend(() => ReferenceFromFhirR4))
+    ),
+    participant: Schema.optional(Schema.Array(EncounterParticipantFromFhirR4)),
+    appointment: Schema.optional(
+      Schema.Array(Schema.suspend(() => ReferenceFromFhirR4))
+    ),
+    period: Schema.optional(Schema.suspend(() => PeriodFromFhirR4)),
+    length: Schema.optional(Schema.suspend(() => SimpleQuantity)),
+    reasonCode: Schema.optional(
+      Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+    ),
+    reasonReference: Schema.optional(
+      Schema.Array(Schema.suspend(() => ReferenceFromFhirR4))
+    ),
+    diagnosis: Schema.optional(Schema.Array(EncounterDiagnosisFromFhirR4)),
+    account: Schema.optional(
+      Schema.Array(Schema.suspend(() => ReferenceFromFhirR4))
+    ),
+    hospitalization: Schema.optional(EncounterHospitalizationFromFhirR4),
+    location: Schema.optional(Schema.Array(EncounterLocationFromFhirR4)),
+    serviceProvider: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
+    partOf: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
+  })
+)

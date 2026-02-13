@@ -1,12 +1,28 @@
+import type { DateTime } from 'effect'
 import { Schema } from 'effect'
-import { DomainResource } from '../../data-types/base/DomainResource'
-import {
+import type {
+  DiagnosticReport as FhirDiagnosticReport,
+  DiagnosticReportMedia as FhirDiagnosticReportMedia,
+} from 'fhir/r4'
+import type { DomainResource } from '../../data-types/base/DomainResource'
+import { DomainResourceFromFhirR4 } from '../../data-types/base/DomainResource'
+import type { BackboneElement } from '../../data-types/base/BackboneElement'
+import { BackboneElementFromFhirR4 } from '../../data-types/base/BackboneElement'
+import type {
   Identifier,
   Reference,
 } from '../../data-types/complex/IdentifierAndReference'
-import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
-import { Attachment } from '../../data-types/complex/Attachment'
-import { Period } from '../../data-types/complex/Period'
+import {
+  IdentifierFromFhirR4,
+  ReferenceFromFhirR4,
+} from '../../data-types/complex/IdentifierAndReference'
+import type { CodeableConcept } from '../../data-types/complex/CodeableConcept'
+import { CodeableConceptFromFhirR4 } from '../../data-types/complex/CodeableConcept'
+import type { Attachment as AttachmentType } from '../../data-types/complex/Attachment'
+import { AttachmentFromFhirR4 } from '../../data-types/complex/Attachment'
+import type { Period } from '../../data-types/complex/Period'
+import { PeriodFromFhirR4 } from '../../data-types/complex/Period'
+import type { DeepReadonly } from '@assessmentis/util'
 
 export const DiagnosticReportId = Schema.String.pipe(
   Schema.brand('DiagnosticReportId')
@@ -16,7 +32,6 @@ export type DiagnosticReportId = typeof DiagnosticReportId.Type
 
 /**
  * The status of the diagnostic report.
- * registered | partial | preliminary | final | amended | corrected | appended | cancelled | entered-in-error | unknown
  */
 export const DiagnosticReportStatus = Schema.Enums({
   registered: 'registered',
@@ -33,102 +48,101 @@ export const DiagnosticReportStatus = Schema.Enums({
 
 export type DiagnosticReportStatus = typeof DiagnosticReportStatus.Type
 
-/**
- * The findings and interpretation of diagnostic tests performed on patients, groups of patients, devices, and locations, and/or specimens derived from these. The report includes clinical context such as requesting and provider information, and some mix of atomic results, images, textual and coded interpretations, and formatted representation of diagnostic reports.
- */
-export const DiagnosticReport = Schema.Struct({
-  ...DomainResource(DiagnosticReportId).fields,
-  resourceType: Schema.Literal('DiagnosticReport'),
-  /**
-   * Identifiers assigned to this report by the performer or other systems.
-   */
-  identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
-  /**
-   * Details concerning a service requested.
-   */
-  basedOn: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
-  /**
-   * The status of the diagnostic report.
-   * This element is labeled as a modifier because the status contains codes that mark the resource as not currently valid.
-   */
-  status: DiagnosticReportStatus,
-  /**
-   * A code that classifies the clinical discipline, department or diagnostic service that created the report (e.g. cardiology, biochemistry, hematology, MRI). This is used for searching, sorting and display purposes.
-   */
-  category: Schema.optional(Schema.Array(CodeableConcept)),
-  /**
-   * A code or name that describes this diagnostic report.
-   */
-  code: CodeableConcept,
-  /**
-   * The subject of the report. Usually, but not always, this is a patient. However, diagnostic services also perform analyses on specimens collected from a variety of other sources.
-   */
-  subject: Schema.optional(Schema.suspend(() => Reference)),
-  /**
-   * The healthcare event (e.g. a patient and healthcare provider interaction) which this DiagnosticReport is about.
-   */
-  encounter: Schema.optional(Schema.suspend(() => Reference)),
-  /**
-   * The time or time-period the observed values are related to. When the subject of the report is a patient, this is usually either the time of the procedure or of specimen collection(s), but very often the source of the date/time is not known, only the date/time itself.
-   * This is a choice element in FHIR (effective[x]) - only one of effectiveDateTime or effectivePeriod should be present.
-   */
-  effectiveDateTime: Schema.optional(Schema.DateTimeUtc),
-  effectivePeriod: Schema.optional(Period),
-  /**
-   * The date and time that this version of the report was made available to providers, typically after the report was reviewed and verified.
-   */
-  issued: Schema.optional(Schema.DateTimeUtc),
-  /**
-   * The diagnostic service that is responsible for issuing the report.
-   */
-  performer: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
-  /**
-   * The practitioner or organization that is responsible for the report's conclusions and interpretations.
-   */
-  resultsInterpreter: Schema.optional(
-    Schema.Array(Schema.suspend(() => Reference))
-  ),
-  /**
-   * Details about the specimens on which this diagnostic report is based.
-   */
-  specimen: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
-  /**
-   * Observations that are part of this diagnostic report.
-   */
-  result: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
-  /**
-   * One or more links to full details of any imaging performed during the diagnostic investigation. Typically, this is imaging performed by DICOM enabled modalities, but this is not required. A fully enabled PACS viewer can use this information to provide views of the source images.
-   */
-  imagingStudy: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
-  /**
-   * A list of key images associated with this report. The images are generally created during the diagnostic process, and may be directly of the patient, or of treated specimens (i.e. slides of interest).
-   */
-  media: Schema.optional(
-    Schema.Array(
-      Schema.Struct({
-        /**
-         * A comment about the image. Typically, this is used to provide an explanation for why the image is included, or to draw the viewer's attention to important features.
-         */
-        comment: Schema.optional(Schema.String),
-        /**
-         * Reference to the image source.
-         */
-        link: Schema.suspend(() => Reference),
-      })
-    )
-  ),
-  /**
-   * Concise and clinically contextualized summary conclusion (interpretation/impression) of the diagnostic report.
-   */
-  conclusion: Schema.optional(Schema.String),
-  /**
-   * One or more codes that represent the summary conclusion (interpretation/impression) of the diagnostic report.
-   */
-  conclusionCode: Schema.optional(Schema.Array(CodeableConcept)),
-  /**
-   * Rich text representation of the entire result as issued by the diagnostic service. Multiple formats are allowed but they SHALL be semantically equivalent.
-   */
-  presentedForm: Schema.optional(Schema.Array(Attachment)),
-})
+const DiagnosticReportMediaId = Schema.String.pipe(
+  Schema.brand('DiagnosticReportMediaId')
+)
+type DiagnosticReportMediaId = typeof DiagnosticReportMediaId.Type
 
-export type DiagnosticReport = typeof DiagnosticReport.Type
+export interface DiagnosticReportMedia extends BackboneElement<DiagnosticReportMediaId> {
+  comment?: string
+  link: Reference
+}
+
+const DiagnosticReportMediaFromFhirR4: Schema.Schema<
+  DiagnosticReportMedia,
+  DeepReadonly<FhirDiagnosticReportMedia>,
+  never
+> = Schema.extend(
+  BackboneElementFromFhirR4(DiagnosticReportMediaId),
+  Schema.Struct({
+    comment: Schema.optional(Schema.String),
+    link: Schema.suspend(() => ReferenceFromFhirR4),
+  })
+)
+
+/**
+ * The findings and interpretation of diagnostic tests performed on patients,
+ * groups of patients, devices, and locations, and/or specimens derived from these.
+ */
+export interface DiagnosticReport extends DomainResource<DiagnosticReportId> {
+  resourceType: 'DiagnosticReport'
+  identifier?: ReadonlyArray<Identifier>
+  basedOn?: ReadonlyArray<Reference>
+  status: DiagnosticReportStatus
+  category?: ReadonlyArray<CodeableConcept>
+  code: CodeableConcept
+  subject?: Reference
+  encounter?: Reference
+  effectiveDateTime?: DateTime.Utc
+  effectivePeriod?: Period
+  issued?: DateTime.Utc
+  performer?: ReadonlyArray<Reference>
+  resultsInterpreter?: ReadonlyArray<Reference>
+  specimen?: ReadonlyArray<Reference>
+  result?: ReadonlyArray<Reference>
+  imagingStudy?: ReadonlyArray<Reference>
+  media?: ReadonlyArray<DiagnosticReportMedia>
+  conclusion?: string
+  conclusionCode?: ReadonlyArray<CodeableConcept>
+  presentedForm?: ReadonlyArray<AttachmentType>
+}
+
+export const DiagnosticReportFromFhirR4: Schema.Schema<
+  DiagnosticReport,
+  DeepReadonly<FhirDiagnosticReport>,
+  never
+> = Schema.extend(
+  DomainResourceFromFhirR4(DiagnosticReportId),
+  Schema.Struct({
+    resourceType: Schema.Literal('DiagnosticReport'),
+    identifier: Schema.optional(
+      Schema.Array(Schema.suspend(() => IdentifierFromFhirR4))
+    ),
+    basedOn: Schema.optional(
+      Schema.Array(Schema.suspend(() => ReferenceFromFhirR4))
+    ),
+    status: DiagnosticReportStatus,
+    category: Schema.optional(
+      Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+    ),
+    code: Schema.suspend(() => CodeableConceptFromFhirR4),
+    subject: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
+    encounter: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
+    effectiveDateTime: Schema.optional(Schema.DateTimeUtc),
+    effectivePeriod: Schema.optional(Schema.suspend(() => PeriodFromFhirR4)),
+    issued: Schema.optional(Schema.DateTimeUtc),
+    performer: Schema.optional(
+      Schema.Array(Schema.suspend(() => ReferenceFromFhirR4))
+    ),
+    resultsInterpreter: Schema.optional(
+      Schema.Array(Schema.suspend(() => ReferenceFromFhirR4))
+    ),
+    specimen: Schema.optional(
+      Schema.Array(Schema.suspend(() => ReferenceFromFhirR4))
+    ),
+    result: Schema.optional(
+      Schema.Array(Schema.suspend(() => ReferenceFromFhirR4))
+    ),
+    imagingStudy: Schema.optional(
+      Schema.Array(Schema.suspend(() => ReferenceFromFhirR4))
+    ),
+    media: Schema.optional(Schema.Array(DiagnosticReportMediaFromFhirR4)),
+    conclusion: Schema.optional(Schema.String),
+    conclusionCode: Schema.optional(
+      Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+    ),
+    presentedForm: Schema.optional(
+      Schema.Array(Schema.suspend(() => AttachmentFromFhirR4))
+    ),
+  })
+)

@@ -1,24 +1,28 @@
 import { Schema } from 'effect'
 import {
-  ValueElement,
-  type ValueElementEncoded,
+  ValueElementFromFhirR4,
+  type ValueElement,
 } from '../primitive/ValueElement'
+import type { Extension as FhirExtension } from 'fhir/r4'
+import type { DeepReadonly } from '@assessmentis/util'
 
 export type Extension = {
   url: string
 } & ValueElement
 
-export type ExtensionEncoded = {
-  url: string
-} & ValueElementEncoded
-
-export const Extension: Schema.Schema<Extension, ExtensionEncoded> =
-  Schema.extend(
-    Schema.Struct({
-      url: Schema.String,
-    }),
-    Schema.suspend(() => ValueElement)
-  )
+export const ExtensionFromFhirR4: Schema.Schema<
+  Extension,
+  Pick<
+    DeepReadonly<FhirExtension>,
+    'url' | keyof typeof ValueElementFromFhirR4.Encoded
+  >,
+  never
+> = Schema.extend(
+  Schema.Struct({
+    url: Schema.String,
+  }),
+  Schema.suspend(() => ValueElementFromFhirR4)
+)
 
 /**
  * Creates a typed FHIR extension helper

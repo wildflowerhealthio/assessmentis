@@ -1,211 +1,97 @@
 import type { DateTime } from 'effect'
 import { Schema } from 'effect'
-import { Code, Coding } from '../complex/Coding'
-import {
-  Reference,
-  type ReferenceEncoded,
-} from '../complex/IdentifierAndReference'
-import { Extension, type ExtensionEncoded } from '../special-purpose/Extension'
-import { CodeableConcept } from '../complex'
+import type {
+  Extension as FhirExtension,
+  Quantity as FhirQuantity,
+} from 'fhir/r4'
 
-const Attachment = Schema.Struct({ contentType: Schema.optional(Code) })
-const Quantity = Schema.Struct({
+import { Code, Coding } from '../complex/Coding'
+import type { Reference } from '../complex/IdentifierAndReference'
+import { ReferenceFromFhirR4 } from '../complex/IdentifierAndReference'
+import { CodeableConceptFromFhirR4, type CodeableConcept } from '../complex'
+import type { Attachment } from '../complex/Attachment'
+import { AttachmentFromFhirR4 } from '../complex/Attachment'
+import type { DeepReadonly } from '@assessmentis/util'
+
+// Local Quantity interface for ValueElement use
+// (Full Quantity type doesn't exist yet, only SimpleQuantity)
+interface Quantity {
+  value?: number
+  unit?: string
+}
+
+const QuantityFromFhirR4 = Schema.Struct({
   value: Schema.optional(Schema.Number),
   unit: Schema.optional(Schema.String),
+}) satisfies Schema.Schema<Quantity, DeepReadonly<FhirQuantity>>
+
+export interface ValueElement {
+  readonly valueBoolean?: boolean
+
+  readonly valueDecimal?: number
+
+  readonly valueInteger?: number
+
+  readonly valueDate?: Date
+
+  readonly valueDateTime?: DateTime.Utc
+
+  readonly valueTime?: string
+
+  readonly valueString?: string
+
+  readonly valueUrl?: string
+  readonly valueAttachment?: Attachment
+
+  readonly valueCoding?: Coding
+
+  readonly valueQuantity?: Quantity
+  readonly valueReference?: Reference
+
+  readonly valueCode?: Code
+  // _valueCode?: { extension?: Extension[] }
+  readonly valueCodeableConcept?: CodeableConcept
+  readonly valueCanonical?: string
+}
+
+export const ValueElementFromFhirR4: Schema.Schema<
+  ValueElement,
+  DeepReadonly<
+    Pick<
+      FhirExtension,
+      | 'valueBoolean'
+      | 'valueDecimal'
+      | 'valueInteger'
+      | 'valueDate'
+      | 'valueDateTime'
+      | 'valueTime'
+      | 'valueString'
+      | 'valueUrl'
+      | 'valueAttachment'
+      | 'valueCoding'
+      | 'valueQuantity'
+      | 'valueReference'
+      | 'valueCode'
+      | 'valueCodeableConcept'
+      | 'valueCanonical'
+    >
+  >
+> = Schema.Struct({
+  valueBoolean: Schema.optional(Schema.Boolean),
+  valueDecimal: Schema.optional(Schema.Number),
+  valueInteger: Schema.optional(Schema.Number),
+  valueDate: Schema.optional(Schema.DateFromString),
+  valueDateTime: Schema.optional(Schema.DateTimeUtc),
+  valueTime: Schema.optional(Schema.String),
+  valueString: Schema.optional(Schema.String),
+  valueUrl: Schema.optional(Schema.String),
+  valueAttachment: Schema.optional(AttachmentFromFhirR4),
+  valueCoding: Schema.optional(Coding),
+  valueQuantity: Schema.optional(QuantityFromFhirR4),
+  valueReference: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
+  valueCode: Schema.optional(Code),
+  valueCodeableConcept: Schema.optional(
+    Schema.suspend(() => CodeableConceptFromFhirR4)
+  ),
+  valueCanonical: Schema.optional(Schema.String),
 })
-
-export type ValueElement =
-  | {
-      valueBoolean: boolean
-    }
-  | {
-      valueDecimal: number
-    }
-  | {
-      valueInteger: number
-      _valueInteger?: { extension?: Extension[] }
-    }
-  | {
-      valueDate: string
-    }
-  | {
-      valueDateTime: DateTime.Utc
-    }
-  | {
-      valueTime: string
-    }
-  | {
-      valueString: string
-    }
-  | {
-      valueUrl: string
-    }
-  | {
-      valueAttachment: typeof Attachment.Type
-    }
-  | {
-      valueCoding: typeof Coding.Type
-    }
-  | {
-      valueQuantity: typeof Quantity.Type
-    }
-  | {
-      valueReference: Reference
-    }
-  | {
-      valueCode: typeof Code.Type
-      _valueCode?: { extension?: Extension[] }
-    }
-  | {
-      valueCodeableConcept: CodeableConcept
-    }
-  | {
-      valueCanonical: string
-    }
-  | object
-
-export type ValueElementEncoded =
-  | {
-      valueBoolean: boolean
-    }
-  | {
-      valueDecimal: number
-    }
-  | {
-      valueInteger: number
-      _valueInteger?: { extension?: ExtensionEncoded[] }
-    }
-  | {
-      valueDate: string
-    }
-  | {
-      valueDateTime: string
-    }
-  | {
-      valueTime: string
-    }
-  | {
-      valueString: string
-    }
-  | {
-      valueUrl: string
-    }
-  | {
-      valueAttachment: typeof Attachment.Encoded
-    }
-  | {
-      valueCoding: typeof Coding.Encoded
-    }
-  | {
-      valueQuantity: typeof Quantity.Encoded
-    }
-  | {
-      valueReference: ReferenceEncoded
-    }
-  | {
-      valueCode: typeof Code.Encoded
-      _valueCode?: { extension?: ExtensionEncoded[] }
-    }
-  | {
-      valueCodeableConcept: typeof CodeableConcept.Encoded
-    }
-  | {
-      valueCanonical: string
-    }
-  | object
-
-const extensionObj = () =>
-  Schema.optional(Schema.Array(Schema.suspend(() => Extension)))
-
-export const ValueElement = Schema.Union(
-  Schema.Struct({
-    /**
-     * More complex structures (Attachment, Resource and Quantity) will typically be limited to electronic forms that can expose an appropriate user interface to capture the components and enforce the constraints of a complex data type.  Additional complex types can be introduced through extensions. Must match the datatype specified by Questionnaire.item.type in the corresponding Questionnaire.
-     */
-    valueBoolean: Schema.Boolean,
-    // _valueBoolean?: Element | undefined;
-  }),
-  Schema.Struct({
-    /**
-     * More complex structures (Attachment, Resource and Quantity) will typically be limited to electronic forms that can expose an appropriate user interface to capture the components and enforce the constraints of a complex data type.  Additional complex types can be introduced through extensions. Must match the datatype specified by Questionnaire.item.type in the corresponding Questionnaire.
-     */
-    valueDecimal: Schema.Number,
-  }),
-  Schema.Struct({
-    /**
-     * More complex structures (Attachment, Resource and Quantity) will typically be limited to electronic forms that can expose an appropriate user interface to capture the components and enforce the constraints of a complex data type.  Additional complex types can be introduced through extensions. Must match the datatype specified by Questionnaire.item.type in the corresponding Questionnaire.
-     */
-    valueInteger: Schema.Number,
-    _valueInteger: extensionObj(),
-  }),
-  Schema.Struct({
-    /**
-     * More complex structures (Attachment, Resource and Quantity) will typically be limited to electronic forms that can expose an appropriate user interface to capture the components and enforce the constraints of a complex data type.  Additional complex types can be introduced through extensions. Must match the datatype specified by Questionnaire.item.type in the corresponding Questionnaire.
-     */
-    valueDate: Schema.String,
-    // _valueDate?: Element | undefined,
-  }),
-  Schema.Struct({
-    /**
-     * More complex structures (Attachment, Resource and Quantity) will typically be limited to electronic forms that can expose an appropriate user interface to capture the components and enforce the constraints of a complex data type.  Additional complex types can be introduced through extensions. Must match the datatype specified by Questionnaire.item.type in the corresponding Questionnaire.
-     */
-    valueDateTime: Schema.DateTimeUtc,
-    // _valueDateTime?: Element | undefined;
-  }),
-  Schema.Struct({
-    /**
-     * More complex structures (Attachment, Resource and Quantity) will typically be limited to electronic forms that can expose an appropriate user interface to capture the components and enforce the constraints of a complex data type.  Additional complex types can be introduced through extensions. Must match the datatype specified by Questionnaire.item.type in the corresponding Questionnaire.
-     */
-    valueTime: Schema.String,
-    // _valueTime?: Element | undefined;
-  }),
-  Schema.Struct({
-    /**
-     * More complex structures (Attachment, Resource and Quantity) will typically be limited to electronic forms that can expose an appropriate user interface to capture the components and enforce the constraints of a complex data type.  Additional complex types can be introduced through extensions. Must match the datatype specified by Questionnaire.item.type in the corresponding Questionnaire.
-     */
-    valueString: Schema.String,
-    // _valueString?: Element | undefined;
-  }),
-  Schema.Struct({
-    /**
-     * More complex structures (Attachment, Resource and Quantity) will typically be limited to electronic forms that can expose an appropriate user interface to capture the components and enforce the constraints of a complex data type.  Additional complex types can be introduced through extensions. Must match the datatype specified by Questionnaire.item.type in the corresponding Questionnaire.
-     */
-    valueUrl: Schema.String,
-    // _valueUrl?: Element | undefined;
-  }),
-  Schema.Struct({
-    /**
-     * More complex structures (Attachment, Resource and Quantity) will typically be limited to electronic forms that can expose an appropriate user interface to capture the components and enforce the constraints of a complex data type.  Additional complex types can be introduced through extensions. Must match the datatype specified by Questionnaire.item.type in the corresponding Questionnaire.
-     */
-    valueAttachment: Attachment, // Attachment | undefined;
-  }),
-  Schema.Struct({
-    /**
-     * More complex structures (Attachment, Resource and Quantity) will typically be limited to electronic forms that can expose an appropriate user interface to capture the components and enforce the constraints of a complex data type.  Additional complex types can be introduced through extensions. Must match the datatype specified by Questionnaire.item.type in the corresponding Questionnaire.
-     */
-    valueCoding: Coding,
-  }),
-  Schema.Struct({
-    /**
-     * More complex structures (Attachment, Resource and Quantity) will typically be limited to electronic forms that can expose an appropriate user interface to capture the components and enforce the constraints of a complex data type.  Additional complex types can be introduced through extensions. Must match the datatype specified by Questionnaire.item.type in the corresponding Questionnaire.
-     */
-    valueQuantity: Quantity,
-  }),
-  Schema.Struct({
-    /**
-     * More complex structures (Attachment, Resource and Quantity) will typically be limited to electronic forms that can expose an appropriate user interface to capture the components and enforce the constraints of a complex data type.  Additional complex types can be introduced through extensions. Must match the datatype specified by Questionnaire.item.type in the corresponding Questionnaire.
-     */
-    valueReference: Schema.suspend(() => Reference),
-  }),
-  Schema.Struct({
-    valueCode: Code,
-    _valueCode: extensionObj(),
-  }),
-  Schema.Struct({
-    valueCodeableConcept: CodeableConcept,
-  }),
-  Schema.Struct({
-    valueCanonical: Schema.String,
-  }),
-  Schema.Struct({})
-)

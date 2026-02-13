@@ -8,14 +8,14 @@ import type {
 } from '@assessmentis/ontology'
 import type { WithId } from './data-types/base/Element'
 import type { Reference } from './data-types/complex/IdentifierAndReference'
-import type Schemas from './Schemas'
+import type ResourceDataTypes from './ResourceDataTypes'
 
 export type ClinicalDomainRepositoryTagClass<
-  Key extends keyof typeof Schemas,
+  Key extends keyof ResourceDataTypes,
   Self extends Context.TagClass<
     Self,
     `${Key}Repository`,
-    ClinicalDataRepository<(typeof Schemas)[Key]['Type']>
+    ClinicalDataRepository<ResourceDataTypes[Key]>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   > = any,
 > = Self

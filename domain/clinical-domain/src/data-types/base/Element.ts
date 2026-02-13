@@ -1,19 +1,15 @@
 import { Effect, Schema } from 'effect'
+import type { Element as FhirElement } from 'fhir/r4'
+export interface Element<IdType extends string = string> {
+  id?: IdType
+}
 
-export const Element = <IdType extends string = string>(
+export const ElementFromFhirR4 = <IdType extends string = string>(
   idSchema: Schema.Schema<IdType, string>
 ) =>
   Schema.Struct({
     id: Schema.optional(idSchema),
-  })
-
-export type Element<IdType extends string = string> = ReturnType<
-  typeof Element<IdType>
->['Type']
-
-export type ElementEncoded<IdType extends string = string> = ReturnType<
-  typeof Element<IdType>
->['Encoded']
+  }) satisfies Schema.Schema<Element<IdType>, FhirElement>
 
 export type WithId<A extends { id?: string | undefined }> = A & {
   id: NonNullable<A['id']>

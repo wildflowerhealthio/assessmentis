@@ -1,17 +1,34 @@
+import type { DateTime } from 'effect'
 import { Schema } from 'effect'
-import { DomainResource } from '../../data-types/base/DomainResource'
-import {
+import type {
+  Patient as FhirPatient,
+  PatientContact as FhirPatientContact,
+  PatientCommunication as FhirPatientCommunication,
+  PatientLink as FhirPatientLink,
+} from 'fhir/r4'
+import type { DomainResource } from '../../data-types/base/DomainResource'
+import { DomainResourceFromFhirR4 } from '../../data-types/base/DomainResource'
+import type { BackboneElement } from '../../data-types/base/BackboneElement'
+import { BackboneElementFromFhirR4 } from '../../data-types/base/BackboneElement'
+import type {
   Identifier,
   Reference,
+} from '../../data-types/complex/IdentifierAndReference'
+import {
+  IdentifierFromFhirR4,
+  ReferenceFromFhirR4,
 } from '../../data-types/complex/IdentifierAndReference'
 import { HumanName } from '../../data-types/complex/HumanName'
 import { ContactPoint } from '../../data-types/complex/ContactPoint'
 import { Address } from '../../data-types/complex/Address'
-import { Attachment } from '../../data-types/complex/Attachment'
-import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
-import { Period } from '../../data-types/complex/Period'
+import type { Attachment } from '../../data-types/complex/Attachment'
+import { AttachmentFromFhirR4 } from '../../data-types/complex/Attachment'
+import type { CodeableConcept } from '../../data-types/complex/CodeableConcept'
+import { CodeableConceptFromFhirR4 } from '../../data-types/complex/CodeableConcept'
+import type { Period } from '../../data-types/complex/Period'
+import { PeriodFromFhirR4 } from '../../data-types/complex/Period'
 import { AdministrativeGender } from '../value-sets/AdministrativeGender'
-import { TimelessDateFromString } from '@assessmentis/util'
+import { TimelessDateFromString, type DeepReadonly } from '@assessmentis/util'
 
 export const PatientId = Schema.String.pipe(Schema.brand('PatientId'))
 
@@ -30,146 +47,154 @@ export const PatientLinkType = Schema.Enums({
 
 export type PatientLinkType = typeof PatientLinkType.Type
 
-/**
- * Demographics and other administrative information about an individual or animal receiving care or other health-related services.
- */
-export const Patient = Schema.Struct({
-  ...DomainResource(PatientId).fields,
-  resourceType: Schema.Literal('Patient'),
-  /**
-   * An identifier for this patient.
-   */
-  identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
-  /**
-   * Whether this patient record is in active use.
-   * Many systems use this property to mark as non-current patients, such as those that have not been seen for a period of time based on an organization's business rules.
-   */
-  active: Schema.optional(Schema.Boolean),
-  /**
-   * A name associated with the individual.
-   */
-  name: Schema.optional(Schema.Array(HumanName)),
-  /**
-   * A contact detail (e.g. a telephone number or an email address) by which the individual may be contacted.
-   */
-  telecom: Schema.optional(Schema.Array(ContactPoint)),
-  /**
-   * Administrative Gender - the gender that the patient is considered to have for administration and record keeping purposes.
-   */
-  gender: Schema.optional(AdministrativeGender),
-  /**
-   * The date of birth for the individual.
-   */
-  birthDate: Schema.optional(TimelessDateFromString),
-  /**
-   * Indicates if the individual is deceased or not.
-   */
-  deceasedBoolean: Schema.optional(Schema.Boolean),
-  /**
-   * The date and time of death if the patient is deceased.
-   */
-  deceasedDateTime: Schema.optional(Schema.DateTimeUtc),
-  /**
-   * An address for the individual.
-   */
-  address: Schema.optional(Schema.Array(Address)),
-  /**
-   * This field contains a patient's most recent marital (civil) status.
-   */
-  maritalStatus: Schema.optional(CodeableConcept),
-  /**
-   * Indicates whether the patient is part of a multiple (boolean) or indicates the actual birth order (integer).
-   */
-  multipleBirthBoolean: Schema.optional(Schema.Boolean),
-  /**
-   * The birth order in a multiple birth scenario (e.g., twin #1, twin #2).
-   */
-  multipleBirthInteger: Schema.optional(Schema.Number),
-  /**
-   * Image of the patient.
-   */
-  photo: Schema.optional(Schema.Array(Attachment)),
-  /**
-   * A contact party (e.g. guardian, partner, friend) for the patient.
-   */
-  contact: Schema.optional(
-    Schema.Array(
-      Schema.Struct({
-        /**
-         * The nature of the relationship between the patient and the contact person.
-         */
-        relationship: Schema.optional(Schema.Array(CodeableConcept)),
-        /**
-         * A name associated with the contact person.
-         */
-        name: Schema.optional(HumanName),
-        /**
-         * A contact detail for the person, e.g. a telephone number or an email address.
-         */
-        telecom: Schema.optional(Schema.Array(ContactPoint)),
-        /**
-         * Address for the contact person.
-         */
-        address: Schema.optional(Address),
-        /**
-         * Administrative Gender - the gender that the contact person is considered to have for administration and record keeping purposes.
-         */
-        gender: Schema.optional(AdministrativeGender),
-        /**
-         * Organization on behalf of which the contact is acting or for which the contact is working.
-         */
-        organization: Schema.optional(Schema.suspend(() => Reference)),
-        /**
-         * The period during which this contact person or organization is valid to be contacted relating to this patient.
-         */
-        period: Schema.optional(Period),
-      })
-    )
-  ),
-  /**
-   * A language which may be used to communicate with the patient about his or her health.
-   */
-  communication: Schema.optional(
-    Schema.Array(
-      Schema.Struct({
-        /**
-         * The ISO-639-1 alpha 2 code in lower case for the language, optionally followed by a hyphen and the ISO-3166-1 alpha 2 code for the region in upper case; e.g. "en" for English, or "en-US" for American English versus "en-EN" for England English.
-         */
-        language: CodeableConcept,
-        /**
-         * Indicates whether or not the patient prefers this language (over other languages he masters up a certain level).
-         */
-        preferred: Schema.optional(Schema.Boolean),
-      })
-    )
-  ),
-  /**
-   * Patient's nominated care provider.
-   */
-  generalPractitioner: Schema.optional(
-    Schema.Array(Schema.suspend(() => Reference))
-  ),
-  /**
-   * Organization that is the custodian of the patient record.
-   */
-  managingOrganization: Schema.optional(Schema.suspend(() => Reference)),
-  /**
-   * Link to another patient resource that concerns the same actual patient.
-   */
-  link: Schema.optional(
-    Schema.Array(
-      Schema.Struct({
-        /**
-         * The other patient resource that the link refers to.
-         */
-        other: Schema.suspend(() => Reference),
-        /**
-         * The type of link between this patient resource and another patient resource.
-         */
-        type: PatientLinkType,
-      })
-    )
-  ),
-})
+// --- Sub-component IDs ---
 
-export type Patient = typeof Patient.Type
+const PatientContactId = Schema.String.pipe(Schema.brand('PatientContactId'))
+type PatientContactId = typeof PatientContactId.Type
+
+const PatientCommunicationId = Schema.String.pipe(
+  Schema.brand('PatientCommunicationId')
+)
+type PatientCommunicationId = typeof PatientCommunicationId.Type
+
+const PatientLinkId = Schema.String.pipe(Schema.brand('PatientLinkId'))
+type PatientLinkId = typeof PatientLinkId.Type
+
+// --- Sub-component interfaces ---
+
+interface PatientContact extends BackboneElement<PatientContactId> {
+  relationship?: ReadonlyArray<CodeableConcept>
+  name?: HumanName
+  telecom?: ReadonlyArray<ContactPoint>
+  address?: Address
+  gender?: AdministrativeGender
+  organization?: Reference
+  period?: Period
+}
+
+interface PatientCommunication extends BackboneElement<PatientCommunicationId> {
+  language: CodeableConcept
+  preferred?: boolean
+}
+
+interface PatientLink extends BackboneElement<PatientLinkId> {
+  other: Reference
+  type: PatientLinkType
+}
+
+// --- Sub-component schemas ---
+
+const PatientContactFromFhirR4: Schema.Schema<
+  PatientContact,
+  DeepReadonly<FhirPatientContact>,
+  never
+> = Schema.extend(
+  BackboneElementFromFhirR4(PatientContactId),
+  Schema.Struct({
+    relationship: Schema.optional(
+      Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+    ),
+    name: Schema.optional(Schema.suspend(() => HumanName)),
+    telecom: Schema.optional(Schema.Array(Schema.suspend(() => ContactPoint))),
+    address: Schema.optional(Schema.suspend(() => Address)),
+    gender: Schema.optional(AdministrativeGender),
+    organization: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
+    period: Schema.optional(Schema.suspend(() => PeriodFromFhirR4)),
+  })
+)
+
+const PatientCommunicationFromFhirR4: Schema.Schema<
+  PatientCommunication,
+  DeepReadonly<FhirPatientCommunication>,
+  never
+> = Schema.extend(
+  BackboneElementFromFhirR4(PatientCommunicationId),
+  Schema.Struct({
+    language: Schema.suspend(() => CodeableConceptFromFhirR4),
+    preferred: Schema.optional(Schema.Boolean),
+  })
+)
+
+const PatientLinkFromFhirR4: Schema.Schema<
+  PatientLink,
+  DeepReadonly<FhirPatientLink>,
+  never
+> = Schema.extend(
+  BackboneElementFromFhirR4(PatientLinkId),
+  Schema.Struct({
+    other: Schema.suspend(() => ReferenceFromFhirR4),
+    type: PatientLinkType,
+  })
+)
+
+// --- Patient ---
+
+/**
+ * Demographics and other administrative information about an individual or animal
+ * receiving care or other health-related services.
+ */
+export interface Patient extends DomainResource<PatientId> {
+  resourceType: 'Patient'
+  identifier?: ReadonlyArray<Identifier>
+  active?: boolean
+  name?: ReadonlyArray<HumanName>
+  telecom?: ReadonlyArray<ContactPoint>
+  gender?: AdministrativeGender
+  birthDate?: Date
+  deceasedBoolean?: boolean
+  deceasedDateTime?: DateTime.Utc
+  address?: ReadonlyArray<Address>
+  maritalStatus?: CodeableConcept
+  multipleBirthBoolean?: boolean
+  multipleBirthInteger?: number
+  photo?: ReadonlyArray<Attachment>
+  contact?: ReadonlyArray<PatientContact>
+  communication?: ReadonlyArray<PatientCommunication>
+  generalPractitioner?: ReadonlyArray<Reference>
+  managingOrganization?: Reference
+  link?: ReadonlyArray<PatientLink>
+}
+
+/**
+ * Schema for transforming between Patient Data objects and FHIR R4 Patient resources.
+ */
+export const PatientFromFhirR4: Schema.Schema<
+  Patient,
+  DeepReadonly<FhirPatient>,
+  never
+> = Schema.extend(
+  DomainResourceFromFhirR4(PatientId),
+  Schema.Struct({
+    resourceType: Schema.Literal('Patient'),
+    identifier: Schema.optional(
+      Schema.Array(Schema.suspend(() => IdentifierFromFhirR4))
+    ),
+    active: Schema.optional(Schema.Boolean),
+    name: Schema.optional(Schema.Array(Schema.suspend(() => HumanName))),
+    telecom: Schema.optional(Schema.Array(Schema.suspend(() => ContactPoint))),
+    gender: Schema.optional(AdministrativeGender),
+    birthDate: Schema.optional(TimelessDateFromString),
+    deceasedBoolean: Schema.optional(Schema.Boolean),
+    deceasedDateTime: Schema.optional(Schema.DateTimeUtc),
+    address: Schema.optional(Schema.Array(Schema.suspend(() => Address))),
+    maritalStatus: Schema.optional(
+      Schema.suspend(() => CodeableConceptFromFhirR4)
+    ),
+    multipleBirthBoolean: Schema.optional(Schema.Boolean),
+    multipleBirthInteger: Schema.optional(Schema.Number),
+    photo: Schema.optional(
+      Schema.Array(Schema.suspend(() => AttachmentFromFhirR4))
+    ),
+    contact: Schema.optional(Schema.Array(PatientContactFromFhirR4)),
+    communication: Schema.optional(
+      Schema.Array(PatientCommunicationFromFhirR4)
+    ),
+    generalPractitioner: Schema.optional(
+      Schema.Array(Schema.suspend(() => ReferenceFromFhirR4))
+    ),
+    managingOrganization: Schema.optional(
+      Schema.suspend(() => ReferenceFromFhirR4)
+    ),
+    link: Schema.optional(Schema.Array(PatientLinkFromFhirR4)),
+  })
+)

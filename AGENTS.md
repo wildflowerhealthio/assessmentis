@@ -9,6 +9,9 @@ Read [AGENTS Explanation](./docs/Agents/Explanation.md) for what this file is an
 - **Changes MUST include corresponding test updates**
 - **This project is picky about testing** — Read [docs/Testing/](./docs/Testing/Testing%20Reference.md)
 - **Clarify before building** — Before starting any task, pause and think about the request, then ask ~5 clarifying questions to minimize guessing and confirm shared understanding. Finish with: "Do you think I understand well enough, or should I ask more questions?" If the user says to ask more, do another think-and-ask cycle. Err on the side of asking too many questions.
+- **Surface early, don't spiral** — If you've taken 3+ investigative actions on a sub-problem without converging, or you're about to work around something that smells like an accidental inconsistency, **stop and present the issue to the user**. Also surface: ambiguous naming, conflicting patterns across files, anything where you're choosing between two plausible interpretations. The trigger is: _"Am I guessing?"_ — if yes, ask.
+- **Work as collaborators** — The user brings domain knowledge, intent, and taste; the agent brings speed, breadth, and tireless attention to detail. Lean into that split. Don't silently resolve judgment calls — surface them so the human can contribute what they're best at.
+- **No unsafe casts or `any`** — Code should be type-safe by design, not by assertion. Never use `as`, `any`, `@ts-ignore`, or `@ts-expect-error` to silence the compiler — if the types don't fit, fix the types. If you encounter a situation where a cast seems unavoidable, surface it to the user in the response message (or PR description) with an explanation of why, so they can decide whether the design needs rethinking.
 
 ## Branch Naming
 

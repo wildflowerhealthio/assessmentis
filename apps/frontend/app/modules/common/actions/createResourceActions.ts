@@ -1,10 +1,9 @@
 import type {
   ClinicalDataRepositoryErrors,
   ClinicalDataRepositoryErrorsWithNotFound,
-  Schemas,
+  ResourceDataTypes,
 } from '@assessmentis/clinical-domain'
 import type { WithId } from '@assessmentis/clinical-domain/data-types'
-import type { Schema } from 'effect'
 import { Effect } from 'effect'
 import { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
 import type { NoSelectedOrgError } from '../../../../../../domain/platform-domain/src/hostedServices'
@@ -36,9 +35,10 @@ import type { NoSelectedOrgError } from '../../../../../../domain/platform-domai
  */
 export function createResourceCreateAction<
   TFormData,
-  TResource extends { id?: string; resourceType: string } & Schema.Schema.Type<
-    (typeof Schemas)[keyof typeof Schemas]
-  >,
+  TResource extends {
+    id?: string
+    resourceType: string
+  } & ResourceDataTypes[keyof ResourceDataTypes],
 >(
   resourceType: TResource['resourceType'],
   transform: (data: TFormData) => TResource | (TResource & { id: undefined })
@@ -95,9 +95,10 @@ export function createResourceCreateAction<
  */
 export function createResourceUpdateAction<
   TFormData,
-  TResource extends { id?: string; resourceType: string } & Schema.Schema.Type<
-    (typeof Schemas)[keyof typeof Schemas]
-  >,
+  TResource extends {
+    id?: string
+    resourceType: string
+  } & ResourceDataTypes[keyof ResourceDataTypes],
 >(
   resourceType: TResource['resourceType'],
   transform: (data: TFormData) => Omit<TResource, 'id'>

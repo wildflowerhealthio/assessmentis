@@ -56,7 +56,7 @@ export class FhirR4Client extends Context.Tag('BareFhirR4Client')<
 
     executeBundle: (
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      bundle: DeepReadonly<typeof Bundle<any, any>>
+      bundle: DeepReadonly<Bundle<any>>
     ) => Effect.Effect<unknown, AuthError | AuthzError | UnhandledError, never>
 
     search: (

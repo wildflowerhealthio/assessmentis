@@ -2,7 +2,7 @@ import { Effect, Schema } from 'effect'
 import { refineOrFail } from '@assessmentis/util'
 import type { Element, WithId } from '@assessmentis/clinical-domain/data-types'
 import { hasId, assertId } from '@assessmentis/clinical-domain/data-types'
-import { Bundle } from '@assessmentis/clinical-domain/foundation-framework'
+import { BundleFromFhirR4 } from '@assessmentis/clinical-domain/foundation-framework'
 import { UnhandledError, ExternalAssertionError } from '@assessmentis/ontology'
 import type { FhirR4Client } from '@assessmentis/fhir-client'
 import type { ClinicalDataRepository } from '../types'
@@ -22,7 +22,7 @@ export const makeClinicalDataRepository = <
   const encodeResourceArraySchema = Schema.encode(resourceArraySchema)
   const decodeResourceArraySchema = Schema.decodeUnknown(resourceArraySchema)
 
-  const DataBundle = Bundle(schema)
+  const DataBundle = BundleFromFhirR4(schema)
   const rawDecodeBundle = Schema.decodeUnknown(DataBundle)
   const decodeBundle = (encodedBundle: unknown) =>
     rawDecodeBundle(encodedBundle).pipe(
@@ -139,7 +139,7 @@ export const makeClinicalDataRepository = <
      * Can be used for batch creation operations.
      */
     createMany: (resources: ReadonlyArray<A>) => {
-      const TransactionResponseBundle = Bundle(
+      const TransactionResponseBundle = BundleFromFhirR4(
         Schema.Struct({
           request: Schema.Struct({
             etag: Schema.String,

@@ -3,6 +3,7 @@ import { Effect } from 'effect'
 import {
   humanizeDateTimeForLocalReader,
   humanizeDateTimeRangeForLocalReader,
+  humanizeTimelessDate,
 } from '../../../common/utils/dateUtils'
 
 /**
@@ -50,28 +51,19 @@ export const formatObservationValue = (
       return `${val} ${unit}`.trim()
     }
 
-    if ('valueString' in observation && observation.valueString) {
+    if (observation.valueString != undefined) {
       return observation.valueString
     }
 
-    if (
-      'valueInteger' in observation &&
-      observation.valueInteger !== undefined
-    ) {
+    if (observation.valueInteger != undefined) {
       return observation.valueInteger.toString()
     }
 
-    if (
-      'valueDecimal' in observation &&
-      observation.valueDecimal !== undefined
-    ) {
+    if (observation.valueDecimal != undefined) {
       return observation.valueDecimal.toString()
     }
 
-    if (
-      'valueCodeableConcept' in observation &&
-      observation.valueCodeableConcept
-    ) {
+    if (observation.valueCodeableConcept != undefined) {
       return (
         observation.valueCodeableConcept.text ??
         observation.valueCodeableConcept.coding?.[0]?.display ??
@@ -79,26 +71,23 @@ export const formatObservationValue = (
       )
     }
 
-    if (
-      'valueBoolean' in observation &&
-      observation.valueBoolean !== undefined
-    ) {
+    if (observation.valueBoolean !== undefined) {
       return observation.valueBoolean ? 'Yes' : 'No'
     }
 
-    if ('valueDateTime' in observation && observation.valueDateTime) {
+    if (observation.valueDateTime) {
       return yield* humanizeDateTimeForLocalReader(observation.valueDateTime)
     }
 
-    if ('valueDate' in observation && observation.valueDate) {
-      return observation.valueDate
+    if (observation.valueDate) {
+      return yield* humanizeTimelessDate(observation.valueDate)
     }
 
-    if ('valueTime' in observation && observation.valueTime) {
+    if (observation.valueTime) {
       return observation.valueTime
     }
 
-    if ('valueCoding' in observation && observation.valueCoding) {
+    if (observation.valueCoding) {
       return (
         observation.valueCoding.display ??
         observation.valueCoding.code ??
@@ -106,11 +95,11 @@ export const formatObservationValue = (
       )
     }
 
-    if ('valueCode' in observation && observation.valueCode) {
+    if (observation.valueCode) {
       return observation.valueCode
     }
 
-    if ('valueReference' in observation && observation.valueReference) {
+    if (observation.valueReference) {
       return (
         observation.valueReference.display ??
         observation.valueReference.reference ??
@@ -118,7 +107,7 @@ export const formatObservationValue = (
       )
     }
 
-    if ('dataAbsentReason' in observation && observation.dataAbsentReason) {
+    if (observation.dataAbsentReason) {
       return `Data absent: ${observation.dataAbsentReason.text ?? 'Unknown reason'}`
     }
 

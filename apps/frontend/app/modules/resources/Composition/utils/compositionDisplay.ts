@@ -40,8 +40,8 @@ export function formatCompositionDetails(composition: Composition) {
     {
       label: 'Subject',
       value:
-        composition.subject.display ??
-        composition.subject.reference ??
+        composition.subject?.display ??
+        composition.subject?.reference ??
         'Not specified',
     },
     {

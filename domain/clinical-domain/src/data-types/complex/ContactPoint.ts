@@ -1,5 +1,6 @@
 import { Schema } from 'effect'
-import { Period } from './Period'
+import type { Period } from './Period'
+import { PeriodFromFhirR4 } from './Period'
 
 /**
  * Details for all kinds of technology mediated contact points for a person or organization, including telephone, email, etc.
@@ -44,7 +45,7 @@ export const ContactPoint = Schema.Struct({
   /**
    * Time period when the contact point was/is in use.
    */
-  period: Schema.optional(Period),
+  period: Schema.optional(Schema.suspend(() => PeriodFromFhirR4)),
 })
 
 export type ContactPoint = typeof ContactPoint.Type

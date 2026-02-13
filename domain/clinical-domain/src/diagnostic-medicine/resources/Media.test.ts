@@ -1,21 +1,21 @@
 import { expect, test, describe } from 'vitest'
-import { Media } from './Media'
+import { MediaFromFhirR4 } from './Media'
 import type { DeepReadonly } from '@assessmentis/util'
 import type { Media as FhirMedia } from 'fhir/r4'
 import { Arbitrary, Either, Schema } from 'effect'
 import * as fc from 'fast-check'
 
 // Compile-time check that Encoded schema matches FHIR R4
-const _mediaEncoded: DeepReadonly<FhirMedia> = Media.Encoded
+const _mediaEncoded: DeepReadonly<FhirMedia> = MediaFromFhirR4.Encoded
 
-const mediaArb = Arbitrary.make(Media)
+const mediaArb = Arbitrary.make(MediaFromFhirR4)
 
 describe('Media model', () => {
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(mediaArb, (media) => {
-        const encoded = Schema.encodeSync(Media)(media)
-        const decoded = Schema.decodeSync(Media)(encoded)
+        const encoded = Schema.encodeSync(MediaFromFhirR4)(media)
+        const decoded = Schema.decodeSync(MediaFromFhirR4)(encoded)
         expect(decoded).toEqual(media)
       })
     )
@@ -43,7 +43,7 @@ describe('Media model', () => {
           })
         ),
         (incomplete) => {
-          const decode = Schema.decodeUnknownEither(Media)
+          const decode = Schema.decodeUnknownEither(MediaFromFhirR4)
           const result = decode(incomplete)
           expect(Either.isLeft(result)).toBe(true)
         }
@@ -61,8 +61,8 @@ describe('Media model', () => {
         fc.option(fc.integer({ min: 1, max: 10000 }), { nil: undefined }),
         fc.option(fc.string(), { nil: undefined }),
         (status, contentType, height, width, deviceName) => {
-          const decode = Schema.decodeUnknownEither(Media)
-          const encode = Schema.encodeUnknownEither(Media)
+          const decode = Schema.decodeUnknownEither(MediaFromFhirR4)
+          const encode = Schema.encodeUnknownEither(MediaFromFhirR4)
 
           const media: {
             resourceType: 'Media'
@@ -107,8 +107,8 @@ describe('Media model', () => {
         fc.option(fc.float({ min: 0, max: 10000 }), { nil: undefined }),
         fc.option(fc.integer({ min: 0, max: 100000 }), { nil: undefined }),
         (duration, frames) => {
-          const decode = Schema.decodeUnknownEither(Media)
-          const encode = Schema.encodeUnknownEither(Media)
+          const decode = Schema.decodeUnknownEither(MediaFromFhirR4)
+          const encode = Schema.encodeUnknownEither(MediaFromFhirR4)
 
           const media: {
             resourceType: 'Media'
@@ -148,8 +148,8 @@ describe('Media model', () => {
         fc.constantFrom('completed', 'preparation', 'in-progress'),
         fc.string(),
         (status, contentType) => {
-          const decode = Schema.decodeUnknownEither(Media)
-          const encode = Schema.encodeUnknownEither(Media)
+          const decode = Schema.decodeUnknownEither(MediaFromFhirR4)
+          const encode = Schema.encodeUnknownEither(MediaFromFhirR4)
 
           const media = {
             resourceType: 'Media' as const,

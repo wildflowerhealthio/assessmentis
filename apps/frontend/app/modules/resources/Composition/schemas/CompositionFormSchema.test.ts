@@ -145,7 +145,7 @@ describe('CompositionFormSchema', () => {
 
           // Patient ID should be in subject reference
           if (formData.patientId) {
-            expect(composition.subject.reference).toBe(
+            expect(composition.subject?.reference).toBe(
               `Patient/${formData.patientId}`
             )
           }

@@ -3,10 +3,11 @@ import fc from 'fast-check'
 
 import { totalScore } from './observations'
 import codings from './codings'
+import type { QuestionnaireResponse } from '@assessmentis/clinical-domain/content-management'
 import {
   QuestionnaireItemLink,
-  QuestionnaireResponse,
-  QuestionnaireResponseItem,
+  QuestionnaireResponseFromFhirR4,
+  QuestionnaireResponseItemFromFhirR4,
 } from '@assessmentis/clinical-domain/content-management'
 import { Arbitrary } from 'effect'
 import {
@@ -46,9 +47,9 @@ const linkIdToQuestionCoding = [
 ] as const
 
 const buildResponse = (scores: ReadonlyArray<number | null>) =>
-  Arbitrary.make(QuestionnaireResponse).chain(({ item: _, ...qr }) =>
+  Arbitrary.make(QuestionnaireResponseFromFhirR4).chain(({ item: _, ...qr }) =>
     fc
-      .array(Arbitrary.make(QuestionnaireResponseItem), {
+      .array(Arbitrary.make(QuestionnaireResponseItemFromFhirR4), {
         minLength: 7,
         maxLength: 7,
       })

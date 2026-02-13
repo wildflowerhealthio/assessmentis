@@ -1,11 +1,11 @@
 import { expect, test, describe } from 'vitest'
-import { Resource } from './Resource'
+import { ResourceFromFhirR4 } from './Resource'
 import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
 import type { DeepReadonly } from '@assessmentis/util'
 import type { Resource as FhirResource } from 'fhir/r4'
 
-const TestResource = Resource(Schema.String)
+const TestResource = ResourceFromFhirR4(Schema.String)
 
 // Compile-time check that Encoded schema matches FHIR R4
 const _resourceEncoded: DeepReadonly<Omit<FhirResource, 'resourceType'>> =

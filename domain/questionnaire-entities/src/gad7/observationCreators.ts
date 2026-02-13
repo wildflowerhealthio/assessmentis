@@ -45,7 +45,7 @@ const findAnswerCoding = (
 ): CodeableConcept | undefined => {
   const firstAnswer = response.item?.find((item) => item.linkId === linkId)
     ?.answer?.[0]
-  return firstAnswer && 'valueCoding' in firstAnswer
+  return firstAnswer && firstAnswer.valueCoding
     ? CodeableConcept.make({ coding: [firstAnswer.valueCoding] })
     : undefined
 }

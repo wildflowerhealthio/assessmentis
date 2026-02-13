@@ -1,6 +1,10 @@
 import { Schema } from 'effect'
-import { Element, type ElementEncoded } from '../base/Element'
-import { Extension, type ExtensionEncoded } from '../special-purpose/Extension'
+import type { Element } from '../base/Element'
+import { ElementFromFhirR4 } from '../base/Element'
+import type { Extension } from '../special-purpose/Extension'
+import { ExtensionFromFhirR4 } from '../special-purpose/Extension'
+import type { BackboneElement as FhirBackboneElement } from 'fhir/r4'
+import type { DeepReadonly } from '@assessmentis/util'
 
 export interface BackboneElement<
   TypeId extends string,
@@ -8,17 +12,14 @@ export interface BackboneElement<
   modifierExtension?: ReadonlyArray<Extension>
 }
 
-export interface BackboneElementEncoded<
-  TypeId extends string,
-> extends ElementEncoded<TypeId> {
-  modifierExtension?: ReadonlyArray<ExtensionEncoded>
-}
-export const BackboneElement = <IdType extends string>(
+export const BackboneElementFromFhirR4 = <IdType extends string>(
   idSchema: Schema.Schema<IdType, string>
-) =>
-  Schema.Struct({
-    ...Element(idSchema).fields,
-    modifierExtension: Schema.optional(
-      Schema.Array(Schema.suspend(() => Extension))
-    ),
-  })
+): Schema.Schema<BackboneElement<IdType>, DeepReadonly<FhirBackboneElement>> =>
+  Schema.extend(
+    ElementFromFhirR4(idSchema),
+    Schema.Struct({
+      modifierExtension: Schema.optional(
+        Schema.Array(Schema.suspend(() => ExtensionFromFhirR4))
+      ),
+    })
+  )

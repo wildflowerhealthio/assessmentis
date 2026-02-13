@@ -1,27 +1,25 @@
+import type { DeepReadonly } from '@assessmentis/util'
 import { Schema } from 'effect'
-
+import type { Coding as CodingEncoded } from 'fhir/r4'
 export const Code = Schema.String.pipe(Schema.brand('code'))
 
 export type Code = typeof Code.Type
-
-interface CodingCommon {
-  display?: string
-  system?: string
-  userSelected?: boolean
-  version?: string
+export interface Coding {
+  readonly code?: Code
+  readonly display?: string
+  readonly system?: string
+  readonly userSelected?: boolean
+  readonly version?: string
 }
 
-export interface Coding extends CodingCommon {
-  code?: Code
-}
-
-export interface CodingEncoded extends CodingCommon {
-  code?: typeof Code.Encoded
-}
 /**
  * A reference to a code defined by a terminology system.
  */
-export const Coding = Schema.Struct({
+export const CodingFromFhirR4: Schema.Schema<
+  Coding,
+  DeepReadonly<CodingEncoded>,
+  never
+> = Schema.Struct({
   /**
    * A symbol in syntax defined by the system. The symbol may be a predefined code or an expression in a syntax defined by the coding system (e.g. post-coordination).
    */
@@ -48,3 +46,6 @@ export const Coding = Schema.Struct({
   version: Schema.optional(Schema.String),
   // _version?: Element | undefined;
 })
+
+// Backwards compatibility alias
+export const Coding = CodingFromFhirR4

@@ -1,11 +1,11 @@
 import { expect, test, describe } from 'vitest'
-import { BackboneElement } from './BackboneElement'
+import { BackboneElementFromFhirR4 } from './BackboneElement'
 import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
 import type { DeepReadonly } from '@assessmentis/util'
 import type { BackboneElement as FhirBackboneElement } from 'fhir/r4'
 
-const TestBackboneElement = BackboneElement(Schema.String)
+const TestBackboneElement = BackboneElementFromFhirR4(Schema.String)
 
 // Compile-time check that Encoded schema matches FHIR R4
 const _backboneElementEncoded: DeepReadonly<FhirBackboneElement> =

@@ -54,6 +54,7 @@ module.exports = defineConfig([
   {
     files: ['**/*.test.ts', '**/*.test.tsx'],
     rules: {
+      '@typescript-eslint/consistent-type-imports': ['off'],
       '@typescript-eslint/no-explicit-any': ['off'],
     },
   },

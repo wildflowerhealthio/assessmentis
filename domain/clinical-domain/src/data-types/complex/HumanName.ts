@@ -1,5 +1,6 @@
 import { Schema } from 'effect'
-import { Period } from './Period'
+import type { Period } from './Period'
+import { PeriodFromFhirR4 } from './Period'
 
 /**
  * A human's name with the ability to identify parts and usage.
@@ -43,7 +44,7 @@ export const HumanName = Schema.Struct({
   /**
    * Indicates the period of time when this name was valid for the named person.
    */
-  period: Schema.optional(Period),
+  period: Schema.optional(Schema.suspend(() => PeriodFromFhirR4)),
 })
 
 export type HumanName = typeof HumanName.Type

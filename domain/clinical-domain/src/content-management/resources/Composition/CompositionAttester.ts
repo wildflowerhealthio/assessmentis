@@ -1,13 +1,15 @@
-import {
-  BackboneElement,
-  Element,
-  Reference,
-} from '@assessmentis/clinical-domain/data-types'
 import { Schema } from 'effect'
+import type { CompositionAttester as FhirCompositionAttester } from 'fhir/r4'
+import type { BackboneElement } from '../../../data-types/base/BackboneElement'
+import { BackboneElementFromFhirR4 } from '../../../data-types/base/BackboneElement'
+import type { Reference } from '../../../data-types/complex/IdentifierAndReference'
+import { ReferenceFromFhirR4 } from '../../../data-types/complex/IdentifierAndReference'
+import type { DeepReadonly } from '@assessmentis/util'
 
 export const CompositionAttesterId = Schema.String.pipe(
   Schema.brand('CompositionAttesterId')
 )
+type CompositionAttesterId = typeof CompositionAttesterId.Type
 
 export const CompositionAttesterMode = Schema.Literal(
   'personal',
@@ -15,32 +17,27 @@ export const CompositionAttesterMode = Schema.Literal(
   'legal',
   'official'
 ).pipe(Schema.brand('code'))
+
+type CompositionAttesterMode = typeof CompositionAttesterMode.Type
+
+export interface CompositionAttester extends BackboneElement<CompositionAttesterId> {
+  mode: CompositionAttesterMode
+  time?: string
+  party?: Reference
+}
+
 /**
  * Attests to accuracy of composition
  */
-
-export const CompositionAttester = Schema.Struct({
-  ...BackboneElement(CompositionAttesterId).fields,
-  /**
-   * personal | professional | legal | official
-   */
-  mode: CompositionAttesterMode,
-  /**
-   * Contains extended information for property 'mode'.
-   */
-  _mode: Schema.optional(Element(Schema.String)),
-  /**
-   * When the composition was attested
-   */
-  time: Schema.optional(Schema.String),
-  /**
-   * Contains extended information for property 'time'.
-   */
-  _time: Schema.optional(Element(Schema.String)),
-  /**
-   * Who attested the composition
-   */
-  party: Schema.optional(Schema.suspend(() => Reference)),
-})
-
-export type CompositionAttester = typeof CompositionAttester.Type
+export const CompositionAttesterFromFhirR4: Schema.Schema<
+  CompositionAttester,
+  DeepReadonly<FhirCompositionAttester>,
+  never
+> = Schema.extend(
+  BackboneElementFromFhirR4(CompositionAttesterId),
+  Schema.Struct({
+    mode: CompositionAttesterMode,
+    time: Schema.optional(Schema.String),
+    party: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
+  })
+)

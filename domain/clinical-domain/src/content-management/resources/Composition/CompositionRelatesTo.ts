@@ -1,40 +1,47 @@
-import {
-  BackboneElement,
-  Element,
+import { Schema } from 'effect'
+import type { CompositionRelatesTo as FhirCompositionRelatesTo } from 'fhir/r4'
+import type { BackboneElement } from '../../../data-types/base/BackboneElement'
+import { BackboneElementFromFhirR4 } from '../../../data-types/base/BackboneElement'
+import type {
   Identifier,
   Reference,
-} from '@assessmentis/clinical-domain/data-types'
-import { Schema } from 'effect'
+} from '../../../data-types/complex/IdentifierAndReference'
+import {
+  IdentifierFromFhirR4,
+  ReferenceFromFhirR4,
+} from '../../../data-types/complex/IdentifierAndReference'
+import type { DeepReadonly } from '@assessmentis/util'
 
 const CompositionRelatesToId = Schema.String.pipe(
   Schema.brand('CompositionRelatesToId')
 )
+type CompositionRelatesToId = typeof CompositionRelatesToId.Type
+
+export interface CompositionRelatesTo extends BackboneElement<CompositionRelatesToId> {
+  code: 'replaces' | 'transforms' | 'signs' | 'appends'
+  targetIdentifier?: Identifier
+  targetReference?: Reference
+}
+
 /**
  * Relationships to other compositions/documents
  */
-export const CompositionRelatesTo = Schema.Struct({
-  ...BackboneElement(CompositionRelatesToId).fields,
-  /**
-   * replaces | transforms | signs | appends
-   */
-  code: Schema.Union(
-    Schema.Literal('replaces'),
-    Schema.Literal('transforms'),
-    Schema.Literal('signs'),
-    Schema.Literal('appends')
-  ),
-  /**
-   * Contains extended information for property 'code'.
-   */
-  _code: Schema.optional(Element(Schema.String)),
-  /**
-   * Target of the relationship
-   */
-  targetIdentifier: Schema.optional(Schema.suspend(() => Identifier)),
-  /**
-   * Target of the relationship
-   */
-  targetReference: Schema.optional(Schema.suspend(() => Reference)),
-})
-
-export type CompositionRelatesTo = typeof CompositionRelatesTo.Type
+export const CompositionRelatesToFromFhirR4: Schema.Schema<
+  CompositionRelatesTo,
+  DeepReadonly<FhirCompositionRelatesTo>,
+  never
+> = Schema.extend(
+  BackboneElementFromFhirR4(CompositionRelatesToId),
+  Schema.Struct({
+    code: Schema.Union(
+      Schema.Literal('replaces'),
+      Schema.Literal('transforms'),
+      Schema.Literal('signs'),
+      Schema.Literal('appends')
+    ),
+    targetIdentifier: Schema.optional(
+      Schema.suspend(() => IdentifierFromFhirR4)
+    ),
+    targetReference: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
+  })
+)

@@ -22,11 +22,11 @@ import {
 } from '@assessmentis/ontology'
 import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
 import type { MediaId } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { Media } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import { MediaFromFhirR4 } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { makeClinicalDataRepository } from '@assessmentis/clinical-domain/assessmentis'
 import { VideoCallClientLayerFromOrg } from '../layers/VideoCallClientService'
 import { FhirR4ClientLayerLive } from '../layers/FhirR4ClientService'
-import { Encounter } from '@assessmentis/clinical-domain/administration'
+import { EncounterFromFhirR4 } from '@assessmentis/clinical-domain/administration'
 
 const _ROOM_IDENTIFIER_SYSTEM = 'http://assessment.is/fhir/video-call-room-name'
 
@@ -223,13 +223,13 @@ const syncMediaToFhir = (
     const encounterRepository = makeClinicalDataRepository(
       fhirClient,
       'Encounter',
-      Encounter
+      EncounterFromFhirR4
     )
 
     const mediaRepository = makeClinicalDataRepository(
       fhirClient,
       'Media',
-      Media
+      MediaFromFhirR4
     )
 
     const { media, roomName } = mediaWithRoom

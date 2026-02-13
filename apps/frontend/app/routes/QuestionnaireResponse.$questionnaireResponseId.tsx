@@ -4,12 +4,12 @@ import { UnhandledError } from '@assessmentis/ontology'
 import type { QuestionnaireItemLink } from '@assessmentis/clinical-domain/content-management'
 import {
   firstItemAnsweredAfter,
-  Questionnaire,
-  QuestionnaireResponse,
   QuestionnaireId,
   QuestionnaireResponseId,
   QuestionnaireRepository,
   QuestionnaireResponseRepository,
+  QuestionnaireFromFhirR4,
+  QuestionnaireResponseFromFhirR4,
 } from '@assessmentis/clinical-domain/content-management'
 
 import type { Route } from './+types/QuestionnaireResponse.$questionnaireResponseId'
@@ -20,10 +20,11 @@ import {
   EncounterId,
   EncounterRepository,
 } from '@assessmentis/clinical-domain/administration'
+import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import {
-  Media,
+  MediaFromFhirR4,
   MediaRepository,
-  Observation,
+  ObservationFromFhirR4,
   ObservationRepository,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { Await, useNavigate } from 'react-router'
@@ -44,10 +45,10 @@ const tryDecodeQuestionnaireResponseId = Schema.decodeOption(
 )
 
 export const QuestionnaireResponseWithQuestionnaire = Schema.Struct({
-  questionnaireResponse: QuestionnaireResponse,
-  questionnaire: Questionnaire,
-  recordings: Schema.Array(Media),
-  observations: Schema.Array(Observation),
+  questionnaireResponse: QuestionnaireResponseFromFhirR4,
+  questionnaire: QuestionnaireFromFhirR4,
+  recordings: Schema.Array(MediaFromFhirR4),
+  observations: Schema.Array(ObservationFromFhirR4),
 })
 
 function questionnaireEffect(questionnaireResponseIdStr: string) {

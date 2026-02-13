@@ -4,21 +4,22 @@ import type {
   Schemas,
   ClinicalDomainRepositoryTagClass,
   ClinicalDataRepository,
+  ResourceDataTypes,
 } from '@assessmentis/clinical-domain'
 import {
-  Composition,
-  Questionnaire,
-  QuestionnaireResponse,
+  CompositionFromFhirR4,
+  QuestionnaireFromFhirR4,
+  QuestionnaireResponseFromFhirR4,
 } from '@assessmentis/clinical-domain/content-management'
 import {
-  Encounter,
+  EncounterFromFhirR4,
   LocationFromFhirR4,
-  Patient,
-  Practitioner,
+  PatientFromFhirR4,
+  PractitionerFromFhirR4,
 } from '@assessmentis/clinical-domain/administration'
 import {
-  Observation,
-  Media,
+  MediaFromFhirR4,
+  ObservationFromFhirR4,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { makeClinicalDataRepository } from '@assessmentis/clinical-domain/assessmentis'
 import type { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
@@ -27,24 +28,25 @@ import { ExternalAssertionError } from '@assessmentis/ontology'
 import { FhirR4ClientService } from './FhirR4ClientService'
 import type { NoSelectedOrgError } from '@assessmentis/platform-domain'
 
-export type GoogleFhirWebLayer<Key extends keyof typeof Schemas> = Layer.Layer<
-  ClinicalDomainRepositoryTagClass<Key>,
-  ExternalAssertionError,
-  LoadedGoogleFhirConfig
->
+export type GoogleFhirWebLayer<Key extends keyof ResourceDataTypes> =
+  Layer.Layer<
+    ClinicalDomainRepositoryTagClass<Key>,
+    ExternalAssertionError,
+    LoadedGoogleFhirConfig
+  >
 
 export type ClinicalDataRepositoryServiceType = {
   effect: {
-    [Key in keyof typeof Schemas]: Effect.Effect<
-      ClinicalDataRepository<Schema.Schema.Type<(typeof Schemas)[Key]>>,
+    [Key in keyof ResourceDataTypes]: Effect.Effect<
+      ClinicalDataRepository<ResourceDataTypes[Key]>,
       AuthError | NoSelectedOrgError | UnhandledError
     >
   }
 
   stream: {
-    [Key in keyof typeof Schemas]: Stream.Stream<
+    [Key in keyof ResourceDataTypes]: Stream.Stream<
       Either.Either<
-        ClinicalDataRepository<Schema.Schema.Type<(typeof Schemas)[Key]>>,
+        ClinicalDataRepository<ResourceDataTypes[Key]>,
         AuthError | NoSelectedOrgError | UnhandledError
       >,
       never,
@@ -110,30 +112,30 @@ export class ClinicalDataRepositoryService extends Effect.Service<ClinicalDataRe
 
       return {
         effect: {
-          Composition: clientEffect(Composition, 'Composition'),
-          Encounter: clientEffect(Encounter, 'Encounter'),
+          Composition: clientEffect(CompositionFromFhirR4, 'Composition'),
+          Encounter: clientEffect(EncounterFromFhirR4, 'Encounter'),
           Location: clientEffect(LocationFromFhirR4, 'Location'),
-          Media: clientEffect(Media, 'Media'),
-          Observation: clientEffect(Observation, 'Observation'),
-          Patient: clientEffect(Patient, 'Patient'),
-          Practitioner: clientEffect(Practitioner, 'Practitioner'),
-          Questionnaire: clientEffect(Questionnaire, 'Questionnaire'),
+          Media: clientEffect(MediaFromFhirR4, 'Media'),
+          Observation: clientEffect(ObservationFromFhirR4, 'Observation'),
+          Patient: clientEffect(PatientFromFhirR4, 'Patient'),
+          Practitioner: clientEffect(PractitionerFromFhirR4, 'Practitioner'),
+          Questionnaire: clientEffect(QuestionnaireFromFhirR4, 'Questionnaire'),
           QuestionnaireResponse: clientEffect(
-            QuestionnaireResponse,
+            QuestionnaireResponseFromFhirR4,
             'QuestionnaireResponse'
           ),
         },
         stream: {
-          Composition: clientStream(Composition, 'Composition'),
-          Encounter: clientStream(Encounter, 'Encounter'),
+          Composition: clientStream(CompositionFromFhirR4, 'Composition'),
+          Encounter: clientStream(EncounterFromFhirR4, 'Encounter'),
           Location: clientStream(LocationFromFhirR4, 'Location'),
-          Media: clientStream(Media, 'Media'),
-          Observation: clientStream(Observation, 'Observation'),
-          Patient: clientStream(Patient, 'Patient'),
-          Practitioner: clientStream(Practitioner, 'Practitioner'),
-          Questionnaire: clientStream(Questionnaire, 'Questionnaire'),
+          Media: clientStream(MediaFromFhirR4, 'Media'),
+          Observation: clientStream(ObservationFromFhirR4, 'Observation'),
+          Patient: clientStream(PatientFromFhirR4, 'Patient'),
+          Practitioner: clientStream(PractitionerFromFhirR4, 'Practitioner'),
+          Questionnaire: clientStream(QuestionnaireFromFhirR4, 'Questionnaire'),
           QuestionnaireResponse: clientStream(
-            QuestionnaireResponse,
+            QuestionnaireResponseFromFhirR4,
             'QuestionnaireResponse'
           ),
         },
@@ -141,33 +143,22 @@ export class ClinicalDataRepositoryService extends Effect.Service<ClinicalDataRe
     }),
   }
 ) {
-  repositoryEffect<
-    TResource extends Schema.Schema.Type<
-      (typeof Schemas)[keyof typeof Schemas]
-    >,
-  >(
-    resourceType: TResource['resourceType']
+  repositoryEffect<const TResourceType extends keyof ResourceDataTypes>(
+    resourceType: TResourceType
   ): Effect.Effect<
-    ClinicalDataRepository<TResource>,
+    ClinicalDataRepository<ResourceDataTypes[TResourceType]>,
     AuthError | NoSelectedOrgError | UnhandledError,
     never
   > {
-    return Effect.gen(function* () {
-      const repoService = yield* ClinicalDataRepositoryService
-
-      const repository = (yield* repoService.effect[
-        resourceType
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ]) satisfies ClinicalDataRepository<any>
-
-      return repository as ClinicalDataRepository<TResource>
-    }).pipe(Effect.provideService(ClinicalDataRepositoryService, this))
+    return pipe(
+      ClinicalDataRepositoryService,
+      Effect.flatMap((service) => service.effect[resourceType]),
+      Effect.provideService(ClinicalDataRepositoryService, this)
+    )
   }
 
   repositoryStream<
-    TResource extends Schema.Schema.Type<
-      (typeof Schemas)[keyof typeof Schemas]
-    >,
+    TResource extends ResourceDataTypes[keyof ResourceDataTypes],
   >(
     resourceType: TResource['resourceType']
   ): Stream.Stream<
@@ -199,7 +190,6 @@ export class ClinicalDataRepositoryService extends Effect.Service<ClinicalDataRe
             Scope.Scope
           >
       ),
-      (a) => a,
       Effect.provideService(ClinicalDataRepositoryService, this),
       Stream.unwrap
     )

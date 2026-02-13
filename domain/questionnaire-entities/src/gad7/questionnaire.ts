@@ -1,8 +1,11 @@
-import { Questionnaire } from '@assessmentis/clinical-domain/content-management'
+import type { Questionnaire } from '@assessmentis/clinical-domain/content-management'
+import { QuestionnaireFromFhirR4 } from '@assessmentis/clinical-domain/content-management'
 import { Schema } from 'effect'
 import { codings } from './codings'
 
-export const questionnaire: Questionnaire = Schema.decodeSync(Questionnaire)({
+export const questionnaire: Questionnaire = Schema.decodeSync(
+  QuestionnaireFromFhirR4
+)({
   resourceType: 'Questionnaire',
   id: '69737-5',
   meta: {
@@ -21,15 +24,13 @@ export const questionnaire: Questionnaire = Schema.decodeSync(Questionnaire)({
     {
       url: 'http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm',
       valueInteger: 2,
-      _valueInteger: {
-        extension: [
-          {
-            url: 'http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom',
-            valueCanonical:
-              'http://hl7.org/fhir/us/pco/ImplementationGuide/hl7.fhir.us.pco',
-          },
-        ],
-      },
+      extension: [
+        {
+          url: 'http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom',
+          valueCanonical:
+            'http://hl7.org/fhir/us/pco/ImplementationGuide/hl7.fhir.us.pco',
+        },
+      ],
     },
     {
       url: 'http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status',

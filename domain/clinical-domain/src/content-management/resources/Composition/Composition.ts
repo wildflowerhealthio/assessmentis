@@ -1,18 +1,28 @@
+import type { DateTime } from 'effect'
 import { Schema } from 'effect'
-import {
-  Code,
-  CodeableConcept,
-  Narrative,
-  Reference,
-  DomainResource,
-  Element,
-  Meta,
+import type { Composition as FhirComposition } from 'fhir/r4'
+import type { DomainResource } from '../../../data-types/base/DomainResource'
+import { DomainResourceFromFhirR4 } from '../../../data-types/base/DomainResource'
+import { Code } from '../../../data-types/complex/Coding'
+import type { CodeableConcept } from '../../../data-types/complex/CodeableConcept'
+import { CodeableConceptFromFhirR4 } from '../../../data-types/complex/CodeableConcept'
+import type {
   Identifier,
-} from '@assessmentis/clinical-domain/data-types'
-import { CompositionAttester } from './CompositionAttester'
-import { CompositionRelatesTo } from './CompositionRelatesTo'
-import { CompositionEvent } from './CompositionEvent'
-import { CompositionSection } from './CompositionSection'
+  Reference,
+} from '../../../data-types/complex/IdentifierAndReference'
+import {
+  IdentifierFromFhirR4,
+  ReferenceFromFhirR4,
+} from '../../../data-types/complex/IdentifierAndReference'
+import type { CompositionAttester } from './CompositionAttester'
+import { CompositionAttesterFromFhirR4 } from './CompositionAttester'
+import type { CompositionRelatesTo } from './CompositionRelatesTo'
+import { CompositionRelatesToFromFhirR4 } from './CompositionRelatesTo'
+import type { CompositionEvent } from './CompositionEvent'
+import { CompositionEventFromFhirR4 } from './CompositionEvent'
+import type { CompositionSection } from './CompositionSection'
+import { CompositionSectionFromFhirR4 } from './CompositionSection'
+import type { DeepReadonly } from '@assessmentis/util'
 
 export const CompositionId = Schema.String.pipe(Schema.brand('CompositionId'))
 
@@ -21,121 +31,55 @@ export type CompositionId = typeof CompositionId.Type
 /**
  * A set of resources composed into a single coherent clinical statement with clinical attestation
  */
-export const Composition = Schema.Struct({
-  ...DomainResource(CompositionId).fields,
-  /**
-   * Resource Type Name (for serialization)
-   */
-  resourceType: Schema.Literal('Composition'),
-  /**
-   * Logical id of this artifact
-   */
-  id: Schema.optional(CompositionId),
-  /**
-   * Metadata about the resource
-   */
-  meta: Schema.optional(Meta),
-  /**
-   * A set of rules under which this content was created
-   */
-  implicitRules: Schema.optional(Schema.String),
-  /**
-   * Contains extended information for property 'implicitRules'.
-   */
-  _implicitRules: Schema.optional(Element(Schema.String)),
-  /**
-   * Language of the resource content
-   */
-  language: Schema.optional(Code),
-  /**
-   * Contains extended information for property 'language'.
-   */
-  _language: Schema.optional(Element(Schema.String)),
-  /**
-   * Text summary of the resource, for human interpretation
-   */
-  text: Schema.optional(Narrative),
-  /**
-   * Logical identifier of composition (version-independent)
-   */
-  identifier: Schema.optional(Schema.suspend(() => Identifier)),
-  /**
-   * preliminary | final | amended | entered-in-error
-   */
-  status: Schema.Union(
-    Schema.Literal('preliminary'),
-    Schema.Literal('final'),
-    Schema.Literal('amended'),
-    Schema.Literal('entered-in-error')
-  ),
-  /**
-   * Contains extended information for property 'status'.
-   */
-  _status: Schema.optional(Element(Schema.String)),
-  /**
-   * Kind of composition (LOINC if possible)
-   */
-  type: CodeableConcept,
-  /**
-   * Categorization of Composition
-   */
-  class: Schema.optional(CodeableConcept),
-  /**
-   * Who and/or what the composition is about
-   */
-  subject: Schema.suspend(() => Reference),
-  /**
-   * Context of the Composition
-   */
-  encounter: Schema.optional(Schema.suspend(() => Reference)),
-  /**
-   * Composition editing time
-   */
-  date: Schema.DateTimeUtc,
-  /**
-   * Contains extended information for property 'date'.
-   */
-  _date: Schema.optional(Element(Schema.String)),
-  /**
-   * Who and/or what authored the composition
-   */
-  author: Schema.Array(Schema.suspend(() => Reference)),
-  /**
-   * Human Readable name/title
-   */
-  title: Schema.String,
-  /**
-   * Contains extended information for property 'title'.
-   */
-  _title: Schema.optional(Element(Schema.String)),
-  /**
-   * As defined by affinity domain
-   */
-  confidentiality: Schema.optional(Code),
-  /**
-   * Contains extended information for property 'confidentiality'.
-   */
-  _confidentiality: Schema.optional(Element(Schema.String)),
-  /**
-   * Attests to accuracy of composition
-   */
-  attester: Schema.optional(Schema.Array(CompositionAttester)),
-  /**
-   * Organization which maintains the composition
-   */
-  custodian: Schema.optional(Schema.suspend(() => Reference)),
-  /**
-   * Relationships to other compositions/documents
-   */
-  relatesTo: Schema.optional(Schema.Array(CompositionRelatesTo)),
-  /**
-   * The clinical service(s) being documented
-   */
-  event: Schema.optional(Schema.Array(CompositionEvent)),
-  /**
-   * Composition is broken into sections
-   */
-  section: Schema.optional(Schema.Array(CompositionSection)),
-})
+export interface Composition extends DomainResource<CompositionId> {
+  resourceType: 'Composition'
+  identifier?: Identifier
+  status: 'preliminary' | 'final' | 'amended' | 'entered-in-error'
+  type: CodeableConcept
+  class?: CodeableConcept
+  subject?: Reference
+  encounter?: Reference
+  date: DateTime.Utc
+  author: ReadonlyArray<Reference>
+  title: string
+  confidentiality?: Code
+  attester?: ReadonlyArray<CompositionAttester>
+  custodian?: Reference
+  relatesTo?: ReadonlyArray<CompositionRelatesTo>
+  event?: ReadonlyArray<CompositionEvent>
+  section?: ReadonlyArray<CompositionSection>
+}
 
-export type Composition = typeof Composition.Type
+/**
+ * Schema for transforming between Composition Data objects and FHIR R4 Composition resources.
+ */
+export const CompositionFromFhirR4: Schema.Schema<
+  Composition,
+  DeepReadonly<FhirComposition>,
+  never
+> = Schema.extend(
+  DomainResourceFromFhirR4(CompositionId),
+  Schema.Struct({
+    resourceType: Schema.Literal('Composition'),
+    identifier: Schema.optional(Schema.suspend(() => IdentifierFromFhirR4)),
+    status: Schema.Union(
+      Schema.Literal('preliminary'),
+      Schema.Literal('final'),
+      Schema.Literal('amended'),
+      Schema.Literal('entered-in-error')
+    ),
+    type: Schema.suspend(() => CodeableConceptFromFhirR4),
+    class: Schema.optional(Schema.suspend(() => CodeableConceptFromFhirR4)),
+    subject: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
+    encounter: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
+    date: Schema.DateTimeUtc,
+    author: Schema.Array(Schema.suspend(() => ReferenceFromFhirR4)),
+    title: Schema.String,
+    confidentiality: Schema.optional(Code),
+    attester: Schema.optional(Schema.Array(CompositionAttesterFromFhirR4)),
+    custodian: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
+    relatesTo: Schema.optional(Schema.Array(CompositionRelatesToFromFhirR4)),
+    event: Schema.optional(Schema.Array(CompositionEventFromFhirR4)),
+    section: Schema.optional(Schema.Array(CompositionSectionFromFhirR4)),
+  })
+)

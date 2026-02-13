@@ -4,9 +4,9 @@ export const ObservationSectionWithMethod: ObservationSectionWithMethodComponent
   ({ observation }) => {
     let score: number | undefined = undefined
 
-    if ('valueInteger' in observation) {
+    if (observation.valueInteger) {
       score = observation.valueInteger
-    } else if ('valueQuantity' in observation) {
+    } else if (observation.valueQuantity) {
       score = observation.valueQuantity.value
     }
 

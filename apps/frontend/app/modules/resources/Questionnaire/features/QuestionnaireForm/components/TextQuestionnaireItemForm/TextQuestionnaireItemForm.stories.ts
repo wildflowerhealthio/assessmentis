@@ -5,7 +5,7 @@ import { Arbitrary, FastCheck } from 'effect'
 import { action } from 'storybook/actions'
 import { Code } from '@assessmentis/clinical-domain/data-types'
 import {
-  QuestionnaireItem,
+  QuestionnaireItemFromFhirR4,
   QuestionnaireItemType,
 } from '@assessmentis/clinical-domain/content-management'
 import TextQuestionnaireItemForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/components/TextQuestionnaireItemForm/TextQuestionnaireItemForm'
@@ -18,7 +18,9 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-const questionnaireItem = FastCheck.sample(Arbitrary.make(QuestionnaireItem))[0]
+const questionnaireItem = FastCheck.sample(
+  Arbitrary.make(QuestionnaireItemFromFhirR4)
+)[0]
 
 const arbitraryProps = {
   questionnaireItem: {

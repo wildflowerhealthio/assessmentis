@@ -1,21 +1,22 @@
 import { expect, test, describe } from 'vitest'
-import { Observation } from './Observation'
+import { ObservationFromFhirR4 } from './Observation'
 import type { DeepReadonly } from '@assessmentis/util'
 import type { Observation as FhirObservation } from 'fhir/r4'
 import { Schema, Arbitrary, Either } from 'effect'
 import * as fc from 'fast-check'
 
 // Compile-time check that Encoded schema matches FHIR R4
-const _observationEncoded: DeepReadonly<FhirObservation> = Observation.Encoded
+const _observationEncoded: DeepReadonly<FhirObservation> =
+  ObservationFromFhirR4.Encoded
 
-const observationArb = Arbitrary.make(Observation)
+const observationArb = Arbitrary.make(ObservationFromFhirR4)
 
 describe('Observation model', () => {
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(observationArb, (obs) => {
-        const encoded = Schema.encodeSync(Observation)(obs)
-        const decoded = Schema.decodeSync(Observation)(encoded)
+        const encoded = Schema.encodeSync(ObservationFromFhirR4)(obs)
+        const decoded = Schema.decodeSync(ObservationFromFhirR4)(encoded)
         expect(decoded).toEqual(obs)
       })
     )
@@ -43,7 +44,7 @@ describe('Observation model', () => {
           })
         ),
         (incomplete) => {
-          const decode = Schema.decodeUnknownEither(Observation)
+          const decode = Schema.decodeUnknownEither(ObservationFromFhirR4)
           const result = decode(incomplete)
           expect(Either.isLeft(result)).toBe(true)
         }

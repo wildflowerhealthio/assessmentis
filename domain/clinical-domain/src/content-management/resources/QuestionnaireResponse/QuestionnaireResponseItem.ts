@@ -1,8 +1,14 @@
 import { Schema } from 'effect'
+import type {
+  QuestionnaireResponseItem as FhirQuestionnaireResponseItem,
+  QuestionnaireResponseItemAnswer as FhirQuestionnaireResponseItemAnswer,
+} from 'fhir/r4'
 import { QuestionnaireItemLink } from '../Questionnaire/Questionnaire'
-import { BackboneElement } from '../../../data-types/base/BackboneElement'
-import type { ValueElementEncoded } from '../../../data-types/primitive/ValueElement'
-import { ValueElement } from '../../../data-types/primitive/ValueElement'
+import type { BackboneElement } from '../../../data-types/base/BackboneElement'
+import { BackboneElementFromFhirR4 } from '../../../data-types/base/BackboneElement'
+import type { ValueElement } from '../../../data-types/primitive/ValueElement'
+import { ValueElementFromFhirR4 } from '../../../data-types/primitive/ValueElement'
+import type { DeepReadonly } from '@assessmentis/util'
 
 export const QuestionnaireResponseItemId = Schema.String.pipe(
   Schema.brand('QuestionnaireResponseItemId')
@@ -16,120 +22,85 @@ export const QuestionnaireResponseItemAnswerId = Schema.String.pipe(
 export type QuestionnaireResponseItemAnswerId =
   typeof QuestionnaireResponseItemAnswerId.Type
 
-const questionnaireResponseItemAnswerFields = {
-  ...BackboneElement(QuestionnaireResponseItemAnswerId).fields,
+export interface QuestionnaireResponseItemAnswer
+  extends BackboneElement<QuestionnaireResponseItemAnswerId>, ValueElement {
+  item?: ReadonlyArray<QuestionnaireResponseItem>
 }
-
-export type QuestionnaireResponseItemAnswer = Schema.Struct.Type<
-  typeof questionnaireResponseItemAnswerFields
-> &
-  ValueElement & {
-    readonly item?: ReadonlyArray<QuestionnaireResponseItem> | undefined
-  }
-
-type QuestionnaireResponseItemAnswerEncoded = Schema.Struct.Encoded<
-  typeof questionnaireResponseItemAnswerFields
-> &
-  ValueElementEncoded & {
-    readonly item?: ReadonlyArray<QuestionnaireResponseItemEncoded> | undefined
-  }
 
 /**
  * The value is nested because we cannot have a repeating structure that has variable type.
  */
-export const QuestionnaireResponseItemAnswer: Schema.Schema<
+export const QuestionnaireResponseItemAnswerFromFhirR4: Schema.Schema<
   QuestionnaireResponseItemAnswer,
-  QuestionnaireResponseItemAnswerEncoded,
+  DeepReadonly<FhirQuestionnaireResponseItemAnswer>,
   never
 > = Schema.extend(
+  Schema.extend(
+    BackboneElementFromFhirR4(QuestionnaireResponseItemAnswerId),
+    Schema.Struct({
+      item: Schema.optional(
+        Schema.Array(
+          Schema.suspend(
+            (): Schema.Schema<
+              QuestionnaireResponseItem,
+              DeepReadonly<FhirQuestionnaireResponseItem>,
+              never
+            > => QuestionnaireResponseItemFromFhirR4
+          )
+        )
+      ),
+    })
+  ),
+  Schema.suspend(() => ValueElementFromFhirR4)
+)
+
+export interface QuestionnaireResponseItem extends BackboneElement<QuestionnaireResponseItemId> {
+  definition?: string
+  linkId: QuestionnaireItemLink
+  text?: string
+  item?: ReadonlyArray<QuestionnaireResponseItem>
+  answer?: ReadonlyArray<QuestionnaireResponseItemAnswer>
+}
+
+/**
+ * Groups cannot have answers and therefore must nest directly within item.
+ * When dealing with questions, nesting must occur within each answer because
+ * some questions may have multiple answers (and the nesting occurs for each answer).
+ */
+export const QuestionnaireResponseItemFromFhirR4: Schema.Schema<
+  QuestionnaireResponseItem,
+  DeepReadonly<FhirQuestionnaireResponseItem>,
+  never
+> = Schema.extend(
+  BackboneElementFromFhirR4(QuestionnaireResponseItemId),
   Schema.Struct({
-    ...questionnaireResponseItemAnswerFields,
-    /**
-     * Nested groups and/or questions found within this particular answer.
-     */
+    definition: Schema.optional(Schema.String),
+    linkId: QuestionnaireItemLink,
+    text: Schema.optional(Schema.String),
     item: Schema.optional(
       Schema.Array(
         Schema.suspend(
           (): Schema.Schema<
             QuestionnaireResponseItem,
-            QuestionnaireResponseItemEncoded,
+            DeepReadonly<FhirQuestionnaireResponseItem>,
             never
-          > => QuestionnaireResponseItem
+          > => QuestionnaireResponseItemFromFhirR4
         )
       )
     ),
-  }),
-  Schema.suspend(() => ValueElement)
+    answer: Schema.optional(
+      Schema.Array(
+        Schema.suspend(
+          (): Schema.Schema<
+            QuestionnaireResponseItemAnswer,
+            DeepReadonly<FhirQuestionnaireResponseItemAnswer>,
+            never
+          > => QuestionnaireResponseItemAnswerFromFhirR4
+        )
+      )
+    ),
+  })
 )
-
-const questionnaireResponseItemFields = {
-  ...BackboneElement(QuestionnaireResponseItemId).fields,
-  /**
-   * The ElementDefinition must be in a [StructureDefinition](structuredefinition.html#), and must have a fragment identifier that identifies the specific data element by its id (Element.id). E.g. http://hl7.org/fhir/StructureDefinition/Observation#Observation.value[x].
-   * There is no need for this element if the item pointed to by the linkId has a definition listed.
-   */
-  definition: Schema.optional(Schema.String),
-  // _definition?: Element | undefined;
-  /**
-   * The item from the Questionnaire that corresponds to this item in the QuestionnaireResponse resource.
-   */
-  linkId: QuestionnaireItemLink,
-  // _linkId?: Element | undefined;
-  /**
-   * Text that is displayed above the contents of the group or as the text of the question being answered.
-   */
-  text: Schema.optional(Schema.String),
-  // _text?: Element | undefined;
-} as const
-
-export interface QuestionnaireResponseItem extends Schema.Struct.Type<
-  typeof questionnaireResponseItemFields
-> {
-  readonly item?: ReadonlyArray<QuestionnaireResponseItem> | undefined
-  readonly answer?:
-    | ReadonlyArray<typeof QuestionnaireResponseItemAnswer.Type>
-    | undefined
-}
-
-export interface QuestionnaireResponseItemEncoded extends Schema.Struct.Encoded<
-  typeof questionnaireResponseItemFields
-> {
-  readonly item?: ReadonlyArray<QuestionnaireResponseItemEncoded> | undefined
-}
-
-/**
- * Groups cannot have answers and therefore must nest directly within item. When dealing with questions, nesting must occur within each answer because some questions may have multiple answers (and the nesting occurs for each answer).
- */
-export const QuestionnaireResponseItem = Schema.Struct({
-  ...questionnaireResponseItemFields,
-  /**
-   * Questions or sub-groups nested beneath a question or group.
-   */
-  item: Schema.optional(
-    Schema.Array(
-      Schema.suspend(
-        (): Schema.Schema<
-          QuestionnaireResponseItem,
-          QuestionnaireResponseItemEncoded,
-          never
-        > => QuestionnaireResponseItem
-      )
-    )
-  ),
-  /**
-   * The value is nested because we cannot have a repeating structure that has variable type.
-   */
-  answer: Schema.optional(
-    Schema.Array(
-      Schema.suspend(
-        (): Schema.Schema<
-          QuestionnaireResponseItemAnswer,
-          QuestionnaireResponseItemAnswerEncoded
-        > => QuestionnaireResponseItemAnswer
-      )
-    )
-  ),
-})
 
 export function* allQuestionnaireResponseItems(
   items: ReadonlyArray<QuestionnaireResponseItem>

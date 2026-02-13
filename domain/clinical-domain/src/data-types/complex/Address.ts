@@ -1,5 +1,6 @@
 import { Schema } from 'effect'
-import { Period } from './Period'
+import type { Period } from './Period'
+import { PeriodFromFhirR4 } from './Period'
 
 /**
  * An address expressed using postal conventions (as opposed to GPS or other location definition formats).
@@ -60,7 +61,7 @@ export const Address = Schema.Struct({
   /**
    * Time period when address was/is in use.
    */
-  period: Schema.optional(Period),
+  period: Schema.optional(Schema.suspend(() => PeriodFromFhirR4)),
 })
 
 export type Address = typeof Address.Type

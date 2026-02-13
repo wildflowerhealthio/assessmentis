@@ -3,7 +3,9 @@ import { type ChangeEventHandler, type SetStateAction } from 'react'
 import classes from './RadioQuestionnaireItemForm.module.css'
 import type {
   QuestionnaireItem,
+  QuestionnaireItemAnswerOption,
   QuestionnaireResponseItem,
+  QuestionnaireResponseItemAnswer,
 } from '@assessmentis/clinical-domain/content-management'
 import {
   QuestionnaireItemUIControlCode,
@@ -21,7 +23,7 @@ export interface IProps {
   uiControl: typeof QuestionnaireItemUIControlCode.Type | undefined
 }
 
-const labelFor = (option: ValueElement) =>
+const labelFor = (option: QuestionnaireItemAnswerOption) =>
   Match.value(option).pipe(
     Match.when({ initialSelected: Match.boolean }, ({ initialSelected }) =>
       initialSelected ? 'Yes' : 'No'
@@ -42,7 +44,9 @@ const RadioQuestionnaireItemForm = ({
 }: IProps) => {
   const displayAsGrid = uiControl === QuestionnaireItemUIControlCode.enums.table
 
-  const answerOptions: undefined | ReadonlyArray<ValueElement> =
+  const answerOptions:
+    | undefined
+    | ReadonlyArray<QuestionnaireItemAnswerOption> =
     questionnaireItem.answerOption
   const options =
     answerOptions?.map((answerValue) => ({
@@ -67,7 +71,11 @@ const RadioQuestionnaireItemForm = ({
         ...qri,
         answer: [
           withAnsweredAt(
-            { ...selected, modifierExtension: [] },
+            {
+              ...selected,
+              id: undefined,
+              modifierExtension: [],
+            } satisfies QuestionnaireResponseItemAnswer,
             Effect.runSync(DateTime.now)
           ),
         ],
@@ -84,7 +92,7 @@ const RadioQuestionnaireItemForm = ({
   ) => {
     if (valueElement === undefined) return false
 
-    if ('valueCoding' in valueElement && 'valueCoding' in answerValue) {
+    if (valueElement.valueCoding && answerValue.valueCoding) {
       return valueElement.valueCoding.code === answerValue.valueCoding.code
     }
 
@@ -129,7 +137,7 @@ export const RadioQuestionnaireItemFormGroup = ({
   children,
   answerOption,
 }: React.PropsWithChildren<{
-  answerOption: ReadonlyArray<ValueElement>
+  answerOption: ReadonlyArray<QuestionnaireItemAnswerOption>
 }>) => {
   return (
     <div>

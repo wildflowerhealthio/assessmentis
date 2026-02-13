@@ -50,7 +50,7 @@ export const makeScoringTable =
         items.find((i) => i.linkId === responseItem.linkId) ?? undefined
       const answer = responseItem?.answer?.[0]
       const answerCode =
-        answer && 'valueCoding' in answer ? answer.valueCoding.code : undefined
+        answer && answer.valueCoding ? answer.valueCoding.code : undefined
       const itemScore = (answerCode && score(responseItem)) ?? undefined
       totalScore += itemScore ?? 0
 

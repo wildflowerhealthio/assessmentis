@@ -6,10 +6,10 @@ import {
 } from './QuestionnaireItemUiControlCode'
 import { Arbitrary } from 'effect'
 import * as fc from 'fast-check'
-import { BackboneElement } from '../../data-types/base/BackboneElement'
+import { BackboneElementFromFhirR4 } from '../../data-types/base/BackboneElement'
 import { Schema } from 'effect'
 
-const TestBackboneElement = BackboneElement(Schema.String)
+const TestBackboneElement = BackboneElementFromFhirR4(Schema.String)
 const backboneElementArb = Arbitrary.make(TestBackboneElement)
 const controlCodeArb = Arbitrary.make(QuestionnaireItemUIControlCode)
 

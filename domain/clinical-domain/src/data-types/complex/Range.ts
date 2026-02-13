@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { Element } from '../base/Element'
+import { ElementFromFhirR4 } from '../base/Element'
 import { SimpleQuantity } from '../complex/SimpleQuantity'
 
 export const RangeId = Schema.String.pipe(Schema.brand('RangeId'))
@@ -13,7 +13,7 @@ export type RangeId = typeof RangeId.Type
  * (e.g. "give the patient between 2 and 4 tablets"). Ranges are typically used in instructions.
  */
 export const Range = Schema.Struct({
-  ...Element(RangeId).fields,
+  ...ElementFromFhirR4(RangeId).fields,
   /**
    * The low limit. The boundary is inclusive.
    */

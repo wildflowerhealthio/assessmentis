@@ -1,91 +1,113 @@
 import { Schema } from 'effect'
-import { DomainResource } from '../../data-types/base/DomainResource'
-import {
+import type {
+  Practitioner as FhirPractitioner,
+  PractitionerQualification as FhirPractitionerQualification,
+} from 'fhir/r4'
+import type { DomainResource } from '../../data-types/base/DomainResource'
+import { DomainResourceFromFhirR4 } from '../../data-types/base/DomainResource'
+import type { BackboneElement } from '../../data-types/base/BackboneElement'
+import { BackboneElementFromFhirR4 } from '../../data-types/base/BackboneElement'
+import type {
   Identifier,
   Reference,
+} from '../../data-types/complex/IdentifierAndReference'
+import {
+  IdentifierFromFhirR4,
+  ReferenceFromFhirR4,
 } from '../../data-types/complex/IdentifierAndReference'
 import { HumanName } from '../../data-types/complex/HumanName'
 import { ContactPoint } from '../../data-types/complex/ContactPoint'
 import { Address } from '../../data-types/complex/Address'
-import { Attachment } from '../../data-types/complex/Attachment'
-import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
-import { Period } from '../../data-types/complex/Period'
+import type { Attachment } from '../../data-types/complex/Attachment'
+import { AttachmentFromFhirR4 } from '../../data-types/complex/Attachment'
+import type { CodeableConcept } from '../../data-types/complex/CodeableConcept'
+import { CodeableConceptFromFhirR4 } from '../../data-types/complex/CodeableConcept'
+import type { Period } from '../../data-types/complex/Period'
+import { PeriodFromFhirR4 } from '../../data-types/complex/Period'
 import { AdministrativeGender } from '../value-sets/AdministrativeGender'
-import { TimelessDateFromString } from '@assessmentis/util'
+import { TimelessDateFromString, type DeepReadonly } from '@assessmentis/util'
 
 export const PractitionerId = Schema.String.pipe(Schema.brand('PractitionerId'))
 
 export type PractitionerId = typeof PractitionerId.Type
 
+// --- Sub-component ---
+
+const PractitionerQualificationId = Schema.String.pipe(
+  Schema.brand('PractitionerQualificationId')
+)
+type PractitionerQualificationId = typeof PractitionerQualificationId.Type
+
+interface PractitionerQualification extends BackboneElement<PractitionerQualificationId> {
+  identifier?: ReadonlyArray<Identifier>
+  code: CodeableConcept
+  period?: Period
+  issuer?: Reference
+}
+
+const PractitionerQualificationFromFhirR4: Schema.Schema<
+  PractitionerQualification,
+  DeepReadonly<FhirPractitionerQualification>,
+  never
+> = Schema.extend(
+  BackboneElementFromFhirR4(PractitionerQualificationId),
+  Schema.Struct({
+    identifier: Schema.optional(
+      Schema.Array(Schema.suspend(() => IdentifierFromFhirR4))
+    ),
+    code: Schema.suspend(() => CodeableConceptFromFhirR4),
+    period: Schema.optional(Schema.suspend(() => PeriodFromFhirR4)),
+    issuer: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
+  })
+)
+
+// --- Practitioner ---
+
 /**
  * A person who is directly or indirectly involved in the provisioning of healthcare.
  */
-export const Practitioner = Schema.Struct({
-  ...DomainResource(PractitionerId).fields,
-  resourceType: Schema.Literal('Practitioner'),
-  /**
-   * An identifier that applies to this person in this role.
-   */
-  identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
-  /**
-   * Whether this practitioner's record is in active use.
-   */
-  active: Schema.optional(Schema.Boolean),
-  /**
-   * The name(s) associated with the practitioner.
-   */
-  name: Schema.optional(Schema.Array(HumanName)),
-  /**
-   * A contact detail for the practitioner, e.g. a telephone number or an email address.
-   */
-  telecom: Schema.optional(Schema.Array(ContactPoint)),
-  /**
-   * Address(es) of the practitioner that are not role specific (typically home address). Work addresses are not typically entered in this property as they are usually role dependent.
-   */
-  address: Schema.optional(Schema.Array(Address)),
-  /**
-   * Administrative Gender - the gender that the person is considered to have for administration and record keeping purposes.
-   */
-  gender: Schema.optional(AdministrativeGender),
-  /**
-   * The date of birth for the practitioner.
-   */
-  birthDate: Schema.optional(TimelessDateFromString),
-  /**
-   * Image of the person.
-   */
-  photo: Schema.optional(Schema.Array(Attachment)),
-  /**
-   * The official certifications, training, and licenses that authorize or otherwise pertain to the provision of care by the practitioner. For example, a medical license issued by a medical board authorizing the practitioner to practice medicine within a certain locality.
-   */
-  qualification: Schema.optional(
-    Schema.Array(
-      Schema.Struct({
-        /**
-         * An identifier that applies to this person's qualification in this role.
-         */
-        identifier: Schema.optional(
-          Schema.Array(Schema.suspend(() => Identifier))
-        ),
-        /**
-         * Coded representation of the qualification.
-         */
-        code: CodeableConcept,
-        /**
-         * Period during which the qualification is valid.
-         */
-        period: Schema.optional(Period),
-        /**
-         * Organization that regulates and issues the qualification.
-         */
-        issuer: Schema.optional(Schema.suspend(() => Reference)),
-      })
-    )
-  ),
-  /**
-   * A language the practitioner can use in patient communication.
-   */
-  communication: Schema.optional(Schema.Array(CodeableConcept)),
-})
+export interface Practitioner extends DomainResource<PractitionerId> {
+  resourceType: 'Practitioner'
+  identifier?: ReadonlyArray<Identifier>
+  active?: boolean
+  name?: ReadonlyArray<HumanName>
+  telecom?: ReadonlyArray<ContactPoint>
+  address?: ReadonlyArray<Address>
+  gender?: AdministrativeGender
+  birthDate?: Date
+  photo?: ReadonlyArray<Attachment>
+  qualification?: ReadonlyArray<PractitionerQualification>
+  communication?: ReadonlyArray<CodeableConcept>
+}
 
-export type Practitioner = typeof Practitioner.Type
+/**
+ * Schema for transforming between Practitioner Data objects and FHIR R4 Practitioner resources.
+ */
+export const PractitionerFromFhirR4: Schema.Schema<
+  Practitioner,
+  DeepReadonly<FhirPractitioner>,
+  never
+> = Schema.extend(
+  DomainResourceFromFhirR4(PractitionerId),
+  Schema.Struct({
+    resourceType: Schema.Literal('Practitioner'),
+    identifier: Schema.optional(
+      Schema.Array(Schema.suspend(() => IdentifierFromFhirR4))
+    ),
+    active: Schema.optional(Schema.Boolean),
+    name: Schema.optional(Schema.Array(Schema.suspend(() => HumanName))),
+    telecom: Schema.optional(Schema.Array(Schema.suspend(() => ContactPoint))),
+    address: Schema.optional(Schema.Array(Schema.suspend(() => Address))),
+    gender: Schema.optional(AdministrativeGender),
+    birthDate: Schema.optional(TimelessDateFromString),
+    photo: Schema.optional(
+      Schema.Array(Schema.suspend(() => AttachmentFromFhirR4))
+    ),
+    qualification: Schema.optional(
+      Schema.Array(PractitionerQualificationFromFhirR4)
+    ),
+    communication: Schema.optional(
+      Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+    ),
+  })
+)

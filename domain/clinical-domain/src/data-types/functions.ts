@@ -1,11 +1,13 @@
-import { Reference } from './complex/IdentifierAndReference'
+import { Schema } from 'effect'
+import type { Reference } from './complex/IdentifierAndReference'
+import { ReferenceFromFhirR4 } from './complex/IdentifierAndReference'
 
 export const referenceFromResource = (
   resource: { id?: string | undefined; resourceType: string },
   display: string | undefined = undefined
 ) =>
   resource && resource.id
-    ? Reference.make({
+    ? Schema.decodeUnknownSync(ReferenceFromFhirR4)({
         reference: `${resource.resourceType}/${resource.id}`,
         display,
       })
