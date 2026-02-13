@@ -1,6 +1,6 @@
 export { hasResourceTypeAndId, groupBy } from './helpers'
+export type { ResourceWithId } from './requests'
 export {
-  ResourceWithId,
   GetResource,
   SearchResources,
   CreateResource,

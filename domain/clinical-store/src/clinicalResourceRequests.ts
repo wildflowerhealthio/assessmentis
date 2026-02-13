@@ -1,4 +1,4 @@
-import { Schema } from 'effect'
+import type { Schema } from 'effect'
 import {
   GetResource as BaseGetResource,
   SearchResources as BaseSearchResources,
@@ -6,7 +6,7 @@ import {
   UpdateResource as BaseUpdateResource,
   DeleteResource as BaseDeleteResource,
 } from '@assessmentis/effectful-store'
-import { Schemas } from '@assessmentis/clinical-domain'
+import type { Schemas } from '@assessmentis/clinical-domain'
 import type {
   ClinicalDataRepositoryErrors,
   ClinicalDataRepositoryErrorsWithNotFound,

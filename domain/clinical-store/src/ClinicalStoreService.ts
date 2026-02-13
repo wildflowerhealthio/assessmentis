@@ -1,4 +1,5 @@
-import { Effect, Request, Schema } from 'effect'
+import type { Schema } from 'effect'
+import { Effect } from 'effect'
 import { FhirR4Client } from '@assessmentis/fhir-client'
 import { Schemas } from '@assessmentis/clinical-domain'
 import type {
@@ -135,7 +136,10 @@ export class ClinicalStoreService extends Effect.Service<ClinicalStoreService>()
         }),
         resolver
       )
-    }).pipe(Effect.provideService(ClinicalStoreService, this))
+    }).pipe(Effect.provideService(ClinicalStoreService, this)) as Effect.Effect<
+      WithId<SchemaType<Key>>,
+      ClinicalDataRepositoryErrorsWithNotFound<SchemaType<Key>>
+    >
   }
 
   /**
@@ -144,7 +148,10 @@ export class ClinicalStoreService extends Effect.Service<ClinicalStoreService>()
   search<Key extends keyof typeof Schemas>(
     resourceType: Key,
     params?: RepositoryFilters<SchemaType<Key>>
-  ): Effect.Effect<readonly WithId<SchemaType<Key>>[], ClinicalDataRepositoryErrors> {
+  ): Effect.Effect<
+    readonly WithId<SchemaType<Key>>[],
+    ClinicalDataRepositoryErrors
+  > {
     return Effect.gen(function* () {
       const service = yield* ClinicalStoreService
       const resolver = getResolver(service.resolvers, resourceType, 'search')
@@ -156,7 +163,10 @@ export class ClinicalStoreService extends Effect.Service<ClinicalStoreService>()
         }),
         resolver
       )
-    }).pipe(Effect.provideService(ClinicalStoreService, this))
+    }).pipe(Effect.provideService(ClinicalStoreService, this)) as Effect.Effect<
+      readonly WithId<SchemaType<Key>>[],
+      ClinicalDataRepositoryErrors
+    >
   }
 
   /**
@@ -177,7 +187,10 @@ export class ClinicalStoreService extends Effect.Service<ClinicalStoreService>()
         }),
         resolver
       )
-    }).pipe(Effect.provideService(ClinicalStoreService, this))
+    }).pipe(Effect.provideService(ClinicalStoreService, this)) as Effect.Effect<
+      WithId<SchemaType<Key>>,
+      ClinicalDataRepositoryErrors
+    >
   }
 
   /**
@@ -201,7 +214,10 @@ export class ClinicalStoreService extends Effect.Service<ClinicalStoreService>()
         }),
         resolver
       )
-    }).pipe(Effect.provideService(ClinicalStoreService, this))
+    }).pipe(Effect.provideService(ClinicalStoreService, this)) as Effect.Effect<
+      WithId<SchemaType<Key>>,
+      ClinicalDataRepositoryErrorsWithNotFound<SchemaType<Key>>
+    >
   }
 
   /**
@@ -225,6 +241,9 @@ export class ClinicalStoreService extends Effect.Service<ClinicalStoreService>()
         }),
         resolver
       )
-    }).pipe(Effect.provideService(ClinicalStoreService, this))
+    }).pipe(Effect.provideService(ClinicalStoreService, this)) as Effect.Effect<
+      void,
+      ClinicalDataRepositoryErrorsWithNotFound<SchemaType<Key>>
+    >
   }
 }
