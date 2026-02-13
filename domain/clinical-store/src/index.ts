@@ -1,3 +1,3 @@
-export * from './requests'
+export * from './clinicalResourceRequests'
 export * from './makeFhirResolvers'
 export * from './ClinicalStoreService'

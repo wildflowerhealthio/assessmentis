@@ -1,11 +1,8 @@
 import { Effect, Request, RequestResolver, Schema } from 'effect'
 import { FhirR4Client } from '@assessmentis/fhir-client'
-import {
-  Element,
-  WithId,
-  hasId,
-  assertId,
-} from '@assessmentis/clinical-domain/data-types'
+import { Schemas } from '@assessmentis/clinical-domain'
+import type { WithId } from '@assessmentis/clinical-domain/data-types'
+import { Element, assertId } from '@assessmentis/clinical-domain/data-types'
 import { Bundle } from '@assessmentis/clinical-domain/foundation-framework'
 import {
   UnhandledError,
@@ -15,13 +12,12 @@ import {
 import { refineOrFail } from '@assessmentis/util'
 import { groupBy } from '@assessmentis/effectful-store'
 import {
-  GetResource,
-  SearchResources,
-  CreateResource,
-  UpdateResource,
-  DeleteResource,
-  ClinicalResource,
-} from './requests'
+  GetClinicalResource,
+  SearchClinicalResources,
+  CreateClinicalResource,
+  UpdateClinicalResource,
+  DeleteClinicalResource,
+} from './clinicalResourceRequests'
 
 /**
  * Helper to decode and assert resource has ID
@@ -107,24 +103,22 @@ const makeBundleDecoder = <
 }
 
 /**
- * Creates a resolver for GetResource requests that batches reads
+ * Creates a resolver for GetClinicalResource requests that batches reads
  */
 export const makeGetResourceResolver = <
+  Key extends keyof typeof Schemas,
   A extends Element<string> & { resourceType: string },
   I extends { resourceType: string; id?: string | undefined },
 >(
   client: typeof FhirR4Client.Service,
   resourceType: A['resourceType'],
   schema: Schema.Schema<A, I, never>
-): RequestResolver.RequestResolver<
-  GetResource<A>,
-  never
-> => {
+): RequestResolver.RequestResolver<GetClinicalResource<Key>, never> => {
   const decoder = decodeAndAssertId(schema)
   const bundleDecoder = makeBundleDecoder(schema)
 
   return RequestResolver.makeBatched(
-    (requests: ReadonlyArray<GetResource<A>>) =>
+    (requests: ReadonlyArray<GetClinicalResource<Key>>) =>
       Effect.gen(function* () {
         // Group by resourceType (though they should all be the same)
         const byType = groupBy(requests, (r) => r.resourceType)
@@ -140,10 +134,7 @@ export const makeGetResourceResolver = <
                 onFailure: (error) =>
                   Request.fail(
                     reqs[0],
-                    error as NotFoundError<
-                      A['resourceType'],
-                      { id: string }
-                    >
+                    error as NotFoundError<A['resourceType'], { id: string }>
                   ),
                 onSuccess: (raw) =>
                   decoder(raw).pipe(
@@ -192,22 +183,20 @@ export const makeGetResourceResolver = <
 }
 
 /**
- * Creates a resolver for SearchResources requests
+ * Creates a resolver for SearchClinicalResources requests
  */
 export const makeSearchResourcesResolver = <
+  Key extends keyof typeof Schemas,
   A extends Element<string> & { resourceType: string },
   I extends { resourceType: string; id?: string | undefined },
 >(
   client: typeof FhirR4Client.Service,
   resourceType: A['resourceType'],
   schema: Schema.Schema<A, I, never>
-): RequestResolver.RequestResolver<
-  SearchResources<A>,
-  never
-> => {
+): RequestResolver.RequestResolver<SearchClinicalResources<Key>, never> => {
   const bundleDecoder = makeBundleDecoder(schema)
 
-  return RequestResolver.fromEffect((request: SearchResources<A>) =>
+  return RequestResolver.fromEffect((request: SearchClinicalResources<Key>) =>
     client
       .search({ resourceType, ...request.params })
       .pipe(Effect.flatMap(bundleDecoder))
@@ -215,23 +204,21 @@ export const makeSearchResourcesResolver = <
 }
 
 /**
- * Creates a resolver for CreateResource requests
+ * Creates a resolver for CreateClinicalResource requests
  */
 export const makeCreateResourceResolver = <
+  Key extends keyof typeof Schemas,
   A extends Element<string> & { resourceType: string },
   I extends { resourceType: string; id?: string | undefined },
 >(
   client: typeof FhirR4Client.Service,
   resourceType: A['resourceType'],
   schema: Schema.Schema<A, I, never>
-): RequestResolver.RequestResolver<
-  CreateResource<A>,
-  never
-> => {
+): RequestResolver.RequestResolver<CreateClinicalResource<Key>, never> => {
   const encode = Schema.encode(schema)
   const decoder = decodeAndAssertId(schema)
 
-  return RequestResolver.fromEffect((request: CreateResource<A>) =>
+  return RequestResolver.fromEffect((request: CreateClinicalResource<Key>) =>
     encode(request.resource).pipe(
       Effect.mapError(
         (cause) =>
@@ -249,23 +236,21 @@ export const makeCreateResourceResolver = <
 }
 
 /**
- * Creates a resolver for UpdateResource requests
+ * Creates a resolver for UpdateClinicalResource requests
  */
 export const makeUpdateResourceResolver = <
+  Key extends keyof typeof Schemas,
   A extends Element<string> & { resourceType: string },
   I extends { resourceType: string; id?: string | undefined },
 >(
   client: typeof FhirR4Client.Service,
   resourceType: A['resourceType'],
   schema: Schema.Schema<A, I, never>
-): RequestResolver.RequestResolver<
-  UpdateResource<A>,
-  never
-> => {
+): RequestResolver.RequestResolver<UpdateClinicalResource<Key>, never> => {
   const encode = Schema.encode(schema)
   const decoder = decodeAndAssertId(schema)
 
-  return RequestResolver.fromEffect((request: UpdateResource<A>) => {
+  return RequestResolver.fromEffect((request: UpdateClinicalResource<Key>) => {
     const originalId = request.resource.id
     return encode(request.resource).pipe(
       Effect.mapError(
@@ -285,18 +270,16 @@ export const makeUpdateResourceResolver = <
 }
 
 /**
- * Creates a resolver for DeleteResource requests
+ * Creates a resolver for DeleteClinicalResource requests
  */
 export const makeDeleteResourceResolver = <
+  Key extends keyof typeof Schemas,
   A extends Element<string> & { resourceType: string },
 >(
   client: typeof FhirR4Client.Service,
   resourceType: A['resourceType']
-): RequestResolver.RequestResolver<
-  DeleteResource<A>,
-  never
-> => {
-  return RequestResolver.fromEffect((request: DeleteResource<A>) =>
+): RequestResolver.RequestResolver<DeleteClinicalResource<Key>, never> => {
+  return RequestResolver.fromEffect((request: DeleteClinicalResource<Key>) =>
     client.delete({ type: resourceType, id: request.id })
   )
 }
@@ -305,6 +288,7 @@ export const makeDeleteResourceResolver = <
  * Creates all resolvers for a given resource type
  */
 export const makeFhirResolvers = <
+  Key extends keyof typeof Schemas,
   A extends Element<string> & { resourceType: string },
   I extends { resourceType: string; id?: string | undefined },
 >(
@@ -312,9 +296,9 @@ export const makeFhirResolvers = <
   resourceType: A['resourceType'],
   schema: Schema.Schema<A, I, never>
 ) => ({
-  get: makeGetResourceResolver(client, resourceType, schema),
-  search: makeSearchResourcesResolver(client, resourceType, schema),
-  create: makeCreateResourceResolver(client, resourceType, schema),
-  update: makeUpdateResourceResolver(client, resourceType, schema),
-  delete: makeDeleteResourceResolver(client, resourceType),
+  get: makeGetResourceResolver<Key, A, I>(client, resourceType, schema),
+  search: makeSearchResourcesResolver<Key, A, I>(client, resourceType, schema),
+  create: makeCreateResourceResolver<Key, A, I>(client, resourceType, schema),
+  update: makeUpdateResourceResolver<Key, A, I>(client, resourceType, schema),
+  delete: makeDeleteResourceResolver<Key, A>(client, resourceType),
 })
