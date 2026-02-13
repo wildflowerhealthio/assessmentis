@@ -1,6 +1,6 @@
 import talkback from 'talkback/es6'
-import { Options } from 'talkback/options'
-import { HttpHandler } from 'msw'
+import type { Options } from 'talkback/options'
+import type { HttpHandler } from 'msw'
 import { expect } from 'vitest'
 
 export interface VcrHost {

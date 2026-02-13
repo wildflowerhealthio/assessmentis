@@ -1,7 +1,7 @@
 import { expect, test, describe } from 'vitest'
 import { Address } from './Address'
-import { DeepReadonly } from '@assessmentis/util'
-import { Address as FhirAddress } from 'fhir/r4'
+import type { DeepReadonly } from '@assessmentis/util'
+import type { Address as FhirAddress } from 'fhir/r4'
 import { Schema, Arbitrary } from 'effect'
 import * as fc from 'fast-check'
 

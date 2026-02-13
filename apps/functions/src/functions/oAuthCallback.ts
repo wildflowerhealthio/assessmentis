@@ -5,10 +5,11 @@ import { google } from 'googleapis'
 import { info, error } from 'firebase-functions/logger'
 import { Effect, Exit } from 'effect'
 import { UserId } from '@assessmentis/platform-domain'
-import { AuthError, AuthzError } from '@assessmentis/ontology'
+import type { AuthzError } from '@assessmentis/ontology'
+import { AuthError } from '@assessmentis/ontology'
 import { defaultHttpOptions, oauth2Client } from '../util/functionContext'
 import { handleError } from '../util/handleError'
-import { UnhandledError } from '@assessmentis/ontology'
+import type { UnhandledError } from '@assessmentis/ontology'
 import { AuthRepository } from '@assessmentis/firebase-server-infrastructure'
 import { makeRequestRuntime } from '../util/BaseLayer'
 
@@ -33,7 +34,9 @@ export const oAuthCallbackEffect = (q: {
       error('Error:' + q.error)
       const errorMessage = String(q.error)
 
-      return yield* Effect.fail(new AuthError({ message: errorMessage }))
+      return yield* Effect.fail(
+        new AuthError({ message: errorMessage, cause: q.error })
+      )
     }
 
     const code = q.code?.toString() ?? ''

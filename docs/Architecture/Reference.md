@@ -2,6 +2,8 @@
 
 Package inventory and dependency rules. For rationale, see [Architecture Explanation](./Explanation.md).
 
+For step-by-step cross-layer implementation, see [Adding Clinical Resource Types How-To](./Adding%20Clinical%20Resource%20Types%20How-To.md).
+
 ## Packages
 
 ### domain/ — Pure business logic
@@ -63,3 +65,7 @@ Package inventory and dependency rules. For rationale, see [Architecture Explana
 | Backend        | Firebase Cloud Functions, Effect-TS, Node.js 22                     |
 | Domain         | Effect-TS, Effect Schema, Vitest                                    |
 | Infrastructure | Firebase SDK/Admin, Google Cloud Healthcare API, Daily.co API       |
+
+## Related how-to
+
+- [Adding Clinical Resource Types How-To](./Adding%20Clinical%20Resource%20Types%20How-To.md)

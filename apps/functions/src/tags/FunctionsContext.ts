@@ -1,5 +1,5 @@
 import { Context } from 'effect'
-import { OrgSlug } from '@assessmentis/platform-domain'
+import type { OrgSlug } from '@assessmentis/platform-domain'
 import type { Request } from 'firebase-functions/https'
 
 /**

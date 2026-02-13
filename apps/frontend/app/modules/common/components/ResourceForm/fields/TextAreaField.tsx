@@ -8,7 +8,8 @@ export interface TextAreaFieldProps {
   placeholder?: string
   rows?: number
   error?: string
-  defaultValue?: string
+  value: string | undefined
+  onChange: (value: string) => void
 }
 
 export function TextAreaField({
@@ -18,7 +19,8 @@ export function TextAreaField({
   placeholder,
   rows = 4,
   error,
-  defaultValue,
+  value,
+  onChange,
 }: TextAreaFieldProps) {
   return (
     <div className={classes.FormField}>
@@ -38,7 +40,8 @@ export function TextAreaField({
         placeholder={placeholder}
         required={required}
         rows={rows}
-        defaultValue={defaultValue}
+        value={value ?? ''}
+        onChange={(e) => onChange(e.target.value)}
       />
       {error && (
         <div className={cn('body-3', classes.FormField__error)}>{error}</div>

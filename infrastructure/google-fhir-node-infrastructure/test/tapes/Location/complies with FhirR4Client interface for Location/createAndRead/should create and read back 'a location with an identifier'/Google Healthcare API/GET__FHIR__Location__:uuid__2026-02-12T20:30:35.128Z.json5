@@ -1,0 +1,74 @@
+{
+    meta: {
+        createdAt: '2026-02-12T20:30:34.990Z',
+        host: 'https://healthcare.googleapis.com',
+        resHumanReadable: true,
+        resUncompressed: true,
+    },
+    req: {
+        url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/f1924b3d-968d-4783-80cf-8a257efa08c3',
+        method: 'GET',
+        headers: {},
+        body: '',
+    },
+    res: {
+        status: 200,
+        headers: {
+            'content-type': [
+                'application/fhir+json;charset=utf-8',
+            ],
+            'last-modified': [
+                'Thu, 12 Feb 2026 20:30:34 UTC',
+            ],
+            'content-encoding': [
+                'gzip',
+            ],
+            etag: [
+                'W/"MTc3MDkyODIzNDk3MTY0NjAwMA"',
+            ],
+            vary: [
+                'Origin, X-Origin, Referer',
+            ],
+            date: [
+                'Thu, 12 Feb 2026 20:30:35 GMT',
+            ],
+            server: [
+                'ESF',
+            ],
+            'x-xss-protection': [
+                '0',
+            ],
+            'x-frame-options': [
+                'SAMEORIGIN',
+            ],
+            'x-content-type-options': [
+                'nosniff',
+            ],
+            'alt-svc': [
+                'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
+            ],
+            connection: [
+                'close',
+            ],
+            'transfer-encoding': [
+                'chunked',
+            ],
+        },
+        body: {
+            id: 'f1924b3d-968d-4783-80cf-8a257efa08c3',
+            identifier: [
+                {
+                    system: 'http://example.com/locations',
+                    value: 'loc-create-read-1',
+                },
+            ],
+            meta: {
+                lastUpdated: '2026-02-12T20:30:34.971646+00:00',
+                versionId: 'MTc3MDkyODIzNDk3MTY0NjAwMA',
+            },
+            name: 'Main Office',
+            resourceType: 'Location',
+            status: 'active',
+        },
+    },
+}

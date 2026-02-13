@@ -11,6 +11,7 @@
     "lint": "npm run lint:projects && npm run lint:docs",
     "lint:projects": "npm exec turbo run lint",
     "lint:docs": "npm exec markdownlint-cli2 -- --config .local.markdownlint-cli2.mjs",
+    "lint:fix": "npm exec turbo run lint:fix",
     "typecheck": "npm exec turbo run typecheck",
     "test": "vitest --project=\"*:unit\"",
     "test:all": "vitest",

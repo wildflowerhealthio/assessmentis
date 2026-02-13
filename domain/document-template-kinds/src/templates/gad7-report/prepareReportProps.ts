@@ -1,4 +1,5 @@
-import { Code, Coding } from '@assessmentis/clinical-domain/data-types'
+import type { Coding } from '@assessmentis/clinical-domain/data-types'
+import { Code } from '@assessmentis/clinical-domain/data-types'
 import { gad7 } from '@assessmentis/questionnaire-entities'
 import { makeScoringTable as makeScoringTableFunction } from '../../utility/scoringTable'
 

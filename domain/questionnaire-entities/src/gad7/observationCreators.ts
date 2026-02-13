@@ -1,8 +1,9 @@
-import { QuestionnaireResponse } from '@assessmentis/clinical-domain/content-management'
-import { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import type { QuestionnaireResponse } from '@assessmentis/clinical-domain/content-management'
+import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import codings from './codings'
 import { totalScore } from './observations'
-import { baseChoiceObservation, ObservationTemplate } from './internal'
+import type { ObservationTemplate } from './internal'
+import { baseChoiceObservation } from './internal'
 import {
   CodeableConcept,
   referenceFromResource,

@@ -1,7 +1,7 @@
 import { expect, test, describe } from 'vitest'
 import { Media } from './Media'
-import { DeepReadonly } from '@assessmentis/util'
-import { Media as FhirMedia } from 'fhir/r4'
+import type { DeepReadonly } from '@assessmentis/util'
+import type { Media as FhirMedia } from 'fhir/r4'
 import { Arbitrary, Either, Schema } from 'effect'
 import * as fc from 'fast-check'
 

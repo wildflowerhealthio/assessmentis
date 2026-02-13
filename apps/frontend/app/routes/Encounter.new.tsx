@@ -2,14 +2,17 @@ import { useNavigate } from 'react-router'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { EncounterForm } from 'app/modules/resources/Encounter/components/EncounterForm'
 import { createEncounter } from 'app/modules/resources/Encounter/actions/createEncounter'
-import { EncounterFormSchema } from 'app/modules/resources/Encounter/schemas/EncounterFormSchema'
+import type { EncounterFormSchema } from 'app/modules/resources/Encounter/schemas/EncounterFormSchema'
 import { DateTime, Effect, Schema } from 'effect'
 import {
   QuestionnaireId,
   QuestionnaireResponseRepository,
 } from '@assessmentis/clinical-domain/content-management'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
-import { EncounterRepository } from '@assessmentis/clinical-domain/administration'
+import {
+  EncounterRepository,
+  LocationRepository,
+} from '@assessmentis/clinical-domain/administration'
 import { usePlatformContext } from '../layers/PlatformContext'
 import { VideoCallClient } from '@assessmentis/video-call-domain'
 
@@ -23,7 +26,7 @@ const defaultValues: Promise<typeof EncounterFormSchema.Encoded> =
     questionnaireIds: [],
     periodStart: undefined,
     periodEnd: undefined,
-    locationDisplay: undefined,
+    locationId: undefined,
   })
 
 export default function CreateEncounterPage() {
@@ -52,7 +55,14 @@ export default function CreateEncounterPage() {
                 end: data.periodEnd?.pipe(DateTime.toUtc),
               }
             : undefined,
-        // Note: Location includes video room (set by createEncounter) + optional display name
+        // User-selected physical location (video room is created by createEncounter)
+        location: data.locationId
+          ? [
+              {
+                location: { reference: `Location/${data.locationId}` },
+              },
+            ]
+          : undefined,
         questionnaireResponses: data.questionnaireIds.map((id) => ({
           questionnaire: decodeQuestionnaireId(id),
         })),
@@ -68,6 +78,10 @@ export default function CreateEncounterPage() {
         Effect.provideServiceEffect(
           VideoCallClient,
           VideoCallClientService.client
+        ),
+        Effect.provideServiceEffect(
+          LocationRepository,
+          clinicalDataRepositoryService.effect.Location
         )
       )
     )

@@ -15,7 +15,8 @@ React Router v7 SPA with Tundra CSS and Effect-TS.
 - [Platform Services Reference](./app/layers/Platform%20Services%20Reference.md) — Frontend platform service wiring
 - [React Router Data APIs Reference](./app/routes/React%20Router%20Data%20APIs%20Reference.md) — Route module data APIs
 - [E2E Testing Reference](./e2e/E2E%20Testing%20Reference.md) — Playwright test layout
-- [Resource CRUD How-To](./app/modules/resources/Resource%20CRUD%20How-To.md) — Full resource CRUD implementation
+- [Adding Clinical Resource Types How-To](./app/modules/resources/Adding%20Clinical%20Resource%20Types%20How-To.md) — Frontend Clinical Resource wiring
+- [Resource CRUD Reference](./app/modules/resources/Resource%20CRUD%20Reference.md) — Frontend Clinical Resource CRUD reference
 
 ## Commands
 

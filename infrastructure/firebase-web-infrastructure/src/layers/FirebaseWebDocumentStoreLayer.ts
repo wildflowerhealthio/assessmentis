@@ -1,4 +1,5 @@
-import { DocumentData, DocumentStore } from '@assessmentis/platform-domain'
+import type { DocumentData } from '@assessmentis/platform-domain'
+import { DocumentStore } from '@assessmentis/platform-domain'
 import { Effect, Either, Layer, Stream } from 'effect'
 import { FirebaseWeb } from '../tagClasses'
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { Schema, FastCheck } from 'effect'
+import type { CompositionFormData } from './CompositionFormSchema'
 import {
-  CompositionFormData,
   CompositionFormSchema,
   transformToComposition,
 } from './CompositionFormSchema'

@@ -3,7 +3,8 @@ import { Effect, Either, Layer, Stream } from 'effect'
 import * as fc from 'fast-check'
 import { ClinicalDataRepositoryService } from './ClinicalDataRepositoriesService'
 import { FhirR4ClientService } from './FhirR4ClientService'
-import { FhirR4Client } from '@assessmentis/fhir-client'
+import type { FhirR4Client } from '@assessmentis/fhir-client'
+import { UnhandledError } from '@assessmentis/ontology'
 
 describe('ClinicalDataRepositoryService', () => {
   const mockFhirClient = {} as typeof FhirR4Client.Service
@@ -15,9 +16,10 @@ describe('ClinicalDataRepositoryService', () => {
       shutdown: Effect.void,
     })
 
-  const resourceTypes = [
+  const clinicalResourceTypes = [
     'Composition',
     'Encounter',
+    'Location',
     'Media',
     'Observation',
     'Patient',
@@ -36,15 +38,17 @@ describe('ClinicalDataRepositoryService', () => {
   ] as const
 
   describe('Service provides repository for each resource type', () => {
-    test.each(resourceTypes)(
+    test.each(clinicalResourceTypes)(
       'provides %s repository as Effect',
-      async (resourceType) => {
+      async (clinicalResourceType) => {
         const mockClientService = createMockFhirR4ClientService()
 
         const program = Effect.gen(function* () {
           const service = yield* ClinicalDataRepositoryService
-          expect(service.effect[resourceType]).toBeDefined()
-          expect(Effect.isEffect(service.effect[resourceType])).toBe(true)
+          expect(service.effect[clinicalResourceType]).toBeDefined()
+          expect(Effect.isEffect(service.effect[clinicalResourceType])).toBe(
+            true
+          )
         }).pipe(
           Effect.provide(
             ClinicalDataRepositoryService.Default.pipe(
@@ -64,13 +68,14 @@ describe('ClinicalDataRepositoryService', () => {
     it('property: returns repository with all required methods for any resource type', async () => {
       await fc.assert(
         fc.asyncProperty(
-          fc.constantFrom(...resourceTypes),
-          async (resourceType) => {
+          fc.constantFrom(...clinicalResourceTypes),
+          async (clinicalResourceType) => {
             const mockClientService = createMockFhirR4ClientService()
 
             const program = Effect.gen(function* () {
               const service = yield* ClinicalDataRepositoryService
-              const repo = yield* service.repositoryEffect<any>(resourceType)
+              const repo =
+                yield* service.repositoryEffect<any>(clinicalResourceType)
 
               expect(repo).toBeDefined()
               repositoryMethods.forEach((method) => {
@@ -99,11 +104,15 @@ describe('ClinicalDataRepositoryService', () => {
         fc.asyncProperty(fc.boolean(), async (shouldFail) => {
           const mockClientService: typeof FhirR4ClientService.Service = {
             client: shouldFail
-              ? Effect.fail(new Error('Client unavailable') as any)
+              ? Effect.fail(
+                  new UnhandledError({ message: 'Client unavailable' })
+                )
               : Effect.succeed(mockFhirClient),
             clientStream: shouldFail
               ? Stream.succeed(
-                  Either.left(new Error('Client unavailable') as any)
+                  Either.left(
+                    new UnhandledError({ message: 'Client unavailable' })
+                  )
                 )
               : Stream.succeed(Either.right(mockFhirClient)),
             shutdown: Effect.void,
@@ -118,7 +127,7 @@ describe('ClinicalDataRepositoryService', () => {
             )
 
             // All repositories should exist regardless of client state
-            resourceTypes.forEach((type) => {
+            clinicalResourceTypes.forEach((type) => {
               expect(service.effect[type]).toBeDefined()
             })
           }).pipe(

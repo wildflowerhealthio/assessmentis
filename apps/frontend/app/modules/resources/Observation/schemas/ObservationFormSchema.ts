@@ -1,5 +1,6 @@
-import { Code, Coding } from '@assessmentis/clinical-domain/data-types'
-import { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import type { Coding } from '@assessmentis/clinical-domain/data-types'
+import { Code } from '@assessmentis/clinical-domain/data-types'
+import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { Schema, DateTime } from 'effect'
 
 export const ValueTypeEnum = Schema.Literal(

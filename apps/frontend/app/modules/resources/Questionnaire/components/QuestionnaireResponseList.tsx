@@ -1,10 +1,10 @@
 'use client'
 
-import {
+import type {
   Questionnaire,
   QuestionnaireResponseId,
 } from '@assessmentis/clinical-domain/content-management'
-import { QuestionnaireResponse } from '@assessmentis/clinical-domain/content-management'
+import type { QuestionnaireResponse } from '@assessmentis/clinical-domain/content-management'
 import { Link } from 'react-router'
 
 const QuestionnaireResponseList = ({

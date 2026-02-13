@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, assert } from 'vitest'
 import fc from 'fast-check'
 
 import { totalScore } from './observations'
@@ -14,6 +14,7 @@ import {
   extractObservationsFromGad7Response,
 } from './observationCreators'
 import { literalOf } from '@assessmentis/util'
+import type { CodeableConcept } from '@assessmentis/clinical-domain/data-types'
 
 const scoreToCoding = [
   codings.notAtAll,
@@ -104,10 +105,12 @@ describe('GAD-7 observations extraction', () => {
             if (expectedScore === undefined) {
               expect(obs).not.toHaveProperty('valueCodeableConcept')
             } else {
-              expect(
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (obs as any).valueCodeableConcept.coding[0].code
-              ).toEqual(scoreToCoding[expectedScore].code)
+              assert.property(obs, 'valueCodeableConcept')
+              if ('valueCodeableConcept' in obs)
+                expect(
+                  (obs.valueCodeableConcept as CodeableConcept)?.coding?.[0]
+                    ?.code
+                ).toEqual(scoreToCoding[expectedScore].code)
             }
           })
 

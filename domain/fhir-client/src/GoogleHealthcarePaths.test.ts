@@ -3,7 +3,7 @@ import {
   buildFhirStoreParent,
   buildFhirResourcePath,
   buildFhirTypePath,
-  GoogleHealthcareConfig,
+  type GoogleHealthcareConfig,
 } from './GoogleHealthcarePaths'
 
 describe('GoogleHealthcarePaths', () => {

@@ -1,22 +1,22 @@
 import { Effect } from 'effect'
 import { VideoCallClient } from '@assessmentis/video-call-domain'
 import { EncounterRepository } from '@assessmentis/clinical-domain/administration'
-import {
+import type {
   UnhandledError,
   ExternalAssertionError,
   NotFoundError,
 } from '@assessmentis/ontology'
-import { WithId } from '@assessmentis/clinical-domain/data-types'
-import {
+import type { WithId } from '@assessmentis/clinical-domain/data-types'
+import type {
   Encounter,
   EncounterId,
 } from '@assessmentis/clinical-domain/administration'
-import {
+import type {
   Media,
   MediaId,
-  MediaRepository,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { AuthError, AuthzError } from '@assessmentis/ontology'
+import { MediaRepository } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import type { AuthError, AuthzError } from '@assessmentis/ontology'
 
 /**
  * Fetches recordings for an encounter's video call room and creates Media resources

@@ -1,6 +1,7 @@
-import { Effect, Schedule, Scope } from 'effect'
+import type { Scope } from 'effect'
+import { Effect, Schedule } from 'effect'
+import type { FhirR4Client } from '@assessmentis/fhir-client'
 import {
-  FhirR4Client,
   buildFhirStoreParent,
   buildFhirResourcePath,
   createFhirResponseHandlers,
@@ -9,12 +10,9 @@ import { buildSearchParams } from '@assessmentis/util'
 import { LoadedGapiClient } from '../services/LoadedGapiClient'
 import { LoadedGapiHealthcareClient } from '../services/LoadedGapiHealthcareClient'
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
-import {
-  AuthError,
-  ExternalAssertionError,
-  UnhandledError,
-} from '@assessmentis/ontology'
-import { UnknownException } from 'effect/Cause'
+import type { ExternalAssertionError } from '@assessmentis/ontology'
+import { AuthError, UnhandledError } from '@assessmentis/ontology'
+import type { UnknownException } from 'effect/Cause'
 
 const _retryGoogle502s = <A extends { status: number }, E>(
   innerCall: Effect.Effect<A, E>
@@ -141,9 +139,7 @@ export const startGapiGoogleHealthcareClient: Effect.Effect<
       Effect.map((response) => response.result)
     )
 
-  const search: (typeof FhirR4Client.Service)['search'] = (
-    params: Record<string, string | undefined> & { resourceType: string }
-  ) => {
+  const search: (typeof FhirR4Client.Service)['search'] = (params) => {
     const { resourceType, ...searchParams } = params
     return Effect.tryPromise(() =>
       client.request({

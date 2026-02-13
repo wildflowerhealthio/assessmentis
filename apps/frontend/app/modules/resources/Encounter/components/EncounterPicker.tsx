@@ -1,4 +1,4 @@
-import { Encounter } from '@assessmentis/clinical-domain/administration'
+import type { Encounter } from '@assessmentis/clinical-domain/administration'
 import { createResourcePicker } from '../../../common/utils/createResourcePicker'
 
 function formatEncounterDisplay(encounter: { id?: string }): string {

@@ -1,11 +1,7 @@
 import { Context, Effect, Either, Layer, Schema } from 'effect'
-import {
-  CurrentOrg,
-  DocumentStore,
-  Org,
-  OrgSlug,
-} from '@assessmentis/platform-domain'
-import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
+import type { OrgSlug } from '@assessmentis/platform-domain'
+import { CurrentOrg, DocumentStore, Org } from '@assessmentis/platform-domain'
+import { BadDataError, NotFoundError } from '@assessmentis/ontology'
 
 export class LoadedOrg extends Context.Tag('LoadedOrg')<LoadedOrg, Org>() {}
 
@@ -22,7 +18,7 @@ const decodeOrg = (orgSlug: OrgSlug, data: unknown | undefined) =>
     return yield* Schema.decodeUnknownEither(Org)(data).pipe(
       Either.mapLeft(
         (cause) =>
-          new UnhandledError({
+          new BadDataError({
             message: `Error decoding org`,
             cause,
           })
@@ -35,7 +31,7 @@ export const LiteralLoadedOrgLayer = (
   data: unknown
 ): Layer.Layer<
   LoadedOrg,
-  NotFoundError<'Org', { orgSlug: OrgSlug }> | UnhandledError,
+  NotFoundError<'Org', { orgSlug: OrgSlug }> | BadDataError,
   never
 > => Layer.effect(LoadedOrg, decodeOrg(orgSlug, data))
 
@@ -45,8 +41,26 @@ export const LoadedOrgLayer = Layer.effect(
     const orgSlug = yield* CurrentOrg
     const documentStore = yield* DocumentStore
 
-    const data = yield* documentStore.get('orgs', orgSlug)
-    const org = yield* decodeOrg(orgSlug, data)
+    const data = yield* documentStore.get('orgs', orgSlug).pipe(
+      Effect.mapError((e) =>
+        e instanceof NotFoundError
+          ? new NotFoundError<'Org', { orgSlug: OrgSlug }>({
+              resourceType: 'Org',
+              params: { orgSlug },
+              cause: e,
+            })
+          : e
+      )
+    )
+    const org = yield* decodeOrg(orgSlug, data).pipe(
+      Effect.mapError(
+        (e) =>
+          new BadDataError({
+            message: `Unparseable data for org ${orgSlug}`,
+            cause: e,
+          })
+      )
+    )
 
     return org
   })

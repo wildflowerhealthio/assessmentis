@@ -2,8 +2,8 @@ import { expect, test, describe } from 'vitest'
 import { Narrative } from './Narrative'
 import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
-import { DeepReadonly } from '@assessmentis/util'
-import { Narrative as FhirNarrative } from 'fhir/r4'
+import type { DeepReadonly } from '@assessmentis/util'
+import type { Narrative as FhirNarrative } from 'fhir/r4'
 
 // Compile-time check that Encoded schema matches FHIR R4
 const _narrativeEncoded: DeepReadonly<FhirNarrative> = Narrative.Encoded

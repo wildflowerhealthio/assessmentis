@@ -4,7 +4,7 @@ import {
   TextField,
 } from 'app/modules/common/components/ResourceForm'
 import { PatientPicker } from 'app/modules/resources/Patient/components/PatientPicker'
-import { CommonFieldProps } from 'app/modules/common/components/ResourceForm/ResourceForm'
+import type { CommonFieldProps } from 'app/modules/common/components/ResourceForm/ResourceForm'
 import {
   CompositionFormSchema,
   type CompositionFormData,

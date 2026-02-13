@@ -2,8 +2,8 @@ import { expect, test, describe } from 'vitest'
 import { QuestionnaireResponseItemAnswer } from './QuestionnaireResponseItem.js'
 import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
-import { DeepReadonly } from '@assessmentis/util'
-import { QuestionnaireResponseItemAnswer as FhirQuestionnaireResponseItemAnswer } from 'fhir/r4'
+import type { DeepReadonly } from '@assessmentis/util'
+import type { QuestionnaireResponseItemAnswer as FhirQuestionnaireResponseItemAnswer } from 'fhir/r4'
 
 // Compile-time check that Encoded schema matches FHIR R4 type
 const _qrItemAnswerEncoded: DeepReadonly<FhirQuestionnaireResponseItemAnswer> =

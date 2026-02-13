@@ -5,7 +5,7 @@ import {
   humanizeDateTimeForLocalReader,
   humanizeDateTimeRangeForLocalReader,
 } from '../../../common/utils/dateUtils'
-import { CurrentTimeZone } from 'effect/DateTime'
+import type { CurrentTimeZone } from 'effect/DateTime'
 
 /**
  * Get a display-friendly name for an encounter

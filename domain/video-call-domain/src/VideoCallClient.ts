@@ -1,9 +1,14 @@
-import { Context, DateTime, Effect } from 'effect'
-import { ExternalVideoCallRoom } from './records/ExternalVideoCallRoom'
-import { Zoned } from 'effect/DateTime'
-import { VideoCallRoomName } from './records/VideoCallRoom'
-import { Media } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import {
+import type { DateTime, Effect } from 'effect'
+import { Context } from 'effect'
+import type { ExternalVideoCallRoom } from './records/ExternalVideoCallRoom'
+import type { Zoned } from 'effect/DateTime'
+import type { VideoCallRoomName } from './records/VideoCallRoom'
+import type {
+  MeetingTokenProperties,
+  MeetingTokenString,
+} from './records/MeetingToken'
+import type { Media } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import type {
   AuthError,
   UnhandledError,
   ExternalAssertionError,
@@ -82,5 +87,17 @@ export class VideoCallClient extends Context.Tag('VideoCallClient')<
       | AuthError
       | NotFoundError<'Room', { name: VideoCallRoomName }>
     >
+
+    createRoomToken: (options: {
+      is_owner?: boolean
+      roomName: VideoCallRoomName
+    }) => Effect.Effect<
+      MeetingTokenString,
+      UnhandledError | ExternalAssertionError | AuthError
+    >
+
+    parseMeetingToken: (
+      token: MeetingTokenString
+    ) => Effect.Effect<MeetingTokenProperties, ExternalAssertionError>
   }
 >() {}

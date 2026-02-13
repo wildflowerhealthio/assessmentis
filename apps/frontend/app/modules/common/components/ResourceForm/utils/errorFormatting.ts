@@ -1,4 +1,4 @@
-import { FormError } from '../types/FormTypes'
+import type { FormError } from '../types/FormTypes'
 
 export function formatFieldError(error: FormError): string {
   return error.message

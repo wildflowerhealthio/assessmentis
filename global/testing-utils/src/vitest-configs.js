@@ -22,6 +22,9 @@ const unit = defineConfig((_configEnv) => ({
 const integration = defineConfig((_configEnv) => ({
   test: {
     include: ['**/*.integration.test.{ts,tsx}'],
+    sequence: {
+      groupOrder: 10,
+    },
     // Run sequentially to avoid rate limiting
     maxWorkers: 1,
     isolate: false,

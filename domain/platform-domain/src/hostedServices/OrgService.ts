@@ -1,8 +1,8 @@
+import type { Scope } from 'effect'
 import {
   Effect,
   Option,
   Stream,
-  Scope,
   Take,
   PubSub,
   Schema,
@@ -12,12 +12,10 @@ import {
   Queue,
   Either,
 } from 'effect'
-import { DocumentStore, Org, OrgSlug } from '@assessmentis/platform-domain'
-import {
-  BadDataError,
-  NotFoundError,
-  UnhandledError,
-} from '@assessmentis/ontology'
+import type { OrgSlug } from '@assessmentis/platform-domain'
+import { DocumentStore, Org } from '@assessmentis/platform-domain'
+import type { UnhandledError } from '@assessmentis/ontology'
+import { BadDataError, NotFoundError } from '@assessmentis/ontology'
 import {
   pubsubAsPerpetualStream,
   StreamEither,

@@ -15,6 +15,9 @@ export default defineConfig((_configEnv) =>
           },
         ],
       },
+      env: {
+        VITE_RECORD: 'true',
+      },
     },
   })
 )

@@ -2,8 +2,8 @@ import { expect, test, describe } from 'vitest'
 import { Identifier, Reference } from './IdentifierAndReference'
 import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
-import { DeepReadonly } from '@assessmentis/util'
-import {
+import type { DeepReadonly } from '@assessmentis/util'
+import type {
   Reference as FhirReference,
   Identifier as FhirIdentifier,
 } from 'fhir/r4'

@@ -2,12 +2,12 @@ import { applyPartialProps, transformProps } from '@assessmentis/react-util'
 import {
   ResourceForm,
   DateTimeField,
-  TextField,
 } from 'app/modules/common/components/ResourceForm'
 import { PatientPicker } from 'app/modules/resources/Patient/components/PatientPicker'
 import { PractitionerPicker } from 'app/modules/resources/Practitioner/components/PractitionerPicker'
 import { QuestionnairePicker } from 'app/modules/resources/Questionnaire/components/QuestionnairePicker/QuestionnairePicker'
-import { CommonFieldProps } from 'app/modules/common/components/ResourceForm/ResourceForm'
+import { LocationPicker } from 'app/modules/resources/Location/components/LocationPicker'
+import type { CommonFieldProps } from 'app/modules/common/components/ResourceForm/ResourceForm'
 import {
   EncounterFormSchema,
   type EncounterFormData,
@@ -54,11 +54,19 @@ const encounterFormFields = {
     name: 'periodEnd',
     label: 'End Date/Time',
   }),
-  locationDisplay: applyPartialProps(TextField, {
-    name: 'locationDisplay',
-    label: 'Location',
-    placeholder: 'e.g., Room 101, Virtual Meeting Room',
-  }),
+  locationId: transformProps(
+    LocationPicker,
+    (props: CommonFieldProps<string | undefined>) => ({
+      name: 'locationId',
+      label: 'Location',
+      picking: {
+        onChange: props.onChange,
+        value: props.value,
+        multiple: false as const,
+      },
+      placeholder: 'Select a location...',
+    })
+  ),
   questionnaireIds: transformProps(
     QuestionnairePicker,
     (props: CommonFieldProps<ReadonlyArray<string>>) => ({
@@ -83,7 +91,7 @@ const fieldOrder = [
   'practitionerIds',
   'periodStart',
   'periodEnd',
-  'locationDisplay',
+  'locationId',
   'questionnaireIds',
 ] as const
 

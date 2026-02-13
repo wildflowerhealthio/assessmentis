@@ -1,30 +1,21 @@
-import { FhirR4Client } from '@assessmentis/fhir-client'
-import {
+import type { FhirR4Client } from '@assessmentis/fhir-client'
+import type {
   LoadedGapiClient,
   LoadedGapiHealthcareClient,
-  startGapiGoogleHealthcareClient,
 } from '@assessmentis/google-fhir-web-infrastructure'
+import { startGapiGoogleHealthcareClient } from '@assessmentis/google-fhir-web-infrastructure'
+import type { AuthError } from '@assessmentis/ontology'
 import {
-  AuthError,
   UnhandledError,
   NotFoundError,
   ExternalAssertionError,
   BadDataError,
 } from '@assessmentis/ontology'
-import {
-  Context,
-  Effect,
-  Either,
-  Fiber,
-  Match,
-  PubSub,
-  Scope,
-  Stream,
-  Take,
-} from 'effect'
+import type { Scope, Take } from 'effect'
+import { Context, Effect, Either, Fiber, Match, PubSub, Stream } from 'effect'
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
-import { NoSelectedOrgError, OrgSlug } from '@assessmentis/platform-domain'
-import { Org } from '@assessmentis/platform-domain'
+import type { NoSelectedOrgError, OrgSlug } from '@assessmentis/platform-domain'
+import type { Org } from '@assessmentis/platform-domain'
 import {
   takeOneFromPubSubOrDie,
   pubsubAsPerpetualStream,

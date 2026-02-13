@@ -1,7 +1,7 @@
 import { auth, db, FirebaseWebLayer } from 'app/FirebaseWebLayer'
 import { DailyCoConfig } from '@assessmentis/config-domain'
 import { DocumentStore, FrontendConfig } from '@assessmentis/platform-domain'
-import { Route } from './+types/orgs.$orgSlug'
+import type { Route } from './+types/orgs.$orgSlug'
 import { Form } from 'react-router'
 import { Effect, pipe } from 'effect'
 import {

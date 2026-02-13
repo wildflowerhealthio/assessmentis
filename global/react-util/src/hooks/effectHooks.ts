@@ -1,14 +1,5 @@
-import {
-  Cause,
-  Chunk,
-  Effect,
-  Either,
-  Exit,
-  Fiber,
-  pipe,
-  Scope,
-  Stream,
-} from 'effect'
+import type { Scope, Stream } from 'effect'
+import { Cause, Chunk, Effect, Either, Exit, Fiber, pipe } from 'effect'
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useStream } from './useStream'
 

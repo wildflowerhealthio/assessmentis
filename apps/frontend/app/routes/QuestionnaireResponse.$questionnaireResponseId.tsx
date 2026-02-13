@@ -1,10 +1,10 @@
 import { Suspense, useMemo } from 'react'
 import { Schema, Option, Effect, DateTime } from 'effect'
 import { UnhandledError } from '@assessmentis/ontology'
+import type { QuestionnaireItemLink } from '@assessmentis/clinical-domain/content-management'
 import {
   firstItemAnsweredAfter,
   Questionnaire,
-  QuestionnaireItemLink,
   QuestionnaireResponse,
   QuestionnaireId,
   QuestionnaireResponseId,

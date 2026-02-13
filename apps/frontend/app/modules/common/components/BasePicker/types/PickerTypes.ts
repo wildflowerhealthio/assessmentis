@@ -1,4 +1,4 @@
-import { PickerSelectionProps } from '../hooks/usePickerSelection'
+import type { PickerSelectionProps } from '../hooks/usePickerSelection'
 
 export interface PickerItem<T> {
   id: string

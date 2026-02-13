@@ -1,22 +1,26 @@
-import { Effect, Either, Option, Scope, Stream } from 'effect'
+import type { Either, Scope } from 'effect'
+import { Effect, Option, Stream } from 'effect'
 import { StreamEither } from '@assessmentis/util'
-import {
+import type {
   Encounter,
   EncounterId,
+  Location,
+  LocationId,
 } from '@assessmentis/clinical-domain/administration'
-import {
+import type {
   AuthError,
   AuthzError,
-  UnhandledError,
   NotFoundError,
   ExternalAssertionError,
 } from '@assessmentis/ontology'
-import {
+import { UnhandledError } from '@assessmentis/ontology'
+import type {
   Questionnaire,
   QuestionnaireResponse,
 } from '@assessmentis/clinical-domain/content-management'
-import { WithId } from '@assessmentis/clinical-domain/data-types'
-import { NoSelectedOrgError } from '@assessmentis/platform-domain'
+import type { WithId } from '@assessmentis/clinical-domain/data-types'
+import { extractReferenceId } from '@assessmentis/clinical-domain/data-types'
+import type { NoSelectedOrgError } from '@assessmentis/platform-domain'
 import { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
 import { ClinicalStoreService } from '@assessmentis/clinical-store'
 
@@ -24,6 +28,7 @@ export type FullEncounter = WithId<Encounter> & {
   questionnaireResponses: Array<
     WithId<QuestionnaireResponse> & { _questionnaire: Questionnaire }
   >
+  _locations: Array<WithId<Location>>
 }
 
 /**
@@ -109,6 +114,7 @@ export const getFullEncounter = (
     | AuthError
     | AuthzError
     | NotFoundError<'Encounter', { id: EncounterId }>
+    | NotFoundError<'Location', { id: LocationId }>
     | ExternalAssertionError
     | NoSelectedOrgError
   >,
@@ -120,6 +126,8 @@ export const getFullEncounter = (
       const clinicalDataRepositoryService = yield* ClinicalDataRepositoryService
       const encounterRepositoryStream =
         clinicalDataRepositoryService.stream.Encounter
+      const locationRepositoryStream =
+        clinicalDataRepositoryService.stream.Location
 
       const questionnaireRepositoryStream =
         clinicalDataRepositoryService.stream.Questionnaire
@@ -129,8 +137,28 @@ export const getFullEncounter = (
 
       yield* Effect.logDebug('encounterEffect started')
 
-      const encounterStream = encounterRepositoryStream.pipe(
-        StreamEither.mapEffect((repo) => repo.get(encounterId))
+      // Fetch encounter and resolve its Location references
+      const encounterWithLocationsStream = StreamEither.zipLatest(
+        encounterRepositoryStream,
+        locationRepositoryStream
+      ).pipe(
+        StreamEither.mapEffect(([encounterRepo, locationRepo]) =>
+          Effect.gen(function* () {
+            const encounter = yield* encounterRepo.get(encounterId)
+
+            // Extract Location IDs from encounter location references
+            const locationIds = (encounter.location ?? [])
+              .map((l) => extractReferenceId(l.location))
+              .filter((id): id is string => !!id)
+
+            // Fetch each referenced Location resource
+            const _locations = yield* Effect.all(
+              locationIds.map((id) => locationRepo.get(id as LocationId))
+            )
+
+            return { encounter, _locations }
+          })
+        )
       )
 
       const responseStream = StreamEither.zipLatest(
@@ -179,10 +207,11 @@ export const getFullEncounter = (
       )
 
       return StreamEither.zipLatestWith(
-        encounterStream,
+        encounterWithLocationsStream,
         responseStream,
-        (encounter, questionnaireResponses) => ({
+        ({ encounter, _locations }, questionnaireResponses) => ({
           ...encounter,
+          _locations,
           questionnaireResponses,
         })
       )

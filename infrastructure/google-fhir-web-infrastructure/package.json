@@ -7,8 +7,8 @@
   "type": "module",
   "prettier": "@assessmentis/prettier-config",
   "scripts": {
-    "lint": "eslint \"./src/**/*\"",
-    "lint:fix": "eslint --fix \"./src/**/*\"",
+    "lint": "eslint \"./{src,test}/**/*\"",
+    "lint:fix": "eslint --fix \"./{src,test}/**/*\"",
     "typecheck": "tsc --noEmit",
     "test:integration": "VITE_GCLOUD_TOKEN=$(gcloud auth print-access-token) vitest --project google-fhir-web-infrastructure:integration"
   },

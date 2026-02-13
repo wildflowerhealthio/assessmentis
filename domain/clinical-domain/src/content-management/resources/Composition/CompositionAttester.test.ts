@@ -1,9 +1,9 @@
 import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
-import { DeepReadonly } from '@assessmentis/util'
+import type { DeepReadonly } from '@assessmentis/util'
 import { CompositionAttester } from './CompositionAttester'
-import { CompositionAttester as FhirCompositionAttester } from 'fhir/r4'
+import type { CompositionAttester as FhirCompositionAttester } from 'fhir/r4'
 
 const _compositionAttesterEncoded: DeepReadonly<FhirCompositionAttester> =
   CompositionAttester.Encoded

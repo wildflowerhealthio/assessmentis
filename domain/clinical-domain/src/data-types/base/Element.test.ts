@@ -2,8 +2,8 @@ import { expect, test, describe } from 'vitest'
 import { Element } from './Element'
 import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
-import { DeepReadonly } from '@assessmentis/util'
-import { Element as FhirElement } from 'fhir/r4'
+import type { DeepReadonly } from '@assessmentis/util'
+import type { Element as FhirElement } from 'fhir/r4'
 
 const TestElement = Element(Schema.String)
 

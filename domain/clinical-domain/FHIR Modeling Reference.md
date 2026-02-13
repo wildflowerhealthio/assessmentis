@@ -2,6 +2,8 @@
 
 This reference documents how FHIR R4 resources are modeled in clinical-domain.
 
+For step-by-step Clinical Resource implementation, see [docs/Adding Resource Types How-To.md](./docs/Adding%20Resource%20Types%20How-To.md).
+
 ## Core modeling rules
 
 - Use Effect Schema for all resource modeling.
@@ -32,6 +34,7 @@ This reference documents how FHIR R4 resources are modeled in clinical-domain.
 - Resource base types: [src/data-types/base](src/data-types/base)
 - DomainResource base: [src/data-types/base/DomainResource.ts](src/data-types/base/DomainResource.ts)
 - Example resource: [src/administration/resources/Patient.ts](src/administration/resources/Patient.ts)
+- Clinical Resource How-To: [docs/Adding Resource Types How-To.md](./docs/Adding%20Resource%20Types%20How-To.md)
 - Resource registry: [src/Schemas.ts](src/Schemas.ts)
 - Repository factory: [src/assessmentis/makeClinicalDataRepository.ts](src/assessmentis/makeClinicalDataRepository.ts)
 - Resource tests: [src/administration/resources](src/administration/resources)

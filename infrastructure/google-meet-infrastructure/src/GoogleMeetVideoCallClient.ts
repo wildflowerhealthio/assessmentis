@@ -1,11 +1,12 @@
-import { Layer, Effect, DateTime } from 'effect'
+import type { DateTime } from 'effect'
+import { Layer, Effect } from 'effect'
 import {
   VideoCallClient,
   VideoCallRoomId,
   VideoCallRoomName,
   type RoomCreationParams,
 } from '@assessmentis/video-call-domain'
-import { UnhandledError } from '@assessmentis/ontology'
+import { ExternalAssertionError, UnhandledError } from '@assessmentis/ontology'
 
 export const GoogleMeetVideoCallClientLayer = Layer.effect(
   VideoCallClient,
@@ -101,6 +102,25 @@ export const GoogleMeetVideoCallClientLayer = Layer.effect(
           })
         )
 
+      const createRoomToken: typeof VideoCallClient.Service.createRoomToken = (
+        _options
+      ) =>
+        Effect.fail(
+          new UnhandledError({
+            cause: 'not-implemented',
+            message: 'Google Meet room tokens not yet implemented',
+          })
+        )
+
+      const parseMeetingToken: typeof VideoCallClient.Service.parseMeetingToken =
+        (_token) =>
+          Effect.fail(
+            new ExternalAssertionError({
+              expected: 'Google Meet token parsing',
+              cause: 'not-implemented',
+            })
+          )
+
       return {
         getMediaRecordedInRoom,
         createRoom,
@@ -109,6 +129,8 @@ export const GoogleMeetVideoCallClientLayer = Layer.effect(
         listAllTranscripts,
         getRoom,
         deleteRoom,
+        createRoomToken,
+        parseMeetingToken,
       }
     })()
   )

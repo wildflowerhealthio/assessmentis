@@ -1,14 +1,14 @@
-import { Context, Effect } from 'effect'
-import {
+import type { Context, Effect } from 'effect'
+import type {
   AuthError,
   AuthzError,
   ExternalAssertionError,
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
-import { WithId } from './data-types/base/Element'
-import { Reference } from './data-types/complex/IdentifierAndReference'
-import Schemas from './Schemas'
+import type { WithId } from './data-types/base/Element'
+import type { Reference } from './data-types/complex/IdentifierAndReference'
+import type Schemas from './Schemas'
 
 export type ClinicalDomainRepositoryTagClass<
   Key extends keyof typeof Schemas,
@@ -36,14 +36,15 @@ export type ClinicalDataRepositoryErrorsWithNotFound<
   | NotFoundError<T['resourceType'], { id: NonNullable<T['id']> }>
 
 /**
- * Filter type for getMany operations on clinical data repositories
- * Allows filtering by resource properties, converting Reference types to strings
+ * Filter type for getMany operations on clinical data repositories.
+ * Allows filtering by resource properties, converting Reference types to strings.
+ * Reference fields also accept `readonly string[]` for FHIR OR-style searching.
  */
 export type RepositoryFilters<TResource> = {
   [key in Exclude<keyof TResource, 'resourceType'>]?: TResource[key] extends
     | Reference
     | undefined
-    ? string
+    ? string | readonly string[]
     : TResource[key]
 }
 
@@ -64,13 +65,9 @@ export interface ClinicalDataRepository<
   /**
    * Retrieve all resources matching the given parameters
    */
-  getMany: (params?: {
-    [key in Exclude<keyof T, 'resourceType'>]?: T[key] extends
-      | Reference
-      | undefined
-      ? string
-      : T[key]
-  }) => Effect.Effect<
+  getMany: (
+    params?: RepositoryFilters<T>
+  ) => Effect.Effect<
     ReadonlyArray<WithId<T>>,
     ClinicalDataRepositoryErrors,
     never

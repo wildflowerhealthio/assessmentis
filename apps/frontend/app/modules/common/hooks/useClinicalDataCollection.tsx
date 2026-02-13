@@ -1,6 +1,10 @@
-import { ClinicalDataRepository, Schemas } from '@assessmentis/clinical-domain'
+import type {
+  ClinicalDataRepository,
+  Schemas,
+} from '@assessmentis/clinical-domain'
 import { useCollection, useCollectionPromise } from '@assessmentis/react-util'
-import { Effect, Schema } from 'effect'
+import type { Schema } from 'effect'
+import { Effect } from 'effect'
 
 const actions = <
   T extends Schema.Schema.Type<(typeof Schemas)[keyof typeof Schemas]> & {
