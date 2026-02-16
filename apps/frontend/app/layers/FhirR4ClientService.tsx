@@ -1,4 +1,4 @@
-import type { FhirR4Client } from '@assessmentis/fhir-client'
+import type { FhirR4Client } from '../../../../domain/fhir-r4/src'
 import type {
   LoadedGapiClient,
   LoadedGapiHealthcareClient,

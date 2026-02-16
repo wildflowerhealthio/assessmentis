@@ -2,7 +2,7 @@ import { describe, expect, vi } from 'vitest'
 import { Effect, Layer } from 'effect'
 import { it } from '@effect/vitest'
 import * as fc from 'fast-check'
-import { FhirR4Client, buildFhirStoreParent } from '@assessmentis/fhir-client'
+import { FhirR4Client, buildFhirStoreParent } from '@assessmentis/fhir-r4'
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
 import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
 

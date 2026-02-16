@@ -1,5 +1,5 @@
 import { describe, beforeAll } from 'vitest'
-import { describeAsFhirR4LocationClient } from '@assessmentis/fhir-client/interface-tests'
+import { describeAsFhirR4LocationClient } from '@assessmentis/fhir-r4/interface-tests'
 import {
   LiveTestLayer,
   verifyGcloudAuth,

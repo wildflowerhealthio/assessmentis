@@ -6,7 +6,7 @@ export default defineConfig((configEnv) =>
     nodeUnit(configEnv),
     defineConfig({
       test: {
-        name: 'fhir-client:unit',
+        name: 'fhir-r4:unit',
       },
     })
   )

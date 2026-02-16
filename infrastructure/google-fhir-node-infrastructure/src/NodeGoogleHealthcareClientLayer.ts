@@ -8,7 +8,7 @@ import {
   buildFhirStoreParent,
   buildFhirResourcePath,
   createFhirResponseHandlers,
-} from '@assessmentis/fhir-client'
+} from '@assessmentis/fhir-r4'
 import { flattenSearchParams } from '@assessmentis/util'
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
 import { UnknownException } from 'effect/Cause'

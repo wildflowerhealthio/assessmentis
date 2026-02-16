@@ -1,5 +1,5 @@
 {
-  "name": "@assessmentis/fhir-client",
+  "name": "@assessmentis/fhir-r4",
   "version": "0.0.1",
   "description": "FHIR client domain types and utilities",
   "author": "Ruth Marks",
@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"./{src,test}/**/*\"",
     "lint:fix": "eslint --fix \"./{src,test}/**/*\"",
-    "test": "vitest run --project fhir-client:unit"
+    "test": "vitest run --project fhir-r4:unit"
   },
   "dependencies": {
     "effect": "^3.19.8",

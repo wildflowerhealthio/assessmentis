@@ -1,0 +1,241 @@
+import type { Schema } from 'effect'
+import { Effect } from 'effect'
+import { FhirR4Client } from '@assessmentis/fhir-r4'
+import { Schemas } from '@assessmentis/clinical-domain'
+import type {
+  ClinicalDataRepositoryErrors,
+  ClinicalDataRepositoryErrorsWithNotFound,
+  RepositoryFilters,
+} from '@assessmentis/clinical-domain'
+import type { WithId } from '@assessmentis/effectful-store'
+import * as ClinicalResource from './ClinicalRequests'
+import { makeFhirResolvers } from './makeFhirResolvers'
+
+/**
+ * Type helper to extract Schema.Type from Schema map
+ */
+type SchemaType<Key extends keyof typeof Schemas> = Schema.Schema.Type<
+  (typeof Schemas)[Key]
+>
+
+type SchemaEncoded<Key extends keyof typeof Schemas> = Schema.Schema.Encoded<
+  (typeof Schemas)[Key]
+>
+
+/**
+ * Type for the resolvers map
+ */
+type ResolversMap = {
+  readonly [Key in keyof typeof Schemas]: ReturnType<
+    typeof makeFhirResolvers<Key, SchemaType<Key>, SchemaEncoded<Key>>
+  >
+}
+
+/**
+ * Helper function to get a resolver with proper typing
+ */
+function getResolver<
+  Key extends keyof typeof Schemas,
+  Method extends keyof ResolversMap[Key],
+>(resolvers: ResolversMap, resourceType: Key, method: Method) {
+  return resolvers[resourceType][method]
+}
+
+/**
+ * ClinicalStoreService provides typed convenience methods for issuing requests
+ * to the clinical data store using Effect Request/RequestResolver system.
+ *
+ * This service sits alongside ClinicalDataRepositoryService and provides:
+ * - Automatic batching (multiple get calls → one batch fetch)
+ * - Deduplication (same request in-flight → shared result)
+ * - Caching (built into Effect runtime)
+ */
+export class ClinicalStoreService extends Effect.Service<ClinicalStoreService>()(
+  'ClinicalStoreService',
+  {
+    effect: Effect.gen(function* () {
+      const fhirClient = yield* FhirR4Client
+
+      // Create resolvers for each resource type
+      const resolvers: ResolversMap = {
+        Composition: makeFhirResolvers<
+          'Composition',
+          SchemaType<'Composition'>,
+          Schema.Schema.Encoded<(typeof Schemas)['Composition']>
+        >(fhirClient, 'Composition', Schemas.Composition),
+        Encounter: makeFhirResolvers<
+          'Encounter',
+          SchemaType<'Encounter'>,
+          Schema.Schema.Encoded<(typeof Schemas)['Encounter']>
+        >(fhirClient, 'Encounter', Schemas.Encounter),
+        Location: makeFhirResolvers<
+          'Location',
+          SchemaType<'Location'>,
+          Schema.Schema.Encoded<(typeof Schemas)['Location']>
+        >(fhirClient, 'Location', Schemas.Location),
+        Media: makeFhirResolvers<
+          'Media',
+          SchemaType<'Media'>,
+          Schema.Schema.Encoded<(typeof Schemas)['Media']>
+        >(fhirClient, 'Media', Schemas.Media),
+        Observation: makeFhirResolvers<
+          'Observation',
+          SchemaType<'Observation'>,
+          Schema.Schema.Encoded<(typeof Schemas)['Observation']>
+        >(fhirClient, 'Observation', Schemas.Observation),
+        Patient: makeFhirResolvers<
+          'Patient',
+          SchemaType<'Patient'>,
+          Schema.Schema.Encoded<(typeof Schemas)['Patient']>
+        >(fhirClient, 'Patient', Schemas.Patient),
+        Practitioner: makeFhirResolvers<
+          'Practitioner',
+          SchemaType<'Practitioner'>,
+          Schema.Schema.Encoded<(typeof Schemas)['Practitioner']>
+        >(fhirClient, 'Practitioner', Schemas.Practitioner),
+        Questionnaire: makeFhirResolvers<
+          'Questionnaire',
+          SchemaType<'Questionnaire'>,
+          Schema.Schema.Encoded<(typeof Schemas)['Questionnaire']>
+        >(fhirClient, 'Questionnaire', Schemas.Questionnaire),
+        QuestionnaireResponse: makeFhirResolvers<
+          'QuestionnaireResponse',
+          SchemaType<'QuestionnaireResponse'>,
+          Schema.Schema.Encoded<(typeof Schemas)['QuestionnaireResponse']>
+        >(fhirClient, 'QuestionnaireResponse', Schemas.QuestionnaireResponse),
+      }
+
+      return { resolvers } as const
+    }),
+  }
+) {
+  /**
+   * Get a single resource by ID
+   */
+  get<Key extends keyof typeof Schemas>(
+    resourceType: Key,
+    id: string
+  ): Effect.Effect<
+    WithId<SchemaType<Key>>,
+    ClinicalDataRepositoryErrorsWithNotFound<SchemaType<Key>>
+  > {
+    return Effect.gen(function* () {
+      const service = yield* ClinicalStoreService
+      const resolver = getResolver(service.resolvers, resourceType, 'get')
+
+      return yield* Effect.request(
+        new ClinicalResource.Get({
+          resourceType: resourceType as SchemaType<Key>['resourceType'],
+          id,
+        }),
+        resolver
+      )
+    }).pipe(Effect.provideService(ClinicalStoreService, this)) as Effect.Effect<
+      WithId<SchemaType<Key>>,
+      ClinicalDataRepositoryErrorsWithNotFound<SchemaType<Key>>
+    >
+  }
+
+  /**
+   * Search for resources matching the given parameters
+   */
+  search<Key extends keyof typeof Schemas>(
+    resourceType: Key,
+    params?: RepositoryFilters<SchemaType<Key>>
+  ): Effect.Effect<
+    readonly WithId<SchemaType<Key>>[],
+    ClinicalDataRepositoryErrors,
+    never
+  > {
+    return Effect.gen(function* () {
+      const service = yield* ClinicalStoreService
+      const resolver = getResolver(service.resolvers, resourceType, 'search')
+
+      return yield* Effect.request(
+        new ClinicalResource.Search<SchemaType<Key>>({
+          resourceType: resourceType,
+          params,
+        }),
+        resolver
+      )
+    }).pipe(Effect.provideService(ClinicalStoreService, this))
+  }
+
+  /**
+   * Create a new resource
+   */
+  create<Key extends keyof typeof Schemas>(
+    resource: SchemaType<Key>
+  ): Effect.Effect<WithId<SchemaType<Key>>, ClinicalDataRepositoryErrors> {
+    return Effect.gen(function* () {
+      const service = yield* ClinicalStoreService
+      const resourceType = resource.resourceType
+      const resolver = getResolver(service.resolvers, resourceType, 'create')
+
+      return yield* Effect.request(
+        new ClinicalResource.Create({
+          resourceType: resource.resourceType,
+          resource,
+        }),
+        resolver
+      )
+    }).pipe(Effect.provideService(ClinicalStoreService, this)) as Effect.Effect<
+      WithId<SchemaType<Key>>,
+      ClinicalDataRepositoryErrors
+    >
+  }
+
+  /**
+   * Update an existing resource
+   */
+  update<Key extends keyof typeof Schemas>(
+    resource: WithId<SchemaType<Key>>
+  ): Effect.Effect<
+    WithId<SchemaType<Key>>,
+    ClinicalDataRepositoryErrorsWithNotFound<SchemaType<Key>>
+  > {
+    return Effect.gen(function* () {
+      const service = yield* ClinicalStoreService
+      const resourceType = resource.resourceType
+      const resolver = getResolver(service.resolvers, resourceType, 'update')
+
+      return yield* Effect.request(
+        new ClinicalResource.Update<Key>({
+          resourceType: resource.resourceType,
+          resource,
+        }),
+        resolver
+      )
+    }).pipe(Effect.provideService(ClinicalStoreService, this)) as Effect.Effect<
+      WithId<SchemaType<Key>>,
+      ClinicalDataRepositoryErrorsWithNotFound<SchemaType<Key>>
+    >
+  }
+
+  /**
+   * Delete a resource by ID
+   */
+  delete<Key extends keyof typeof Schemas>(
+    resourceType: Key,
+    id: NonNullable<SchemaType<Key>['id']>
+  ): Effect.Effect<
+    void,
+    ClinicalDataRepositoryErrorsWithNotFound<SchemaType<Key>>
+  > {
+    return Effect.gen(function* () {
+      const service = yield* ClinicalStoreService
+      const resolver = getResolver(service.resolvers, resourceType, 'delete')
+
+      return yield* Effect.request(
+        new ClinicalResource.Delete<Key>({
+          resourceType: resourceType,
+          id,
+        }),
+        resolver
+      )
+    }).pipe(Effect.provideService(ClinicalStoreService, this)) as Effect.Effect<
+      void,
+      ClinicalDataRepositoryErrorsWithNotFound<SchemaType<Key>>
+    >
+  }
+}

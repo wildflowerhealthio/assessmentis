@@ -1,11 +1,11 @@
 import type { Scope } from 'effect'
 import { Effect, Schedule } from 'effect'
-import type { FhirR4Client } from '@assessmentis/fhir-client'
+import type { FhirR4Client } from '@assessmentis/fhir-r4'
 import {
   buildFhirStoreParent,
   buildFhirResourcePath,
   createFhirResponseHandlers,
-} from '@assessmentis/fhir-client'
+} from '@assessmentis/fhir-r4'
 import { buildSearchParams } from '@assessmentis/util'
 import { LoadedGapiClient } from '../services/LoadedGapiClient'
 import { LoadedGapiHealthcareClient } from '../services/LoadedGapiHealthcareClient'

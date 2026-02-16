@@ -6,7 +6,7 @@ import {
   VideoCallClient,
   type MediaWithRoom,
 } from '@assessmentis/video-call-domain'
-import { FhirR4Client } from '@assessmentis/fhir-client'
+import { FhirR4Client } from '@assessmentis/fhir-r4'
 import {
   CurrentOrg,
   DocumentStore,

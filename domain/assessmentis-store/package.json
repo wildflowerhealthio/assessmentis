@@ -19,7 +19,7 @@
     "effect": "^3.19.8",
     "@assessmentis/effectful-store": "*",
     "@assessmentis/clinical-domain": "*",
-    "@assessmentis/fhir-client": "*",
+    "@assessmentis/fhir-r4": "*",
     "@assessmentis/ontology": "*",
     "@assessmentis/util": "*"
   },

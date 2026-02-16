@@ -3,7 +3,7 @@ import { Effect, Either, Layer, Stream } from 'effect'
 import * as fc from 'fast-check'
 import { ClinicalDataRepositoryService } from './ClinicalDataRepositoriesService'
 import { FhirR4ClientService } from './FhirR4ClientService'
-import type { FhirR4Client } from '@assessmentis/fhir-client'
+import type { FhirR4Client } from '../../../../domain/fhir-r4/src'
 import { UnhandledError } from '@assessmentis/ontology'
 
 describe('ClinicalDataRepositoryService', () => {

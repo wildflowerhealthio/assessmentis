@@ -1,4 +1,4 @@
-import type { FhirR4Client } from '@assessmentis/fhir-client'
+import type { FhirR4Client } from '@assessmentis/fhir-r4'
 import { NodeGoogleHealthcareFhirR4ClientLayer } from '@assessmentis/google-fhir-node-infrastructure'
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
 import { UnhandledError } from '@assessmentis/ontology'

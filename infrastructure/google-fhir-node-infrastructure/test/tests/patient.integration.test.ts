@@ -1,8 +1,8 @@
 import { describe, expect, afterEach, beforeAll } from 'vitest'
 import { it } from '@effect/vitest'
 import { Effect } from 'effect'
-import { FhirR4Client } from '@assessmentis/fhir-client'
-import { describeAsFhirR4PatientClient } from '@assessmentis/fhir-client/interface-tests'
+import { FhirR4Client } from '@assessmentis/fhir-r4'
+import { describeAsFhirR4PatientClient } from '@assessmentis/fhir-r4/interface-tests'
 import {
   LiveTestLayer,
   verifyGcloudAuth,

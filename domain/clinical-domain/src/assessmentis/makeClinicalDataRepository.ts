@@ -8,7 +8,7 @@ import {
   type OptionalIdBundle,
 } from '@assessmentis/clinical-domain/foundation-framework'
 import { UnhandledError, ExternalAssertionError } from '@assessmentis/ontology'
-import type { FhirR4Client } from '@assessmentis/fhir-client'
+import type { FhirR4Client } from '@assessmentis/fhir-r4'
 import type { ClinicalDataRepository } from '../types'
 
 export const makeClinicalDataRepository = <
@@ -152,108 +152,105 @@ export const makeClinicalDataRepository = <
         })
       )
 
-      return Effect.gen(
-        function* () {
-          const encodedResources = yield* encodeResourceArraySchema(
-            resources
-          ).pipe(
-            Effect.mapError(
-              (cause) =>
-                new UnhandledError({
-                  message: 'Error encoding resources',
-                  cause,
-                })
-            )
+      return Effect.gen(this, function* () {
+        const encodedResources = yield* encodeResourceArraySchema(
+          resources
+        ).pipe(
+          Effect.mapError(
+            (cause) =>
+              new UnhandledError({
+                message: 'Error encoding resources',
+                cause,
+              })
           )
-          const resource = {
-            resourceType: 'Bundle',
-            type: 'transaction',
-            entry: encodedResources.map((resource) => ({
-              resource,
-              request: {
-                method: 'POST',
-                url: resource.resourceType,
-              } as const,
-            })),
-          } satisfies OptionalIdBundle<unknown>
+        )
+        const resource = {
+          resourceType: 'Bundle',
+          type: 'transaction',
+          entry: encodedResources.map((resource) => ({
+            resource,
+            request: {
+              method: 'POST',
+              url: resource.resourceType,
+            } as const,
+          })),
+        } satisfies OptionalIdBundle<unknown>
 
-          const result = yield* innerClient.executeBundle(resource)
+        const result = yield* innerClient.executeBundle(resource)
 
-          const responseBundle = yield* Schema.decodeUnknown(
-            TransactionResponseBundle
-          )(result).pipe(
-            Effect.mapError(
-              (cause) =>
-                new ExternalAssertionError({
-                  expected: 'Response should be an transaction response bundle',
-                  cause,
-                })
-            )
-          )
-
-          if (responseBundle.entry == undefined) {
-            return yield* Effect.fail(
+        const responseBundle = yield* Schema.decodeUnknown(
+          TransactionResponseBundle
+        )(result).pipe(
+          Effect.mapError(
+            (cause) =>
               new ExternalAssertionError({
-                cause: undefined,
-                expected:
-                  'Expected transaction response bundle to have entries',
+                expected: 'Response should be an transaction response bundle',
+                cause,
               })
-            )
-          }
+          )
+        )
 
-          const ids = yield* Effect.all(
-            responseBundle.entry.map((entry) => {
-              if (typeof entry?.response?.location != 'string') {
-                return Effect.fail(
-                  new ExternalAssertionError({
-                    expected:
-                      'Expected entry in transaction response bundle to have a location URL',
-                    cause: undefined,
-                  })
-                )
-              }
-              const locationParts = entry.response.location.split('/')
-              if (locationParts.length < 15) {
-                return Effect.fail(
-                  new ExternalAssertionError({
-                    cause: undefined,
-                    expected:
-                      'Expected entry in transaction response bundle to have a location URL shaped like `https://healthcare.googleapis.com/v1/projects/PROJECT_ID/locations/REGION/datasets/REGION/fhirStores/FHIR_STORE_ID/fhir/Patient/PATIENT_ID/_history/HISTORY_ID`',
-                  })
-                )
-              }
-
-              return Effect.succeed(locationParts[14])
+        if (responseBundle.entry == undefined) {
+          return yield* Effect.fail(
+            new ExternalAssertionError({
+              cause: undefined,
+              expected: 'Expected transaction response bundle to have entries',
             })
           )
+        }
 
-          const updated = yield* decodeResourceArraySchema(
-            encodedResources.map(
-              (resource, idx): WithId<I> => ({
-                ...resource,
-                id: ids[idx],
-              })
-            )
-          ).pipe(
-            Effect.mapError(
-              (cause) =>
+        const ids = yield* Effect.all(
+          responseBundle.entry.map((entry) => {
+            if (typeof entry?.response?.location != 'string') {
+              return Effect.fail(
                 new ExternalAssertionError({
-                  expected: 'Response should be an array of resources',
-                  cause,
+                  expected:
+                    'Expected entry in transaction response bundle to have a location URL',
+                  cause: undefined,
                 })
-            )
-          )
+              )
+            }
+            const locationParts = entry.response.location.split('/')
+            if (locationParts.length < 15) {
+              return Effect.fail(
+                new ExternalAssertionError({
+                  cause: undefined,
+                  expected:
+                    'Expected entry in transaction response bundle to have a location URL shaped like `https://healthcare.googleapis.com/v1/projects/PROJECT_ID/locations/REGION/datasets/REGION/fhirStores/FHIR_STORE_ID/fhir/Patient/PATIENT_ID/_history/HISTORY_ID`',
+                })
+              )
+            }
 
-          return updated
-            .map((res): WithId<A> | undefined => {
-              if (res != undefined && hasId(res)) {
-                return res
-              }
-              return undefined
+            return Effect.succeed(locationParts[14])
+          })
+        )
+
+        const updated = yield* decodeResourceArraySchema(
+          encodedResources.map(
+            (resource, idx): WithId<I> => ({
+              ...resource,
+              id: ids[idx],
             })
-            .filter((q): q is WithId<A> => q != undefined)
-        }.bind(this)
-      )
+          )
+        ).pipe(
+          Effect.mapError(
+            (cause) =>
+              new ExternalAssertionError({
+                expected: 'Response should be an array of resources',
+                cause,
+              })
+          )
+        )
+
+        return updated
+          .map((res): WithId<A> | undefined => {
+            if (res != undefined && hasId(res)) {
+              return res
+            }
+            return undefined
+          })
+          .filter((q): q is WithId<A> => q != undefined)
+      })
     },
   }
 }

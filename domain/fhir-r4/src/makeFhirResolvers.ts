@@ -9,7 +9,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Array, Record, Effect, Request, RequestResolver, Schema } from 'effect'
-import type { FhirR4Client } from '@assessmentis/fhir-client'
+import type { FhirR4Client } from '@assessmentis/fhir-r4'
 import type {
   ClinicalDataRepositoryErrors,
   ClinicalResources,
