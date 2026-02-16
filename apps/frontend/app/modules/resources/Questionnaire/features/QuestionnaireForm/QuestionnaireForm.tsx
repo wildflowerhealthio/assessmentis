@@ -8,7 +8,7 @@ import type {
 import { QuestionnaireResponseRepository } from '@assessmentis/clinical-domain/content-management'
 import QuestionnaireItemForm from './components/QuestionnaireItemForm/QuestionnaireItemForm'
 import { Effect } from 'effect'
-import { hasId } from '@assessmentis/clinical-domain/data-types'
+import { hasId } from '@assessmentis/effectful-store'
 import { useAutoSave } from 'app/modules/common/hooks/useAutoSave'
 import { usePlatformContext } from '../../../../../layers/PlatformContext'
 

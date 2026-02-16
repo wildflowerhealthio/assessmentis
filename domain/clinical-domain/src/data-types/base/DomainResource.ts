@@ -1,17 +1,13 @@
 import type { DateTime } from 'effect'
 import { Schema } from 'effect'
-import type {
-  Meta as FhirMeta,
-  DomainResource as FhirDomainResource,
-} from 'fhir/r4'
-import { Coding } from '../complex/Coding'
+import type fhir from 'fhir/r4'
+import { CodingFromFhirR4, type Coding } from '../complex/Coding'
 import { Narrative } from '../special-purpose/Narrative'
 import { ResourceFromFhirR4, type Resource } from './Resource'
 import {
   ExtensionFromFhirR4,
   type Extension,
 } from '../special-purpose/Extension'
-import type { DeepReadonly } from '@assessmentis/util'
 
 export interface DomainResource<
   IdType extends string,
@@ -23,48 +19,50 @@ export interface DomainResource<
   /**
    * Contained, inline Resources
    */
-  contained?: ReadonlyArray<unknown> // Resource
+  contained?: unknown[] // Resource
   /**
    * Additional content defined by implementations
    */
-  extension?: ReadonlyArray<Extension>
+  extension?: Extension[]
   /**
    * Extensions that cannot be ignored
    */
-  modifierExtension?: ReadonlyArray<Extension>
+  modifierExtension?: Extension[]
 }
 
 export const DomainResourceFromFhirR4 = <IdType extends string>(
   idSchema: Schema.Schema<IdType, string>
-): Schema.Schema<
-  DomainResource<IdType>,
-  DeepReadonly<FhirDomainResource>,
-  never
-> =>
+): Schema.Schema<DomainResource<IdType>, fhir.DomainResource, never> =>
   Schema.extend(
     ResourceFromFhirR4(idSchema),
-    Schema.Struct({
-      /**
-       * Text summary of the resource, for human interpretation
-       */
-      text: Schema.optional(Narrative),
-      /**
-       * Contained, inline Resources
-       */
-      contained: Schema.optional(Schema.Array(Schema.Any)), // Resource
-      /**
-       * Additional content defined by implementations
-       */
-      extension: Schema.optional(
-        Schema.Array(Schema.suspend(() => ExtensionFromFhirR4))
-      ),
-      /**
-       * Extensions that cannot be ignored
-       */
-      modifierExtension: Schema.optional(
-        Schema.Array(Schema.suspend(() => ExtensionFromFhirR4))
-      ),
-    })
+    Schema.mutable(
+      Schema.Struct({
+        /**
+         * Text summary of the resource, for human interpretation
+         */
+        text: Schema.optional(Narrative),
+        /**
+         * Contained, inline Resources
+         */
+        contained: Schema.optional(Schema.mutable(Schema.Array(Schema.Any))), // Resource
+        /**
+         * Additional content defined by implementations
+         */
+        extension: Schema.optional(
+          Schema.mutable(
+            Schema.Array(Schema.suspend(() => ExtensionFromFhirR4))
+          )
+        ),
+        /**
+         * Extensions that cannot be ignored
+         */
+        modifierExtension: Schema.optional(
+          Schema.mutable(
+            Schema.Array(Schema.suspend(() => ExtensionFromFhirR4))
+          )
+        ),
+      })
+    )
   )
 
 export interface Meta {
@@ -72,19 +70,21 @@ export interface Meta {
   readonly lastUpdated?: DateTime.Utc
   readonly source?: URL
   // readonly profile: canonical(StructureDefinition),
-  readonly security?: ReadonlyArray<Coding>
-  readonly tag?: ReadonlyArray<Coding>
+  readonly security?: Coding[]
+  readonly tag?: Coding[]
 }
 
-export const Meta: Schema.Schema<
-  Meta,
-  DeepReadonly<FhirMeta>,
-  never
-> = Schema.Struct({
-  versionId: Schema.optional(Schema.String),
-  lastUpdated: Schema.optional(Schema.DateTimeUtc),
-  source: Schema.optional(Schema.URL),
-  // profile: canonical(StructureDefinition),
-  security: Schema.optional(Schema.Array(Schema.suspend(() => Coding))),
-  tag: Schema.optional(Schema.Array(Schema.suspend(() => Coding))),
-})
+export const Meta: Schema.Schema<Meta, fhir.Meta, never> = Schema.mutable(
+  Schema.Struct({
+    versionId: Schema.optional(Schema.String),
+    lastUpdated: Schema.optional(Schema.DateTimeUtc),
+    source: Schema.optional(Schema.URL),
+    // profile: canonical(StructureDefinition),
+    security: Schema.optional(
+      Schema.mutable(Schema.Array(Schema.suspend(() => CodingFromFhirR4)))
+    ),
+    tag: Schema.optional(
+      Schema.mutable(Schema.Array(Schema.suspend(() => CodingFromFhirR4)))
+    ),
+  })
+)

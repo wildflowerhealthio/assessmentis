@@ -1,5 +1,5 @@
 import { DateTime, Schema, Option, Data } from 'effect'
-import type { QuestionnaireResponse as FhirQuestionnaireResponse } from 'fhir/r4'
+import type fhir from 'fhir/r4'
 import type { DomainResource } from '../../../data-types/base/DomainResource'
 import { DomainResourceFromFhirR4 } from '../../../data-types/base/DomainResource'
 import type {
@@ -17,7 +17,6 @@ import {
 } from './QuestionnaireResponseItem'
 import { QuestionnaireId } from '../Questionnaire/Questionnaire'
 import { getAnsweredAt } from '../../extensions/QuestionnaireItemAnsweredAt'
-import type { DeepReadonly } from '@assessmentis/util'
 
 export const QuestionnaireResponseId = Schema.UUID.pipe(
   Schema.brand('QuestionnaireResponseId')
@@ -40,11 +39,11 @@ export interface QuestionnaireResponse extends DomainResource<QuestionnaireRespo
   resourceType: 'QuestionnaireResponse'
   author?: Reference
   authored?: string
-  basedOn?: ReadonlyArray<Reference>
+  basedOn?: Reference[]
   encounter?: Reference
   identifier?: Identifier
-  item?: ReadonlyArray<QuestionnaireResponseItem>
-  partOf?: ReadonlyArray<Reference>
+  item?: QuestionnaireResponseItem[]
+  partOf?: Reference[]
   questionnaire?: string | typeof QuestionnaireId.Type
   source?: Reference
   status: typeof QuestionnaireResponseStatus.Type
@@ -57,7 +56,7 @@ export const QuestionnaireResponse = {
 
 export const QuestionnaireResponseFromFhirR4: Schema.Schema<
   QuestionnaireResponse,
-  DeepReadonly<FhirQuestionnaireResponse>,
+  fhir.QuestionnaireResponse,
   never
 > = Schema.extend(
   DomainResourceFromFhirR4(QuestionnaireResponseId),
@@ -66,13 +65,13 @@ export const QuestionnaireResponseFromFhirR4: Schema.Schema<
     author: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
     authored: Schema.optional(Schema.String),
     basedOn: Schema.optional(
-      Schema.Array(Schema.suspend(() => ReferenceFromFhirR4))
+      Schema.mutable(Schema.Array(Schema.suspend(() => ReferenceFromFhirR4)))
     ),
     encounter: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
     identifier: Schema.optional(Schema.suspend(() => IdentifierFromFhirR4)),
-    item: Schema.optional(Schema.Array(QuestionnaireResponseItemFromFhirR4)),
+    item: Schema.optional(Schema.mutable(Schema.Array(QuestionnaireResponseItemFromFhirR4))),
     partOf: Schema.optional(
-      Schema.Array(Schema.suspend(() => ReferenceFromFhirR4))
+      Schema.mutable(Schema.Array(Schema.suspend(() => ReferenceFromFhirR4)))
     ),
     questionnaire: Schema.optional(
       Schema.Union(Schema.String, QuestionnaireId)

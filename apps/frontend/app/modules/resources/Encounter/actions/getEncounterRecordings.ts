@@ -4,7 +4,7 @@ import type {
   ExternalAssertionError,
   NotFoundError,
 } from '@assessmentis/ontology'
-import type { WithId } from '@assessmentis/clinical-domain/data-types'
+import type { WithId } from '@assessmentis/effectful-store'
 import type { EncounterId } from '@assessmentis/clinical-domain/administration'
 import type { Media } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { MediaRepository } from '@assessmentis/clinical-domain/diagnostic-medicine'

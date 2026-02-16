@@ -2,7 +2,7 @@
 
 This reference documents how FHIR R4 resources are modeled in clinical-domain.
 
-For step-by-step Clinical Resource implementation, see [docs/Adding Resource Types How-To.md](./docs/Adding%20Resource%20Types%20How-To.md).
+For step-by-step Clinical Resource implementation, see [docs/Adding Resource Types How-To.md](./docs/Adding%20Resource%20Types%20How-To.md). For understanding the schema transformation pattern, see [docs/FHIR Schemas Explanation.md](./docs/FHIR%20Schemas%20Explanation.md).
 
 ## Core modeling rules
 

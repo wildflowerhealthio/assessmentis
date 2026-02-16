@@ -50,7 +50,9 @@ export function usePickerData<
 
               const service: ClinicalDataRepositoryServiceType =
                 yield* ClinicalDataRepositoryService
-              const repoStream = service.stream[resourceType] as Stream.Stream<
+              const repoStream = service.stream[
+                resourceType
+              ] as unknown as Stream.Stream<
                 Either.Either<
                   ClinicalDataRepository<T>,
                   AuthError | NoSelectedOrgError | UnhandledError

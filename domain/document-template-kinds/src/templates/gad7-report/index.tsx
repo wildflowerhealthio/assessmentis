@@ -2,13 +2,11 @@ import type { ComponentFamily } from '../../types'
 import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { ObservationRepository } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { Effect } from 'effect'
-import type {
-  Reference,
-  WithId,
-} from '@assessmentis/clinical-domain/data-types'
+import type { Reference } from '@assessmentis/clinical-domain/data-types'
 import { referenceAsString } from '@assessmentis/clinical-domain/data-types'
 import type { JSX } from 'react'
 import { gad7 } from '@assessmentis/questionnaire-entities'
+import type { WithId } from '@assessmentis/effectful-store'
 
 export const gad7Report = (
   {
@@ -26,7 +24,7 @@ export const gad7Report = (
 
     const observations = yield* observationRepository.getMany({
       subject: referenceAsString(patientReference),
-    })
+    } as const)
 
     const gad7Observations = gad7.questionnaire.item
       ?.map((item) =>

@@ -1,14 +1,10 @@
 import { Schema } from 'effect'
-import type {
-  QuestionnaireResponseItem as FhirQuestionnaireResponseItem,
-  QuestionnaireResponseItemAnswer as FhirQuestionnaireResponseItemAnswer,
-} from 'fhir/r4'
+import type fhir from 'fhir/r4'
 import { QuestionnaireItemLink } from '../Questionnaire/Questionnaire'
 import type { BackboneElement } from '../../../data-types/base/BackboneElement'
 import { BackboneElementFromFhirR4 } from '../../../data-types/base/BackboneElement'
 import type { ValueElement } from '../../../data-types/primitive/ValueElement'
 import { ValueElementFromFhirR4 } from '../../../data-types/primitive/ValueElement'
-import type { DeepReadonly } from '@assessmentis/util'
 
 export const QuestionnaireResponseItemId = Schema.String.pipe(
   Schema.brand('QuestionnaireResponseItemId')
@@ -24,7 +20,7 @@ export type QuestionnaireResponseItemAnswerId =
 
 export interface QuestionnaireResponseItemAnswer
   extends BackboneElement<QuestionnaireResponseItemAnswerId>, ValueElement {
-  item?: ReadonlyArray<QuestionnaireResponseItem>
+  item?: QuestionnaireResponseItem[]
 }
 
 /**
@@ -32,22 +28,22 @@ export interface QuestionnaireResponseItemAnswer
  */
 export const QuestionnaireResponseItemAnswerFromFhirR4: Schema.Schema<
   QuestionnaireResponseItemAnswer,
-  DeepReadonly<FhirQuestionnaireResponseItemAnswer>,
+  fhir.QuestionnaireResponseItemAnswer,
   never
 > = Schema.extend(
   Schema.extend(
     BackboneElementFromFhirR4(QuestionnaireResponseItemAnswerId),
     Schema.Struct({
       item: Schema.optional(
-        Schema.Array(
+        Schema.mutable(Schema.Array(
           Schema.suspend(
             (): Schema.Schema<
               QuestionnaireResponseItem,
-              DeepReadonly<FhirQuestionnaireResponseItem>,
+              fhir.QuestionnaireResponseItem,
               never
             > => QuestionnaireResponseItemFromFhirR4
           )
-        )
+        ))
       ),
     })
   ),
@@ -58,8 +54,8 @@ export interface QuestionnaireResponseItem extends BackboneElement<Questionnaire
   definition?: string
   linkId: QuestionnaireItemLink
   text?: string
-  item?: ReadonlyArray<QuestionnaireResponseItem>
-  answer?: ReadonlyArray<QuestionnaireResponseItemAnswer>
+  item?: QuestionnaireResponseItem[]
+  answer?: QuestionnaireResponseItemAnswer[]
 }
 
 /**
@@ -69,7 +65,7 @@ export interface QuestionnaireResponseItem extends BackboneElement<Questionnaire
  */
 export const QuestionnaireResponseItemFromFhirR4: Schema.Schema<
   QuestionnaireResponseItem,
-  DeepReadonly<FhirQuestionnaireResponseItem>,
+  fhir.QuestionnaireResponseItem,
   never
 > = Schema.extend(
   BackboneElementFromFhirR4(QuestionnaireResponseItemId),
@@ -78,32 +74,32 @@ export const QuestionnaireResponseItemFromFhirR4: Schema.Schema<
     linkId: QuestionnaireItemLink,
     text: Schema.optional(Schema.String),
     item: Schema.optional(
-      Schema.Array(
+      Schema.mutable(Schema.Array(
         Schema.suspend(
           (): Schema.Schema<
             QuestionnaireResponseItem,
-            DeepReadonly<FhirQuestionnaireResponseItem>,
+            fhir.QuestionnaireResponseItem,
             never
           > => QuestionnaireResponseItemFromFhirR4
         )
-      )
+      ))
     ),
     answer: Schema.optional(
-      Schema.Array(
+      Schema.mutable(Schema.Array(
         Schema.suspend(
           (): Schema.Schema<
             QuestionnaireResponseItemAnswer,
-            DeepReadonly<FhirQuestionnaireResponseItemAnswer>,
+            fhir.QuestionnaireResponseItemAnswer,
             never
           > => QuestionnaireResponseItemAnswerFromFhirR4
         )
-      )
+      ))
     ),
   })
 )
 
 export function* allQuestionnaireResponseItems(
-  items: ReadonlyArray<QuestionnaireResponseItem>
+  items: QuestionnaireResponseItem[]
 ): Generator<QuestionnaireResponseItem> {
   for (const child of items) {
     yield child

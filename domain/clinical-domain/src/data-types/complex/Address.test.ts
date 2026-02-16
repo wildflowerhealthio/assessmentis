@@ -1,21 +1,16 @@
 import { expect, test, describe } from 'vitest'
-import { Address } from './Address'
-import type { DeepReadonly } from '@assessmentis/util'
-import type { Address as FhirAddress } from 'fhir/r4'
+import { AddressFromFhirR4 } from './Address'
 import { Schema, Arbitrary } from 'effect'
 import * as fc from 'fast-check'
 
-// Compile-time check that Encoded schema matches FHIR R4
-const _addressEncoded: DeepReadonly<FhirAddress> = Address.Encoded
-
-const addressArb = Arbitrary.make(Address)
+const addressArb = Arbitrary.make(AddressFromFhirR4)
 
 describe('Address model', () => {
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(addressArb, (address) => {
-        const encoded = Schema.encodeSync(Address)(address)
-        const decoded = Schema.decodeSync(Address)(encoded)
+        const encoded = Schema.encodeSync(AddressFromFhirR4)(address)
+        const decoded = Schema.decodeSync(AddressFromFhirR4)(encoded)
         expect(decoded).toEqual(address)
       })
     )

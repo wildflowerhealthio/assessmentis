@@ -6,7 +6,7 @@ import type {
   ExternalAssertionError,
   NotFoundError,
 } from '@assessmentis/ontology'
-import type { WithId } from '@assessmentis/clinical-domain/data-types'
+import type { WithId } from '@assessmentis/effectful-store'
 import type {
   Encounter,
   EncounterId,

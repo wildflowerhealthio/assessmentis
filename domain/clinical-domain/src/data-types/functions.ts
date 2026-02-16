@@ -1,6 +1,7 @@
 import { Schema } from 'effect'
 import type { Reference } from './complex/IdentifierAndReference'
 import { ReferenceFromFhirR4 } from './complex/IdentifierAndReference'
+import type { WithId } from '@assessmentis/effectful-store'
 
 export const referenceFromResource = (
   resource: { id?: string | undefined; resourceType: string },
@@ -56,4 +57,21 @@ export function extractReferenceIds(
       ?.map((r) => r.reference?.split('/')[1])
       .filter((id): id is string => !!id) ?? []
   )
+}
+
+export const SchemaWithMandatoryId = <
+  A extends { id?: AId | undefined },
+  I extends { id?: IId | undefined },
+  R,
+  AId extends string,
+  IId extends string,
+>(
+  schema: Schema.Schema<A, I, R>,
+  idSchema: Schema.Schema<AId, IId, R>
+): Schema.Schema<WithId<A>, WithId<I>, R> => {
+  const withMandatoryId: Schema.Schema<{ id: AId }, { id: IId }, R> =
+    Schema.Struct({
+      id: idSchema,
+    })
+  return Schema.extend(schema, withMandatoryId)
 }

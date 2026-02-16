@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import type { CompositionRelatesTo as FhirCompositionRelatesTo } from 'fhir/r4'
+import type fhir from 'fhir/r4'
 import type { BackboneElement } from '../../../data-types/base/BackboneElement'
 import { BackboneElementFromFhirR4 } from '../../../data-types/base/BackboneElement'
 import type {
@@ -10,7 +10,6 @@ import {
   IdentifierFromFhirR4,
   ReferenceFromFhirR4,
 } from '../../../data-types/complex/IdentifierAndReference'
-import type { DeepReadonly } from '@assessmentis/util'
 
 const CompositionRelatesToId = Schema.String.pipe(
   Schema.brand('CompositionRelatesToId')
@@ -28,7 +27,7 @@ export interface CompositionRelatesTo extends BackboneElement<CompositionRelates
  */
 export const CompositionRelatesToFromFhirR4: Schema.Schema<
   CompositionRelatesTo,
-  DeepReadonly<FhirCompositionRelatesTo>,
+  fhir.CompositionRelatesTo,
   never
 > = Schema.extend(
   BackboneElementFromFhirR4(CompositionRelatesToId),

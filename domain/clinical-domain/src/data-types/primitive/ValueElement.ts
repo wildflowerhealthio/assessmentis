@@ -11,7 +11,6 @@ import { ReferenceFromFhirR4 } from '../complex/IdentifierAndReference'
 import { CodeableConceptFromFhirR4, type CodeableConcept } from '../complex'
 import type { Attachment } from '../complex/Attachment'
 import { AttachmentFromFhirR4 } from '../complex/Attachment'
-import type { DeepReadonly } from '@assessmentis/util'
 
 // Local Quantity interface for ValueElement use
 // (Full Quantity type doesn't exist yet, only SimpleQuantity)
@@ -20,78 +19,65 @@ interface Quantity {
   unit?: string
 }
 
-const QuantityFromFhirR4 = Schema.Struct({
-  value: Schema.optional(Schema.Number),
-  unit: Schema.optional(Schema.String),
-}) satisfies Schema.Schema<Quantity, DeepReadonly<FhirQuantity>>
-
+const QuantityFromFhirR4: Schema.Schema<Quantity, FhirQuantity> = Schema.Struct(
+  {
+    value: Schema.optional(Schema.Number),
+    unit: Schema.optional(Schema.String),
+  }
+)
 export interface ValueElement {
-  readonly valueBoolean?: boolean
+  valueBoolean?: boolean
 
-  readonly valueDecimal?: number
+  valueDecimal?: number
 
-  readonly valueInteger?: number
+  valueInteger?: number
 
-  readonly valueDate?: Date
+  valueDate?: Date
 
-  readonly valueDateTime?: DateTime.Utc
+  valueDateTime?: DateTime.Utc
 
-  readonly valueTime?: string
+  valueTime?: string
 
-  readonly valueString?: string
+  valueString?: string
 
-  readonly valueUrl?: string
-  readonly valueAttachment?: Attachment
+  valueUrl?: string
+  valueAttachment?: Attachment
 
-  readonly valueCoding?: Coding
+  valueCoding?: Coding
 
-  readonly valueQuantity?: Quantity
-  readonly valueReference?: Reference
+  valueQuantity?: Quantity
+  valueReference?: Reference
 
-  readonly valueCode?: Code
+  valueCode?: Code
   // _valueCode?: { extension?: Extension[] }
-  readonly valueCodeableConcept?: CodeableConcept
-  readonly valueCanonical?: string
+  valueCodeableConcept?: CodeableConcept
+  valueCanonical?: string
 }
+
+export type DefinedValueElement = Omit<FhirExtension, 'url' | '_url'>
 
 export const ValueElementFromFhirR4: Schema.Schema<
   ValueElement,
-  DeepReadonly<
-    Pick<
-      FhirExtension,
-      | 'valueBoolean'
-      | 'valueDecimal'
-      | 'valueInteger'
-      | 'valueDate'
-      | 'valueDateTime'
-      | 'valueTime'
-      | 'valueString'
-      | 'valueUrl'
-      | 'valueAttachment'
-      | 'valueCoding'
-      | 'valueQuantity'
-      | 'valueReference'
-      | 'valueCode'
-      | 'valueCodeableConcept'
-      | 'valueCanonical'
-    >
-  >
-> = Schema.Struct({
-  valueBoolean: Schema.optional(Schema.Boolean),
-  valueDecimal: Schema.optional(Schema.Number),
-  valueInteger: Schema.optional(Schema.Number),
-  valueDate: Schema.optional(Schema.DateFromString),
-  valueDateTime: Schema.optional(Schema.DateTimeUtc),
-  valueTime: Schema.optional(Schema.String),
-  valueString: Schema.optional(Schema.String),
-  valueUrl: Schema.optional(Schema.String),
-  valueAttachment: Schema.optional(AttachmentFromFhirR4),
-  valueCoding: Schema.optional(Coding),
-  valueQuantity: Schema.optional(QuantityFromFhirR4),
-  valueReference: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
-  valueCode: Schema.optional(Code),
-  valueCodeableConcept: Schema.optional(
-    Schema.suspend(() => CodeableConceptFromFhirR4)
-  ),
-  valueCanonical: Schema.optional(Schema.String),
-})
+  DefinedValueElement,
+  never
+> = Schema.mutable(
+  Schema.Struct({
+    valueBoolean: Schema.optional(Schema.Boolean),
+    valueDecimal: Schema.optional(Schema.Number),
+    valueInteger: Schema.optional(Schema.Number),
+    valueDate: Schema.optional(Schema.DateFromString),
+    valueDateTime: Schema.optional(Schema.DateTimeUtc),
+    valueTime: Schema.optional(Schema.String),
+    valueString: Schema.optional(Schema.String),
+    valueUrl: Schema.optional(Schema.String),
+    valueAttachment: Schema.optional(AttachmentFromFhirR4),
+    valueCoding: Schema.optional(Coding),
+    valueQuantity: Schema.optional(QuantityFromFhirR4),
+    valueReference: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
+    valueCode: Schema.optional(Code),
+    valueCodeableConcept: Schema.optional(
+      Schema.suspend(() => CodeableConceptFromFhirR4)
+    ),
+    valueCanonical: Schema.optional(Schema.String),
+  })
+)

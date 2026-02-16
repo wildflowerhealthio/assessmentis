@@ -6,7 +6,7 @@ import type {
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
-import type { WithId } from './data-types/base/Element'
+import type { WithId } from '@assessmentis/effectful-store'
 import type { Reference } from './data-types/complex/IdentifierAndReference'
 import type ResourceDataTypes from './ResourceDataTypes'
 
@@ -41,11 +41,14 @@ export type ClinicalDataRepositoryErrorsWithNotFound<
  * Reference fields also accept `readonly string[]` for FHIR OR-style searching.
  */
 export type RepositoryFilters<TResource> = {
-  [key in Exclude<keyof TResource, 'resourceType'>]?: TResource[key] extends
-    | Reference
-    | undefined
-    ? string | readonly string[]
-    : TResource[key]
+  [key in Exclude<
+    keyof TResource,
+    'resourceType'
+  >]?: Reference extends TResource[key]
+    ? undefined | string | readonly string[]
+    : TResource[key] extends string
+      ? undefined | string | readonly string[]
+      : never
 }
 
 export interface ClinicalDataRepository<

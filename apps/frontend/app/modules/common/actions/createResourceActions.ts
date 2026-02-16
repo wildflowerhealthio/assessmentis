@@ -3,7 +3,7 @@ import type {
   ClinicalDataRepositoryErrorsWithNotFound,
   ResourceDataTypes,
 } from '@assessmentis/clinical-domain'
-import type { WithId } from '@assessmentis/clinical-domain/data-types'
+import type { WithId } from '@assessmentis/effectful-store'
 import { Effect } from 'effect'
 import { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
 import type { NoSelectedOrgError } from '../../../../../../domain/platform-domain/src/hostedServices'
@@ -35,24 +35,21 @@ import type { NoSelectedOrgError } from '../../../../../../domain/platform-domai
  */
 export function createResourceCreateAction<
   TFormData,
-  TResource extends {
-    id?: string
-    resourceType: string
-  } & ResourceDataTypes[keyof ResourceDataTypes],
+  Key extends keyof ResourceDataTypes,
 >(
-  resourceType: TResource['resourceType'],
-  transform: (data: TFormData) => TResource | (TResource & { id: undefined })
+  resourceType: Key,
+  transform: (data: TFormData) => ResourceDataTypes[Key]
 ): (
   formData: TFormData
 ) => Effect.Effect<
-  WithId<TResource>,
+  WithId<ResourceDataTypes[Key]>,
   ClinicalDataRepositoryErrors | NoSelectedOrgError,
   ClinicalDataRepositoryService
 > {
   return (
     formData: TFormData
   ): Effect.Effect<
-    WithId<TResource>,
+    WithId<ResourceDataTypes[Key]>,
     ClinicalDataRepositoryErrors | NoSelectedOrgError,
     ClinicalDataRepositoryService
   > => {
@@ -95,29 +92,28 @@ export function createResourceCreateAction<
  */
 export function createResourceUpdateAction<
   TFormData,
-  TResource extends {
-    id?: string
-    resourceType: string
-  } & ResourceDataTypes[keyof ResourceDataTypes],
+  Key extends keyof ResourceDataTypes,
 >(
-  resourceType: TResource['resourceType'],
-  transform: (data: TFormData) => Omit<TResource, 'id'>
+  resourceType: Key,
+  transform: (data: TFormData) => Omit<ResourceDataTypes[Key], 'id'>
 ): (
-  id: NonNullable<TResource['id']>,
-  current: TResource,
+  id: NonNullable<ResourceDataTypes[Key]['id']>,
+  current: ResourceDataTypes[Key],
   formData: TFormData
 ) => Effect.Effect<
-  TResource,
-  ClinicalDataRepositoryErrorsWithNotFound<TResource> | NoSelectedOrgError,
+  ResourceDataTypes[Key],
+  | ClinicalDataRepositoryErrorsWithNotFound<ResourceDataTypes[Key]>
+  | NoSelectedOrgError,
   ClinicalDataRepositoryService
 > {
   return (
-    id: NonNullable<TResource['id']>,
-    current: TResource,
+    id: NonNullable<ResourceDataTypes[Key]['id']>,
+    current: ResourceDataTypes[Key],
     formData: TFormData
   ): Effect.Effect<
-    TResource,
-    ClinicalDataRepositoryErrorsWithNotFound<TResource> | NoSelectedOrgError,
+    ResourceDataTypes[Key],
+    | ClinicalDataRepositoryErrorsWithNotFound<ResourceDataTypes[Key]>
+    | NoSelectedOrgError,
     ClinicalDataRepositoryService
   > => {
     return Effect.gen(function* () {
@@ -125,7 +121,7 @@ export function createResourceUpdateAction<
         yield* ClinicalDataRepositoryService
       const repo = yield* service.repositoryEffect(resourceType)
       const updatedFields = transform(formData)
-      const updated: WithId<TResource> = {
+      const updated: WithId<ResourceDataTypes[Key]> = {
         ...current,
         ...updatedFields,
         id,

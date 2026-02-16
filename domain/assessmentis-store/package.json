@@ -1,0 +1,32 @@
+{
+  "name": "@assessmentis/assessmentis-store",
+  "version": "0.0.1",
+  "description": "Clinical-specific request types and resolvers for Effect-TS",
+  "author": "Ruth Marks",
+  "license": "UNLICENSED",
+  "type": "module",
+  "prettier": "@assessmentis/prettier-config",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint \"./src/**/*\"",
+    "lint:fix": "eslint --fix \"./src/**/*\"",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "effect": "^3.19.8",
+    "@assessmentis/effectful-store": "*",
+    "@assessmentis/clinical-domain": "*",
+    "@assessmentis/fhir-client": "*",
+    "@assessmentis/ontology": "*",
+    "@assessmentis/util": "*"
+  },
+  "devDependencies": {
+    "@assessmentis/prettier-config": "*",
+    "@effect/vitest": "^0.27.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
+  }
+}

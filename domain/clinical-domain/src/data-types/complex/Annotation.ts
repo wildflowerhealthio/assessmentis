@@ -4,11 +4,7 @@ import type { Element } from '../base/Element'
 import { ElementFromFhirR4 } from '../base/Element'
 import type { Reference } from './IdentifierAndReference'
 import { ReferenceFromFhirR4 } from './IdentifierAndReference'
-import type { DeepReadonly } from '@assessmentis/util'
-import type {
-  Reference as FhirReference,
-  Annotation as FhirAnnotation,
-} from 'fhir/r4'
+import type fhir from 'fhir/r4'
 
 export const AnnotationId = Schema.String.pipe(Schema.brand('AnnotationId'))
 export type AnnotationId = typeof AnnotationId.Type
@@ -21,46 +17,45 @@ export interface Annotation extends Element<AnnotationId> {
    * The individual responsible for making the annotation.
    * This is a choice element in FHIR (author[x]) - only one of authorString or authorReference should be present.
    */
-  readonly authorString?: string
-  readonly authorReference?: Reference
+  authorString?: string
+  authorReference?: Reference
   /**
    * Indicates when this particular annotation was made.
    */
-  readonly time?: DateTime.Utc
+  time?: DateTime.Utc
   /**
    * The text of the annotation in markdown format.
    */
-  readonly text: string
+  text: string
 }
 
 export const AnnotationFromFhirR4: Schema.Schema<
   Annotation,
-  DeepReadonly<FhirAnnotation>,
+  fhir.Annotation,
   never
 > = Schema.extend(
   ElementFromFhirR4(AnnotationId),
-  Schema.Struct({
-    /**
-     * The individual responsible for making the annotation.
-     * This is a choice element in FHIR (author[x]) - only one of authorString or authorReference should be present.
-     */
-    authorString: Schema.optional(Schema.String),
-    /**
-     * The individual responsible for making the annotation.
-     */
-    authorReference: Schema.optional(
-      Schema.suspend(
-        (): Schema.Schema<Reference, DeepReadonly<FhirReference>, never> =>
-          ReferenceFromFhirR4
-      )
-    ),
-    /**
-     * Indicates when this particular annotation was made.
-     */
-    time: Schema.optional(Schema.DateTimeUtc),
-    /**
-     * The text of the annotation in markdown format.
-     */
-    text: Schema.String,
-  })
+  Schema.mutable(
+    Schema.Struct({
+      /**
+       * The individual responsible for making the annotation.
+       * This is a choice element in FHIR (author[x]) - only one of authorString or authorReference should be present.
+       */
+      authorString: Schema.optional(Schema.String),
+      /**
+       * The individual responsible for making the annotation.
+       */
+      authorReference: Schema.optional(
+        Schema.suspend(() => ReferenceFromFhirR4)
+      ),
+      /**
+       * Indicates when this particular annotation was made.
+       */
+      time: Schema.optional(Schema.DateTimeUtc),
+      /**
+       * The text of the annotation in markdown format.
+       */
+      text: Schema.String,
+    })
+  )
 )

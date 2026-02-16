@@ -1,8 +1,12 @@
 import { Effect, Schema } from 'effect'
 import { refineOrFail } from '@assessmentis/util'
-import type { Element, WithId } from '@assessmentis/clinical-domain/data-types'
-import { hasId, assertId } from '@assessmentis/clinical-domain/data-types'
-import { BundleFromFhirR4 } from '@assessmentis/clinical-domain/foundation-framework'
+import type { Element } from '@assessmentis/clinical-domain/data-types'
+import type { WithId } from '@assessmentis/effectful-store'
+import { hasId, assertId } from '@assessmentis/effectful-store'
+import {
+  BundleFromFhirR4,
+  type OptionalIdBundle,
+} from '@assessmentis/clinical-domain/foundation-framework'
 import { UnhandledError, ExternalAssertionError } from '@assessmentis/ontology'
 import type { FhirR4Client } from '@assessmentis/fhir-client'
 import type { ClinicalDataRepository } from '../types'
@@ -51,14 +55,12 @@ export const makeClinicalDataRepository = <
         )
       )
 
-      const resourceWithId: WithId<A> = yield* assertId(decoded).pipe(
-        Effect.mapError(
-          (cause) =>
-            new ExternalAssertionError({
-              expected: 'Expected resource to have id',
-              cause,
-            })
-        )
+      const resourceWithId: WithId<A> = yield* assertId(
+        decoded,
+        new ExternalAssertionError({
+          expected: 'Expected resource to have id',
+          cause: decoded,
+        })
       )
 
       return resourceWithId
@@ -173,7 +175,7 @@ export const makeClinicalDataRepository = <
                 url: resource.resourceType,
               } as const,
             })),
-          } as const
+          } satisfies OptionalIdBundle<unknown>
 
           const result = yield* innerClient.executeBundle(resource)
 

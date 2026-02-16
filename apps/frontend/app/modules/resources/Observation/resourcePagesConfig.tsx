@@ -102,11 +102,11 @@ export const observationConfig: ResourcePagesConfig<
     }
   },
 
-  createAction: createResourceCreateAction<ObservationFormData, Observation>(
+  createAction: createResourceCreateAction<ObservationFormData, 'Observation'>(
     'Observation',
     transformToObservation
   ),
-  updateAction: createResourceUpdateAction<ObservationFormData, Observation>(
+  updateAction: createResourceUpdateAction<ObservationFormData, 'Observation'>(
     'Observation',
     transformToObservation
   ),

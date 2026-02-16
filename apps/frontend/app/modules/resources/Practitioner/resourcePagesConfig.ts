@@ -46,14 +46,14 @@ export const practitionerConfig: ResourcePagesConfig<
     qualification: practitioner.qualification?.[0]?.code?.text ?? undefined,
   }),
 
-  createAction: createResourceCreateAction<PractitionerFormData, Practitioner>(
-    'Practitioner',
-    transformToPractitioner
-  ),
-  updateAction: createResourceUpdateAction<PractitionerFormData, Practitioner>(
-    'Practitioner',
-    transformToPractitioner
-  ),
+  createAction: createResourceCreateAction<
+    PractitionerFormData,
+    'Practitioner'
+  >('Practitioner', transformToPractitioner),
+  updateAction: createResourceUpdateAction<
+    PractitionerFormData,
+    'Practitioner'
+  >('Practitioner', transformToPractitioner),
 
   getListSummaryItems: (practitioner) => [
     practitioner.gender ?? 'Unknown',

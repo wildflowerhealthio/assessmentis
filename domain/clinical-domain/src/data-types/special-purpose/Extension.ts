@@ -3,25 +3,30 @@ import {
   ValueElementFromFhirR4,
   type ValueElement,
 } from '../primitive/ValueElement'
-import type { Extension as FhirExtension } from 'fhir/r4'
-import type { DeepReadonly } from '@assessmentis/util'
+import type fhir from 'fhir/r4'
+import { ElementFromFhirR4, type Element } from '../base/Element'
 
-export type Extension = {
+const ElementId = Schema.String.pipe(Schema.brand('ElementId'))
+type ElementId = typeof ElementId.Type
+
+export interface Extension extends ValueElement, Element<ElementId> {
   url: string
-} & ValueElement
+}
 
 export const ExtensionFromFhirR4: Schema.Schema<
   Extension,
-  Pick<
-    DeepReadonly<FhirExtension>,
-    'url' | keyof typeof ValueElementFromFhirR4.Encoded
-  >,
+  fhir.Extension,
   never
 > = Schema.extend(
-  Schema.Struct({
-    url: Schema.String,
-  }),
-  Schema.suspend(() => ValueElementFromFhirR4)
+  Schema.extend(
+    ElementFromFhirR4(ElementId),
+    Schema.suspend(() => ValueElementFromFhirR4)
+  ),
+  Schema.mutable(
+    Schema.Struct({
+      url: Schema.String,
+    })
+  )
 )
 
 /**

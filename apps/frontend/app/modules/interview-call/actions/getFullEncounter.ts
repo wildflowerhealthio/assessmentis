@@ -18,7 +18,7 @@ import type {
   Questionnaire,
   QuestionnaireResponse,
 } from '@assessmentis/clinical-domain/content-management'
-import type { WithId } from '@assessmentis/clinical-domain/data-types'
+import type { WithId } from '@assessmentis/effectful-store'
 import { extractReferenceId } from '@assessmentis/clinical-domain/data-types'
 import type { NoSelectedOrgError } from '@assessmentis/platform-domain'
 import { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'

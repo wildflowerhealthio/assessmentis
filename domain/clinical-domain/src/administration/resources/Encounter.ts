@@ -1,14 +1,6 @@
 import { Schema } from 'effect'
-import type {
-  Encounter as FhirEncounter,
-  EncounterStatusHistory as FhirEncounterStatusHistory,
-  EncounterClassHistory as FhirEncounterClassHistory,
-  EncounterParticipant as FhirEncounterParticipant,
-  EncounterDiagnosis as FhirEncounterDiagnosis,
-  EncounterHospitalization as FhirEncounterHospitalization,
-  EncounterLocation as FhirEncounterLocation,
-} from 'fhir/r4'
-import { Coding } from '../../data-types/complex/Coding'
+import type fhir from 'fhir/r4'
+import { CodingFromFhirR4, type Coding } from '../../data-types/complex/Coding'
 import type { CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import { CodeableConceptFromFhirR4 } from '../../data-types/complex/CodeableConcept'
 import type { DomainResource } from '../../data-types/base/DomainResource'
@@ -25,8 +17,10 @@ import {
 } from '../../data-types/complex/IdentifierAndReference'
 import type { Period } from '../../data-types/complex/Period'
 import { PeriodFromFhirR4 } from '../../data-types/complex/Period'
-import { SimpleQuantity } from '../../data-types/complex/SimpleQuantity'
-import type { DeepReadonly } from '@assessmentis/util'
+import {
+  type Quantity,
+  QuantityFromFhirR4,
+} from '../../data-types/complex/Quantity'
 
 export const EncounterId = Schema.String.pipe(Schema.brand('EncounterId'))
 
@@ -79,41 +73,41 @@ type HospitalizationId = typeof HospitalizationId.Type
 
 // --- Sub-component interfaces ---
 
-interface EncounterStatusHistory extends BackboneElement<StatusHistoryId> {
+export interface EncounterStatusHistory extends BackboneElement<StatusHistoryId> {
   status: EncounterStatus
   period: Period
 }
 
-interface EncounterClassHistory extends BackboneElement<ClassHistoryId> {
+export interface EncounterClassHistory extends BackboneElement<ClassHistoryId> {
   class: Coding
   period: Period
 }
 
-interface EncounterParticipant extends BackboneElement<ParticipantId> {
-  type?: ReadonlyArray<CodeableConcept>
+export interface EncounterParticipant extends BackboneElement<ParticipantId> {
+  type?: CodeableConcept[]
   period?: Period
   individual?: Reference
 }
 
-interface EncounterDiagnosis extends BackboneElement<DiagnosisId> {
+export interface EncounterDiagnosis extends BackboneElement<DiagnosisId> {
   condition: Reference
   use?: CodeableConcept
   rank?: number
 }
 
-interface EncounterHospitalization extends BackboneElement<HospitalizationId> {
+export interface EncounterHospitalization extends BackboneElement<HospitalizationId> {
   preAdmissionIdentifier?: Identifier
   origin?: Reference
   admitSource?: CodeableConcept
   reAdmission?: CodeableConcept
-  dietPreference?: ReadonlyArray<CodeableConcept>
-  specialCourtesy?: ReadonlyArray<CodeableConcept>
-  specialArrangement?: ReadonlyArray<CodeableConcept>
+  dietPreference?: CodeableConcept[]
+  specialCourtesy?: CodeableConcept[]
+  specialArrangement?: CodeableConcept[]
   destination?: Reference
   dischargeDisposition?: CodeableConcept
 }
 
-interface EncounterLocation extends BackboneElement<EncounterLocationId> {
+export interface EncounterLocation extends BackboneElement<EncounterLocationId> {
   location: Reference
   status?: EncounterLocationStatus
   physicalType?: CodeableConcept
@@ -124,37 +118,41 @@ interface EncounterLocation extends BackboneElement<EncounterLocationId> {
 
 const EncounterStatusHistoryFromFhirR4: Schema.Schema<
   EncounterStatusHistory,
-  DeepReadonly<FhirEncounterStatusHistory>,
+  fhir.EncounterStatusHistory,
   never
 > = Schema.extend(
   BackboneElementFromFhirR4(StatusHistoryId),
-  Schema.Struct({
-    status: EncounterStatus,
-    period: Schema.suspend(() => PeriodFromFhirR4),
-  })
+  Schema.mutable(
+    Schema.Struct({
+      status: EncounterStatus,
+      period: Schema.suspend(() => PeriodFromFhirR4),
+    })
+  )
 )
 
 const EncounterClassHistoryFromFhirR4: Schema.Schema<
   EncounterClassHistory,
-  DeepReadonly<FhirEncounterClassHistory>,
+  fhir.EncounterClassHistory,
   never
 > = Schema.extend(
   BackboneElementFromFhirR4(ClassHistoryId),
   Schema.Struct({
-    class: Schema.suspend(() => Coding),
+    class: Schema.suspend(() => CodingFromFhirR4),
     period: Schema.suspend(() => PeriodFromFhirR4),
   })
 )
 
 const EncounterParticipantFromFhirR4: Schema.Schema<
   EncounterParticipant,
-  DeepReadonly<FhirEncounterParticipant>,
+  fhir.EncounterParticipant,
   never
 > = Schema.extend(
   BackboneElementFromFhirR4(ParticipantId),
   Schema.Struct({
     type: Schema.optional(
-      Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+      Schema.mutable(
+        Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+      )
     ),
     period: Schema.optional(Schema.suspend(() => PeriodFromFhirR4)),
     individual: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
@@ -163,7 +161,7 @@ const EncounterParticipantFromFhirR4: Schema.Schema<
 
 const EncounterDiagnosisFromFhirR4: Schema.Schema<
   EncounterDiagnosis,
-  DeepReadonly<FhirEncounterDiagnosis>,
+  fhir.EncounterDiagnosis,
   never
 > = Schema.extend(
   BackboneElementFromFhirR4(DiagnosisId),
@@ -176,7 +174,7 @@ const EncounterDiagnosisFromFhirR4: Schema.Schema<
 
 const EncounterHospitalizationFromFhirR4: Schema.Schema<
   EncounterHospitalization,
-  DeepReadonly<FhirEncounterHospitalization>,
+  fhir.EncounterHospitalization,
   never
 > = Schema.extend(
   BackboneElementFromFhirR4(HospitalizationId),
@@ -192,13 +190,19 @@ const EncounterHospitalizationFromFhirR4: Schema.Schema<
       Schema.suspend(() => CodeableConceptFromFhirR4)
     ),
     dietPreference: Schema.optional(
-      Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+      Schema.mutable(
+        Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+      )
     ),
     specialCourtesy: Schema.optional(
-      Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+      Schema.mutable(
+        Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+      )
     ),
     specialArrangement: Schema.optional(
-      Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+      Schema.mutable(
+        Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+      )
     ),
     destination: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
     dischargeDisposition: Schema.optional(
@@ -209,7 +213,7 @@ const EncounterHospitalizationFromFhirR4: Schema.Schema<
 
 const EncounterLocationFromFhirR4: Schema.Schema<
   EncounterLocation,
-  DeepReadonly<FhirEncounterLocation>,
+  fhir.EncounterLocation,
   never
 > = Schema.extend(
   BackboneElementFromFhirR4(EncounterLocationId),
@@ -231,27 +235,27 @@ const EncounterLocationFromFhirR4: Schema.Schema<
  */
 export interface Encounter extends DomainResource<EncounterId> {
   resourceType: 'Encounter'
-  identifier?: ReadonlyArray<Identifier>
+  identifier?: Identifier[]
   status: EncounterStatus
-  statusHistory?: ReadonlyArray<EncounterStatusHistory>
+  statusHistory?: EncounterStatusHistory[]
   class: Coding
-  classHistory?: ReadonlyArray<EncounterClassHistory>
-  type?: ReadonlyArray<CodeableConcept>
+  classHistory?: EncounterClassHistory[]
+  type?: CodeableConcept[]
   serviceType?: CodeableConcept
   priority?: CodeableConcept
   subject?: Reference
-  episodeOfCare?: ReadonlyArray<Reference>
-  basedOn?: ReadonlyArray<Reference>
-  participant?: ReadonlyArray<EncounterParticipant>
-  appointment?: ReadonlyArray<Reference>
+  episodeOfCare?: Reference[]
+  basedOn?: Reference[]
+  participant?: EncounterParticipant[]
+  appointment?: Reference[]
   period?: Period
-  length?: SimpleQuantity
-  reasonCode?: ReadonlyArray<CodeableConcept>
-  reasonReference?: ReadonlyArray<Reference>
-  diagnosis?: ReadonlyArray<EncounterDiagnosis>
-  account?: ReadonlyArray<Reference>
+  length?: Quantity
+  reasonCode?: CodeableConcept[]
+  reasonReference?: Reference[]
+  diagnosis?: EncounterDiagnosis[]
+  account?: Reference[]
   hospitalization?: EncounterHospitalization
-  location?: ReadonlyArray<EncounterLocation>
+  location?: EncounterLocation[]
   serviceProvider?: Reference
   partOf?: Reference
 }
@@ -261,25 +265,27 @@ export interface Encounter extends DomainResource<EncounterId> {
  */
 export const EncounterFromFhirR4: Schema.Schema<
   Encounter,
-  DeepReadonly<FhirEncounter>,
+  fhir.Encounter,
   never
 > = Schema.extend(
   DomainResourceFromFhirR4(EncounterId),
   Schema.Struct({
     resourceType: Schema.Literal('Encounter'),
     identifier: Schema.optional(
-      Schema.Array(Schema.suspend(() => IdentifierFromFhirR4))
+      Schema.mutable(Schema.Array(Schema.suspend(() => IdentifierFromFhirR4)))
     ),
     status: EncounterStatus,
     statusHistory: Schema.optional(
-      Schema.Array(EncounterStatusHistoryFromFhirR4)
+      Schema.mutable(Schema.Array(EncounterStatusHistoryFromFhirR4))
     ),
-    class: Schema.suspend(() => Coding),
+    class: Schema.suspend(() => CodingFromFhirR4),
     classHistory: Schema.optional(
-      Schema.Array(EncounterClassHistoryFromFhirR4)
+      Schema.mutable(Schema.Array(EncounterClassHistoryFromFhirR4))
     ),
     type: Schema.optional(
-      Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+      Schema.mutable(
+        Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+      )
     ),
     serviceType: Schema.optional(
       Schema.suspend(() => CodeableConceptFromFhirR4)
@@ -287,29 +293,37 @@ export const EncounterFromFhirR4: Schema.Schema<
     priority: Schema.optional(Schema.suspend(() => CodeableConceptFromFhirR4)),
     subject: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
     episodeOfCare: Schema.optional(
-      Schema.Array(Schema.suspend(() => ReferenceFromFhirR4))
+      Schema.mutable(Schema.Array(Schema.suspend(() => ReferenceFromFhirR4)))
     ),
     basedOn: Schema.optional(
-      Schema.Array(Schema.suspend(() => ReferenceFromFhirR4))
+      Schema.mutable(Schema.Array(Schema.suspend(() => ReferenceFromFhirR4)))
     ),
-    participant: Schema.optional(Schema.Array(EncounterParticipantFromFhirR4)),
+    participant: Schema.optional(
+      Schema.mutable(Schema.Array(EncounterParticipantFromFhirR4))
+    ),
     appointment: Schema.optional(
-      Schema.Array(Schema.suspend(() => ReferenceFromFhirR4))
+      Schema.mutable(Schema.Array(Schema.suspend(() => ReferenceFromFhirR4)))
     ),
     period: Schema.optional(Schema.suspend(() => PeriodFromFhirR4)),
-    length: Schema.optional(Schema.suspend(() => SimpleQuantity)),
+    length: Schema.optional(Schema.suspend(() => QuantityFromFhirR4)),
     reasonCode: Schema.optional(
-      Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+      Schema.mutable(
+        Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+      )
     ),
     reasonReference: Schema.optional(
-      Schema.Array(Schema.suspend(() => ReferenceFromFhirR4))
+      Schema.mutable(Schema.Array(Schema.suspend(() => ReferenceFromFhirR4)))
     ),
-    diagnosis: Schema.optional(Schema.Array(EncounterDiagnosisFromFhirR4)),
+    diagnosis: Schema.optional(
+      Schema.mutable(Schema.Array(EncounterDiagnosisFromFhirR4))
+    ),
     account: Schema.optional(
-      Schema.Array(Schema.suspend(() => ReferenceFromFhirR4))
+      Schema.mutable(Schema.Array(Schema.suspend(() => ReferenceFromFhirR4)))
     ),
     hospitalization: Schema.optional(EncounterHospitalizationFromFhirR4),
-    location: Schema.optional(Schema.Array(EncounterLocationFromFhirR4)),
+    location: Schema.optional(
+      Schema.mutable(Schema.Array(EncounterLocationFromFhirR4))
+    ),
     serviceProvider: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
     partOf: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
   })

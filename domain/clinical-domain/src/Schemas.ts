@@ -11,17 +11,10 @@ import {
   QuestionnaireResponseFromFhirR4,
 } from './content-management'
 import { MediaFromFhirR4, ObservationFromFhirR4 } from './diagnostic-medicine'
-import type { DeepReadonly } from '@assessmentis/util'
 import type ResourceDataTypes from './ResourceDataTypes'
 import type FhirResourceDataTypes from './FhirResourceDataTypes'
 
-const Schemas: {
-  [K in keyof ResourceDataTypes]: Schema.Schema<
-    ResourceDataTypes[K],
-    DeepReadonly<FhirResourceDataTypes[K]>,
-    never
-  >
-} = {
+const Schemas = {
   Composition: CompositionFromFhirR4,
   Encounter: EncounterFromFhirR4,
   Location: LocationFromFhirR4,
@@ -31,6 +24,12 @@ const Schemas: {
   Practitioner: PractitionerFromFhirR4,
   Questionnaire: QuestionnaireFromFhirR4,
   QuestionnaireResponse: QuestionnaireResponseFromFhirR4,
+} as const satisfies {
+  [K in keyof ResourceDataTypes]: Schema.Schema<
+    ResourceDataTypes[K],
+    FhirResourceDataTypes[K],
+    never
+  >
 }
 
 export default Schemas

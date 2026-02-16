@@ -46,11 +46,11 @@ export const patientConfig: ResourcePagesConfig<
     practitionerId: extractReferenceId(patient.generalPractitioner?.[0]),
   }),
 
-  createAction: createResourceCreateAction<PatientFormData, Patient>(
+  createAction: createResourceCreateAction<PatientFormData, 'Patient'>(
     'Patient',
     transformToPatient
   ),
-  updateAction: createResourceUpdateAction<PatientFormData, Patient>(
+  updateAction: createResourceUpdateAction<PatientFormData, 'Patient'>(
     'Patient',
     transformToPatient
   ),

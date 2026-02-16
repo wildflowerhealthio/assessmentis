@@ -24,8 +24,8 @@ export type ResourceType =
 
 export type ResourceDataTypeToResourceBase = {
   [K in ResourceType]: {
-    readonly resourceType: K
-    readonly id?: string | undefined
+    resourceType: K
+    id?: string | undefined
   }
 }
 

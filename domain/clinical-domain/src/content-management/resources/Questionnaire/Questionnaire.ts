@@ -1,16 +1,11 @@
 import { Schema } from 'effect'
-import type {
-  Questionnaire as FhirQuestionnaire,
-  QuestionnaireItem as FhirQuestionnaireItem,
-  QuestionnaireItemAnswerOption as FhirQuestionnaireItemAnswerOption,
-} from 'fhir/r4'
+import type fhir from 'fhir/r4'
 import type { DomainResource } from '../../../data-types/base/DomainResource'
 import { DomainResourceFromFhirR4 } from '../../../data-types/base/DomainResource'
 import type { BackboneElement } from '../../../data-types/base/BackboneElement'
 import { BackboneElementFromFhirR4 } from '../../../data-types/base/BackboneElement'
 import type { Coding } from '../../../data-types/complex/Coding'
 import { Coding as CodingSchema } from '../../../data-types/complex/Coding'
-import type { DeepReadonly } from '@assessmentis/util'
 import {
   ValueElementFromFhirR4,
   type ValueElement,
@@ -85,7 +80,7 @@ export interface QuestionnaireItemAnswerOption
 
 const QuestionnaireItemAnswerOptionFromFhirR4: Schema.Schema<
   QuestionnaireItemAnswerOption,
-  DeepReadonly<FhirQuestionnaireItemAnswerOption>,
+  fhir.QuestionnaireItemAnswerOption,
   never
 > = Schema.extend(
   Schema.extend(
@@ -102,16 +97,14 @@ const QuestionnaireItemAnswerOptionFromFhirR4: Schema.Schema<
  * hierarchical collection of items.
  */
 export interface QuestionnaireItem extends BackboneElement<QuestionnaireItemId> {
-  answerOption?: ReadonlyArray<QuestionnaireItemAnswerOption>
+  answerOption?: QuestionnaireItemAnswerOption[]
   answerValueSet?: string
-  code?: ReadonlyArray<Coding>
+  code?: Coding[]
   definition?: string
   enableBehavior?: 'all' | 'any'
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  enableWhen?: any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  initial?: any
-  item?: ReadonlyArray<QuestionnaireItem>
+  enableWhen?: unknown
+  initial?: unknown
+  item?: QuestionnaireItem[]
   linkId: QuestionnaireItemLink
   maxLength?: number
   prefix?: string
@@ -128,16 +121,16 @@ export interface QuestionnaireItem extends BackboneElement<QuestionnaireItemId> 
  */
 export const QuestionnaireItemFromFhirR4: Schema.Schema<
   QuestionnaireItem,
-  DeepReadonly<FhirQuestionnaireItem>,
+  fhir.QuestionnaireItem,
   never
 > = Schema.extend(
   BackboneElementFromFhirR4(QuestionnaireItemId),
   Schema.Struct({
     answerOption: Schema.optional(
-      Schema.Array(QuestionnaireItemAnswerOptionFromFhirR4)
+      Schema.mutable(Schema.Array(QuestionnaireItemAnswerOptionFromFhirR4))
     ),
     answerValueSet: Schema.optional(Schema.String),
-    code: Schema.optional(Schema.Array(Schema.suspend(() => CodingSchema))),
+    code: Schema.optional(Schema.mutable(Schema.Array(Schema.suspend(() => CodingSchema)))),
     definition: Schema.optional(Schema.String),
     enableBehavior: Schema.optional(
       Schema.Union(
@@ -149,15 +142,15 @@ export const QuestionnaireItemFromFhirR4: Schema.Schema<
     enableWhen: Schema.optional(Schema.Any),
     initial: Schema.optional(Schema.Any),
     item: Schema.optional(
-      Schema.Array(
+      Schema.mutable(Schema.Array(
         Schema.suspend(
           (): Schema.Schema<
             QuestionnaireItem,
-            DeepReadonly<FhirQuestionnaireItem>,
+            fhir.QuestionnaireItem,
             never
           > => QuestionnaireItemFromFhirR4
         )
-      )
+      ))
     ),
     linkId: QuestionnaireItemLink,
     maxLength: Schema.optional(Schema.Int),
@@ -179,53 +172,48 @@ export const QuestionnaireItemFromFhirR4: Schema.Schema<
 export interface Questionnaire extends DomainResource<QuestionnaireId> {
   resourceType: 'Questionnaire'
   approvalDate?: string
-  code?: ReadonlyArray<Coding>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  contact?: any
+  code?: Coding[]
+  contact?: unknown
   copyright?: string
   date?: string
-  derivedFrom?: ReadonlyArray<string>
+  derivedFrom?: string[]
   description?: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  effectivePeriod?: any
+  effectivePeriod?: unknown
   experimental?: boolean
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  identifier?: any
-  item?: ReadonlyArray<QuestionnaireItem>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  jurisdiction?: any
+  identifier?: unknown
+  item?: QuestionnaireItem[]
+  jurisdiction?: unknown
   lastReviewDate?: string
   name?: string
   publisher?: string
   purpose?: string
   status: 'draft' | 'active' | 'retired' | 'unknown'
-  subjectType?: ReadonlyArray<string>
+  subjectType?: string[]
   title?: string
   url?: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  useContext?: any
+  useContext?: unknown
   version?: string
 }
 
 export const QuestionnaireFromFhirR4: Schema.Schema<
   Questionnaire,
-  DeepReadonly<FhirQuestionnaire>,
+  fhir.Questionnaire,
   never
 > = Schema.extend(
   DomainResourceFromFhirR4(QuestionnaireId),
   Schema.Struct({
     resourceType: Schema.Literal('Questionnaire'),
     approvalDate: Schema.optional(Schema.String),
-    code: Schema.optional(Schema.Array(Schema.suspend(() => CodingSchema))),
+    code: Schema.optional(Schema.mutable(Schema.Array(Schema.suspend(() => CodingSchema)))),
     contact: Schema.optional(Schema.Any),
     copyright: Schema.optional(Schema.String),
     date: Schema.optional(Schema.String),
-    derivedFrom: Schema.optional(Schema.Array(Schema.String)),
+    derivedFrom: Schema.optional(Schema.mutable(Schema.Array(Schema.String))),
     description: Schema.optional(Schema.String),
     effectivePeriod: Schema.optional(Schema.Any),
     experimental: Schema.optional(Schema.Boolean),
     identifier: Schema.optional(Schema.Any),
-    item: Schema.optional(Schema.Array(QuestionnaireItemFromFhirR4)),
+    item: Schema.optional(Schema.mutable(Schema.Array(QuestionnaireItemFromFhirR4))),
     jurisdiction: Schema.optional(Schema.Any),
     lastReviewDate: Schema.optional(Schema.String),
     name: Schema.optional(Schema.String),
@@ -237,7 +225,7 @@ export const QuestionnaireFromFhirR4: Schema.Schema<
       Schema.Literal('retired'),
       Schema.Literal('unknown')
     ),
-    subjectType: Schema.optional(Schema.Array(Schema.String)),
+    subjectType: Schema.optional(Schema.mutable(Schema.Array(Schema.String))),
     title: Schema.optional(Schema.String),
     url: Schema.optional(Schema.String),
     useContext: Schema.optional(Schema.Any),

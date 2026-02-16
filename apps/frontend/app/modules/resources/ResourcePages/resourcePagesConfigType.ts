@@ -6,7 +6,7 @@ import type {
   RepositoryFilters,
   Schemas,
 } from '@assessmentis/clinical-domain'
-import type { WithId } from '@assessmentis/clinical-domain/data-types'
+import type { WithId } from '@assessmentis/effectful-store'
 import type { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
 import type { NoSelectedOrgError } from '@assessmentis/platform-domain'
 import type { NotFoundError } from '@assessmentis/ontology'

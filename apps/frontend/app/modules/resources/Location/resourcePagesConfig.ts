@@ -47,11 +47,11 @@ export const locationConfig: ResourcePagesConfig<
     identifierValue: location.identifier?.[0]?.value ?? undefined,
   }),
 
-  createAction: createResourceCreateAction<LocationFormData, Location>(
+  createAction: createResourceCreateAction<LocationFormData, 'Location'>(
     'Location',
     transformToLocation
   ),
-  updateAction: createResourceUpdateAction<LocationFormData, Location>(
+  updateAction: createResourceUpdateAction<LocationFormData, 'Location'>(
     'Location',
     transformToLocation
   ),

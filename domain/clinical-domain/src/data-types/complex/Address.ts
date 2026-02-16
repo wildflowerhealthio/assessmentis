@@ -1,67 +1,114 @@
 import { Schema } from 'effect'
+import type fhir from 'fhir/r4'
 import type { Period } from './Period'
 import { PeriodFromFhirR4 } from './Period'
 
-/**
- * An address expressed using postal conventions (as opposed to GPS or other location definition formats).
- */
-export const Address = Schema.Struct({
+export interface Address {
   /**
    * The purpose of this address.
    * home | work | temp | old | billing - purpose of this address
    */
-  use: Schema.optional(
-    Schema.Union(
-      Schema.Literal('home'),
-      Schema.Literal('work'),
-      Schema.Literal('temp'),
-      Schema.Literal('old'),
-      Schema.Literal('billing')
-    )
-  ),
+  use?: 'home' | 'work' | 'temp' | 'old' | 'billing'
   /**
    * Distinguishes between physical addresses (those you can visit) and mailing addresses (e.g. PO Boxes and care-of addresses). Most addresses are both.
    * postal | physical | both
    */
-  type: Schema.optional(
-    Schema.Union(
-      Schema.Literal('postal'),
-      Schema.Literal('physical'),
-      Schema.Literal('both')
-    )
-  ),
+  type?: 'postal' | 'physical' | 'both'
   /**
    * Specifies the entire address as it should be displayed e.g. on a postal label. This may be provided instead of or as well as the specific parts.
    */
-  text: Schema.optional(Schema.String),
+  text?: string
   /**
    * This component contains the house number, apartment number, street name, street direction, P.O. Box number, delivery hints, and similar address information.
    */
-  line: Schema.optional(Schema.Array(Schema.String)),
+  line?: string[]
+
   /**
    * The name of the city, town, suburb, village or other community or delivery center.
    */
-  city: Schema.optional(Schema.String),
+  city?: string
   /**
    * The name of the administrative area (county).
    */
-  district: Schema.optional(Schema.String),
+  district?: string
   /**
    * Sub-unit of a country with limited sovereignty in a federally organized country. A code may be used if codes are in common use (e.g. US 2 letter state codes).
    */
-  state: Schema.optional(Schema.String),
+  state?: string
   /**
    * A postal code designating a region defined by the postal service.
    */
-  postalCode: Schema.optional(Schema.String),
+  postalCode?: string
   /**
    * Country - a nation as commonly understood or generally accepted.
    */
-  country: Schema.optional(Schema.String),
+  country?: string
   /**
    * Time period when address was/is in use.
    */
-  period: Schema.optional(Schema.suspend(() => PeriodFromFhirR4)),
-})
-
-export type Address = typeof Address.Type
+  period?: Period
+}
+/**
+ * An address expressed using postal conventions (as opposed to GPS or other location definition formats).
+ */
+export const AddressFromFhirR4: Schema.Schema<Address, fhir.Address, never> =
+  Schema.mutable(
+    Schema.Struct({
+      /**
+       * The purpose of this address.
+       * home | work | temp | old | billing - purpose of this address
+       */
+      use: Schema.optional(
+        Schema.Union(
+          Schema.Literal('home'),
+          Schema.Literal('work'),
+          Schema.Literal('temp'),
+          Schema.Literal('old'),
+          Schema.Literal('billing')
+        )
+      ),
+      /**
+       * Distinguishes between physical addresses (those you can visit) and mailing addresses (e.g. PO Boxes and care-of addresses). Most addresses are both.
+       * postal | physical | both
+       */
+      type: Schema.optional(
+        Schema.Union(
+          Schema.Literal('postal'),
+          Schema.Literal('physical'),
+          Schema.Literal('both')
+        )
+      ),
+      /**
+       * Specifies the entire address as it should be displayed e.g. on a postal label. This may be provided instead of or as well as the specific parts.
+       */
+      text: Schema.optional(Schema.String),
+      /**
+       * This component contains the house number, apartment number, street name, street direction, P.O. Box number, delivery hints, and similar address information.
+       */
+      line: Schema.optional(Schema.mutable(Schema.Array(Schema.String))),
+      /**
+       * The name of the city, town, suburb, village or other community or delivery center.
+       */
+      city: Schema.optional(Schema.String),
+      /**
+       * The name of the administrative area (county).
+       */
+      district: Schema.optional(Schema.String),
+      /**
+       * Sub-unit of a country with limited sovereignty in a federally organized country. A code may be used if codes are in common use (e.g. US 2 letter state codes).
+       */
+      state: Schema.optional(Schema.String),
+      /**
+       * A postal code designating a region defined by the postal service.
+       */
+      postalCode: Schema.optional(Schema.String),
+      /**
+       * Country - a nation as commonly understood or generally accepted.
+       */
+      country: Schema.optional(Schema.String),
+      /**
+       * Time period when address was/is in use.
+       */
+      period: Schema.optional(Schema.suspend(() => PeriodFromFhirR4)),
+    })
+  )

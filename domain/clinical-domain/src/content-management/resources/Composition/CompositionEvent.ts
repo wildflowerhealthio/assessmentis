@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import type { CompositionEvent as FhirCompositionEvent } from 'fhir/r4'
+import type fhir from 'fhir/r4'
 import type { BackboneElement } from '../../../data-types/base/BackboneElement'
 import { BackboneElementFromFhirR4 } from '../../../data-types/base/BackboneElement'
 import type { Reference } from '../../../data-types/complex/IdentifierAndReference'
@@ -8,7 +8,6 @@ import type { CodeableConcept } from '../../../data-types/complex/CodeableConcep
 import { CodeableConceptFromFhirR4 } from '../../../data-types/complex/CodeableConcept'
 import type { Period } from '../../../data-types/complex/Period'
 import { PeriodFromFhirR4 } from '../../../data-types/complex/Period'
-import type { DeepReadonly } from '@assessmentis/util'
 
 const CompositionEventId = Schema.String.pipe(
   Schema.brand('CompositionEventId')
@@ -16,9 +15,9 @@ const CompositionEventId = Schema.String.pipe(
 type CompositionEventId = typeof CompositionEventId.Type
 
 export interface CompositionEvent extends BackboneElement<CompositionEventId> {
-  code?: ReadonlyArray<CodeableConcept>
+  code?: CodeableConcept[]
   period?: Period
-  detail?: ReadonlyArray<Reference>
+  detail?: Reference[]
 }
 
 /**
@@ -26,17 +25,17 @@ export interface CompositionEvent extends BackboneElement<CompositionEventId> {
  */
 export const CompositionEventFromFhirR4: Schema.Schema<
   CompositionEvent,
-  DeepReadonly<FhirCompositionEvent>,
+  fhir.CompositionEvent,
   never
 > = Schema.extend(
   BackboneElementFromFhirR4(CompositionEventId),
   Schema.Struct({
     code: Schema.optional(
-      Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+      Schema.mutable(Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4)))
     ),
     period: Schema.optional(Schema.suspend(() => PeriodFromFhirR4)),
     detail: Schema.optional(
-      Schema.Array(Schema.suspend(() => ReferenceFromFhirR4))
+      Schema.mutable(Schema.Array(Schema.suspend(() => ReferenceFromFhirR4)))
     ),
   })
 )

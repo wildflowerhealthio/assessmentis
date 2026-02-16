@@ -1,10 +1,9 @@
 import { Schema } from 'effect'
-import type { CompositionAttester as FhirCompositionAttester } from 'fhir/r4'
+import type fhir from 'fhir/r4'
 import type { BackboneElement } from '../../../data-types/base/BackboneElement'
 import { BackboneElementFromFhirR4 } from '../../../data-types/base/BackboneElement'
 import type { Reference } from '../../../data-types/complex/IdentifierAndReference'
 import { ReferenceFromFhirR4 } from '../../../data-types/complex/IdentifierAndReference'
-import type { DeepReadonly } from '@assessmentis/util'
 
 export const CompositionAttesterId = Schema.String.pipe(
   Schema.brand('CompositionAttesterId')
@@ -31,7 +30,7 @@ export interface CompositionAttester extends BackboneElement<CompositionAttester
  */
 export const CompositionAttesterFromFhirR4: Schema.Schema<
   CompositionAttester,
-  DeepReadonly<FhirCompositionAttester>,
+  fhir.CompositionAttester,
   never
 > = Schema.extend(
   BackboneElementFromFhirR4(CompositionAttesterId),

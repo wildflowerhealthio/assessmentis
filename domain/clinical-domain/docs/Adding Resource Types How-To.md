@@ -12,6 +12,7 @@ In `src/{category}/resources/{ResourceName}.ts`:
 - Define `{ResourceName}` with `resourceType: Schema.Literal('{ResourceName}')`
 - Extend `DomainResource({ResourceName}Id)` fields
 - Add FHIR-compatible optional fields as needed
+- Use the Omit + intersection pattern for fields with `FromFhirR4` schemas (see [FHIR Schemas Explanation](./FHIR%20Schemas%20Explanation.md))
 
 Also export from `src/{category}/resources/index.ts`.
 
@@ -55,3 +56,9 @@ The schema and repository keys must match the FHIR `resourceType` literal.
 - Schema registry: [../src/Schemas.ts](../src/Schemas.ts)
 - Repository registry: [../src/Repositories.ts](../src/Repositories.ts)
 - Generic repository implementation: [../src/assessmentis/makeClinicalDataRepository.ts](../src/assessmentis/makeClinicalDataRepository.ts)
+
+## See Also
+
+- [FHIR Schemas Explanation](./FHIR%20Schemas%20Explanation.md) — Understanding the schema transformation pattern
+- [FHIR Schemas How-To](./FHIR%20Schemas%20How-To.md) — Steps to transform a schema to use the explicit field pattern
+- [FHIR Modeling Reference](../FHIR%20Modeling%20Reference.md) — Core modeling rules and conventions

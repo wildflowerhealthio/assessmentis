@@ -1,27 +1,22 @@
 import { Effect, Schema } from 'effect'
-import type { Element as FhirElement } from 'fhir/r4'
+import type fhir from 'fhir/r4'
+import type { WithId } from '@assessmentis/effectful-store'
+import { hasId } from '@assessmentis/effectful-store'
+
+import { ExtensionFromFhirR4, type Extension } from '../special-purpose'
 export interface Element<IdType extends string = string> {
-  id?: IdType
+  id?: IdType | undefined
+  extension?: Extension[]
 }
 
 export const ElementFromFhirR4 = <IdType extends string = string>(
   idSchema: Schema.Schema<IdType, string>
-) =>
-  Schema.Struct({
-    id: Schema.optional(idSchema),
-  }) satisfies Schema.Schema<Element<IdType>, FhirElement>
-
-export type WithId<A extends { id?: string | undefined }> = A & {
-  id: NonNullable<A['id']>
-}
-
-export const hasId = <IdType extends string, A extends Element<IdType>>(
-  element: A
-): element is WithId<A> => {
-  return element.id !== undefined
-}
-
-export const assertId = <A extends { id?: string | undefined }>(
-  a: A
-): Effect.Effect<WithId<A>, undefined, never> =>
-  hasId(a) ? Effect.succeed(a) : Effect.fail(undefined)
+): Schema.Schema<Element<IdType>, fhir.Element, never> =>
+  Schema.mutable(
+    Schema.Struct({
+      id: Schema.optional(idSchema),
+      extension: Schema.optional(
+        Schema.mutable(Schema.Array(Schema.suspend(() => ExtensionFromFhirR4)))
+      ),
+    })
+  )

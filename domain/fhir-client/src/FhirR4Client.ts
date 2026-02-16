@@ -6,20 +6,21 @@ import type {
   AuthError,
   AuthzError,
 } from '@assessmentis/ontology'
-import type { Bundle } from '@assessmentis/clinical-domain/foundation-framework'
+import type { OptionalIdBundle } from '@assessmentis/clinical-domain/foundation-framework'
 import { type DeepReadonly } from '@assessmentis/util'
+import type { ReadonlyRecord } from 'effect/Record'
 
 export class FhirR4Client extends Context.Tag('BareFhirR4Client')<
   FhirR4Client,
   {
     create: (params: {
-      type: string
-      resource: unknown
+      readonly type: string
+      readonly resource: unknown
     }) => Effect.Effect<unknown, AuthError | AuthzError | UnhandledError, never>
 
     read: <ResourceType extends string>(params: {
-      resourceType: ResourceType
-      id: string
+      readonly resourceType: ResourceType
+      readonly id: string
     }) => Effect.Effect<
       unknown,
       | AuthError
@@ -30,9 +31,9 @@ export class FhirR4Client extends Context.Tag('BareFhirR4Client')<
     >
 
     update: <ResourceType extends string>(params: {
-      id: string
-      type: ResourceType
-      resource: unknown
+      readonly id: string
+      readonly type: ResourceType
+      readonly resource: unknown
     }) => Effect.Effect<
       unknown,
       | AuthError
@@ -43,8 +44,8 @@ export class FhirR4Client extends Context.Tag('BareFhirR4Client')<
     >
 
     delete: <ResourceType extends string>(params: {
-      id: string
-      type: ResourceType
+      readonly id: string
+      readonly type: ResourceType
     }) => Effect.Effect<
       void,
       | AuthError
@@ -56,13 +57,13 @@ export class FhirR4Client extends Context.Tag('BareFhirR4Client')<
 
     executeBundle: (
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      bundle: DeepReadonly<Bundle<any>>
+      bundle: DeepReadonly<OptionalIdBundle<any>>
     ) => Effect.Effect<unknown, AuthError | AuthzError | UnhandledError, never>
 
     search: (
-      params: Record<string, string | readonly string[] | undefined> & {
-        resourceType: string
-      }
+      params: {
+        readonly resourceType: string
+      } & ReadonlyRecord<string, undefined | string | readonly string[]>
     ) => Effect.Effect<unknown, AuthError | AuthzError | UnhandledError, never>
   }
 >() {}

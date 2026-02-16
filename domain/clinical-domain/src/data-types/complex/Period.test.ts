@@ -26,6 +26,7 @@ describe('Period model', () => {
     const decode = Schema.decodeSync(PeriodFromFhirR4)
 
     const decoded = decode({
+      id: '123',
       start: '2026-01-04T00:00:00.000Z',
       end: '2026-01-07T00:00:00.000Z',
     })

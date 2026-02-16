@@ -1,11 +1,6 @@
 import type { DateTime } from 'effect'
 import { Schema } from 'effect'
-import type {
-  Patient as FhirPatient,
-  PatientContact as FhirPatientContact,
-  PatientCommunication as FhirPatientCommunication,
-  PatientLink as FhirPatientLink,
-} from 'fhir/r4'
+import type fhir from 'fhir/r4'
 import type { DomainResource } from '../../data-types/base/DomainResource'
 import { DomainResourceFromFhirR4 } from '../../data-types/base/DomainResource'
 import type { BackboneElement } from '../../data-types/base/BackboneElement'
@@ -19,8 +14,14 @@ import {
   ReferenceFromFhirR4,
 } from '../../data-types/complex/IdentifierAndReference'
 import { HumanName } from '../../data-types/complex/HumanName'
-import { ContactPoint } from '../../data-types/complex/ContactPoint'
-import { Address } from '../../data-types/complex/Address'
+import {
+  ContactPointFromFhirR4,
+  type ContactPoint,
+} from '../../data-types/complex/ContactPoint'
+import {
+  AddressFromFhirR4,
+  type Address,
+} from '../../data-types/complex/Address'
 import type { Attachment } from '../../data-types/complex/Attachment'
 import { AttachmentFromFhirR4 } from '../../data-types/complex/Attachment'
 import type { CodeableConcept } from '../../data-types/complex/CodeableConcept'
@@ -28,7 +29,7 @@ import { CodeableConceptFromFhirR4 } from '../../data-types/complex/CodeableConc
 import type { Period } from '../../data-types/complex/Period'
 import { PeriodFromFhirR4 } from '../../data-types/complex/Period'
 import { AdministrativeGender } from '../value-sets/AdministrativeGender'
-import { TimelessDateFromString, type DeepReadonly } from '@assessmentis/util'
+import { TimelessDateFromString } from '@assessmentis/util'
 
 export const PatientId = Schema.String.pipe(Schema.brand('PatientId'))
 
@@ -63,9 +64,9 @@ type PatientLinkId = typeof PatientLinkId.Type
 // --- Sub-component interfaces ---
 
 interface PatientContact extends BackboneElement<PatientContactId> {
-  relationship?: ReadonlyArray<CodeableConcept>
+  relationship?: CodeableConcept[]
   name?: HumanName
-  telecom?: ReadonlyArray<ContactPoint>
+  telecom?: ContactPoint[]
   address?: Address
   gender?: AdministrativeGender
   organization?: Reference
@@ -86,17 +87,23 @@ interface PatientLink extends BackboneElement<PatientLinkId> {
 
 const PatientContactFromFhirR4: Schema.Schema<
   PatientContact,
-  DeepReadonly<FhirPatientContact>,
+  fhir.PatientContact,
   never
 > = Schema.extend(
   BackboneElementFromFhirR4(PatientContactId),
   Schema.Struct({
     relationship: Schema.optional(
-      Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+      Schema.mutable(
+        Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+      )
     ),
     name: Schema.optional(Schema.suspend(() => HumanName)),
-    telecom: Schema.optional(Schema.Array(Schema.suspend(() => ContactPoint))),
-    address: Schema.optional(Schema.suspend(() => Address)),
+    telecom: Schema.optional(
+      Schema.mutable(
+        Schema.Array(Schema.suspend(() => ContactPointFromFhirR4))
+      )
+    ),
+    address: Schema.optional(Schema.suspend(() => AddressFromFhirR4)),
     gender: Schema.optional(AdministrativeGender),
     organization: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
     period: Schema.optional(Schema.suspend(() => PeriodFromFhirR4)),
@@ -105,7 +112,7 @@ const PatientContactFromFhirR4: Schema.Schema<
 
 const PatientCommunicationFromFhirR4: Schema.Schema<
   PatientCommunication,
-  DeepReadonly<FhirPatientCommunication>,
+  fhir.PatientCommunication,
   never
 > = Schema.extend(
   BackboneElementFromFhirR4(PatientCommunicationId),
@@ -117,7 +124,7 @@ const PatientCommunicationFromFhirR4: Schema.Schema<
 
 const PatientLinkFromFhirR4: Schema.Schema<
   PatientLink,
-  DeepReadonly<FhirPatientLink>,
+  fhir.PatientLink,
   never
 > = Schema.extend(
   BackboneElementFromFhirR4(PatientLinkId),
@@ -135,24 +142,24 @@ const PatientLinkFromFhirR4: Schema.Schema<
  */
 export interface Patient extends DomainResource<PatientId> {
   resourceType: 'Patient'
-  identifier?: ReadonlyArray<Identifier>
+  identifier?: Identifier[]
   active?: boolean
-  name?: ReadonlyArray<HumanName>
-  telecom?: ReadonlyArray<ContactPoint>
+  name?: HumanName[]
+  telecom?: ContactPoint[]
   gender?: AdministrativeGender
   birthDate?: Date
   deceasedBoolean?: boolean
   deceasedDateTime?: DateTime.Utc
-  address?: ReadonlyArray<Address>
+  address?: Address[]
   maritalStatus?: CodeableConcept
   multipleBirthBoolean?: boolean
   multipleBirthInteger?: number
-  photo?: ReadonlyArray<Attachment>
-  contact?: ReadonlyArray<PatientContact>
-  communication?: ReadonlyArray<PatientCommunication>
-  generalPractitioner?: ReadonlyArray<Reference>
+  photo?: Attachment[]
+  contact?: PatientContact[]
+  communication?: PatientCommunication[]
+  generalPractitioner?: Reference[]
   managingOrganization?: Reference
-  link?: ReadonlyArray<PatientLink>
+  link?: PatientLink[]
 }
 
 /**
@@ -160,41 +167,61 @@ export interface Patient extends DomainResource<PatientId> {
  */
 export const PatientFromFhirR4: Schema.Schema<
   Patient,
-  DeepReadonly<FhirPatient>,
+  fhir.Patient,
   never
 > = Schema.extend(
   DomainResourceFromFhirR4(PatientId),
   Schema.Struct({
     resourceType: Schema.Literal('Patient'),
     identifier: Schema.optional(
-      Schema.Array(Schema.suspend(() => IdentifierFromFhirR4))
+      Schema.mutable(
+        Schema.Array(Schema.suspend(() => IdentifierFromFhirR4))
+      )
     ),
     active: Schema.optional(Schema.Boolean),
-    name: Schema.optional(Schema.Array(Schema.suspend(() => HumanName))),
-    telecom: Schema.optional(Schema.Array(Schema.suspend(() => ContactPoint))),
+    name: Schema.optional(
+      Schema.mutable(Schema.Array(Schema.suspend(() => HumanName)))
+    ),
+    telecom: Schema.optional(
+      Schema.mutable(
+        Schema.Array(Schema.suspend(() => ContactPointFromFhirR4))
+      )
+    ),
     gender: Schema.optional(AdministrativeGender),
     birthDate: Schema.optional(TimelessDateFromString),
     deceasedBoolean: Schema.optional(Schema.Boolean),
     deceasedDateTime: Schema.optional(Schema.DateTimeUtc),
-    address: Schema.optional(Schema.Array(Schema.suspend(() => Address))),
+    address: Schema.optional(
+      Schema.mutable(
+        Schema.Array(Schema.suspend(() => AddressFromFhirR4))
+      )
+    ),
     maritalStatus: Schema.optional(
       Schema.suspend(() => CodeableConceptFromFhirR4)
     ),
     multipleBirthBoolean: Schema.optional(Schema.Boolean),
     multipleBirthInteger: Schema.optional(Schema.Number),
     photo: Schema.optional(
-      Schema.Array(Schema.suspend(() => AttachmentFromFhirR4))
+      Schema.mutable(
+        Schema.Array(Schema.suspend(() => AttachmentFromFhirR4))
+      )
     ),
-    contact: Schema.optional(Schema.Array(PatientContactFromFhirR4)),
+    contact: Schema.optional(
+      Schema.mutable(Schema.Array(PatientContactFromFhirR4))
+    ),
     communication: Schema.optional(
-      Schema.Array(PatientCommunicationFromFhirR4)
+      Schema.mutable(Schema.Array(PatientCommunicationFromFhirR4))
     ),
     generalPractitioner: Schema.optional(
-      Schema.Array(Schema.suspend(() => ReferenceFromFhirR4))
+      Schema.mutable(
+        Schema.Array(Schema.suspend(() => ReferenceFromFhirR4))
+      )
     ),
     managingOrganization: Schema.optional(
       Schema.suspend(() => ReferenceFromFhirR4)
     ),
-    link: Schema.optional(Schema.Array(PatientLinkFromFhirR4)),
+    link: Schema.optional(
+      Schema.mutable(Schema.Array(PatientLinkFromFhirR4))
+    ),
   })
 )

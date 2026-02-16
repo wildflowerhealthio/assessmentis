@@ -43,11 +43,11 @@ export const compositionConfig: ResourcePagesConfig<
     patientId: extractReferenceId(composition.subject),
   }),
 
-  createAction: createResourceCreateAction<CompositionFormData, Composition>(
+  createAction: createResourceCreateAction<CompositionFormData, 'Composition'>(
     'Composition',
     transformToComposition
   ),
-  updateAction: createResourceUpdateAction<CompositionFormData, Composition>(
+  updateAction: createResourceUpdateAction<CompositionFormData, 'Composition'>(
     'Composition',
     transformToComposition
   ),

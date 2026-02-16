@@ -1,3 +1,5 @@
+import type { ReadonlyRecord } from 'effect/Record'
+
 export type SearchParamValue = string | readonly string[] | undefined
 
 /**
@@ -5,7 +7,7 @@ export type SearchParamValue = string | readonly string[] | undefined
  * and filtering out undefined values and empty arrays.
  */
 export const flattenSearchParams = (
-  params: Record<string, SearchParamValue>
+  params: ReadonlyRecord<string, SearchParamValue>
 ): Record<string, string> => {
   const result: Record<string, string> = {}
   for (const [key, value] of Object.entries(params)) {

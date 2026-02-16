@@ -1,8 +1,5 @@
 import { Schema } from 'effect'
-import type {
-  Practitioner as FhirPractitioner,
-  PractitionerQualification as FhirPractitionerQualification,
-} from 'fhir/r4'
+import type fhir from 'fhir/r4'
 import type { DomainResource } from '../../data-types/base/DomainResource'
 import { DomainResourceFromFhirR4 } from '../../data-types/base/DomainResource'
 import type { BackboneElement } from '../../data-types/base/BackboneElement'
@@ -16,8 +13,12 @@ import {
   ReferenceFromFhirR4,
 } from '../../data-types/complex/IdentifierAndReference'
 import { HumanName } from '../../data-types/complex/HumanName'
-import { ContactPoint } from '../../data-types/complex/ContactPoint'
-import { Address } from '../../data-types/complex/Address'
+import type { ContactPoint } from '../../data-types/complex/ContactPoint'
+import { ContactPointFromFhirR4 } from '../../data-types/complex/ContactPoint'
+import {
+  AddressFromFhirR4,
+  type Address,
+} from '../../data-types/complex/Address'
 import type { Attachment } from '../../data-types/complex/Attachment'
 import { AttachmentFromFhirR4 } from '../../data-types/complex/Attachment'
 import type { CodeableConcept } from '../../data-types/complex/CodeableConcept'
@@ -25,7 +26,7 @@ import { CodeableConceptFromFhirR4 } from '../../data-types/complex/CodeableConc
 import type { Period } from '../../data-types/complex/Period'
 import { PeriodFromFhirR4 } from '../../data-types/complex/Period'
 import { AdministrativeGender } from '../value-sets/AdministrativeGender'
-import { TimelessDateFromString, type DeepReadonly } from '@assessmentis/util'
+import { TimelessDateFromString } from '@assessmentis/util'
 
 export const PractitionerId = Schema.String.pipe(Schema.brand('PractitionerId'))
 
@@ -39,7 +40,7 @@ const PractitionerQualificationId = Schema.String.pipe(
 type PractitionerQualificationId = typeof PractitionerQualificationId.Type
 
 interface PractitionerQualification extends BackboneElement<PractitionerQualificationId> {
-  identifier?: ReadonlyArray<Identifier>
+  identifier?: Identifier[]
   code: CodeableConcept
   period?: Period
   issuer?: Reference
@@ -47,13 +48,13 @@ interface PractitionerQualification extends BackboneElement<PractitionerQualific
 
 const PractitionerQualificationFromFhirR4: Schema.Schema<
   PractitionerQualification,
-  DeepReadonly<FhirPractitionerQualification>,
+  fhir.PractitionerQualification,
   never
 > = Schema.extend(
   BackboneElementFromFhirR4(PractitionerQualificationId),
   Schema.Struct({
     identifier: Schema.optional(
-      Schema.Array(Schema.suspend(() => IdentifierFromFhirR4))
+      Schema.mutable(Schema.Array(Schema.suspend(() => IdentifierFromFhirR4)))
     ),
     code: Schema.suspend(() => CodeableConceptFromFhirR4),
     period: Schema.optional(Schema.suspend(() => PeriodFromFhirR4)),
@@ -68,16 +69,16 @@ const PractitionerQualificationFromFhirR4: Schema.Schema<
  */
 export interface Practitioner extends DomainResource<PractitionerId> {
   resourceType: 'Practitioner'
-  identifier?: ReadonlyArray<Identifier>
+  identifier?: Identifier[]
   active?: boolean
-  name?: ReadonlyArray<HumanName>
-  telecom?: ReadonlyArray<ContactPoint>
-  address?: ReadonlyArray<Address>
+  name?: HumanName[]
+  telecom?: ContactPoint[]
+  address?: Address[]
   gender?: AdministrativeGender
   birthDate?: Date
-  photo?: ReadonlyArray<Attachment>
-  qualification?: ReadonlyArray<PractitionerQualification>
-  communication?: ReadonlyArray<CodeableConcept>
+  photo?: Attachment[]
+  qualification?: PractitionerQualification[]
+  communication?: CodeableConcept[]
 }
 
 /**
@@ -85,29 +86,37 @@ export interface Practitioner extends DomainResource<PractitionerId> {
  */
 export const PractitionerFromFhirR4: Schema.Schema<
   Practitioner,
-  DeepReadonly<FhirPractitioner>,
+  fhir.Practitioner,
   never
 > = Schema.extend(
   DomainResourceFromFhirR4(PractitionerId),
   Schema.Struct({
     resourceType: Schema.Literal('Practitioner'),
     identifier: Schema.optional(
-      Schema.Array(Schema.suspend(() => IdentifierFromFhirR4))
+      Schema.mutable(Schema.Array(Schema.suspend(() => IdentifierFromFhirR4)))
     ),
     active: Schema.optional(Schema.Boolean),
-    name: Schema.optional(Schema.Array(Schema.suspend(() => HumanName))),
-    telecom: Schema.optional(Schema.Array(Schema.suspend(() => ContactPoint))),
-    address: Schema.optional(Schema.Array(Schema.suspend(() => Address))),
+    name: Schema.optional(
+      Schema.mutable(Schema.Array(Schema.suspend(() => HumanName)))
+    ),
+    telecom: Schema.optional(
+      Schema.mutable(Schema.Array(Schema.suspend(() => ContactPointFromFhirR4)))
+    ),
+    address: Schema.optional(
+      Schema.mutable(Schema.Array(Schema.suspend(() => AddressFromFhirR4)))
+    ),
     gender: Schema.optional(AdministrativeGender),
     birthDate: Schema.optional(TimelessDateFromString),
     photo: Schema.optional(
-      Schema.Array(Schema.suspend(() => AttachmentFromFhirR4))
+      Schema.mutable(Schema.Array(Schema.suspend(() => AttachmentFromFhirR4)))
     ),
     qualification: Schema.optional(
-      Schema.Array(PractitionerQualificationFromFhirR4)
+      Schema.mutable(Schema.Array(PractitionerQualificationFromFhirR4))
     ),
     communication: Schema.optional(
-      Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+      Schema.mutable(
+        Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+      )
     ),
   })
 )

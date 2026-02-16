@@ -1,5 +1,9 @@
 import { Effect, Schema } from 'effect'
 import { VideoCallClient } from '@assessmentis/video-call-domain'
+import type {
+  EncounterLocation,
+  Encounter,
+} from '@assessmentis/clinical-domain/administration'
 import type { QuestionnaireResponse } from '@assessmentis/clinical-domain/content-management'
 import {
   QuestionnaireResponseFromFhirR4,
@@ -20,13 +24,17 @@ import type {
 import { Code } from '@assessmentis/clinical-domain/data-types'
 
 export const CreateEncounterArg = Schema.extend(
-  Schema.partial(EncounterFromFhirR4),
-  Schema.Struct({
-    //....pipe(Schema.omit("encounterId")).fields,
-    questionnaireResponses: Schema.Array(
-      QuestionnaireResponseFromFhirR4.pipe(Schema.pick('questionnaire'))
-    ),
-  })
+  Schema.mutable(Schema.partial(EncounterFromFhirR4)),
+  Schema.mutable(
+    Schema.Struct({
+      //....pipe(Schema.omit("encounterId")).fields,
+      questionnaireResponses: Schema.mutable(
+        Schema.Array(
+          QuestionnaireResponseFromFhirR4.pipe(Schema.pick('questionnaire'))
+        )
+      ),
+    })
+  )
 )
 
 export type CreateEncounterArg = typeof CreateEncounterArg.Type
@@ -76,7 +84,7 @@ export const createEncounter = (
     })
 
     // Build location array with proper references
-    const videoRoomEntry = {
+    const videoRoomEntry: EncounterLocation = {
       location: { reference: `Location/${videoRoomLocation.id}` },
       physicalType: {
         coding: [
@@ -91,10 +99,11 @@ export const createEncounter = (
     }
 
     // Add user-selected physical location if provided
-    const userLocationEntries =
-      args.location?.filter((l) => !Location.isVirtualLocation(l)) ?? []
+    const userLocationEntries: EncounterLocation[] = (
+      args.location ?? []
+    ).filter((l) => !Location.isVirtualLocation(l))
 
-    const encounterData = {
+    const encounterData: Encounter = {
       resourceType: 'Encounter',
       class: {
         display: 'virtual',
@@ -104,7 +113,7 @@ export const createEncounter = (
       status: 'planned',
       ...args,
       location: [videoRoomEntry, ...userLocationEntries],
-    } as const
+    }
 
     const createdEncounter = yield* encounterRepository.create(encounterData)
 

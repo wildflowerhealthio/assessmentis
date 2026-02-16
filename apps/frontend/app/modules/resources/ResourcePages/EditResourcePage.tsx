@@ -16,7 +16,7 @@ import type {
   ClinicalDataRepositoryErrorsWithNotFound,
   Schemas,
 } from '@assessmentis/clinical-domain'
-import type { WithId } from '@assessmentis/clinical-domain/data-types'
+import type { WithId } from '@assessmentis/effectful-store'
 import type { NoSelectedOrgError } from '@assessmentis/platform-domain'
 
 export interface EditResourcePageProps {

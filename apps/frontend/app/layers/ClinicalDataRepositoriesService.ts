@@ -1,7 +1,6 @@
 import type { Layer, Schema, Scope } from 'effect'
 import { Effect, Either, pipe, Stream } from 'effect'
 import type {
-  Schemas,
   ClinicalDomainRepositoryTagClass,
   ClinicalDataRepository,
   ResourceDataTypes,
@@ -110,40 +109,44 @@ export class ClinicalDataRepositoryService extends Effect.Service<ClinicalDataRe
           )
         )
 
+      const effect: ClinicalDataRepositoryServiceType['effect'] = {
+        Composition: clientEffect(CompositionFromFhirR4, 'Composition'),
+        Encounter: clientEffect(EncounterFromFhirR4, 'Encounter'),
+        Location: clientEffect(LocationFromFhirR4, 'Location'),
+        Media: clientEffect(MediaFromFhirR4, 'Media'),
+        Observation: clientEffect(ObservationFromFhirR4, 'Observation'),
+        Patient: clientEffect(PatientFromFhirR4, 'Patient'),
+        Practitioner: clientEffect(PractitionerFromFhirR4, 'Practitioner'),
+        Questionnaire: clientEffect(QuestionnaireFromFhirR4, 'Questionnaire'),
+        QuestionnaireResponse: clientEffect(
+          QuestionnaireResponseFromFhirR4,
+          'QuestionnaireResponse'
+        ),
+      }
+
+      const stream: ClinicalDataRepositoryServiceType['stream'] = {
+        Composition: clientStream(CompositionFromFhirR4, 'Composition'),
+        Encounter: clientStream(EncounterFromFhirR4, 'Encounter'),
+        Location: clientStream(LocationFromFhirR4, 'Location'),
+        Media: clientStream(MediaFromFhirR4, 'Media'),
+        Observation: clientStream(ObservationFromFhirR4, 'Observation'),
+        Patient: clientStream(PatientFromFhirR4, 'Patient'),
+        Practitioner: clientStream(PractitionerFromFhirR4, 'Practitioner'),
+        Questionnaire: clientStream(QuestionnaireFromFhirR4, 'Questionnaire'),
+        QuestionnaireResponse: clientStream(
+          QuestionnaireResponseFromFhirR4,
+          'QuestionnaireResponse'
+        ),
+      }
+
       return {
-        effect: {
-          Composition: clientEffect(CompositionFromFhirR4, 'Composition'),
-          Encounter: clientEffect(EncounterFromFhirR4, 'Encounter'),
-          Location: clientEffect(LocationFromFhirR4, 'Location'),
-          Media: clientEffect(MediaFromFhirR4, 'Media'),
-          Observation: clientEffect(ObservationFromFhirR4, 'Observation'),
-          Patient: clientEffect(PatientFromFhirR4, 'Patient'),
-          Practitioner: clientEffect(PractitionerFromFhirR4, 'Practitioner'),
-          Questionnaire: clientEffect(QuestionnaireFromFhirR4, 'Questionnaire'),
-          QuestionnaireResponse: clientEffect(
-            QuestionnaireResponseFromFhirR4,
-            'QuestionnaireResponse'
-          ),
-        },
-        stream: {
-          Composition: clientStream(CompositionFromFhirR4, 'Composition'),
-          Encounter: clientStream(EncounterFromFhirR4, 'Encounter'),
-          Location: clientStream(LocationFromFhirR4, 'Location'),
-          Media: clientStream(MediaFromFhirR4, 'Media'),
-          Observation: clientStream(ObservationFromFhirR4, 'Observation'),
-          Patient: clientStream(PatientFromFhirR4, 'Patient'),
-          Practitioner: clientStream(PractitionerFromFhirR4, 'Practitioner'),
-          Questionnaire: clientStream(QuestionnaireFromFhirR4, 'Questionnaire'),
-          QuestionnaireResponse: clientStream(
-            QuestionnaireResponseFromFhirR4,
-            'QuestionnaireResponse'
-          ),
-        },
-      } satisfies ClinicalDataRepositoryServiceType
+        effect,
+        stream,
+      }
     }),
   }
 ) {
-  repositoryEffect<const TResourceType extends keyof ResourceDataTypes>(
+  repositoryEffect<TResourceType extends keyof ResourceDataTypes>(
     resourceType: TResourceType
   ): Effect.Effect<
     ClinicalDataRepository<ResourceDataTypes[TResourceType]>,
@@ -152,7 +155,14 @@ export class ClinicalDataRepositoryService extends Effect.Service<ClinicalDataRe
   > {
     return pipe(
       ClinicalDataRepositoryService,
-      Effect.flatMap((service) => service.effect[resourceType]),
+      Effect.flatMap(
+        (service) =>
+          service.effect[resourceType] as unknown as Effect.Effect<
+            ClinicalDataRepository<ResourceDataTypes[TResourceType]>,
+            AuthError | NoSelectedOrgError | UnhandledError,
+            never
+          >
+      ),
       Effect.provideService(ClinicalDataRepositoryService, this)
     )
   }
@@ -173,15 +183,7 @@ export class ClinicalDataRepositoryService extends Effect.Service<ClinicalDataRe
       Effect.map(
         ClinicalDataRepositoryService,
         (service) =>
-          service.stream[resourceType] satisfies Stream.Stream<
-            Either.Either<
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              ClinicalDataRepository<any>,
-              AuthError | NoSelectedOrgError | UnhandledError
-            >,
-            never,
-            Scope.Scope
-          > as Stream.Stream<
+          service.stream[resourceType] as unknown as Stream.Stream<
             Either.Either<
               ClinicalDataRepository<TResource>,
               AuthError | NoSelectedOrgError | UnhandledError
