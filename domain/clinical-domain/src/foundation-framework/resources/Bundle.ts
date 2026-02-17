@@ -1,11 +1,7 @@
 import { Schema } from 'effect'
-import type fhir from 'fhir/r4'
-import type { BackboneElement } from '../../data-types/base/BackboneElement'
-import { BackboneElementFromFhirR4 } from '../../data-types/base/BackboneElement'
-import type { Resource } from '../../data-types/base/Resource'
-import { ResourceFromFhirR4 } from '../../data-types/base/Resource'
-import type { Identifier } from '../../data-types/complex/IdentifierAndReference'
-import { IdentifierFromFhirR4 } from '../../data-types/complex/IdentifierAndReference'
+import { BackboneElement } from '../../data-types/base/BackboneElement'
+import { Resource } from '../../data-types/base/Resource'
+import { Identifier } from '../../data-types/complex/IdentifierAndReference'
 
 const BundleId = Schema.String.pipe(Schema.brand('BundleId'))
 type BundleId = typeof BundleId.Type
@@ -60,19 +56,15 @@ export interface OptionalIdBundle<T> extends Omit<Bundle<T>, 'id' | 'entry'> {
  * An entry in a bundle resource - will either contain a resource or information
  * about a resource (transactions and history only).
  */
-const BundleEntry = <BundleContentType, BundleContentEncoded>(
+const BundleEntrySchema = <BundleContentType, BundleContentEncoded>(
   contentTypeSchema: Schema.Schema<
     BundleContentType,
     BundleContentEncoded,
     never
   >
-): Schema.Schema<
-  BundleEntry<BundleContentType>,
-  fhir.BundleEntry<BundleContentEncoded>,
-  never
-> =>
+) =>
   Schema.extend(
-    BackboneElementFromFhirR4(BundleEntryId),
+    BackboneElement.Schema(BundleEntryId),
     Schema.mutable(
       Schema.Struct({
         fullUrl: Schema.optional(Schema.URL),
@@ -88,31 +80,29 @@ const BundleEntry = <BundleContentType, BundleContentEncoded>(
 /**
  * A container for a collection of resources.
  */
-export const BundleFromFhirR4 = <BundleContentType, BundleContentEncoded>(
-  contentTypeSchema: Schema.Schema<
-    BundleContentType,
-    BundleContentEncoded,
-    never
-  >
-): Schema.Schema<
-  Bundle<BundleContentType>,
-  fhir.Bundle<BundleContentEncoded>,
-  never
-> =>
-  Schema.extend(
-    ResourceFromFhirR4(BundleId),
-    Schema.mutable(
-      Schema.Struct({
-        resourceType: Schema.Literal('Bundle'),
-        entry: Schema.optional(
-          Schema.mutable(Schema.Array(BundleEntry(contentTypeSchema)))
-        ),
-        identifier: Schema.optional(Schema.suspend(() => IdentifierFromFhirR4)),
-        link: Schema.optional(Schema.mutable(Schema.Array(Schema.Any))),
-        signature: Schema.optional(Schema.Any),
-        timestamp: Schema.optional(Schema.String),
-        total: Schema.optional(Schema.Number),
-        type: BundleType,
-      })
-    )
-  )
+export const Bundle = {
+  Schema: <BundleContentType, BundleContentEncoded>(
+    contentTypeSchema: Schema.Schema<
+      BundleContentType,
+      BundleContentEncoded,
+      never
+    >
+  ) =>
+    Schema.extend(
+      Resource.Schema(BundleId),
+      Schema.mutable(
+        Schema.Struct({
+          resourceType: Schema.Literal('Bundle'),
+          entry: Schema.optional(
+            Schema.mutable(Schema.Array(BundleEntrySchema(contentTypeSchema)))
+          ),
+          identifier: Schema.optional(Schema.suspend(() => Identifier.Schema)),
+          link: Schema.optional(Schema.mutable(Schema.Array(Schema.Any))),
+          signature: Schema.optional(Schema.Any),
+          timestamp: Schema.optional(Schema.String),
+          total: Schema.optional(Schema.Number),
+          type: BundleType,
+        })
+      )
+    ),
+}

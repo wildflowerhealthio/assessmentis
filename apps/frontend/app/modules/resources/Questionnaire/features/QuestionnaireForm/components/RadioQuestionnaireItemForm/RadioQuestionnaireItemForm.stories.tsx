@@ -5,7 +5,7 @@ import { Arbitrary, FastCheck } from 'effect'
 import { action } from 'storybook/actions'
 import {
   QuestionnaireItemType,
-  QuestionnaireItemFromFhirR4,
+  QuestionnaireItem,
 } from '@assessmentis/clinical-domain/content-management'
 import RadioQuestionnaireItemForm, {
   RadioQuestionnaireItemFormGroup,
@@ -20,7 +20,7 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 const questionnaireItem = FastCheck.sample(
-  Arbitrary.make(QuestionnaireItemFromFhirR4)
+  Arbitrary.make(QuestionnaireItem.Schema)
 )[0]
 
 const arbitraryProps = {

@@ -1,10 +1,9 @@
-import type { Questionnaire } from '@assessmentis/clinical-domain/content-management'
-import { QuestionnaireFromFhirR4 } from '@assessmentis/clinical-domain/content-management'
+import { Questionnaire } from '@assessmentis/clinical-domain/content-management'
 import { Schema } from 'effect'
 import { codings } from './codings'
 
 export const questionnaire: Questionnaire = Schema.decodeSync(
-  QuestionnaireFromFhirR4
+  Questionnaire.Schema
 )({
   resourceType: 'Questionnaire',
   id: '69737-5',

@@ -1,25 +1,19 @@
 import { expect, test, describe } from 'vitest'
-import { QuestionnaireResponseItemAnswerFromFhirR4 } from './QuestionnaireResponseItem.js'
+import { QuestionnaireResponseItemAnswer } from './QuestionnaireResponseItem.js'
 import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
-import type { DeepReadonly } from '@assessmentis/util'
-import type { QuestionnaireResponseItemAnswer as FhirQuestionnaireResponseItemAnswer } from 'fhir/r4'
 
-// Compile-time check that Encoded schema matches FHIR R4 type
-const _qrItemAnswerEncoded: DeepReadonly<FhirQuestionnaireResponseItemAnswer> =
-  QuestionnaireResponseItemAnswerFromFhirR4.Encoded
-
-const answerArb = Arbitrary.make(QuestionnaireResponseItemAnswerFromFhirR4)
+const answerArb = Arbitrary.make(QuestionnaireResponseItemAnswer.Schema)
 
 describe('QuestionnaireResponseItemAnswer', () => {
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(answerArb, (answer) => {
         const encoded = Schema.encodeSync(
-          QuestionnaireResponseItemAnswerFromFhirR4
+          QuestionnaireResponseItemAnswer.Schema
         )(answer)
         const decoded = Schema.decodeSync(
-          QuestionnaireResponseItemAnswerFromFhirR4
+          QuestionnaireResponseItemAnswer.Schema
         )(encoded)
         expect(decoded).toEqual(answer)
       })

@@ -6,9 +6,9 @@ import {
 } from './QuestionnaireItemUiDisplayLevel'
 import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
-import { BackboneElementFromFhirR4 } from '../../data-types/base/BackboneElement'
+import { BackboneElement } from '../../data-types/base/BackboneElement'
 
-const TestBackboneElement = BackboneElementFromFhirR4(Schema.String)
+const TestBackboneElement = BackboneElement.Schema(Schema.String)
 const backboneElementArb = Arbitrary.make(TestBackboneElement)
 const displayLevelArb = Arbitrary.make(QuestionnaireItemUiDisplayLevel)
 

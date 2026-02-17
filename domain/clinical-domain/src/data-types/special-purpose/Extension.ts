@@ -1,10 +1,8 @@
 import { Schema } from 'effect'
-import {
-  ValueElementFromFhirR4,
-  type ValueElement,
-} from '../primitive/ValueElement'
-import type fhir from 'fhir/r4'
-import { ElementFromFhirR4, type Element } from '../base/Element'
+import type { ValueElementEncoded } from '../primitive/ValueElement'
+import { ValueElement } from '../primitive/ValueElement'
+import type { ElementEncoded } from '../base/Element'
+import { Element } from '../base/Element'
 
 const ElementId = Schema.String.pipe(Schema.brand('ElementId'))
 type ElementId = typeof ElementId.Type
@@ -13,21 +11,29 @@ export interface Extension extends ValueElement, Element<ElementId> {
   url: string
 }
 
-export const ExtensionFromFhirR4: Schema.Schema<
-  Extension,
-  fhir.Extension,
-  never
-> = Schema.extend(
+export interface ExtensionEncoded extends ValueElementEncoded, ElementEncoded {
+  url: string
+}
+
+const ExtensionSchema: Schema.Schema<Extension, ExtensionEncoded, never> =
   Schema.extend(
-    ElementFromFhirR4(ElementId),
-    Schema.suspend(() => ValueElementFromFhirR4)
-  ),
-  Schema.mutable(
-    Schema.Struct({
-      url: Schema.String,
-    })
+    Schema.extend(
+      Element.Schema(ElementId),
+      Schema.suspend(
+        (): Schema.Schema<ValueElement, ValueElementEncoded, never> =>
+          ValueElement.Schema
+      )
+    ),
+    Schema.mutable(
+      Schema.Struct({
+        url: Schema.String,
+      })
+    )
   )
-)
+
+export const Extension = {
+  Schema: ExtensionSchema,
+}
 
 /**
  * Creates a typed FHIR extension helper

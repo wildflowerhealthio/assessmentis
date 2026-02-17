@@ -1,7 +1,6 @@
 import { Data, Schema } from 'effect'
-import type fhir from 'fhir/r4'
-import { CodingFromFhirR4, type Coding } from './Coding'
-import { ElementFromFhirR4, type Element } from '../base/Element'
+import { Coding, type CodingEncoded } from './Coding'
+import { Element, type ElementEncoded } from '../base/Element'
 
 export const CodeableConceptId = Schema.String.pipe(
   Schema.brand('CodeableConceptId')
@@ -14,16 +13,17 @@ export interface CodeableConcept extends Element<CodeableConceptId> {
   text?: string
 }
 
-export const CodeableConcept = {
-  make: Data.case<CodeableConcept>(),
+export interface CodeableConceptEncoded extends ElementEncoded {
+  coding?: CodingEncoded[]
+  text?: string
 }
 
-export const CodeableConceptFromFhirR4: Schema.Schema<
+const CodeableConceptSchema: Schema.Schema<
   CodeableConcept,
-  fhir.CodeableConcept,
+  CodeableConceptEncoded,
   never
 > = Schema.extend(
-  ElementFromFhirR4(CodeableConceptId),
+  Element.Schema(CodeableConceptId),
   Schema.mutable(
     Schema.Struct({
       /**
@@ -34,7 +34,7 @@ export const CodeableConceptFromFhirR4: Schema.Schema<
        * will be labeled as UserSelected = true.
        */
       coding: Schema.optional(
-        Schema.mutable(Schema.Array(Schema.suspend(() => CodingFromFhirR4)))
+        Schema.mutable(Schema.Array(Schema.suspend(() => Coding.Schema)))
       ),
       /**
        * Very often the text is the same as a displayName of one of the codings.
@@ -44,3 +44,8 @@ export const CodeableConceptFromFhirR4: Schema.Schema<
     })
   )
 )
+
+export const CodeableConcept = {
+  make: Data.case<CodeableConcept>(),
+  Schema: CodeableConceptSchema,
+}

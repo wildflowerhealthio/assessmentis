@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Arbitrary, FastCheck } from 'effect'
 import {
   QuestionnaireItemType,
-  QuestionnaireItemFromFhirR4,
+  QuestionnaireItem,
 } from '@assessmentis/clinical-domain/content-management'
 import DisplayQuestionnaireItemForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/components/DisplayQuestionnaireItemForm/DisplayQuestionnaireItemForm'
 
@@ -17,7 +17,7 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 const arbitraryQuestionnaireItem = FastCheck.sample(
-  Arbitrary.make(QuestionnaireItemFromFhirR4)
+  Arbitrary.make(QuestionnaireItem.Schema)
 )[0]
 
 export const Heading1: Story = {

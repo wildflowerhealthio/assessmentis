@@ -1,7 +1,6 @@
 import { Schema } from 'effect'
 import { Code } from '../complex/Coding'
 import { Meta } from './DomainResource'
-import type fhir from 'fhir/r4'
 
 export interface Resource<IdType extends string> {
   /**
@@ -14,29 +13,31 @@ export interface Resource<IdType extends string> {
   readonly language?: Code
 }
 
-export const ResourceFromFhirR4 = <IdType extends string>(
-  idSchema: Schema.Schema<IdType, string>
-): Schema.Schema<Resource<IdType>, fhir.Resource, never> =>
-  Schema.mutable(
-    Schema.Struct({
-      /**
-       * Logical id of this artifact
-       */
-      id: Schema.optional(idSchema),
+export const Resource = {
+  Schema: <IdType extends string>(
+    idSchema: Schema.Schema<IdType, string>
+  ) =>
+    Schema.mutable(
+      Schema.Struct({
+        /**
+         * Logical id of this artifact
+         */
+        id: Schema.optional(idSchema),
 
-      resourceType: Schema.String,
+        resourceType: Schema.String,
 
-      /**
-       * Metadata about the resource
-       */
-      meta: Schema.optional(Meta),
-      /**
-       * A set of rules under which this content was created
-       */
-      implicitRules: Schema.optional(Schema.URL),
-      /**
-       * Language of the resource content
-       */
-      language: Schema.optional(Code),
-    })
-  )
+        /**
+         * Metadata about the resource
+         */
+        meta: Schema.optional(Meta.Schema),
+        /**
+         * A set of rules under which this content was created
+         */
+        implicitRules: Schema.optional(Schema.URL),
+        /**
+         * Language of the resource content
+         */
+        language: Schema.optional(Code),
+      })
+    ),
+}

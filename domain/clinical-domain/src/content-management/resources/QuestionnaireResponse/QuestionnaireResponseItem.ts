@@ -1,10 +1,7 @@
 import { Schema } from 'effect'
-import type fhir from 'fhir/r4'
 import { QuestionnaireItemLink } from '../Questionnaire/Questionnaire'
-import type { BackboneElement } from '../../../data-types/base/BackboneElement'
-import { BackboneElementFromFhirR4 } from '../../../data-types/base/BackboneElement'
-import type { ValueElement } from '../../../data-types/primitive/ValueElement'
-import { ValueElementFromFhirR4 } from '../../../data-types/primitive/ValueElement'
+import { BackboneElement } from '../../../data-types/base/BackboneElement'
+import { ValueElement } from '../../../data-types/primitive/ValueElement'
 
 export const QuestionnaireResponseItemId = Schema.String.pipe(
   Schema.brand('QuestionnaireResponseItemId')
@@ -26,29 +23,30 @@ export interface QuestionnaireResponseItemAnswer
 /**
  * The value is nested because we cannot have a repeating structure that has variable type.
  */
-export const QuestionnaireResponseItemAnswerFromFhirR4: Schema.Schema<
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const QuestionnaireResponseItemAnswerSchema: Schema.Schema<
   QuestionnaireResponseItemAnswer,
-  fhir.QuestionnaireResponseItemAnswer,
+  any,
   never
 > = Schema.extend(
   Schema.extend(
-    BackboneElementFromFhirR4(QuestionnaireResponseItemAnswerId),
+    BackboneElement.Schema(QuestionnaireResponseItemAnswerId),
     Schema.Struct({
       item: Schema.optional(
         Schema.mutable(Schema.Array(
           Schema.suspend(
-            (): Schema.Schema<
-              QuestionnaireResponseItem,
-              fhir.QuestionnaireResponseItem,
-              never
-            > => QuestionnaireResponseItemFromFhirR4
+            () => QuestionnaireResponseItemSchema
           )
         ))
       ),
     })
   ),
-  Schema.suspend(() => ValueElementFromFhirR4)
+  Schema.suspend(() => ValueElement.Schema)
 )
+
+export const QuestionnaireResponseItemAnswer = {
+  Schema: QuestionnaireResponseItemAnswerSchema,
+}
 
 export interface QuestionnaireResponseItem extends BackboneElement<QuestionnaireResponseItemId> {
   definition?: string
@@ -63,12 +61,13 @@ export interface QuestionnaireResponseItem extends BackboneElement<Questionnaire
  * When dealing with questions, nesting must occur within each answer because
  * some questions may have multiple answers (and the nesting occurs for each answer).
  */
-export const QuestionnaireResponseItemFromFhirR4: Schema.Schema<
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const QuestionnaireResponseItemSchema: Schema.Schema<
   QuestionnaireResponseItem,
-  fhir.QuestionnaireResponseItem,
+  any,
   never
 > = Schema.extend(
-  BackboneElementFromFhirR4(QuestionnaireResponseItemId),
+  BackboneElement.Schema(QuestionnaireResponseItemId),
   Schema.Struct({
     definition: Schema.optional(Schema.String),
     linkId: QuestionnaireItemLink,
@@ -76,27 +75,23 @@ export const QuestionnaireResponseItemFromFhirR4: Schema.Schema<
     item: Schema.optional(
       Schema.mutable(Schema.Array(
         Schema.suspend(
-          (): Schema.Schema<
-            QuestionnaireResponseItem,
-            fhir.QuestionnaireResponseItem,
-            never
-          > => QuestionnaireResponseItemFromFhirR4
+          () => QuestionnaireResponseItemSchema
         )
       ))
     ),
     answer: Schema.optional(
       Schema.mutable(Schema.Array(
         Schema.suspend(
-          (): Schema.Schema<
-            QuestionnaireResponseItemAnswer,
-            fhir.QuestionnaireResponseItemAnswer,
-            never
-          > => QuestionnaireResponseItemAnswerFromFhirR4
+          () => QuestionnaireResponseItemAnswerSchema
         )
       ))
     ),
   })
 )
+
+export const QuestionnaireResponseItem = {
+  Schema: QuestionnaireResponseItemSchema,
+}
 
 export function* allQuestionnaireResponseItems(
   items: QuestionnaireResponseItem[]

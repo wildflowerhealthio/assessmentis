@@ -1,22 +1,16 @@
 import { expect, test, describe } from 'vitest'
-import { PractitionerFromFhirR4 } from './Practitioner'
-import type { DeepReadonly } from '@assessmentis/util'
-import type { Practitioner as FhirPractitioner } from 'fhir/r4'
+import { Practitioner } from './Practitioner'
 import { Schema, Arbitrary, Either } from 'effect'
 import * as fc from 'fast-check'
 
-// Compile-time check that Encoded schema matches FHIR R4
-const _practitionerEncoded: DeepReadonly<FhirPractitioner> =
-  PractitionerFromFhirR4.Encoded
-
-const practitionerArb = Arbitrary.make(PractitionerFromFhirR4)
+const practitionerArb = Arbitrary.make(Practitioner.Schema)
 
 describe('Practitioner model', () => {
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(practitionerArb, (practitioner) => {
-        const encoded = Schema.encodeSync(PractitionerFromFhirR4)(practitioner)
-        const decoded = Schema.decodeSync(PractitionerFromFhirR4)(encoded)
+        const encoded = Schema.encodeSync(Practitioner.Schema)(practitioner)
+        const decoded = Schema.decodeSync(Practitioner.Schema)(encoded)
         expect(decoded).toEqual(practitioner)
       })
     )
@@ -42,7 +36,7 @@ describe('Practitioner model', () => {
           })
         ),
         (incomplete) => {
-          const decode = Schema.decodeUnknownEither(PractitionerFromFhirR4)
+          const decode = Schema.decodeUnknownEither(Practitioner.Schema)
           const result = decode(incomplete)
           expect(Either.isLeft(result)).toBe(true)
         }

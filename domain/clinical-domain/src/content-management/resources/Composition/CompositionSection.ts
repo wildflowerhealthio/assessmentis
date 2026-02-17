@@ -1,11 +1,7 @@
 import { Schema } from 'effect'
-import type fhir from 'fhir/r4'
-import type { BackboneElement } from '../../../data-types/base/BackboneElement'
-import { BackboneElementFromFhirR4 } from '../../../data-types/base/BackboneElement'
-import type { Reference } from '../../../data-types/complex/IdentifierAndReference'
-import { ReferenceFromFhirR4 } from '../../../data-types/complex/IdentifierAndReference'
-import type { CodeableConcept } from '../../../data-types/complex/CodeableConcept'
-import { CodeableConceptFromFhirR4 } from '../../../data-types/complex/CodeableConcept'
+import { BackboneElement } from '../../../data-types/base/BackboneElement'
+import { Reference } from '../../../data-types/complex/IdentifierAndReference'
+import { CodeableConcept } from '../../../data-types/complex/CodeableConcept'
 import { Narrative } from '../../../data-types/special-purpose/Narrative'
 
 const CompositionSectionId = Schema.String.pipe(
@@ -27,16 +23,14 @@ export interface CompositionSection extends BackboneElement<CompositionSectionId
 /**
  * Composition is broken into sections
  */
-export const CompositionSectionFromFhirR4: Schema.Schema<
-  CompositionSection,
-  fhir.CompositionSection,
-  never
-> = Schema.extend(
-  BackboneElementFromFhirR4(CompositionSectionId),
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const CompositionSectionSchema: Schema.Schema<CompositionSection, any, never> =
+  Schema.extend(
+  BackboneElement.Schema(CompositionSectionId),
   Schema.Struct({
     title: Schema.optional(Schema.String),
-    code: Schema.optional(Schema.suspend(() => CodeableConceptFromFhirR4)),
-    text: Schema.optional(Schema.suspend(() => Narrative)),
+    code: Schema.optional(Schema.suspend(() => CodeableConcept.Schema)),
+    text: Schema.optional(Schema.suspend(() => Narrative.Schema)),
     mode: Schema.optional(
       Schema.Union(
         Schema.Literal('working'),
@@ -44,23 +38,19 @@ export const CompositionSectionFromFhirR4: Schema.Schema<
         Schema.Literal('changes')
       )
     ),
-    orderedBy: Schema.optional(Schema.suspend(() => CodeableConceptFromFhirR4)),
+    orderedBy: Schema.optional(Schema.suspend(() => CodeableConcept.Schema)),
     entry: Schema.optional(
-      Schema.mutable(Schema.Array(Schema.suspend(() => ReferenceFromFhirR4)))
+      Schema.mutable(Schema.Array(Schema.suspend(() => Reference.Schema)))
     ),
     emptyReason: Schema.optional(
-      Schema.suspend(() => CodeableConceptFromFhirR4)
+      Schema.suspend(() => CodeableConcept.Schema)
     ),
     section: Schema.optional(
       Schema.mutable(Schema.Array(
-        Schema.suspend(
-          (): Schema.Schema<
-            CompositionSection,
-            fhir.CompositionSection,
-            never
-          > => CompositionSectionFromFhirR4
-        )
+        Schema.suspend(() => CompositionSectionSchema)
       ))
     ),
   })
 )
+
+export const CompositionSection = { Schema: CompositionSectionSchema }

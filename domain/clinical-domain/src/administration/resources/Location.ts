@@ -1,24 +1,25 @@
-import { Data, Schema } from 'effect'
-import type fhir from 'fhir/r4'
-import type { DomainResource } from '../../data-types/base/DomainResource'
-import { DomainResourceFromFhirR4 } from '../../data-types/base/DomainResource'
-import type { Identifier, Reference, CodeableConcept } from '../../data-types'
+import { Schema } from 'effect'
+import { DomainResource } from '../../data-types/base/DomainResource'
 import {
-  CodingFromFhirR4,
-  type Coding,
-  ContactPointFromFhirR4,
+  Coding,
   Code,
-  IdentifierFromFhirR4,
-  ReferenceFromFhirR4,
-  CodeableConceptFromFhirR4,
+  ContactPoint,
+  Identifier,
+  Reference,
+  CodeableConcept,
 } from '../../data-types'
-import type { ContactPoint } from '../../data-types/complex/ContactPoint'
-import {
-  type Address,
-  AddressFromFhirR4,
-} from '../../data-types/complex/Address'
+import { Address } from '../../data-types/complex/Address'
 import { LocationMode } from '../value-sets/LocationMode'
 import { LocationStatus } from '../value-sets/LocationStatus'
+import {
+  ClinicalResourceBehaviourImpl,
+  type ClinicalResourceBehaviour,
+} from '../../ClinicalResourceBehaviour'
+
+const TypeId: unique symbol = Symbol.for(
+  '@assessmentis/clinical-domain/Location'
+)
+type TypeId = typeof TypeId
 
 export const LocationId = Schema.String.pipe(Schema.brand('LocationId'))
 
@@ -49,104 +50,99 @@ export interface Location extends DomainResource<LocationId> {
   partOf?: Reference
 }
 
+const LocationSchema = Schema.extend(
+  DomainResource.Schema(LocationId),
+  Schema.Struct({
+    resourceType: Schema.Literal('Location'),
+    /**
+     * The operational status of the location (e.g. closed temporarily).
+     */
+    operationalStatus: Schema.optional(Schema.suspend(() => Coding.Schema)),
+    identifier: Schema.optional(
+      Schema.mutable(Schema.Array(Schema.suspend(() => Identifier.Schema)))
+    ),
+    /**
+     * A name associated with the location.
+     */
+    name: Schema.optional(Schema.String),
+    /**
+     * A list of alternate names that the location is known as.
+     */
+    alias: Schema.optional(Schema.mutable(Schema.Array(Schema.String))),
+    /**
+     * Additional details about the location.
+     */
+    description: Schema.optional(Schema.String),
+    /**
+     * Indicates whether the location is still in use.
+     */
+    status: Schema.optional(LocationStatus),
+    /**
+     * Indicates whether this Location is a specific instance or a kind/class of locations.
+     */
+    mode: Schema.optional(LocationMode),
+    /**
+     * A list of physical types for this location.
+     */
+    type: Schema.optional(
+      Schema.mutable(Schema.Array(Schema.suspend(() => CodeableConcept.Schema)))
+    ),
+    /**
+     * Contact details for the location.
+     */
+    telecom: Schema.optional(
+      Schema.mutable(Schema.Array(Schema.suspend(() => ContactPoint.Schema)))
+    ),
+    /**
+     * Physical location details.
+     */
+    address: Schema.optional(Schema.suspend(() => Address.Schema)),
+    /**
+     * The physical type of the location (e.g. room, building).
+     */
+    physicalType: Schema.optional(Schema.suspend(() => CodeableConcept.Schema)),
+    /**
+     * The absolute geographic location.
+     */
+    position: Schema.optional(
+      Schema.Struct({
+        longitude: Schema.Number,
+        latitude: Schema.Number,
+        altitude: Schema.optional(Schema.Number),
+      })
+    ),
+    /**
+     * Organization responsible for this location.
+     */
+    managingOrganization: Schema.optional(
+      Schema.suspend(() => Reference.Schema)
+    ),
+    /**
+     * Another location this location is physically a part of.
+     */
+    partOf: Schema.optional(Schema.suspend(() => Reference.Schema)),
+  })
+)
+
 /**
  * Schema for transforming between Location Data objects and FHIR R4 Location resources.
  *
  * Details and position information for a physical place where services are provided
  * and resources and participants may be stored, found, contained, or accommodated.
  */
-export const LocationFromFhirR4: Schema.Schema<Location, fhir.Location, never> =
-  Schema.extend(
-    DomainResourceFromFhirR4(LocationId),
-    Schema.Struct({
-      resourceType: Schema.Literal('Location'),
-      /**
-       * The operational status of the location (e.g. closed temporarily).
-       */
-      operationalStatus: Schema.optional(
-        Schema.suspend(() => CodingFromFhirR4)
-      ),
-      identifier: Schema.optional(
-        Schema.mutable(Schema.Array(Schema.suspend(() => IdentifierFromFhirR4)))
-      ),
-      /**
-       * A name associated with the location.
-       */
-      name: Schema.optional(Schema.String),
-      /**
-       * A list of alternate names that the location is known as.
-       */
-      alias: Schema.optional(Schema.mutable(Schema.Array(Schema.String))),
-      /**
-       * Additional details about the location.
-       */
-      description: Schema.optional(Schema.String),
-      /**
-       * Indicates whether the location is still in use.
-       */
-      status: Schema.optional(LocationStatus),
-      /**
-       * Indicates whether this Location is a specific instance or a kind/class of locations.
-       */
-      mode: Schema.optional(LocationMode),
-      /**
-       * A list of physical types for this location.
-       */
-      type: Schema.optional(
-        Schema.mutable(
-          Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
-        )
-      ),
-      /**
-       * Contact details for the location.
-       */
-      telecom: Schema.optional(
-        Schema.mutable(
-          Schema.Array(Schema.suspend(() => ContactPointFromFhirR4))
-        )
-      ),
-      /**
-       * Physical location details.
-       */
-      address: Schema.optional(Schema.suspend(() => AddressFromFhirR4)),
-      /**
-       * The physical type of the location (e.g. room, building).
-       */
-      physicalType: Schema.optional(
-        Schema.suspend(() => CodeableConceptFromFhirR4)
-      ),
-      /**
-       * The absolute geographic location.
-       */
-      position: Schema.optional(
-        Schema.Struct({
-          longitude: Schema.Number,
-          latitude: Schema.Number,
-          altitude: Schema.optional(Schema.Number),
-        })
-      ),
-      /**
-       * Organization responsible for this location.
-       */
-      managingOrganization: Schema.optional(
-        Schema.suspend(() => ReferenceFromFhirR4)
-      ),
-      /**
-       * Another location this location is physically a part of.
-       */
-      partOf: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
-    })
-  )
-
-/**
- * Location namespace providing factory and utility functions
- */
-export const Location = {
-  /**
-   * Create a new Location instance
-   */
-  make: Data.case<Location>(),
-
+export const Location: ClinicalResourceBehaviour<
+  Location,
+  typeof LocationSchema.Encoded
+> & {
+  isVirtualLocation: (locationEntry: {
+    physicalType?: { coding?: { code?: Code }[] }
+  }) => boolean
+} = {
+  ...ClinicalResourceBehaviourImpl({
+    TypeId,
+    resourceType: 'Location',
+    Schema: LocationSchema,
+  }),
   /**
    * Checks if a location entry represents a virtual location (e.g., video room).
    * Virtual locations are identified by a physical type coding with code 'vi'.

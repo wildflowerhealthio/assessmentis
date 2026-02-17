@@ -1,5 +1,5 @@
 import type { Either } from 'effect'
-import { Effect, Layer, pipe, Schema } from 'effect'
+import { Effect, Layer, pipe, RequestResolver, Schema } from 'effect'
 import { info, error as logError } from 'firebase-functions/logger'
 import type { VideoCallRoomName } from '@assessmentis/video-call-domain'
 import {
@@ -21,15 +21,13 @@ import {
   BadDataError,
 } from '@assessmentis/ontology'
 import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
-import type { MediaId } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { MediaFromFhirR4 } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { makeClinicalDataRepository } from '@assessmentis/clinical-domain/assessmentis'
+import { FhirR4Media } from '@assessmentis/fhir-r4/diagnostic-medicine'
+
 import { VideoCallClientLayerFromOrg } from '../layers/VideoCallClientService'
 import { FhirR4ClientLayerLive } from '../layers/FhirR4ClientService'
-import { EncounterFromFhirR4 } from '@assessmentis/clinical-domain/administration'
-
-const _ROOM_IDENTIFIER_SYSTEM = 'http://assessment.is/fhir/video-call-room-name'
-
+import { FhirR4Encounter } from '@assessmentis/fhir-r4/administration'
+import { Encounter } from '@assessmentis/clinical-domain/administration'
+import { Media } from '@assessmentis/clinical-domain/diagnostic-medicine'
 interface SyncOrgResult {
   orgSlug: string
   recordingsSynced: number
@@ -210,7 +208,8 @@ const syncMediaToFhir = (
   | ExternalAssertionError
   | AuthError
   | NotFoundError<'Room', { name: VideoCallRoomName }>
-  | NotFoundError<'Encounter', { id: string }>
+  | NotFoundError<'Encounter', { id: string }>,
+  FhirR4Client
 > =>
   Effect.gen(function* () {
     const mediaUpdates: Record<
@@ -220,40 +219,27 @@ const syncMediaToFhir = (
 
     const mediaCreations = [] as Array<Either.Either<unknown, UnhandledError>>
 
-    const encounterRepository = makeClinicalDataRepository(
-      fhirClient,
-      'Encounter',
-      EncounterFromFhirR4
-    )
-
-    const mediaRepository = makeClinicalDataRepository(
-      fhirClient,
-      'Media',
-      MediaFromFhirR4
-    )
-
     const { media, roomName } = mediaWithRoom
     const mediaIdentifier = media.identifier?.[0]?.value
     if (!mediaIdentifier) return { mediaUpdates, mediaCreations }
 
     // Get the full room URL for encounter lookup
-    const _roomUrl = yield* getRoomUrl(roomName)
 
     // Search for Encounter with matching location identifier
-    const encounterSearchResult = yield* encounterRepository
-      .getMany({
-        // TODO: Fix location search
-        // 'location:identifier': `${ROOM_IDENTIFIER_SYSTEM}|${roomUrl}`,
-      })
-      .pipe(
-        Effect.mapError(
-          (e) =>
-            new UnhandledError({
-              message: 'Error searching for encounter',
-              cause: e,
-            })
-        )
+    const encounterSearchResult = yield* Effect.request(
+      Encounter.Requests.Search({}),
+      FhirR4Encounter.Search.pipe(
+        RequestResolver.contextFromServices(FhirR4Client)
       )
+    ).pipe(
+      Effect.mapError(
+        (e) =>
+          new UnhandledError({
+            message: 'Error searching for encounter',
+            cause: e,
+          })
+      )
+    )
 
     const encounterBundle = encounterSearchResult as {
       entry?: Array<{
@@ -270,55 +256,59 @@ const syncMediaToFhir = (
     const encounterId = encounterEntry.id
 
     // Check if Media with this identifier already exists
-    const mediaSearchResult = yield* mediaRepository
-      .getMany
-      // TODO: Fix media search
-      // { id: mediaIdentifier, encounter: `Encounter/${encounterId}` }
-      ()
-      .pipe(
+    const mediaSearchResult = yield* Effect.request(
+      Media.Requests.Search({
+        id: mediaIdentifier,
+        encounter: `Encounter/${encounterId}`,
+      }),
+      FhirR4Media.Search.pipe(RequestResolver.contextFromServices(FhirR4Client))
+    ).pipe(
+      Effect.mapError(
+        (e) =>
+          new UnhandledError({
+            message: 'Error searching for existing media',
+            cause: e,
+          })
+      )
+    )
+
+    const existingMedia: (Media & { id: string }) | undefined =
+      mediaSearchResult[0]
+
+    if (existingMedia) {
+      mediaUpdates[existingMedia.id] = yield* Effect.request(
+        Media.Requests.Update({
+          ...existingMedia,
+          content: media.content,
+        }),
+        FhirR4Media.Update.pipe(
+          RequestResolver.contextFromServices(FhirR4Client)
+        )
+      ).pipe(
         Effect.mapError(
           (e) =>
             new UnhandledError({
-              message: 'Error searching for existing media',
+              message: `Error updating media ${existingMedia.id}`,
               cause: e,
             })
-        )
+        ),
+        Effect.either
       )
-
-    const mediaBundle = mediaSearchResult as {
-      entry?: Array<{
-        resource?: { id: MediaId; resourceType: string }
-      }>
-    }
-
-    const existingMedia = mediaBundle.entry?.[0]?.resource
-
-    if (existingMedia) {
-      // TODO: Update existing Media with fresh URL
-      // mediaUpdates[existingMedia.id] = yield* mediaRepository
-      //   .update({
-      //     ...existingMedia
-      //     content: media.content,
-      //   })
-      //   .pipe(
-      //     Effect.mapError(
-      //       (e) =>
-      //         new UnhandledError({
-      //           message: `Error updating media ${existingMedia.id}`,
-      //           cause: e,
-      //         })
-      //     ),
-      //     Effect.either
-      //   )
     } else {
       mediaCreations.push(
         yield* pipe(
-          mediaRepository.create({
-            ...media,
-            encounter: {
-              reference: `Encounter/${encounterId}`,
-            },
-          }),
+          Effect.request(
+            Media.Requests.Create({
+              ...media,
+              encounter: {
+                reference: `Encounter/${encounterId}`,
+              },
+            }),
+            FhirR4Media.Create.pipe(
+              RequestResolver.contextFromServices(FhirR4Client)
+            )
+          ),
+
           Effect.mapError(
             (e) =>
               new UnhandledError({

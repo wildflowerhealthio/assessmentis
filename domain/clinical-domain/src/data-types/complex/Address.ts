@@ -1,7 +1,5 @@
 import { Schema } from 'effect'
-import type fhir from 'fhir/r4'
-import type { Period } from './Period'
-import { PeriodFromFhirR4 } from './Period'
+import { Period } from './Period'
 
 export interface Address {
   /**
@@ -51,8 +49,8 @@ export interface Address {
 /**
  * An address expressed using postal conventions (as opposed to GPS or other location definition formats).
  */
-export const AddressFromFhirR4: Schema.Schema<Address, fhir.Address, never> =
-  Schema.mutable(
+export const Address = {
+  Schema: Schema.mutable(
     Schema.Struct({
       /**
        * The purpose of this address.
@@ -109,6 +107,7 @@ export const AddressFromFhirR4: Schema.Schema<Address, fhir.Address, never> =
       /**
        * Time period when address was/is in use.
        */
-      period: Schema.optional(Schema.suspend(() => PeriodFromFhirR4)),
+      period: Schema.optional(Schema.suspend(() => Period.Schema)),
     })
-  )
+  ),
+}

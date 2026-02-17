@@ -1,7 +1,5 @@
 import { Schema } from 'effect'
-import type fhir from 'fhir/r4'
-import type { Period } from './Period'
-import { PeriodFromFhirR4 } from './Period'
+import { Period } from './Period'
 
 export interface HumanName {
   /**
@@ -45,8 +43,8 @@ export interface HumanName {
 /**
  * A human's name with the ability to identify parts and usage.
  */
-export const HumanName: Schema.Schema<HumanName, fhir.HumanName, never> =
-  Schema.mutable(
+export const HumanName = {
+  Schema: Schema.mutable(
     Schema.Struct({
       /**
        * Identifies the purpose for this name.
@@ -86,6 +84,7 @@ export const HumanName: Schema.Schema<HumanName, fhir.HumanName, never> =
       /**
        * Indicates the period of time when this name was valid for the named person.
        */
-      period: Schema.optional(Schema.suspend(() => PeriodFromFhirR4)),
+      period: Schema.optional(Schema.suspend(() => Period.Schema)),
     })
-  )
+  ),
+}

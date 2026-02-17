@@ -1,6 +1,5 @@
 import { Schema } from 'effect'
-import type fhir from 'fhir/r4'
-import { ElementFromFhirR4, type Element } from '../base/Element'
+import { Element } from '../base/Element'
 
 export const QuantityId = Schema.String.pipe(Schema.brand('QuantityId'))
 
@@ -39,9 +38,9 @@ export interface Quantity extends Element<QuantityId> {
   comparator?: '<' | '<=' | '>=' | '>'
 }
 
-export const QuantityFromFhirR4: Schema.Schema<Quantity, fhir.Quantity> =
-  Schema.extend(
-    ElementFromFhirR4(QuantityId),
+export const Quantity = {
+  Schema: Schema.extend(
+    Element.Schema(QuantityId),
     Schema.mutable(
       Schema.Struct({
         /**
@@ -76,4 +75,5 @@ export const QuantityFromFhirR4: Schema.Schema<Quantity, fhir.Quantity> =
         ),
       })
     )
-  )
+  ),
+}

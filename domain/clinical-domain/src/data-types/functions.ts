@@ -1,6 +1,5 @@
 import { Schema } from 'effect'
-import type { Reference } from './complex/IdentifierAndReference'
-import { ReferenceFromFhirR4 } from './complex/IdentifierAndReference'
+import { Reference } from './complex/IdentifierAndReference'
 import type { WithId } from '@assessmentis/effectful-store'
 
 export const referenceFromResource = (
@@ -8,7 +7,7 @@ export const referenceFromResource = (
   display: string | undefined = undefined
 ) =>
   resource && resource.id
-    ? Schema.decodeUnknownSync(ReferenceFromFhirR4)({
+    ? Schema.decodeUnknownSync(Reference.Schema)({
         reference: `${resource.resourceType}/${resource.id}`,
         display,
       })

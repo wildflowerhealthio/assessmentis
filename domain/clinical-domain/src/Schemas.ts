@@ -1,33 +1,27 @@
 import type { Schema } from 'effect'
+import { Encounter, Location, Patient, Practitioner } from './administration'
 import {
-  EncounterFromFhirR4,
-  LocationFromFhirR4,
-  PatientFromFhirR4,
-  PractitionerFromFhirR4,
-} from './administration'
-import {
-  CompositionFromFhirR4,
-  QuestionnaireFromFhirR4,
-  QuestionnaireResponseFromFhirR4,
+  Composition,
+  Questionnaire,
+  QuestionnaireResponse,
 } from './content-management'
-import { MediaFromFhirR4, ObservationFromFhirR4 } from './diagnostic-medicine'
+import { Media, Observation } from './diagnostic-medicine'
 import type ResourceDataTypes from './ResourceDataTypes'
-import type FhirResourceDataTypes from './FhirResourceDataTypes'
 
 const Schemas = {
-  Composition: CompositionFromFhirR4,
-  Encounter: EncounterFromFhirR4,
-  Location: LocationFromFhirR4,
-  Media: MediaFromFhirR4,
-  Observation: ObservationFromFhirR4,
-  Patient: PatientFromFhirR4,
-  Practitioner: PractitionerFromFhirR4,
-  Questionnaire: QuestionnaireFromFhirR4,
-  QuestionnaireResponse: QuestionnaireResponseFromFhirR4,
+  Composition: Composition.Schema,
+  Encounter: Encounter.Schema,
+  Location: Location.Schema,
+  Media: Media.Schema,
+  Observation: Observation.Schema,
+  Patient: Patient.Schema,
+  Practitioner: Practitioner.Schema,
+  Questionnaire: Questionnaire.Schema,
+  QuestionnaireResponse: QuestionnaireResponse.Schema,
 } as const satisfies {
   [K in keyof ResourceDataTypes]: Schema.Schema<
     ResourceDataTypes[K],
-    FhirResourceDataTypes[K],
+    any,
     never
   >
 }

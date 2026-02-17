@@ -1,19 +1,15 @@
 import { Effect, Schema } from 'effect'
 import { VideoCallClient } from '@assessmentis/video-call-domain'
-import type {
-  EncounterLocation,
-  Encounter,
-} from '@assessmentis/clinical-domain/administration'
-import type { QuestionnaireResponse } from '@assessmentis/clinical-domain/content-management'
+import type { EncounterLocation } from '@assessmentis/clinical-domain/administration'
 import {
-  QuestionnaireResponseFromFhirR4,
+  QuestionnaireResponse,
   QuestionnaireResponseRepository,
 } from '@assessmentis/clinical-domain/content-management'
 import {
+  Encounter,
   EncounterRepository,
   LocationRepository,
   Location,
-  EncounterFromFhirR4,
 } from '@assessmentis/clinical-domain/administration'
 import type {
   AuthError,
@@ -24,13 +20,13 @@ import type {
 import { Code } from '@assessmentis/clinical-domain/data-types'
 
 export const CreateEncounterArg = Schema.extend(
-  Schema.mutable(Schema.partial(EncounterFromFhirR4)),
+  Schema.mutable(Schema.partial(Encounter.Schema)),
   Schema.mutable(
     Schema.Struct({
       //....pipe(Schema.omit("encounterId")).fields,
       questionnaireResponses: Schema.mutable(
         Schema.Array(
-          QuestionnaireResponseFromFhirR4.pipe(Schema.pick('questionnaire'))
+          QuestionnaireResponse.Schema.pipe(Schema.pick('questionnaire'))
         )
       ),
     })
@@ -40,10 +36,10 @@ export const CreateEncounterArg = Schema.extend(
 export type CreateEncounterArg = typeof CreateEncounterArg.Type
 
 export const CreateEncounterResponse = Schema.extend(
-  EncounterFromFhirR4,
+  Encounter.Schema,
   Schema.Struct({
     // videoCallRooms: Schema.Array(VideoCallRoom),
-    questionnaireResponses: Schema.Array(QuestionnaireResponseFromFhirR4),
+    questionnaireResponses: Schema.Array(QuestionnaireResponse.Schema),
   })
 )
 export type CreateEncounterResponse = typeof CreateEncounterResponse.Type

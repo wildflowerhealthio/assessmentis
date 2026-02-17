@@ -6,12 +6,6 @@ import {
 } from './EncounterTranscript'
 import { Schema, Arbitrary } from 'effect'
 import * as fc from 'fast-check'
-import type { DeepReadonly } from '@assessmentis/util'
-import type { Extension as FhirExtension } from 'fhir/r4'
-
-// Compile-time check that Encoded schema matches FHIR R4 Extension
-const _encounterTranscriptEncoded: DeepReadonly<FhirExtension> =
-  EncounterTranscriptExtension.Encoded
 
 const transcriptExtensionArb = Arbitrary.make(EncounterTranscriptExtension)
 

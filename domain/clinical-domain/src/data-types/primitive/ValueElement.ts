@@ -1,16 +1,13 @@
 import type { DateTime } from 'effect'
 import { Schema } from 'effect'
-import type {
-  Extension as FhirExtension,
-  Quantity as FhirQuantity,
-} from 'fhir/r4'
-
-import { Code, Coding } from '../complex/Coding'
-import type { Reference } from '../complex/IdentifierAndReference'
-import { ReferenceFromFhirR4 } from '../complex/IdentifierAndReference'
-import { CodeableConceptFromFhirR4, type CodeableConcept } from '../complex'
-import type { Attachment } from '../complex/Attachment'
-import { AttachmentFromFhirR4 } from '../complex/Attachment'
+import { Element, type ElementEncoded } from '../'
+import { Code, Coding, type CodingEncoded } from '../complex/Coding'
+import {
+  Reference,
+  type ReferenceEncoded,
+} from '../complex/IdentifierAndReference'
+import { CodeableConcept, type CodeableConceptEncoded } from '../complex'
+import { Attachment, type AttachmentEncoded } from '../complex/Attachment'
 
 // Local Quantity interface for ValueElement use
 // (Full Quantity type doesn't exist yet, only SimpleQuantity)
@@ -19,12 +16,16 @@ interface Quantity {
   unit?: string
 }
 
-const QuantityFromFhirR4: Schema.Schema<Quantity, FhirQuantity> = Schema.Struct(
-  {
-    value: Schema.optional(Schema.Number),
-    unit: Schema.optional(Schema.String),
-  }
-)
+interface QuantityEncoded {
+  value?: number
+  unit?: string
+}
+
+const QuantitySchema = Schema.Struct({
+  value: Schema.optional(Schema.Number),
+  unit: Schema.optional(Schema.String),
+})
+
 export interface ValueElement {
   valueBoolean?: boolean
 
@@ -49,16 +50,43 @@ export interface ValueElement {
   valueReference?: Reference
 
   valueCode?: Code
-  // _valueCode?: { extension?: Extension[] }
+  _valueCode?: Element
   valueCodeableConcept?: CodeableConcept
   valueCanonical?: string
 }
 
-export type DefinedValueElement = Omit<FhirExtension, 'url' | '_url'>
+export interface ValueElementEncoded {
+  valueBoolean?: boolean
 
-export const ValueElementFromFhirR4: Schema.Schema<
+  valueDecimal?: number
+
+  valueInteger?: number
+
+  valueDate?: string
+
+  valueDateTime?: string
+
+  valueTime?: string
+
+  valueString?: string
+
+  valueUrl?: string
+  valueAttachment?: AttachmentEncoded
+
+  valueCoding?: CodingEncoded
+
+  valueQuantity?: QuantityEncoded
+  valueReference?: ReferenceEncoded
+
+  valueCode?: string
+  _valueCode?: ElementEncoded
+  valueCodeableConcept?: CodeableConceptEncoded
+  valueCanonical?: string
+}
+
+const ValueElementSchema: Schema.Schema<
   ValueElement,
-  DefinedValueElement,
+  ValueElementEncoded,
   never
 > = Schema.mutable(
   Schema.Struct({
@@ -70,14 +98,19 @@ export const ValueElementFromFhirR4: Schema.Schema<
     valueTime: Schema.optional(Schema.String),
     valueString: Schema.optional(Schema.String),
     valueUrl: Schema.optional(Schema.String),
-    valueAttachment: Schema.optional(AttachmentFromFhirR4),
-    valueCoding: Schema.optional(Coding),
-    valueQuantity: Schema.optional(QuantityFromFhirR4),
-    valueReference: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
+    valueAttachment: Schema.optional(Attachment.Schema),
+    valueCoding: Schema.optional(Coding.Schema),
+    valueQuantity: Schema.optional(QuantitySchema),
+    valueReference: Schema.optional(Schema.suspend(() => Reference.Schema)),
     valueCode: Schema.optional(Code),
+    _valueCode: Schema.optional(Element.Schema(Schema.String)),
     valueCodeableConcept: Schema.optional(
-      Schema.suspend(() => CodeableConceptFromFhirR4)
+      Schema.suspend(() => CodeableConcept.Schema)
     ),
     valueCanonical: Schema.optional(Schema.String),
   })
 )
+
+export const ValueElement = {
+  Schema: ValueElementSchema,
+}

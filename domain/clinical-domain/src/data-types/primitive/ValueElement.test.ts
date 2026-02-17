@@ -1,16 +1,16 @@
 import { expect, test, describe } from 'vitest'
-import { ValueElementFromFhirR4 } from './ValueElement'
+import { ValueElement } from './ValueElement'
 import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
 
-const valueElementArb = Arbitrary.make(ValueElementFromFhirR4)
+const valueElementArb = Arbitrary.make(ValueElement.Schema)
 
 describe('ValueElement model', () => {
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(valueElementArb, (valueElement) => {
-        const encoded = Schema.encodeSync(ValueElementFromFhirR4)(valueElement)
-        const decoded = Schema.decodeSync(ValueElementFromFhirR4)(encoded)
+        const encoded = Schema.encodeSync(ValueElement.Schema)(valueElement)
+        const decoded = Schema.decodeSync(ValueElement.Schema)(encoded)
         expect(decoded).toEqual(valueElement)
       })
     )

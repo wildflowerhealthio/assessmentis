@@ -12,8 +12,7 @@
     "./content-management": "./src/content-management/index.ts",
     "./data-types": "./src/data-types/index.ts",
     "./diagnostic-medicine": "./src/diagnostic-medicine/index.ts",
-    "./foundation-framework": "./src/foundation-framework/index.ts",
-    "./assessmentis": "./src/assessmentis/index.ts"
+    "./foundation-framework": "./src/foundation-framework/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -25,7 +24,6 @@
     "effect": "^3.19.8",
     "temporal-polyfill": "^0.3.0",
     "@assessmentis/ontology": "*",
-    "@assessmentis/fhir-r4": "*",
     "@assessmentis/util": "*"
   },
   "devDependencies": {

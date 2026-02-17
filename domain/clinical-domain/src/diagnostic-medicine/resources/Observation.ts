@@ -1,31 +1,23 @@
 import type { DateTime } from 'effect'
 import { Schema } from 'effect'
-import type fhir from 'fhir/r4'
-import type { DomainResource } from '../../data-types/base/DomainResource'
-import { DomainResourceFromFhirR4 } from '../../data-types/base/DomainResource'
-import type { BackboneElement } from '../../data-types/base/BackboneElement'
-import { BackboneElementFromFhirR4 } from '../../data-types/base/BackboneElement'
-import type {
+import { ClinicalResourceBehaviourImpl } from '../../ClinicalResourceBehaviour'
+import { DomainResource } from '../../data-types/base/DomainResource'
+import { BackboneElement } from '../../data-types/base/BackboneElement'
+import {
   Identifier,
   Reference,
 } from '../../data-types/complex/IdentifierAndReference'
-import {
-  IdentifierFromFhirR4,
-  ReferenceFromFhirR4,
-} from '../../data-types/complex/IdentifierAndReference'
-import type { CodeableConcept } from '../../data-types/complex/CodeableConcept'
-import { CodeableConceptFromFhirR4 } from '../../data-types/complex/CodeableConcept'
-import type { Annotation } from '../../data-types/complex/Annotation'
-import { AnnotationFromFhirR4 } from '../../data-types/complex/Annotation'
-import type { Period } from '../../data-types/complex/Period'
-import { PeriodFromFhirR4 } from '../../data-types/complex/Period'
-import type { ValueElement } from '../../data-types/primitive/ValueElement'
-import { ValueElementFromFhirR4 } from '../../data-types/primitive/ValueElement'
-import {
-  type Quantity,
-  QuantityFromFhirR4,
-} from '../../data-types/complex/Quantity'
+import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
+import { Annotation } from '../../data-types/complex/Annotation'
+import { Period } from '../../data-types/complex/Period'
+import { ValueElement } from '../../data-types/primitive/ValueElement'
+import { Quantity } from '../../data-types/complex/Quantity'
 import { Range } from '../../data-types/complex/Range'
+
+const TypeId: unique symbol = Symbol.for(
+  '@assessmentis/clinical-domain/Observation'
+)
+type TypeId = typeof TypeId
 
 export const ObservationId = Schema.String.pipe(Schema.brand('ObservationId'))
 
@@ -61,22 +53,16 @@ export interface ObservationReferenceRange extends BackboneElement<ObservationRe
   text?: string
 }
 
-const ObservationReferenceRangeFromFhirR4: Schema.Schema<
-  ObservationReferenceRange,
-  fhir.ObservationReferenceRange,
-  never
-> = Schema.extend(
-  BackboneElementFromFhirR4(ObservationReferenceRangeId),
+const ObservationReferenceRangeSchema = Schema.extend(
+  BackboneElement.Schema(ObservationReferenceRangeId),
   Schema.Struct({
-    low: Schema.optional(Schema.suspend(() => QuantityFromFhirR4)),
-    high: Schema.optional(Schema.suspend(() => QuantityFromFhirR4)),
-    type: Schema.optional(Schema.suspend(() => CodeableConceptFromFhirR4)),
+    low: Schema.optional(Schema.suspend(() => Quantity.Schema)),
+    high: Schema.optional(Schema.suspend(() => Quantity.Schema)),
+    type: Schema.optional(Schema.suspend(() => CodeableConcept.Schema)),
     appliesTo: Schema.optional(
-      Schema.mutable(
-        Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
-      )
+      Schema.mutable(Schema.Array(Schema.suspend(() => CodeableConcept.Schema)))
     ),
-    age: Schema.optional(Schema.suspend(() => Range)),
+    age: Schema.optional(Schema.suspend(() => Range.Schema)),
     text: Schema.optional(Schema.String),
   })
 )
@@ -94,29 +80,25 @@ export interface ObservationComponent
   referenceRange?: ObservationReferenceRange[]
 }
 
-const ObservationComponentFromFhirR4: Schema.Schema<
-  ObservationComponent,
-  fhir.ObservationComponent,
-  never
-> = Schema.extend(
+const ObservationComponentSchema = Schema.extend(
   Schema.extend(
-    BackboneElementFromFhirR4(ObservationComponentId),
+    BackboneElement.Schema(ObservationComponentId),
     Schema.Struct({
-      code: Schema.suspend(() => CodeableConceptFromFhirR4),
+      code: Schema.suspend(() => CodeableConcept.Schema),
       dataAbsentReason: Schema.optional(
-        Schema.suspend(() => CodeableConceptFromFhirR4)
+        Schema.suspend(() => CodeableConcept.Schema)
       ),
       interpretation: Schema.optional(
         Schema.mutable(
-          Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+          Schema.Array(Schema.suspend(() => CodeableConcept.Schema))
         )
       ),
       referenceRange: Schema.optional(
-        Schema.mutable(Schema.Array(ObservationReferenceRangeFromFhirR4))
+        Schema.mutable(Schema.Array(ObservationReferenceRangeSchema))
       ),
     })
   ),
-  Schema.suspend(() => ValueElementFromFhirR4)
+  Schema.suspend(() => ValueElement.Schema)
 )
 
 /**
@@ -152,73 +134,71 @@ export interface Observation
   component?: ObservationComponent[]
 }
 
-export const ObservationFromFhirR4: Schema.Schema<
-  Observation,
-  fhir.Observation,
-  never
-> = Schema.extend(
-  Schema.extend(
-    DomainResourceFromFhirR4(ObservationId),
-    Schema.Struct({
-      resourceType: Schema.Literal('Observation'),
-      identifier: Schema.optional(
-        Schema.mutable(Schema.Array(Schema.suspend(() => IdentifierFromFhirR4)))
-      ),
-      basedOn: Schema.optional(
-        Schema.mutable(Schema.Array(Schema.suspend(() => ReferenceFromFhirR4)))
-      ),
-      partOf: Schema.optional(
-        Schema.mutable(Schema.Array(Schema.suspend(() => ReferenceFromFhirR4)))
-      ),
-      status: ObservationStatus,
-      category: Schema.optional(
-        Schema.mutable(
-          Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
-        )
-      ),
-      code: Schema.suspend(() => CodeableConceptFromFhirR4),
-      subject: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
-      focus: Schema.optional(
-        Schema.mutable(Schema.Array(Schema.suspend(() => ReferenceFromFhirR4)))
-      ),
-      encounter: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
-      effectiveDateTime: Schema.optional(Schema.DateTimeUtc),
-      effectivePeriod: Schema.optional(Schema.suspend(() => PeriodFromFhirR4)),
-      effectiveInstant: Schema.optional(Schema.DateTimeUtc),
-      issued: Schema.optional(Schema.DateTimeUtc),
-      performer: Schema.optional(
-        Schema.mutable(Schema.Array(Schema.suspend(() => ReferenceFromFhirR4)))
-      ),
-      dataAbsentReason: Schema.optional(
-        Schema.suspend(() => CodeableConceptFromFhirR4)
-      ),
-      interpretation: Schema.optional(
-        Schema.mutable(
-          Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
-        )
-      ),
-      note: Schema.optional(
-        Schema.mutable(Schema.Array(Schema.suspend(() => AnnotationFromFhirR4)))
-      ),
-      bodySite: Schema.optional(
-        Schema.suspend(() => CodeableConceptFromFhirR4)
-      ),
-      method: Schema.optional(Schema.suspend(() => CodeableConceptFromFhirR4)),
-      specimen: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
-      device: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
-      referenceRange: Schema.optional(
-        Schema.mutable(Schema.Array(ObservationReferenceRangeFromFhirR4))
-      ),
-      hasMember: Schema.optional(
-        Schema.mutable(Schema.Array(Schema.suspend(() => ReferenceFromFhirR4)))
-      ),
-      derivedFrom: Schema.optional(
-        Schema.mutable(Schema.Array(Schema.suspend(() => ReferenceFromFhirR4)))
-      ),
-      component: Schema.optional(
-        Schema.mutable(Schema.Array(ObservationComponentFromFhirR4))
-      ),
-    })
+export const Observation = ClinicalResourceBehaviourImpl({
+  TypeId,
+  resourceType: 'Observation',
+  Schema: Schema.extend(
+    Schema.extend(
+      DomainResource.Schema(ObservationId),
+      Schema.Struct({
+        resourceType: Schema.Literal('Observation'),
+        identifier: Schema.optional(
+          Schema.mutable(Schema.Array(Schema.suspend(() => Identifier.Schema)))
+        ),
+        basedOn: Schema.optional(
+          Schema.mutable(Schema.Array(Schema.suspend(() => Reference.Schema)))
+        ),
+        partOf: Schema.optional(
+          Schema.mutable(Schema.Array(Schema.suspend(() => Reference.Schema)))
+        ),
+        status: ObservationStatus,
+        category: Schema.optional(
+          Schema.mutable(
+            Schema.Array(Schema.suspend(() => CodeableConcept.Schema))
+          )
+        ),
+        code: Schema.suspend(() => CodeableConcept.Schema),
+        subject: Schema.optional(Schema.suspend(() => Reference.Schema)),
+        focus: Schema.optional(
+          Schema.mutable(Schema.Array(Schema.suspend(() => Reference.Schema)))
+        ),
+        encounter: Schema.optional(Schema.suspend(() => Reference.Schema)),
+        effectiveDateTime: Schema.optional(Schema.DateTimeUtc),
+        effectivePeriod: Schema.optional(Schema.suspend(() => Period.Schema)),
+        effectiveInstant: Schema.optional(Schema.DateTimeUtc),
+        issued: Schema.optional(Schema.DateTimeUtc),
+        performer: Schema.optional(
+          Schema.mutable(Schema.Array(Schema.suspend(() => Reference.Schema)))
+        ),
+        dataAbsentReason: Schema.optional(
+          Schema.suspend(() => CodeableConcept.Schema)
+        ),
+        interpretation: Schema.optional(
+          Schema.mutable(
+            Schema.Array(Schema.suspend(() => CodeableConcept.Schema))
+          )
+        ),
+        note: Schema.optional(
+          Schema.mutable(Schema.Array(Schema.suspend(() => Annotation.Schema)))
+        ),
+        bodySite: Schema.optional(Schema.suspend(() => CodeableConcept.Schema)),
+        method: Schema.optional(Schema.suspend(() => CodeableConcept.Schema)),
+        specimen: Schema.optional(Schema.suspend(() => Reference.Schema)),
+        device: Schema.optional(Schema.suspend(() => Reference.Schema)),
+        referenceRange: Schema.optional(
+          Schema.mutable(Schema.Array(ObservationReferenceRangeSchema))
+        ),
+        hasMember: Schema.optional(
+          Schema.mutable(Schema.Array(Schema.suspend(() => Reference.Schema)))
+        ),
+        derivedFrom: Schema.optional(
+          Schema.mutable(Schema.Array(Schema.suspend(() => Reference.Schema)))
+        ),
+        component: Schema.optional(
+          Schema.mutable(Schema.Array(ObservationComponentSchema))
+        ),
+      })
+    ),
+    Schema.suspend(() => ValueElement.Schema)
   ),
-  Schema.suspend(() => ValueElementFromFhirR4)
-)
+})

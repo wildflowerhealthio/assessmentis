@@ -6,26 +6,30 @@ import type {
   ResourceDataTypes,
 } from '@assessmentis/clinical-domain'
 import {
-  CompositionFromFhirR4,
-  QuestionnaireFromFhirR4,
-  QuestionnaireResponseFromFhirR4,
+  Composition,
+  Questionnaire,
+  QuestionnaireResponse,
 } from '@assessmentis/clinical-domain/content-management'
 import {
-  EncounterFromFhirR4,
-  LocationFromFhirR4,
-  PatientFromFhirR4,
-  PractitionerFromFhirR4,
+  Encounter,
+  Location,
+  Patient,
+  Practitioner,
 } from '@assessmentis/clinical-domain/administration'
 import {
-  MediaFromFhirR4,
-  ObservationFromFhirR4,
+  Media,
+  Observation,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { makeClinicalDataRepository } from '@assessmentis/clinical-domain/assessmentis'
 import type { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
 import type { AuthError, UnhandledError } from '@assessmentis/ontology'
 import { ExternalAssertionError } from '@assessmentis/ontology'
 import { FhirR4ClientService } from './FhirR4ClientService'
 import type { NoSelectedOrgError } from '@assessmentis/platform-domain'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const makeClinicalDataRepository = (..._args: any[]): any => {
+  throw new Error('makeClinicalDataRepository is not implemented yet')
+}
 
 export type GoogleFhirWebLayer<Key extends keyof ResourceDataTypes> =
   Layer.Layer<
@@ -110,31 +114,31 @@ export class ClinicalDataRepositoryService extends Effect.Service<ClinicalDataRe
         )
 
       const effect: ClinicalDataRepositoryServiceType['effect'] = {
-        Composition: clientEffect(CompositionFromFhirR4, 'Composition'),
-        Encounter: clientEffect(EncounterFromFhirR4, 'Encounter'),
-        Location: clientEffect(LocationFromFhirR4, 'Location'),
-        Media: clientEffect(MediaFromFhirR4, 'Media'),
-        Observation: clientEffect(ObservationFromFhirR4, 'Observation'),
-        Patient: clientEffect(PatientFromFhirR4, 'Patient'),
-        Practitioner: clientEffect(PractitionerFromFhirR4, 'Practitioner'),
-        Questionnaire: clientEffect(QuestionnaireFromFhirR4, 'Questionnaire'),
+        Composition: clientEffect(Composition.Schema, 'Composition'),
+        Encounter: clientEffect(Encounter.Schema, 'Encounter'),
+        Location: clientEffect(Location.Schema, 'Location'),
+        Media: clientEffect(Media.Schema, 'Media'),
+        Observation: clientEffect(Observation.Schema, 'Observation'),
+        Patient: clientEffect(Patient.Schema, 'Patient'),
+        Practitioner: clientEffect(Practitioner.Schema, 'Practitioner'),
+        Questionnaire: clientEffect(Questionnaire.Schema, 'Questionnaire'),
         QuestionnaireResponse: clientEffect(
-          QuestionnaireResponseFromFhirR4,
+          QuestionnaireResponse.Schema,
           'QuestionnaireResponse'
         ),
       }
 
       const stream: ClinicalDataRepositoryServiceType['stream'] = {
-        Composition: clientStream(CompositionFromFhirR4, 'Composition'),
-        Encounter: clientStream(EncounterFromFhirR4, 'Encounter'),
-        Location: clientStream(LocationFromFhirR4, 'Location'),
-        Media: clientStream(MediaFromFhirR4, 'Media'),
-        Observation: clientStream(ObservationFromFhirR4, 'Observation'),
-        Patient: clientStream(PatientFromFhirR4, 'Patient'),
-        Practitioner: clientStream(PractitionerFromFhirR4, 'Practitioner'),
-        Questionnaire: clientStream(QuestionnaireFromFhirR4, 'Questionnaire'),
+        Composition: clientStream(Composition.Schema, 'Composition'),
+        Encounter: clientStream(Encounter.Schema, 'Encounter'),
+        Location: clientStream(Location.Schema, 'Location'),
+        Media: clientStream(Media.Schema, 'Media'),
+        Observation: clientStream(Observation.Schema, 'Observation'),
+        Patient: clientStream(Patient.Schema, 'Patient'),
+        Practitioner: clientStream(Practitioner.Schema, 'Practitioner'),
+        Questionnaire: clientStream(Questionnaire.Schema, 'Questionnaire'),
         QuestionnaireResponse: clientStream(
-          QuestionnaireResponseFromFhirR4,
+          QuestionnaireResponse.Schema,
           'QuestionnaireResponse'
         ),
       }

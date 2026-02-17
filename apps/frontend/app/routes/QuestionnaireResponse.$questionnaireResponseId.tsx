@@ -3,13 +3,12 @@ import { Schema, Option, Effect, DateTime } from 'effect'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { QuestionnaireItemLink } from '@assessmentis/clinical-domain/content-management'
 import {
-  firstItemAnsweredAfter,
+  Questionnaire,
   QuestionnaireId,
+  QuestionnaireResponse,
   QuestionnaireResponseId,
   QuestionnaireRepository,
   QuestionnaireResponseRepository,
-  QuestionnaireFromFhirR4,
-  QuestionnaireResponseFromFhirR4,
 } from '@assessmentis/clinical-domain/content-management'
 
 import type { Route } from './+types/QuestionnaireResponse.$questionnaireResponseId'
@@ -20,11 +19,10 @@ import {
   EncounterId,
   EncounterRepository,
 } from '@assessmentis/clinical-domain/administration'
-import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import {
-  MediaFromFhirR4,
+  Media,
   MediaRepository,
-  ObservationFromFhirR4,
+  Observation,
   ObservationRepository,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { Await, useNavigate } from 'react-router'
@@ -45,10 +43,10 @@ const tryDecodeQuestionnaireResponseId = Schema.decodeOption(
 )
 
 export const QuestionnaireResponseWithQuestionnaire = Schema.Struct({
-  questionnaireResponse: QuestionnaireResponseFromFhirR4,
-  questionnaire: QuestionnaireFromFhirR4,
-  recordings: Schema.Array(MediaFromFhirR4),
-  observations: Schema.Array(ObservationFromFhirR4),
+  questionnaireResponse: QuestionnaireResponse.Schema,
+  questionnaire: Questionnaire.Schema,
+  recordings: Schema.Array(Media.Schema),
+  observations: Schema.Array(Observation.Schema),
 })
 
 function questionnaireEffect(questionnaireResponseIdStr: string) {
@@ -280,10 +278,11 @@ const ResponsePage = ({
                     const videoTime = DateTime.add(data.createdDateTime, {
                       seconds: e.currentTarget.currentTime,
                     })
-                    const nextAnswer = firstItemAnsweredAfter(
-                      questionnaireResponse,
-                      videoTime
-                    )
+                    const nextAnswer =
+                      QuestionnaireResponse.firstItemAnsweredAfter(
+                        questionnaireResponse,
+                        videoTime
+                      )
 
                     setHighlightLinks(
                       nextAnswer ? new Set([nextAnswer.linkId]) : new Set()

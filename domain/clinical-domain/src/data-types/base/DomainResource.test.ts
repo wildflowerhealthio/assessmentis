@@ -1,20 +1,14 @@
 import { expect, test, describe } from 'vitest'
-import { DomainResourceFromFhirR4 } from './DomainResource'
+import { DomainResource } from './DomainResource'
 import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
-import type { DeepReadonly } from '@assessmentis/util'
-import type { DomainResource as FhirDomainResource } from 'fhir/r4'
 
 const TestDomainResource = Schema.extend(
-  DomainResourceFromFhirR4(Schema.String),
+  DomainResource.Schema(Schema.String),
   Schema.Struct({
     resourceType: Schema.Literal('Basic'),
   })
 )
-
-// Compile-time check that Encoded schema matches FHIR R4
-const _domainResourceEncoded: DeepReadonly<FhirDomainResource> =
-  TestDomainResource.Encoded
 
 const domainResourceArb = Arbitrary.make(TestDomainResource)
 

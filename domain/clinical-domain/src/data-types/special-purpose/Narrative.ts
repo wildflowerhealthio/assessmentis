@@ -1,7 +1,5 @@
 import { Schema } from 'effect'
-import type { Element } from '../base/Element'
-import { ElementFromFhirR4 } from '../base/Element'
-import type fhir from 'fhir/r4'
+import { Element } from '../base/Element'
 
 const NarrativeId = Schema.String.pipe(Schema.brand('NarrativeId'))
 type NarrativeId = typeof NarrativeId.Type
@@ -27,9 +25,9 @@ export interface Narrative extends Element<NarrativeId> {
   div: string
 }
 
-export const Narrative: Schema.Schema<Narrative, fhir.Narrative, never> =
-  Schema.extend(
-    ElementFromFhirR4(NarrativeId),
+export const Narrative = {
+  Schema: Schema.extend(
+    Element.Schema(NarrativeId),
     Schema.mutable(
       Schema.Struct({
         status: NarrativeStatus,
@@ -44,4 +42,5 @@ export const Narrative: Schema.Schema<Narrative, fhir.Narrative, never> =
         div: Schema.String,
       })
     )
-  )
+  ),
+}

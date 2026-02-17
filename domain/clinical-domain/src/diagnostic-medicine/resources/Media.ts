@@ -1,25 +1,18 @@
 import type { DateTime } from 'effect'
-import { Data, Schema } from 'effect'
-import type fhir from 'fhir/r4'
-import type { DomainResource } from '../../data-types/base/DomainResource'
-import { DomainResourceFromFhirR4 } from '../../data-types/base/DomainResource'
-import type {
+import { Schema } from 'effect'
+import { ClinicalResourceBehaviourImpl } from '../../ClinicalResourceBehaviour'
+import { DomainResource } from '../../data-types/base/DomainResource'
+import {
   Identifier,
   Reference,
 } from '../../data-types/complex/IdentifierAndReference'
-import {
-  IdentifierFromFhirR4,
-  ReferenceFromFhirR4,
-} from '../../data-types/complex/IdentifierAndReference'
-import type { CodeableConcept } from '../../data-types/complex/CodeableConcept'
-import { CodeableConceptFromFhirR4 } from '../../data-types/complex/CodeableConcept'
-import type { Attachment as AttachmentType } from '../../data-types/complex/Attachment'
-import { AttachmentFromFhirR4 } from '../../data-types/complex/Attachment'
-import type { Annotation } from '../../data-types/complex/Annotation'
-import { AnnotationFromFhirR4 } from '../../data-types/complex/Annotation'
-import type { Period as PeriodType } from '../../data-types/complex/Period'
-import { PeriodFromFhirR4 } from '../../data-types/complex/Period'
-import type { WithId } from '@assessmentis/effectful-store'
+import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
+import { Attachment } from '../../data-types/complex/Attachment'
+import { Annotation } from '../../data-types/complex/Annotation'
+import { Period } from '../../data-types/complex/Period'
+
+const TypeId: unique symbol = Symbol.for('@assessmentis/clinical-domain/Media')
+type TypeId = typeof TypeId
 
 export const MediaId = Schema.String.pipe(Schema.brand('MediaId'))
 
@@ -57,7 +50,7 @@ export interface Media extends DomainResource<MediaId> {
   subject?: Reference
   encounter?: Reference
   createdDateTime?: DateTime.Utc
-  createdPeriod?: PeriodType
+  createdPeriod?: Period
   issued?: DateTime.Utc
   operator?: Reference
   reasonCode?: CodeableConcept[]
@@ -68,58 +61,52 @@ export interface Media extends DomainResource<MediaId> {
   width?: number
   frames?: number
   duration?: number
-  content: AttachmentType
+  content: Attachment
   note?: Annotation[]
 }
 
-export const Media = {
-  make: Data.case<Media>(),
-  makeWithId: Data.case<WithId<Media>>(),
-}
-
-export const MediaFromFhirR4: Schema.Schema<Media, fhir.Media, never> =
-  Schema.extend(
-    DomainResourceFromFhirR4(MediaId),
+export const Media = ClinicalResourceBehaviourImpl({
+  TypeId,
+  resourceType: 'Media',
+  Schema: Schema.extend(
+    DomainResource.Schema(MediaId),
     Schema.Struct({
       resourceType: Schema.Literal('Media'),
       identifier: Schema.optional(
-        Schema.mutable(Schema.Array(Schema.suspend(() => IdentifierFromFhirR4)))
+        Schema.mutable(Schema.Array(Schema.suspend(() => Identifier.Schema)))
       ),
       basedOn: Schema.optional(
-        Schema.mutable(Schema.Array(Schema.suspend(() => ReferenceFromFhirR4)))
+        Schema.mutable(Schema.Array(Schema.suspend(() => Reference.Schema)))
       ),
       partOf: Schema.optional(
-        Schema.mutable(Schema.Array(Schema.suspend(() => ReferenceFromFhirR4)))
+        Schema.mutable(Schema.Array(Schema.suspend(() => Reference.Schema)))
       ),
       status: MediaStatus,
-      type: Schema.optional(Schema.suspend(() => CodeableConceptFromFhirR4)),
-      modality: Schema.optional(
-        Schema.suspend(() => CodeableConceptFromFhirR4)
-      ),
-      view: Schema.optional(Schema.suspend(() => CodeableConceptFromFhirR4)),
-      subject: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
-      encounter: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
+      type: Schema.optional(Schema.suspend(() => CodeableConcept.Schema)),
+      modality: Schema.optional(Schema.suspend(() => CodeableConcept.Schema)),
+      view: Schema.optional(Schema.suspend(() => CodeableConcept.Schema)),
+      subject: Schema.optional(Schema.suspend(() => Reference.Schema)),
+      encounter: Schema.optional(Schema.suspend(() => Reference.Schema)),
       createdDateTime: Schema.optional(Schema.DateTimeUtc),
-      createdPeriod: Schema.optional(Schema.suspend(() => PeriodFromFhirR4)),
+      createdPeriod: Schema.optional(Schema.suspend(() => Period.Schema)),
       issued: Schema.optional(Schema.DateTimeUtc),
-      operator: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
+      operator: Schema.optional(Schema.suspend(() => Reference.Schema)),
       reasonCode: Schema.optional(
         Schema.mutable(
-          Schema.Array(Schema.suspend(() => CodeableConceptFromFhirR4))
+          Schema.Array(Schema.suspend(() => CodeableConcept.Schema))
         )
       ),
-      bodySite: Schema.optional(
-        Schema.suspend(() => CodeableConceptFromFhirR4)
-      ),
+      bodySite: Schema.optional(Schema.suspend(() => CodeableConcept.Schema)),
       deviceName: Schema.optional(Schema.String),
-      device: Schema.optional(Schema.suspend(() => ReferenceFromFhirR4)),
+      device: Schema.optional(Schema.suspend(() => Reference.Schema)),
       height: Schema.optional(Schema.Number),
       width: Schema.optional(Schema.Number),
       frames: Schema.optional(Schema.Number),
       duration: Schema.optional(Schema.Number),
-      content: Schema.suspend(() => AttachmentFromFhirR4),
+      content: Schema.suspend(() => Attachment.Schema),
       note: Schema.optional(
-        Schema.mutable(Schema.Array(Schema.suspend(() => AnnotationFromFhirR4)))
+        Schema.mutable(Schema.Array(Schema.suspend(() => Annotation.Schema)))
       ),
     })
-  )
+  ),
+})

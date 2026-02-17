@@ -1,9 +1,15 @@
 import { Schema } from 'effect'
-import type fhir from 'fhir/r4'
+import { Element, type ElementEncoded } from '../base/Element'
+
 export const Code = Schema.String.pipe(Schema.brand('code'))
 
 export type Code = typeof Code.Type
-export interface Coding {
+
+export const CodingId = Schema.String.pipe(Schema.brand('CodingId'))
+
+export type CodingId = typeof CodingId.Type
+
+export interface Coding extends Element<CodingId> {
   readonly code?: Code
   readonly display?: string
   readonly system?: string
@@ -11,10 +17,16 @@ export interface Coding {
   readonly version?: string
 }
 
-/**
- * A reference to a code defined by a terminology system.
- */
-export const CodingFromFhirR4: Schema.Schema<Coding, fhir.Coding, never> =
+export interface CodingEncoded extends ElementEncoded {
+  readonly code?: string
+  readonly display?: string
+  readonly system?: string
+  readonly userSelected?: boolean
+  readonly version?: string
+}
+
+const CodingSchema: Schema.Schema<Coding, CodingEncoded, never> = Schema.extend(
+  Element.Schema(CodingId),
   Schema.mutable(
     Schema.Struct({
       /**
@@ -44,6 +56,11 @@ export const CodingFromFhirR4: Schema.Schema<Coding, fhir.Coding, never> =
       // _version?: Element | undefined;
     })
   )
+)
 
-// Backwards compatibility alias
-export const Coding = CodingFromFhirR4
+/**
+ * A reference to a code defined by a terminology system.
+ */
+export const Coding = {
+  Schema: CodingSchema,
+}

@@ -8,7 +8,6 @@ import type {
 } from '@assessmentis/ontology'
 import type { OptionalIdBundle } from '@assessmentis/clinical-domain/foundation-framework'
 import { type DeepReadonly } from '@assessmentis/util'
-import type { ReadonlyRecord } from 'effect/Record'
 
 export class FhirR4Client extends Context.Tag('BareFhirR4Client')<
   FhirR4Client,
@@ -63,7 +62,7 @@ export class FhirR4Client extends Context.Tag('BareFhirR4Client')<
     search: (
       params: {
         readonly resourceType: string
-      } & ReadonlyRecord<string, undefined | string | readonly string[]>
+      } & Record<string, undefined | string | ReadonlyArray<string>>
     ) => Effect.Effect<unknown, AuthError | AuthzError | UnhandledError, never>
   }
 >() {}

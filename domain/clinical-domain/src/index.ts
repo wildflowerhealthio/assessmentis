@@ -1,5 +1,5 @@
 export { default as Schemas } from './Schemas'
-export * as ClinicalResources from './ClinicalResources'
+export * from './ClinicalResourceBehaviour'
 export { default as Repositories, type RepositoriesType } from './Repositories'
 export type {
   default as ResourceDataTypes,

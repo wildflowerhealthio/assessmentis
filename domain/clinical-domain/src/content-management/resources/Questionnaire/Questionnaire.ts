@@ -1,15 +1,14 @@
 import { Schema } from 'effect'
-import type fhir from 'fhir/r4'
-import type { DomainResource } from '../../../data-types/base/DomainResource'
-import { DomainResourceFromFhirR4 } from '../../../data-types/base/DomainResource'
-import type { BackboneElement } from '../../../data-types/base/BackboneElement'
-import { BackboneElementFromFhirR4 } from '../../../data-types/base/BackboneElement'
-import type { Coding } from '../../../data-types/complex/Coding'
-import { Coding as CodingSchema } from '../../../data-types/complex/Coding'
-import {
-  ValueElementFromFhirR4,
-  type ValueElement,
-} from '../../../data-types/primitive/ValueElement'
+import { ClinicalResourceBehaviourImpl } from '../../../ClinicalResourceBehaviour'
+import { DomainResource } from '../../../data-types/base/DomainResource'
+import { BackboneElement } from '../../../data-types/base/BackboneElement'
+import { Coding } from '../../../data-types/complex/Coding'
+import { ValueElement } from '../../../data-types/primitive/ValueElement'
+
+const TypeId: unique symbol = Symbol.for(
+  '@assessmentis/clinical-domain/Questionnaire'
+)
+type TypeId = typeof TypeId
 
 export const QuestionnaireId = Schema.String.pipe(
   Schema.brand('QuestionnaireId')
@@ -78,14 +77,10 @@ export interface QuestionnaireItemAnswerOption
   initialSelected?: boolean
 }
 
-const QuestionnaireItemAnswerOptionFromFhirR4: Schema.Schema<
-  QuestionnaireItemAnswerOption,
-  fhir.QuestionnaireItemAnswerOption,
-  never
-> = Schema.extend(
+const QuestionnaireItemAnswerOptionSchema = Schema.extend(
   Schema.extend(
-    BackboneElementFromFhirR4(QuestionnaireItemAnswerOptionId),
-    ValueElementFromFhirR4
+    BackboneElement.Schema(QuestionnaireItemAnswerOptionId),
+    ValueElement.Schema
   ),
   Schema.Struct({
     initialSelected: Schema.optional(Schema.Boolean),
@@ -119,49 +114,45 @@ export interface QuestionnaireItem extends BackboneElement<QuestionnaireItemId> 
  * The content of the questionnaire is constructed from an ordered,
  * hierarchical collection of items.
  */
-export const QuestionnaireItemFromFhirR4: Schema.Schema<
-  QuestionnaireItem,
-  fhir.QuestionnaireItem,
-  never
-> = Schema.extend(
-  BackboneElementFromFhirR4(QuestionnaireItemId),
-  Schema.Struct({
-    answerOption: Schema.optional(
-      Schema.mutable(Schema.Array(QuestionnaireItemAnswerOptionFromFhirR4))
-    ),
-    answerValueSet: Schema.optional(Schema.String),
-    code: Schema.optional(Schema.mutable(Schema.Array(Schema.suspend(() => CodingSchema)))),
-    definition: Schema.optional(Schema.String),
-    enableBehavior: Schema.optional(
-      Schema.Union(
-        Schema.Literal('all'),
-        Schema.Literal('any'),
-        Schema.Undefined
-      )
-    ),
-    enableWhen: Schema.optional(Schema.Any),
-    initial: Schema.optional(Schema.Any),
-    item: Schema.optional(
-      Schema.mutable(Schema.Array(
-        Schema.suspend(
-          (): Schema.Schema<
-            QuestionnaireItem,
-            fhir.QuestionnaireItem,
-            never
-          > => QuestionnaireItemFromFhirR4
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const QuestionnaireItemSchema: Schema.Schema<QuestionnaireItem, any, never> =
+  Schema.extend(
+    BackboneElement.Schema(QuestionnaireItemId),
+    Schema.Struct({
+      answerOption: Schema.optional(
+        Schema.mutable(Schema.Array(QuestionnaireItemAnswerOptionSchema))
+      ),
+      answerValueSet: Schema.optional(Schema.String),
+      code: Schema.optional(
+        Schema.mutable(Schema.Array(Schema.suspend(() => Coding.Schema)))
+      ),
+      definition: Schema.optional(Schema.String),
+      enableBehavior: Schema.optional(
+        Schema.Union(
+          Schema.Literal('all'),
+          Schema.Literal('any'),
+          Schema.Undefined
         )
-      ))
-    ),
-    linkId: QuestionnaireItemLink,
-    maxLength: Schema.optional(Schema.Int),
-    prefix: Schema.optional(Schema.String),
-    readOnly: Schema.optional(Schema.Boolean),
-    repeats: Schema.optional(Schema.Boolean),
-    required: Schema.optional(Schema.Boolean),
-    text: Schema.optional(Schema.String),
-    type: QuestionItemType,
-  })
-)
+      ),
+      enableWhen: Schema.optional(Schema.Any),
+      initial: Schema.optional(Schema.Any),
+      item: Schema.optional(
+        Schema.mutable(
+          Schema.Array(Schema.suspend(() => QuestionnaireItemSchema))
+        )
+      ),
+      linkId: QuestionnaireItemLink,
+      maxLength: Schema.optional(Schema.Int),
+      prefix: Schema.optional(Schema.String),
+      readOnly: Schema.optional(Schema.Boolean),
+      repeats: Schema.optional(Schema.Boolean),
+      required: Schema.optional(Schema.Boolean),
+      text: Schema.optional(Schema.String),
+      type: QuestionItemType,
+    })
+  )
+
+export const QuestionnaireItem = { Schema: QuestionnaireItemSchema }
 
 /**
  * A structured set of questions intended to guide the collection of answers
@@ -195,40 +186,44 @@ export interface Questionnaire extends DomainResource<QuestionnaireId> {
   version?: string
 }
 
-export const QuestionnaireFromFhirR4: Schema.Schema<
-  Questionnaire,
-  fhir.Questionnaire,
-  never
-> = Schema.extend(
-  DomainResourceFromFhirR4(QuestionnaireId),
-  Schema.Struct({
-    resourceType: Schema.Literal('Questionnaire'),
-    approvalDate: Schema.optional(Schema.String),
-    code: Schema.optional(Schema.mutable(Schema.Array(Schema.suspend(() => CodingSchema)))),
-    contact: Schema.optional(Schema.Any),
-    copyright: Schema.optional(Schema.String),
-    date: Schema.optional(Schema.String),
-    derivedFrom: Schema.optional(Schema.mutable(Schema.Array(Schema.String))),
-    description: Schema.optional(Schema.String),
-    effectivePeriod: Schema.optional(Schema.Any),
-    experimental: Schema.optional(Schema.Boolean),
-    identifier: Schema.optional(Schema.Any),
-    item: Schema.optional(Schema.mutable(Schema.Array(QuestionnaireItemFromFhirR4))),
-    jurisdiction: Schema.optional(Schema.Any),
-    lastReviewDate: Schema.optional(Schema.String),
-    name: Schema.optional(Schema.String),
-    publisher: Schema.optional(Schema.String),
-    purpose: Schema.optional(Schema.String),
-    status: Schema.Union(
-      Schema.Literal('draft'),
-      Schema.Literal('active'),
-      Schema.Literal('retired'),
-      Schema.Literal('unknown')
-    ),
-    subjectType: Schema.optional(Schema.mutable(Schema.Array(Schema.String))),
-    title: Schema.optional(Schema.String),
-    url: Schema.optional(Schema.String),
-    useContext: Schema.optional(Schema.Any),
-    version: Schema.optional(Schema.String),
-  })
-)
+export const Questionnaire = ClinicalResourceBehaviourImpl({
+  TypeId,
+  resourceType: 'Questionnaire',
+  Schema: Schema.extend(
+    DomainResource.Schema(QuestionnaireId),
+    Schema.Struct({
+      resourceType: Schema.Literal('Questionnaire'),
+      approvalDate: Schema.optional(Schema.String),
+      code: Schema.optional(
+        Schema.mutable(Schema.Array(Schema.suspend(() => Coding.Schema)))
+      ),
+      contact: Schema.optional(Schema.Any),
+      copyright: Schema.optional(Schema.String),
+      date: Schema.optional(Schema.String),
+      derivedFrom: Schema.optional(Schema.mutable(Schema.Array(Schema.String))),
+      description: Schema.optional(Schema.String),
+      effectivePeriod: Schema.optional(Schema.Any),
+      experimental: Schema.optional(Schema.Boolean),
+      identifier: Schema.optional(Schema.Any),
+      item: Schema.optional(
+        Schema.mutable(Schema.Array(QuestionnaireItemSchema))
+      ),
+      jurisdiction: Schema.optional(Schema.Any),
+      lastReviewDate: Schema.optional(Schema.String),
+      name: Schema.optional(Schema.String),
+      publisher: Schema.optional(Schema.String),
+      purpose: Schema.optional(Schema.String),
+      status: Schema.Union(
+        Schema.Literal('draft'),
+        Schema.Literal('active'),
+        Schema.Literal('retired'),
+        Schema.Literal('unknown')
+      ),
+      subjectType: Schema.optional(Schema.mutable(Schema.Array(Schema.String))),
+      title: Schema.optional(Schema.String),
+      url: Schema.optional(Schema.String),
+      useContext: Schema.optional(Schema.Any),
+      version: Schema.optional(Schema.String),
+    })
+  ),
+})
