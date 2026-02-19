@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
-import { FhirR4ResourceBehaviourImpl } from '../../../FhirR4ResourceBehaviour'
+import {} from '../../../FhirR4ResourceBehaviour'
 import type { Composition } from '@assessmentis/clinical-domain/content-management'
 import { CompositionId } from '@assessmentis/clinical-domain/content-management'
 import { Code } from '@assessmentis/clinical-domain/data-types'
@@ -62,7 +62,7 @@ const FhirR4CompositionSchema: Schema.Schema<
   )
 )
 
-export const FhirR4Composition = FhirR4ResourceBehaviourImpl({
+export const FhirR4Composition = {
   resourceType: 'Composition',
   Schema: FhirR4CompositionSchema,
-})
+}

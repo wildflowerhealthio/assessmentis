@@ -15,7 +15,7 @@ import {
 } from '../../data-types/complex/IdentifierAndReference'
 import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import { FhirR4Address } from '../../data-types/complex/Address'
-import { FhirR4ResourceBehaviourImpl } from '../../FhirR4ResourceBehaviour'
+import {} from '../../FhirR4ResourceBehaviour'
 
 const FhirR4LocationSchema: Schema.Schema<Location, FhirR4.Location, never> =
   Schema.extend(
@@ -63,7 +63,7 @@ const FhirR4LocationSchema: Schema.Schema<Location, FhirR4.Location, never> =
     })
   )
 
-export const FhirR4Location = FhirR4ResourceBehaviourImpl({
+export const FhirR4Location = {
   resourceType: 'Location',
   Schema: FhirR4LocationSchema,
-})
+}

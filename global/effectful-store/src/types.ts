@@ -10,3 +10,5 @@ export interface BaseResource {
 export type WithId<T extends { readonly id?: string | undefined }> = T & {
   readonly id: NonNullable<T['id']>
 }
+
+export type Id<T extends BaseResource> = NonNullable<T['id']>

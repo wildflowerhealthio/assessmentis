@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
-import { FhirR4ResourceBehaviourImpl } from '../../FhirR4ResourceBehaviour'
+import {} from '../../FhirR4ResourceBehaviour'
 import type {
   Practitioner,
   PractitionerQualification,
@@ -92,7 +92,7 @@ const FhirR4PractitionerSchema: Schema.Schema<
   })
 )
 
-export const FhirR4Practitioner = FhirR4ResourceBehaviourImpl({
+export const FhirR4Practitioner = {
   resourceType: 'Practitioner',
   Schema: FhirR4PractitionerSchema,
-})
+}

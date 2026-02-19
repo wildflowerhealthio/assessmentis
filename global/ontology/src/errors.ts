@@ -79,7 +79,7 @@ export class BadDataError extends Data.TaggedError('BadDataError')<{
  * Resource not found
  */
 export class NotFoundError<
-  ResourceType extends string,
+  ResourceType extends string | symbol,
   Parameters extends Record<string, unknown>,
 > extends Data.TaggedError('NotFoundError')<{
   resourceType: ResourceType
@@ -88,7 +88,7 @@ export class NotFoundError<
 }> {
   asUnhandledError() {
     return new UnhandledError({
-      message: `Resource of type ${this.resourceType} not found with parameters: ${JSON.stringify(
+      message: `Resource of type ${String(this.resourceType)} not found with parameters: ${JSON.stringify(
         this.params
       )}`,
       cause: this.cause,

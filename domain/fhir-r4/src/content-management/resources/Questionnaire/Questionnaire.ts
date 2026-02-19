@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
-import { FhirR4ResourceBehaviourImpl } from '../../../FhirR4ResourceBehaviour'
+import {} from '../../../FhirR4ResourceBehaviour'
 import type {
   Questionnaire,
   QuestionnaireItem,
@@ -72,9 +72,7 @@ const FhirR4QuestionnaireItemSchema: Schema.Schema<
     ),
     answerValueSet: Schema.optional(Schema.String),
     code: Schema.optional(
-      Schema.mutable(
-        Schema.Array(Schema.suspend(() => FhirR4Coding.Schema))
-      )
+      Schema.mutable(Schema.Array(Schema.suspend(() => FhirR4Coding.Schema)))
     ),
     definition: Schema.optional(Schema.String),
     enableBehavior: Schema.optional(
@@ -88,9 +86,7 @@ const FhirR4QuestionnaireItemSchema: Schema.Schema<
     initial: Schema.optional(Schema.Any),
     item: Schema.optional(
       Schema.mutable(
-        Schema.Array(
-          Schema.suspend(() => FhirR4QuestionnaireItemSchema)
-        )
+        Schema.Array(Schema.suspend(() => FhirR4QuestionnaireItemSchema))
       )
     ),
     linkId: QuestionnaireItemLink,
@@ -120,16 +116,12 @@ const FhirR4QuestionnaireSchema: Schema.Schema<
     resourceType: Schema.Literal('Questionnaire'),
     approvalDate: Schema.optional(Schema.String),
     code: Schema.optional(
-      Schema.mutable(
-        Schema.Array(Schema.suspend(() => FhirR4Coding.Schema))
-      )
+      Schema.mutable(Schema.Array(Schema.suspend(() => FhirR4Coding.Schema)))
     ),
     contact: Schema.optional(Schema.Any),
     copyright: Schema.optional(Schema.String),
     date: Schema.optional(Schema.String),
-    derivedFrom: Schema.optional(
-      Schema.mutable(Schema.Array(Schema.String))
-    ),
+    derivedFrom: Schema.optional(Schema.mutable(Schema.Array(Schema.String))),
     description: Schema.optional(Schema.String),
     effectivePeriod: Schema.optional(Schema.Any),
     experimental: Schema.optional(Schema.Boolean),
@@ -148,9 +140,7 @@ const FhirR4QuestionnaireSchema: Schema.Schema<
       Schema.Literal('retired'),
       Schema.Literal('unknown')
     ),
-    subjectType: Schema.optional(
-      Schema.mutable(Schema.Array(Schema.String))
-    ),
+    subjectType: Schema.optional(Schema.mutable(Schema.Array(Schema.String))),
     title: Schema.optional(Schema.String),
     url: Schema.optional(Schema.String),
     useContext: Schema.optional(Schema.Any),
@@ -158,7 +148,7 @@ const FhirR4QuestionnaireSchema: Schema.Schema<
   })
 )
 
-export const FhirR4Questionnaire = FhirR4ResourceBehaviourImpl({
+export const FhirR4Questionnaire = {
   resourceType: 'Questionnaire',
   Schema: FhirR4QuestionnaireSchema,
-})
+}

@@ -7,6 +7,14 @@
  */
 import { dual } from 'effect/Function'
 import { Effect, Either, Stream } from 'effect'
+import type { NoSuchElementException } from 'effect/Cause'
+
+export interface StreamEither<
+  out A,
+  out E,
+  out StreamErr = never,
+  out R = never,
+> extends Stream.Stream<Either.Either<A, E>, StreamErr, R> {}
 
 // -------------------------------------------------------------------------------------
 // mapping
@@ -261,4 +269,12 @@ export const unwrap = <A, E, StreamErr, R>(
       onRight: (a) => Stream.succeed(a),
       onLeft: (e) => Stream.fail(e),
     })
+  )
+
+export const head = <A, E, StreamErr, R>(
+  self: StreamEither<A, E, StreamErr, R>
+): Effect.Effect<A, E | StreamErr | NoSuchElementException, R> =>
+  Stream.runHead(self).pipe(
+    Effect.flatMap((a) => a),
+    Effect.flatMap((a) => a)
   )

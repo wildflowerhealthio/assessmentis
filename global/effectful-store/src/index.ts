@@ -1,3 +1,5 @@
 export { hasId, assertId } from './helpers'
-export type { BaseResource, WithId } from './types'
-export * as Requests from './Requests'
+export * as Hub from './Hub'
+export * as ResourceRequest from './ResourceRequest'
+export * as SourceBehaviour from './SourceBehaviour'
+export type { BaseResource, WithId, Id } from './types'

@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
-import { FhirR4ResourceBehaviourImpl } from '../../FhirR4ResourceBehaviour'
+import {} from '../../FhirR4ResourceBehaviour'
 import type {
   Observation,
   ObservationReferenceRange,
@@ -173,7 +173,7 @@ const FhirR4ObservationSchema: Schema.Schema<
   Schema.suspend(() => FhirR4ValueElement.Schema)
 )
 
-export const FhirR4Observation = FhirR4ResourceBehaviourImpl({
+export const FhirR4Observation = {
   resourceType: 'Observation',
   Schema: FhirR4ObservationSchema,
-})
+}

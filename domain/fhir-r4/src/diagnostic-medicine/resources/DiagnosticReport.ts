@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
-import { FhirR4ResourceBehaviourImpl } from '../../FhirR4ResourceBehaviour'
+import {} from '../../FhirR4ResourceBehaviour'
 import type {
   DiagnosticReport,
   DiagnosticReportMedia,
@@ -99,7 +99,7 @@ const FhirR4DiagnosticReportSchema: Schema.Schema<
   })
 )
 
-export const FhirR4DiagnosticReport = FhirR4ResourceBehaviourImpl({
+export const FhirR4DiagnosticReport = {
   resourceType: 'DiagnosticReport',
   Schema: FhirR4DiagnosticReportSchema,
-})
+}

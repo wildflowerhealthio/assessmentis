@@ -23,6 +23,10 @@ module.exports = defineConfig([
       },
     },
     rules: {
+      '@typescript-eslint/no-empty-object-type': [
+        'error',
+        { allowInterfaces: 'always' },
+      ],
       '@typescript-eslint/consistent-type-imports': [
         'error',
         { fixStyle: 'separate-type-imports', prefer: 'type-imports' },

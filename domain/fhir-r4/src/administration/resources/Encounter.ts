@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
-import { FhirR4ResourceBehaviourImpl } from '../../FhirR4ResourceBehaviour'
+import {} from '../../FhirR4ResourceBehaviour'
 import type {
   Encounter,
   EncounterStatusHistory,
@@ -248,7 +248,7 @@ const FhirR4EncounterSchema: Schema.Schema<Encounter, FhirR4.Encounter, never> =
     })
   )
 
-export const FhirR4Encounter = FhirR4ResourceBehaviourImpl({
+export const FhirR4Encounter = {
   resourceType: 'Encounter',
   Schema: FhirR4EncounterSchema,
-})
+}

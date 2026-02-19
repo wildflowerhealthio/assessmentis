@@ -7,21 +7,37 @@
  * 3. Each resolver is strongly typed based on the Key parameter
  */
 
-import { Array, Record, Effect, Request, RequestResolver, Schema } from 'effect'
+import {
+  Array,
+  Record,
+  Effect,
+  Request,
+  RequestResolver,
+  Schema,
+  Context,
+} from 'effect'
 import { FhirR4Client } from '@assessmentis/fhir-r4'
 import type {
   BaseResource,
   WithId,
-  Requests,
+  ResourceRequest,
+  SourceBehaviour,
 } from '@assessmentis/effectful-store'
 import { assertId } from '@assessmentis/effectful-store'
+import type { AuthError } from '@assessmentis/ontology'
 import {
   UnhandledError,
   ExternalAssertionError,
   NotFoundError,
 } from '@assessmentis/ontology'
+import { StreamEither } from '@assessmentis/util'
 import { refineOrFail } from '@assessmentis/util'
 import { FhirR4Bundle } from './foundation-framework'
+import type {
+  Encounter,
+  Patient,
+} from '@assessmentis/clinical-domain/administration'
+import { FhirR4Encounter, FhirR4Patient } from './administration'
 
 /**
  * Helper to decode and assert resource has ID
@@ -98,32 +114,111 @@ const makeBundleDecoder = <T extends BaseResource, TEncoded>(
     )
 }
 
+type Resources = {
+  Patient: Patient
+  Encounter: Encounter
+}
+
+const fhirSchemas: {
+  readonly [K in keyof Resources]: Schema.Schema<Resources[K], any, never>
+} = {
+  Patient: FhirR4Patient.Schema,
+  Encounter: FhirR4Encounter.Schema,
+} as const
+
+const resolverForResource = <K extends keyof Resources>(request: {
+  resourceType: K
+}): AllActionResolver<Resources[K]> =>
+  makeResolverSet({
+    resourceType: request.resourceType,
+    Schema: fhirSchemas[request.resourceType],
+  })
+
+export const FhirR4SourceBehaviour = ({
+  clientStream,
+  sourceId,
+  sourceType,
+  url,
+  provokeReauth,
+}: {
+  clientStream: StreamEither.StreamEither<
+    typeof FhirR4Client.Service,
+    AuthError | UnhandledError
+  >
+  sourceType: string
+  sourceId: string
+  url: string
+  provokeReauth: () => Effect.Effect<void, AuthError, never>
+}): SourceBehaviour.SourceBehaviour<
+  Resources,
+  keyof Resources,
+  FhirR4Client
+> => {
+  const resolverStream = clientStream.pipe(
+    StreamEither.map((client) => {
+      const resolver: ResourceRequest.MultiResolver<
+        Resources,
+        keyof Resources,
+        FhirR4Client
+      > = RequestResolver.fromEffect((request) => {
+        const innerResolver = resolverForResource(request)
+
+        return Effect.request(
+          request,
+          innerResolver.pipe(
+            RequestResolver.provideContext(Context.make(FhirR4Client, client))
+          )
+        )
+      })
+
+      return resolver
+    })
+  )
+
+  return {
+    sourceId,
+    sourceType,
+    url,
+    resolverStream,
+    provokeReauth,
+    activeResources: {
+      Patient: true,
+      Encounter: true,
+    },
+  }
+}
+
 export interface FhirR4ResourceBehaviour<
   T extends BaseResource,
   TEncoded = unknown,
 > {
   resourceType: T['resourceType']
   Schema: Schema.Schema<T, TEncoded, never>
-  Get: RequestResolver.RequestResolver<Requests.Get<T>, FhirR4Client>
-  Search: RequestResolver.RequestResolver<Requests.Search<T>, FhirR4Client>
-  Create: RequestResolver.RequestResolver<Requests.Create<T>, FhirR4Client>
-  Update: RequestResolver.RequestResolver<Requests.Update<T>, FhirR4Client>
-  Delete: RequestResolver.RequestResolver<Requests.Delete<T>, FhirR4Client>
 }
 
-export const FhirR4ResourceBehaviourImpl = <T extends BaseResource, TEncoded>({
+type AllActionResolver<T extends BaseResource> =
+  RequestResolver.RequestResolver<
+    | ResourceRequest.Get<T>
+    | ResourceRequest.Search<T>
+    | ResourceRequest.Create<T>
+    | ResourceRequest.Update<T>
+    | ResourceRequest.Delete<T>,
+    FhirR4Client
+  >
+
+const makeResolverSet = <T extends BaseResource>({
   resourceType,
   Schema: schema,
 }: {
   resourceType: T['resourceType']
-  Schema: Schema.Schema<T, TEncoded, never>
-}): FhirR4ResourceBehaviour<T, TEncoded> => {
+  Schema: Schema.Schema<T, any, never>
+}): AllActionResolver<T> => {
   const encode = Schema.encode(schema)
   const decoder = decodeAndAssertId(schema)
   const bundleDecoder = makeBundleDecoder(schema)
 
   const Get = RequestResolver.makeBatched(
-    (requests: ReadonlyArray<Requests.Get<T>>) =>
+    (requests: ReadonlyArray<ResourceRequest.Get<T>>) =>
       Effect.gen(function* () {
         const client = yield* FhirR4Client
         // Group by resourceType (though they should all be the same)
@@ -188,87 +283,112 @@ export const FhirR4ResourceBehaviourImpl = <T extends BaseResource, TEncoded>({
       })
   )
 
-  const Search = RequestResolver.fromEffect((request: Requests.Search<T>) =>
-    Effect.flatMap(FhirR4Client, (client) =>
-      client
-        .search({ resourceType: request.resourceType, ...request.params })
-        .pipe(Effect.flatMap(bundleDecoder))
-    )
+  const Search = RequestResolver.fromEffect(
+    (request: ResourceRequest.Search<T>) =>
+      Effect.flatMap(FhirR4Client, (client) =>
+        client
+          .search({ resourceType: request.resourceType, ...request.params })
+          .pipe(Effect.flatMap(bundleDecoder))
+      )
   )
 
-  const Create = RequestResolver.fromEffect((request: Requests.Create<T>) =>
-    Effect.flatMap(FhirR4Client, (client) =>
-      encode(request.resource).pipe(
-        Effect.mapError(
-          (cause) =>
-            new UnhandledError({
-              message: 'Error encoding resource',
-              cause,
-            })
-        ),
-
-        Effect.flatMap((resource) =>
-          client.create({
-            type: request.resourceType,
-            resource,
-          })
-        ),
-        Effect.flatMap(decoder)
-      )
-    )
-  )
-
-  const Update = RequestResolver.fromEffect((request: Requests.Update<T>) => {
-    const originalId = request.resource.id
-    return Effect.flatMap(FhirR4Client, (client) =>
-      encode(request.resource).pipe(
-        Effect.mapError(
-          (cause) =>
-            new UnhandledError({ message: 'Error encoding resource', cause })
-        ),
-        Effect.flatMap((resource) =>
-          client.update({
-            id: originalId,
-            type: resourceType,
-            resource,
-          })
-        ),
-        Effect.flatMap(decoder)
-      )
-    )
-  })
-
-  const Delete = RequestResolver.fromEffect((request: Requests.Delete<T>) =>
-    Effect.flatMap(FhirR4Client, (client) =>
-      client
-        .delete<T['resourceType']>({
-          type: resourceType,
-          id: request.id,
-        })
-        .pipe(
-          Effect.catchTag('NotFoundError', () =>
-            Effect.fail(
-              new NotFoundError<
-                T['resourceType'],
-                { id: NonNullable<T['id']> }
-              >({
-                resourceType,
-                params: { id: request.id },
+  const Create = RequestResolver.fromEffect(
+    (request: ResourceRequest.Create<T>) =>
+      Effect.flatMap(FhirR4Client, (client) =>
+        encode(request.resource).pipe(
+          Effect.mapError(
+            (cause) =>
+              new UnhandledError({
+                message: 'Error encoding resource',
+                cause,
               })
-            )
           ),
-          Effect.as(null)
+
+          Effect.flatMap((resource) =>
+            client.create({
+              type: request.resourceType,
+              resource,
+            })
+          ),
+          Effect.flatMap(decoder)
         )
-    )
+      )
   )
 
-  return {
-    resourceType,
-    Schema: schema,
-    Get,
-    Search,
-    Create,
-    Update,
-    Delete,
-  }
+  const Update = RequestResolver.fromEffect(
+    (request: ResourceRequest.Update<T>) => {
+      const originalId = request.resource.id
+      return Effect.flatMap(FhirR4Client, (client) =>
+        encode(request.resource).pipe(
+          Effect.mapError(
+            (cause) =>
+              new UnhandledError({ message: 'Error encoding resource', cause })
+          ),
+          Effect.flatMap((resource) =>
+            client.update({
+              id: originalId,
+              type: resourceType,
+              resource,
+            })
+          ),
+          Effect.flatMap(decoder)
+        )
+      )
+    }
+  )
+
+  const Delete = RequestResolver.fromEffect(
+    (request: ResourceRequest.Delete<T>) =>
+      Effect.flatMap(FhirR4Client, (client) =>
+        client
+          .delete<T['resourceType']>({
+            type: resourceType,
+            id: request.id,
+          })
+          .pipe(
+            Effect.catchTag('NotFoundError', () =>
+              Effect.fail(
+                new NotFoundError<
+                  T['resourceType'],
+                  { id: NonNullable<T['id']> }
+                >({
+                  resourceType,
+                  params: { id: request.id },
+                })
+              )
+            ),
+            Effect.as(null)
+          )
+      )
+  )
+
+  return RequestResolver.fromEffect((request) => {
+    switch (request._tag) {
+      case 'Get':
+        return Effect.request(
+          request,
+          Get.pipe(RequestResolver.contextFromServices(FhirR4Client))
+        )
+      case 'Search':
+        return Effect.request(
+          request,
+          Search.pipe(RequestResolver.contextFromServices(FhirR4Client))
+        )
+      case 'Create':
+        return Effect.request(
+          request,
+          Create.pipe(RequestResolver.contextFromServices(FhirR4Client))
+        )
+      case 'Update':
+        return Effect.request(
+          request,
+          Update.pipe(RequestResolver.contextFromServices(FhirR4Client))
+        )
+      case 'Delete':
+        return Effect.request(
+          request,
+          Delete.pipe(RequestResolver.contextFromServices(FhirR4Client))
+        )
+    }
+  })
 }
