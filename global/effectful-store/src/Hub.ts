@@ -6,7 +6,7 @@ import type {
   NotFoundError,
 } from '@assessmentis/ontology'
 import { UnhandledError } from '@assessmentis/ontology'
-import type { BaseResource, WithId, Id } from './types'
+import type * as Resource from './Resource'
 import type {
   InferActiveResourceTypes,
   SourceBehaviour,
@@ -17,50 +17,63 @@ import { NoSuchElementExceptionTypeId } from 'effect/Cause'
 
 export interface Hub<
   Resources extends {
-    readonly [K: string]: BaseResource & { readonly resourceType: typeof K }
+    readonly [K: PropertyKey]: Resource.Resource<typeof K, Resource.ReadonlyUrl>
   },
 > {
-  get: <K extends keyof Resources & string>(args: {
+  get: <K extends keyof Resources>(args: {
     resourceType: K
-    id: Id<Resources[K]>
+    url: Resource.InferResourceUrl<Resources[K]>
   }) => Effect.Effect<
-    WithId<Resources[K]>,
+    Resource.WithResourceUrl<Resources[K]>,
     | ResourceRequest.CommonErrors
-    | NotFoundError<Resources[K]['resourceType'], { id: Id<Resources[K]> }>,
+    | NotFoundError<
+        Resources[K][Resource.ResourceType],
+        { url: Resource.InferResourceUrl<Resources[K]> }
+      >,
     never
   >
 
-  search: <K extends keyof Resources & string>(args: {
+  search: <K extends keyof Resources>(args: {
     resourceType: K
     params: ResourceRequest.SearchParam<Resources[K]>
   }) => Effect.Effect<
-    ReadonlyArray<WithId<Resources[K]>>,
+    ReadonlyArray<Resource.WithResourceUrl<Resources[K]>>,
     ResourceRequest.CommonErrors,
     never
   >
 
-  create: <K extends keyof Resources & string>(args: {
+  create: <K extends keyof Resources>(args: {
     resourceType: K
     resource: Resources[K]
-  }) => Effect.Effect<WithId<Resources[K]>, ResourceRequest.CommonErrors, never>
-
-  update: <K extends keyof Resources & string>(args: {
-    resourceType: K
-    resource: WithId<Resources[K]>
   }) => Effect.Effect<
-    WithId<Resources[K]>,
-    | ResourceRequest.CommonErrors
-    | NotFoundError<Resources[K]['resourceType'], { id: Id<Resources[K]> }>,
+    Resource.WithResourceUrl<Resources[K]>,
+    ResourceRequest.CommonErrors,
     never
   >
 
-  delete: <K extends keyof Resources & string>(args: {
+  update: <K extends keyof Resources>(args: {
     resourceType: K
-    id: Id<Resources[K]>
+    resource: Resource.WithResourceUrl<Resources[K]>
+  }) => Effect.Effect<
+    Resource.WithResourceUrl<Resources[K]>,
+    | ResourceRequest.CommonErrors
+    | NotFoundError<
+        Resources[K][Resource.ResourceType],
+        { url: Resource.InferResourceUrl<Resources[K]> }
+      >,
+    never
+  >
+
+  delete: <K extends keyof Resources>(args: {
+    resourceType: K
+    url: Resource.InferResourceUrl<Resources[K]>
   }) => Effect.Effect<
     void,
     | ResourceRequest.CommonErrors
-    | NotFoundError<Resources[K]['resourceType'], { id: Id<Resources[K]> }>,
+    | NotFoundError<
+        Resources[K][Resource.ResourceType],
+        { url: Resource.InferResourceUrl<Resources[K]> }
+      >,
     never
   >
 }
@@ -73,34 +86,35 @@ type Identifiers<DependenciesArray extends Array<Context.Tag<any, any>>> = {
 export const make = <
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DependenciesArray extends Array<Context.Tag<any, any>>,
-  Resources extends {
-    readonly [key: string]: BaseResource & {
-      readonly resourceType: typeof key
-    }
+  TResources extends {
+    readonly [key: PropertyKey]: Resource.Resource<
+      typeof key,
+      Resource.ReadonlyUrl
+    >
   },
-  SourceResources extends {
-    readonly [SourceId: string]: keyof Resources & string
+  TSourceResources extends {
+    readonly [SourceUrl: string]: keyof TResources & string
   },
-  Sources extends {
-    readonly [SourceId in keyof SourceResources]: SourceBehaviour<
-      Resources,
-      SourceResources[SourceId],
+  TSources extends {
+    readonly [SourceId in keyof TSourceResources]: SourceBehaviour<
+      TResources,
+      TSourceResources[SourceId],
       Identifiers<DependenciesArray>
     >
   },
 >(
-  sources: Sources
-): Effect.Effect<Hub<Resources>, never, Identifiers<DependenciesArray>> =>
+  sources: TSources
+): Effect.Effect<Hub<TResources>, never, Identifiers<DependenciesArray>> =>
   Effect.gen(function* () {
     yield* Effect.void // TODO - this is here to force the function to be a generator
 
     const context = yield* Effect.context<Identifiers<DependenciesArray>>()
 
     return {
-      sourceFor<K extends keyof Resources & string>(
+      sourceFor<K extends keyof TResources>(
         resourceType: K
       ): Effect.Effect<
-        SourceBehaviour<Resources, K, Identifiers<DependenciesArray>>,
+        SourceBehaviour<TResources, K, Identifiers<DependenciesArray>>,
         UnhandledError,
         never
       > {
@@ -112,7 +126,7 @@ export const make = <
             ): sourcePair is [
               string,
               SourceBehaviour<
-                Resources,
+                TResources,
                 K | InferActiveResourceTypes<(typeof sourcePair)[1]>,
                 Identifiers<DependenciesArray>
               >,
@@ -128,7 +142,7 @@ export const make = <
           if (matchingSources.length > 1) {
             return yield* Effect.fail(
               new UnhandledError({
-                message: `Multiple sources found for resource type ${resourceType}, unable to determine which to use`,
+                message: `Multiple sources found for resource type ${String(resourceType)}, unable to determine which to use`,
               })
             )
           }
@@ -136,13 +150,13 @@ export const make = <
           if (!Array.isNonEmptyArray(matchingSources)) {
             return yield* Effect.fail(
               new UnhandledError({
-                message: `No sources found for resource type ${resourceType}`,
+                message: `No sources found for resource type ${String(resourceType)}`,
               })
             )
           }
 
           const source: SourceBehaviour<
-            Resources,
+            TResources,
             K,
             Identifiers<DependenciesArray>
           > = matchingSources[0][1]
@@ -150,13 +164,21 @@ export const make = <
         })
       },
 
-      takeResolver<K extends keyof Resources & string>(
-        source: SourceBehaviour<Resources, K, Identifiers<DependenciesArray>>
-      ) {
+      takeResolver<K extends keyof TResources>(
+        source: SourceBehaviour<TResources, K, Identifiers<DependenciesArray>>
+      ): Effect.Effect<
+        ResourceRequest.MultiResolver<
+          TResources,
+          K,
+          Identifiers<DependenciesArray>
+        >,
+        UnhandledError | AuthError | AuthzError,
+        never
+      > {
         return Effect.gen(this, function* () {
           const resolverStream: StreamEither.StreamEither<
             ResourceRequest.MultiResolver<
-              Resources,
+              TResources,
               K,
               Identifiers<DependenciesArray>
             >,
@@ -164,7 +186,7 @@ export const make = <
           > = source.resolverStream
 
           const resolver: ResourceRequest.MultiResolver<
-            Resources,
+            TResources,
             K,
             Identifiers<DependenciesArray>
           > = yield* StreamEither.head(resolverStream).pipe(
@@ -184,26 +206,29 @@ export const make = <
         })
       },
 
-      get<K extends keyof Resources & string>({
+      get<K extends keyof TResources>({
         resourceType,
-        id,
+        url,
       }: {
         resourceType: K
-        id: Id<Resources[K]>
+        url: Resource.InferResourceUrl<TResources[K]>
       }): Effect.Effect<
-        WithId<Resources[K]>,
+        Resource.WithResourceUrl<TResources[K]>,
         | ResourceRequest.CommonErrors
-        | NotFoundError<Resources[K]['resourceType'], { id: Id<Resources[K]> }>,
+        | NotFoundError<
+            TResources[K][Resource.ResourceType],
+            { url: Resource.InferResourceUrl<TResources[K]> }
+          >,
         never
       > {
         return Effect.gen(this, function* () {
           const source = yield* this.sourceFor(resourceType)
           const resolver = yield* this.takeResolver(source)
 
-          const getRequest = Request.of<ResourceRequest.Get<Resources[K]>>()({
+          const getRequest = Request.of<ResourceRequest.Get<TResources[K]>>()({
             _tag: 'Get',
             resourceType,
-            id,
+            url,
           })
 
           const thisResolver = RequestResolver.provideContext(resolver, context)
@@ -212,14 +237,14 @@ export const make = <
         })
       },
 
-      search<K extends keyof Resources & string>({
+      search<K extends keyof TResources>({
         resourceType,
         params,
       }: {
         resourceType: K
-        params: ResourceRequest.SearchParam<Resources[K]>
+        params: ResourceRequest.SearchParam<TResources[K]>
       }): Effect.Effect<
-        ReadonlyArray<WithId<Resources[K]>>,
+        ReadonlyArray<Resource.WithResourceUrl<TResources[K]>>,
         ResourceRequest.CommonErrors,
         never
       > {
@@ -228,7 +253,7 @@ export const make = <
           const resolver = yield* this.takeResolver(source)
 
           const searchRequest = Request.of<
-            ResourceRequest.Search<Resources[K]>
+            ResourceRequest.Search<TResources[K]>
           >()({
             _tag: 'Search',
             resourceType,
@@ -241,14 +266,14 @@ export const make = <
         })
       },
 
-      create<K extends keyof Resources & string>({
+      create<K extends keyof TResources>({
         resourceType,
         resource,
       }: {
         resourceType: K
-        resource: Resources[K]
+        resource: TResources[K]
       }): Effect.Effect<
-        WithId<Resources[K]>,
+        Resource.WithResourceUrl<TResources[K]>,
         ResourceRequest.CommonErrors,
         never
       > {
@@ -257,7 +282,7 @@ export const make = <
           const resolver = yield* this.takeResolver(source)
 
           const createRequest = Request.of<
-            ResourceRequest.Create<Resources[K]>
+            ResourceRequest.Create<TResources[K]>
           >()({
             _tag: 'Create',
             resourceType,
@@ -270,16 +295,19 @@ export const make = <
         })
       },
 
-      update<K extends keyof Resources & string>({
+      update<K extends keyof TResources>({
         resourceType,
         resource,
       }: {
         resourceType: K
-        resource: WithId<Resources[K]>
+        resource: Resource.WithResourceUrl<TResources[K]>
       }): Effect.Effect<
-        WithId<Resources[K]>,
+        Resource.WithResourceUrl<TResources[K]>,
         | ResourceRequest.CommonErrors
-        | NotFoundError<Resources[K]['resourceType'], { id: Id<Resources[K]> }>,
+        | NotFoundError<
+            TResources[K][Resource.ResourceType],
+            { url: Resource.InferResourceUrl<TResources[K]> }
+          >,
         never
       > {
         return Effect.gen(this, function* () {
@@ -287,7 +315,7 @@ export const make = <
           const resolver = yield* this.takeResolver(source)
 
           const updateRequest = Request.of<
-            ResourceRequest.Update<Resources[K]>
+            ResourceRequest.Update<TResources[K]>
           >()({
             _tag: 'Update',
             resourceType,
@@ -300,16 +328,19 @@ export const make = <
         })
       },
 
-      delete<K extends keyof Resources & string>({
+      delete<K extends keyof TResources>({
         resourceType,
-        id,
+        url,
       }: {
         resourceType: K
-        id: Id<Resources[K]>
+        url: Resource.InferResourceUrl<TResources[K]>
       }): Effect.Effect<
         void,
         | ResourceRequest.CommonErrors
-        | NotFoundError<Resources[K]['resourceType'], { id: Id<Resources[K]> }>,
+        | NotFoundError<
+            TResources[K][Resource.ResourceType],
+            { url: Resource.InferResourceUrl<TResources[K]> }
+          >,
         never
       > {
         return Effect.gen(this, function* () {
@@ -317,11 +348,11 @@ export const make = <
           const resolver = yield* this.takeResolver(source)
 
           const deleteRequest = Request.of<
-            ResourceRequest.Delete<Resources[K]>
+            ResourceRequest.Delete<TResources[K]>
           >()({
             _tag: 'Delete',
             resourceType,
-            id,
+            url,
           })
 
           const thisResolver = RequestResolver.provideContext(resolver, context)

@@ -5,14 +5,14 @@ import type {
   UnhandledError,
 } from '@assessmentis/ontology'
 import type { MultiResolver } from './ResourceRequest'
-import type { BaseResource } from './types'
+import type * as Resource from './Resource'
 import type { StreamEither } from '@assessmentis/util'
 
 export interface SourceBehaviour<
   in out Resources extends {
-    readonly [k: string]: BaseResource & { readonly resourceType: typeof k }
+    readonly [k: PropertyKey]: Resource.Resource<typeof k, Resource.ReadonlyUrl>
   },
-  in ActiveResourceTypes extends keyof Resources & string,
+  in ActiveResourceTypes extends keyof Resources,
   out Deps,
 > {
   readonly sourceType: string

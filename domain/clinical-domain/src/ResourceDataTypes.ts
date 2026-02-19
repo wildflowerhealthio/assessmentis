@@ -30,13 +30,13 @@ export type ResourceDataTypeToResourceBase = {
 }
 
 export default interface ResourceDataTypes extends ResourceDataTypeToResourceBase {
-  Composition: Composition
+  Composition: Composition.Composition
   Encounter: Encounter
   Location: Location
   Media: Media
   Observation: Observation
   Patient: Patient
   Practitioner: Practitioner
-  Questionnaire: Questionnaire
-  QuestionnaireResponse: QuestionnaireResponse
+  Questionnaire: Questionnaire.Questionnaire
+  QuestionnaireResponse: QuestionnaireResponse.QuestionnaireResponse
 }

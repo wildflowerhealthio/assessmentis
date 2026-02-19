@@ -1,5 +1,5 @@
 import type { DateTime } from 'effect'
-import { Schema } from 'effect'
+import { pipe, Schema } from 'effect'
 import { ClinicalResourceBehaviourImpl } from '../../ClinicalResourceBehaviour'
 import { DomainResource } from '../../data-types/base/DomainResource'
 import { BackboneElement } from '../../data-types/base/BackboneElement'
@@ -13,11 +13,13 @@ import { Period } from '../../data-types/complex/Period'
 import { ValueElement } from '../../data-types/primitive/ValueElement'
 import { Quantity } from '../../data-types/complex/Quantity'
 import { Range } from '../../data-types/complex/Range'
+import { WithSymbolTag } from '@assessmentis/util'
+import { Resource } from '@assessmentis/effectful-store'
 
-const TypeId: unique symbol = Symbol.for(
+const ResourceSymbol: unique symbol = Symbol.for(
   '@assessmentis/clinical-domain/Observation'
 )
-type TypeId = typeof TypeId
+type ResourceSymbol = typeof ResourceSymbol
 
 export const ObservationId = Schema.String.pipe(Schema.brand('ObservationId'))
 
@@ -49,7 +51,7 @@ export interface ObservationReferenceRange extends BackboneElement<ObservationRe
   high?: Quantity
   type?: CodeableConcept
   appliesTo?: CodeableConcept[]
-  age?: import('../../data-types/complex/Range').Range
+  age?: Range
   text?: string
 }
 
@@ -101,11 +103,17 @@ const ObservationComponentSchema = Schema.extend(
   Schema.suspend(() => ValueElement.Schema)
 )
 
+// --- Observation ---
+
 /**
  * Measurements and simple assertions made about a patient, device or other subject.
  */
 export interface Observation
-  extends DomainResource<ObservationId>, ValueElement {
+  extends
+    DomainResource<ObservationId>,
+    Resource.Resource<ResourceSymbol, Resource.ReadonlyUrl>,
+    ValueElement {
+  [Resource.ResourceType]: ResourceSymbol
   resourceType: 'Observation'
   identifier?: Identifier[]
   basedOn?: Reference[]
@@ -134,71 +142,82 @@ export interface Observation
   component?: ObservationComponent[]
 }
 
-export const Observation = ClinicalResourceBehaviourImpl({
-  TypeId,
+const ObservationSchema = pipe(
+  DomainResource.Schema(ObservationId),
+  WithSymbolTag(Resource.ResourceType, ResourceSymbol),
+  Schema.extend(Schema.suspend(() => ValueElement.Schema)),
+  Schema.extend(
+    Schema.Struct({
+      resourceType: Schema.Literal('Observation'),
+      identifier: Schema.optional(
+        Schema.mutable(Schema.Array(Schema.suspend(() => Identifier.Schema)))
+      ),
+      basedOn: Schema.optional(
+        Schema.mutable(Schema.Array(Schema.suspend(() => Reference.Schema)))
+      ),
+      partOf: Schema.optional(
+        Schema.mutable(Schema.Array(Schema.suspend(() => Reference.Schema)))
+      ),
+      status: ObservationStatus,
+      category: Schema.optional(
+        Schema.mutable(
+          Schema.Array(Schema.suspend(() => CodeableConcept.Schema))
+        )
+      ),
+      code: Schema.suspend(() => CodeableConcept.Schema),
+      subject: Schema.optional(Schema.suspend(() => Reference.Schema)),
+      focus: Schema.optional(
+        Schema.mutable(Schema.Array(Schema.suspend(() => Reference.Schema)))
+      ),
+      encounter: Schema.optional(Schema.suspend(() => Reference.Schema)),
+      effectiveDateTime: Schema.optional(Schema.DateTimeUtc),
+      effectivePeriod: Schema.optional(Schema.suspend(() => Period.Schema)),
+      effectiveInstant: Schema.optional(Schema.DateTimeUtc),
+      issued: Schema.optional(Schema.DateTimeUtc),
+      performer: Schema.optional(
+        Schema.mutable(Schema.Array(Schema.suspend(() => Reference.Schema)))
+      ),
+      dataAbsentReason: Schema.optional(
+        Schema.suspend(() => CodeableConcept.Schema)
+      ),
+      interpretation: Schema.optional(
+        Schema.mutable(
+          Schema.Array(Schema.suspend(() => CodeableConcept.Schema))
+        )
+      ),
+      note: Schema.optional(
+        Schema.mutable(Schema.Array(Schema.suspend(() => Annotation.Schema)))
+      ),
+      bodySite: Schema.optional(Schema.suspend(() => CodeableConcept.Schema)),
+      method: Schema.optional(Schema.suspend(() => CodeableConcept.Schema)),
+      specimen: Schema.optional(Schema.suspend(() => Reference.Schema)),
+      device: Schema.optional(Schema.suspend(() => Reference.Schema)),
+      referenceRange: Schema.optional(
+        Schema.mutable(Schema.Array(ObservationReferenceRangeSchema))
+      ),
+      hasMember: Schema.optional(
+        Schema.mutable(Schema.Array(Schema.suspend(() => Reference.Schema)))
+      ),
+      derivedFrom: Schema.optional(
+        Schema.mutable(Schema.Array(Schema.suspend(() => Reference.Schema)))
+      ),
+      component: Schema.optional(
+        Schema.mutable(Schema.Array(ObservationComponentSchema))
+      ),
+    })
+  )
+)
+
+type ObservationEncoded = Schema.Schema.Encoded<typeof ObservationSchema>
+
+/**
+ * Schema for transforming between Observation Data objects and FHIR R4 Observation resources.
+ */
+export const Observation = ClinicalResourceBehaviourImpl<
+  Observation,
+  ObservationEncoded
+>({
+  ResourceSymbol,
   resourceType: 'Observation',
-  Schema: Schema.extend(
-    Schema.extend(
-      DomainResource.Schema(ObservationId),
-      Schema.Struct({
-        resourceType: Schema.Literal('Observation'),
-        identifier: Schema.optional(
-          Schema.mutable(Schema.Array(Schema.suspend(() => Identifier.Schema)))
-        ),
-        basedOn: Schema.optional(
-          Schema.mutable(Schema.Array(Schema.suspend(() => Reference.Schema)))
-        ),
-        partOf: Schema.optional(
-          Schema.mutable(Schema.Array(Schema.suspend(() => Reference.Schema)))
-        ),
-        status: ObservationStatus,
-        category: Schema.optional(
-          Schema.mutable(
-            Schema.Array(Schema.suspend(() => CodeableConcept.Schema))
-          )
-        ),
-        code: Schema.suspend(() => CodeableConcept.Schema),
-        subject: Schema.optional(Schema.suspend(() => Reference.Schema)),
-        focus: Schema.optional(
-          Schema.mutable(Schema.Array(Schema.suspend(() => Reference.Schema)))
-        ),
-        encounter: Schema.optional(Schema.suspend(() => Reference.Schema)),
-        effectiveDateTime: Schema.optional(Schema.DateTimeUtc),
-        effectivePeriod: Schema.optional(Schema.suspend(() => Period.Schema)),
-        effectiveInstant: Schema.optional(Schema.DateTimeUtc),
-        issued: Schema.optional(Schema.DateTimeUtc),
-        performer: Schema.optional(
-          Schema.mutable(Schema.Array(Schema.suspend(() => Reference.Schema)))
-        ),
-        dataAbsentReason: Schema.optional(
-          Schema.suspend(() => CodeableConcept.Schema)
-        ),
-        interpretation: Schema.optional(
-          Schema.mutable(
-            Schema.Array(Schema.suspend(() => CodeableConcept.Schema))
-          )
-        ),
-        note: Schema.optional(
-          Schema.mutable(Schema.Array(Schema.suspend(() => Annotation.Schema)))
-        ),
-        bodySite: Schema.optional(Schema.suspend(() => CodeableConcept.Schema)),
-        method: Schema.optional(Schema.suspend(() => CodeableConcept.Schema)),
-        specimen: Schema.optional(Schema.suspend(() => Reference.Schema)),
-        device: Schema.optional(Schema.suspend(() => Reference.Schema)),
-        referenceRange: Schema.optional(
-          Schema.mutable(Schema.Array(ObservationReferenceRangeSchema))
-        ),
-        hasMember: Schema.optional(
-          Schema.mutable(Schema.Array(Schema.suspend(() => Reference.Schema)))
-        ),
-        derivedFrom: Schema.optional(
-          Schema.mutable(Schema.Array(Schema.suspend(() => Reference.Schema)))
-        ),
-        component: Schema.optional(
-          Schema.mutable(Schema.Array(ObservationComponentSchema))
-        ),
-      })
-    ),
-    Schema.suspend(() => ValueElement.Schema)
-  ),
+  Schema: ObservationSchema,
 })

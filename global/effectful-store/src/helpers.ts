@@ -1,5 +1,5 @@
 import { Effect } from 'effect'
-import type { WithId } from './types'
+import type { WithId } from './Resource'
 
 export const hasId = <T extends { id?: string | undefined }>(
   value: T

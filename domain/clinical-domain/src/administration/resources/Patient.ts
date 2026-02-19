@@ -1,5 +1,5 @@
 import type { DateTime } from 'effect'
-import { Schema } from 'effect'
+import { pipe, Schema } from 'effect'
 import { DomainResource } from '../../data-types/base/DomainResource'
 import { ClinicalResourceBehaviourImpl } from '../../ClinicalResourceBehaviour'
 import { BackboneElement } from '../../data-types/base/BackboneElement'
@@ -14,12 +14,13 @@ import { Attachment } from '../../data-types/complex/Attachment'
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import { Period } from '../../data-types/complex/Period'
 import { AdministrativeGender } from '../value-sets/AdministrativeGender'
-import { TimelessDateFromString } from '@assessmentis/util'
+import { TimelessDateFromString, WithSymbolTag } from '@assessmentis/util'
+import { Resource } from '@assessmentis/effectful-store'
 
-const TypeId: unique symbol = Symbol.for(
+const ResourceSymbol: unique symbol = Symbol.for(
   '@assessmentis/clinical-domain/Patient'
 )
-type TypeId = typeof TypeId
+type ResourceSymbol = typeof ResourceSymbol
 
 export const PatientId = Schema.String.pipe(Schema.brand('PatientId'))
 
@@ -114,7 +115,11 @@ const PatientLinkSchema = Schema.extend(
  * Demographics and other administrative information about an individual or animal
  * receiving care or other health-related services.
  */
-export interface Patient extends DomainResource<PatientId> {
+export interface Patient
+  extends
+    DomainResource<PatientId>,
+    Resource.Resource<ResourceSymbol, Resource.ReadonlyUrl> {
+  [Resource.ResourceType]: ResourceSymbol
   resourceType: 'Patient'
   identifier?: Identifier[]
   active?: boolean
@@ -136,14 +141,10 @@ export interface Patient extends DomainResource<PatientId> {
   link?: PatientLink[]
 }
 
-/**
- * Schema for transforming between Patient Data objects and FHIR R4 Patient resources.
- */
-export const Patient = ClinicalResourceBehaviourImpl({
-  TypeId,
-  resourceType: 'Patient',
-  Schema: Schema.extend(
-    DomainResource.Schema(PatientId),
+const PatientSchema = pipe(
+  DomainResource.Schema(PatientId),
+  WithSymbolTag(Resource.ResourceType, ResourceSymbol),
+  Schema.extend(
     Schema.Struct({
       resourceType: Schema.Literal('Patient'),
       identifier: Schema.optional(
@@ -185,5 +186,16 @@ export const Patient = ClinicalResourceBehaviourImpl({
       ),
       link: Schema.optional(Schema.mutable(Schema.Array(PatientLinkSchema))),
     })
-  ),
+  )
+)
+
+type PatientEncoded = Schema.Schema.Encoded<typeof PatientSchema>
+
+/**
+ * Schema for transforming between Patient Data objects and FHIR R4 Patient resources.
+ */
+export const Patient = ClinicalResourceBehaviourImpl<Patient, PatientEncoded>({
+  ResourceSymbol: ResourceSymbol,
+  resourceType: 'Patient',
+  Schema: PatientSchema,
 })

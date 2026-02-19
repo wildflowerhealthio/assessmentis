@@ -1,4 +1,4 @@
-import { Schema } from 'effect'
+import { pipe, Schema } from 'effect'
 import { ClinicalResourceBehaviourImpl } from '../../ClinicalResourceBehaviour'
 import { Coding } from '../../data-types/complex/Coding'
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
@@ -10,11 +10,13 @@ import {
 } from '../../data-types/complex/IdentifierAndReference'
 import { Period } from '../../data-types/complex/Period'
 import { Quantity } from '../../data-types/complex/Quantity'
+import { WithSymbolTag } from '@assessmentis/util'
+import { Resource } from '@assessmentis/effectful-store'
 
-const TypeId: unique symbol = Symbol.for(
+const ResourceSymbol: unique symbol = Symbol.for(
   '@assessmentis/clinical-domain/Encounter'
 )
-type TypeId = typeof TypeId
+type ResourceSymbol = typeof ResourceSymbol
 
 export const EncounterId = Schema.String.pipe(Schema.brand('EncounterId'))
 
@@ -189,7 +191,11 @@ const EncounterLocationSchema = Schema.extend(
  * An interaction between a patient and healthcare provider(s) for the purpose of
  * providing healthcare service(s) or assessing the health status of a patient.
  */
-export interface Encounter extends DomainResource<EncounterId> {
+export interface Encounter
+  extends
+    DomainResource<EncounterId>,
+    Resource.Resource<ResourceSymbol, Resource.ReadonlyUrl> {
+  [Resource.ResourceType]: ResourceSymbol
   resourceType: 'Encounter'
   identifier?: Identifier[]
   status: EncounterStatus
@@ -216,14 +222,10 @@ export interface Encounter extends DomainResource<EncounterId> {
   partOf?: Reference
 }
 
-/**
- * Schema for transforming between Encounter Data objects and FHIR R4 Encounter resources.
- */
-export const Encounter = ClinicalResourceBehaviourImpl({
-  TypeId,
-  resourceType: 'Encounter',
-  Schema: Schema.extend(
-    DomainResource.Schema(EncounterId),
+const EncounterSchema = pipe(
+  DomainResource.Schema(EncounterId),
+  WithSymbolTag(Resource.ResourceType, ResourceSymbol),
+  Schema.extend(
     Schema.Struct({
       resourceType: Schema.Literal('Encounter'),
       identifier: Schema.optional(
@@ -282,5 +284,19 @@ export const Encounter = ClinicalResourceBehaviourImpl({
       serviceProvider: Schema.optional(Schema.suspend(() => Reference.Schema)),
       partOf: Schema.optional(Schema.suspend(() => Reference.Schema)),
     })
-  ),
+  )
+)
+
+type EncounterEncoded = Schema.Schema.Encoded<typeof EncounterSchema>
+
+/**
+ * Schema for transforming between Encounter Data objects and FHIR R4 Encounter resources.
+ */
+export const Encounter = ClinicalResourceBehaviourImpl<
+  Encounter,
+  EncounterEncoded
+>({
+  ResourceSymbol,
+  resourceType: 'Encounter',
+  Schema: EncounterSchema,
 })

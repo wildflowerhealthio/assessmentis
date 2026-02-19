@@ -1,4 +1,5 @@
-import { DateTime, ParseResult, Schema } from 'effect'
+import { DateTime, Option, ParseResult, Schema } from 'effect'
+import type { Any } from 'effect/Schema'
 
 export const TimelessDateFromString = Schema.transformOrFail(
   // Source schema
@@ -148,3 +149,45 @@ export const DateTimeUtcFromFirebaseTimestamp = Schema.transform(
     },
   }
 )
+
+export const DefaultAnything = <A, I = A, R = never>(
+  to: Schema.Schema<A, I, R>,
+  defaultValue: I
+) =>
+  Schema.optionalToRequired<unknown, unknown, never, A, I, R>(
+    Schema.Unknown,
+    to,
+    {
+      decode: (_: unknown): I => defaultValue,
+      encode: (_: I): Option.Option<unknown> => Option.none<unknown>(),
+    }
+  )
+export const DefaultSymbol = <Ts extends symbol>(s: Ts) =>
+  DefaultAnything(Schema.UniqueSymbolFromSelf<Ts>(s), s)
+
+// Create the enhanced schema with a symbol property on the Type side only
+export const WithSymbolTag =
+  <K extends symbol, S extends symbol>(k: K, s: S) =>
+  <A extends object, I extends object, R>(schema: Schema.Schema<A, I, R>) =>
+    Schema.transform(
+      schema,
+      // Use typeSchema so the "to" side doesn't re-decode the fields
+      Schema.extend(
+        schema,
+        Schema.Record({
+          key: Schema.UniqueSymbolFromSelf<K>(k),
+          value: Schema.UniqueSymbolFromSelf<S>(s),
+        })
+      ).pipe(Schema.typeSchema),
+      {
+        strict: true,
+        decode: (fromA: A, _fromI: I): A & { [k]: S } => ({ ...fromA, [k]: s }),
+        encode: (
+          toI: A & { readonly [x in K]: S },
+          toA: A & { readonly [x in K]: S }
+        ): A => {
+          const { [k]: _, ...justToA } = toA
+          return justToA as A
+        },
+      }
+    )

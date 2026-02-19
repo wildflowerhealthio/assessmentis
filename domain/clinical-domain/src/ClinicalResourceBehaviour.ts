@@ -1,20 +1,25 @@
-import type { BaseResource, WithId } from '@assessmentis/effectful-store'
+import { Resource, type WithId } from '@assessmentis/effectful-store'
 import { Data, type Schema } from 'effect'
 
+interface BaseResource {
+  resourceType: string
+  id?: string | undefined
+}
+
 export const ClinicalResourceBehaviourImpl = <
-  T extends BaseResource,
+  T extends BaseResource & Resource.Resource<symbol, Resource.ReadonlyUrl>,
   TEncoded,
 >({
-  TypeId,
+  ResourceSymbol,
   resourceType,
   Schema,
 }: {
-  readonly TypeId: symbol
+  readonly ResourceSymbol: T[Resource.ResourceType]
   readonly resourceType: T['resourceType']
   readonly Schema: Schema.Schema<T, TEncoded, never>
 }): ClinicalResourceBehaviour<T, TEncoded> => {
   return {
-    clinicalResourceTypeId: TypeId,
+    [Resource.ResourceType]: ResourceSymbol,
     resourceType,
     make: Data.case<T>(),
     makeWithId: Data.case<WithId<T>>(),
@@ -22,8 +27,11 @@ export const ClinicalResourceBehaviourImpl = <
   }
 }
 
-export interface ClinicalResourceBehaviour<T extends BaseResource, TEncoded> {
-  readonly clinicalResourceTypeId: symbol
+export interface ClinicalResourceBehaviour<
+  T extends BaseResource & Resource.Resource<symbol, Resource.ReadonlyUrl>,
+  TEncoded,
+> {
+  readonly [Resource.ResourceType]: T[Resource.ResourceType]
   readonly resourceType: T['resourceType']
   readonly make: Data.Case.Constructor<T>
   readonly makeWithId: Data.Case.Constructor<WithId<T>>

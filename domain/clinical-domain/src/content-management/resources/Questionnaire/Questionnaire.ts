@@ -1,14 +1,16 @@
-import { Schema } from 'effect'
+import { pipe, Schema } from 'effect'
 import { ClinicalResourceBehaviourImpl } from '../../../ClinicalResourceBehaviour'
 import { DomainResource } from '../../../data-types/base/DomainResource'
 import { BackboneElement } from '../../../data-types/base/BackboneElement'
 import { Coding } from '../../../data-types/complex/Coding'
 import { ValueElement } from '../../../data-types/primitive/ValueElement'
+import { WithSymbolTag } from '@assessmentis/util'
+import { Resource } from '@assessmentis/effectful-store'
 
-const TypeId: unique symbol = Symbol.for(
+export const ResourceSymbol: unique symbol = Symbol.for(
   '@assessmentis/clinical-domain/Questionnaire'
 )
-type TypeId = typeof TypeId
+export type ResourceSymbol = typeof ResourceSymbol
 
 export const QuestionnaireId = Schema.String.pipe(
   Schema.brand('QuestionnaireId')
@@ -154,13 +156,19 @@ const QuestionnaireItemSchema: Schema.Schema<QuestionnaireItem, any, never> =
 
 export const QuestionnaireItem = { Schema: QuestionnaireItemSchema }
 
+// --- Questionnaire ---
+
 /**
  * A structured set of questions intended to guide the collection of answers
  * from end-users. Questionnaires provide detailed control over order,
  * presentation, phraseology and grouping to allow coherent, consistent
  * data collection.
  */
-export interface Questionnaire extends DomainResource<QuestionnaireId> {
+export interface Questionnaire
+  extends
+    DomainResource<QuestionnaireId>,
+    Resource.Resource<ResourceSymbol, Resource.ReadonlyUrl> {
+  [Resource.ResourceType]: ResourceSymbol
   resourceType: 'Questionnaire'
   approvalDate?: string
   code?: Coding[]
@@ -186,11 +194,10 @@ export interface Questionnaire extends DomainResource<QuestionnaireId> {
   version?: string
 }
 
-export const Questionnaire = ClinicalResourceBehaviourImpl({
-  TypeId,
-  resourceType: 'Questionnaire',
-  Schema: Schema.extend(
-    DomainResource.Schema(QuestionnaireId),
+const QuestionnaireSchema = pipe(
+  DomainResource.Schema(QuestionnaireId),
+  WithSymbolTag(Resource.ResourceType, ResourceSymbol),
+  Schema.extend(
     Schema.Struct({
       resourceType: Schema.Literal('Questionnaire'),
       approvalDate: Schema.optional(Schema.String),
@@ -225,5 +232,19 @@ export const Questionnaire = ClinicalResourceBehaviourImpl({
       useContext: Schema.optional(Schema.Any),
       version: Schema.optional(Schema.String),
     })
-  ),
+  )
+)
+
+type QuestionnaireEncoded = Schema.Schema.Encoded<typeof QuestionnaireSchema>
+
+/**
+ * Schema for transforming between Questionnaire Data objects and FHIR R4 Questionnaire resources.
+ */
+export const Questionnaire = ClinicalResourceBehaviourImpl<
+  Questionnaire,
+  QuestionnaireEncoded
+>({
+  ResourceSymbol,
+  resourceType: 'Questionnaire',
+  Schema: QuestionnaireSchema,
 })

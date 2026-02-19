@@ -1,5 +1,5 @@
 import type { DateTime } from 'effect'
-import { Schema } from 'effect'
+import { pipe, Schema } from 'effect'
 import { ClinicalResourceBehaviourImpl } from '../../../ClinicalResourceBehaviour'
 import { DomainResource } from '../../../data-types/base/DomainResource'
 import { Code } from '../../../data-types/complex/Coding'
@@ -12,11 +12,13 @@ import { CompositionAttester } from './CompositionAttester'
 import { CompositionRelatesTo } from './CompositionRelatesTo'
 import { CompositionEvent } from './CompositionEvent'
 import { CompositionSection } from './CompositionSection'
+import { WithSymbolTag } from '@assessmentis/util'
+import { Resource } from '@assessmentis/effectful-store'
 
-const TypeId: unique symbol = Symbol.for(
+const ResourceSymbol: unique symbol = Symbol.for(
   '@assessmentis/clinical-domain/Composition'
 )
-type TypeId = typeof TypeId
+type ResourceSymbol = typeof ResourceSymbol
 
 export const CompositionId = Schema.String.pipe(Schema.brand('CompositionId'))
 
@@ -25,7 +27,11 @@ export type CompositionId = typeof CompositionId.Type
 /**
  * A set of resources composed into a single coherent clinical statement with clinical attestation
  */
-export interface Composition extends DomainResource<CompositionId> {
+export interface Composition
+  extends
+    DomainResource<CompositionId>,
+    Resource.Resource<ResourceSymbol, Resource.ReadonlyUrl> {
+  [Resource.ResourceType]: ResourceSymbol
   resourceType: 'Composition'
   identifier?: Identifier
   status: 'preliminary' | 'final' | 'amended' | 'entered-in-error'
@@ -44,14 +50,10 @@ export interface Composition extends DomainResource<CompositionId> {
   section?: CompositionSection[]
 }
 
-/**
- * Schema for transforming between Composition Data objects and FHIR R4 Composition resources.
- */
-export const Composition = ClinicalResourceBehaviourImpl({
-  TypeId,
-  resourceType: 'Composition',
-  Schema: Schema.extend(
-    DomainResource.Schema(CompositionId),
+const CompositionSchema = pipe(
+  DomainResource.Schema(CompositionId),
+  WithSymbolTag(Resource.ResourceType, ResourceSymbol),
+  Schema.extend(
     Schema.mutable(
       Schema.Struct({
         resourceType: Schema.Literal('Composition'),
@@ -87,5 +89,19 @@ export const Composition = ClinicalResourceBehaviourImpl({
         ),
       })
     )
-  ),
+  )
+)
+
+type CompositionEncoded = Schema.Schema.Encoded<typeof CompositionSchema>
+
+/**
+ * Schema for transforming between Composition Data objects and FHIR R4 Composition resources.
+ */
+export const Composition = ClinicalResourceBehaviourImpl<
+  Composition,
+  CompositionEncoded
+>({
+  ResourceSymbol,
+  resourceType: 'Composition',
+  Schema: CompositionSchema,
 })

@@ -1,4 +1,4 @@
-import { Schema } from 'effect'
+import { pipe, Schema } from 'effect'
 import { ClinicalResourceBehaviourImpl } from '../../ClinicalResourceBehaviour'
 import { DomainResource } from '../../data-types/base/DomainResource'
 import { BackboneElement } from '../../data-types/base/BackboneElement'
@@ -13,12 +13,13 @@ import { Attachment } from '../../data-types/complex/Attachment'
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import { Period } from '../../data-types/complex/Period'
 import { AdministrativeGender } from '../value-sets/AdministrativeGender'
-import { TimelessDateFromString } from '@assessmentis/util'
+import { TimelessDateFromString, WithSymbolTag } from '@assessmentis/util'
+import { Resource } from '@assessmentis/effectful-store'
 
-const TypeId: unique symbol = Symbol.for(
+const ResourceSymbol: unique symbol = Symbol.for(
   '@assessmentis/clinical-domain/Practitioner'
 )
-type TypeId = typeof TypeId
+type ResourceSymbol = typeof ResourceSymbol
 
 export const PractitionerId = Schema.String.pipe(Schema.brand('PractitionerId'))
 
@@ -55,7 +56,11 @@ const PractitionerQualificationSchema = Schema.extend(
 /**
  * A person who is directly or indirectly involved in the provisioning of healthcare.
  */
-export interface Practitioner extends DomainResource<PractitionerId> {
+export interface Practitioner
+  extends
+    DomainResource<PractitionerId>,
+    Resource.Resource<ResourceSymbol, Resource.ReadonlyUrl> {
+  [Resource.ResourceType]: ResourceSymbol
   resourceType: 'Practitioner'
   identifier?: Identifier[]
   active?: boolean
@@ -69,14 +74,10 @@ export interface Practitioner extends DomainResource<PractitionerId> {
   communication?: CodeableConcept[]
 }
 
-/**
- * Schema for transforming between Practitioner Data objects and FHIR R4 Practitioner resources.
- */
-export const Practitioner = ClinicalResourceBehaviourImpl({
-  TypeId,
-  resourceType: 'Practitioner',
-  Schema: Schema.extend(
-    DomainResource.Schema(PractitionerId),
+const PractitionerSchema = pipe(
+  DomainResource.Schema(PractitionerId),
+  WithSymbolTag(Resource.ResourceType, ResourceSymbol),
+  Schema.extend(
     Schema.Struct({
       resourceType: Schema.Literal('Practitioner'),
       identifier: Schema.optional(
@@ -106,5 +107,19 @@ export const Practitioner = ClinicalResourceBehaviourImpl({
         )
       ),
     })
-  ),
+  )
+)
+
+type PractitionerEncoded = Schema.Schema.Encoded<typeof PractitionerSchema>
+
+/**
+ * Schema for transforming between Practitioner Data objects and FHIR R4 Practitioner resources.
+ */
+export const Practitioner = ClinicalResourceBehaviourImpl<
+  Practitioner,
+  PractitionerEncoded
+>({
+  ResourceSymbol,
+  resourceType: 'Practitioner',
+  Schema: PractitionerSchema,
 })

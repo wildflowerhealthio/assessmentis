@@ -79,8 +79,8 @@ export class BadDataError extends Data.TaggedError('BadDataError')<{
  * Resource not found
  */
 export class NotFoundError<
-  ResourceType extends string | symbol,
-  Parameters extends Record<string, unknown>,
+  ResourceType extends PropertyKey,
+  Parameters extends Record<string | symbol, unknown>,
 > extends Data.TaggedError('NotFoundError')<{
   resourceType: ResourceType
   params: Parameters

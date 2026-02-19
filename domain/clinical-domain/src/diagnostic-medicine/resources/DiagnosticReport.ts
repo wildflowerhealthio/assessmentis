@@ -1,5 +1,5 @@
 import type { DateTime } from 'effect'
-import { Schema } from 'effect'
+import { pipe, Schema } from 'effect'
 import { ClinicalResourceBehaviourImpl } from '../../ClinicalResourceBehaviour'
 import { DomainResource } from '../../data-types/base/DomainResource'
 import { BackboneElement } from '../../data-types/base/BackboneElement'
@@ -10,6 +10,13 @@ import {
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import { Attachment } from '../../data-types/complex/Attachment'
 import { Period } from '../../data-types/complex/Period'
+import { WithSymbolTag } from '@assessmentis/util'
+import { Resource } from '@assessmentis/effectful-store'
+
+const ResourceSymbol: unique symbol = Symbol.for(
+  '@assessmentis/clinical-domain/DiagnosticReport'
+)
+type ResourceSymbol = typeof ResourceSymbol
 
 export const DiagnosticReportId = Schema.String.pipe(
   Schema.brand('DiagnosticReportId')
@@ -53,11 +60,17 @@ const DiagnosticReportMediaSchema = Schema.extend(
   })
 )
 
+// --- DiagnosticReport ---
+
 /**
  * The findings and interpretation of diagnostic tests performed on patients,
  * groups of patients, devices, and locations, and/or specimens derived from these.
  */
-export interface DiagnosticReport extends DomainResource<DiagnosticReportId> {
+export interface DiagnosticReport
+  extends
+    DomainResource<DiagnosticReportId>,
+    Resource.Resource<ResourceSymbol, Resource.ReadonlyUrl> {
+  [Resource.ResourceType]: ResourceSymbol
   resourceType: 'DiagnosticReport'
   identifier?: Identifier[]
   basedOn?: Reference[]
@@ -80,11 +93,10 @@ export interface DiagnosticReport extends DomainResource<DiagnosticReportId> {
   presentedForm?: Attachment[]
 }
 
-export const DiagnosticReport = ClinicalResourceBehaviourImpl({
-  TypeId: Symbol.for('@assessmentis/clinical-domain/DiagnosticReport'),
-  resourceType: 'DiagnosticReport',
-  Schema: Schema.extend(
-    DomainResource.Schema(DiagnosticReportId),
+const DiagnosticReportSchema = pipe(
+  DomainResource.Schema(DiagnosticReportId),
+  WithSymbolTag(Resource.ResourceType, ResourceSymbol),
+  Schema.extend(
     Schema.mutable(
       Schema.Struct({
         resourceType: Schema.Literal('DiagnosticReport'),
@@ -135,5 +147,21 @@ export const DiagnosticReport = ClinicalResourceBehaviourImpl({
         ),
       })
     )
-  ),
+  )
+)
+
+type DiagnosticReportEncoded = Schema.Schema.Encoded<
+  typeof DiagnosticReportSchema
+>
+
+/**
+ * Schema for transforming between DiagnosticReport Data objects and FHIR R4 DiagnosticReport resources.
+ */
+export const DiagnosticReport = ClinicalResourceBehaviourImpl<
+  DiagnosticReport,
+  DiagnosticReportEncoded
+>({
+  ResourceSymbol,
+  resourceType: 'DiagnosticReport',
+  Schema: DiagnosticReportSchema,
 })

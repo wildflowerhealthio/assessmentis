@@ -1,5 +1,5 @@
 import type { DateTime } from 'effect'
-import { Schema } from 'effect'
+import { pipe, Schema } from 'effect'
 import { ClinicalResourceBehaviourImpl } from '../../ClinicalResourceBehaviour'
 import { DomainResource } from '../../data-types/base/DomainResource'
 import {
@@ -10,9 +10,13 @@ import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import { Attachment } from '../../data-types/complex/Attachment'
 import { Annotation } from '../../data-types/complex/Annotation'
 import { Period } from '../../data-types/complex/Period'
+import { WithSymbolTag } from '@assessmentis/util'
+import { Resource } from '@assessmentis/effectful-store'
 
-const TypeId: unique symbol = Symbol.for('@assessmentis/clinical-domain/Media')
-type TypeId = typeof TypeId
+const ResourceSymbol: unique symbol = Symbol.for(
+  '@assessmentis/clinical-domain/Media'
+)
+type ResourceSymbol = typeof ResourceSymbol
 
 export const MediaId = Schema.String.pipe(Schema.brand('MediaId'))
 
@@ -38,7 +42,11 @@ export type MediaStatus = typeof MediaStatus.Type
  * A photo, video, or audio recording acquired or used in healthcare.
  * The actual content may be inline or provided by direct reference.
  */
-export interface Media extends DomainResource<MediaId> {
+export interface Media
+  extends
+    DomainResource<MediaId>,
+    Resource.Resource<ResourceSymbol, Resource.ReadonlyUrl> {
+  [Resource.ResourceType]: ResourceSymbol
   resourceType: 'Media'
   identifier?: Identifier[]
   basedOn?: Reference[]
@@ -65,11 +73,10 @@ export interface Media extends DomainResource<MediaId> {
   note?: Annotation[]
 }
 
-export const Media = ClinicalResourceBehaviourImpl({
-  TypeId,
-  resourceType: 'Media',
-  Schema: Schema.extend(
-    DomainResource.Schema(MediaId),
+const MediaSchema = pipe(
+  DomainResource.Schema(MediaId),
+  WithSymbolTag(Resource.ResourceType, ResourceSymbol),
+  Schema.extend(
     Schema.Struct({
       resourceType: Schema.Literal('Media'),
       identifier: Schema.optional(
@@ -108,5 +115,16 @@ export const Media = ClinicalResourceBehaviourImpl({
         Schema.mutable(Schema.Array(Schema.suspend(() => Annotation.Schema)))
       ),
     })
-  ),
+  )
+)
+
+type MediaEncoded = Schema.Schema.Encoded<typeof MediaSchema>
+
+/**
+ * Schema for transforming between Media Data objects and FHIR R4 Media resources.
+ */
+export const Media = ClinicalResourceBehaviourImpl<Media, MediaEncoded>({
+  ResourceSymbol,
+  resourceType: 'Media',
+  Schema: MediaSchema,
 })

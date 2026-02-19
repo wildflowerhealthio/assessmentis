@@ -1,18 +1,20 @@
 import { expect, test, describe } from 'vitest'
-import { Questionnaire } from './Questionnaire'
+import * as Questionnaire from './Questionnaire'
 import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
 
-const questionnaireArb = Arbitrary.make(Questionnaire.Schema)
+const questionnaireArb = Arbitrary.make(Questionnaire.Questionnaire.Schema)
 
 describe('Questionnaire resource', () => {
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(questionnaireArb, (questionnaire) => {
-        const encoded = Schema.encodeSync(Questionnaire.Schema)(
+        const encoded = Schema.encodeSync(Questionnaire.Questionnaire.Schema)(
           questionnaire
         )
-        const decoded = Schema.decodeSync(Questionnaire.Schema)(encoded)
+        const decoded = Schema.decodeSync(Questionnaire.Questionnaire.Schema)(
+          encoded
+        )
         expect(decoded).toEqual(questionnaire)
       })
     )

@@ -1,18 +1,18 @@
-import { Schema } from 'effect'
+import { pipe, Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
 import {} from '../../FhirR4ResourceBehaviour'
-import type {
+import {
   Patient,
-  PatientContact,
-  PatientCommunication,
-  PatientLink,
+  type PatientContact,
+  type PatientCommunication,
+  type PatientLink,
 } from '@assessmentis/clinical-domain/administration'
 import {
   PatientId,
   PatientLinkType,
   AdministrativeGender,
 } from '@assessmentis/clinical-domain/administration'
-import { TimelessDateFromString } from '@assessmentis/util'
+import { TimelessDateFromString, WithSymbolTag } from '@assessmentis/util'
 import { FhirR4DomainResource } from '../../data-types/base/DomainResource'
 import { FhirR4BackboneElement } from '../../data-types/base/BackboneElement'
 import {
@@ -25,6 +25,7 @@ import { FhirR4Address } from '../../data-types/complex/Address'
 import { FhirR4Attachment } from '../../data-types/complex/Attachment'
 import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import { FhirR4Period } from '../../data-types/complex/Period'
+import { Resource } from '@assessmentis/effectful-store'
 
 // --- Sub-component IDs ---
 
@@ -89,9 +90,10 @@ const FhirR4PatientLinkSchema: Schema.Schema<
 
 // --- Patient ---
 
-const FhirR4PatientSchema: Schema.Schema<Patient, FhirR4.Patient, never> =
+const FhirR4PatientSchema: Schema.Schema<Patient, FhirR4.Patient, never> = pipe(
+  FhirR4DomainResource.Schema(PatientId),
+  WithSymbolTag(Resource.ResourceType, Patient[Resource.ResourceType]),
   Schema.extend(
-    FhirR4DomainResource.Schema(PatientId),
     Schema.Struct({
       resourceType: Schema.Literal('Patient'),
       identifier: Schema.optional(
@@ -146,6 +148,7 @@ const FhirR4PatientSchema: Schema.Schema<Patient, FhirR4.Patient, never> =
       ),
     })
   )
+)
 
 export const FhirR4Patient = {
   resourceType: 'Patient',
