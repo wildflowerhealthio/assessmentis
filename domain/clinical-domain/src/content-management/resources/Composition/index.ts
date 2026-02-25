@@ -1,5 +1,0 @@
-export * from './Composition'
-export * as Attester from './CompositionAttester'
-export * as Event from './CompositionEvent'
-export * as RelatesTo from './CompositionRelatesTo'
-export * as Section from './CompositionSection'

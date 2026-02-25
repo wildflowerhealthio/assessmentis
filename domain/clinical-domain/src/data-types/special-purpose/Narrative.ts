@@ -1,8 +1,10 @@
 import { Schema } from 'effect'
-import { Element } from '../base/Element'
+import { Element, type ElementEncoded } from '../base/Element'
+import { applySchemaMixinTo } from '@assessmentis/util'
 
-const NarrativeId = Schema.String.pipe(Schema.brand('NarrativeId'))
-type NarrativeId = typeof NarrativeId.Type
+const Key = 'Narrative' as const
+type Key = typeof Key
+
 const NarrativeStatus = Schema.Union(
   /**The contents of the narrative are entirely generated from the core elements in the content. */
   Schema.Literal('generated'),
@@ -12,8 +14,8 @@ const NarrativeStatus = Schema.Union(
 )
 type NarrativeStatus = typeof NarrativeStatus.Type
 
-export interface Narrative extends Element<NarrativeId> {
-  status: NarrativeStatus
+const fields = {
+  status: NarrativeStatus,
   /**
    * Limited xhtml content
    * + Rule: The narrative SHALL contain only the basic html formatting
@@ -22,25 +24,22 @@ export interface Narrative extends Element<NarrativeId> {
    * href), images and internally contained style attributes, and SHALL contain
    * some non-whitespace characters
    */
-  div: string
+  div: Schema.String,
+} as const satisfies Schema.Struct.Fields
+
+const ElementMixin = Element(Key)
+
+export interface NarrativeEncoded
+  extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<Key> {}
+
+class Narrative extends Schema.Class<Narrative>(Key)({
+  ...ElementMixin.fields,
+  ...fields,
+}) {
+  static readonly Key = Key
 }
 
-export const Narrative = {
-  Schema: Schema.extend(
-    Element.Schema(NarrativeId),
-    Schema.mutable(
-      Schema.Struct({
-        status: NarrativeStatus,
-        /**
-         * Limited xhtml content
-         * + Rule: The narrative SHALL contain only the basic html formatting
-         * elements and attributes described in chapters 7-11 (except section 4 of
-         * chapter 9) and 15 of the HTML 4.0 standard, <a> elements (either name or
-         * href), images and internally contained style attributes, and SHALL contain
-         * some non-whitespace characters
-         */
-        div: Schema.String,
-      })
-    )
-  ),
-}
+const NarrativeWithMixin = applySchemaMixinTo(Narrative, ElementMixin)
+type NarrativeWithMixin = Narrative
+
+export { NarrativeWithMixin as Narrative }

@@ -1,18 +1,59 @@
-import { expect, test, describe } from 'vitest'
-import { BackboneElement } from './BackboneElement'
+import { expect, test, describe, expectTypeOf } from 'vitest'
+import { BackboneElement, type BackboneElementEncoded } from './BackboneElement'
 import { Arbitrary, Schema } from 'effect'
+import { applySchemaMixinTo } from '@assessmentis/util'
 import * as fc from 'fast-check'
 
-const TestBackboneElement = BackboneElement.Schema(Schema.String)
+const BackboneMixin = BackboneElement('TestBackbone')
 
-const backboneElementArb = Arbitrary.make(TestBackboneElement)
+class TestBackbonePreMix extends Schema.Class<TestBackbonePreMix>(
+  'TestBackbone'
+)({
+  ...BackboneMixin.fields,
+}) {}
 
-describe('BackboneElement base model', () => {
-  test('property: encode-decode cycle', () => {
+const TestBackbone = applySchemaMixinTo(TestBackbonePreMix, BackboneMixin)
+type TestBackbone = TestBackbonePreMix
+
+describe('BackboneElement', () => {
+  describe('types', () => {
+    test('Type.domainType is the literal domain type string', () => {
+      expectTypeOf<
+        (typeof TestBackbone)['Type']['domainType']
+      >().toEqualTypeOf<'TestBackbone'>()
+    })
+
+    test('BackboneElementEncoded extends the Encoded type', () => {
+      expectTypeOf<BackboneElementEncoded<'TestBackbone'>>().toExtend<
+        typeof TestBackbone.Encoded
+      >()
+    })
+
+    test('Type.modifierExtension is present', () => {
+      expectTypeOf<
+        (typeof TestBackbone)['Type']['modifierExtension']
+      >().toExtend<ReadonlyArray<any>>()
+    })
+  })
+
+  test('decodes minimal input — domainType, extension, modifierExtension default', () => {
+    const decoded = Schema.decodeSync(TestBackbone)({})
+    expect(decoded.domainType).toBe('TestBackbone')
+    expect(decoded.extension).toEqual([])
+    expect(decoded.modifierExtension).toEqual([])
+    expect(decoded.url).toBeUndefined()
+  })
+
+  test('Key static equals the domain type', () => {
+    expect(TestBackbone.Key).toBe('TestBackbone')
+  })
+
+  test('property: encode-decode round-trip', () => {
+    const arb = Arbitrary.make(TestBackbone)
     fc.assert(
-      fc.property(backboneElementArb, (element) => {
-        const encoded = Schema.encodeSync(TestBackboneElement)(element)
-        const decoded = Schema.decodeSync(TestBackboneElement)(encoded)
+      fc.property(arb, (element) => {
+        const encoded = Schema.encodeSync(TestBackbone)(element)
+        const decoded = Schema.decodeSync(TestBackbone)(encoded)
         expect(decoded).toEqual(element)
       })
     )

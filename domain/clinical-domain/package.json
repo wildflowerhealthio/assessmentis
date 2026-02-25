@@ -8,11 +8,8 @@
   "prettier": "@assessmentis/prettier-config",
   "exports": {
     ".": "./src/index.ts",
-    "./administration": "./src/administration/index.ts",
-    "./content-management": "./src/content-management/index.ts",
     "./data-types": "./src/data-types/index.ts",
-    "./diagnostic-medicine": "./src/diagnostic-medicine/index.ts",
-    "./foundation-framework": "./src/foundation-framework/index.ts"
+    "./repositories": "./src/repositories/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -21,13 +18,14 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "effect": "^3.19.8",
-    "temporal-polyfill": "^0.3.0",
     "@assessmentis/ontology": "*",
-    "@assessmentis/util": "*"
+    "@assessmentis/util": "*",
+    "effect": "^3.19.8",
+    "temporal-polyfill": "^0.3.0"
   },
   "devDependencies": {
     "@assessmentis/prettier-config": "*",
+    "@assessmentis/testing-utils": "*",
     "@types/fhir": "^0.0.41",
     "typescript": "^5.9.3",
     "vitest": "^4.0.15"

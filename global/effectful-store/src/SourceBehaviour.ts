@@ -10,7 +10,7 @@ import type { StreamEither } from '@assessmentis/util'
 
 export interface SourceBehaviour<
   in out Resources extends {
-    readonly [k: PropertyKey]: Resource.Resource<typeof k, Resource.ReadonlyUrl>
+    readonly [k: PropertyKey]: Resource.Resource<typeof k>
   },
   in ActiveResourceTypes extends keyof Resources,
   out Deps,

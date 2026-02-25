@@ -1,41 +1,48 @@
 import {
-  EncounterRepository,
-  LocationRepository,
-  PatientRepository,
-  PractitionerRepository,
-} from './administration'
-import {
-  QuestionnaireRepository,
-  QuestionnaireResponseRepository,
-} from './content-management'
-import { CompositionRepository } from './content-management'
-import { MediaRepository, ObservationRepository } from './diagnostic-medicine'
-import type Schemas from './Schemas'
-import type { ClinicalDomainRepositoryTagClass } from './types'
+  Composition,
+  Encounter,
+  Location,
+  Media,
+  Observation,
+  Patient,
+  Practitioner,
+  Questionnaire,
+  QuestionnaireResponse,
+} from '.'
+import { CompositionRepository } from './repositories/CompositionRepository'
+import { EncounterRepository } from './repositories/EncounterRepository'
+import { LocationRepository } from './repositories/LocationRepository'
+import { MediaRepository } from './repositories/MediaRepository'
+import { ObservationRepository } from './repositories/ObservationRepository'
+import { PatientRepository } from './repositories/PatientRepository'
+import { PractitionerRepository } from './repositories/PractitionerRepository'
+import { QuestionnaireRepository } from './repositories/QuestionnaireRepository'
+import { QuestionnaireResponseRepository } from './repositories/QuestionnaireResponseRepository'
 
 const Repositories = {
-  Composition: CompositionRepository,
-  Encounter: EncounterRepository,
-  Location: LocationRepository,
-  Media: MediaRepository,
-  Observation: ObservationRepository,
-  Patient: PatientRepository,
-  Practitioner: PractitionerRepository,
-  Questionnaire: QuestionnaireRepository,
-  QuestionnaireResponse: QuestionnaireResponseRepository,
-} as const satisfies {
-  readonly [key in keyof typeof Schemas]: ClinicalDomainRepositoryTagClass<key>
-}
+  [Composition.Composition.Key]: CompositionRepository,
+  [Encounter.Encounter.Key]: EncounterRepository,
+  [Location.Location.Key]: LocationRepository,
+  [Media.Media.Key]: MediaRepository,
+  [Observation.Observation.Key]: ObservationRepository,
+  [Patient.Patient.Key]: PatientRepository,
+  [Practitioner.Practitioner.Key]: PractitionerRepository,
+  [Questionnaire.Questionnaire.Key]: QuestionnaireRepository,
+  [QuestionnaireResponse.QuestionnaireResponse.Key]:
+    QuestionnaireResponseRepository,
+} as const
+
 export interface RepositoriesType {
-  Composition: typeof CompositionRepository
-  Encounter: typeof EncounterRepository
-  Location: typeof LocationRepository
-  Media: typeof MediaRepository
-  Observation: typeof ObservationRepository
-  Patient: typeof PatientRepository
-  Practitioner: typeof PractitionerRepository
-  Questionnaire: typeof QuestionnaireRepository
-  QuestionnaireResponse: typeof QuestionnaireResponseRepository
+  [Composition.Composition.Key]: typeof CompositionRepository
+  [Encounter.Encounter.Key]: typeof EncounterRepository
+  [Location.Location.Key]: typeof LocationRepository
+  [Media.Media.Key]: typeof MediaRepository
+  [Observation.Observation.Key]: typeof ObservationRepository
+  [Patient.Patient.Key]: typeof PatientRepository
+  [Practitioner.Practitioner.Key]: typeof PractitionerRepository
+  [Questionnaire.Questionnaire.Key]: typeof QuestionnaireRepository
+  [QuestionnaireResponse.QuestionnaireResponse
+    .Key]: typeof QuestionnaireResponseRepository
 }
 
 export default Repositories

@@ -14,7 +14,7 @@ export type ClinicalDomainRepositoryTagClass<
   Key extends keyof ResourceDataTypes,
   Self extends Context.TagClass<
     Self,
-    `${Key}Repository`,
+    `${ResourceDataTypes[Key]['resourceType']}Repository`,
     ClinicalDataRepository<ResourceDataTypes[Key]>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   > = any,

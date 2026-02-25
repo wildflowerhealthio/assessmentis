@@ -14,10 +14,11 @@ import type {
 import type * as ResourceRequest from './ResourceRequest'
 import { StreamEither } from '@assessmentis/util'
 import { NoSuchElementExceptionTypeId } from 'effect/Cause'
+import type * as ReadonlyUrl from './ReadonlyUrl'
 
 export interface Hub<
   Resources extends {
-    readonly [K: PropertyKey]: Resource.Resource<typeof K, Resource.ReadonlyUrl>
+    readonly [K: PropertyKey]: Resource.Resource<typeof K>
   },
 > {
   get: <K extends keyof Resources>(args: {
@@ -87,10 +88,7 @@ export const make = <
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DependenciesArray extends Array<Context.Tag<any, any>>,
   TResources extends {
-    readonly [key: PropertyKey]: Resource.Resource<
-      typeof key,
-      Resource.ReadonlyUrl
-    >
+    readonly [key: PropertyKey]: Resource.Resource<typeof key>
   },
   TSourceResources extends {
     readonly [SourceUrl: string]: keyof TResources & string

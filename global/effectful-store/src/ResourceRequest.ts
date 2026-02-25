@@ -1,6 +1,7 @@
 import type { RequestResolver } from 'effect'
 import type { Request } from 'effect'
 import type * as Resource from './Resource'
+
 import type {
   UnhandledError,
   AuthError,
@@ -67,7 +68,7 @@ export interface Update<
     >
 > {
   readonly _tag: 'Update'
-  readonly resourceType: TResource[Resource.ResourceType]
+  readonly resourceType: TResource['domainType']
   readonly resource: Resource.WithResourceUrl<TResource>
 }
 
@@ -88,7 +89,7 @@ export interface Delete<
 
 export interface MultiResolver<
   in out TResources extends {
-    readonly [K: PropertyKey]: Resource.Resource<typeof K, Resource.ReadonlyUrl>
+    readonly [K: PropertyKey]: Resource.Resource<typeof K>
   },
   in ActiveResourceTypes extends keyof TResources,
   out Dep,

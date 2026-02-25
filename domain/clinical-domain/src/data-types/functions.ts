@@ -1,13 +1,16 @@
 import { Schema } from 'effect'
 import { Reference } from './complex/IdentifierAndReference'
-import type { WithId } from '@assessmentis/effectful-store'
+import type {
+  Resource as EffectResource,
+  ReadonlyUrl,
+} from '@assessmentis/effectful-store'
 
 export const referenceFromResource = (
   resource: { id?: string | undefined; resourceType: string },
   display: string | undefined = undefined
 ) =>
   resource && resource.id
-    ? Schema.decodeUnknownSync(Reference.Schema)({
+    ? Schema.decodeUnknownSync(Reference)({
         reference: `${resource.resourceType}/${resource.id}`,
         display,
       })
@@ -58,19 +61,23 @@ export function extractReferenceIds(
   )
 }
 
-export const SchemaWithMandatoryId = <
-  A extends { id?: AId | undefined },
-  I extends { id?: IId | undefined },
+export const SchemaWithMandatoryUrl = <
+  A extends { url?: AUrl | undefined },
+  I extends { url?: IUrl | undefined },
   R,
-  AId extends string,
-  IId extends string,
+  AUrl extends ReadonlyUrl,
+  IUrl extends ReadonlyUrl,
 >(
   schema: Schema.Schema<A, I, R>,
-  idSchema: Schema.Schema<AId, IId, R>
-): Schema.Schema<WithId<A>, WithId<I>, R> => {
-  const withMandatoryId: Schema.Schema<{ id: AId }, { id: IId }, R> =
+  urlSchema: Schema.Schema<AUrl, IUrl, R>
+): Schema.Schema<
+  EffectResource.WithResourceUrl<A>,
+  EffectResource.WithResourceUrl<I>,
+  R
+> => {
+  const withMandatoryUrl: Schema.Schema<{ url: AUrl }, { url: IUrl }, R> =
     Schema.Struct({
-      id: idSchema,
+      url: urlSchema,
     })
-  return Schema.extend(schema, withMandatoryId)
+  return Schema.extend(schema, withMandatoryUrl)
 }

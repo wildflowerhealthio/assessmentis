@@ -1,5 +1,5 @@
-import { DateTime, Option, ParseResult, Schema } from 'effect'
-import type { Any } from 'effect/Schema'
+import { Array, DateTime, Effect, Option, ParseResult, Schema } from 'effect'
+import { record } from 'effect/FastCheck'
 
 export const TimelessDateFromString = Schema.transformOrFail(
   // Source schema
@@ -191,3 +191,119 @@ export const WithSymbolTag =
         },
       }
     )
+
+export const Prepend =
+  <P extends string>(prefix: P) =>
+  <A extends string, I extends string, R>(s: Schema.Schema<A, I, R>) =>
+    Schema.transformOrFail(
+      s,
+      Schema.String as Schema.Schema<`${P}${A}`, `${P}${I}`, R>,
+      {
+        strict: true,
+        decode(_fromA: A, _options, _ast, fromI: I): Effect.Effect<`${P}${I}`> {
+          return Effect.succeed<`${P}${I}`>(`${prefix}${fromI}`)
+        },
+        encode(
+          _toI: `${P}${I}`,
+          _options,
+          ast,
+          toA: `${P}${A}`
+        ): Effect.Effect<A, ParseResult.ParseIssue> {
+          if (!toA.startsWith(prefix)) {
+            return Effect.fail(
+              new ParseResult.Forbidden(
+                ast,
+                toA,
+                `String must start with prefix "${prefix}"`
+              )
+            )
+          }
+          return Effect.succeed(toA.slice(prefix.length) as A)
+        },
+      }
+    )
+
+// const WithFhirR4Url = <R extends string>(resourceType: R) =>
+//   Schema.extend(
+//     Schema.Struct({
+//       [Resource.ResourceUrl]: Schema.String.pipe(
+//         Prepend(`/${resourceType}/`),
+//         Schema.propertySignature,
+//         Schema.fromKey('id')
+//       ),
+//     })
+//   )
+
+// ---------------------------------------------------------------------------
+// Schema composition helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * A non-empty Schema.Union — at least one member.
+ */
+export type NonEmptyUnion = Schema.Union<
+  ReadonlyArray<Schema.Schema.AnyNoContext>
+>
+
+/**
+ * Type-safe `Schema.extend` for two no-context schemas.
+ *
+ * Returns a schema whose Type/Encoded are the intersections of the inputs.
+ * Use this instead of raw `Schema.extend` when both operands are context-free
+ * to get cleaner intersection types.
+ */
+export interface extendNoContext<
+  Self extends Schema.Schema.AnyNoContext,
+  That extends Schema.Schema.AnyNoContext,
+> extends Schema.AnnotableClass<
+  extendNoContext<Self, That>,
+  Schema.Schema.Type<Self> & Schema.Schema.Type<That>,
+  Schema.Schema.Encoded<Self> & Schema.Schema.Encoded<That>,
+  never
+> {}
+export const extendNoContext = <
+  Self extends Schema.Schema.AnyNoContext,
+  That extends Schema.Schema.AnyNoContext,
+>(
+  self: Self,
+  that: That
+) => Schema.extend(self, that) as extendNoContext<Self, That>
+
+export interface StructNoContext<
+  Fields extends {
+    readonly [x: PropertyKey]:
+      | Schema.Schema.AnyNoContext
+      | Schema.PropertySignature.All
+  },
+  Records extends ReadonlyArray<{
+    readonly key: Schema.Schema.AnyNoContext
+    readonly value: Schema.Schema.AnyNoContext
+  }>,
+> extends Schema.AnnotableClass<
+  any,
+  Schema.Simplify<Schema.TypeLiteral.Type<Fields, Records>>,
+  Schema.Simplify<Schema.TypeLiteral.Encoded<Fields, Records>>,
+  never
+> {}
+
+export const StructNoContext = <
+  const Fields extends {
+    readonly [x: PropertyKey]:
+      | Schema.Schema.AnyNoContext
+      | Schema.PropertySignature.All
+  },
+  const Records extends ReadonlyArray<{
+    readonly key: Schema.Schema.AnyNoContext
+    readonly value: Schema.Schema.AnyNoContext
+  }>,
+>(
+  fields: Fields,
+  ...records: Records
+): StructNoContext<Fields, Records> =>
+  Array.isNonEmptyReadonlyArray(records)
+    ? (Schema.Struct(
+        fields,
+        records[0],
+        ...records.slice(1)
+      ) as any as StructNoContext<Fields, Records>)
+    : (Schema.Struct(fields) as any as StructNoContext<Fields, Records>)

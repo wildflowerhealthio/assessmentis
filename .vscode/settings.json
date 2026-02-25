@@ -5,6 +5,8 @@
     "effectful",
     "firestore",
     "gapi",
+    "Klass",
+    "MECE",
     "northamerica",
     "talkback"
   ],
