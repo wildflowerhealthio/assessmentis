@@ -2,12 +2,13 @@ import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
 import { IdentifierAndReference } from '@assessmentis/clinical-domain/data-types'
 import type { BaseUrl } from '../UrlIdentification'
-import { ElementIdentification } from '../UrlIdentification'
+import { ElementIdentification } from '../base/Element'
 import { mutableEncoded } from '@assessmentis/util'
-import { CodeableConceptEncodedFromFhir } from './CodeableConcept'
-import { PeriodEncodedFromFhir } from './Period'
+import { FhirR4CodeableConcept } from './CodeableConcept'
+import { FhirR4Period } from './Period'
+import { TwoStepExternalSchema } from '../../TwoStepExternalSchema'
 
-export const ReferenceEncodedFromFhir: Schema.Schema<
+const ReferenceEncodedFromFhir: Schema.Schema<
   IdentifierAndReference.ReferenceEncoded,
   FhirR4.Reference,
   BaseUrl
@@ -25,17 +26,12 @@ export const ReferenceEncodedFromFhir: Schema.Schema<
   )
 )
 
-const ReferenceSchema: Schema.Schema<
+export const FhirR4Reference = new TwoStepExternalSchema(
   IdentifierAndReference.Reference,
-  FhirR4.Reference,
-  BaseUrl
-> = Schema.compose(ReferenceEncodedFromFhir, IdentifierAndReference.Reference)
+  ReferenceEncodedFromFhir
+)
 
-export const FhirR4Reference = {
-  Schema: ReferenceSchema,
-}
-
-export const IdentifierEncodedFromFhir: Schema.Schema<
+const IdentifierEncodedFromFhir: Schema.Schema<
   IdentifierAndReference.IdentifierEncoded,
   FhirR4.Identifier,
   BaseUrl
@@ -43,10 +39,12 @@ export const IdentifierEncodedFromFhir: Schema.Schema<
   ElementIdentification('Identifier'),
   mutableEncoded(
     Schema.Struct({
-      period: Schema.optional(Schema.suspend(() => PeriodEncodedFromFhir)),
+      period: Schema.optional(
+        Schema.suspend(() => FhirR4Period.EncodedFromExternal)
+      ),
       system: Schema.optional(Schema.String),
       type: Schema.optional(
-        Schema.suspend(() => CodeableConceptEncodedFromFhir)
+        Schema.suspend(() => FhirR4CodeableConcept.EncodedFromExternal)
       ),
       use: Schema.optional(
         Schema.Union(
@@ -58,17 +56,14 @@ export const IdentifierEncodedFromFhir: Schema.Schema<
         )
       ),
       value: Schema.optional(Schema.String),
-      assigner: Schema.optional(Schema.suspend(() => ReferenceEncodedFromFhir)),
+      assigner: Schema.optional(
+        Schema.suspend(() => ReferenceEncodedFromFhir)
+      ),
     })
   )
 )
 
-const IdentifierSchema: Schema.Schema<
+export const FhirR4Identifier = new TwoStepExternalSchema(
   IdentifierAndReference.Identifier,
-  FhirR4.Identifier,
-  BaseUrl
-> = Schema.compose(IdentifierEncodedFromFhir, IdentifierAndReference.Identifier)
-
-export const FhirR4Identifier = {
-  Schema: IdentifierSchema,
-}
+  IdentifierEncodedFromFhir
+)

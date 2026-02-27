@@ -121,10 +121,10 @@ export const startGapiGoogleHealthcareClient: Effect.Effect<
   const read: (typeof FhirR4Client.Service)['read'] = <
     ResourceType extends string,
   >({
-    resourceType,
+    domainType: resourceType,
     id,
   }: {
-    resourceType: ResourceType
+    domainType: ResourceType
     id: string
   }) =>
     Effect.tryPromise(() =>
@@ -158,10 +158,10 @@ export const startGapiGoogleHealthcareClient: Effect.Effect<
   }
 
   const create: (typeof FhirR4Client.Service)['create'] = ({
-    type,
+    domainType: type,
     resource,
   }: {
-    type: string
+    domainType: string
     resource: unknown
   }) =>
     Effect.tryPromise(() =>
@@ -180,11 +180,11 @@ export const startGapiGoogleHealthcareClient: Effect.Effect<
     ResourceType extends string,
   >({
     id,
-    type,
+    domainType: type,
     resource,
   }: {
     id: string
-    type: ResourceType
+    domainType: ResourceType
     resource: unknown
   }) =>
     Effect.tryPromise(() =>
@@ -207,10 +207,10 @@ export const startGapiGoogleHealthcareClient: Effect.Effect<
     ResourceType extends string,
   >({
     id,
-    type,
+    domainType: type,
   }: {
     id: string
-    type: ResourceType
+    domainType: ResourceType
   }) =>
     Effect.tryPromise(() =>
       healthcare.projects.locations.datasets.fhirStores.fhir.delete({

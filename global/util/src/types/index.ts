@@ -2,15 +2,6 @@ export * from './DeepReadonly'
 export * from './DeepWriteable'
 export * from './NotEmpty'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type TupleToIntersection<T extends any[]> = {
-  [K in keyof T]: (x: T[K]) => void
-} extends {
-  [K: number]: (x: infer I) => void
-}
-  ? I
-  : never
-
 export type Simplfy<T> = { [K in keyof T]: T[K] } & {}
 
 /**

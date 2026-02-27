@@ -134,7 +134,7 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
     })
 
     const read: (typeof FhirR4Client.Service)['read'] = ({
-      resourceType,
+      domainType: resourceType,
       id,
     }) =>
       Effect.tryPromise(() =>
@@ -155,7 +155,7 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
       )
 
     const search: (typeof FhirR4Client.Service)['search'] = (params) => {
-      const { resourceType, ...searchParams } = params
+      const { domainType, ...searchParams } = params
       // Flatten array values to comma-separated strings for FHIR OR semantics
       // (gaxios would repeat keys for arrays, which is not FHIR-compliant)
       const flatParams = flattenSearchParams(searchParams)
@@ -164,10 +164,10 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
         healthcare.projects.locations.datasets.fhirStores.fhir.searchType(
           {
             parent,
-            resourceType,
+            resourceType: domainType,
             ...(Object.keys(flatParams).length > 0 && {
               requestBody: {
-                resourceType,
+                resourceType: domainType,
               },
             }),
           },
@@ -186,7 +186,7 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
     }
 
     const create: (typeof FhirR4Client.Service)['create'] = ({
-      type,
+      domainType: type,
       resource,
     }) =>
       Effect.tryPromise(() =>
@@ -205,7 +205,7 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
 
     const update: (typeof FhirR4Client.Service)['update'] = ({
       id,
-      type,
+      domainType: type,
       resource,
     }) =>
       Effect.tryPromise(() =>
@@ -227,7 +227,7 @@ export const NodeGoogleHealthcareFhirR4ClientLayer = Layer.effect(
 
     const deleteResource: (typeof FhirR4Client.Service)['delete'] = ({
       id,
-      type,
+      domainType: type,
     }) =>
       Effect.tryPromise(() =>
         healthcare.projects.locations.datasets.fhirStores.fhir.delete({

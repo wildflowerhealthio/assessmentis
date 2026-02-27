@@ -1,32 +1,18 @@
 import { Schema } from 'effect'
 import { MergeClasses } from '@assessmentis/util'
-import { BackboneElement } from '../../data-types/base/BackboneElement'
 import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
-import {
-  Identifier,
-  Reference,
-} from '../../data-types/complex/IdentifierAndReference'
+import { Identifier } from '../../data-types/complex/IdentifierAndReference'
 import { HumanName } from '../../data-types/complex/HumanName'
 import { ContactPoint } from '../../data-types/complex/ContactPoint'
 import { Address } from '../../data-types/complex/Address'
 import { Attachment } from '../../data-types/complex/Attachment'
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
-import { Period } from '../../data-types/complex/Period'
 import { AdministrativeGender } from '../../data-types/complex/AdministrativeGender'
 import { TimelessDateFromString } from '@assessmentis/util'
+import { PractitionerQualification } from './PractitionerQualification'
 
 const Key = 'Practitioner' as const
 type Key = typeof Key
-
-// --- Sub-component ---
-
-const PractitionerQualificationSchema = Schema.Struct({
-  ...BackboneElement('PractitionerQualification').fields,
-  identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
-  code: Schema.suspend(() => CodeableConcept),
-  period: Schema.optional(Schema.suspend(() => Period)),
-  issuer: Schema.optional(Schema.suspend(() => Reference)),
-})
 
 // --- Practitioner ---
 
@@ -39,7 +25,7 @@ const fields = {
   gender: Schema.optional(AdministrativeGender),
   birthDate: Schema.optional(TimelessDateFromString),
   photo: Schema.optional(Schema.Array(Schema.suspend(() => Attachment))),
-  qualification: Schema.optional(Schema.Array(PractitionerQualificationSchema)),
+  qualification: Schema.optional(Schema.Array(PractitionerQualification)),
   communication: Schema.optional(
     Schema.Array(Schema.suspend(() => CodeableConcept))
   ),
@@ -54,6 +40,7 @@ export interface PractitionerEncoded
  * A person who is directly or indirectly involved in the provisioning of healthcare.
  */
 export class Practitioner extends MergeClasses<Practitioner>(Key)(
+  [],
   resourceMixin,
   fields
 ) {}

@@ -1,7 +1,8 @@
+import type { FastCheck } from 'effect'
 import { pipe, Schema } from 'effect'
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import { AllDatatypeKeys, DatatypeChoice } from '../Datatype'
-import { MergeClasses } from '@assessmentis/util'
+import { MergeClasses, mergeArbitraries } from '@assessmentis/util'
 
 // ---------------------------------------------------------------------------
 // Extension
@@ -10,9 +11,14 @@ import { MergeClasses } from '@assessmentis/util'
 const ExtensionKey = 'Extension' as const
 type ExtensionKey = typeof ExtensionKey
 
-const ValueMixin = DatatypeChoice('value', AllDatatypeKeys)
+class ExtensionValue extends DatatypeChoice<
+  ExtensionValue,
+  'value',
+  typeof AllDatatypeKeys
+>('ExtensionValue', 'value', AllDatatypeKeys) {}
+
 export interface ExtensionEncoded extends Schema.Struct.Encoded<
-  typeof ValueMixin.fields
+  typeof ExtensionValue.fields
 > {
   readonly url?: string | undefined
   readonly domainType?: ExtensionKey | undefined
@@ -25,30 +31,41 @@ const extensionUrlSchema = pipe(
   Schema.brand(`${ExtensionKey}/url`)
 )
 
+const extensionFields = {
+  domainType: Schema.Literal(ExtensionKey).pipe(
+    Schema.optionalWith({
+      default: (): ExtensionKey => ExtensionKey,
+    })
+  ),
+  url: Schema.optional(extensionUrlSchema),
+  extension: pipe(
+    Schema.Array(
+      Schema.suspend(
+        (): Schema.Schema<Extension, ExtensionEncoded, never> => Extension
+      )
+    ),
+    Schema.annotations({
+      arbitrary: () => (fc) => fc.constant([]),
+    }),
+    Schema.optionalWith({
+      default: (): ReadonlyArray<Extension> => [],
+    })
+  ),
+  definitionUrl: Schema.String,
+} as const satisfies Schema.Struct.Fields
+
 export class Extension extends MergeClasses<Extension>('Extension')(
-  ValueMixin,
-  {
-    domainType: Schema.Literal(ExtensionKey).pipe(
-      Schema.optionalWith({
-        default: (): ExtensionKey => ExtensionKey,
-      })
-    ),
-    url: Schema.optional(extensionUrlSchema),
-    extension: pipe(
-      Schema.Array(
-        Schema.suspend(
-          (): Schema.Schema<Extension, ExtensionEncoded, never> => Extension
-        )
+  [
+    {
+      arbitrary: mergeArbitraries(
+        (props) => new Extension(props),
+        ExtensionValue.arbitraryValueOneOrNone,
+        extensionFields
       ),
-      Schema.annotations({
-        arbitrary: () => (fc) => fc.constant([]),
-      }),
-      Schema.optionalWith({
-        default: (): ReadonlyArray<Extension> => [],
-      })
-    ),
-    definitionUrl: Schema.String,
-  }
+    },
+  ],
+  ExtensionValue,
+  extensionFields
 ) {
   static Key = ExtensionKey
   static UrlSchema = extensionUrlSchema

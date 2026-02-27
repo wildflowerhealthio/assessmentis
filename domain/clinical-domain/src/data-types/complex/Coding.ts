@@ -39,4 +39,8 @@ const ElementMixin = Element(Key)
 export interface CodingEncoded
   extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<Key> {}
 
-export class Coding extends MergeClasses<Coding>(Key)(ElementMixin, fields) {}
+export class Coding extends MergeClasses<Coding>(Key)(
+  [],
+  ElementMixin,
+  fields
+) {}

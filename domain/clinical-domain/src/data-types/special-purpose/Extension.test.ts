@@ -1,5 +1,5 @@
 import { expect, test, describe } from 'vitest'
-import { Schema } from 'effect'
+import { Arbitrary, Schema } from 'effect'
 import { capitalize } from 'effect/String'
 import * as fc from 'fast-check'
 import { Extension } from './Extension'
@@ -93,6 +93,23 @@ describe('Extension', () => {
         }) as Extension
         expect(ext.isExactlyOneValuePresent()).toBe(false)
         expect(ext.isNoValuePresent()).toBe(false)
+      })
+    )
+  })
+
+  test('property: Arbitrary.make produces Extensions with one-or-none value and correct prototype', () => {
+    const arb = Arbitrary.make(Extension)
+    fc.assert(
+      fc.property(arb, (ext) => {
+        expect(ext).toBeInstanceOf(Extension)
+        expect(typeof ext.isExactlyOneValuePresent).toBe('function')
+        expect(typeof ext.isNoValuePresent).toBe('function')
+
+        const none = ext.isNoValuePresent()
+        const one = ext.isExactlyOneValuePresent()
+        // Must be exactly one of: none present or one present
+        expect(none || one).toBe(true)
+        expect(none && one).toBe(false)
       })
     )
   })

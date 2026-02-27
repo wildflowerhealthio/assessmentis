@@ -5,7 +5,7 @@ import {
   type BackboneElementEncoded,
 } from '@assessmentis/clinical-domain/data-types'
 import { ElementEncodedFromFhir } from './Element'
-import { ExtensionEncodedFromFhir } from '../special-purpose/Extension'
+import { FhirR4Extension } from '../special-purpose/Extension'
 import { mutableEncoded } from '@assessmentis/util'
 import type { BaseUrl } from '../UrlIdentification'
 
@@ -22,7 +22,7 @@ export const BackboneElementEncodedFromFhir = <DomainType extends string>(
       Schema.Struct({
         modifierExtension: Schema.optional(
           mutableEncoded(
-            Schema.Array(Schema.suspend(() => ExtensionEncodedFromFhir))
+            Schema.Array(Schema.suspend(() => FhirR4Extension.EncodedFromExternal))
           )
         ),
       })

@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { QuestionnaireItemLink } from '../Questionnaire/Questionnaire'
+import { QuestionnaireItemLink } from '../Questionnaire/QuestionnaireItemLink'
 import {
   BackboneElement,
   type BackboneElementEncoded,
@@ -10,11 +10,14 @@ import { MergeClasses } from '@assessmentis/util'
 
 const questionnaireResponseItemAnswerFields = {}
 
-const valueMixin = DatatypeChoice(
+class QuestionnaireResponseItemAnswerValue extends DatatypeChoice(
+  'QuestionnaireResponseItemAnswerValue',
   'value',
   FhirR4ChoiceElements['QuestionnaireResponse.item.answer.value[x]']
-)
-type valueMixinEncoded = Schema.Struct.Encoded<typeof valueMixin.fields>
+) {}
+type valueMixinEncoded = Schema.Struct.Encoded<
+  typeof QuestionnaireResponseItemAnswerValue.fields
+>
 export interface QuestionnaireResponseItemAnswerEncoded
   extends
     Schema.Struct.Encoded<typeof questionnaireResponseItemAnswerFields>,
@@ -28,20 +31,25 @@ export interface QuestionnaireResponseItemAnswerEncoded
  */
 export class QuestionnaireResponseItemAnswer extends MergeClasses<QuestionnaireResponseItemAnswer>(
   'QuestionnaireResponseItemAnswer'
-)(BackboneElement('QuestionnaireResponseItemAnswer'), valueMixin, {
-  ...questionnaireResponseItemAnswerFields,
+)(
+  [],
+  BackboneElement('QuestionnaireResponseItemAnswer'),
+  QuestionnaireResponseItemAnswerValue,
+  {
+    ...questionnaireResponseItemAnswerFields,
 
-  item: Schema.optional(
-    Schema.Array(
-      Schema.suspend(
-        (): Schema.Schema<
-          QuestionnaireResponseItem,
-          QuestionnaireResponseItemEncoded
-        > => QuestionnaireResponseItem
+    item: Schema.optional(
+      Schema.Array(
+        Schema.suspend(
+          (): Schema.Schema<
+            QuestionnaireResponseItem,
+            QuestionnaireResponseItemEncoded
+          > => QuestionnaireResponseItem
+        )
       )
-    )
-  ),
-}) {}
+    ),
+  }
+) {}
 
 const questionnaireResponseItemFields = {
   definition: Schema.optional(Schema.String),

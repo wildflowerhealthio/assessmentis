@@ -9,11 +9,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./interface-tests": "./src/index.interface.test.ts",
-    "./data-types": "./src/data-types/index.ts",
-    "./administration": "./src/administration/index.ts",
-    "./content-management": "./src/content-management/index.ts",
-    "./diagnostic-medicine": "./src/diagnostic-medicine/index.ts",
-    "./foundation-framework": "./src/foundation-framework/index.ts"
+    "./data-types": "./src/data-types/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

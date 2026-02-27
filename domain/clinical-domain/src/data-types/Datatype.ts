@@ -1,6 +1,8 @@
+import type { FastCheck } from 'effect'
 import { Arbitrary, Schema } from 'effect'
 import type FhirR4ChoiceElements from './fhirR4ChoiceElements'
 import { capitalize } from 'effect/String'
+import type { extend } from 'effect/Schema'
 
 interface Datatype<Name extends string, A, I> {
   name: Name
@@ -111,6 +113,72 @@ export const baseDatatypes = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly [K in FhirR4DatatypeOptionNames]: Datatype<K, any, any>
 }
+
+const arbitraries: {
+  [K in keyof typeof baseDatatypes]: FastCheck.Arbitrary<
+    Schema.Schema.Type<(typeof baseDatatypes)[K]['schema']>
+  >
+} = {
+  string: Arbitrary.make(baseDatatypes.string.schema),
+  boolean: Arbitrary.make(baseDatatypes.boolean.schema),
+  decimal: Arbitrary.make(baseDatatypes.decimal.schema),
+  integer: Arbitrary.make(baseDatatypes.integer.schema),
+  date: Arbitrary.make(baseDatatypes.date.schema),
+  dateTime: Arbitrary.make(baseDatatypes.dateTime.schema),
+  time: Arbitrary.make(baseDatatypes.time.schema),
+  uri: Arbitrary.make(baseDatatypes.uri.schema),
+  url: Arbitrary.make(baseDatatypes.url.schema),
+  canonical: Arbitrary.make(baseDatatypes.canonical.schema),
+  code: Arbitrary.make(baseDatatypes.code.schema),
+  Reference: Arbitrary.make(baseDatatypes.Reference.schema),
+  Identifier: Arbitrary.make(baseDatatypes.Identifier.schema),
+  // Primitive types
+  base64Binary: Arbitrary.make(baseDatatypes.base64Binary.schema),
+  id: Arbitrary.make(baseDatatypes.id.schema),
+  instant: Arbitrary.make(baseDatatypes.instant.schema),
+  markdown: Arbitrary.make(baseDatatypes.markdown.schema),
+  oid: Arbitrary.make(baseDatatypes.oid.schema),
+  positiveInt: Arbitrary.make(baseDatatypes.positiveInt.schema),
+  unsignedInt: Arbitrary.make(baseDatatypes.unsignedInt.schema),
+  uuid: Arbitrary.make(baseDatatypes.uuid.schema),
+  // Complex data types
+  Address: Arbitrary.make(baseDatatypes.Address.schema),
+  Age: Arbitrary.make(baseDatatypes.Age.schema),
+  Annotation: Arbitrary.make(baseDatatypes.Annotation.schema),
+  Attachment: Arbitrary.make(baseDatatypes.Attachment.schema),
+  CodeableConcept: Arbitrary.make(baseDatatypes.CodeableConcept.schema),
+  Coding: Arbitrary.make(baseDatatypes.Coding.schema),
+  ContactPoint: Arbitrary.make(baseDatatypes.ContactPoint.schema),
+  Count: Arbitrary.make(baseDatatypes.Count.schema),
+  Distance: Arbitrary.make(baseDatatypes.Distance.schema),
+  Duration: Arbitrary.make(baseDatatypes.Duration.schema),
+  HumanName: Arbitrary.make(baseDatatypes.HumanName.schema),
+  Money: Arbitrary.make(baseDatatypes.Money.schema),
+  Period: Arbitrary.make(baseDatatypes.Period.schema),
+  Quantity: Arbitrary.make(baseDatatypes.Quantity.schema),
+  Range: Arbitrary.make(baseDatatypes.Range.schema),
+  Ratio: Arbitrary.make(baseDatatypes.Ratio.schema),
+  SampledData: Arbitrary.make(baseDatatypes.SampledData.schema),
+  Signature: Arbitrary.make(baseDatatypes.Signature.schema),
+  SimpleQuantity: Arbitrary.make(baseDatatypes.SimpleQuantity.schema),
+  Timing: Arbitrary.make(baseDatatypes.Timing.schema),
+  // Metadata types
+  MetaDataTypes: Arbitrary.make(baseDatatypes.MetaDataTypes.schema),
+  ContactDetail: Arbitrary.make(baseDatatypes.ContactDetail.schema),
+  Contributor: Arbitrary.make(baseDatatypes.Contributor.schema),
+  DataRequirement: Arbitrary.make(baseDatatypes.DataRequirement.schema),
+  Expression: Arbitrary.make(baseDatatypes.Expression.schema),
+  ParameterDefinition: Arbitrary.make(baseDatatypes.ParameterDefinition.schema),
+  RelatedArtifact: Arbitrary.make(baseDatatypes.RelatedArtifact.schema),
+  TriggerDefinition: Arbitrary.make(baseDatatypes.TriggerDefinition.schema),
+  UsageContext: Arbitrary.make(baseDatatypes.UsageContext.schema),
+  // Special types
+  Dosage: Arbitrary.make(baseDatatypes.Dosage.schema),
+  Meta: Arbitrary.make(baseDatatypes.Meta.schema),
+  // Wildcard
+  '*': Arbitrary.make(baseDatatypes['*'].schema),
+}
+
 type BaseDatatypes = typeof baseDatatypes
 
 const datatypeFields = {
@@ -184,20 +252,19 @@ export const AllDatatypeKeys = Object.keys(datatypeFields) as ReadonlyArray<
   keyof typeof datatypeFields
 >
 
-type DatatypeFieldKey = keyof typeof datatypeFields
+export type DatatypeFieldKey = keyof typeof datatypeFields
 
 type DatatypeMixinClass<
+  Self,
   Prefix extends string,
   PrefixedFields extends Schema.Struct.Fields,
-> = {
-  readonly fields: Schema.Simplify<PrefixedFields>
-  readonly Encoded: Schema.Struct.Encoded<PrefixedFields>
-  new (
-    props: Schema.Struct.Constructor<PrefixedFields>,
-    options?: Schema.MakeOptions
-  ): Schema.Struct.Type<PrefixedFields> & {
-    readonly Encoded: Schema.Struct.Encoded<PrefixedFields>
-  } & {
+> = Schema.Class<
+  Self,
+  PrefixedFields,
+  Schema.Struct.Encoded<PrefixedFields>,
+  Schema.Struct.Context<PrefixedFields>,
+  Schema.Struct.Constructor<PrefixedFields>,
+  {
     readonly [P in Prefix as `isExactlyOne${Capitalize<P>}Present`]: (
       this: Schema.Struct.Type<PrefixedFields>
     ) => boolean
@@ -205,20 +272,28 @@ type DatatypeMixinClass<
     readonly [P in Prefix as `isNo${Capitalize<P>}Present`]: (
       this: Schema.Struct.Type<PrefixedFields>
     ) => boolean
-  }
-} & {
+  },
+  {}
+> & {
   readonly [P in Prefix as `all${Capitalize<P>}Keys`]: () => ReadonlyArray<
     keyof PrefixedFields
+  >
+} & {
+  readonly [P in Prefix as `arbitrary${Capitalize<P>}OneOrNone`]: Arbitrary.LazyArbitrary<
+    Schema.Struct.Type<PrefixedFields>
   >
 }
 
 export function DatatypeChoice<
+  Self,
   const Prefix extends string,
   const PickedKeys extends ReadonlyArray<DatatypeFieldKey>,
 >(
+  identifier: string,
   prefix: Prefix,
   pickedKeys: PickedKeys
 ): DatatypeMixinClass<
+  Self,
   Prefix,
   {
     [K in PickedKeys[number] as `${Prefix}${Capitalize<K>}`]: (typeof datatypeFields)[K]
@@ -242,14 +317,37 @@ export function DatatypeChoice<
       fields[prefixedKey] = (datatypeFields as any)[key]
     }
   }
-  class DatatypeMixin {
-    static fields = fields as Schema.Simplify<PrefixedFields>
-    constructor(_props: FieldType, _options?: Schema.MakeOptions) {}
-  }
+
+  const DatatypeMixin = Schema.Class<Self>(identifier)(fields, {
+    arbitrary: (_fcx) => (fc) =>
+      fc.constantFrom(...pickedKeys).chain((key) =>
+        arbitraries[key].map(
+          (u) =>
+            ({
+              [`${prefix}${capitalize(key)}` as keyof FieldType]: u,
+            }) as Self
+        )
+      ),
+  })
+  if (typeof DatatypeMixin === 'string') throw new Error(DatatypeMixin)
+
+  const arbitraryOneOrNone: Arbitrary.LazyArbitrary<
+    Schema.Struct.Type<PrefixedFields>
+  > = (fc: typeof FastCheck) =>
+    fc.constantFrom(...pickedKeys).chain((key: PickedKeys[number]) =>
+      arbitraries[key].map(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (u: any) =>
+          ({
+            [`${prefix}${capitalize(key)}`]: u,
+          }) as Schema.Struct.Type<PrefixedFields>
+      )
+    )
 
   Object.assign(DatatypeMixin, {
     [`all${capitalize(prefix)}Keys`]: (): ReadonlyArray<keyof FieldType> =>
       optionKeys,
+    [`arbitrary${capitalize(prefix)}OneOrNone`]: arbitraryOneOrNone,
   })
 
   Object.assign(DatatypeMixin.prototype, {

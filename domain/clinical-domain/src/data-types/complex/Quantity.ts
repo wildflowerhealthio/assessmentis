@@ -51,6 +51,7 @@ export interface QuantityEncoded
  */
 
 export class Quantity extends MergeClasses<Quantity>('Quantity')(
+  [],
   elementMixin,
   fields
 ) {}

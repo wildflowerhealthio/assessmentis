@@ -1,6 +1,5 @@
 import { Schema } from 'effect'
-import { MergeClasses } from '@assessmentis/util'
-import { BackboneElement } from '../../data-types/base/BackboneElement'
+import { mergeArbitraries, MergeClasses } from '@assessmentis/util'
 import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
 import {
   Identifier,
@@ -9,10 +8,10 @@ import {
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import { Annotation } from '../../data-types/complex/Annotation'
 import { Period } from '../../data-types/complex/Period'
-import { Quantity } from '../../data-types/complex/Quantity'
-import { Range } from '../../data-types/complex/Range'
 import { DatatypeChoice } from '../../data-types/Datatype'
 import FhirR4ChoiceElements from '../../data-types/fhirR4ChoiceElements'
+import { ObservationComponent } from './ObservationComponent'
+import { ObservationReferenceRange } from './ObservationReferenceRange'
 
 const Key = 'Observation' as const
 type Key = typeof Key
@@ -33,43 +32,13 @@ export const ObservationStatus = Schema.Enums({
 
 export type ObservationStatus = typeof ObservationStatus.Type
 
-// --- Sub-component schemas ---
-
-export class ObservationReferenceRange extends MergeClasses<ObservationReferenceRange>(
-  'ObservationReferenceRange'
-)(BackboneElement('ObservationReferenceRange'), {
-  low: Schema.optional(Schema.suspend(() => Quantity)),
-  high: Schema.optional(Schema.suspend(() => Quantity)),
-  type: Schema.optional(Schema.suspend(() => CodeableConcept)),
-  appliesTo: Schema.optional(
-    Schema.Array(Schema.suspend(() => CodeableConcept))
-  ),
-  age: Schema.optional(Schema.suspend(() => Range)),
-  text: Schema.optional(Schema.String),
-}) {}
-
-const componentValueMixin = DatatypeChoice(
-  'value',
-  FhirR4ChoiceElements['Observation.component.value[x]']
-)
-
-const ObservationComponentSchema = Schema.Struct({
-  ...BackboneElement('ObservationComponent').fields,
-  ...componentValueMixin.fields,
-  code: Schema.suspend(() => CodeableConcept),
-  dataAbsentReason: Schema.optional(Schema.suspend(() => CodeableConcept)),
-  interpretation: Schema.optional(
-    Schema.Array(Schema.suspend(() => CodeableConcept))
-  ),
-  referenceRange: Schema.optional(Schema.Array(ObservationReferenceRange)),
-})
-
 // --- Observation ---
 
-const ObservationValueMixin = DatatypeChoice(
+class ObservationValue extends DatatypeChoice(
+  'ObservationValue',
   'value',
   FhirR4ChoiceElements['Observation.value[x]']
-)
+) {}
 
 const fields = {
   identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
@@ -100,12 +69,12 @@ const fields = {
   referenceRange: Schema.optional(Schema.Array(ObservationReferenceRange)),
   hasMember: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
   derivedFrom: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
-  component: Schema.optional(Schema.Array(ObservationComponentSchema)),
+  component: Schema.optional(Schema.Array(ObservationComponent)),
 } as const satisfies Schema.Struct.Fields
 
 const resourceMixin = Resource(Key)
 
-type ObservationValueMixinEncoded = typeof ObservationValueMixin.Encoded
+type ObservationValueMixinEncoded = typeof ObservationValue.Encoded
 export interface ObservationEncoded
   extends
     Schema.Struct.Encoded<typeof fields>,
@@ -116,7 +85,17 @@ export interface ObservationEncoded
  * Measurements and simple assertions made about a patient, device or other subject.
  */
 export class Observation extends MergeClasses<Observation>(Key)(
+  [
+    {
+      arbitrary: mergeArbitraries(
+        (props) => new Observation(props),
+        resourceMixin,
+        ObservationValue.arbitraryValueOneOrNone,
+        fields
+      ),
+    },
+  ],
   fields,
   resourceMixin,
-  ObservationValueMixin
+  ObservationValue
 ) {}

@@ -5,8 +5,9 @@ import {
   type NarrativeEncoded,
 } from '@assessmentis/clinical-domain/data-types'
 import type { BaseUrl } from '../UrlIdentification'
-import { ElementIdentification } from '../UrlIdentification'
+import { ElementIdentification } from '../base/Element'
 import { mutableEncoded } from '@assessmentis/util'
+import { TwoStepExternalSchema } from '../../TwoStepExternalSchema'
 
 const NarrativeStatus = Schema.Union(
   Schema.Literal('generated'),
@@ -15,7 +16,7 @@ const NarrativeStatus = Schema.Union(
   Schema.Literal('empty')
 )
 
-export const NarrativeEncodedFromFhir: Schema.Schema<
+const EncodedFromFhir: Schema.Schema<
   NarrativeEncoded,
   FhirR4.Narrative,
   BaseUrl
@@ -29,9 +30,7 @@ export const NarrativeEncodedFromFhir: Schema.Schema<
   )
 )
 
-const NarrativeSchema: Schema.Schema<Narrative, FhirR4.Narrative, BaseUrl> =
-  Schema.compose(NarrativeEncodedFromFhir, Narrative)
-
-export const FhirR4Narrative = {
-  Schema: NarrativeSchema,
-}
+export const FhirR4Narrative = new TwoStepExternalSchema(
+  Narrative,
+  EncodedFromFhir
+)

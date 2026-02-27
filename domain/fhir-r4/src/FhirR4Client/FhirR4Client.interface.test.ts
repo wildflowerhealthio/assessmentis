@@ -103,7 +103,9 @@ export const describeAsFhirR4ResourceClient = (
         Effect.gen(function* () {
           const client = yield* FhirR4Client
           for (const { type, id } of resourcesToDelete) {
-            const exit = yield* Effect.exit(client.delete({ type, id }))
+            const exit = yield* Effect.exit(
+              client.delete({ domainType: type, id })
+            )
             if (Exit.isFailure(exit)) {
               yield* Console.warn(
                 `Failed to delete ${type}/${id} during cleanup`
@@ -120,7 +122,7 @@ export const describeAsFhirR4ResourceClient = (
           const client = yield* FhirR4Client
           const exit = yield* Effect.exit(
             client.read({
-              resourceType,
+              domainType: resourceType,
               id:
                 cases.nonExistentResourceId ??
                 '9a027c58-305f-4d5c-ad19-59654b8e436b',
@@ -150,7 +152,7 @@ export const describeAsFhirR4ResourceClient = (
 
             // Create
             const created = yield* client.create({
-              type: resourceType,
+              domainType: resourceType,
               resource: testCase.resource,
             })
             const createdResource = created as { id: string }
@@ -158,7 +160,7 @@ export const describeAsFhirR4ResourceClient = (
 
             // Read back
             const readBack = yield* client.read({
-              resourceType,
+              domainType: resourceType,
               id: createdResource.id,
             })
 
@@ -177,7 +179,7 @@ export const describeAsFhirR4ResourceClient = (
 
             // Create initial
             const created = yield* client.create({
-              type: resourceType,
+              domainType: resourceType,
               resource: cases.updateAndRead.initial,
             })
             const before = created as { id: string }
@@ -185,14 +187,14 @@ export const describeAsFhirR4ResourceClient = (
 
             // Update
             const updateResponse = yield* client.update({
-              type: resourceType,
+              domainType: resourceType,
               id: before.id,
               resource: { ...(testCase.update as object), id: before.id },
             })
 
             // Read back
             const readBack = yield* client.read({
-              resourceType,
+              domainType: resourceType,
               id: before.id,
             })
 
@@ -211,7 +213,7 @@ export const describeAsFhirR4ResourceClient = (
 
             // Create
             const created = yield* client.create({
-              type: resourceType,
+              domainType: resourceType,
               resource: testCase.resource,
             })
             const createdResource = created as { id: string }
@@ -219,13 +221,13 @@ export const describeAsFhirR4ResourceClient = (
 
             // Delete
             const deleteResult = yield* client.delete({
-              type: resourceType,
+              domainType: resourceType,
               id: createdResource.id,
             })
 
             // Attempt read (should fail)
             const readExit = yield* Effect.exit(
-              client.read({ resourceType, id: createdResource.id })
+              client.read({ domainType: resourceType, id: createdResource.id })
             )
 
             // Custom assertion
@@ -249,7 +251,7 @@ export const describeAsFhirR4ResourceClient = (
             // Create all resources fresh for this search case
             for (const resource of cases.createManyAndSearch.toCreate) {
               const created = yield* client.create({
-                type: resourceType,
+                domainType: resourceType,
                 resource,
               })
               const createdResource = created as { id: string }
@@ -267,7 +269,9 @@ export const describeAsFhirR4ResourceClient = (
           Effect.gen(function* () {
             const client = yield* FhirR4Client
             for (const { type, id } of searchableResourcesToDelete) {
-              const exit = yield* Effect.exit(client.delete({ type, id }))
+              const exit = yield* Effect.exit(
+                client.delete({ domainType: type, id })
+              )
               if (Exit.isFailure(exit)) {
                 yield* Console.warn(
                   `Failed to delete ${type}/${id} during cleanup`
@@ -286,7 +290,7 @@ export const describeAsFhirR4ResourceClient = (
 
             // Search
             const result = yield* client.search({
-              resourceType,
+              domainType: resourceType,
               ...searchCase.params,
             })
 

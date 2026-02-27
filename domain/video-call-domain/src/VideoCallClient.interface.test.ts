@@ -228,7 +228,7 @@ export const describeAsVideoCallClient = (
           expect(recordings.length).toBeGreaterThan(0)
           // If there are recordings, verify structure
           const first = recordings[0]
-          expect(first.media.resourceType).toBe('Media')
+          expect(first.media.domainType).toBe('Media')
           expect(first.media.status).toBe('completed')
           expect(typeof first.roomName).toBe('string')
         }).pipe(Effect.provide(VideoCallClientLayer))
@@ -304,7 +304,7 @@ export const describeAsVideoCallClient = (
             )
           }
           const first = transcripts[0]
-          expect(first.media.resourceType).toBe('Media')
+          expect(first.media.domainType).toBe('Media')
           expect(first.media.status).toBe('completed')
           expect(typeof first.roomName).toBe('string')
         }).pipe(Effect.provide(VideoCallClientLayer))

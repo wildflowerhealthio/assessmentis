@@ -4,6 +4,7 @@ import { Element } from '../base/'
 import { CodeableConcept, type CodeableConceptEncoded } from './CodeableConcept'
 import { Period } from './Period'
 import { MergeClasses } from '@assessmentis/util'
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
 
 /**
  * Circular dependency note:
@@ -52,6 +53,7 @@ export interface ReferenceEncoded
 const referenceElement = Element(ReferenceKey)
 
 export class Reference extends MergeClasses<Reference>(ReferenceKey)(
+  [],
   referenceElement,
   referenceFields,
   {
@@ -70,7 +72,23 @@ export class Reference extends MergeClasses<Reference>(ReferenceKey)(
       )
     ),
   }
-) {}
+) {
+  static fromResource(
+    resource: { url?: ReadonlyUrl | string | undefined; domainType: string },
+    display: string | undefined = undefined
+  ): Reference | undefined {
+    return resource && resource.url
+      ? new Reference({
+          reference:
+            resource.url instanceof ReadonlyUrl
+              ? resource.url.toString()
+              : resource.url,
+          type: resource.domainType,
+          display,
+        })
+      : undefined
+  }
+}
 
 export const IdentifierKey = 'Identifier'
 export type IdentifierKey = typeof IdentifierKey
@@ -132,6 +150,7 @@ export interface IdentifierEncoded
 const IdentifierElementMixin = Element(IdentifierKey)
 
 export class Identifier extends MergeClasses<Identifier>(IdentifierKey)(
+  [],
   IdentifierElementMixin,
   identifierFields,
   {

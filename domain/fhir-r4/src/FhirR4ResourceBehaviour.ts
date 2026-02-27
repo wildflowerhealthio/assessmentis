@@ -30,34 +30,29 @@ import {
 } from '@assessmentis/ontology'
 import { StreamEither } from '@assessmentis/util'
 import { refineOrFail } from '@assessmentis/util'
-import { FhirR4Bundle } from './foundation-framework'
+import { FhirR4Bundle } from './resources/Bundle'
 import type {
   Composition,
   DiagnosticReport,
+  Encounter,
   Location,
   Media,
   Observation,
+  Patient,
   Practitioner,
   Questionnaire,
   QuestionnaireResponse,
 } from '@assessmentis/clinical-domain'
-import type { Encounter, Patient } from '@assessmentis/clinical-domain'
-import {
-  FhirR4Encounter,
-  FhirR4Location,
-  FhirR4Patient,
-  FhirR4Practitioner,
-} from './administration'
-import {
-  FhirR4Composition,
-  FhirR4Questionnaire,
-  FhirR4QuestionnaireResponse,
-} from './content-management'
-import {
-  FhirR4DiagnosticReport,
-  FhirR4Media,
-  FhirR4Observation,
-} from './diagnostic-medicine'
+import { FhirR4Composition } from './resources/Composition'
+import { FhirR4DiagnosticReport } from './resources/DiagnosticReport'
+import { FhirR4Encounter } from './resources/Encounter'
+import { FhirR4Location } from './resources/Location'
+import { FhirR4Media } from './resources/Media'
+import { FhirR4Observation } from './resources/Observation'
+import { FhirR4Patient } from './resources/Patient'
+import { FhirR4Practitioner } from './resources/Practitioner'
+import { FhirR4Questionnaire } from './resources/Questionnaire'
+import { FhirR4QuestionnaireResponse } from './resources/QuestionnaireResponse'
 import { BaseUrl } from './data-types/UrlIdentification'
 
 export const fhirProtocols = {
@@ -89,16 +84,16 @@ const FhirR4Schemas: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [K in keyof Resources]: Schema.Schema<Resources[K], any, BaseUrl>
 } = {
-  Composition: FhirR4Composition.Schema,
-  DiagnosticReport: FhirR4DiagnosticReport.Schema,
-  Encounter: FhirR4Encounter.Schema,
-  Location: FhirR4Location.Schema,
-  Media: FhirR4Media.Schema,
-  Observation: FhirR4Observation.Schema,
-  Patient: FhirR4Patient.Schema,
-  Practitioner: FhirR4Practitioner.Schema,
-  Questionnaire: FhirR4Questionnaire.Schema,
-  QuestionnaireResponse: FhirR4QuestionnaireResponse.Schema,
+  Composition: FhirR4Composition,
+  DiagnosticReport: FhirR4DiagnosticReport,
+  Encounter: FhirR4Encounter,
+  Location: FhirR4Location,
+  Media: FhirR4Media,
+  Observation: FhirR4Observation,
+  Patient: FhirR4Patient,
+  Practitioner: FhirR4Practitioner,
+  Questionnaire: FhirR4Questionnaire,
+  QuestionnaireResponse: FhirR4QuestionnaireResponse,
 }
 
 // --- Helpers ---
@@ -211,11 +206,11 @@ const makeBundleDecoder = <T extends Resource.Resource<string>>(
 }
 
 const resolverForResource = <K extends keyof Resources>(request: {
-  resourceType: K
+  domainType: K
 }): AllActionResolver<Resources[K]> =>
   makeResolverSet({
-    resourceType: request.resourceType,
-    Schema: FhirR4Schemas[request.resourceType],
+    domainType: request.domainType,
+    Schema: FhirR4Schemas[request.domainType],
   })
 
 export const FhirR4SourceBehaviour = ({
@@ -286,7 +281,7 @@ export interface FhirR4ResourceBehaviour<
   T extends Resource.Resource<string>,
   TEncoded = unknown,
 > {
-  resourceType: T[Resource.ResourceType]
+  domainType: T['domainType']
   Schema: Schema.Schema<T, TEncoded, never>
 }
 
@@ -301,10 +296,10 @@ type AllActionResolver<T extends Resource.Resource<string>> =
   >
 
 const makeResolverSet = <T extends Resource.Resource<string>>({
-  resourceType,
+  domainType,
   Schema: schema,
 }: {
-  resourceType: T[Resource.ResourceType]
+  domainType: T['domainType']
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Schema: Schema.Schema<T, any, BaseUrl>
 }): AllActionResolver<T> => {
@@ -317,7 +312,7 @@ const makeResolverSet = <T extends Resource.Resource<string>>({
       Effect.gen(function* () {
         const client = yield* FhirR4Client
         // Group by resourceType (though they should all be the same)
-        const byType = Array.groupBy(requests, (r) => r.resourceType)
+        const byType = Array.groupBy(requests, (r) => r.domainType)
 
         for (const [resType, reqs] of Record.toEntries(byType)) {
           if (reqs.length === 1) {
@@ -325,14 +320,14 @@ const makeResolverSet = <T extends Resource.Resource<string>>({
             const fhirId = extractFhirId(reqs[0].url)
             yield* client
               .read({
-                resourceType: resType,
+                domainType: resType,
                 id: fhirId,
               })
               .pipe(
                 Effect.catchTag('NotFoundError', () =>
                   Effect.fail(
                     new NotFoundError({
-                      resourceType: resourceType,
+                      resourceType: resType,
                       params: { url: reqs[0].url },
                     })
                   )
@@ -354,7 +349,7 @@ const makeResolverSet = <T extends Resource.Resource<string>>({
             const ids = reqs.map((r) => extractFhirId(r.url))
             yield* client
               .search({
-                resourceType: resType,
+                domainType: resType,
                 id: ids,
               })
               .pipe(
@@ -376,7 +371,7 @@ const makeResolverSet = <T extends Resource.Resource<string>>({
                           yield* Request.fail(
                             req,
                             new NotFoundError({
-                              resourceType: resourceType,
+                              resourceType: domainType,
                               params: { url: req.url },
                             })
                           )
@@ -394,7 +389,7 @@ const makeResolverSet = <T extends Resource.Resource<string>>({
     (request: ResourceRequest.Search<T>) =>
       Effect.flatMap(FhirR4Client, (client) =>
         client
-          .search({ resourceType: request.resourceType, ...request.params })
+          .search({ domainType: request.domainType, ...request.params })
           .pipe(Effect.flatMap(bundleDecoder))
       )
   )
@@ -413,7 +408,7 @@ const makeResolverSet = <T extends Resource.Resource<string>>({
 
           Effect.flatMap((resource) =>
             client.create({
-              type: request.resourceType,
+              domainType: request.domainType,
               resource,
             })
           ),
@@ -434,14 +429,14 @@ const makeResolverSet = <T extends Resource.Resource<string>>({
           Effect.flatMap((resource) =>
             client.update({
               id: fhirId,
-              type: resourceType,
+              domainType: domainType,
               resource,
             })
           ),
           Effect.catchTag('NotFoundError', () =>
             Effect.fail(
               new NotFoundError({
-                resourceType: resourceType,
+                resourceType: domainType,
                 params: { url: request.resource.url },
               })
             )
@@ -457,14 +452,14 @@ const makeResolverSet = <T extends Resource.Resource<string>>({
       Effect.flatMap(FhirR4Client, (client) =>
         client
           .delete({
-            type: request.resourceType,
+            domainType: request.domainType,
             id: extractFhirId(request.url),
           })
           .pipe(
             Effect.catchTag('NotFoundError', () =>
               Effect.fail(
                 new NotFoundError({
-                  resourceType: request.resourceType,
+                  resourceType: request.domainType,
                   params: { url: request.url },
                 })
               )

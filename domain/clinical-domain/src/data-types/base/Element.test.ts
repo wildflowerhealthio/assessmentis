@@ -12,6 +12,7 @@ import { MergeClasses } from '@assessmentis/util'
 const ElementMixin = Element('TestElement')
 
 class TestElement extends MergeClasses<TestElement>('TestElement')(
+  [],
   ElementMixin
 ) {}
 

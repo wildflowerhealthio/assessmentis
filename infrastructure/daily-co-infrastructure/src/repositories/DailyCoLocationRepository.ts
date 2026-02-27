@@ -52,7 +52,7 @@ const roomToLocation = (room: {
   })
 
   return Location.make({
-    resourceType: 'Location' as const,
+    domainType: 'Location' as const,
     name: room.name,
     status: 'active' as const,
     mode: 'instance' as const,

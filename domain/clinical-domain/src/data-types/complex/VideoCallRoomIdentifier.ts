@@ -36,9 +36,7 @@ const fields = {
   ),
   use: Schema.optional(IdentifierUse),
   assigner: Schema.optional(
-    Schema.suspend(
-      (): Schema.Schema<Reference, ReferenceEncoded> => Reference
-    )
+    Schema.suspend((): Schema.Schema<Reference, ReferenceEncoded> => Reference)
   ),
 } as const satisfies Schema.Struct.Fields
 
@@ -53,7 +51,7 @@ const fields = {
  */
 export class VideoCallRoomIdentifier extends MergeClasses<VideoCallRoomIdentifier>(
   Key
-)(Element(Key), fields) {
+)([], Element(Key), fields) {
   static readonly SYSTEM = VIDEO_CALL_ROOM_NAME_SYSTEM
 
   /**
@@ -74,9 +72,7 @@ export class VideoCallRoomIdentifier extends MergeClasses<VideoCallRoomIdentifie
    * Extract a VideoCallRoomIdentifier from a standard Identifier,
    * if it has the matching system URL.
    */
-  static fromIdentifier(
-    id: Identifier
-  ): VideoCallRoomIdentifier | undefined {
+  static fromIdentifier(id: Identifier): VideoCallRoomIdentifier | undefined {
     if (id.system === VIDEO_CALL_ROOM_NAME_SYSTEM && id.value !== undefined) {
       return VideoCallRoomIdentifier.make({ value: id.value })
     }

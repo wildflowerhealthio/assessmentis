@@ -2,11 +2,12 @@ import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
 import { Annotation } from '@assessmentis/clinical-domain/data-types'
 import type { BaseUrl } from '../UrlIdentification'
-import { ElementIdentification } from '../UrlIdentification'
+import { ElementIdentification } from '../base/Element'
 import { mutableEncoded } from '@assessmentis/util'
-import { ReferenceEncodedFromFhir } from './IdentifierAndReference'
+import { TwoStepExternalSchema } from '../../TwoStepExternalSchema'
+import { FhirR4Reference } from './IdentifierAndReference'
 
-export const AnnotationEncodedFromFhir: Schema.Schema<
+const EncodedFromFhir: Schema.Schema<
   Annotation.AnnotationEncoded,
   FhirR4.Annotation,
   BaseUrl
@@ -16,7 +17,7 @@ export const AnnotationEncodedFromFhir: Schema.Schema<
     Schema.Struct({
       authorString: Schema.optional(Schema.String),
       authorReference: Schema.optional(
-        Schema.suspend(() => ReferenceEncodedFromFhir)
+        Schema.suspend(() => FhirR4Reference.EncodedFromExternal)
       ),
       time: Schema.optional(Schema.String),
       text: Schema.String,
@@ -24,12 +25,7 @@ export const AnnotationEncodedFromFhir: Schema.Schema<
   )
 )
 
-const AnnotationSchema: Schema.Schema<
+export const FhirR4Annotation = new TwoStepExternalSchema(
   Annotation.Annotation,
-  FhirR4.Annotation,
-  BaseUrl
-> = Schema.compose(AnnotationEncodedFromFhir, Annotation.Annotation)
-
-export const FhirR4Annotation = {
-  Schema: AnnotationSchema,
-}
+  EncodedFromFhir
+)

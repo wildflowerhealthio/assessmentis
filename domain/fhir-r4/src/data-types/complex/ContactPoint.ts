@@ -3,9 +3,10 @@ import type FhirR4 from 'fhir/r4'
 import { ContactPoint } from '@assessmentis/clinical-domain/data-types'
 import type { BaseUrl } from '../UrlIdentification'
 import { mutableEncoded } from '@assessmentis/util'
-import { PeriodEncodedFromFhir } from './Period'
+import { TwoStepExternalSchema } from '../../TwoStepExternalSchema'
+import { FhirR4Period } from './Period'
 
-export const ContactPointEncodedFromFhir: Schema.Schema<
+const EncodedFromFhir: Schema.Schema<
   ContactPoint.ContactPointEncoded,
   FhirR4.ContactPoint,
   BaseUrl
@@ -33,16 +34,13 @@ export const ContactPointEncodedFromFhir: Schema.Schema<
       )
     ),
     rank: Schema.optional(Schema.Number),
-    period: Schema.optional(Schema.suspend(() => PeriodEncodedFromFhir)),
+    period: Schema.optional(
+      Schema.suspend(() => FhirR4Period.EncodedFromExternal)
+    ),
   })
 )
 
-const ContactPointSchema: Schema.Schema<
+export const FhirR4ContactPoint = new TwoStepExternalSchema(
   ContactPoint.ContactPoint,
-  FhirR4.ContactPoint,
-  BaseUrl
-> = Schema.compose(ContactPointEncodedFromFhir, ContactPoint.ContactPoint)
-
-export const FhirR4ContactPoint = {
-  Schema: ContactPointSchema,
-}
+  EncodedFromFhir
+)

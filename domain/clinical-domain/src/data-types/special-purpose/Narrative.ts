@@ -33,6 +33,7 @@ export interface NarrativeEncoded
   extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<Key> {}
 
 export class Narrative extends MergeClasses<Narrative>(Key)(
+  [],
   ElementMixin,
   fields
 ) {

@@ -24,15 +24,6 @@ export type InferResourceUrl<T extends Resource<PropertyKey>> = NonNullable<
 >
 
 // Deprecated
-export interface BaseResource {
-  readonly resourceType: string
-  readonly id?: string | undefined
-}
-
-// Deprecated
 export type WithId<T extends { readonly id?: string | undefined }> = T & {
   readonly id: NonNullable<T['id']>
 }
-
-// Deprecated
-export type Id<T extends { id?: unknown }> = NonNullable<T['id']>

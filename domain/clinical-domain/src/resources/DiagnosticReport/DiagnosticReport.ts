@@ -1,18 +1,15 @@
 import { Schema } from 'effect'
 import { MergeClasses } from '@assessmentis/util'
-import { BackboneElement } from '../../data-types/base/BackboneElement'
 import {
   Identifier,
   Reference,
-  type ReferenceEncoded,
 } from '../../data-types/complex/IdentifierAndReference'
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import { Attachment } from '../../data-types/complex/Attachment'
-
 import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
-
 import { DatatypeChoice } from '../../data-types/Datatype'
 import FhirR4ChoiceElements from '../../data-types/fhirR4ChoiceElements'
+import { DiagnosticReportMedia } from './DiagnosticReportMedia'
 
 const Key = 'DiagnosticReport' as const
 type Key = typeof Key
@@ -35,20 +32,6 @@ export const DiagnosticReportStatus = Schema.Enums({
 
 export type DiagnosticReportStatus = typeof DiagnosticReportStatus.Type
 
-const diagnosticReportMediaSchemaBackbone = BackboneElement(
-  'DiagnosticReportMedia'
-)
-
-class DiagnosticReportMediaSchema extends Schema.Class<DiagnosticReportMediaSchema>(
-  'DiagnosticReportMedia'
-)({
-  ...diagnosticReportMediaSchemaBackbone.fields,
-  comment: Schema.optional(Schema.String),
-  link: Schema.suspend(
-    (): Schema.Schema<Reference, ReferenceEncoded> => Reference
-  ),
-}) {}
-
 const fields = {
   identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
   basedOn: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
@@ -68,7 +51,7 @@ const fields = {
   specimen: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
   result: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
   imagingStudy: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
-  media: Schema.optional(Schema.Array(DiagnosticReportMediaSchema)),
+  media: Schema.optional(Schema.Array(DiagnosticReportMedia)),
   conclusion: Schema.optional(Schema.String),
   conclusionCode: Schema.optional(
     Schema.Array(Schema.suspend(() => CodeableConcept))
@@ -78,11 +61,13 @@ const fields = {
   ),
 } as const satisfies Schema.Struct.Fields
 
-const effectiveMixin = DatatypeChoice(
+class DiagnosticReportEffective extends DatatypeChoice(
+  'DiagnosticReportEffective',
   'effective',
   FhirR4ChoiceElements['DiagnosticReport.effective[x]']
-)
-type effectiveMixinEncoded = typeof effectiveMixin.Encoded
+) {}
+
+type effectiveMixinEncoded = typeof DiagnosticReportEffective.Encoded
 const resourceMixin = Resource(Key)
 
 export interface DiagnosticReportEncoded
@@ -96,7 +81,8 @@ export interface DiagnosticReportEncoded
  * groups of patients, devices, and locations, and/or specimens derived from these.
  */
 export class DiagnosticReport extends MergeClasses<DiagnosticReport>(Key)(
+  [],
   resourceMixin,
-  effectiveMixin,
+  DiagnosticReportEffective,
   fields
 ) {}

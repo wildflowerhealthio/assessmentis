@@ -24,12 +24,12 @@ export interface Get<
   Resource.WithResourceUrl<TResource>,
   | CommonErrors
   | NotFoundError<
-      TResource[Resource.ResourceType],
+      TResource['domainType'],
       { url: Resource.InferResourceUrl<TResource> }
     >
 > {
   readonly _tag: 'Get'
-  readonly resourceType: TResource[Resource.ResourceType]
+  readonly domainType: TResource['domainType']
   readonly url: Resource.InferResourceUrl<TResource>
 }
 
@@ -44,7 +44,7 @@ export interface Search<
   CommonErrors
 > {
   readonly _tag: 'Search'
-  readonly resourceType: TResource[Resource.ResourceType]
+  readonly domainType: TResource['domainType']
   readonly params: SearchParam<TResource>
 }
 
@@ -52,7 +52,7 @@ export interface Create<
   TResource extends Resource.AnyResource,
 > extends Request.Request<Resource.WithResourceUrl<TResource>, CommonErrors> {
   readonly _tag: 'Create'
-  readonly resourceType: TResource[Resource.ResourceType]
+  readonly domainType: TResource['domainType']
   readonly requestId?: symbol
   readonly resource: TResource
 }
@@ -63,12 +63,12 @@ export interface Update<
   Resource.WithResourceUrl<TResource>,
   | CommonErrors
   | NotFoundError<
-      TResource[Resource.ResourceType],
+      TResource['domainType'],
       { url: Resource.InferResourceUrl<TResource> }
     >
 > {
   readonly _tag: 'Update'
-  readonly resourceType: TResource['domainType']
+  readonly domainType: TResource['domainType']
   readonly resource: Resource.WithResourceUrl<TResource>
 }
 
@@ -78,12 +78,12 @@ export interface Delete<
   null,
   | CommonErrors
   | NotFoundError<
-      TResource[Resource.ResourceType],
+      TResource['domainType'],
       { url: Resource.InferResourceUrl<TResource> }
     >
 > {
   readonly _tag: 'Delete'
-  readonly resourceType: TResource[Resource.ResourceType]
+  readonly domainType: TResource['domainType']
   readonly url: Resource.InferResourceUrl<TResource>
 }
 

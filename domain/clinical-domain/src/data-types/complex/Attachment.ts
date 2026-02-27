@@ -52,6 +52,7 @@ const ElementMixin = Element(Key)
  * Note: Per FHIR spec, if data is present, contentType SHALL be populated.
  */
 export class Attachment extends MergeClasses<Attachment>(Key)(
+  [],
   ElementMixin,
   fields
 ) {}

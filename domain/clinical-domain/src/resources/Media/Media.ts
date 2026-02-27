@@ -66,4 +66,8 @@ export interface MediaEncoded
  * A photo, video, or audio recording acquired or used in healthcare.
  * The actual content may be inline or provided by direct reference.
  */
-export class Media extends MergeClasses<Media>(Key)(resourceMixin, fields) {}
+export class Media extends MergeClasses<Media>(Key)(
+  [],
+  resourceMixin,
+  fields
+) {}

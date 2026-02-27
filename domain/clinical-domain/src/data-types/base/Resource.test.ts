@@ -8,6 +8,7 @@ import type { Extension } from '../special-purpose/Extension'
 const ResourceMixin = Resource('TestResource')
 
 class TestResource extends MergeClasses<TestResource>('TestResource')(
+  [],
   ResourceMixin
 ) {}
 

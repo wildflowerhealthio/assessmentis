@@ -3,8 +3,12 @@ import { AllDatatypeKeys, DatatypeChoice } from '../Datatype'
 import { Extension } from './Extension'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ValueMixin = DatatypeChoice('value', [...AllDatatypeKeys])
-type ValueFields = Schema.Struct.Type<typeof ValueMixin.fields>
+class StructureDefinitionValue extends DatatypeChoice(
+  'StructureDefinitionValue',
+  'value',
+  AllDatatypeKeys
+) {}
+type ValueFields = Schema.Struct.Type<typeof StructureDefinitionValue.fields>
 
 /*
 {

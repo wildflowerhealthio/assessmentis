@@ -13,12 +13,12 @@ export class FhirR4Client extends Context.Tag('BareFhirR4Client')<
   FhirR4Client,
   {
     create: (params: {
-      readonly type: string
+      readonly domainType: string
       readonly resource: unknown
     }) => Effect.Effect<unknown, AuthError | AuthzError | UnhandledError, never>
 
     read: <ResourceType extends string>(params: {
-      readonly resourceType: ResourceType
+      readonly domainType: ResourceType
       readonly id: string
     }) => Effect.Effect<
       unknown,
@@ -31,7 +31,7 @@ export class FhirR4Client extends Context.Tag('BareFhirR4Client')<
 
     update: <ResourceType extends string>(params: {
       readonly id: string
-      readonly type: ResourceType
+      readonly domainType: ResourceType
       readonly resource: unknown
     }) => Effect.Effect<
       unknown,
@@ -44,7 +44,7 @@ export class FhirR4Client extends Context.Tag('BareFhirR4Client')<
 
     delete: <ResourceType extends string>(params: {
       readonly id: string
-      readonly type: ResourceType
+      readonly domainType: ResourceType
     }) => Effect.Effect<
       void,
       | AuthError
@@ -61,7 +61,7 @@ export class FhirR4Client extends Context.Tag('BareFhirR4Client')<
 
     search: (
       params: {
-        readonly resourceType: string
+        readonly domainType: string
       } & Record<string, undefined | string | ReadonlyArray<string>>
     ) => Effect.Effect<unknown, AuthError | AuthzError | UnhandledError, never>
   }

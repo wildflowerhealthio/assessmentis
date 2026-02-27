@@ -3,9 +3,10 @@ import type FhirR4 from 'fhir/r4'
 import { Address } from '@assessmentis/clinical-domain/data-types'
 import type { BaseUrl } from '../UrlIdentification'
 import { mutableEncoded } from '@assessmentis/util'
-import { PeriodEncodedFromFhir } from './Period'
+import { TwoStepExternalSchema } from '../../TwoStepExternalSchema'
+import { FhirR4Period } from './Period'
 
-export const AddressEncodedFromFhir: Schema.Schema<
+const EncodedFromFhir: Schema.Schema<
   Address.AddressEncoded,
   FhirR4.Address,
   BaseUrl
@@ -36,13 +37,13 @@ export const AddressEncodedFromFhir: Schema.Schema<
     state: Schema.optional(Schema.String),
     postalCode: Schema.optional(Schema.String),
     country: Schema.optional(Schema.String),
-    period: Schema.optional(Schema.suspend(() => PeriodEncodedFromFhir)),
+    period: Schema.optional(
+      Schema.suspend(() => FhirR4Period.EncodedFromExternal)
+    ),
   })
 )
 
-const AddressSchema: Schema.Schema<Address.Address, FhirR4.Address, BaseUrl> =
-  Schema.compose(AddressEncodedFromFhir, Address.Address)
-
-export const FhirR4Address = {
-  Schema: AddressSchema,
-}
+export const FhirR4Address = new TwoStepExternalSchema(
+  Address.Address,
+  EncodedFromFhir
+)

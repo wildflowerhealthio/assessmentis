@@ -238,7 +238,7 @@ describe('NodeGoogleHealthcareClientLayer', () => {
         for (const input of testInputs) {
           // Test read
           const readResult = yield* client.read({
-            resourceType: input.readResource.resourceType,
+            domainType: input.readResource.resourceType,
             id: input.readResource.id,
           })
           results.push({
@@ -251,16 +251,16 @@ describe('NodeGoogleHealthcareClientLayer', () => {
           })
 
           // Test search without params
-          yield* client.search({ resourceType: input.searchResourceType })
+          yield* client.search({ domainType: input.searchResourceType })
           results.push({
             operation: 'searchWithoutParams',
-            input: { resourceType: input.searchResourceType },
+            input: { domainType: input.searchResourceType },
             success: true,
           })
 
           // Test search with params
           yield* client.search({
-            resourceType: input.searchWithParams.resourceType,
+            domainType: input.searchWithParams.resourceType,
             ...input.searchWithParams.params,
           })
           results.push({
@@ -275,7 +275,7 @@ describe('NodeGoogleHealthcareClientLayer', () => {
             name: [{ given: ['Test'] }],
           }
           const createResult = yield* client.create({
-            type: input.createResource.resourceType,
+            domainType: input.createResource.resourceType,
             resource,
           })
           results.push({
@@ -294,7 +294,7 @@ describe('NodeGoogleHealthcareClientLayer', () => {
           }
           yield* client.update({
             id: input.updateResource.id,
-            type: input.updateResource.resourceType,
+            domainType: input.updateResource.resourceType,
             resource: updateResource,
           })
           results.push({
@@ -306,7 +306,7 @@ describe('NodeGoogleHealthcareClientLayer', () => {
           // Test delete
           yield* client.delete({
             id: input.deleteResource.id,
-            type: input.deleteResource.resourceType,
+            domainType: input.deleteResource.resourceType,
           })
           results.push({
             operation: 'delete',

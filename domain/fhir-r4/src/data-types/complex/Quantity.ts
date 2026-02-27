@@ -5,10 +5,11 @@ import {
   type QuantityEncoded,
 } from '@assessmentis/clinical-domain/data-types'
 import type { BaseUrl } from '../UrlIdentification'
-import { ElementIdentification } from '../UrlIdentification'
+import { ElementIdentification } from '../base/Element'
 import { mutableEncoded } from '@assessmentis/util'
+import { TwoStepExternalSchema } from '../../TwoStepExternalSchema'
 
-export const QuantityEncodedFromFhir: Schema.Schema<
+const EncodedFromFhir: Schema.Schema<
   QuantityEncoded,
   FhirR4.Quantity,
   BaseUrl
@@ -32,9 +33,4 @@ export const QuantityEncodedFromFhir: Schema.Schema<
   )
 )
 
-const QuantitySchema: Schema.Schema<Quantity, FhirR4.Quantity, BaseUrl> =
-  Schema.compose(QuantityEncodedFromFhir, Quantity)
-
-export const FhirR4Quantity = {
-  Schema: QuantitySchema,
-}
+export const FhirR4Quantity = new TwoStepExternalSchema(Quantity, EncodedFromFhir)

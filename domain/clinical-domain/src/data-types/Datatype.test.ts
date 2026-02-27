@@ -1,25 +1,13 @@
 import { assert, describe, expect, test } from 'vitest'
-import { Schema } from 'effect'
+import { Arbitrary, Schema } from 'effect'
 import { capitalize } from 'effect/String'
 import * as fc from 'fast-check'
-import { AllDatatypeKeys, DatatypeChoice } from './Datatype'
+import { DatatypeChoice } from './Datatype'
 import { MergeClasses } from '@assessmentis/util'
 
 // ---------------------------------------------------------------------------
 // Arbitraries
 // ---------------------------------------------------------------------------
-
-/** A random non-empty subset of AllDatatypeKeys (order preserved). */
-const pickedKeysArb = fc
-  .subarray([...AllDatatypeKeys], { minLength: 1 })
-  .map((arr) => arr as ReadonlyArray<(typeof AllDatatypeKeys)[number]>)
-
-/** A short alphabetic prefix — realistic for FHIR choice element names. */
-const prefixArb = fc.string({
-  unit: 'grapheme-ascii',
-  minLength: 1,
-  maxLength: 12,
-})
 
 /**
  * Given a set of prefixed keys, generate an object where each key is
@@ -41,185 +29,188 @@ const presencePatternArb = (keys: ReadonlyArray<string>) =>
 // DatatypeChoice
 // ---------------------------------------------------------------------------
 
-describe('DatatypeChoice', () => {
-  describe('fields', () => {
-    test('property: output has exactly one key per picked key', () => {
-      fc.assert(
-        fc.property(prefixArb, pickedKeysArb, (prefix, picked) => {
-          const { fields } = DatatypeChoice(prefix, picked)
-          expect(Object.keys(fields)).toHaveLength(picked.length)
+describe.each([
+  {
+    prefix: 'value' as const,
+    picked: ['string', 'boolean'] as const,
+    Mixin: class Mixin extends DatatypeChoice<
+      Mixin,
+      'value',
+      ['string', 'boolean']
+    >('Mixin', 'value', ['string', 'boolean']) {},
+  },
+  {
+    prefix: 'answered' as const,
+    picked: ['string', 'boolean', 'code'] as const,
+    Mixin: class Mixin extends DatatypeChoice<
+      Mixin,
+      'answered',
+      ['string', 'boolean', 'code']
+    >('Mixin', 'answered', ['string', 'boolean', 'code']) {},
+  },
+])(
+  "A DatatypeChoice with prefix '$prefix' and picked keys $picked",
+  ({ prefix, picked, Mixin }) => {
+    describe('fields', () => {
+      test('property: output has exactly one key per picked key', () => {
+        expect(Object.keys(Mixin.fields)).toHaveLength(picked.length)
+      })
+
+      test('property: every output key equals prefix + capitalize(pickedKey)', () => {
+        const resultKeys = Object.keys(Mixin.fields)
+        const expectedKeys = picked.map((k) => `${prefix}${capitalize(k)}`)
+        expect(new Set(resultKeys)).toEqual(new Set(expectedKeys))
+      })
+
+      test('property: output fields are usable in Schema.Struct decode round-trip', () => {
+        // Should not throw — validates the cast produced valid Schema fields
+        const TestSchema = Schema.Struct(Mixin.fields)
+        // All fields are optional, so an empty object should decode
+        const decoded = Schema.decodeSync(TestSchema)({})
+        expect(decoded).toBeDefined()
+      })
+    })
+
+    describe('Mixin', () => {
+      describe('all${capitalize(prefix)}Keys', () => {
+        test('property: matches Object.keys(fields)', () => {
+          expect(
+            new Set([...(Mixin as any)[`all${capitalize(prefix)}Keys`]()])
+          ).toEqual(new Set(Object.keys(Mixin.fields)))
         })
-      )
-    })
 
-    test('property: every output key equals prefix + capitalize(pickedKey)', () => {
-      fc.assert(
-        fc.property(prefixArb, pickedKeysArb, (prefix, picked) => {
-          const { fields } = DatatypeChoice(prefix, picked)
-          const resultKeys = Object.keys(fields)
-          const expectedKeys = picked.map((k) => `${prefix}${capitalize(k)}`)
-          expect(new Set(resultKeys)).toEqual(new Set(expectedKeys))
+        test('property: idempotent — multiple calls return equal results', () => {
+          expect((Mixin as any)[`all${capitalize(prefix)}Keys`]()).toEqual(
+            (Mixin as any)[`all${capitalize(prefix)}Keys`]()
+          )
         })
-      )
-    })
+      })
 
-    test('property: output fields are usable in Schema.Struct decode round-trip', () => {
-      fc.assert(
-        fc.property(prefixArb, pickedKeysArb, (prefix, picked) => {
-          const Mixin = DatatypeChoice(prefix, picked)
-          // Should not throw — validates the cast produced valid Schema fields
-          const TestSchema = Schema.Struct(Mixin.fields)
-          // All fields are optional, so an empty object should decode
-          const decoded = Schema.decodeSync(TestSchema)({})
-          expect(decoded).toBeDefined()
+      describe('choice invariants', () => {
+        test('property: isExactlyOnePresent iff exactly one key is defined', () => {
+          const keys: string[] = (Mixin as any)[
+            `all${capitalize(prefix)}Keys`
+          ]()
+
+          return fc.assert(
+            fc.property(presencePatternArb(keys), ({ obj, definedCount }) => {
+              const instance = Object.assign(
+                Object.create(Mixin.prototype),
+                obj
+              )
+              expect(
+                instance[`isExactlyOne${capitalize(prefix)}Present`]()
+              ).toBe(definedCount === 1)
+            })
+          )
         })
-      )
-    })
-  })
 
-  describe('Mixin', () => {
-    describe('all${capitalize(prefix)}Keys', () => {
-      test('property: matches Object.keys(fields)', () => {
-        fc.assert(
-          fc.property(prefixArb, pickedKeysArb, (prefix, picked) => {
-            const Mixin = DatatypeChoice(prefix, picked)
-            expect(
-              new Set([...Mixin[`all${capitalize(prefix)}Keys`]()])
-            ).toEqual(new Set(Object.keys(Mixin.fields)))
-          })
-        )
-      })
+        test('property: isNonePresent iff zero keys are defined', () => {
+          const keys: string[] = (Mixin as any)[
+            `all${capitalize(prefix)}Keys`
+          ]()
 
-      test('property: idempotent — multiple calls return equal results', () => {
-        fc.assert(
-          fc.property(prefixArb, pickedKeysArb, (prefix, picked) => {
-            const Mixin = DatatypeChoice(prefix, picked)
-            expect(Mixin[`all${capitalize(prefix)}Keys`]()).toEqual(
-              Mixin[`all${capitalize(prefix)}Keys`]()
-            )
-          })
-        )
-      })
-    })
+          return fc.assert(
+            fc.property(presencePatternArb(keys), ({ obj, definedCount }) => {
+              const instance = Object.assign(
+                Object.create(Mixin.prototype),
+                obj
+              )
+              expect(instance[`isNo${capitalize(prefix)}Present`]()).toBe(
+                definedCount === 0
+              )
+            })
+          )
+        })
 
-    describe('choice invariants', () => {
-      test('property: isExactlyOnePresent iff exactly one key is defined', () => {
-        fc.assert(
-          fc.property(prefixArb, pickedKeysArb, (prefix, picked) => {
-            const Mixin = DatatypeChoice(prefix, picked)
-            const keys = Mixin[`all${capitalize(prefix)}Keys`]()
+        test('property: isExactlyOnePresent and isNonePresent are never both true', () => {
+          const keys: string[] = (Mixin as any)[
+            `all${capitalize(prefix)}Keys`
+          ]()
 
-            return fc.assert(
-              fc.property(presencePatternArb(keys), ({ obj, definedCount }) => {
-                const instance = Object.assign(
-                  Object.create(Mixin.prototype),
-                  obj
+          return fc.assert(
+            fc.property(presencePatternArb(keys), ({ obj }) => {
+              const instance = Object.assign(
+                Object.create(Mixin.prototype),
+                obj
+              )
+              if (
+                instance[`isExactlyOne${capitalize(prefix)}Present`]() &&
+                instance[`isNo${capitalize(prefix)}Present`]()
+              ) {
+                assert.fail(
+                  'isExactlyOnePresent and isNonePresent must be mutually exclusive'
                 )
-                expect(
-                  instance[`isExactlyOne${capitalize(prefix)}Present`]()
-                ).toBe(definedCount === 1)
-              })
-            )
-          })
-        )
-      })
+              }
+            })
+          )
+        })
 
-      test('property: isNonePresent iff zero keys are defined', () => {
-        fc.assert(
-          fc.property(prefixArb, pickedKeysArb, (prefix, picked) => {
-            const Mixin = DatatypeChoice(prefix, picked)
-            const keys = Mixin[`all${capitalize(prefix)}Keys`]()
+        test('property: MECE — every presence pattern is classified by exactly one of three cases', () => {
+          const keys: string[] = (Mixin as any)[
+            `all${capitalize(prefix)}Keys`
+          ]()
 
-            return fc.assert(
-              fc.property(presencePatternArb(keys), ({ obj, definedCount }) => {
-                const instance = Object.assign(
-                  Object.create(Mixin.prototype),
-                  obj
-                )
-                expect(instance[`isNo${capitalize(prefix)}Present`]()).toBe(
-                  definedCount === 0
-                )
-              }),
-              { numRuns: 10 }
-            )
-          }),
-          { numRuns: 10 }
-        )
-      })
+          return fc.assert(
+            fc.property(presencePatternArb(keys), ({ obj, definedCount }) => {
+              const instance = Object.assign(
+                Object.create(Mixin.prototype),
+                obj
+              )
+              const none = instance[`isNo${capitalize(prefix)}Present`]()
+              const exactlyOne =
+                instance[`isExactlyOne${capitalize(prefix)}Present`]()
 
-      test('property: isExactlyOnePresent and isNonePresent are never both true', () => {
-        fc.assert(
-          fc.property(prefixArb, pickedKeysArb, (prefix, picked) => {
-            const Mixin = DatatypeChoice(prefix, picked)
-            const keys = Mixin[`all${capitalize(prefix)}Keys`]()
+              if (definedCount === 0) {
+                expect(none).toBe(true)
+                expect(exactlyOne).toBe(false)
+              } else if (definedCount === 1) {
+                expect(none).toBe(false)
+                expect(exactlyOne).toBe(true)
+              } else {
+                // more than one defined
+                expect(none).toBe(false)
+                expect(exactlyOne).toBe(false)
+              }
+            })
+          )
+        })
 
-            return fc.assert(
-              fc.property(presencePatternArb(keys), ({ obj }) => {
-                const instance = Object.assign(
-                  Object.create(Mixin.prototype),
-                  obj
-                )
-                if (
-                  instance[`isExactlyOne${capitalize(prefix)}Present`]() &&
-                  instance[`isNo${capitalize(prefix)}Present`]()
-                ) {
-                  assert.fail(
-                    'isExactlyOnePresent and isNonePresent must be mutually exclusive'
-                  )
-                }
-              })
-            )
-          })
-        )
-      })
+        test('property: Every value generated by arbitrary has exactly one key set', () => {
+          // Standalone DatatypeChoice arbitrary produces plain objects
+          // (no prototype methods). Verify the structural constraint
+          // that exactly one value[x] key is set.
+          const keys: string[] = (Mixin as any)[
+            `all${capitalize(prefix)}Keys`
+          ]()
 
-      test('property: MECE — every presence pattern is classified by exactly one of three cases', () => {
-        fc.assert(
-          fc.property(prefixArb, pickedKeysArb, (prefix, picked) => {
-            const Mixin = DatatypeChoice(prefix, picked)
-            const keys = Mixin[`all${capitalize(prefix)}Keys`]()
-
-            return fc.assert(
-              fc.property(presencePatternArb(keys), ({ obj, definedCount }) => {
-                const instance = Object.assign(
-                  Object.create(Mixin.prototype),
-                  obj
-                )
-                const none = instance[`isNo${capitalize(prefix)}Present`]()
-                const exactlyOne =
-                  instance[`isExactlyOne${capitalize(prefix)}Present`]()
-
-                if (definedCount === 0) {
-                  expect(none).toBe(true)
-                  expect(exactlyOne).toBe(false)
-                } else if (definedCount === 1) {
-                  expect(none).toBe(false)
-                  expect(exactlyOne).toBe(true)
-                } else {
-                  // more than one defined
-                  expect(none).toBe(false)
-                  expect(exactlyOne).toBe(false)
-                }
-              }),
-              { numRuns: 10 }
-            )
-          }),
-          { numRuns: 10 }
-        )
+          fc.assert(
+            fc.property(Arbitrary.make(Mixin as any), (instance: any) => {
+              const definedCount = keys.filter(
+                (key) => instance[key] !== undefined
+              ).length
+              expect(definedCount).toBe(1)
+            })
+          )
+        })
       })
     })
-  })
-})
+  }
+)
 
 // ---------------------------------------------------------------------------
 // DatatypeChoice with MergeClasses
 // ---------------------------------------------------------------------------
 
-const ValueMixin = DatatypeChoice('value', ['string', 'boolean', 'integer'])
+class DatatypeChoiceTestValue extends DatatypeChoice(
+  'DatatypeChoiceTestValue',
+  'value',
+  ['string', 'boolean', 'integer']
+) {}
 
 class MergedWithChoice extends MergeClasses<MergedWithChoice>(
   'MergedWithChoice'
-)(ValueMixin, { extra: Schema.String }) {}
+)([], DatatypeChoiceTestValue, { extra: Schema.String }) {}
 
 describe('DatatypeChoice with MergeClasses', () => {
   describe('fields', () => {

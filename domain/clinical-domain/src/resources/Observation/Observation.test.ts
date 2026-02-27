@@ -1,16 +1,16 @@
 import { expect, test, describe } from 'vitest'
-import * as Observation from './Observation'
+import { Observation } from './Observation'
 import { Schema, Arbitrary, Either } from 'effect'
 import * as fc from 'fast-check'
 
-const observationArb = Arbitrary.make(Observation.Observation)
+const observationArb = Arbitrary.make(Observation)
 
 describe('Observation model', () => {
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(observationArb, (obs) => {
-        const encoded = Schema.encodeSync(Observation.Observation)(obs)
-        const decoded = Schema.decodeSync(Observation.Observation)(encoded)
+        const encoded = Schema.encodeSync(Observation)(obs)
+        const decoded = Schema.decodeSync(Observation)(encoded)
         expect(decoded).toEqual(obs)
       })
     )
@@ -33,7 +33,7 @@ describe('Observation model', () => {
           })
         ),
         (incomplete) => {
-          const decode = Schema.decodeUnknownEither(Observation.Observation)
+          const decode = Schema.decodeUnknownEither(Observation)
           const result = decode(incomplete)
           expect(Either.isLeft(result)).toBe(true)
         }

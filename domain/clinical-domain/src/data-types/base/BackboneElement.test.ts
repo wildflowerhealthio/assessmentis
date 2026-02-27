@@ -7,6 +7,7 @@ import * as fc from 'fast-check'
 const BackboneMixin = BackboneElement('TestBackbone')
 
 class TestBackbone extends MergeClasses<TestBackbone>('TestBackbone')(
+  [],
   BackboneMixin
 ) {}
 

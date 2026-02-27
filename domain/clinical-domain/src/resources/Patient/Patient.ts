@@ -1,6 +1,5 @@
 import { Schema } from 'effect'
 import { MergeClasses } from '@assessmentis/util'
-import { BackboneElement } from '../../data-types/base/BackboneElement'
 import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
 import {
   Identifier,
@@ -11,52 +10,14 @@ import { ContactPoint } from '../../data-types/complex/ContactPoint'
 import { Address } from '../../data-types/complex/Address'
 import { Attachment } from '../../data-types/complex/Attachment'
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
-import { Period } from '../../data-types/complex/Period'
 import { AdministrativeGender } from '../../data-types/complex/AdministrativeGender'
 import { TimelessDateFromString } from '@assessmentis/util'
+import { PatientContact } from './PatientContact'
+import { PatientCommunication } from './PatientCommunication'
+import { PatientLink } from './PatientLink'
 
 const Key = 'Patient' as const
 type Key = typeof Key
-
-/**
- * This element is labeled as a modifier because it may be used to mark that the
- * resource was created in error.
- */
-export const PatientLinkType = Schema.Enums({
-  'replaced-by': 'replaced-by',
-  replaces: 'replaces',
-  refer: 'refer',
-  seealso: 'seealso',
-} as const)
-
-export type PatientLinkType = typeof PatientLinkType.Type
-
-// --- Sub-component schemas ---
-
-const PatientContactSchema = Schema.Struct({
-  ...BackboneElement('PatientContact').fields,
-  relationship: Schema.optional(
-    Schema.Array(Schema.suspend(() => CodeableConcept))
-  ),
-  name: Schema.optional(Schema.suspend(() => HumanName)),
-  telecom: Schema.optional(Schema.Array(Schema.suspend(() => ContactPoint))),
-  address: Schema.optional(Schema.suspend(() => Address)),
-  gender: Schema.optional(AdministrativeGender),
-  organization: Schema.optional(Schema.suspend(() => Reference)),
-  period: Schema.optional(Schema.suspend(() => Period)),
-})
-
-const PatientCommunicationSchema = Schema.Struct({
-  ...BackboneElement('PatientCommunication').fields,
-  language: Schema.suspend(() => CodeableConcept),
-  preferred: Schema.optional(Schema.Boolean),
-})
-
-const PatientLinkSchema = Schema.Struct({
-  ...BackboneElement('PatientLink').fields,
-  other: Schema.suspend(() => Reference),
-  type: PatientLinkType,
-})
 
 // --- Patient ---
 
@@ -74,13 +35,13 @@ const fields = {
   multipleBirthBoolean: Schema.optional(Schema.Boolean),
   multipleBirthInteger: Schema.optional(Schema.Number),
   photo: Schema.optional(Schema.Array(Schema.suspend(() => Attachment))),
-  contact: Schema.optional(Schema.Array(PatientContactSchema)),
-  communication: Schema.optional(Schema.Array(PatientCommunicationSchema)),
+  contact: Schema.optional(Schema.Array(PatientContact)),
+  communication: Schema.optional(Schema.Array(PatientCommunication)),
   generalPractitioner: Schema.optional(
     Schema.Array(Schema.suspend(() => Reference))
   ),
   managingOrganization: Schema.optional(Schema.suspend(() => Reference)),
-  link: Schema.optional(Schema.Array(PatientLinkSchema)),
+  link: Schema.optional(Schema.Array(PatientLink)),
 } as const satisfies Schema.Struct.Fields
 
 const resourceMixin = Resource(Key)
@@ -93,6 +54,7 @@ export interface PatientEncoded
  * receiving care or other health-related services.
  */
 export class Patient extends MergeClasses<Patient>(Key)(
+  [],
   resourceMixin,
   fields
 ) {}

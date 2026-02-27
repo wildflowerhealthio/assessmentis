@@ -4,13 +4,72 @@ import {
 } from '@assessmentis/clinical-domain/data-types'
 import type FhirR4 from 'fhir/r4'
 import { mutableEncoded } from '@assessmentis/util'
-import { Schema } from 'effect'
-import {
-  NarrativeEncodedFromFhir,
-  ExtensionEncodedFromFhir,
-} from '../special-purpose'
-import type { BaseUrl } from '../UrlIdentification'
-import { ResourceIdentification } from '../UrlIdentification'
+import { Effect, ParseResult, Schema } from 'effect'
+import { FhirR4Narrative, FhirR4Extension } from '../special-purpose'
+import { BaseUrl, domainIdentification } from '../UrlIdentification'
+
+const fhirR4ResourceIdentification = <TResourceType extends string>(
+  resourceType: TResourceType
+) =>
+  Schema.extend(
+    Schema.Struct({
+      resourceType: Schema.Literal(resourceType),
+    }),
+    mutableEncoded(
+      Schema.Struct({
+        id: Schema.optional(Schema.String),
+      })
+    )
+  )
+
+export const ResourceIdentification = <
+  TDomainType extends string,
+  TResourceType extends string,
+>(
+  domainType: TDomainType,
+  resourceType: TResourceType
+): Schema.Schema<
+  { readonly url?: string; readonly domainType?: TDomainType | undefined },
+  { id?: string; readonly resourceType: TResourceType },
+  BaseUrl
+> =>
+  Schema.transformOrFail(
+    fhirR4ResourceIdentification(resourceType),
+    domainIdentification(domainType),
+    {
+      strict: true,
+      encode: (domainType, _, ast) =>
+        Effect.gen(function* () {
+          const baseUrl = yield* BaseUrl
+
+          if (!domainType.url?.startsWith(baseUrl.toString())) {
+            return yield* Effect.fail(
+              new ParseResult.Type(
+                ast,
+                domainType,
+                `URL must contain base URL ${baseUrl}`
+              )
+            )
+          }
+
+          return {
+            resourceType,
+            id: domainType.url?.split('/').pop() ?? undefined,
+          }
+        }),
+      decode: (fhirType) =>
+        Effect.gen(function* () {
+          const baseUrl = yield* BaseUrl
+
+          return {
+            url: baseUrl
+              .appendToPathname(`${fhirType.resourceType}/${fhirType.id}`)
+              .toString(),
+            domainType: domainType,
+          } as const
+        }),
+    }
+  )
 
 export const FhirR4Resource = <
   DomainType extends string,
@@ -43,16 +102,20 @@ export const ResourceEncodedFromFhirR4Resource = <
     ResourceIdentification(domainType, resourceType),
     mutableEncoded(
       Schema.Struct({
-        text: Schema.optional(NarrativeEncodedFromFhir),
+        text: Schema.optional(FhirR4Narrative.EncodedFromExternal),
         contained: Schema.optional(mutableEncoded(Schema.Array(Schema.Any))),
         extension: Schema.optional(
           mutableEncoded(
-            Schema.Array(Schema.suspend(() => ExtensionEncodedFromFhir))
+            Schema.Array(
+              Schema.suspend(() => FhirR4Extension.EncodedFromExternal)
+            )
           )
         ),
         modifierExtension: Schema.optional(
           mutableEncoded(
-            Schema.Array(Schema.suspend(() => ExtensionEncodedFromFhir))
+            Schema.Array(
+              Schema.suspend(() => FhirR4Extension.EncodedFromExternal)
+            )
           )
         ),
       })

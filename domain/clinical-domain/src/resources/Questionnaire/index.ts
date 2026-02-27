@@ -1,4 +1,7 @@
 export * from './Questionnaire'
+export * from './QuestionnaireItem'
+export * from './QuestionnaireItemLink'
+export * from './QuestionnaireItemAnswerOption'
 export * from './QuestionnaireItemAnsweredAt'
 export * from './QuestionnaireItemUiControlCode'
 export * from './QuestionnaireItemUiDisplayLevel'

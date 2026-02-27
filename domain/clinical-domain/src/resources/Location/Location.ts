@@ -50,6 +50,7 @@ export interface LocationEncoded
  * or accommodated.
  */
 export class Location extends MergeClasses<Location>(Key)(
+  [],
   resourceMixin,
   fields
 ) {}

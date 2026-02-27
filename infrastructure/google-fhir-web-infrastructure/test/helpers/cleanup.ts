@@ -45,7 +45,7 @@ export class TestResourceTracker {
 
       for (const { type, id } of this.resources) {
         yield* client
-          .delete({ type, id })
+          .delete({ domainType: type, id })
           .pipe(Effect.catchAll(() => Effect.succeed(void 0)))
       }
 

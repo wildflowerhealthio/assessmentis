@@ -48,6 +48,7 @@ export interface CompositionEncoded
  * clinical attestation.
  */
 export class Composition extends MergeClasses<Composition>(Key)(
+  [],
   resourceMixin,
   fields
 ) {}

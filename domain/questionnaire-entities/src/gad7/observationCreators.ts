@@ -7,6 +7,7 @@ import { baseChoiceObservation } from './internal'
 import type { Coding } from '@assessmentis/clinical-domain/data-types'
 import {
   CodeableConcept,
+  Reference,
   referenceFromResource,
 } from '@assessmentis/clinical-domain/data-types'
 
@@ -63,7 +64,7 @@ export const computeGad7HelperTotalScoreObservation = (
     const score = codingScore[String(answerCoding.coding[0].code)] ?? 0
     return acc + score
   }, 0)
-  const responseResource = referenceFromResource(response)
+  const responseResource = Reference.fromResource(response)
 
   return {
     ...totalScore,
@@ -80,7 +81,7 @@ export const extractObservationsFromGad7Response = (
     const code = questionCodeByLinkId[linkId]
     const answerCoding = findAnswerCoding(response, linkId)
 
-    const responseResource = referenceFromResource(response)
+    const responseResource = Reference.fromResource(response)
     return {
       ...baseChoiceObservation,
       code: CodeableConcept.make({

@@ -3,7 +3,6 @@ import type { Observation } from '@assessmentis/clinical-domain'
 import { ObservationRepository } from '@assessmentis/clinical-domain/repositories'
 import { Effect } from 'effect'
 import type { Reference } from '@assessmentis/clinical-domain/data-types'
-import { referenceAsString } from '@assessmentis/clinical-domain/data-types'
 import type { JSX } from 'react'
 import { gad7 } from '@assessmentis/questionnaire-entities'
 import type { Resource } from '@assessmentis/effectful-store'
@@ -25,7 +24,7 @@ export const gad7Report = (
     const title = <TitleComponent title="GAD-7 Report" />
 
     const observations = yield* observationRepository.getMany({
-      subject: referenceAsString(patientReference),
+      subject: patientReference.reference,
     } as const)
 
     const gad7Observations = gad7.questionnaire.item
@@ -45,7 +44,7 @@ export const gad7Report = (
         new NotFoundError({
           resourceType: 'Observation',
           params: {
-            subject: referenceAsString(patientReference),
+            subject: patientReference.reference,
             code: string,
           },
         }) // ('GAD-7 score observation not found for the patient')
@@ -61,7 +60,7 @@ export const gad7Report = (
         new NotFoundError({
           resourceType: 'Observation',
           params: {
-            subject: referenceAsString(patientReference),
+            subject: patientReference.reference,
             code: gad7.codings.totalScore.code,
           },
         }) // ('GAD-7 score observation not found for the patient')

@@ -124,7 +124,7 @@ export const makeDailyCoMediaRepository = (
               const startedAtUtc = DateTime.unsafeMake(rec.start_ts * 1000)
 
               return Media.make({
-                resourceType: 'Media' as const,
+                domainType: 'Media' as const,
                 status: 'completed' as const,
                 identifier: [
                   IdentifierAndReference.Identifier.make({ value: rec.id }),
@@ -216,7 +216,7 @@ export const makeDailyCoMediaRepository = (
 
           const startedAtUtc = DateTime.unsafeMake(rec.start_ts * 1000)
           const media = Media.make({
-            resourceType: 'Media' as const,
+            domainType: 'Media' as const,
             status: 'completed' as const,
             identifier: [
               IdentifierAndReference.Identifier.make({ value: rec.id }),

@@ -14,12 +14,12 @@ import {
   Coding,
   IdentifierAndReference,
 } from '@assessmentis/clinical-domain/data-types'
-import type { AuthError } from '@assessmentis/ontology'
-import {
+import type {
+  AuthError,
   UnhandledError,
-  ExternalAssertionError,
   NotFoundError,
 } from '@assessmentis/ontology'
+import { ExternalAssertionError } from '@assessmentis/ontology'
 import { DailyCoContext } from '@assessmentis/config-domain'
 import { ApiDailyCoRecordingSchema } from './models/ApiDailyCoRecordingSchema'
 import { ApiDailyCoTranscriptSchema } from './models/ApiDailyCoTranscriptSchema'
@@ -148,7 +148,7 @@ export const DailyCoVideoCallClientLayer: Layer.Layer<
                   const startedAtUtc = DateTime.unsafeMake(rec.start_ts * 1000)
 
                   return Media.make({
-                    resourceType: 'Media' as const,
+                    domainType: 'Media' as const,
                     status: 'completed' as const,
                     identifier: [
                       IdentifierAndReference.Identifier.make({ value: rec.id }),
@@ -200,7 +200,7 @@ export const DailyCoVideoCallClientLayer: Layer.Layer<
 
               const startedAtUtc = DateTime.unsafeMake(rec.start_ts * 1000)
               const media = Media.make({
-                resourceType: 'Media' as const,
+                domainType: 'Media' as const,
                 status: 'completed' as const,
                 identifier: [
                   IdentifierAndReference.Identifier.make({ value: rec.id }),
@@ -263,7 +263,7 @@ export const DailyCoVideoCallClientLayer: Layer.Layer<
               if (!roomName) continue
 
               const media = Media.make({
-                resourceType: 'Media' as const,
+                domainType: 'Media' as const,
                 status: 'completed' as const,
                 type: CodeableConcept.make({
                   coding: [

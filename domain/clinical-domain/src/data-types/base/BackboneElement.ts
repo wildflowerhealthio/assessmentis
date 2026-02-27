@@ -25,11 +25,10 @@ export type BackboneElementEncoded<TDomainType extends string> =
 export const BackboneElement = <TDomainType extends string>(
   domainType: TDomainType
 ) => {
-  const ElementMixin = Element(domainType)
-
-  class BackboneElementMixin extends MergeClasses<BackboneElementMixin>(
+  const ElementBase = Element(domainType)
+  class BackboneElementMixin extends ElementBase.extend<BackboneElementMixin>(
     'BackboneElement'
-  )(ElementMixin, {
+  )({
     modifierExtension: pipe(
       Schema.Array(
         Schema.suspend(
@@ -44,6 +43,9 @@ export const BackboneElement = <TDomainType extends string>(
         default: (): ReadonlyArray<Extension> => [],
       })
     ),
-  }) {}
+  }) {
+    static Key = ElementBase.Key
+    static UrlSchema = ElementBase.UrlSchema
+  }
   return BackboneElementMixin
 }

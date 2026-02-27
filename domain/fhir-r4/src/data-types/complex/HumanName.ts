@@ -3,9 +3,10 @@ import type FhirR4 from 'fhir/r4'
 import { HumanName } from '@assessmentis/clinical-domain/data-types'
 import type { BaseUrl } from '../UrlIdentification'
 import { mutableEncoded } from '@assessmentis/util'
-import { PeriodEncodedFromFhir } from './Period'
+import { TwoStepExternalSchema } from '../../TwoStepExternalSchema'
+import { FhirR4Period } from './Period'
 
-export const HumanNameEncodedFromFhir: Schema.Schema<
+const EncodedFromFhir: Schema.Schema<
   HumanName.HumanNameEncoded,
   FhirR4.HumanName,
   BaseUrl
@@ -27,16 +28,13 @@ export const HumanNameEncodedFromFhir: Schema.Schema<
     given: Schema.optional(mutableEncoded(Schema.Array(Schema.String))),
     prefix: Schema.optional(mutableEncoded(Schema.Array(Schema.String))),
     suffix: Schema.optional(mutableEncoded(Schema.Array(Schema.String))),
-    period: Schema.optional(Schema.suspend(() => PeriodEncodedFromFhir)),
+    period: Schema.optional(
+      Schema.suspend(() => FhirR4Period.EncodedFromExternal)
+    ),
   })
 )
 
-const HumanNameSchema: Schema.Schema<
+export const FhirR4HumanName = new TwoStepExternalSchema(
   HumanName.HumanName,
-  FhirR4.HumanName,
-  BaseUrl
-> = Schema.compose(HumanNameEncodedFromFhir, HumanName.HumanName)
-
-export const FhirR4HumanName = {
-  Schema: HumanNameSchema,
-}
+  EncodedFromFhir
+)

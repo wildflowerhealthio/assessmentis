@@ -2,10 +2,11 @@ import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
 import { Attachment } from '@assessmentis/clinical-domain/data-types'
 import type { BaseUrl } from '../UrlIdentification'
-import { ElementIdentification } from '../UrlIdentification'
+import { ElementIdentification } from '../base/Element'
 import { mutableEncoded } from '@assessmentis/util'
+import { TwoStepExternalSchema } from '../../TwoStepExternalSchema'
 
-export const AttachmentEncodedFromFhir: Schema.Schema<
+const EncodedFromFhir: Schema.Schema<
   Attachment.AttachmentEncoded,
   FhirR4.Attachment,
   BaseUrl
@@ -25,12 +26,7 @@ export const AttachmentEncodedFromFhir: Schema.Schema<
   )
 )
 
-const AttachmentSchema: Schema.Schema<
+export const FhirR4Attachment = new TwoStepExternalSchema(
   Attachment.Attachment,
-  FhirR4.Attachment,
-  BaseUrl
-> = Schema.compose(AttachmentEncodedFromFhir, Attachment.Attachment)
-
-export const FhirR4Attachment = {
-  Schema: AttachmentSchema,
-}
+  EncodedFromFhir
+)

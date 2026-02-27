@@ -2,10 +2,11 @@ import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
 import { Period } from '@assessmentis/clinical-domain/data-types'
 import type { BaseUrl } from '../UrlIdentification'
-import { ElementIdentification } from '../UrlIdentification'
+import { ElementIdentification } from '../base/Element'
 import { mutableEncoded } from '@assessmentis/util'
+import { TwoStepExternalSchema } from '../../TwoStepExternalSchema'
 
-export const PeriodEncodedFromFhir: Schema.Schema<
+const EncodedFromFhir: Schema.Schema<
   Period.PeriodEncoded,
   FhirR4.Period,
   BaseUrl
@@ -19,9 +20,7 @@ export const PeriodEncodedFromFhir: Schema.Schema<
   )
 )
 
-const PeriodSchema: Schema.Schema<Period.Period, FhirR4.Period, BaseUrl> =
-  Schema.compose(PeriodEncodedFromFhir, Period.Period)
-
-export const FhirR4Period = {
-  Schema: PeriodSchema,
-}
+export const FhirR4Period = new TwoStepExternalSchema(
+  Period.Period,
+  EncodedFromFhir
+)

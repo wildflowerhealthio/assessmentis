@@ -31,6 +31,7 @@ export interface CodeableConceptEncoded
 const ElementMixin = Element<Key>(Key)
 
 export class CodeableConcept extends MergeClasses<CodeableConcept>(Key)(
+  [],
   ElementMixin,
   fields
 ) {}

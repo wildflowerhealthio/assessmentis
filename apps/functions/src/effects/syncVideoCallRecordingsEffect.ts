@@ -231,7 +231,7 @@ const syncMediaToFhir = (
     // Search for Encounter with matching location identifier
     const encounterSearchResult = yield* hub
       .search({
-        resourceType: 'Encounter',
+        domainType: 'Encounter',
         params: {},
       })
       .pipe(
@@ -261,7 +261,7 @@ const syncMediaToFhir = (
     // Check if Media with this identifier already exists
     const mediaSearchResult = yield* hub
       .search({
-        resourceType: 'Media',
+        domainType: 'Media',
         params: {
           id: mediaIdentifier,
           encounter: `Encounter/${encounterId}`,
@@ -283,7 +283,7 @@ const syncMediaToFhir = (
     if (existingMedia) {
       mediaUpdates[existingMedia.id] = yield* hub
         .update({
-          resourceType: 'Media',
+          domainType: 'Media',
           resource: {
             ...existingMedia,
             content: media.content,
@@ -303,7 +303,7 @@ const syncMediaToFhir = (
       mediaCreations.push(
         yield* pipe(
           hub.create({
-            resourceType: 'Media',
+            domainType: 'Media',
             resource: {
               ...media,
               encounter: {

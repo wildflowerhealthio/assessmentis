@@ -45,7 +45,7 @@ export interface QuestionnaireResponseEncoded
  */
 export class QuestionnaireResponse extends MergeClasses<QuestionnaireResponse>(
   Key
-)(resourceMixin, fields, {
+)([], resourceMixin, fields, {
   item: Schema.optional(
     Schema.Array(
       Schema.suspend(
