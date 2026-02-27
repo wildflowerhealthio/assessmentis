@@ -1,7 +1,7 @@
 import { Schema } from 'effect'
 import { Coding, type CodingEncoded } from './Coding'
 import { Element, type ElementEncoded } from '../base/Element'
-import { applySchemaMixinTo } from '@assessmentis/util'
+import { MergeClasses } from '@assessmentis/util'
 import { Datatype } from '../Datatype'
 
 export const Key = 'CodeableConcept'
@@ -17,7 +17,7 @@ const fields = {
    */
   coding: Schema.Array(
     Schema.suspend((): Schema.Schema<Coding, CodingEncoded, never> => Coding)
-  ),
+  ).pipe(Schema.optionalWith({ default: () => [] })),
   /**
    * Very often the text is the same as a displayName of one of the codings.
    */
@@ -29,21 +29,13 @@ export interface CodeableConceptEncoded
   extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<Key> {}
 
 const ElementMixin = Element<Key>(Key)
-class CodeableConcept extends Schema.Class<CodeableConcept>(Key)({
-  ...ElementMixin.fields,
-  ...fields,
-}) {}
 
-const CodeableConceptWithMixin = applySchemaMixinTo(
-  CodeableConcept,
-  ElementMixin
-)
-
-type CodeableConceptWithMixin = InstanceType<typeof CodeableConceptWithMixin>
-
-export { CodeableConceptWithMixin as CodeableConcept }
+export class CodeableConcept extends MergeClasses<CodeableConcept>(Key)(
+  ElementMixin,
+  fields
+) {}
 
 export const CodeableConceptDatatype = Datatype(
   'CodeableConcept',
-  CodeableConceptWithMixin
+  CodeableConcept
 )

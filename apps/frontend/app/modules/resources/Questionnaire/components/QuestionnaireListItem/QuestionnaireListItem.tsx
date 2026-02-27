@@ -1,4 +1,4 @@
-import type { Questionnaire } from '@assessmentis/clinical-domain/content-management'
+import type { Questionnaire } from '@assessmentis/clinical-domain'
 import { ResourceListItem } from '../../../ResourcePages/ResourceListItem/ResourceListItem'
 
 interface QuestionnaireListItemProps {
@@ -12,15 +12,15 @@ export function QuestionnaireListItem({
   onDelete,
   loading,
 }: QuestionnaireListItemProps) {
-  const displayName = item.title ?? item.id ?? 'Unnamed Questionnaire'
+  const displayName = item.title ?? item.url?.toString() ?? 'Unnamed Questionnaire'
   const status = item.status ?? 'unknown'
 
   return (
     <ResourceListItem
       displayName={displayName}
       summaryItems={[` Status: ${status}`]}
-      viewPath={`/Questionnaire/${item.id}`}
-      editPath={`/Questionnaire/${item.id}`}
+      viewPath={`/Questionnaire/${item.url?.toString()}`}
+      editPath={`/Questionnaire/${item.url?.toString()}`}
       onDelete={onDelete}
       loading={loading}
     />

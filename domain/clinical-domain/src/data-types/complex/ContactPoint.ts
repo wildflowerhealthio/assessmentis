@@ -29,10 +29,7 @@ export interface Type {
   period?: Period.Period
 }
 
-/**
- * Details for all kinds of technology mediated contact points for a person or organization, including telephone, email, etc.
- */
-export class ContactPoint extends Schema.Class<ContactPoint>(Key)({
+const fields = {
   /**
    * Telecommunications form for contact point - what communications system is required to make use of the contact.
    * phone | fax | email | pager | url | sms | other
@@ -73,6 +70,15 @@ export class ContactPoint extends Schema.Class<ContactPoint>(Key)({
    * Time period when the contact point was/is in use.
    */
   period: Schema.optional(Schema.suspend(() => Period.Period)),
-}) {
+} as const
+
+export interface ContactPointEncoded extends Schema.Struct.Encoded<
+  typeof fields
+> {}
+
+/**
+ * Details for all kinds of technology mediated contact points for a person or organization, including telephone, email, etc.
+ */
+export class ContactPoint extends Schema.Class<ContactPoint>(Key)(fields) {
   static readonly Key = Key
 }

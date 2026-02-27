@@ -1,4 +1,4 @@
-import type { Practitioner } from '@assessmentis/clinical-domain/administration'
+import type { Practitioner } from '@assessmentis/clinical-domain'
 import { humanizeDateRange } from '../../../../common/utils/dateUtils'
 import classes from './PractitionerQualifications.module.css'
 import { runEffectSyncFlat } from '../../../../../runEffectSync'

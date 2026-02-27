@@ -1,19 +1,14 @@
 import { expect, test, describe, expectTypeOf } from 'vitest'
 import { BackboneElement, type BackboneElementEncoded } from './BackboneElement'
 import { Arbitrary, Schema } from 'effect'
-import { applySchemaMixinTo } from '@assessmentis/util'
+import { MergeClasses } from '@assessmentis/util'
 import * as fc from 'fast-check'
 
 const BackboneMixin = BackboneElement('TestBackbone')
 
-class TestBackbonePreMix extends Schema.Class<TestBackbonePreMix>(
-  'TestBackbone'
-)({
-  ...BackboneMixin.fields,
-}) {}
-
-const TestBackbone = applySchemaMixinTo(TestBackbonePreMix, BackboneMixin)
-type TestBackbone = TestBackbonePreMix
+class TestBackbone extends MergeClasses<TestBackbone>('TestBackbone')(
+  BackboneMixin
+) {}
 
 describe('BackboneElement', () => {
   describe('types', () => {

@@ -1,102 +1,209 @@
 import { describe, expect, expectTypeOf, it } from 'vitest'
 import { Schema } from 'effect'
-import { applySchemaMixinTo } from './MixinableFields'
+import { MergeClasses } from './MixinableFields'
 
-class MixinClass extends Schema.Class<MixinClass>('MixinClass')({
-  aField: Schema.Literal('aField'),
+// --- MergeClasses fixtures ---
+
+class Alpha extends Schema.Class<Alpha>('Alpha')({
+  alpha: Schema.String,
 }) {
-  static staticA = 'staticA' as const
-  aMethod() {
-    return 'aMethod' as const
+  static readonly ALPHA = 'ALPHA' as const
+  alphaMethod() {
+    return 'alpha' as const
   }
 }
 
-class BaseClass extends Schema.Class<BaseClass>('BaseClass')({
-  ...MixinClass.fields,
-  bField: Schema.Literal('bField'),
+class Beta extends Schema.Class<Beta>('Beta')({
+  beta: Schema.Int,
 }) {
-  static staticB = 'staticB' as const
-  bMethod() {
-    return 'bMethod' as const
+  static readonly BETA = 'BETA' as const
+  betaMethod() {
+    return 'beta' as const
   }
 }
 
-const Mixed = applySchemaMixinTo<typeof BaseClass, typeof MixinClass>(
-  BaseClass,
-  MixinClass
-)
+class AlphaBeta extends MergeClasses<AlphaBeta>('AlphaBeta')(Alpha, Beta) {
+  combinedMethod() {
+    return `${this.alphaMethod()}-${this.betaMethod()}` as const
+  }
+}
 
-describe('applySchemaMixinTo', () => {
+class Gamma extends Schema.Class<Gamma>('Gamma')({
+  gamma: Schema.Boolean,
+}) {
+  static readonly GAMMA = 'GAMMA' as const
+  gammaMethod() {
+    return 'gamma' as const
+  }
+}
+
+class AlphaBetaGamma extends MergeClasses<AlphaBetaGamma>('AlphaBetaGamma')(
+  Alpha,
+  Beta,
+  Gamma
+) {}
+
+describe('MergeClasses', () => {
+  describe('fields', () => {
+    it('merges fields from all input classes', () => {
+      expect(AlphaBeta.fields).toHaveProperty('alpha')
+      expect(AlphaBeta.fields).toHaveProperty('beta')
+    })
+
+    it('merges fields from three input classes', () => {
+      expect(AlphaBetaGamma.fields).toHaveProperty('alpha')
+      expect(AlphaBetaGamma.fields).toHaveProperty('beta')
+      expect(AlphaBetaGamma.fields).toHaveProperty('gamma')
+    })
+  })
+
   describe('static members', () => {
-    it('adds static properties from the mixin', () => {
-      expect(Mixed.staticA).toBe('staticA')
+    it('copies static properties from the first class', () => {
+      expect(AlphaBeta.ALPHA).toBe('ALPHA')
     })
 
-    it('preserves static properties from the base class', () => {
-      expect(Mixed.staticB).toBe('staticB')
+    it('copies static properties from the second class', () => {
+      expect(AlphaBeta.BETA).toBe('BETA')
     })
 
-    it('types mixin statics correctly', () => {
-      expectTypeOf(Mixed.staticA).toEqualTypeOf<'staticA'>()
+    it('types first class statics correctly', () => {
+      expectTypeOf(AlphaBeta.ALPHA).toEqualTypeOf<'ALPHA'>()
     })
 
-    it('types base statics correctly', () => {
-      expectTypeOf(Mixed.staticB).toEqualTypeOf<'staticB'>()
+    it('types second class statics correctly', () => {
+      expectTypeOf(AlphaBeta.BETA).toEqualTypeOf<'BETA'>()
     })
   })
 
   describe('instance via constructor', () => {
-    const instance = new Mixed({ aField: 'aField', bField: 'bField' })
-
-    it('adds mixin instance methods', () => {
-      expect(instance.aMethod()).toBe('aMethod')
-    })
-
-    it('preserves base instance methods', () => {
-      expect(instance.bMethod()).toBe('bMethod')
-    })
+    const instance = new AlphaBeta({ alpha: 'hello', beta: 42 })
 
     it('preserves field values', () => {
-      expect(instance.aField).toBe('aField')
-      expect(instance.bField).toBe('bField')
+      expect(instance.alpha).toBe('hello')
+      expect(instance.beta).toBe(42)
     })
 
-    it('types instances with both base and mixin members', () => {
-      expectTypeOf(instance.aMethod).toBeFunction()
-      expectTypeOf(instance.bMethod).toBeFunction()
-      expectTypeOf(instance.aField).toEqualTypeOf<'aField'>()
-      expectTypeOf(instance.bField).toEqualTypeOf<'bField'>()
+    it('has methods from the first class', () => {
+      expect(instance.alphaMethod()).toBe('alpha')
+    })
+
+    it('has methods from the second class', () => {
+      expect(instance.betaMethod()).toBe('beta')
+    })
+
+    it('has methods defined on the merged class', () => {
+      expect(instance.combinedMethod()).toBe('alpha-beta')
+    })
+
+    it('types field values correctly', () => {
+      expectTypeOf(instance.alpha).toEqualTypeOf<string>()
+      expectTypeOf(instance.beta).toEqualTypeOf<number>()
+    })
+
+    it('types inherited methods correctly', () => {
+      expectTypeOf(instance.alphaMethod).toBeFunction()
+      expectTypeOf(instance.betaMethod).toBeFunction()
+      expectTypeOf(instance.combinedMethod).toBeFunction()
     })
   })
 
   describe('instance via make()', () => {
-    const instance = Mixed.make({ aField: 'aField', bField: 'bField' })
-
-    it('adds mixin instance methods', () => {
-      expect(instance.aMethod()).toBe('aMethod')
-    })
-
-    it('preserves base instance methods', () => {
-      expect(instance.bMethod()).toBe('bMethod')
-    })
+    const instance = AlphaBeta.make({ alpha: 'world', beta: 7 })
 
     it('preserves field values', () => {
-      expect(instance.aField).toBe('aField')
-      expect(instance.bField).toBe('bField')
+      expect(instance.alpha).toBe('world')
+      expect(instance.beta).toBe(7)
     })
 
-    it('types make() return with both base and mixin members', () => {
-      expectTypeOf(instance.aMethod).toBeFunction()
-      expectTypeOf(instance.bMethod).toBeFunction()
-      expectTypeOf(instance.aField).toEqualTypeOf<'aField'>()
-      expectTypeOf(instance.bField).toEqualTypeOf<'bField'>()
+    it('has methods from the first class', () => {
+      expect(instance.alphaMethod()).toBe('alpha')
+    })
+
+    it('has methods from the second class', () => {
+      expect(instance.betaMethod()).toBe('beta')
+    })
+
+    it('has methods defined on the merged class', () => {
+      expect(instance.combinedMethod()).toBe('alpha-beta')
+    })
+
+    it('types make() return with all members', () => {
+      expectTypeOf(instance.alpha).toEqualTypeOf<string>()
+      expectTypeOf(instance.beta).toEqualTypeOf<number>()
+      expectTypeOf(instance.alphaMethod).toBeFunction()
+      expectTypeOf(instance.betaMethod).toBeFunction()
+      expectTypeOf(instance.combinedMethod).toBeFunction()
     })
   })
 
-  describe('fields', () => {
-    it('retains all fields on the base class', () => {
-      expect(Mixed.fields).toHaveProperty('aField')
-      expect(Mixed.fields).toHaveProperty('bField')
+  describe('Schema.decode', () => {
+    const decode = Schema.decodeUnknownSync(AlphaBeta)
+
+    it('decodes valid input', () => {
+      const result = decode({ alpha: 'decoded', beta: 1 })
+      expect(result.alpha).toBe('decoded')
+      expect(result.beta).toBe(1)
+    })
+
+    it('decoded instances have inherited methods', () => {
+      const result = decode({ alpha: 'test', beta: 2 })
+      expect(result.alphaMethod()).toBe('alpha')
+      expect(result.betaMethod()).toBe('beta')
+      expect(result.combinedMethod()).toBe('alpha-beta')
+    })
+
+    it('rejects invalid input', () => {
+      expect(() => decode({ alpha: 123, beta: 1 })).toThrow()
+    })
+  })
+
+  describe('3-class merge', () => {
+    describe('static members', () => {
+      it('copies statics from all three classes', () => {
+        expect(AlphaBetaGamma.ALPHA).toBe('ALPHA')
+        expect(AlphaBetaGamma.BETA).toBe('BETA')
+        expect(AlphaBetaGamma.GAMMA).toBe('GAMMA')
+      })
+    })
+
+    describe('instance via constructor', () => {
+      const instance = new AlphaBetaGamma({
+        alpha: 'a',
+        beta: 1,
+        gamma: true,
+      })
+
+      it('preserves all field values', () => {
+        expect(instance.alpha).toBe('a')
+        expect(instance.beta).toBe(1)
+        expect(instance.gamma).toBe(true)
+      })
+
+      it('has methods from all three classes', () => {
+        expect(instance.alphaMethod()).toBe('alpha')
+        expect(instance.betaMethod()).toBe('beta')
+        expect(instance.gammaMethod()).toBe('gamma')
+      })
+    })
+
+    describe('instance via make()', () => {
+      const instance = AlphaBetaGamma.make({
+        alpha: 'b',
+        beta: 2,
+        gamma: false,
+      })
+
+      it('preserves all field values', () => {
+        expect(instance.alpha).toBe('b')
+        expect(instance.beta).toBe(2)
+        expect(instance.gamma).toBe(false)
+      })
+
+      it('has methods from all three classes', () => {
+        expect(instance.alphaMethod()).toBe('alpha')
+        expect(instance.betaMethod()).toBe('beta')
+        expect(instance.gammaMethod()).toBe('gamma')
+      })
     })
   })
 })

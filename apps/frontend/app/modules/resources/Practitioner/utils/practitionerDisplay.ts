@@ -1,4 +1,4 @@
-import type { Practitioner } from '@assessmentis/clinical-domain/administration'
+import type { Practitioner } from '@assessmentis/clinical-domain'
 import { Effect } from 'effect'
 import { formatHumanName } from '../../../common/utils/fhirDisplay'
 import { humanizeTimelessDate } from '../../../common/utils/dateUtils'

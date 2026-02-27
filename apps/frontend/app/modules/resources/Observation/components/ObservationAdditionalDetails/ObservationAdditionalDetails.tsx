@@ -1,4 +1,4 @@
-import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import type { Observation } from '@assessmentis/clinical-domain'
 import { DetailGrid } from 'app/modules/common/components/DetailGrid/DetailGrid'
 
 interface ObservationAdditionalDetailsProps {

@@ -31,7 +31,6 @@ interface BundleEntry<
 }
 
 export interface Bundle<T> extends Resource<'Bundle'> {
-  resourceType: 'Bundle'
   entry?: BundleEntry<T>[]
   identifier?: Identifier
   link?: unknown[]

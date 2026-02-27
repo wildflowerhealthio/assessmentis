@@ -1,24 +1,21 @@
 import { DateTime, Effect } from 'effect'
-import type {
-  Encounter,
-  EncounterId,
-} from '@assessmentis/clinical-domain/administration'
+import { type Encounter, isVirtualLocation } from '@assessmentis/clinical-domain'
+import { EncounterRepository } from '@assessmentis/clinical-domain/repositories'
 import {
-  EncounterRepository,
-  Location,
-} from '@assessmentis/clinical-domain/administration'
+  IdentifierAndReference,
+  Period,
+} from '@assessmentis/clinical-domain/data-types'
 import type {
   ExternalAssertionError,
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
-import type { WithId } from '@assessmentis/effectful-store'
+import type { ReadonlyUrl, Resource } from '@assessmentis/effectful-store'
 import type { EncounterFormData } from '../schemas/EncounterFormSchema'
 import type { AuthError, AuthzError } from '@assessmentis/ontology'
 
 export const updateEncounter = (
-  id: EncounterId,
-  currentEncounter: Encounter,
+  currentEncounter: Resource.WithResourceUrl<Encounter>,
   formData: EncounterFormData
 ): Effect.Effect<
   Encounter,
@@ -26,45 +23,48 @@ export const updateEncounter = (
   | AuthError
   | AuthzError
   | ExternalAssertionError
-  | NotFoundError<'Encounter', { id: EncounterId }>,
+  | NotFoundError<'Encounter', { url: ReadonlyUrl }>,
   EncounterRepository
 > => {
   return Effect.gen(function* () {
     const repository = yield* EncounterRepository
 
     // Build updated encounter with form data
-    const updatedEncounter: WithId<Encounter> = {
+    const updatedEncounter: Resource.WithResourceUrl<Encounter> = {
       ...currentEncounter,
-      id,
       // Update subject (patient)
       subject: formData.patientId
-        ? { reference: `Patient/${formData.patientId}` }
+        ? IdentifierAndReference.Reference.make({
+            reference: `Patient/${formData.patientId}`,
+          })
         : undefined,
       // Update participant (practitioners)
       participant: formData.practitionerIds?.map((practitionerId) => ({
-        individual: { reference: `Practitioner/${practitionerId}` },
+        individual: IdentifierAndReference.Reference.make({
+          reference: `Practitioner/${practitionerId}`,
+        }),
       })),
       // Update period
       period:
         formData.periodStart || formData.periodEnd
-          ? {
+          ? Period.Period.make({
               start: formData.periodStart?.pipe(DateTime.toUtc),
               end: formData.periodEnd?.pipe(DateTime.toUtc),
-            }
+            })
           : undefined,
       // Update location references (preserve virtual/video room locations)
       location: [
         // Keep existing virtual location entries (video room)
         ...(currentEncounter.location?.filter((l) =>
-          Location.isVirtualLocation(l)
+          isVirtualLocation(l)
         ) ?? []),
         // Add user-selected physical location if provided
         ...(formData.locationId
           ? [
               {
-                location: {
+                location: IdentifierAndReference.Reference.make({
                   reference: `Location/${formData.locationId}`,
-                },
+                }),
               },
             ]
           : []),

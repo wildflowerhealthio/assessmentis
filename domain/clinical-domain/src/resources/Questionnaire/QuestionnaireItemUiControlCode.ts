@@ -1,6 +1,7 @@
 import { Schema, Option } from 'effect'
 import type { BackboneElement } from '../../data-types/base/BackboneElement'
 import { Code } from '../../data-types/complex/Code'
+import { Extension } from '../../data-types/special-purpose/Extension'
 
 export const QuestionnaireItemUIControlCode = Schema.Enums({
   list: Code.make('list'),
@@ -12,10 +13,11 @@ export const questionnaireItemControlUrl =
 
 export const questionnaireItemUiControlCodeExtension = (
   value: typeof QuestionnaireItemUIControlCode.Type
-) => ({
-  definitionUrl: questionnaireItemControlUrl,
-  valueCode: value,
-})
+): Extension =>
+  Extension.make({
+    definitionUrl: questionnaireItemControlUrl,
+    valueCode: value,
+  })
 
 export const getUiControlCode = (
   be: BackboneElement<string>

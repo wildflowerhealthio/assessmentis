@@ -1,4 +1,4 @@
-import type { Encounter } from '@assessmentis/clinical-domain/administration'
+import { Encounter } from '@assessmentis/clinical-domain'
 import { Effect } from 'effect'
 import { capitalizeFirst } from '../../../common/utils/fhirDisplay'
 import {

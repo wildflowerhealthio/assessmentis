@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { Schema, FastCheck } from 'effect'
 import type { PatientFormData } from './PatientFormSchema'
 import { PatientFormSchema, transformToPatient } from './PatientFormSchema'
-import type { AdministrativeGender } from '@assessmentis/clinical-domain/administration'
+import type { AdministrativeGender } from '@assessmentis/clinical-domain/data-types'
 
 // NOTE: This test requires vitest to be installed
 // Run: npm install --save-dev vitest @effect/vitest
@@ -108,7 +108,7 @@ describe('PatientFormSchema', () => {
   describe('property-based tests', () => {
     // Property-based test: any valid form data should transform to a valid Patient
     it('should transform any valid form data to Patient without throwing', () => {
-      const genGender = FastCheck.constantFrom<AdministrativeGender>(
+      const genGender = FastCheck.constantFrom<AdministrativeGender.AdministrativeGender>(
         'male',
         'female',
         'other',
@@ -154,7 +154,7 @@ describe('PatientFormSchema', () => {
 
     // Property-based test: transformation should be idempotent for the core fields
     it('should maintain field values through transformation', () => {
-      const genGender = FastCheck.constantFrom<AdministrativeGender>(
+      const genGender = FastCheck.constantFrom<AdministrativeGender.AdministrativeGender>(
         'male',
         'female',
         'other',

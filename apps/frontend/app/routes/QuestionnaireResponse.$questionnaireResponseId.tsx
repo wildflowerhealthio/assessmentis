@@ -1,30 +1,26 @@
 import { Suspense, useMemo } from 'react'
 import { Schema, Option, Effect, DateTime } from 'effect'
 import { UnhandledError } from '@assessmentis/ontology'
-import type { QuestionnaireItemLink } from '@assessmentis/clinical-domain/content-management'
 import {
   Questionnaire,
-  QuestionnaireId,
   QuestionnaireResponse,
-  QuestionnaireResponseId,
+  type QuestionnaireItemLink,
+} from '@assessmentis/clinical-domain'
+import {
   QuestionnaireRepository,
   QuestionnaireResponseRepository,
-} from '@assessmentis/clinical-domain/content-management'
+} from '@assessmentis/clinical-domain/repositories'
 
 import type { Route } from './+types/QuestionnaireResponse.$questionnaireResponseId'
 import QuestionnaireForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/QuestionnaireForm'
 import { updateEncounterRecordingsAndTranscripts } from '../modules/resources/Encounter/actions/updateEncounterRecordingsAndTranscripts'
 import { getEncounterRecordings } from '../modules/resources/Encounter/actions/getEncounterRecordings'
+import { Encounter, Media, Observation } from '@assessmentis/clinical-domain'
 import {
-  EncounterId,
   EncounterRepository,
-} from '@assessmentis/clinical-domain/administration'
-import {
-  Media,
   MediaRepository,
-  Observation,
   ObservationRepository,
-} from '@assessmentis/clinical-domain/diagnostic-medicine'
+} from '@assessmentis/clinical-domain/repositories'
 import { Await, useNavigate } from 'react-router'
 import { useState } from 'react'
 import SplitPane from '../modules/common/components/SplitPane/SplitPane'
@@ -38,15 +34,13 @@ import { usePlatformContext } from '../layers/PlatformContext'
 import { ErrorBoundary } from 'react-error-boundary'
 import { ClinicalDataRepositoryService } from '../layers/ClinicalDataRepositoriesService'
 
-const tryDecodeQuestionnaireResponseId = Schema.decodeOption(
-  QuestionnaireResponseId
-)
+const tryDecodeQuestionnaireResponseId = Schema.decodeOption(Schema.String)
 
 export const QuestionnaireResponseWithQuestionnaire = Schema.Struct({
-  questionnaireResponse: QuestionnaireResponse.Schema,
-  questionnaire: Questionnaire.Schema,
-  recordings: Schema.Array(Media.Schema),
-  observations: Schema.Array(Observation.Schema),
+  questionnaireResponse: QuestionnaireResponse,
+  questionnaire: Questionnaire,
+  recordings: Schema.Array(Media),
+  observations: Schema.Array(Observation),
 })
 
 function questionnaireEffect(questionnaireResponseIdStr: string) {
@@ -74,16 +68,15 @@ function questionnaireEffect(questionnaireResponseIdStr: string) {
       questionnaireResponseId
     )
 
-    const questionnaireId = QuestionnaireId.make(
+    const questionnaireId =
       questionnaireResponse.questionnaire?.split('/')[3] ??
         questionnaireResponse.questionnaire ??
         ''
-    )
     const encounterId =
       questionnaireResponse.encounter?.reference?.split('/')[1] ?? undefined
 
     const recordings = encounterId
-      ? yield* getEncounterRecordings(EncounterId.make(encounterId))
+      ? yield* getEncounterRecordings(encounterId)
       : []
 
     const questionnaire = yield* questionnaireRepository.get(questionnaireId)
@@ -153,7 +146,7 @@ const ResponsePage = ({
 
   useBreadcrumbs([
     { label: 'Questionnaire Responses', href: '/QuestionnaireResponse' },
-    { label: questionnaire.title || `Response ${questionnaireResponse.id}` },
+    { label: questionnaire.title || `Response ${questionnaireResponse.url?.toString() ?? 'Unknown'}` },
   ])
 
   const repoEffect = useMemo(() => {
@@ -210,7 +203,7 @@ const ResponsePage = ({
     const encounterIdStr =
       questionnaireResponse.encounter?.reference?.split('/')[1] ?? undefined
     if (!encounterIdStr) return undefined
-    const encounterId = EncounterId.make(encounterIdStr)
+    const encounterId = encounterIdStr
 
     const updateEffect = updateEncounterRecordingsAndTranscripts(
       encounterId
@@ -279,10 +272,7 @@ const ResponsePage = ({
                       seconds: e.currentTarget.currentTime,
                     })
                     const nextAnswer =
-                      QuestionnaireResponse.firstItemAnsweredAfter(
-                        questionnaireResponse,
-                        videoTime
-                      )
+                      questionnaireResponse.firstItemAnsweredAfter(videoTime)
 
                     setHighlightLinks(
                       nextAnswer ? new Set([nextAnswer.linkId]) : new Set()
@@ -291,7 +281,7 @@ const ResponsePage = ({
                 }}
                 controls
               >
-                <source src={data.content.url} type="video/mp4" />
+                <source src={data.content.url?.toString()} type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
               <button
@@ -301,7 +291,7 @@ const ResponsePage = ({
                   marginBottom: 'var(--space-5)',
                   width: '100%',
                 }}
-                onClick={() => deleteMedia(data.id)}
+                onClick={() => deleteMedia(data.url)}
               >
                 Delete
               </button>

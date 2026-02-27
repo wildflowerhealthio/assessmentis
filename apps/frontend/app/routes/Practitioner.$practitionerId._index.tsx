@@ -1,6 +1,5 @@
 import { Either, Option, Schema, Stream } from 'effect'
 import { StreamEither } from '@assessmentis/util'
-import { PractitionerId } from '@assessmentis/clinical-domain/administration'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/Practitioner.$practitionerId._index'
 import { runEffectSyncFlat } from '../runEffectSync'
@@ -21,7 +20,7 @@ import { useEitherStream } from '@assessmentis/react-util'
 import { usePlatformContext } from '../layers/PlatformContext'
 import { Await } from 'react-router'
 
-const tryDecodePractitionerId = Schema.decodeOption(PractitionerId)
+const tryDecodePractitionerId = Schema.decodeOption(Schema.String)
 
 export default function PractitionerDetailPage({
   params,
@@ -88,9 +87,9 @@ export default function PractitionerDetailPage({
       <Await resolve={practitionerPromise}>
         {(practitioner) => (
           <ResourceDetailPage
-            editTo={`/Practitioner/${practitioner.id}/edit`}
+            editTo={`/Practitioner/${practitioner.url?.toString() ?? params.practitionerId}/edit`}
             title={getPractitionerDisplayName(practitioner)}
-            subtitle={`Practitioner ID: ${practitioner.id}`}
+            subtitle={`Practitioner: ${practitioner.url?.toString() ?? params.practitionerId}`}
             sections={[
               {
                 id: 'demographics',

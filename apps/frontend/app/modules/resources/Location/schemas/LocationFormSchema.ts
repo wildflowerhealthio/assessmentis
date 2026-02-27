@@ -1,9 +1,6 @@
 import { Schema } from 'effect'
-import {
-  type Location,
-  LocationMode,
-  LocationStatus,
-} from '@assessmentis/clinical-domain/administration'
+import { LocationStatus, LocationMode } from '@assessmentis/clinical-domain'
+import type { Location } from '@assessmentis/clinical-domain'
 
 export const LocationFormSchema = Schema.Struct({
   name: Schema.String,

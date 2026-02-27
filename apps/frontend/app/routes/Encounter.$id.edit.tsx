@@ -6,10 +6,7 @@ import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 import { EncounterForm } from 'app/modules/resources/Encounter/components/EncounterForm'
 import { updateEncounter } from 'app/modules/resources/Encounter/actions/updateEncounter'
 import type { EncounterFormSchema } from 'app/modules/resources/Encounter/schemas/EncounterFormSchema'
-import {
-  EncounterId,
-  EncounterRepository,
-} from '@assessmentis/clinical-domain/administration'
+import { EncounterRepository } from '@assessmentis/clinical-domain/repositories'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/Encounter.$id.edit'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
@@ -22,7 +19,7 @@ import { useMemo } from 'react'
 import { useEitherStream } from '@assessmentis/react-util'
 import { usePlatformContext } from '../layers/PlatformContext'
 
-const tryDecodeEncounterId = Schema.decodeOption(EncounterId)
+const tryDecodeEncounterId = Schema.decodeOption(Schema.String)
 
 export default function EditEncounterPage({ params }: Route.ComponentProps) {
   const { clinicalDataRepositoryService } = usePlatformContext()
@@ -67,15 +64,19 @@ export default function EditEncounterPage({ params }: Route.ComponentProps) {
         const practitionerIds = extractReferenceIds(
           encounter.participant
             ?.filter(
-              (p): p is { individual: { reference: string } } =>
+              (p) =>
                 p.individual?.reference?.startsWith('Practitioner/') ?? false
             )
-            .map((p) => p.individual) ?? []
+            .map((p) => p.individual)
+            .filter(
+              (ref): ref is NonNullable<typeof ref> => ref !== undefined
+            ) ?? []
         )
 
         // Extract user-selected location ID (non-virtual location entry)
         const userLocation = encounter.location?.find(
-          (l) => !l.physicalType?.coding?.some((c) => c.code === 'vi')
+          (loc) =>
+            !loc.physicalType?.coding?.some((coding) => coding.code === 'vi')
         )
         const locationId = extractReferenceId(userLocation?.location)
 
@@ -99,7 +100,7 @@ export default function EditEncounterPage({ params }: Route.ComponentProps) {
     const encounter = await encounterPromise
 
     await Effect.runPromise(
-      updateEncounter(encounter.id, encounter, data).pipe(
+      updateEncounter(encounter, data).pipe(
         Effect.provideServiceEffect(
           EncounterRepository,
           clinicalDataRepositoryService.effect.Encounter
@@ -108,7 +109,7 @@ export default function EditEncounterPage({ params }: Route.ComponentProps) {
     )
 
     // Redirect back to detail page
-    navigate(`/Encounter/${encounter.id}`)
+    navigate(`/Encounter/${encounter.url?.toString() ?? params.id}`)
   }
 
   return (

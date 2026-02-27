@@ -3,19 +3,17 @@ import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
 import { Element } from './Element'
 import { Extension, type ExtensionEncoded } from '../special-purpose/Extension'
-import { applySchemaMixinTo } from '@assessmentis/util'
+import { MergeClasses } from '@assessmentis/util'
 
 // ---------------------------------------------------------------------------
 // Element tests
 // ---------------------------------------------------------------------------
 
 const ElementMixin = Element('TestElement')
-class TestElementPreMix extends Schema.Class<TestElementPreMix>('TestElement')({
-  ...ElementMixin.fields,
-}) {}
 
-const TestElement = applySchemaMixinTo(TestElementPreMix, ElementMixin)
-type TestElement = TestElementPreMix
+class TestElement extends MergeClasses<TestElement>('TestElement')(
+  ElementMixin
+) {}
 
 describe('Element', () => {
   describe('types', () => {

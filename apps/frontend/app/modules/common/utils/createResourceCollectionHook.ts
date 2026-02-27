@@ -32,7 +32,7 @@ import { StreamEither } from '@assessmentis/util'
  */
 export function createResourceCollectionHook<
   TResource extends Schema.Schema.Type<(typeof Schemas)[keyof typeof Schemas]>,
->(config: { resourceType: TResource['resourceType'] }) {
+>(config: { resourceType: TResource['domainType'] }) {
   return (filters?: RepositoryFilters<TResource>) => {
     const { clinicalDataRepositoryService } = usePlatformContext()
 
@@ -61,7 +61,7 @@ export function createResourceCollectionHook<
       TResource,
       | UnhandledError
       | ExternalAssertionError
-      | NotFoundError<TResource['resourceType'], { id: TResource['id'] }>
+      | NotFoundError<TResource['domainType'], { url: TResource['url'] }>
       | NoSelectedOrgError
       | AuthError
     >(repoEffect, resourcesPromise)

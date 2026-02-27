@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
-import type { Practitioner } from '@assessmentis/clinical-domain/administration'
-import { PractitionerId } from '@assessmentis/clinical-domain/administration'
+import { Practitioner } from '@assessmentis/clinical-domain'
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import type { ResourcePagesConfig } from '../ResourcePages/resourcePagesConfigType'
 import { PractitionerForm } from './components/PractitionerForm'
 import {
@@ -26,7 +26,7 @@ export const practitionerConfig: ResourcePagesConfig<
   pluralLabel: 'Practitioners',
   paramName: 'practitionerId',
 
-  decodeId: (raw) => Schema.decodeOption(PractitionerId)(raw),
+  decodeUrl: (raw: string) => Schema.decodeOption(ReadonlyUrl.FromString)(raw),
   getDisplayName: getPractitionerDisplayName,
 
   schema: PractitionerFormSchema,

@@ -1,33 +1,36 @@
 import { Effect, Schema } from 'effect'
 import { VideoCallClient } from '@assessmentis/video-call-domain'
-import type { EncounterLocation } from '@assessmentis/clinical-domain/administration'
-import {
-  QuestionnaireResponse,
-  QuestionnaireResponseRepository,
-} from '@assessmentis/clinical-domain/content-management'
 import {
   Encounter,
+  Location,
+  QuestionnaireResponse,
+  isVirtualLocation,
+} from '@assessmentis/clinical-domain'
+import {
   EncounterRepository,
   LocationRepository,
-  Location,
-} from '@assessmentis/clinical-domain/administration'
+  QuestionnaireResponseRepository,
+} from '@assessmentis/clinical-domain/repositories'
 import type {
   AuthError,
   AuthzError,
   UnhandledError,
   ExternalAssertionError,
 } from '@assessmentis/ontology'
-import { Code } from '@assessmentis/clinical-domain/data-types'
+import {
+  Code,
+  CodeableConcept,
+  Coding,
+  IdentifierAndReference,
+} from '@assessmentis/clinical-domain/data-types'
 
 export const CreateEncounterArg = Schema.extend(
-  Schema.mutable(Schema.partial(Encounter.Schema)),
+  Schema.mutable(Schema.partial(Encounter)),
   Schema.mutable(
     Schema.Struct({
       //....pipe(Schema.omit("encounterId")).fields,
       questionnaireResponses: Schema.mutable(
-        Schema.Array(
-          QuestionnaireResponse.Schema.pipe(Schema.pick('questionnaire'))
-        )
+        Schema.Array(QuestionnaireResponse.pipe(Schema.pick('questionnaire')))
       ),
     })
   )
@@ -36,10 +39,10 @@ export const CreateEncounterArg = Schema.extend(
 export type CreateEncounterArg = typeof CreateEncounterArg.Type
 
 export const CreateEncounterResponse = Schema.extend(
-  Encounter.Schema,
+  Encounter,
   Schema.Struct({
     // videoCallRooms: Schema.Array(VideoCallRoom),
-    questionnaireResponses: Schema.Array(QuestionnaireResponse.Schema),
+    questionnaireResponses: Schema.Array(QuestionnaireResponse),
   })
 )
 export type CreateEncounterResponse = typeof CreateEncounterResponse.Type
@@ -66,63 +69,66 @@ export const createEncounter = (
     })
 
     // Create a standalone Location resource for the video room
-    const videoRoomLocation = yield* locationRepository.create({
-      resourceType: 'Location',
-      name: 'Video Room',
-      identifier: [
-        {
-          system: 'http://assessment.is/fhir/video-call-room-name',
-          value: externalVideoCallRoom.url,
-        },
-      ],
-      status: 'active',
-      mode: 'instance',
-    })
+    const videoRoomLocation = yield* locationRepository.create(
+      Location.make({
+        name: 'Video Room',
+        identifier: [
+          IdentifierAndReference.Identifier.make({
+            system: 'http://assessment.is/fhir/video-call-room-name',
+            value: externalVideoCallRoom.url,
+          }),
+        ],
+        status: 'active',
+        mode: 'instance',
+      })
+    )
 
     // Build location array with proper references
-    const videoRoomEntry: EncounterLocation = {
-      location: { reference: `Location/${videoRoomLocation.id}` },
-      physicalType: {
+    const videoRoomEntry: NonNullable<Encounter['location']>[number] = {
+      location: IdentifierAndReference.Reference.make({
+        reference: `Location/${videoRoomLocation.url.toString()}`,
+      }),
+      physicalType: CodeableConcept.make({
         coding: [
-          {
+          Coding.Coding.make({
             system:
               'http://terminology.hl7.org/CodeSystem/location-physical-type',
             code: Code.make('vi'),
             display: 'Virtual',
-          },
+          }),
         ],
-      },
+      }),
     }
 
     // Add user-selected physical location if provided
-    const userLocationEntries: EncounterLocation[] = (
+    const userLocationEntries: NonNullable<Encounter['location']>[number][] = (
       args.location ?? []
-    ).filter((l) => !Location.isVirtualLocation(l))
+    ).filter((l) => !isVirtualLocation(l))
 
-    const encounterData: Encounter = {
-      resourceType: 'Encounter',
-      class: {
+    const encounterData: Encounter = Encounter.make({
+      class: Coding.Coding.make({
         display: 'virtual',
         system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
         code: Code.make('VR'),
-      },
+      }),
       status: 'planned',
       ...args,
       location: [videoRoomEntry, ...userLocationEntries],
-    }
+    })
 
     const createdEncounter = yield* encounterRepository.create(encounterData)
 
     const questionnaireResponsesEffect =
       questionnaireResponseRepository.createMany(
-        args.questionnaireResponses.map((questionnaireResponse) => ({
-          resourceType: 'QuestionnaireResponse',
-          encounter: {
-            reference: `Encounter/${createdEncounter.id}`,
-          },
-          ...questionnaireResponse,
-          status: 'in-progress',
-        }))
+        args.questionnaireResponses.map((questionnaireResponse) =>
+          QuestionnaireResponse.make({
+            encounter: IdentifierAndReference.Reference.make({
+              reference: `Encounter/${createdEncounter.url.toString()}`,
+            }),
+            ...questionnaireResponse,
+            status: 'in-progress',
+          })
+        )
       )
 
     const [

@@ -26,8 +26,8 @@ export function makeResourceListIndexPage<
       <ResourceListItem
         displayName={config.getDisplayName(props.item)}
         summaryItems={config.getListSummaryItems(props.item)}
-        viewPath={`/${config.resourceType}/${props.item.id}`}
-        editPath={`/${config.resourceType}/${props.item.id}/edit`}
+        viewPath={`/${config.resourceType}/${props.item.url?.toString() ?? ''}`}
+        editPath={`/${config.resourceType}/${props.item.url?.toString() ?? ''}/edit`}
         onDelete={props.onDelete}
         loading={props.loading}
       />

@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { applySchemaMixinTo } from '@assessmentis/util'
+import { MergeClasses } from '@assessmentis/util'
 import { BackboneElement } from '../../data-types/base/BackboneElement'
 import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
 import {
@@ -61,7 +61,6 @@ const PatientLinkSchema = Schema.Struct({
 // --- Patient ---
 
 const fields = {
-  resourceType: Schema.Literal('Patient'),
   identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
   active: Schema.optional(Schema.Boolean),
   name: Schema.optional(Schema.Array(Schema.suspend(() => HumanName))),
@@ -93,12 +92,7 @@ export interface PatientEncoded
  * Demographics and other administrative information about an individual or animal
  * receiving care or other health-related services.
  */
-class Patient extends Schema.Class<Patient>(Key)({
-  ...resourceMixin.fields,
-  ...fields,
-}) {}
-
-const PatientWithMixin = applySchemaMixinTo(Patient, resourceMixin)
-type PatientWithMixin = Patient
-
-export { PatientWithMixin as Patient }
+export class Patient extends MergeClasses<Patient>(Key)(
+  resourceMixin,
+  fields
+) {}

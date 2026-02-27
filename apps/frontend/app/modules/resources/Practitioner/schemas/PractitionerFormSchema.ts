@@ -1,11 +1,14 @@
 import { Schema } from 'effect'
-import type { Practitioner } from '@assessmentis/clinical-domain/administration'
-import { AdministrativeGender } from '@assessmentis/clinical-domain/administration'
+import { Practitioner } from '@assessmentis/clinical-domain'
+import {
+  AdministrativeGender,
+  CodeableConcept,
+} from '@assessmentis/clinical-domain/data-types'
 
 export const PractitionerFormSchema = Schema.Struct({
   givenName: Schema.String,
   familyName: Schema.String,
-  gender: Schema.optional(AdministrativeGender),
+  gender: Schema.optional(AdministrativeGender.AdministrativeGender),
   qualification: Schema.optional(Schema.String),
 })
 
@@ -13,13 +16,12 @@ export type PractitionerFormData = typeof PractitionerFormSchema.Type
 
 export function transformToPractitioner(
   formData: PractitionerFormData
-): Omit<Practitioner, 'id'> {
+): Practitioner {
   const givenName = formData.givenName?.trim()
   const familyName = formData.familyName?.trim()
   const qualification = formData.qualification?.trim()
 
-  return {
-    resourceType: 'Practitioner' as const,
+  return Practitioner.make({
     name:
       givenName || familyName
         ? [
@@ -33,12 +35,13 @@ export function transformToPractitioner(
     qualification: qualification
       ? [
           {
-            code: {
+            code: CodeableConcept.make({
               text: qualification,
-            },
+              coding: [],
+            }),
           },
         ]
       : undefined,
     active: true,
-  }
+  })
 }

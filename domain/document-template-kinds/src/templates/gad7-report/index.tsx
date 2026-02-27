@@ -1,12 +1,14 @@
 import type { ComponentFamily } from '../../types'
-import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { ObservationRepository } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import type { Observation } from '@assessmentis/clinical-domain'
+import { ObservationRepository } from '@assessmentis/clinical-domain/repositories'
 import { Effect } from 'effect'
 import type { Reference } from '@assessmentis/clinical-domain/data-types'
 import { referenceAsString } from '@assessmentis/clinical-domain/data-types'
 import type { JSX } from 'react'
 import { gad7 } from '@assessmentis/questionnaire-entities'
-import type { WithId } from '@assessmentis/effectful-store'
+import type { Resource } from '@assessmentis/effectful-store'
+import { NotFoundError } from '../../../../../global/ontology/src/errors'
+import { string } from 'fast-check'
 
 export const gad7Report = (
   {
@@ -32,7 +34,7 @@ export const gad7Report = (
           (obs) => item.code?.[0]?.code === obs.code.coding?.[0]?.code
         )
       )
-      .filter((o): o is WithId<Observation> => Boolean(o))
+      .filter((o): o is Resource.WithResourceUrl<Observation> => Boolean(o))
 
     if (
       gad7Observations == undefined ||
@@ -40,7 +42,13 @@ export const gad7Report = (
       gad7Observations.some((obs) => obs === undefined)
     ) {
       return yield* Effect.fail(
-        new Error('GAD-7 observations not found for the patient')
+        new NotFoundError({
+          resourceType: 'Observation',
+          params: {
+            subject: referenceAsString(patientReference),
+            code: string,
+          },
+        }) // ('GAD-7 score observation not found for the patient')
       )
     }
 
@@ -50,7 +58,13 @@ export const gad7Report = (
 
     if (!scoreObservations) {
       return yield* Effect.fail(
-        new Error('GAD-7 score observation not found for the patient')
+        new NotFoundError({
+          resourceType: 'Observation',
+          params: {
+            subject: referenceAsString(patientReference),
+            code: gad7.codings.totalScore.code,
+          },
+        }) // ('GAD-7 score observation not found for the patient')
       )
     }
     return (

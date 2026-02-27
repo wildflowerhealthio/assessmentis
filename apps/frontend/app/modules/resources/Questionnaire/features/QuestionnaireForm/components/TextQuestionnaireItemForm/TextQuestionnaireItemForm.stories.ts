@@ -4,10 +4,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Arbitrary, FastCheck } from 'effect'
 import { action } from 'storybook/actions'
 import { Code } from '@assessmentis/clinical-domain/data-types'
-import {
-  QuestionnaireItem,
-  QuestionnaireItemType,
-} from '@assessmentis/clinical-domain/content-management'
+import { QuestionnaireItem } from '@assessmentis/clinical-domain'
 import TextQuestionnaireItemForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/components/TextQuestionnaireItemForm/TextQuestionnaireItemForm'
 
 //👇 This default export determines where your story goes in the story list
@@ -19,13 +16,13 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 const questionnaireItem = FastCheck.sample(
-  Arbitrary.make(QuestionnaireItem.Schema)
+  Arbitrary.make(QuestionnaireItem)
 )[0]
 
 const arbitraryProps = {
   questionnaireItem: {
     ...questionnaireItem,
-    type: QuestionnaireItemType.enums.text,
+    type: 'text',
     text: 'Do you often interrupt the activities of others, or intrude on others?',
   },
   questionnaireResponseItem: {

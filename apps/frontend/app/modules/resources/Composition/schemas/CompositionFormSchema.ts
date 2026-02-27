@@ -1,5 +1,9 @@
 import { Schema, DateTime, Effect } from 'effect'
-import type { Composition } from '@assessmentis/clinical-domain/content-management'
+import { Composition } from '@assessmentis/clinical-domain'
+import {
+  CodeableConcept,
+  IdentifierAndReference,
+} from '@assessmentis/clinical-domain/data-types'
 
 export const CompositionFormSchema = Schema.Struct({
   title: Schema.String,
@@ -10,18 +14,16 @@ export type CompositionFormData = typeof CompositionFormSchema.Type
 
 export function transformToComposition(
   formData: CompositionFormData
-): Omit<Composition, 'id'> {
-  return {
-    resourceType: 'Composition',
+): Composition {
+  return Composition.make({
     title: formData.title || 'New Composition',
     status: 'preliminary',
-    type: { coding: [] },
+    type: CodeableConcept.make({ coding: [] }),
     subject: formData.patientId
-      ? { reference: `Patient/${formData.patientId}` }
-      : {},
-    author: [{ display: 'Anonymous' }],
-    // Date always reflects the last editing time
+      ? IdentifierAndReference.Reference.make({ reference: `Patient/${formData.patientId}` })
+      : undefined,
+    author: [IdentifierAndReference.Reference.make({ display: 'Anonymous' })],
     date: Effect.runSync(DateTime.now),
     section: [],
-  }
+  })
 }

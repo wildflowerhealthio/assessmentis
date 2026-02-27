@@ -1,4 +1,4 @@
-import type { Composition } from '@assessmentis/clinical-domain/content-management'
+import type { Composition } from '@assessmentis/clinical-domain'
 
 /**
  * Get a display-friendly name for a composition

@@ -1,7 +1,7 @@
 import { pipe, Schema } from 'effect'
 import { Element, type ElementEncoded } from './Element'
 import { Extension, type ExtensionEncoded } from '../special-purpose/Extension'
-import { applySchemaMixinTo } from '@assessmentis/util'
+import { MergeClasses } from '@assessmentis/util'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -27,8 +27,9 @@ export const BackboneElement = <TDomainType extends string>(
 ) => {
   const ElementMixin = Element(domainType)
 
-  const backboneFields = {
-    ...ElementMixin.fields,
+  class BackboneElementMixin extends MergeClasses<BackboneElementMixin>(
+    'BackboneElement'
+  )(ElementMixin, {
     modifierExtension: pipe(
       Schema.Array(
         Schema.suspend(
@@ -43,10 +44,6 @@ export const BackboneElement = <TDomainType extends string>(
         default: (): ReadonlyArray<Extension> => [],
       })
     ),
-  } as const satisfies Schema.Struct.Fields
-
-  class BackboneElementMixin extends Schema.Class<BackboneElementMixin>(
-    'BackboneElement'
-  )(backboneFields) {}
-  return applySchemaMixinTo(BackboneElementMixin, ElementMixin)
+  }) {}
+  return BackboneElementMixin
 }

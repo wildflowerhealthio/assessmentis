@@ -1,9 +1,10 @@
-import type { QuestionnaireResponse } from '@assessmentis/clinical-domain/content-management'
-import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import type { Observation } from '@assessmentis/clinical-domain'
+import { type QuestionnaireResponse } from '@assessmentis/clinical-domain'
 import codings from './codings'
 import { totalScore } from './observations'
 import type { ObservationTemplate } from './internal'
 import { baseChoiceObservation } from './internal'
+import type { Coding } from '@assessmentis/clinical-domain/data-types'
 import {
   CodeableConcept,
   referenceFromResource,
@@ -46,13 +47,15 @@ const findAnswerCoding = (
   const firstAnswer = response.item?.find((item) => item.linkId === linkId)
     ?.answer?.[0]
   return firstAnswer && firstAnswer.valueCoding
-    ? CodeableConcept.make({ coding: [firstAnswer.valueCoding] })
+    ? CodeableConcept.make({
+        coding: [firstAnswer.valueCoding as Coding.Coding],
+      })
     : undefined
 }
 
 export const computeGad7HelperTotalScoreObservation = (
   response: QuestionnaireResponse
-) => {
+): Omit<ConstructorParameters<typeof Observation>[0], 'status'> => {
   const totalScoreValue = questionLinkIds.reduce((acc, linkId) => {
     const answerCoding = findAnswerCoding(response, linkId)
     if (!answerCoding?.coding?.[0]?.code) return acc
@@ -67,12 +70,12 @@ export const computeGad7HelperTotalScoreObservation = (
     encounter: response.encounter,
     derivedFrom: responseResource ? [responseResource] : undefined,
     valueInteger: totalScoreValue,
-  }
+  } as const
 }
 
 export const extractObservationsFromGad7Response = (
   response: QuestionnaireResponse
-): Omit<Observation, 'status'>[] => {
+): Omit<ConstructorParameters<typeof Observation>[0], 'status'>[] => {
   const questionObsList = questionLinkIds.map((linkId) => {
     const code = questionCodeByLinkId[linkId]
     const answerCoding = findAnswerCoding(response, linkId)
@@ -80,14 +83,14 @@ export const extractObservationsFromGad7Response = (
     const responseResource = referenceFromResource(response)
     return {
       ...baseChoiceObservation,
-      code: {
+      code: CodeableConcept.make({
         coding: [code],
         text: code.display,
-      },
+      }),
       encounter: response.encounter,
       derivedFrom: responseResource ? [responseResource] : undefined,
       ...(answerCoding ? { valueCodeableConcept: answerCoding } : {}),
-    } as const satisfies ObservationTemplate
+    } satisfies ObservationTemplate
   })
 
   return [...questionObsList, computeGad7HelperTotalScoreObservation(response)]

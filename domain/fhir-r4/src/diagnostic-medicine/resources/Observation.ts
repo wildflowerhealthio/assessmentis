@@ -1,179 +1,166 @@
 import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
-import {} from '../../FhirR4ResourceBehaviour'
-import type {
+import {
   Observation,
-  ObservationReferenceRange,
-  ObservationComponent,
-} from '@assessmentis/clinical-domain/diagnostic-medicine'
-import {
-  ObservationId,
+  type ObservationEncoded,
   ObservationStatus,
-} from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { FhirR4DomainResource } from '../../data-types/base/DomainResource'
-import { FhirR4BackboneElement } from '../../data-types/base/BackboneElement'
+} from '@assessmentis/clinical-domain'
 import {
-  FhirR4Identifier,
-  FhirR4Reference,
+  AllDatatypeKeys,
+  DatatypeChoiceEncodedPassthroughFields,
+} from '@assessmentis/clinical-domain/data-types'
+import { ResourceEncodedFromFhirR4Resource } from '../../data-types/base/Resource'
+import { BackboneElementEncodedFromFhir } from '../../data-types/base/BackboneElement'
+import {
+  IdentifierEncodedFromFhir,
+  ReferenceEncodedFromFhir,
 } from '../../data-types/complex/IdentifierAndReference'
-import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
-import { FhirR4Annotation } from '../../data-types/complex/Annotation'
-import { FhirR4Period } from '../../data-types/complex/Period'
-import { FhirR4ValueElement } from '../../data-types/primitive/ValueElement'
-import { FhirR4Quantity } from '../../data-types/complex/Quantity'
-import { FhirR4Range } from '../../data-types/complex/Range'
-
-// --- Sub-component IDs ---
-
-const ObservationReferenceRangeId = Schema.String.pipe(
-  Schema.brand('ObservationReferenceRangeId')
-)
-
-const ObservationComponentId = Schema.String.pipe(
-  Schema.brand('ObservationComponentId')
-)
+import { CodeableConceptEncodedFromFhir } from '../../data-types/complex/CodeableConcept'
+import { AnnotationEncodedFromFhir } from '../../data-types/complex/Annotation'
+import { PeriodEncodedFromFhir } from '../../data-types/complex/Period'
+import { QuantityEncodedFromFhir } from '../../data-types/complex/Quantity'
+import { RangeEncodedFromFhir } from '../../data-types/complex/Range'
+import type { BaseUrl } from '../../data-types/UrlIdentification'
+import { mutableEncoded } from '@assessmentis/util'
 
 // --- Sub-component schemas ---
 
-const FhirR4ObservationReferenceRangeSchema: Schema.Schema<
-  ObservationReferenceRange,
-  FhirR4.ObservationReferenceRange,
-  never
-> = Schema.extend(
-  FhirR4BackboneElement.Schema(ObservationReferenceRangeId),
-  Schema.Struct({
-    low: Schema.optional(Schema.suspend(() => FhirR4Quantity.Schema)),
-    high: Schema.optional(Schema.suspend(() => FhirR4Quantity.Schema)),
-    type: Schema.optional(Schema.suspend(() => FhirR4CodeableConcept.Schema)),
-    appliesTo: Schema.optional(
-      Schema.mutable(
-        Schema.Array(Schema.suspend(() => FhirR4CodeableConcept.Schema))
-      )
-    ),
-    age: Schema.optional(Schema.suspend(() => FhirR4Range.Schema)),
-    text: Schema.optional(Schema.String),
-  })
+const ObservationReferenceRangeEncodedFromFhir = Schema.extend(
+  BackboneElementEncodedFromFhir('ObservationReferenceRange'),
+  mutableEncoded(
+    Schema.Struct({
+      low: Schema.optional(Schema.suspend(() => QuantityEncodedFromFhir)),
+      high: Schema.optional(Schema.suspend(() => QuantityEncodedFromFhir)),
+      type: Schema.optional(
+        Schema.suspend(() => CodeableConceptEncodedFromFhir)
+      ),
+      appliesTo: Schema.optional(
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => CodeableConceptEncodedFromFhir))
+        )
+      ),
+      age: Schema.optional(Schema.suspend(() => RangeEncodedFromFhir)),
+      text: Schema.optional(Schema.String),
+    })
+  )
 )
 
-const FhirR4ObservationComponentSchema: Schema.Schema<
-  ObservationComponent,
-  FhirR4.ObservationComponent,
-  never
-> = Schema.extend(
-  Schema.extend(
-    FhirR4BackboneElement.Schema(ObservationComponentId),
+const ObservationComponentEncodedFromFhir = Schema.extend(
+  BackboneElementEncodedFromFhir('ObservationComponent'),
+  mutableEncoded(
     Schema.Struct({
-      code: Schema.suspend(() => FhirR4CodeableConcept.Schema),
+      code: Schema.suspend(() => CodeableConceptEncodedFromFhir),
       dataAbsentReason: Schema.optional(
-        Schema.suspend(() => FhirR4CodeableConcept.Schema)
+        Schema.suspend(() => CodeableConceptEncodedFromFhir)
       ),
       interpretation: Schema.optional(
-        Schema.mutable(
-          Schema.Array(Schema.suspend(() => FhirR4CodeableConcept.Schema))
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => CodeableConceptEncodedFromFhir))
         )
       ),
       referenceRange: Schema.optional(
-        Schema.mutable(Schema.Array(FhirR4ObservationReferenceRangeSchema))
+        mutableEncoded(Schema.Array(ObservationReferenceRangeEncodedFromFhir))
       ),
+      ...DatatypeChoiceEncodedPassthroughFields('value', AllDatatypeKeys),
     })
-  ),
-  Schema.suspend(() => FhirR4ValueElement.Schema)
+  )
 )
 
 // --- Observation ---
 
-const FhirR4ObservationSchema: Schema.Schema<
-  Observation,
+const FhirR4ObservationEncodedFromFhir: Schema.Schema<
+  ObservationEncoded,
   FhirR4.Observation,
-  never
+  BaseUrl
 > = Schema.extend(
-  Schema.extend(
-    FhirR4DomainResource.Schema(ObservationId),
+  ResourceEncodedFromFhirR4Resource('Observation', 'Observation'),
+  mutableEncoded(
     Schema.Struct({
-      resourceType: Schema.Literal('Observation'),
       identifier: Schema.optional(
-        Schema.mutable(
-          Schema.Array(Schema.suspend(() => FhirR4Identifier.Schema))
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => IdentifierEncodedFromFhir))
         )
       ),
       basedOn: Schema.optional(
-        Schema.mutable(
-          Schema.Array(Schema.suspend(() => FhirR4Reference.Schema))
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => ReferenceEncodedFromFhir))
         )
       ),
       partOf: Schema.optional(
-        Schema.mutable(
-          Schema.Array(Schema.suspend(() => FhirR4Reference.Schema))
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => ReferenceEncodedFromFhir))
         )
       ),
       status: ObservationStatus,
       category: Schema.optional(
-        Schema.mutable(
-          Schema.Array(Schema.suspend(() => FhirR4CodeableConcept.Schema))
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => CodeableConceptEncodedFromFhir))
         )
       ),
-      code: Schema.suspend(() => FhirR4CodeableConcept.Schema),
-      subject: Schema.optional(Schema.suspend(() => FhirR4Reference.Schema)),
+      code: Schema.suspend(() => CodeableConceptEncodedFromFhir),
+      subject: Schema.optional(Schema.suspend(() => ReferenceEncodedFromFhir)),
       focus: Schema.optional(
-        Schema.mutable(
-          Schema.Array(Schema.suspend(() => FhirR4Reference.Schema))
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => ReferenceEncodedFromFhir))
         )
       ),
-      encounter: Schema.optional(Schema.suspend(() => FhirR4Reference.Schema)),
-      effectiveDateTime: Schema.optional(Schema.DateTimeUtc),
-      effectivePeriod: Schema.optional(
-        Schema.suspend(() => FhirR4Period.Schema)
+      encounter: Schema.optional(
+        Schema.suspend(() => ReferenceEncodedFromFhir)
       ),
-      effectiveInstant: Schema.optional(Schema.DateTimeUtc),
-      issued: Schema.optional(Schema.DateTimeUtc),
+      effectiveDateTime: Schema.optional(Schema.String),
+      effectivePeriod: Schema.optional(
+        Schema.suspend(() => PeriodEncodedFromFhir)
+      ),
+      effectiveInstant: Schema.optional(Schema.String),
+      issued: Schema.optional(Schema.String),
       performer: Schema.optional(
-        Schema.mutable(
-          Schema.Array(Schema.suspend(() => FhirR4Reference.Schema))
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => ReferenceEncodedFromFhir))
         )
       ),
       dataAbsentReason: Schema.optional(
-        Schema.suspend(() => FhirR4CodeableConcept.Schema)
+        Schema.suspend(() => CodeableConceptEncodedFromFhir)
       ),
       interpretation: Schema.optional(
-        Schema.mutable(
-          Schema.Array(Schema.suspend(() => FhirR4CodeableConcept.Schema))
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => CodeableConceptEncodedFromFhir))
         )
       ),
       note: Schema.optional(
-        Schema.mutable(
-          Schema.Array(Schema.suspend(() => FhirR4Annotation.Schema))
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => AnnotationEncodedFromFhir))
         )
       ),
       bodySite: Schema.optional(
-        Schema.suspend(() => FhirR4CodeableConcept.Schema)
+        Schema.suspend(() => CodeableConceptEncodedFromFhir)
       ),
       method: Schema.optional(
-        Schema.suspend(() => FhirR4CodeableConcept.Schema)
+        Schema.suspend(() => CodeableConceptEncodedFromFhir)
       ),
-      specimen: Schema.optional(Schema.suspend(() => FhirR4Reference.Schema)),
-      device: Schema.optional(Schema.suspend(() => FhirR4Reference.Schema)),
+      specimen: Schema.optional(Schema.suspend(() => ReferenceEncodedFromFhir)),
+      device: Schema.optional(Schema.suspend(() => ReferenceEncodedFromFhir)),
       referenceRange: Schema.optional(
-        Schema.mutable(Schema.Array(FhirR4ObservationReferenceRangeSchema))
+        mutableEncoded(Schema.Array(ObservationReferenceRangeEncodedFromFhir))
       ),
       hasMember: Schema.optional(
-        Schema.mutable(
-          Schema.Array(Schema.suspend(() => FhirR4Reference.Schema))
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => ReferenceEncodedFromFhir))
         )
       ),
       derivedFrom: Schema.optional(
-        Schema.mutable(
-          Schema.Array(Schema.suspend(() => FhirR4Reference.Schema))
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => ReferenceEncodedFromFhir))
         )
       ),
       component: Schema.optional(
-        Schema.mutable(Schema.Array(FhirR4ObservationComponentSchema))
+        mutableEncoded(Schema.Array(ObservationComponentEncodedFromFhir))
       ),
+      ...DatatypeChoiceEncodedPassthroughFields('value', AllDatatypeKeys),
     })
-  ),
-  Schema.suspend(() => FhirR4ValueElement.Schema)
+  )
 )
 
 export const FhirR4Observation = {
   resourceType: 'Observation',
-  Schema: FhirR4ObservationSchema,
+  Schema: Schema.compose(FhirR4ObservationEncodedFromFhir, Observation),
 }

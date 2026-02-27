@@ -5,23 +5,26 @@ import type {
 import { useCollection, useCollectionPromise } from '@assessmentis/react-util'
 import type { Schema } from 'effect'
 import { Effect } from 'effect'
+import type { ReadonlyUrl } from '@assessmentis/effectful-store'
+
+type AnyResource = Schema.Schema.Type<(typeof Schemas)[keyof typeof Schemas]>
 
 const actions = <
-  T extends Schema.Schema.Type<(typeof Schemas)[keyof typeof Schemas]> & {
-    id?: string | undefined
-    resourceType: string
+  T extends AnyResource & {
+    url?: ReadonlyUrl | undefined
+    domainType: string
   },
   E,
 >(
   repoEffect: Effect.Effect<ClinicalDataRepository<T>, E, never>
 ) => ({
-  apiDelete: async (id: T['id']) => {
-    if (!id) return
+  apiDelete: async (url: T['url']) => {
+    if (!url) return
 
     return Effect.runPromise(
       Effect.all([
         Effect.sleep('200 millis'),
-        Effect.flatMap(repoEffect, (repo) => repo.delete(id)),
+        Effect.flatMap(repoEffect, (repo) => repo.delete(url)),
       ])
     )
   },
@@ -36,9 +39,9 @@ const actions = <
 })
 
 export function useClinicalDataCollection<
-  T extends Schema.Schema.Type<(typeof Schemas)[keyof typeof Schemas]> & {
-    id?: string | undefined
-    resourceType: string
+  T extends AnyResource & {
+    url?: ReadonlyUrl | undefined
+    domainType: string
   },
   E,
 >(
@@ -49,9 +52,9 @@ export function useClinicalDataCollection<
 }
 
 export function useClinicalDataCollectionPromise<
-  T extends Schema.Schema.Type<(typeof Schemas)[keyof typeof Schemas]> & {
-    id?: string | undefined
-    resourceType: string
+  T extends AnyResource & {
+    url?: ReadonlyUrl | undefined
+    domainType: string
   },
   E,
 >(

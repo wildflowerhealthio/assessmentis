@@ -1,4 +1,5 @@
 export * from './Element'
 export * from './BackboneElement'
+export * from './Meta'
 export * from './Resource'
 export * from './DomainResource'

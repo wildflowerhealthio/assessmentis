@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { applySchemaMixinTo } from '@assessmentis/util'
+import { MergeClasses } from '@assessmentis/util'
 import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
 import {
   Identifier,
@@ -30,7 +30,6 @@ export const MediaStatus = Schema.Enums({
 export type MediaStatus = typeof MediaStatus.Type
 
 const fields = {
-  resourceType: Schema.Literal('Media'),
   identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
   basedOn: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
   partOf: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
@@ -67,12 +66,4 @@ export interface MediaEncoded
  * A photo, video, or audio recording acquired or used in healthcare.
  * The actual content may be inline or provided by direct reference.
  */
-class Media extends Schema.Class<Media>(Key)({
-  ...resourceMixin.fields,
-  ...fields,
-}) {}
-
-const MediaWithMixin = applySchemaMixinTo(Media, resourceMixin)
-type MediaWithMixin = Media
-
-export { MediaWithMixin as Media }
+export class Media extends MergeClasses<Media>(Key)(resourceMixin, fields) {}

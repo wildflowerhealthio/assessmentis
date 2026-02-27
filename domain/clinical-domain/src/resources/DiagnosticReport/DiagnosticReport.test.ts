@@ -17,24 +17,19 @@ describe('DiagnosticReport model', () => {
   })
 
   test('property: missing required fields always fail', () => {
-    // Property: DiagnosticReport must have resourceType, status, and code
+    // Property: DiagnosticReport must have status, and code
     fc.assert(
       fc.property(
         fc.oneof(
           // Missing status
           fc.record({
-            resourceType: fc.constant('DiagnosticReport' as const),
+            domainType: fc.constant('DiagnosticReport' as const),
             code: fc.record({ text: fc.string() }),
           }),
           // Missing code
           fc.record({
-            resourceType: fc.constant('DiagnosticReport' as const),
+            domainType: fc.constant('DiagnosticReport' as const),
             status: fc.constantFrom('final', 'preliminary'),
-          }),
-          // Missing resourceType
-          fc.record({
-            status: fc.constantFrom('final', 'preliminary'),
-            code: fc.record({ text: fc.string() }),
           })
         ),
         (incomplete) => {

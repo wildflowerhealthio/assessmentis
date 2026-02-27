@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
-import type { Composition } from '@assessmentis/clinical-domain/content-management'
-import { CompositionId } from '@assessmentis/clinical-domain/content-management'
+import type { Composition } from '@assessmentis/clinical-domain'
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import type { ResourcePagesConfig } from '../ResourcePages/resourcePagesConfigType'
 import { CompositionForm } from './components/CompositionForm'
 import {
@@ -27,7 +27,7 @@ export const compositionConfig: ResourcePagesConfig<
   pluralLabel: 'Compositions',
   paramName: 'compositionId',
 
-  decodeId: (raw) => Schema.decodeOption(CompositionId)(raw),
+  decodeUrl: (raw: string) => Schema.decodeOption(ReadonlyUrl.FromString)(raw),
   getDisplayName: getCompositionDisplayName,
 
   schema: CompositionFormSchema,

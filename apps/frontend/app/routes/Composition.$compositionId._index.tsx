@@ -1,6 +1,5 @@
 import { Either, Option, Schema, Stream } from 'effect'
 import { StreamEither } from '@assessmentis/util'
-import { CompositionId } from '@assessmentis/clinical-domain/content-management'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/Composition.$compositionId._index'
 import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
@@ -17,7 +16,7 @@ import { useEitherStream } from '@assessmentis/react-util'
 import { usePlatformContext } from '../layers/PlatformContext'
 import { Await } from 'react-router'
 
-const tryDecodeCompositionId = Schema.decodeOption(CompositionId)
+const tryDecodeCompositionId = Schema.decodeOption(Schema.String)
 
 export default function CompositionDetailsPage({
   params,
@@ -87,9 +86,9 @@ export default function CompositionDetailsPage({
           const displayName = getCompositionDisplayName(composition)
           return (
             <ResourceDetailPage
-              editTo={`/Composition/${composition.id}/edit`}
+              editTo={`/Composition/${composition.url?.toString() ?? params.compositionId}/edit`}
               title={displayName}
-              subtitle={`Composition ID: ${composition.id}`}
+              subtitle={`Composition: ${composition.url?.toString() ?? params.compositionId}`}
               sections={[
                 {
                   id: 'details',

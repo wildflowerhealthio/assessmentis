@@ -2,11 +2,11 @@ import { Effect } from 'effect'
 import type {
   Questionnaire,
   QuestionnaireResponse,
-} from '@assessmentis/clinical-domain/content-management'
+} from '@assessmentis/clinical-domain'
 import {
   QuestionnaireRepository,
   QuestionnaireResponseRepository,
-} from '@assessmentis/clinical-domain/content-management'
+} from '@assessmentis/clinical-domain/repositories'
 import type { Route } from './+types/QuestionnaireResponse._index'
 import { QuestionnaireResponseListItem } from '../modules/resources/Questionnaire/components/QuestionnaireResponseListItem/QuestionnaireResponseListItem'
 import { ResourceListPage } from '../modules/common/components/ResourceListPage/ResourceListPage'

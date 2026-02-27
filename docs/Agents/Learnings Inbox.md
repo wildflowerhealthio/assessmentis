@@ -81,3 +81,9 @@ Append-only log for agent-discovered knowledge. Agents add entries here during w
 **Discovered during**: ruthmarks/refactor/seperate-fhir-from-data-types (Extension refactor)
 **Learning**: Extension is a special case — it's defined in the same file as Element to break circular imports, and it needs both Element fields and DatatypeChoice value[x] fields. Rather than chaining `applySchemaMixinTo` twice, Extension is a plain `Schema.Class` that manually delegates DatatypeChoice instance methods (`isExactlyOnePresent`, `isNonePresent`) by calling `ValueMixin.prototype.method.call(this)`, and wraps the static `allOptionKeys()`. This avoids complex mixin composition and keeps the Extension definition readable.
 **Suggested destination**: domain/clinical-domain/docs/FHIR Modeling Reference.md
+
+### applySchemaMixinTo has been eliminated — entries above are outdated
+
+**Discovered during**: ruthmarks/refactor/seperate-fhir-from-data-types (applySchemaMixinTo elimination)
+**Learning**: `applySchemaMixinTo` has been fully replaced by `MergeClasses` across the codebase. The following earlier entries are now outdated: "Arrow-function statics required for applySchemaMixinTo" (line 55), "Base type factory pattern" (line 73, reference to applySchemaMixinTo), "Extension delegates DatatypeChoice methods manually, not via applySchemaMixinTo" (line 79). The new pattern is `class Foo extends MergeClasses<Foo>('Foo')(mixin, fields) {}` — no intermediate class, no manual `.fields` spread, no aliased export. `MergeClasses` uses `for...in` (not `Object.assign`) to copy statics, which ensures inherited statics survive when a MergeClasses result is used as mixin input to another MergeClasses call.
+**Suggested destination**: domain/clinical-domain/docs/FHIR Modeling Reference.md

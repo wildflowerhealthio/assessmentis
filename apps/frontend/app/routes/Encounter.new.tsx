@@ -4,19 +4,16 @@ import { EncounterForm } from 'app/modules/resources/Encounter/components/Encoun
 import { createEncounter } from 'app/modules/resources/Encounter/actions/createEncounter'
 import type { EncounterFormSchema } from 'app/modules/resources/Encounter/schemas/EncounterFormSchema'
 import { DateTime, Effect, Schema } from 'effect'
-import {
-  QuestionnaireId,
-  QuestionnaireResponseRepository,
-} from '@assessmentis/clinical-domain/content-management'
+import { QuestionnaireResponseRepository } from '@assessmentis/clinical-domain/repositories'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import {
   EncounterRepository,
   LocationRepository,
-} from '@assessmentis/clinical-domain/administration'
+} from '@assessmentis/clinical-domain/repositories'
 import { usePlatformContext } from '../layers/PlatformContext'
 import { VideoCallClient } from '@assessmentis/video-call-domain'
 
-const decodeQuestionnaireId = Schema.decodeUnknownSync(QuestionnaireId)
+const decodeQuestionnaireId = Schema.decodeUnknownSync(Schema.String)
 
 // Provide default values to prevent uncontrolled input warnings
 const defaultValues: Promise<typeof EncounterFormSchema.Encoded> =
@@ -87,7 +84,7 @@ export default function CreateEncounterPage() {
     )
 
     // Navigate to the created encounter
-    navigate(`/Encounter/${encounter.id}`)
+    navigate(`/Encounter/${encounter.url?.toString() ?? ''}`)
   }
 
   return (

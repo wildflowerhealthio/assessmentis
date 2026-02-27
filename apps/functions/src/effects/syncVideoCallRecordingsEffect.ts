@@ -1,5 +1,5 @@
 import type { Either } from 'effect'
-import { Effect, Layer, pipe, RequestResolver, Schema } from 'effect'
+import { Effect, Layer, pipe, Schema } from 'effect'
 import { info, error as logError } from 'firebase-functions/logger'
 import type { VideoCallRoomName } from '@assessmentis/video-call-domain'
 import {
@@ -24,9 +24,9 @@ import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
 
 import { VideoCallClientLayerFromOrg } from '../layers/VideoCallClientService'
 import { FhirR4ClientLayerLive } from '../layers/FhirR4ClientService'
-import type { Location } from '@assessmentis/clinical-domain/administration'
-import type { Encounter } from '@assessmentis/clinical-domain/administration'
-import type { Media } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import type { Location } from '@assessmentis/clinical-domain'
+import type { Encounter } from '@assessmentis/clinical-domain'
+import type { Media } from '@assessmentis/clinical-domain'
 import type { Hub } from '../../../../global/effectful-store/src/Hub'
 interface SyncOrgResult {
   orgSlug: string

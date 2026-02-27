@@ -1,4 +1,4 @@
-import type { Composition } from '@assessmentis/clinical-domain/content-management'
+import type { Composition } from '@assessmentis/clinical-domain'
 import type React from 'react'
 
 export interface JsxComposition {

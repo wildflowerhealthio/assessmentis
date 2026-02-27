@@ -3,10 +3,10 @@ import { Effect, Option, Stream } from 'effect'
 import { StreamEither } from '@assessmentis/util'
 import type {
   Encounter,
-  EncounterId,
   Location,
-  LocationId,
-} from '@assessmentis/clinical-domain/administration'
+  Questionnaire,
+  QuestionnaireResponse,
+} from '@assessmentis/clinical-domain'
 import type {
   AuthError,
   AuthzError,
@@ -14,32 +14,30 @@ import type {
   ExternalAssertionError,
 } from '@assessmentis/ontology'
 import { UnhandledError } from '@assessmentis/ontology'
-import type {
-  Questionnaire,
-  QuestionnaireResponse,
-} from '@assessmentis/clinical-domain/content-management'
-import type { WithId } from '@assessmentis/effectful-store'
+import type { Resource } from '@assessmentis/effectful-store'
 import { extractReferenceId } from '@assessmentis/clinical-domain/data-types'
 import type { NoSelectedOrgError } from '@assessmentis/platform-domain'
 import { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
 
-export type FullEncounter = WithId<Encounter> & {
+export type FullEncounter = Resource.WithResourceUrl<Encounter> & {
   questionnaireResponses: Array<
-    WithId<QuestionnaireResponse> & { _questionnaire: Questionnaire }
+    Resource.WithResourceUrl<QuestionnaireResponse> & {
+      _questionnaire: Questionnaire
+    }
   >
-  _locations: Array<WithId<Location>>
+  _locations: Array<Resource.WithResourceUrl<Location>>
 }
 
 export const getFullEncounter = (
-  encounterId: EncounterId
+  encounterId: string
 ): Stream.Stream<
   Either.Either<
     FullEncounter,
     | UnhandledError
     | AuthError
     | AuthzError
-    | NotFoundError<'Encounter', { id: EncounterId }>
-    | NotFoundError<'Location', { id: LocationId }>
+    | NotFoundError<'Encounter', { url: string }>
+    | NotFoundError<'Location', { url: string }>
     | ExternalAssertionError
     | NoSelectedOrgError
   >,
@@ -78,7 +76,7 @@ export const getFullEncounter = (
 
             // Fetch each referenced Location resource
             const _locations = yield* Effect.all(
-              locationIds.map((id) => locationRepo.get(id as LocationId))
+              locationIds.map((id) => locationRepo.get(id))
             )
 
             return { encounter, _locations }
@@ -107,7 +105,9 @@ export const getFullEncounter = (
                     UnhandledError
                   > =>
                     Option.fromNullable<Questionnaire | undefined>(
-                      allQuestionnaires.find(({ id }) => id == qr.questionnaire)
+                      allQuestionnaires.find(
+                        (q) => q.url?.toString() === qr.questionnaire
+                      )
                     ).pipe(
                       Option.map((_questionnaire: Questionnaire) =>
                         Effect.succeed<

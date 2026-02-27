@@ -1,5 +1,4 @@
-import { Array, DateTime, Effect, Option, ParseResult, Schema } from 'effect'
-import { record } from 'effect/FastCheck'
+import { DateTime, Effect, Option, ParseResult, Schema } from 'effect'
 
 export const TimelessDateFromString = Schema.transformOrFail(
   // Source schema
@@ -234,76 +233,16 @@ export const Prepend =
 //     })
 //   )
 
-// ---------------------------------------------------------------------------
-// Schema composition helpers
-// ---------------------------------------------------------------------------
-
-/**
- * A non-empty Schema.Union — at least one member.
- */
-export type NonEmptyUnion = Schema.Union<
-  ReadonlyArray<Schema.Schema.AnyNoContext>
->
-
-/**
- * Type-safe `Schema.extend` for two no-context schemas.
- *
- * Returns a schema whose Type/Encoded are the intersections of the inputs.
- * Use this instead of raw `Schema.extend` when both operands are context-free
- * to get cleaner intersection types.
- */
-export interface extendNoContext<
-  Self extends Schema.Schema.AnyNoContext,
-  That extends Schema.Schema.AnyNoContext,
+export interface mutableEncoded<
+  S extends Schema.Schema.Any,
 > extends Schema.AnnotableClass<
-  extendNoContext<Self, That>,
-  Schema.Schema.Type<Self> & Schema.Schema.Type<That>,
-  Schema.Schema.Encoded<Self> & Schema.Schema.Encoded<That>,
-  never
-> {}
-export const extendNoContext = <
-  Self extends Schema.Schema.AnyNoContext,
-  That extends Schema.Schema.AnyNoContext,
->(
-  self: Self,
-  that: That
-) => Schema.extend(self, that) as extendNoContext<Self, That>
-
-export interface StructNoContext<
-  Fields extends {
-    readonly [x: PropertyKey]:
-      | Schema.Schema.AnyNoContext
-      | Schema.PropertySignature.All
-  },
-  Records extends ReadonlyArray<{
-    readonly key: Schema.Schema.AnyNoContext
-    readonly value: Schema.Schema.AnyNoContext
-  }>,
-> extends Schema.AnnotableClass<
-  any,
-  Schema.Simplify<Schema.TypeLiteral.Type<Fields, Records>>,
-  Schema.Simplify<Schema.TypeLiteral.Encoded<Fields, Records>>,
-  never
+  mutableEncoded<S>,
+  Schema.Simplify<Schema.Schema.Type<S>>,
+  Schema.SimplifyMutable<Schema.Schema.Encoded<S>>,
+  Schema.Schema.Context<S>
 > {}
 
-export const StructNoContext = <
-  const Fields extends {
-    readonly [x: PropertyKey]:
-      | Schema.Schema.AnyNoContext
-      | Schema.PropertySignature.All
-  },
-  const Records extends ReadonlyArray<{
-    readonly key: Schema.Schema.AnyNoContext
-    readonly value: Schema.Schema.AnyNoContext
-  }>,
->(
-  fields: Fields,
-  ...records: Records
-): StructNoContext<Fields, Records> =>
-  Array.isNonEmptyReadonlyArray(records)
-    ? (Schema.Struct(
-        fields,
-        records[0],
-        ...records.slice(1)
-      ) as any as StructNoContext<Fields, Records>)
-    : (Schema.Struct(fields) as any as StructNoContext<Fields, Records>)
+export const mutableEncoded = <S extends Schema.Schema.Any>(
+  schema: S
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): mutableEncoded<S> => Schema.mutable(schema) as any

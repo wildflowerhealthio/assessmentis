@@ -6,10 +6,16 @@ import type {
   RepositoryFilters,
   Schemas,
 } from '@assessmentis/clinical-domain'
-import type { WithId } from '@assessmentis/effectful-store'
+import type { ReadonlyUrl } from '@assessmentis/effectful-store'
 import type { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
 import type { NoSelectedOrgError } from '@assessmentis/platform-domain'
 import type { NotFoundError } from '@assessmentis/ontology'
+
+type AnyResource = Schema.Schema.Type<(typeof Schemas)[keyof typeof Schemas]>
+
+type WithUrl<T extends { url?: ReadonlyUrl | undefined }> = T & {
+  url: NonNullable<T['url']>
+}
 
 /**
  * Configuration for the generic resource CRUD pages (create, edit, list).
@@ -20,18 +26,18 @@ import type { NotFoundError } from '@assessmentis/ontology'
  * `ResourcePagesConfig<any, any>` to avoid threading generics through routes.
  */
 export interface ResourcePagesConfig<
-  TResource extends Schema.Schema.Type<(typeof Schemas)[keyof typeof Schemas]>,
+  TResource extends AnyResource,
   TFormSchema extends Schema.Schema.AnyNoContext,
 > {
-  /** FHIR resource type key — must match a key in ClinicalDataRepositoryService.stream */
-  resourceType: TResource['resourceType']
+  /** Domain type key — must match a key in ClinicalDataRepositoryService.stream */
+  resourceType: TResource['domainType']
   singularLabel: string
   pluralLabel: string
   /** Route param name for the resource ID, e.g. 'patientId' */
   paramName: string
 
-  /** Decode a raw URL param string into a typed ID. Returns None for invalid IDs. */
-  decodeId: (raw: string) => Option.Option<NonNullable<TResource['id']>>
+  /** Decode a raw URL param string into a resource URL. Returns None for invalid IDs. */
+  decodeUrl: (raw: string) => Option.Option<ReadonlyUrl>
   /** Human-readable display name for a resource instance */
   getDisplayName: (resource: TResource) => string
 
@@ -50,19 +56,19 @@ export interface ResourcePagesConfig<
   createAction: (
     formData: Schema.Schema.Type<TFormSchema>
   ) => Effect.Effect<
-    WithId<TResource>,
+    WithUrl<TResource>,
     ClinicalDataRepositoryErrors | NoSelectedOrgError,
     ClinicalDataRepositoryService
   >
   updateAction: (
-    id: NonNullable<TResource['id']>,
+    url: ReadonlyUrl,
     current: TResource,
     formData: Schema.Schema.Type<TFormSchema>
   ) => Effect.Effect<
     TResource,
     | ClinicalDataRepositoryErrors
     | NoSelectedOrgError
-    | NotFoundError<TResource['resourceType'], { id: TResource['id'] }>,
+    | NotFoundError<TResource['domainType'], { url: ReadonlyUrl }>,
     ClinicalDataRepositoryService
   >
 

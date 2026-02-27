@@ -1,7 +1,5 @@
 import type { Scope } from 'effect'
 import { Either, Option, Schema, Stream } from 'effect'
-import type { LocationId } from '@assessmentis/clinical-domain/administration'
-import { EncounterId } from '@assessmentis/clinical-domain/administration'
 import type { FullEncounter } from 'app/modules/interview-call/actions/getFullEncounter'
 import { getFullEncounter } from 'app/modules/interview-call/actions/getFullEncounter'
 import InterviewCall from 'app/modules/interview-call/features/InterviewCall/InterviewCall'
@@ -24,7 +22,7 @@ import { usePlatformContext } from '../layers/PlatformContext'
 import { Await, useAsyncError } from 'react-router'
 import type { NoSelectedOrgError } from '../../../../domain/platform-domain/src/hostedServices'
 
-const tryDecodeEncounterId = Schema.decodeOption(EncounterId)
+const tryDecodeEncounterId = Schema.decodeOption(Schema.String)
 
 const EncounterError = () => {
   const error = useAsyncError()
@@ -41,15 +39,15 @@ export default function EncounterPage({ params }: Route.ComponentProps) {
     const encounterIdStr = params.encounterId
     const encounterIdMaybe = tryDecodeEncounterId(encounterIdStr)
     return Option.match<
-      EncounterId,
+      string,
       Stream.Stream<
         Either.Either<
           FullEncounter,
           | UnhandledError
           | AuthError
           | AuthzError
-          | NotFoundError<'Encounter', { id: EncounterId }>
-          | NotFoundError<'Location', { id: LocationId }>
+          | NotFoundError<'Encounter', { id: string }>
+          | NotFoundError<'Location', { id: string }>
           | ExternalAssertionError
           | NoSelectedOrgError
         >,
@@ -70,7 +68,7 @@ export default function EncounterPage({ params }: Route.ComponentProps) {
           Either.left(
             new NotFoundError({
               resourceType: 'Encounter',
-              params: { id: EncounterId.make(encounterIdStr) },
+              params: { id: encounterIdStr },
             })
           )
         )
@@ -96,7 +94,7 @@ export default function EncounterPage({ params }: Route.ComponentProps) {
       <Await resolve={encounterPromise} errorElement={<EncounterError />}>
         {(encounterData) => (
           <ResourceDetailPage
-            editTo={`/Encounter/${encounterData.id}/edit`}
+            editTo={`/Encounter/${encounterData.url?.toString() ?? params.encounterId}/edit`}
             title={runEffectSync(getEncounterDisplayName(encounterData))}
             sections={[
               {

@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { applySchemaMixinTo } from '@assessmentis/util'
+import { MergeClasses } from '@assessmentis/util'
 import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
 import { Code } from '../../data-types/complex/Code'
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
@@ -16,7 +16,6 @@ const Key = 'Composition' as const
 type Key = typeof Key
 
 const fields = {
-  resourceType: Schema.Literal('Composition'),
   identifier: Schema.optional(Schema.suspend(() => Identifier)),
   status: Schema.Union(
     Schema.Literal('preliminary'),
@@ -48,12 +47,7 @@ export interface CompositionEncoded
  * A set of resources composed into a single coherent clinical statement with
  * clinical attestation.
  */
-class Composition extends Schema.Class<Composition>(Key)({
-  ...resourceMixin.fields,
-  ...fields,
-}) {}
-
-const CompositionWithMixin = applySchemaMixinTo(Composition, resourceMixin)
-type CompositionWithMixin = Composition
-
-export { CompositionWithMixin as Composition }
+export class Composition extends MergeClasses<Composition>(Key)(
+  resourceMixin,
+  fields
+) {}

@@ -1,4 +1,4 @@
-import type { QuestionnaireResponse } from '@assessmentis/clinical-domain/content-management'
+import type { QuestionnaireResponse } from '@assessmentis/clinical-domain'
 import { ResourceListItem } from '../../../ResourcePages/ResourceListItem/ResourceListItem'
 
 interface QuestionnaireResponseListItemProps {
@@ -12,7 +12,7 @@ export function QuestionnaireResponseListItem({
   onDelete,
   loading,
 }: QuestionnaireResponseListItemProps) {
-  const displayName = item.questionnaire ?? item.id ?? 'Unnamed Response'
+  const displayName = item.questionnaire ?? item.url?.toString() ?? 'Unnamed Response'
   const lastUpdated = item.meta?.lastUpdated
     ? new Date(item.meta.lastUpdated.epochMillis).toLocaleDateString()
     : null
@@ -21,8 +21,8 @@ export function QuestionnaireResponseListItem({
     <ResourceListItem
       displayName={displayName}
       summaryItems={lastUpdated ? [`Updated: ${lastUpdated}`] : []}
-      viewPath={`/QuestionnaireResponse/${item.id}`}
-      editPath={`/QuestionnaireResponse/${item.id}`}
+      viewPath={`/QuestionnaireResponse/${item.url?.toString()}`}
+      editPath={`/QuestionnaireResponse/${item.url?.toString()}`}
       onDelete={onDelete}
       loading={loading}
     />

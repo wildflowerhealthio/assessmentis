@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { applySchemaMixinTo } from '@assessmentis/util'
+import { MergeClasses } from '@assessmentis/util'
 import {
   BackboneElement,
   type BackboneElementEncoded,
@@ -61,17 +61,17 @@ const answerOptionValueMixin = DatatypeChoice(
   'value',
   FhirR4ChoiceElements['Questionnaire.item.answerOption.value[x]']
 )
-
-const QuestionnaireItemAnswerOptionSchema = Schema.Struct({
-  ...BackboneElement('QuestionnaireItemAnswerOption').fields,
-  ...answerOptionValueMixin.fields,
+const QuestionnaireItemAnswerOptionBackbone = BackboneElement(
+  'QuestionnaireItemAnswerOption'
+)
+export class QuestionnaireItemAnswerOption extends MergeClasses<QuestionnaireItemAnswerOption>(
+  'QuestionnaireItemAnswerOption'
+)(QuestionnaireItemAnswerOptionBackbone, answerOptionValueMixin, {
   initialSelected: Schema.optional(Schema.Boolean),
-})
+}) {}
 
 const questionnaireItemFields = {
-  answerOption: Schema.optional(
-    Schema.Array(QuestionnaireItemAnswerOptionSchema)
-  ),
+  answerOption: Schema.optional(Schema.Array(QuestionnaireItemAnswerOption)),
   answerValueSet: Schema.optional(Schema.String),
   code: Schema.optional(Schema.Array(Schema.suspend(() => Coding))),
   definition: Schema.optional(Schema.String),
@@ -119,7 +119,7 @@ export class QuestionnaireItem extends Schema.Class<QuestionnaireItem>(
 // --- Questionnaire ---
 
 const fields = {
-  resourceType: Schema.Literal('Questionnaire'),
+  definitionUrl: Schema.optional(Schema.String),
   approvalDate: Schema.optional(Schema.String),
   code: Schema.optional(Schema.Array(Schema.suspend(() => Coding))),
   contact: Schema.optional(Schema.Any),
@@ -159,12 +159,7 @@ export interface QuestionnaireEncoded
  * presentation, phraseology and grouping to allow coherent, consistent
  * data collection.
  */
-class Questionnaire extends Schema.Class<Questionnaire>(Key)({
-  ...resourceMixin.fields,
-  ...fields,
-}) {}
-
-const QuestionnaireWithMixin = applySchemaMixinTo(Questionnaire, resourceMixin)
-type QuestionnaireWithMixin = Questionnaire
-
-export { QuestionnaireWithMixin as Questionnaire }
+export class Questionnaire extends MergeClasses<Questionnaire>(Key)(
+  resourceMixin,
+  fields
+) {}

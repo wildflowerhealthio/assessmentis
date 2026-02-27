@@ -17,24 +17,19 @@ describe('Media model', () => {
   })
 
   test('property: missing required fields always fail', () => {
-    // Property: Media must have resourceType, status, and content
+    // Property: Media must have domainType, status, and content
     fc.assert(
       fc.property(
         fc.oneof(
           // Missing status
           fc.record({
-            resourceType: fc.constant('Media' as const),
+            domainType: fc.constant('Media' as const),
             content: fc.record({ contentType: fc.string() }),
           }),
           // Missing content
           fc.record({
-            resourceType: fc.constant('Media' as const),
+            domainType: fc.constant('Media' as const),
             status: fc.constantFrom('completed', 'preparation'),
-          }),
-          // Missing resourceType
-          fc.record({
-            status: fc.constantFrom('completed', 'preparation'),
-            content: fc.record({ contentType: fc.string() }),
           })
         ),
         (incomplete) => {
@@ -60,14 +55,14 @@ describe('Media model', () => {
           const encode = Schema.encodeUnknownEither(Media.Media)
 
           const media: {
-            resourceType: 'Media'
+            domainType: 'Media'
             status: string
             content: { contentType: string }
             height?: number
             width?: number
             deviceName?: string
           } = {
-            resourceType: 'Media',
+            domainType: 'Media',
             status,
             content: { contentType },
           }
@@ -106,13 +101,13 @@ describe('Media model', () => {
           const encode = Schema.encodeUnknownEither(Media.Media)
 
           const media: {
-            resourceType: 'Media'
+            domainType: 'Media'
             status: string
             content: { contentType: string }
             duration?: number
             frames?: number
           } = {
-            resourceType: 'Media',
+            domainType: 'Media',
             status: 'completed',
             content: { contentType: 'video/mp4' },
           }
@@ -147,7 +142,7 @@ describe('Media model', () => {
           const encode = Schema.encodeUnknownEither(Media.Media)
 
           const media = {
-            resourceType: 'Media' as const,
+            domainType: 'Media' as const,
             status,
             content: { contentType },
           }

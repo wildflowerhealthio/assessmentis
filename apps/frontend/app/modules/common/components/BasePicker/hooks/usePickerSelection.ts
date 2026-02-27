@@ -36,26 +36,26 @@ export function usePickerSelection<T>(
   }, [value])
 
   const selectedItems = useMemo(() => {
-    return items.filter((item) => normalizedValue.includes(item.id))
+    return items.filter((item) => normalizedValue.includes(item.url.toString()))
   }, [items, normalizedValue])
 
   const handleSelect = useCallback(
     (item: PickerItem<T>) => {
       if (props.multiple) {
-        const isCurrentlySelected = normalizedValue.includes(item.id)
+        const isCurrentlySelected = normalizedValue.includes(item.url.toString())
 
         const newIds = isCurrentlySelected
-          ? normalizedValue.filter((id) => id !== item.id)
-          : [...normalizedValue, item.id]
+          ? normalizedValue.filter((id) => id !== item.url.toString())
+          : [...normalizedValue, item.url.toString()]
 
         props.onChange(newIds)
       } else {
-        if (normalizedValue[0] === item.id) {
+        if (normalizedValue[0] === item.url.toString()) {
           // Deselect if already selected
           props.onChange(undefined)
           return
         } else {
-          props.onChange(item.id)
+          props.onChange(item.url.toString())
         }
       }
     },
@@ -65,7 +65,7 @@ export function usePickerSelection<T>(
   const handleSelectMany = useCallback(
     (items: ReadonlyArray<PickerItem<T>>) => {
       if (props.multiple) {
-        props.onChange(items.map((i) => i.id))
+        props.onChange(items.map((i) => i.url.toString()))
       }
     },
     [props]
@@ -73,7 +73,7 @@ export function usePickerSelection<T>(
 
   const isSelected = useCallback(
     (item: PickerItem<T>) => {
-      return normalizedValue.includes(item.id)
+      return normalizedValue.includes(item.url.toString())
     },
     [normalizedValue]
   )

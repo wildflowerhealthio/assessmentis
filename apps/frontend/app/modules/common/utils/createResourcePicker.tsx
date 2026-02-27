@@ -13,7 +13,7 @@ import type { Schemas } from '@assessmentis/clinical-domain'
 export interface ResourcePickerConfig<
   TResource extends Schema.Schema.Type<(typeof Schemas)[keyof typeof Schemas]>,
 > {
-  resourceType: TResource['resourceType']
+  resourceType: TResource['domainType']
   formatDisplay: (resource: TResource) => string
   formatSecondary: (resource: TResource) => string
   defaultPlaceholder: string
@@ -46,7 +46,7 @@ export function createResourcePicker<
   const transform = (
     resource: TResource
   ): PickerItem<{ resource: TResource }> => ({
-    id: resource.id!,
+    url: resource.url!,
     displayName: config.formatDisplay(resource),
     secondaryText: config.formatSecondary(resource),
     metadata: { resource },

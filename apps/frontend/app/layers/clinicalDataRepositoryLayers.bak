@@ -15,16 +15,16 @@ import {
   EncounterRepository,
   PatientRepository,
   PractitionerRepository,
-} from '@assessmentis/clinical-domain/administration'
+} from '@assessmentis/clinical-domain'
 import {
   CompositionRepository,
   QuestionnaireRepository,
   QuestionnaireResponseRepository,
-} from '@assessmentis/clinical-domain/content-management'
+} from '@assessmentis/clinical-domain'
 import {
   MediaRepository,
   ObservationRepository,
-} from '@assessmentis/clinical-domain/diagnostic-medicine'
+} from '@assessmentis/clinical-domain'
 
 type LayerType<Key extends keyof typeof Schemas> = Layer.Layer<
   ClinicalDomainRepositoryTagClass<Key>,

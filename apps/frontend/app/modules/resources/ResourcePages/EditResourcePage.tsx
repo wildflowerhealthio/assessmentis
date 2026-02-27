@@ -12,15 +12,17 @@ import { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepos
 import { usePlatformContext } from '../../../layers/PlatformContext'
 import type { ResourcePagesConfig } from './resourcePagesConfigType'
 import { NotFoundError } from '@assessmentis/ontology'
-import type {
-  ClinicalDataRepositoryErrorsWithNotFound,
-  Schemas,
-} from '@assessmentis/clinical-domain'
-import type { WithId } from '@assessmentis/effectful-store'
+import type { Schemas } from '@assessmentis/clinical-domain'
+import type { ReadonlyUrl } from '@assessmentis/effectful-store'
 import type { NoSelectedOrgError } from '@assessmentis/platform-domain'
+import type { ClinicalDataRepositoryErrors } from '@assessmentis/clinical-domain'
 
 export interface EditResourcePageProps {
   params: { id: string }
+}
+
+type WithUrl<T extends { url?: ReadonlyUrl | undefined }> = T & {
+  url: NonNullable<T['url']>
 }
 
 export function makeEditResourcePage<
@@ -32,43 +34,38 @@ export function makeEditResourcePage<
   const EditResourcePage = ({
     params: { id: rawResourceId },
   }: EditResourcePageProps) => {
-    const resourceId = useMemo(
-      () => config.decodeId(rawResourceId),
+    const resourceUrl = useMemo(
+      () => config.decodeUrl(rawResourceId),
       [rawResourceId]
     )
 
     const { clinicalDataRepositoryService } = usePlatformContext()
 
-    const resourceStream = useMemo(
-      () =>
-        Option.match<
-          NonNullable<TResource['id']>,
-          Stream.Stream<
-            Either.Either<
-              WithId<TResource>,
-              | NoSelectedOrgError
-              | ClinicalDataRepositoryErrorsWithNotFound<TResource>
-            >,
-            never,
-            Scope.Scope
-          >
-        >(resourceId, {
-          onNone: () =>
-            Stream.succeed(
-              Either.left(
-                new NotFoundError({
-                  resourceType: config.resourceType,
-                  params: { id: rawResourceId as NonNullable<TResource['id']> },
-                })
-              )
-            ),
-          onSome: (id) =>
-            clinicalDataRepositoryService
-              .repositoryStream(config.resourceType)
-              .pipe(StreamEither.mapEffect((repo) => repo.get(id))),
-        }),
-      [clinicalDataRepositoryService, rawResourceId, resourceId]
-    )
+    const resourceStream = useMemo(() => {
+      if (Option.isNone(resourceUrl)) {
+        return Stream.succeed(
+          Either.left(
+            new NotFoundError({
+              resourceType: config.resourceType,
+              params: { url: rawResourceId },
+            })
+          )
+        ) as Stream.Stream<
+          Either.Either<
+            WithUrl<TResource>,
+            | NoSelectedOrgError
+            | ClinicalDataRepositoryErrors
+            | NotFoundError<string, { url: string }>
+          >,
+          never,
+          Scope.Scope
+        >
+      }
+      const url = resourceUrl.value
+      return clinicalDataRepositoryService
+        .repositoryStream(config.resourceType)
+        .pipe(StreamEither.mapEffect((repo) => repo.get(url)))
+    }, [clinicalDataRepositoryService, rawResourceId, resourceUrl])
 
     const resourcePromise = useEitherStream(resourceStream)
 
@@ -98,7 +95,7 @@ export function makeEditResourcePage<
 
       await Effect.runPromise(
         config
-          .updateAction(resource.id, resource, formData)
+          .updateAction(resource.url, resource, formData)
           .pipe(
             Effect.provideService(
               ClinicalDataRepositoryService,
@@ -107,10 +104,10 @@ export function makeEditResourcePage<
           )
       )
 
-      navigate(`/${config.resourceType}/${resource.id}`)
+      navigate(`/${config.resourceType}/${resource.url.toString()}`)
     }
 
-    if (Option.isNone(resourceId)) {
+    if (Option.isNone(resourceUrl)) {
       return <Generic404Content resourceType={config.singularLabel} />
     }
 

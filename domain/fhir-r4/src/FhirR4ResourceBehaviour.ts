@@ -1,13 +1,12 @@
 /*
- * This file uses `any` type casts in several places to work around TypeScript's
- * limitations when dealing with generic request/resolver types. These casts are
- * safe because:
- * 1. The actual types are enforced by the public API signatures
- * 2. The runtime behavior is validated by the Effect-TS Request/RequestResolver system
- * 3. Each resolver is strongly typed based on the Key parameter
+ * This file bridges the FHIR R4 client (which uses {resourceType, id}) with
+ * the effectful-store request system (which uses {domainType, url}).
+ *
+ * The FhirR4 schemas are in a transitional state — their base data-type schemas
+ * don't yet produce clinical-domain types with url/domainType. Once the base
+ * schemas are updated, many of the bridge helpers here can be simplified.
  */
 
-import { Resource as EffectResource } from 'effect'
 import {
   Array,
   Record,
@@ -18,14 +17,11 @@ import {
   Context,
 } from 'effect'
 import { FhirR4Client } from '@assessmentis/fhir-r4'
+import type { ReadonlyUrl, Resource } from '@assessmentis/effectful-store'
 import {
-  Resource,
-  type WithId,
   type ResourceRequest,
   type SourceBehaviour,
-  type BaseResource,
 } from '@assessmentis/effectful-store'
-import { assertId } from '@assessmentis/effectful-store'
 import type { AuthError } from '@assessmentis/ontology'
 import {
   UnhandledError,
@@ -35,52 +31,135 @@ import {
 import { StreamEither } from '@assessmentis/util'
 import { refineOrFail } from '@assessmentis/util'
 import { FhirR4Bundle } from './foundation-framework'
+import type {
+  Composition,
+  DiagnosticReport,
+  Location,
+  Media,
+  Observation,
+  Practitioner,
+  Questionnaire,
+  QuestionnaireResponse,
+} from '@assessmentis/clinical-domain'
+import type { Encounter, Patient } from '@assessmentis/clinical-domain'
 import {
-  Encounter,
-  Patient,
-} from '@assessmentis/clinical-domain/administration'
-import { FhirR4Encounter, FhirR4Patient } from './administration'
-import { symbol } from 'effect/Equivalence'
+  FhirR4Encounter,
+  FhirR4Location,
+  FhirR4Patient,
+  FhirR4Practitioner,
+} from './administration'
+import {
+  FhirR4Composition,
+  FhirR4Questionnaire,
+  FhirR4QuestionnaireResponse,
+} from './content-management'
+import {
+  FhirR4DiagnosticReport,
+  FhirR4Media,
+  FhirR4Observation,
+} from './diagnostic-medicine'
+import { BaseUrl } from './data-types/UrlIdentification'
+
+export const fhirProtocols = {
+  http: 'fhir-r4+http:',
+  https: 'fhir-r4+https:',
+} as const
+
+export type FhirR4Protocol = (typeof fhirProtocols)[keyof typeof fhirProtocols]
+
+// Type alias (not interface) to provide implicit index signature for
+// compatibility with MultiResolver/SourceBehaviour constraints
+type Resources = {
+  readonly Composition: Composition
+  readonly DiagnosticReport: DiagnosticReport
+  readonly Encounter: Encounter
+  readonly Location: Location
+  readonly Media: Media
+  readonly Observation: Observation
+  readonly Patient: Patient
+  readonly Practitioner: Practitioner
+  readonly Questionnaire: Questionnaire
+  readonly QuestionnaireResponse: QuestionnaireResponse
+}
+
+// Explicit mapped type ensures FhirR4Schemas[K] resolves to Schema<Resources[K], ...>
+// for generic K, rather than a union of all concrete schema types.
+
+const FhirR4Schemas: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [K in keyof Resources]: Schema.Schema<Resources[K], any, BaseUrl>
+} = {
+  Composition: FhirR4Composition.Schema,
+  DiagnosticReport: FhirR4DiagnosticReport.Schema,
+  Encounter: FhirR4Encounter.Schema,
+  Location: FhirR4Location.Schema,
+  Media: FhirR4Media.Schema,
+  Observation: FhirR4Observation.Schema,
+  Patient: FhirR4Patient.Schema,
+  Practitioner: FhirR4Practitioner.Schema,
+  Questionnaire: FhirR4Questionnaire.Schema,
+  QuestionnaireResponse: FhirR4QuestionnaireResponse.Schema,
+}
+
+// --- Helpers ---
 
 /**
- * Helper to decode and assert resource has ID
+ * Extract the FHIR resource ID from a ReadonlyUrl pathname.
+ * URLs follow the pattern `.../{resourceType}/{id}`.
  */
-const decodeAndAssertId = <T extends BaseResource, TEncoded>(
-  schema: Schema.Schema<T, TEncoded, never>
+const extractFhirId = (url: { readonly pathname: string }): string => {
+  const segments = url.pathname.split('/')
+  return segments[segments.length - 1]
+}
+
+/**
+ * Type guard: asserts a resource has a non-undefined url
+ */
+const hasResourceUrl = <T extends Resource.AnyResource>(
+  value: T
+): value is Resource.WithResourceUrl<T> => value.url !== undefined
+
+/**
+ * Decode raw FHIR JSON and assert the result has a url
+ */
+const decodeAndAssertUrl = <T extends Resource.Resource<string>>(
+  schema: Schema.Schema<T, unknown, BaseUrl>
 ) => {
   const decode = Schema.decodeUnknown(schema)
 
   return (
     result: unknown
-  ): Effect.Effect<WithId<T>, ExternalAssertionError, never> =>
-    Effect.gen(function* () {
-      const decoded = yield* decode(result).pipe(
-        Effect.mapError(
-          (cause) =>
-            new ExternalAssertionError({
-              expected: 'Expected resource to conform to schema',
-              cause,
-            })
-        )
+  ): Effect.Effect<
+    Resource.WithResourceUrl<T>,
+    ExternalAssertionError,
+    BaseUrl
+  > =>
+    decode(result).pipe(
+      Effect.mapError(
+        (cause) =>
+          new ExternalAssertionError({
+            expected: 'Expected resource to conform to schema',
+            cause,
+          })
+      ),
+      Effect.flatMap((decoded) =>
+        hasResourceUrl(decoded)
+          ? Effect.succeed(decoded)
+          : Effect.fail(
+              new ExternalAssertionError({
+                expected: 'Expected resource to have url',
+                cause: decoded,
+              })
+            )
       )
-
-      const resourceWithId: WithId<T> = yield* assertId(
-        decoded,
-        new ExternalAssertionError({
-          expected: 'Expected resource to have id',
-          cause: decoded,
-        })
-      )
-
-      return resourceWithId
-    })
+    )
 }
 
 /**
- * Helper to decode a Bundle of resources
+ * Decode a Bundle of resources
  */
-const makeBundleDecoder = <T extends BaseResource, TEncoded>(
-  schema: Schema.Schema<T, TEncoded, never>
+const makeBundleDecoder = <T extends Resource.Resource<string>>(
+  schema: Schema.Schema<T, unknown, BaseUrl>
 ) => {
   const DataBundle = FhirR4Bundle.Schema(schema)
   const rawDecodeBundle = Schema.decodeUnknown(DataBundle)
@@ -94,66 +173,49 @@ const makeBundleDecoder = <T extends BaseResource, TEncoded>(
             expected: 'Search response could not be decoded as a Bundle',
           })
       ),
-      Effect.map(({ entry }) => entry?.map((e) => e.resource) ?? []),
       Effect.flatMap(
         (
-          entries
-        ): Effect.Effect<readonly WithId<T>[], ExternalAssertionError, never> =>
-          Effect.all(
-            entries.map(
-              refineOrFail<ExternalAssertionError, undefined | T, WithId<T>>(
-                (entry: T | undefined): entry is WithId<T> =>
-                  entry?.id !== undefined,
+          bundle
+        ): Effect.Effect<
+          readonly Resource.WithResourceUrl<T>[],
+          ExternalAssertionError,
+          never
+        > => {
+          // Explicitly type to prevent `any` propagation from broken base schemas
+          const resources: readonly (T | undefined)[] =
+            bundle.entry?.map(
+              (e: { resource?: T | undefined }) => e.resource
+            ) ?? []
+
+          return Effect.all(
+            resources.map(
+              refineOrFail<
+                ExternalAssertionError,
+                undefined | T,
+                Resource.WithResourceUrl<T>
+              >(
+                (entry: T | undefined): entry is Resource.WithResourceUrl<T> =>
+                  entry !== undefined && entry.url !== undefined,
                 (_) =>
                   new ExternalAssertionError({
                     expected:
-                      'Expected resource entry to have a resource with an id',
+                      'Expected resource entry to have a resource with a url',
                     cause: undefined,
                   })
               )
             )
           )
+        }
       )
     )
 }
-
-type BaseResources = {
-  readonly [key: symbol]: BaseResource & Resource.AnyResource
-}
-interface Resources {
-  readonly [Patient[Resource.ResourceType]]: Patient
-  readonly [Encounter[Resource.ResourceType]]: Encounter
-}
-
-const fhirR4HttpProtocol = 'fhir-r4+http:'
-const fhirR4HttpsProtocol = 'fhir-r4+https:'
-
-export type FhirR4Protocol =
-  | typeof fhirR4HttpProtocol
-  | typeof fhirR4HttpsProtocol
-interface FhirResource extends Resource.Resource<
-  keyof Resources,
-  Resource.ReadonlyUrl<{
-    Protocol: FhirR4Protocol
-  }>
-> {
-  resourceType: string
-  id?: string | undefined
-}
-
-const fhirSchemas: {
-  readonly [K in keyof Resources]: Schema.Schema<Resources[K], any, never>
-} = {
-  [Patient[Resource.ResourceType]]: FhirR4Patient.Schema,
-  [Encounter[Resource.ResourceType]]: FhirR4Encounter.Schema,
-} as const
 
 const resolverForResource = <K extends keyof Resources>(request: {
   resourceType: K
 }): AllActionResolver<Resources[K]> =>
   makeResolverSet({
     resourceType: request.resourceType,
-    Schema: fhirSchemas[request.resourceType],
+    Schema: FhirR4Schemas[request.resourceType],
   })
 
 export const FhirR4SourceBehaviour = ({
@@ -169,7 +231,7 @@ export const FhirR4SourceBehaviour = ({
   >
   sourceType: string
   sourceId: string
-  url: string
+  url: ReadonlyUrl
   provokeReauth: () => Effect.Effect<void, AuthError, never>
 }): SourceBehaviour.SourceBehaviour<
   Resources,
@@ -181,14 +243,16 @@ export const FhirR4SourceBehaviour = ({
       const resolver: ResourceRequest.MultiResolver<
         Resources,
         keyof Resources,
-        FhirR4Client
+        never
       > = RequestResolver.fromEffect((request) => {
         const innerResolver = resolverForResource(request)
 
         return Effect.request(
           request,
           innerResolver.pipe(
-            RequestResolver.provideContext(Context.make(FhirR4Client, client))
+            RequestResolver.provideContext(
+              Context.make(FhirR4Client, client).pipe(Context.add(BaseUrl, url))
+            )
           )
         )
       })
@@ -200,43 +264,52 @@ export const FhirR4SourceBehaviour = ({
   return {
     sourceId,
     sourceType,
-    url,
+    url: url.toString(),
     resolverStream,
     provokeReauth,
     activeResources: {
-      Patient: true,
+      Composition: true,
+      DiagnosticReport: true,
       Encounter: true,
+      Location: true,
+      Media: true,
+      Observation: true,
+      Patient: true,
+      Practitioner: true,
+      Questionnaire: true,
+      QuestionnaireResponse: true,
     },
   }
 }
 
 export interface FhirR4ResourceBehaviour<
-  T extends FhirResource,
+  T extends Resource.Resource<string>,
   TEncoded = unknown,
 > {
-  resourceType: T['resourceType']
+  resourceType: T[Resource.ResourceType]
   Schema: Schema.Schema<T, TEncoded, never>
 }
 
-type AllActionResolver<T extends FhirResource> =
+type AllActionResolver<T extends Resource.Resource<string>> =
   RequestResolver.RequestResolver<
     | ResourceRequest.Get<T>
     | ResourceRequest.Search<T>
     | ResourceRequest.Create<T>
     | ResourceRequest.Update<T>
     | ResourceRequest.Delete<T>,
-    FhirR4Client
+    FhirR4Client | BaseUrl
   >
 
-const makeResolverSet = <T extends FhirResource>({
+const makeResolverSet = <T extends Resource.Resource<string>>({
   resourceType,
   Schema: schema,
 }: {
   resourceType: T[Resource.ResourceType]
-  Schema: Schema.Schema<T, any, never>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Schema: Schema.Schema<T, any, BaseUrl>
 }): AllActionResolver<T> => {
   const encode = Schema.encode(schema)
-  const decoder = decodeAndAssertId(schema)
+  const decoder = decodeAndAssertUrl(schema)
   const bundleDecoder = makeBundleDecoder(schema)
 
   const Get = RequestResolver.makeBatched(
@@ -249,12 +322,21 @@ const makeResolverSet = <T extends FhirResource>({
         for (const [resType, reqs] of Record.toEntries(byType)) {
           if (reqs.length === 1) {
             // Single read → client.read()
+            const fhirId = extractFhirId(reqs[0].url)
             yield* client
               .read({
                 resourceType: resType,
-                id: reqs[0].id,
+                id: fhirId,
               })
               .pipe(
+                Effect.catchTag('NotFoundError', () =>
+                  Effect.fail(
+                    new NotFoundError({
+                      resourceType: resourceType,
+                      params: { url: reqs[0].url },
+                    })
+                  )
+                ),
                 Effect.matchEffect({
                   onFailure: (error) => Request.fail(reqs[0], error),
                   onSuccess: (raw) =>
@@ -269,7 +351,7 @@ const makeResolverSet = <T extends FhirResource>({
               )
           } else {
             // Batch → client.search({ _id: [id1, id2, ...] })
-            const ids = reqs.map((r) => r.id)
+            const ids = reqs.map((r) => extractFhirId(r.url))
             yield* client
               .search({
                 resourceType: resType,
@@ -282,9 +364,12 @@ const makeResolverSet = <T extends FhirResource>({
                     Effect.all(reqs.map((req) => Request.fail(req, error))),
                   onSuccess: (entries) =>
                     Effect.gen(function* () {
-                      // Match results back to requests by id
+                      // Match results back to requests by url
                       for (const req of reqs) {
-                        const match = entries.find((e) => e.id === req.id)
+                        const reqId = extractFhirId(req.url)
+                        const match = entries.find(
+                          (e) => extractFhirId(e.url) === reqId
+                        )
                         if (match) {
                           yield* Request.succeed(req, match)
                         } else {
@@ -292,7 +377,7 @@ const makeResolverSet = <T extends FhirResource>({
                             req,
                             new NotFoundError({
                               resourceType: resourceType,
-                              params: { id: req.id },
+                              params: { url: req.url },
                             })
                           )
                         }
@@ -339,7 +424,7 @@ const makeResolverSet = <T extends FhirResource>({
 
   const Update = RequestResolver.fromEffect(
     (request: ResourceRequest.Update<T>) => {
-      const originalId = request.resource.id
+      const fhirId = extractFhirId(request.resource.url)
       return Effect.flatMap(FhirR4Client, (client) =>
         encode(request.resource).pipe(
           Effect.mapError(
@@ -348,10 +433,18 @@ const makeResolverSet = <T extends FhirResource>({
           ),
           Effect.flatMap((resource) =>
             client.update({
-              id: originalId,
+              id: fhirId,
               type: resourceType,
               resource,
             })
+          ),
+          Effect.catchTag('NotFoundError', () =>
+            Effect.fail(
+              new NotFoundError({
+                resourceType: resourceType,
+                params: { url: request.resource.url },
+              })
+            )
           ),
           Effect.flatMap(decoder)
         )
@@ -363,17 +456,14 @@ const makeResolverSet = <T extends FhirResource>({
     (request: ResourceRequest.Delete<T>) =>
       Effect.flatMap(FhirR4Client, (client) =>
         client
-          .delete<T['resourceType']>({
+          .delete({
             type: request.resourceType,
-            id: request.id,
+            id: extractFhirId(request.url),
           })
           .pipe(
             Effect.catchTag('NotFoundError', () =>
               Effect.fail(
-                new NotFoundError<
-                  T[Resource.ResourceType],
-                  { url: Resource.InferResourceUrl<T> }
-                >({
+                new NotFoundError({
                   resourceType: request.resourceType,
                   params: { url: request.url },
                 })
@@ -389,27 +479,35 @@ const makeResolverSet = <T extends FhirResource>({
       case 'Get':
         return Effect.request(
           request,
-          Get.pipe(RequestResolver.contextFromServices(FhirR4Client))
+          Get.pipe(RequestResolver.contextFromServices(FhirR4Client, BaseUrl))
         )
       case 'Search':
         return Effect.request(
           request,
-          Search.pipe(RequestResolver.contextFromServices(FhirR4Client))
+          Search.pipe(
+            RequestResolver.contextFromServices(FhirR4Client, BaseUrl)
+          )
         )
       case 'Create':
         return Effect.request(
           request,
-          Create.pipe(RequestResolver.contextFromServices(FhirR4Client))
+          Create.pipe(
+            RequestResolver.contextFromServices(FhirR4Client, BaseUrl)
+          )
         )
       case 'Update':
         return Effect.request(
           request,
-          Update.pipe(RequestResolver.contextFromServices(FhirR4Client))
+          Update.pipe(
+            RequestResolver.contextFromServices(FhirR4Client, BaseUrl)
+          )
         )
       case 'Delete':
         return Effect.request(
           request,
-          Delete.pipe(RequestResolver.contextFromServices(FhirR4Client))
+          Delete.pipe(
+            RequestResolver.contextFromServices(FhirR4Client, BaseUrl)
+          )
         )
     }
   })

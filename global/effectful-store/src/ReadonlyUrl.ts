@@ -132,6 +132,21 @@ export class ReadonlyUrl extends Schema.Class<ReadonlyUrl>('ReadonlyUrl')({
       }),
   })
 
+  contains(otherUrl: ReadonlyUrl): boolean {
+    return (
+      this.protocol === otherUrl.protocol &&
+      this.host === otherUrl.host &&
+      this.pathname.startsWith(otherUrl.pathname)
+    )
+  }
+
+  toString(): string {
+    const url = new URL(`${this.protocol}//${this.host}${this.pathname}`)
+    url.username = this.username
+    url.password = this.password
+    return url.href
+  }
+
   appendToPathname(path: string): ReadonlyUrl {
     return ReadonlyUrl.make({
       host: this.host,

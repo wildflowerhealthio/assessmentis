@@ -1,21 +1,28 @@
 import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
-import type { Range } from '@assessmentis/clinical-domain/data-types'
-import { RangeId } from '@assessmentis/clinical-domain/data-types'
-import { FhirR4Element } from '../base/Element'
-import { FhirR4Quantity } from './Quantity'
+import { Range } from '@assessmentis/clinical-domain/data-types'
+import type { BaseUrl } from '../UrlIdentification'
+import { ElementIdentification } from '../UrlIdentification'
+import { mutableEncoded } from '@assessmentis/util'
+import { QuantityEncodedFromFhir } from './Quantity'
 
-const FhirR4RangeSchema: Schema.Schema<Range, FhirR4.Range, never> =
-  Schema.extend(
-    FhirR4Element.Schema(RangeId),
-    Schema.mutable(
-      Schema.Struct({
-        low: Schema.optional(FhirR4Quantity.Schema),
-        high: Schema.optional(FhirR4Quantity.Schema),
-      })
-    )
+export const RangeEncodedFromFhir: Schema.Schema<
+  Range.RangeEncoded,
+  FhirR4.Range,
+  BaseUrl
+> = Schema.extend(
+  ElementIdentification('Range'),
+  mutableEncoded(
+    Schema.Struct({
+      low: Schema.optional(QuantityEncodedFromFhir),
+      high: Schema.optional(QuantityEncodedFromFhir),
+    })
   )
+)
+
+const RangeSchema: Schema.Schema<Range.Range, FhirR4.Range, BaseUrl> =
+  Schema.compose(RangeEncodedFromFhir, Range.Range)
 
 export const FhirR4Range = {
-  Schema: FhirR4RangeSchema,
+  Schema: RangeSchema,
 }

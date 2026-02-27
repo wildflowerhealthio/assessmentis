@@ -1,4 +1,5 @@
 import { useState, useMemo, Suspense } from 'react'
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import {
   Combobox,
   ComboboxButton,
@@ -102,7 +103,7 @@ export function BasePicker<T>(props: BasePickerProps<T>) {
     if (picking.value && loading) {
       const ids = Array.isArray(picking.value) ? picking.value : [picking.value]
       return ids.map((id) => ({
-        id,
+        url: ReadonlyUrl.make({ pathname: id }),
         displayName: 'Loading...',
         metadata: undefined,
       }))
@@ -171,7 +172,7 @@ export function BasePicker<T>(props: BasePickerProps<T>) {
           ) : (
             filteredItems.map((item) => (
               <ComboboxOption
-                key={item.id}
+                key={item.url.toString()}
                 value={item}
                 className={({ active }) =>
                   cn(classes.Picker__option, {

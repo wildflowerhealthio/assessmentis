@@ -218,7 +218,7 @@ export const humanizeDateTimeWithTime = (
  * @returns Effect that produces formatted range (e.g., "December 31st 9 AM - 10 AM", "January 10 - 14th")
  */
 export const humanizeDateRange = (
-  period: Period | undefined,
+  period: Period.Period | undefined,
   options: DateRangeFormatOptions = {}
 ): Effect.Effect<string, never, DateTime.CurrentTimeZone> =>
   Effect.gen(function* () {
@@ -299,7 +299,7 @@ export const humanizeDateRange = (
  * @returns Effect that produces formatted datetime range
  */
 export const humanizeDateTimeRangeForLocalReader = (
-  period: Period | undefined,
+  period: Period.Period | undefined,
   options: DateRangeFormatOptions = {}
 ): Effect.Effect<string, never, DateTime.CurrentTimeZone> =>
   Effect.gen(function* () {

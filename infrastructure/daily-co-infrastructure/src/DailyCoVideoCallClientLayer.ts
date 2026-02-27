@@ -1,5 +1,3 @@
-import type { HttpClientError } from '@effect/platform'
-import { HttpBody } from '@effect/platform'
 import { HttpClient } from '@effect/platform/HttpClient'
 import { DateTime, Effect, Layer, pipe, Schema } from 'effect'
 import type { ExternalVideoCallRoom } from '@assessmentis/video-call-domain'
@@ -8,8 +6,14 @@ import {
   VideoCallRoomName,
   MeetingTokenString,
 } from '@assessmentis/video-call-domain'
-import { Media } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { Code } from '@assessmentis/clinical-domain/data-types'
+import { Media } from '@assessmentis/clinical-domain'
+import {
+  Attachment,
+  Code,
+  CodeableConcept,
+  Coding,
+  IdentifierAndReference,
+} from '@assessmentis/clinical-domain/data-types'
 import type { AuthError } from '@assessmentis/ontology'
 import {
   UnhandledError,
@@ -24,191 +28,20 @@ import { ApiDailyCoRecordingLinkSchema } from './models/ApiDailyCoRecordingLinkS
 import { ApiDailyCoRoomSchema } from './models/ApiDailyCoRoomSchema'
 import { ApiDailyCoMeetingTokenSchema } from './models/ApiDailyCoMeetingTokenSchema'
 import { DailyCoMeetingTokenPayloadSchema } from './models/DailyCoMeetingTokenPayloadSchema'
-import type { HttpClientResponse } from '@effect/platform/HttpClientResponse'
-import { isHttpClientError } from '@effect/platform/HttpClientError'
 import type {
   MediaWithRoom,
   RoomCreationParams,
 } from '../../../domain/video-call-domain/src/VideoCallClient'
 import { VideoCallClient } from '../../../domain/video-call-domain/src/VideoCallClient'
-
-const getRequestFromHeaders =
-  (
-    httpClient: HttpClient,
-    url: URL,
-    options: Parameters<HttpClient['get']>[1]
-  ) =>
-  <E, R>(effect: Effect.Effect<Record<string, string>, E, R>) =>
-    Effect.flatMap(effect, (authHeaders) => {
-      return httpClient.get(url, {
-        ...options,
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          ...(options?.headers ?? {}),
-          ...authHeaders,
-        },
-      })
-    })
-
-const postRequestFromHeaders =
-  (
-    httpClient: HttpClient,
-    url: URL,
-    body: unknown,
-    options: Parameters<HttpClient['post']>[1]
-  ) =>
-  <E, R>(
-    effect: Effect.Effect<Record<string, string>, E, R>
-  ): Effect.Effect<
-    HttpClientResponse,
-    E | UnhandledError | HttpClientError.HttpClientError,
-    R
-  > =>
-    effect.pipe(
-      Effect.flatMap((authHeaders) =>
-        HttpBody.json(body).pipe(
-          Effect.mapError(
-            (cause) =>
-              new UnhandledError({
-                cause,
-                message: 'Error serializing request body JSON',
-              })
-          ),
-          Effect.map((body) => [authHeaders, body] as const)
-        )
-      ),
-      Effect.flatMap(([authHeaders, body]) => {
-        return httpClient.post(url, {
-          ...options,
-          body,
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            ...(options?.headers ?? {}),
-            ...authHeaders,
-          },
-        })
-      })
-    )
-
-const deleteRequestFromHeaders =
-  (
-    httpClient: HttpClient,
-    url: URL,
-    options: Parameters<HttpClient['del']>[1]
-  ) =>
-  <E, R>(
-    effect: Effect.Effect<Record<string, string>, E, R>
-  ): Effect.Effect<
-    HttpClientResponse,
-    E | UnhandledError | HttpClientError.HttpClientError,
-    R
-  > =>
-    effect.pipe(
-      Effect.flatMap((authHeaders) => {
-        return httpClient.del(url, {
-          ...options,
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            ...(options?.headers ?? {}),
-            ...authHeaders,
-          },
-        })
-      })
-    )
-
-const handleHttpClientError =
-  (message: string) =>
-  <A, E, R>(resp: Effect.Effect<A, HttpClientError.HttpClientError | E, R>) =>
-    Effect.catchIf(resp, isHttpClientError, (cause) =>
-      Effect.fail(
-        new UnhandledError({
-          cause,
-          message,
-        })
-      )
-    )
-
-const handle404 =
-  <ResourceType extends string, Params extends Record<string, unknown>>(
-    resourceType: ResourceType,
-    params: Params
-  ) =>
-  <E, R>(resp: Effect.Effect<HttpClientResponse, E, R>) =>
-    Effect.flatMap(resp, (resp) => {
-      if (resp.status === 404) {
-        return Effect.fail(
-          new NotFoundError<ResourceType, Params>({ resourceType, params })
-        )
-      }
-      return Effect.succeed(resp)
-    })
-
-const assertStatus =
-  (...allowedStatuses: number[]) =>
-  <E, R>(resp: Effect.Effect<HttpClientResponse, E, R>) =>
-    Effect.flatMap(resp, (resp) => {
-      if (allowedStatuses.includes(resp.status)) return Effect.succeed(resp)
-      return Effect.flatMap(
-        resp.text.pipe(
-          Effect.mapError(
-            (responseError) =>
-              new UnhandledError({
-                cause: {
-                  status: resp.status,
-                  allowedStatuses,
-                  responseError,
-                  url: resp.request.url,
-                },
-                message: `Unexpected HTTP status: ${resp.status}, expected one of: ${allowedStatuses.join(', ')} AND an error reading body text`,
-              })
-          )
-        ),
-        (body) =>
-          Effect.fail(
-            new UnhandledError({
-              message: `Unexpected HTTP status: ${resp.status}, expected one of: ${allowedStatuses.join(', ')}`,
-              cause: {
-                status: resp.status,
-                allowedStatuses,
-                url: resp.request.url,
-                body,
-              },
-            })
-          )
-      )
-    })
-
-const parseAs =
-  <A, I, R1>(schema: Schema.Schema<A, I, R1>) =>
-  <E, R2>(resp: Effect.Effect<HttpClientResponse, E, R2>) =>
-    pipe(
-      resp,
-      Effect.flatMap((resp) =>
-        Effect.catchAll(resp.json, (cause) =>
-          Effect.fail(
-            new ExternalAssertionError({
-              expected: 'Valid JSON response',
-              cause,
-            })
-          )
-        )
-      ),
-      Effect.flatMap((json) =>
-        Schema.decodeUnknown(schema)(json).pipe(
-          Effect.catchAll((cause) =>
-            Effect.fail(
-              new ExternalAssertionError({
-                expected: 'response matching schema',
-                cause,
-              })
-            )
-          )
-        )
-      )
-    )
+import {
+  getRequestFromHeaders,
+  postRequestFromHeaders,
+  deleteRequestFromHeaders,
+  handleHttpClientError,
+  handle404,
+  assertStatus,
+  parseAs,
+} from './httpHelpers'
 
 /**
  * Shared implementation of the Daily.co VideoCallClient.
@@ -317,10 +150,14 @@ export const DailyCoVideoCallClientLayer: Layer.Layer<
                   return Media.make({
                     resourceType: 'Media' as const,
                     status: 'completed' as const,
-                    identifier: [{ value: rec.id }],
+                    identifier: [
+                      IdentifierAndReference.Identifier.make({ value: rec.id }),
+                    ],
                     createdDateTime: startedAtUtc,
                     duration: rec.duration,
-                    content: { url: recordingFileUrl },
+                    content: Attachment.Attachment.make({
+                      dataUrl: recordingFileUrl,
+                    }),
                   })
                 })
               )
@@ -365,10 +202,14 @@ export const DailyCoVideoCallClientLayer: Layer.Layer<
               const media = Media.make({
                 resourceType: 'Media' as const,
                 status: 'completed' as const,
-                identifier: [{ value: rec.id }],
+                identifier: [
+                  IdentifierAndReference.Identifier.make({ value: rec.id }),
+                ],
                 createdDateTime: startedAtUtc,
                 duration: rec.duration,
-                content: { url: recordingFileUrl },
+                content: Attachment.Attachment.make({
+                  dataUrl: recordingFileUrl,
+                }),
               })
               allMedia.push({ media, roomName: rec.room_name })
             }
@@ -424,18 +265,22 @@ export const DailyCoVideoCallClientLayer: Layer.Layer<
               const media = Media.make({
                 resourceType: 'Media' as const,
                 status: 'completed' as const,
-                type: {
+                type: CodeableConcept.make({
                   coding: [
-                    {
+                    Coding.Coding.make({
                       system: 'http://assessment.is/fhir/media-type',
                       code: Code.make('transcript'),
                       display: 'Transcript',
-                    },
+                    }),
                   ],
-                },
-                identifier: [{ value: transcript.transcriptId }],
+                }),
+                identifier: [
+                  IdentifierAndReference.Identifier.make({
+                    value: transcript.transcriptId,
+                  }),
+                ],
                 duration: transcript.duration,
-                content: { url: accessLink },
+                content: Attachment.Attachment.make({ dataUrl: accessLink }),
               })
               allMedia.push({ media, roomName })
             }

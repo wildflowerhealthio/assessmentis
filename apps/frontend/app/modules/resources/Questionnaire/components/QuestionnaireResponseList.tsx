@@ -2,9 +2,8 @@
 
 import type {
   Questionnaire,
-  QuestionnaireResponseId,
-} from '@assessmentis/clinical-domain/content-management'
-import type { QuestionnaireResponse } from '@assessmentis/clinical-domain/content-management'
+  QuestionnaireResponse,
+} from '@assessmentis/clinical-domain'
 import { Link } from 'react-router'
 
 const QuestionnaireResponseList = ({
@@ -12,7 +11,7 @@ const QuestionnaireResponseList = ({
   questionnaireResponses,
 }: {
   deleteQuestionnaireResponse: (
-    id: QuestionnaireResponseId | undefined
+    id: string | undefined
   ) => Promise<unknown>
   questionnaireResponses: {
     data: QuestionnaireResponse & { _questionnaire: Questionnaire | undefined }
@@ -22,16 +21,16 @@ const QuestionnaireResponseList = ({
   return (
     <li>
       {questionnaireResponses.map(
-        ({ data: { _questionnaire: questionnaire, id, meta }, loading }) => (
-          <ul key={id} style={loading ? { color: 'rgba(0,0,0,0.5)' } : {}}>
+        ({ data: { _questionnaire: questionnaire, url, meta }, loading }) => (
+          <ul key={url?.toString()} style={loading ? { color: 'rgba(0,0,0,0.5)' } : {}}>
             <button
-              onClick={() => deleteQuestionnaireResponse(id)}
+              onClick={() => deleteQuestionnaireResponse(url?.toString())}
               style={{ border: 'none' }}
             >
               ❌
             </button>
-            <Link to={`/QuestionnaireResponse/${id}`} className="body-3">
-              {questionnaire?.title ?? id}
+            <Link to={`/QuestionnaireResponse/${url?.toString() ?? ''}`} className="body-3">
+              {questionnaire?.title ?? url?.toString()}
               {meta?.lastUpdated && (
                 <span
                   style={{

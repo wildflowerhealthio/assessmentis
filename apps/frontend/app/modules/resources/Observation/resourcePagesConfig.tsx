@@ -1,6 +1,6 @@
 import { DateTime, Effect, Schema } from 'effect'
-import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { ObservationId } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import { Observation } from '@assessmentis/clinical-domain'
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import type { ResourcePagesConfig } from '../ResourcePages/resourcePagesConfigType'
 import { ObservationForm } from './components/ObservationForm'
 import {
@@ -31,7 +31,7 @@ export const observationConfig: ResourcePagesConfig<
   pluralLabel: 'Observations',
   paramName: 'observationId',
 
-  decodeId: (raw) => Schema.decodeOption(ObservationId)(raw),
+  decodeUrl: (raw: string) => Schema.decodeOption(ReadonlyUrl.FromString)(raw),
   getDisplayName: getObservationDisplayName,
 
   schema: ObservationFormSchema,

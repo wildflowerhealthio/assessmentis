@@ -5,8 +5,9 @@ import { cn } from '@assessmentis/react-util'
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 import classes from './ResourceListPage.module.css'
+import type { ReadonlyUrl } from '@assessmentis/effectful-store'
 
-interface ResourceListPageProps<T extends { id?: string }> {
+interface ResourceListPageProps<T extends { url?: ReadonlyUrl }> {
   // Page metadata
   title: string
 
@@ -16,7 +17,7 @@ interface ResourceListPageProps<T extends { id?: string }> {
   // Actions
   createPath: string
   createLabel: string
-  onDelete: (id: T['id']) => Promise<void>
+  onDelete: (url: T['url']) => Promise<void>
 
   // List rendering - pass component instead of render function
   ItemComponent: ComponentType<{
@@ -41,7 +42,7 @@ interface ResourceListPageProps<T extends { id?: string }> {
   className?: string
 }
 
-const Body = <T extends { id?: string | undefined }>({
+const Body = <T extends { url?: ReadonlyUrl }>({
   collectionPromise,
   skeletonCount,
   emptyMessage,
@@ -52,7 +53,7 @@ const Body = <T extends { id?: string | undefined }>({
   collectionPromise: Promise<ReadonlyArray<{ data: T; loading: boolean }>>
   skeletonCount: number
   emptyMessage: string
-  onDelete: (id: T['id']) => Promise<void>
+  onDelete: (url: T['url']) => Promise<void>
   ErrorBody?: React.FC<object>
   ItemComponent: ComponentType<{
     item: T
@@ -89,13 +90,13 @@ const Body = <T extends { id?: string | undefined }>({
             <ul className={classes.ListPage__list}>
               {items.map(({ data, loading }) => (
                 <li
-                  key={data.id ?? ''}
+                  key={data.url ?? ''}
                   className={classes.ListPage__item}
                   data-loading={loading}
                 >
                   <ItemComponent
                     item={data}
-                    onDelete={() => onDelete(data.id)}
+                    onDelete={() => onDelete(data.url)}
                     loading={loading}
                   />
                 </li>
@@ -108,7 +109,7 @@ const Body = <T extends { id?: string | undefined }>({
   )
 }
 
-export function ResourceListPage<T extends { id?: string }>(
+export function ResourceListPage<T extends { url?: ReadonlyUrl }>(
   props: ResourceListPageProps<T>
 ) {
   const {

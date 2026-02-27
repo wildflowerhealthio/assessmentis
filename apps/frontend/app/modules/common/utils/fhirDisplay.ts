@@ -13,7 +13,7 @@ export {
  * @returns Formatted name string (e.g., "John Doe")
  */
 export function formatHumanName(
-  name: HumanName | undefined,
+  name: HumanName.HumanName | undefined,
   fallback: string = 'Unnamed'
 ): string {
   if (!name) return fallback

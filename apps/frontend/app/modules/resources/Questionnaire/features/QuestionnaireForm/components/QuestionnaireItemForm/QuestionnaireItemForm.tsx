@@ -1,15 +1,12 @@
 'use client'
 
-import type {
-  QuestionnaireItemUIControlCode,
-  QuestionnaireResponseItem,
-  QuestionnaireItem,
-  QuestionnaireItemLink,
-} from '@assessmentis/clinical-domain/content-management'
 import {
+  type QuestionnaireItem,
+  type QuestionnaireResponseItem,
+  type QuestionnaireItemLink,
+  QuestionnaireItemUIControlCode,
   getUiControlCode,
-  QuestionnaireItemType,
-} from '@assessmentis/clinical-domain/content-management'
+} from '@assessmentis/clinical-domain'
 import DisplayQuestionnaireItemForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/components/DisplayQuestionnaireItemForm/DisplayQuestionnaireItemForm'
 import RadioQuestionnaireItemForm, {
   RadioQuestionnaireItemFormGroup,
@@ -42,7 +39,7 @@ const QuestionnaireItemForm = ({
     ) : undefined
 
   switch (questionnaireItem.type) {
-    case QuestionnaireItemType.enums.boolean: {
+    case 'boolean': {
       return (
         <div
           style={
@@ -62,7 +59,7 @@ const QuestionnaireItemForm = ({
         </div>
       )
     }
-    case QuestionnaireItemType.enums.text: {
+    case 'text': {
       return (
         <div
           style={
@@ -82,7 +79,7 @@ const QuestionnaireItemForm = ({
         </div>
       )
     }
-    case QuestionnaireItemType.enums.group: {
+    case 'group': {
       const questionnaireItems = questionnaireItem.item ?? []
       const items = (
         <>
@@ -126,7 +123,7 @@ const QuestionnaireItemForm = ({
       )
       if (
         questionnaireItems.every(
-          (item) => item.type == QuestionnaireItemType.enums.boolean
+          (item) => item.type == 'boolean'
         ) &&
         getUiControlCode(questionnaireItem) == 'table'
       ) {
@@ -144,7 +141,7 @@ const QuestionnaireItemForm = ({
       }
       return items
     }
-    case QuestionnaireItemType.enums.display:
+    case 'display':
       return (
         <DisplayQuestionnaireItemForm
           key={questionnaireItem.linkId}
@@ -152,7 +149,7 @@ const QuestionnaireItemForm = ({
           uiControl={uiControl}
         />
       )
-    case QuestionnaireItemType.enums.choice: {
+    case 'choice': {
       return (
         <div
           style={

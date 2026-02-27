@@ -5,7 +5,7 @@ import {
   PractitionerFormSchema,
   transformToPractitioner,
 } from './PractitionerFormSchema'
-import type { AdministrativeGender } from '@assessmentis/clinical-domain/administration'
+import type { AdministrativeGender } from '@assessmentis/clinical-domain/data-types'
 
 describe('PractitionerFormSchema', () => {
   describe('schema validation', () => {
@@ -79,7 +79,7 @@ describe('PractitionerFormSchema', () => {
 
   describe('property-based tests', () => {
     it('should transform any valid form data without throwing', () => {
-      const genGender = FastCheck.constantFrom<AdministrativeGender>(
+      const genGender = FastCheck.constantFrom<AdministrativeGender.AdministrativeGender>(
         'male',
         'female',
         'other',

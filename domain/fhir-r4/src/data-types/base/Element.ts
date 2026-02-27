@@ -1,20 +1,23 @@
 import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
-import type { Element } from '@assessmentis/clinical-domain/data-types'
-import { FhirR4Extension } from '../special-purpose/Extension'
+import type { ElementEncoded } from '@assessmentis/clinical-domain/data-types'
+import { ExtensionEncodedFromFhir } from '../special-purpose/Extension'
+import { mutableEncoded } from '@assessmentis/util'
+import type { BaseUrl } from '../UrlIdentification'
+import { ElementIdentification } from '../UrlIdentification'
 
-export const FhirR4Element = {
-  Schema: <IdType extends string = string>(
-    idSchema: Schema.Schema<IdType, string>
-  ): Schema.Schema<Element<IdType>, FhirR4.Element, never> =>
-    Schema.mutable(
+export const ElementEncodedFromFhir = <DomainType extends string>(
+  domainType: DomainType
+): Schema.Schema<ElementEncoded<DomainType>, FhirR4.Element, BaseUrl> =>
+  Schema.extend(
+    ElementIdentification(domainType),
+    mutableEncoded(
       Schema.Struct({
-        id: Schema.optional(idSchema),
         extension: Schema.optional(
-          Schema.mutable(
-            Schema.Array(Schema.suspend(() => FhirR4Extension.Schema))
+          mutableEncoded(
+            Schema.Array(Schema.suspend(() => ExtensionEncodedFromFhir))
           )
         ),
       })
-    ),
-}
+    )
+  )

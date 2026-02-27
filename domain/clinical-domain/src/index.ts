@@ -1,15 +1,15 @@
-// Resource namespaces
-export * as Bundle from './resources/Bundle'
-export * as Composition from './resources/Composition'
-export * as DiagnosticReport from './resources/DiagnosticReport'
-export * as Encounter from './resources/Encounter'
-export * as Location from './resources/Location'
-export * as Media from './resources/Media'
-export * as Observation from './resources/Observation'
-export * as Patient from './resources/Patient'
-export * as Practitioner from './resources/Practitioner'
-export * as Questionnaire from './resources/Questionnaire'
-export * as QuestionnaireResponse from './resources/QuestionnaireResponse'
+// Resources
+export * from './resources/Bundle'
+export * from './resources/Composition'
+export * from './resources/DiagnosticReport'
+export * from './resources/Encounter'
+export * from './resources/Location'
+export * from './resources/Media'
+export * from './resources/Observation'
+export * from './resources/Patient'
+export * from './resources/Practitioner'
+export * from './resources/Questionnaire'
+export * from './resources/QuestionnaireResponse'
 
 // Registry types
 export { default as Schemas } from './Schemas'

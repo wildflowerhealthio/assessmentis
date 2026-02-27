@@ -1,9 +1,6 @@
 import { Schema } from 'effect'
-import { applySchemaMixinTo } from '@assessmentis/util'
+import { MergeClasses } from '@assessmentis/util'
 import { Element, type ElementEncoded } from '../base/Element'
-
-export const Key = 'Quantity'
-export type Key = typeof Key
 
 const fields = {
   /**
@@ -38,10 +35,10 @@ const fields = {
   ),
 } as const satisfies Schema.Struct.Fields
 
-const elementMixin = Element(Key)
+const elementMixin = Element('Quantity')
 
 export interface QuantityEncoded
-  extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<Key> {}
+  extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<'Quantity'> {}
 
 /**
  * A measured amount (or an amount that can potentially be measured).
@@ -53,13 +50,7 @@ export interface QuantityEncoded
  * of units can be used. The context of use may also restrict the values for the comparator.
  */
 
-class Quantity extends Schema.Class<Quantity>(Key)({
-  ...elementMixin.fields,
-  ...fields,
-}) {}
-
-const QuantityWithMixin = applySchemaMixinTo(Quantity, elementMixin)
-
-type QuantityWithMixin = Quantity
-
-export { QuantityWithMixin as Quantity }
+export class Quantity extends MergeClasses<Quantity>('Quantity')(
+  elementMixin,
+  fields
+) {}

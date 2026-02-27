@@ -1,77 +1,93 @@
 import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
-import {} from '../../FhirR4ResourceBehaviour'
-import type { Media } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import { Media, type MediaEncoded } from '@assessmentis/clinical-domain'
+import { MediaStatus } from '@assessmentis/clinical-domain'
+import { ResourceEncodedFromFhirR4Resource } from '../../data-types/base/Resource'
 import {
-  MediaId,
-  MediaStatus,
-} from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { FhirR4DomainResource } from '../../data-types/base/DomainResource'
-import {
-  FhirR4Identifier,
-  FhirR4Reference,
+  IdentifierEncodedFromFhir,
+  ReferenceEncodedFromFhir,
 } from '../../data-types/complex/IdentifierAndReference'
-import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
-import { FhirR4Attachment } from '../../data-types/complex/Attachment'
-import { FhirR4Annotation } from '../../data-types/complex/Annotation'
-import { FhirR4Period } from '../../data-types/complex/Period'
+import { CodeableConceptEncodedFromFhir } from '../../data-types/complex/CodeableConcept'
+import { AttachmentEncodedFromFhir } from '../../data-types/complex/Attachment'
+import { AnnotationEncodedFromFhir } from '../../data-types/complex/Annotation'
+import { PeriodEncodedFromFhir } from '../../data-types/complex/Period'
+import type { BaseUrl } from '../../data-types/UrlIdentification'
+import { mutableEncoded } from '@assessmentis/util'
 
-const FhirR4MediaSchema: Schema.Schema<Media, FhirR4.Media, never> =
-  Schema.extend(
-    FhirR4DomainResource.Schema(MediaId),
+const FhirR4MediaEncodedFromFhir: Schema.Schema<
+  MediaEncoded,
+  FhirR4.Media,
+  BaseUrl
+> = Schema.extend(
+  ResourceEncodedFromFhirR4Resource('Media', 'Media'),
+  mutableEncoded(
     Schema.Struct({
-      resourceType: Schema.Literal('Media'),
       identifier: Schema.optional(
-        Schema.mutable(
-          Schema.Array(Schema.suspend(() => FhirR4Identifier.Schema))
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => IdentifierEncodedFromFhir))
         )
       ),
       basedOn: Schema.optional(
-        Schema.mutable(
-          Schema.Array(Schema.suspend(() => FhirR4Reference.Schema))
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => ReferenceEncodedFromFhir))
         )
       ),
       partOf: Schema.optional(
-        Schema.mutable(
-          Schema.Array(Schema.suspend(() => FhirR4Reference.Schema))
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => ReferenceEncodedFromFhir))
         )
       ),
       status: MediaStatus,
-      type: Schema.optional(Schema.suspend(() => FhirR4CodeableConcept.Schema)),
-      modality: Schema.optional(
-        Schema.suspend(() => FhirR4CodeableConcept.Schema)
+      type: Schema.optional(
+        Schema.suspend(() => CodeableConceptEncodedFromFhir)
       ),
-      view: Schema.optional(Schema.suspend(() => FhirR4CodeableConcept.Schema)),
-      subject: Schema.optional(Schema.suspend(() => FhirR4Reference.Schema)),
-      encounter: Schema.optional(Schema.suspend(() => FhirR4Reference.Schema)),
-      createdDateTime: Schema.optional(Schema.DateTimeUtc),
-      createdPeriod: Schema.optional(Schema.suspend(() => FhirR4Period.Schema)),
-      issued: Schema.optional(Schema.DateTimeUtc),
-      operator: Schema.optional(Schema.suspend(() => FhirR4Reference.Schema)),
+      modality: Schema.optional(
+        Schema.suspend(() => CodeableConceptEncodedFromFhir)
+      ),
+      view: Schema.optional(
+        Schema.suspend(() => CodeableConceptEncodedFromFhir)
+      ),
+      subject: Schema.optional(
+        Schema.suspend(() => ReferenceEncodedFromFhir)
+      ),
+      encounter: Schema.optional(
+        Schema.suspend(() => ReferenceEncodedFromFhir)
+      ),
+      createdDateTime: Schema.optional(Schema.String),
+      createdPeriod: Schema.optional(
+        Schema.suspend(() => PeriodEncodedFromFhir)
+      ),
+      issued: Schema.optional(Schema.String),
+      operator: Schema.optional(
+        Schema.suspend(() => ReferenceEncodedFromFhir)
+      ),
       reasonCode: Schema.optional(
-        Schema.mutable(
-          Schema.Array(Schema.suspend(() => FhirR4CodeableConcept.Schema))
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => CodeableConceptEncodedFromFhir))
         )
       ),
       bodySite: Schema.optional(
-        Schema.suspend(() => FhirR4CodeableConcept.Schema)
+        Schema.suspend(() => CodeableConceptEncodedFromFhir)
       ),
       deviceName: Schema.optional(Schema.String),
-      device: Schema.optional(Schema.suspend(() => FhirR4Reference.Schema)),
+      device: Schema.optional(
+        Schema.suspend(() => ReferenceEncodedFromFhir)
+      ),
       height: Schema.optional(Schema.Number),
       width: Schema.optional(Schema.Number),
       frames: Schema.optional(Schema.Number),
       duration: Schema.optional(Schema.Number),
-      content: Schema.suspend(() => FhirR4Attachment.Schema),
+      content: Schema.suspend(() => AttachmentEncodedFromFhir),
       note: Schema.optional(
-        Schema.mutable(
-          Schema.Array(Schema.suspend(() => FhirR4Annotation.Schema))
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => AnnotationEncodedFromFhir))
         )
       ),
     })
   )
+)
 
 export const FhirR4Media = {
   resourceType: 'Media',
-  Schema: FhirR4MediaSchema,
+  Schema: Schema.compose(FhirR4MediaEncodedFromFhir, Media),
 }

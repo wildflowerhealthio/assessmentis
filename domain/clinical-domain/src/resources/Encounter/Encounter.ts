@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { applySchemaMixinTo } from '@assessmentis/util'
+import { MergeClasses } from '@assessmentis/util'
 import { BackboneElement } from '../../data-types/base/BackboneElement'
 import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
 import { Coding } from '../../data-types/complex/Coding'
@@ -93,7 +93,6 @@ const EncounterLocationSchema = Schema.Struct({
 // --- Encounter ---
 
 const fields = {
-  resourceType: Schema.Literal('Encounter'),
   identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
   status: EncounterStatus,
   statusHistory: Schema.optional(Schema.Array(EncounterStatusHistorySchema)),
@@ -132,12 +131,7 @@ export interface EncounterEncoded
  * An interaction between a patient and healthcare provider(s) for the purpose of
  * providing healthcare service(s) or assessing the health status of a patient.
  */
-class Encounter extends Schema.Class<Encounter>(Key)({
-  ...resourceMixin.fields,
-  ...fields,
-}) {}
-
-const EncounterWithMixin = applySchemaMixinTo(Encounter, resourceMixin)
-type EncounterWithMixin = Encounter
-
-export { EncounterWithMixin as Encounter }
+export class Encounter extends MergeClasses<Encounter>(Key)(
+  resourceMixin,
+  fields
+) {}

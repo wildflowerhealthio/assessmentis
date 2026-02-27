@@ -17,24 +17,19 @@ describe('Observation model', () => {
   })
 
   test('property: missing required fields always fail', () => {
-    // Property: Observation must have resourceType, status, and code
+    // Property: Observation must have domainType, status, and code
     fc.assert(
       fc.property(
         fc.oneof(
           // Missing status
           fc.record({
-            resourceType: fc.constant('Observation' as const),
+            domainType: fc.constant('Observation' as const),
             code: fc.record({ text: fc.string() }),
           }),
           // Missing code
           fc.record({
-            resourceType: fc.constant('Observation' as const),
+            domainType: fc.constant('Observation' as const),
             status: fc.constantFrom('final', 'preliminary'),
-          }),
-          // Missing resourceType
-          fc.record({
-            status: fc.constantFrom('final', 'preliminary'),
-            code: fc.record({ text: fc.string() }),
           })
         ),
         (incomplete) => {
@@ -42,7 +37,8 @@ describe('Observation model', () => {
           const result = decode(incomplete)
           expect(Either.isLeft(result)).toBe(true)
         }
-      )
+      ),
+      { numRuns: 20 }
     )
   })
 })

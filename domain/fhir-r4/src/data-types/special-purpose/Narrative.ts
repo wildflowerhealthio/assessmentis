@@ -1,9 +1,12 @@
 import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
-import type { Narrative } from '@assessmentis/clinical-domain/data-types'
-import { FhirR4Element } from '../base/Element'
-
-const NarrativeId = Schema.String.pipe(Schema.brand('NarrativeId'))
+import {
+  Narrative,
+  type NarrativeEncoded,
+} from '@assessmentis/clinical-domain/data-types'
+import type { BaseUrl } from '../UrlIdentification'
+import { ElementIdentification } from '../UrlIdentification'
+import { mutableEncoded } from '@assessmentis/util'
 
 const NarrativeStatus = Schema.Union(
   Schema.Literal('generated'),
@@ -12,16 +15,22 @@ const NarrativeStatus = Schema.Union(
   Schema.Literal('empty')
 )
 
-const NarrativeSchema: Schema.Schema<Narrative, FhirR4.Narrative, never> =
-  Schema.extend(
-    FhirR4Element.Schema(NarrativeId),
-    Schema.mutable(
-      Schema.Struct({
-        status: NarrativeStatus,
-        div: Schema.String,
-      })
-    )
+export const NarrativeEncodedFromFhir: Schema.Schema<
+  NarrativeEncoded,
+  FhirR4.Narrative,
+  BaseUrl
+> = Schema.extend(
+  ElementIdentification('Narrative'),
+  mutableEncoded(
+    Schema.Struct({
+      status: NarrativeStatus,
+      div: Schema.String,
+    })
   )
+)
+
+const NarrativeSchema: Schema.Schema<Narrative, FhirR4.Narrative, BaseUrl> =
+  Schema.compose(NarrativeEncodedFromFhir, Narrative)
 
 export const FhirR4Narrative = {
   Schema: NarrativeSchema,

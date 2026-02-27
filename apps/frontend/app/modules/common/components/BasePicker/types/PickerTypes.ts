@@ -1,7 +1,8 @@
+import type { ReadonlyUrl } from '@assessmentis/effectful-store'
 import type { PickerSelectionProps } from '../hooks/usePickerSelection'
 
 export interface PickerItem<T> {
-  id: string
+  url: ReadonlyUrl
   displayName: string
   secondaryText?: string
   metadata?: undefined | T

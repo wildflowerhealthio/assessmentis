@@ -2,10 +2,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { Arbitrary, FastCheck } from 'effect'
-import {
-  QuestionnaireItemType,
-  QuestionnaireItem,
-} from '@assessmentis/clinical-domain/content-management'
+import { QuestionnaireItem } from '@assessmentis/clinical-domain'
 import DisplayQuestionnaireItemForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/components/DisplayQuestionnaireItemForm/DisplayQuestionnaireItemForm'
 
 //👇 This default export determines where your story goes in the story list
@@ -17,7 +14,7 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 const arbitraryQuestionnaireItem = FastCheck.sample(
-  Arbitrary.make(QuestionnaireItem.Schema)
+  Arbitrary.make(QuestionnaireItem)
 )[0]
 
 export const Heading1: Story = {
@@ -26,7 +23,7 @@ export const Heading1: Story = {
     questionnaireItem: {
       ...arbitraryQuestionnaireItem,
       text: 'Heading 1',
-      type: QuestionnaireItemType.enums.display,
+      type: 'display',
       // style: QuestionnaireItemStyle.HEADING1,
     },
   },
@@ -38,7 +35,7 @@ export const Heading2: Story = {
     questionnaireItem: {
       ...arbitraryQuestionnaireItem,
       text: 'Heading 2',
-      type: QuestionnaireItemType.enums.display,
+      type: 'display',
       // style: QuestionnaireItemStyle.HEADING2,
     },
   },
@@ -50,7 +47,7 @@ export const Heading3: Story = {
     questionnaireItem: {
       ...arbitraryQuestionnaireItem,
       text: 'Heading 3',
-      type: QuestionnaireItemType.enums.display,
+      type: 'display',
       // style: QuestionnaireItemStyle.HEADING3,
     },
   },
@@ -62,7 +59,7 @@ export const Question: Story = {
     questionnaireItem: {
       ...arbitraryQuestionnaireItem,
       text: 'This is just a question',
-      type: QuestionnaireItemType.enums.display,
+      type: 'display',
       // style: QuestionnaireItemStyle.QUESTION,
     },
   },

@@ -6,10 +6,7 @@ import {
   TextField,
 } from 'app/modules/common/components/ResourceForm'
 import type { CommonFieldProps } from 'app/modules/common/components/ResourceForm/ResourceForm'
-import type {
-  LocationMode,
-  LocationStatus,
-} from '@assessmentis/clinical-domain/administration'
+import type { LocationStatus, LocationMode } from '@assessmentis/clinical-domain'
 import {
   type LocationFormData,
   LocationFormSchema,

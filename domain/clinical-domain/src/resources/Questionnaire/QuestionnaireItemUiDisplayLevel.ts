@@ -1,6 +1,7 @@
 import { Schema, Option } from 'effect'
 import type { BackboneElement } from '../../data-types/base/BackboneElement'
 import { Code } from '../../data-types/complex/Code'
+import { Extension } from '../../data-types/special-purpose/Extension'
 
 export const QuestionnaireItemUiDisplayLevel = Schema.Enums({
   heading1: Code.make('heading1'),
@@ -14,10 +15,11 @@ export const questionnaireItemUiDisplayLevelUrl =
 
 export const questionnaireItemUiDisplayLevelExtension = (
   value: typeof QuestionnaireItemUiDisplayLevel.Type
-) => ({
-  definitionUrl: questionnaireItemUiDisplayLevelUrl,
-  valueCode: value,
-})
+): Extension =>
+  Extension.make({
+    definitionUrl: questionnaireItemUiDisplayLevelUrl,
+    valueCode: value,
+  })
 
 export const getUiDisplayLevel = (
   be: BackboneElement<string>

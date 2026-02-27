@@ -1,6 +1,5 @@
 import { Either, Option, Schema, Stream } from 'effect'
 import { StreamEither } from '@assessmentis/util'
-import { PatientId } from '@assessmentis/clinical-domain/administration'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/Patient.$patientId._index'
 import { runEffectSyncFlat } from '../runEffectSync'
@@ -20,7 +19,7 @@ import { useEitherStream } from '@assessmentis/react-util'
 import { usePlatformContext } from '../layers/PlatformContext'
 import { Await } from 'react-router'
 
-const tryDecodePatientId = Schema.decodeOption(PatientId)
+const tryDecodePatientId = Schema.decodeOption(Schema.String)
 
 export default function PatientDetailPage({ params }: Route.ComponentProps) {
   const { clinicalDataRepositoryService } = usePlatformContext()
@@ -81,9 +80,9 @@ export default function PatientDetailPage({ params }: Route.ComponentProps) {
 
           return (
             <ResourceDetailPage
-              editTo={`/Patient/${patient.id}/edit`}
+              editTo={`/Patient/${patient.url?.toString() ?? params.patientId}/edit`}
               title={displayName}
-              subtitle={`Patient ID: ${patient.id}`}
+              subtitle={`Patient: ${patient.url?.toString() ?? params.patientId}`}
               sections={[
                 {
                   id: 'demographics',

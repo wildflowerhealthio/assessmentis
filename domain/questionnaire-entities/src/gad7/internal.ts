@@ -1,21 +1,24 @@
-import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import type { CodeableConcept } from '@assessmentis/clinical-domain/data-types'
-import { Code } from '@assessmentis/clinical-domain/data-types'
+import type { Observation } from '@assessmentis/clinical-domain'
+import { CodeableConcept } from '@assessmentis/clinical-domain/data-types'
+import { Code, Coding } from '@assessmentis/clinical-domain/data-types'
 import { literalOf } from '../../../../global/util/src/addLiteralSupportToBrandedSchema'
 
-const surveyCategory = {
+const surveyCategory = CodeableConcept.make({
   coding: [
-    {
+    Coding.Coding.make({
       system: 'http://terminology.hl7.org/CodeSystem/observation-category',
       code: literalOf(Code)('survey'),
       display: 'Survey',
-    },
+    }),
   ],
-} as const satisfies CodeableConcept
+})
 
 export const baseChoiceObservation = {
-  resourceType: 'Observation',
+  domainType: 'Observation',
   category: [surveyCategory],
-} as const satisfies Pick<Observation, 'resourceType' | 'category'>
+} as const satisfies Pick<Observation, 'domainType' | 'category'>
 
-export type ObservationTemplate = Omit<Observation, 'id' | 'meta' | 'status'>
+export type ObservationTemplate = Omit<
+  ConstructorParameters<typeof Observation>[0],
+  'url' | 'meta' | 'status'
+>

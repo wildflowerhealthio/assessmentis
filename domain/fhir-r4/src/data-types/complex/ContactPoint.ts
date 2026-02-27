@@ -1,13 +1,15 @@
 import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
-import type { ContactPoint } from '@assessmentis/clinical-domain/data-types'
-import { FhirR4Period } from './Period'
+import { ContactPoint } from '@assessmentis/clinical-domain/data-types'
+import type { BaseUrl } from '../UrlIdentification'
+import { mutableEncoded } from '@assessmentis/util'
+import { PeriodEncodedFromFhir } from './Period'
 
-const FhirR4ContactPointSchema: Schema.Schema<
-  ContactPoint,
+export const ContactPointEncodedFromFhir: Schema.Schema<
+  ContactPoint.ContactPointEncoded,
   FhirR4.ContactPoint,
-  never
-> = Schema.mutable(
+  BaseUrl
+> = mutableEncoded(
   Schema.Struct({
     system: Schema.optional(
       Schema.Union(
@@ -31,10 +33,16 @@ const FhirR4ContactPointSchema: Schema.Schema<
       )
     ),
     rank: Schema.optional(Schema.Number),
-    period: Schema.optional(Schema.suspend(() => FhirR4Period.Schema)),
+    period: Schema.optional(Schema.suspend(() => PeriodEncodedFromFhir)),
   })
 )
 
+const ContactPointSchema: Schema.Schema<
+  ContactPoint.ContactPoint,
+  FhirR4.ContactPoint,
+  BaseUrl
+> = Schema.compose(ContactPointEncodedFromFhir, ContactPoint.ContactPoint)
+
 export const FhirR4ContactPoint = {
-  Schema: FhirR4ContactPointSchema,
+  Schema: ContactPointSchema,
 }

@@ -6,7 +6,7 @@ import {
 } from '../../data-types/base/BackboneElement'
 import FhirR4ChoiceElements from '../../data-types/fhirR4ChoiceElements'
 import { DatatypeChoice } from '../../data-types/Datatype'
-import { applySchemaMixinTo } from '@assessmentis/util'
+import { MergeClasses } from '@assessmentis/util'
 
 const questionnaireResponseItemAnswerFields = {}
 
@@ -26,12 +26,11 @@ export interface QuestionnaireResponseItemAnswerEncoded
 /**
  * The value is nested because we cannot have a repeating structure that has variable type.
  */
-class QuestionnaireResponseItemAnswer extends Schema.Class<QuestionnaireResponseItemAnswer>(
+export class QuestionnaireResponseItemAnswer extends MergeClasses<QuestionnaireResponseItemAnswer>(
   'QuestionnaireResponseItemAnswer'
-)({
-  ...BackboneElement('QuestionnaireResponseItemAnswer').fields,
-  ...valueMixin.fields,
+)(BackboneElement('QuestionnaireResponseItemAnswer'), valueMixin, {
   ...questionnaireResponseItemAnswerFields,
+
   item: Schema.optional(
     Schema.Array(
       Schema.suspend(
@@ -43,16 +42,6 @@ class QuestionnaireResponseItemAnswer extends Schema.Class<QuestionnaireResponse
     )
   ),
 }) {}
-
-const QuestionnaireResponseItemAnswerWithMixin = applySchemaMixinTo(
-  QuestionnaireResponseItemAnswer,
-  valueMixin
-)
-type QuestionnaireResponseItemAnswerWithMixin = InstanceType<
-  typeof QuestionnaireResponseItemAnswerWithMixin
->
-
-export { QuestionnaireResponseItemAnswerWithMixin as QuestionnaireResponseItemAnswer }
 
 const questionnaireResponseItemFields = {
   definition: Schema.optional(Schema.String),

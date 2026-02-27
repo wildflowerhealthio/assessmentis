@@ -1,5 +1,5 @@
 import { DateTime, Schema, Option } from 'effect'
-import { applySchemaMixinTo } from '@assessmentis/util'
+import { MergeClasses } from '@assessmentis/util'
 import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
 import {
   Identifier,
@@ -21,7 +21,6 @@ export const QuestionnaireResponseStatus = Schema.Enums({
 } as const)
 
 const fields = {
-  resourceType: Schema.Literal('QuestionnaireResponse'),
   author: Schema.optional(Schema.suspend(() => Reference)),
   authored: Schema.optional(Schema.String),
   basedOn: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
@@ -44,9 +43,9 @@ export interface QuestionnaireResponseEncoded
 /**
  * A structured set of questions and their answers.
  */
-class QuestionnaireResponse extends Schema.Class<QuestionnaireResponse>(Key)({
-  ...resourceMixin.fields,
-  ...fields,
+export class QuestionnaireResponse extends MergeClasses<QuestionnaireResponse>(
+  Key
+)(resourceMixin, fields, {
   item: Schema.optional(
     Schema.Array(
       Schema.suspend(
@@ -123,11 +122,3 @@ class QuestionnaireResponse extends Schema.Class<QuestionnaireResponse>(Key)({
     )
   }
 }
-
-const QuestionnaireResponseWithMixin = applySchemaMixinTo(
-  QuestionnaireResponse,
-  resourceMixin
-)
-type QuestionnaireResponseWithMixin = QuestionnaireResponse
-
-export { QuestionnaireResponseWithMixin as QuestionnaireResponse }

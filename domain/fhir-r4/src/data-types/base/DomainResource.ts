@@ -1,54 +1,58 @@
 import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
-import { FhirR4Coding } from '../complex/Coding'
-import { FhirR4Narrative } from '../special-purpose/Narrative'
-import { FhirR4Resource } from './Resource'
-import { FhirR4Extension } from '../special-purpose/Extension'
-import type {
-  DomainResource,
-  Meta,
+import { NarrativeEncodedFromFhir } from '../special-purpose/Narrative'
+import { ExtensionEncodedFromFhir } from '../special-purpose/Extension'
+import {
+  Resource,
+  type ResourceEncoded,
 } from '@assessmentis/clinical-domain/data-types'
+import type { BaseUrl } from '../UrlIdentification'
+import { ResourceIdentification } from '../UrlIdentification'
+import { mutableEncoded } from '@assessmentis/util'
 
-export const FhirR4DomainResource = {
-  Schema: <IdType extends string>(
-    idSchema: Schema.Schema<IdType, string>
-  ): Schema.Schema<DomainResource<IdType>, FhirR4.DomainResource, never> =>
-    Schema.extend(
-      FhirR4Resource.Schema(idSchema),
-      Schema.mutable(
-        Schema.Struct({
-          text: Schema.optional(FhirR4Narrative.Schema),
-          contained: Schema.optional(Schema.mutable(Schema.Array(Schema.Any))),
-          extension: Schema.optional(
-            Schema.mutable(
-              Schema.Array(Schema.suspend(() => FhirR4Extension.Schema))
-            )
-          ),
-          modifierExtension: Schema.optional(
-            Schema.mutable(
-              Schema.Array(Schema.suspend(() => FhirR4Extension.Schema))
-            )
-          ),
-        })
-      )
-    ),
-}
-
-const FhirR4MetaSchema: Schema.Schema<Meta, FhirR4.Meta, never> =
-  Schema.mutable(
-    Schema.Struct({
-      versionId: Schema.optional(Schema.String),
-      lastUpdated: Schema.optional(Schema.DateTimeUtc),
-      source: Schema.optional(Schema.URL),
-      security: Schema.optional(
-        Schema.mutable(Schema.Array(Schema.suspend(() => FhirR4Coding.Schema)))
-      ),
-      tag: Schema.optional(
-        Schema.mutable(Schema.Array(Schema.suspend(() => FhirR4Coding.Schema)))
-      ),
-    })
+export const FhirR4DomainResource = <
+  DomainType extends string,
+  ResourceType extends string,
+>(
+  domainType: DomainType,
+  resourceType: ResourceType
+): Schema.Schema<
+  Resource<DomainType>,
+  FhirR4.DomainResource & { readonly resourceType: ResourceType },
+  BaseUrl
+> =>
+  Schema.compose(
+    ResourceEncodedFromFhirR4DomainResource(domainType, resourceType),
+    Resource(domainType)
   )
 
-export const FhirR4Meta = {
-  Schema: FhirR4MetaSchema,
-}
+const ResourceEncodedFromFhirR4DomainResource = <
+  DomainType extends string,
+  ResourceType extends string,
+>(
+  domainType: DomainType,
+  resourceType: ResourceType
+): Schema.Schema<
+  ResourceEncoded<DomainType>,
+  FhirR4.DomainResource & { readonly resourceType: ResourceType },
+  BaseUrl
+> =>
+  Schema.extend(
+    ResourceIdentification(domainType, resourceType),
+    mutableEncoded(
+      Schema.Struct({
+        text: Schema.optional(NarrativeEncodedFromFhir),
+        contained: Schema.optional(mutableEncoded(Schema.Array(Schema.Any))),
+        extension: Schema.optional(
+          mutableEncoded(
+            Schema.Array(Schema.suspend(() => ExtensionEncodedFromFhir))
+          )
+        ),
+        modifierExtension: Schema.optional(
+          mutableEncoded(
+            Schema.Array(Schema.suspend(() => ExtensionEncodedFromFhir))
+          )
+        ),
+      })
+    )
+  )

@@ -1,6 +1,5 @@
 import { Either, Option, Schema, Stream } from 'effect'
 import { StreamEither } from '@assessmentis/util'
-import { LocationId } from '@assessmentis/clinical-domain/administration'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/Location.$locationId._index'
 import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
@@ -13,7 +12,7 @@ import { useEitherStream } from '@assessmentis/react-util'
 import { usePlatformContext } from '../layers/PlatformContext'
 import { Await } from 'react-router'
 
-const tryDecodeLocationId = Schema.decodeOption(LocationId)
+const tryDecodeLocationId = Schema.decodeOption(Schema.String)
 
 export default function LocationDetailPage({ params }: Route.ComponentProps) {
   const { clinicalDataRepositoryService } = usePlatformContext()
@@ -111,9 +110,9 @@ export default function LocationDetailPage({ params }: Route.ComponentProps) {
 
           return (
             <ResourceDetailPage
-              editTo={`/Location/${location.id}/edit`}
+              editTo={`/Location/${location.url?.toString() ?? params.locationId}/edit`}
               title={displayName}
-              subtitle={`Location ID: ${location.id}`}
+              subtitle={`Location: ${location.url?.toString() ?? params.locationId}`}
               sections={[
                 {
                   id: 'details',

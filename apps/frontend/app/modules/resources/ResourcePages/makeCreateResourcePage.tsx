@@ -35,7 +35,7 @@ export const makeCreateResourcePage = <
             )
           )
       )
-      navigate(`/${config.resourceType}/${created.id}`)
+      navigate(`/${config.resourceType}/${created.url.toString()}`)
     }
 
     return (

@@ -1,13 +1,15 @@
 import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
-import type { HumanName } from '@assessmentis/clinical-domain/data-types'
-import { FhirR4Period } from './Period'
+import { HumanName } from '@assessmentis/clinical-domain/data-types'
+import type { BaseUrl } from '../UrlIdentification'
+import { mutableEncoded } from '@assessmentis/util'
+import { PeriodEncodedFromFhir } from './Period'
 
-const FhirR4HumanNameSchema: Schema.Schema<
-  HumanName,
+export const HumanNameEncodedFromFhir: Schema.Schema<
+  HumanName.HumanNameEncoded,
   FhirR4.HumanName,
-  never
-> = Schema.mutable(
+  BaseUrl
+> = mutableEncoded(
   Schema.Struct({
     use: Schema.optional(
       Schema.Union(
@@ -22,13 +24,19 @@ const FhirR4HumanNameSchema: Schema.Schema<
     ),
     text: Schema.optional(Schema.String),
     family: Schema.optional(Schema.String),
-    given: Schema.optional(Schema.mutable(Schema.Array(Schema.String))),
-    prefix: Schema.optional(Schema.mutable(Schema.Array(Schema.String))),
-    suffix: Schema.optional(Schema.mutable(Schema.Array(Schema.String))),
-    period: Schema.optional(Schema.suspend(() => FhirR4Period.Schema)),
+    given: Schema.optional(mutableEncoded(Schema.Array(Schema.String))),
+    prefix: Schema.optional(mutableEncoded(Schema.Array(Schema.String))),
+    suffix: Schema.optional(mutableEncoded(Schema.Array(Schema.String))),
+    period: Schema.optional(Schema.suspend(() => PeriodEncodedFromFhir)),
   })
 )
 
+const HumanNameSchema: Schema.Schema<
+  HumanName.HumanName,
+  FhirR4.HumanName,
+  BaseUrl
+> = Schema.compose(HumanNameEncodedFromFhir, HumanName.HumanName)
+
 export const FhirR4HumanName = {
-  Schema: FhirR4HumanNameSchema,
+  Schema: HumanNameSchema,
 }

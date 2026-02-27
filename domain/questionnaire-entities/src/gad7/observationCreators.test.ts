@@ -7,7 +7,8 @@ import {
   QuestionnaireItemLink,
   QuestionnaireResponse,
   QuestionnaireResponseItem,
-} from '@assessmentis/clinical-domain/content-management'
+  QuestionnaireResponseItemAnswer,
+} from '@assessmentis/clinical-domain'
 import { Arbitrary } from 'effect'
 import {
   computeGad7HelperTotalScoreObservation,
@@ -46,32 +47,35 @@ const linkIdToQuestionCoding = [
 ] as const
 
 const buildResponse = (scores: ReadonlyArray<number | null>) =>
-  Arbitrary.make(QuestionnaireResponse.Schema).chain(({ item: _, ...qr }) =>
+  Arbitrary.make(QuestionnaireResponse).chain(({ item: _, ...qr }) =>
     fc
-      .array(Arbitrary.make(QuestionnaireResponseItem.Schema), {
+      .array(Arbitrary.make(QuestionnaireResponseItem), {
         minLength: 7,
         maxLength: 7,
       })
       .map(
-        (items): QuestionnaireResponse => ({
-          ...qr,
-          item: items.map((item, idx) => {
-            const { linkId: _, answer: __, ...qri } = item
-            const linkId = questionLinkIds[idx]
-            const score = scores[idx]
-            return score === null
-              ? { ...qri, linkId }
-              : {
-                  ...qri,
-                  linkId,
-                  answer: [
-                    {
-                      valueCoding: scoreToCoding[score],
-                    },
-                  ],
-                }
-          }),
-        })
+        (items): QuestionnaireResponse =>
+          QuestionnaireResponse.make({
+            ...qr,
+            item: items.map((item, idx) => {
+              const { linkId: _, answer: __, ...qri } = item
+              const linkId = questionLinkIds[idx]
+              const score = scores[idx]
+              return QuestionnaireResponseItem.make(
+                score === null
+                  ? { ...qri, linkId }
+                  : {
+                      ...qri,
+                      linkId,
+                      answer: [
+                        QuestionnaireResponseItemAnswer.make({
+                          valueCoding: scoreToCoding[score],
+                        }),
+                      ],
+                    }
+              )
+            }),
+          })
       )
   )
 
@@ -97,7 +101,7 @@ describe('GAD-7 observations extraction', () => {
           const questionObs = observations.slice(0, 7)
 
           questionObs.forEach((obs, idx) => {
-            expect(obs.resourceType).toBe('Observation')
+            expect(obs.domainType).toBe('Observation')
             expect(obs.category?.[0]?.coding?.[0]?.code).toBe('survey')
             expect(obs.code.coding?.[0]).toEqual(linkIdToQuestionCoding[idx])
 

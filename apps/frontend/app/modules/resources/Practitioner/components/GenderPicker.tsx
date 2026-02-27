@@ -1,4 +1,4 @@
-import type { AdministrativeGender } from '@assessmentis/clinical-domain/administration'
+import { AdministrativeGender } from '@assessmentis/clinical-domain/data-types'
 import { cn } from '@assessmentis/react-util'
 import classes from 'app/modules/common/components/ResourceForm/ResourceForm.module.css'
 
@@ -7,12 +7,12 @@ export interface GenderPickerProps {
   label?: string
   required?: boolean
   error?: string | undefined
-  value: AdministrativeGender | undefined
-  onChange: (data: AdministrativeGender | undefined) => void
+  value: AdministrativeGender.AdministrativeGender | undefined
+  onChange: (data: AdministrativeGender.AdministrativeGender | undefined) => void
 }
 
 const genderOptions: ReadonlyArray<{
-  value: AdministrativeGender
+  value: AdministrativeGender.AdministrativeGender
   label: string
 }> = [
   { value: 'male', label: 'Male' },
@@ -48,7 +48,7 @@ export function GenderPicker({
         value={value ?? ''}
         onChange={(e) => {
           const selected = e.target.value
-          onChange(selected ? (selected as AdministrativeGender) : undefined)
+          onChange(selected ? (selected as AdministrativeGender.AdministrativeGender) : undefined)
         }}
       >
         <option value="">Select {label || 'gender'}...</option>

@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { applySchemaMixinTo } from '@assessmentis/util'
+import { MergeClasses } from '@assessmentis/util'
 import { BackboneElement } from '../../data-types/base/BackboneElement'
 import {
   Identifier,
@@ -50,7 +50,6 @@ class DiagnosticReportMediaSchema extends Schema.Class<DiagnosticReportMediaSche
 }) {}
 
 const fields = {
-  resourceType: Schema.Literal('DiagnosticReport'),
   identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
   basedOn: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
   status: DiagnosticReportStatus,
@@ -96,17 +95,8 @@ export interface DiagnosticReportEncoded
  * The findings and interpretation of diagnostic tests performed on patients,
  * groups of patients, devices, and locations, and/or specimens derived from these.
  */
-class DiagnosticReport extends Schema.Class<DiagnosticReport>(Key)({
-  ...resourceMixin.fields,
-  ...effectiveMixin.fields,
-  ...fields,
-}) {}
-
-const DiagnosticReportWithMixin = applySchemaMixinTo(
-  applySchemaMixinTo(DiagnosticReport, effectiveMixin),
-  resourceMixin
-)
-
-type DiagnosticReportWithMixin = InstanceType<typeof DiagnosticReportWithMixin>
-
-export { DiagnosticReportWithMixin as DiagnosticReport }
+export class DiagnosticReport extends MergeClasses<DiagnosticReport>(Key)(
+  resourceMixin,
+  effectiveMixin,
+  fields
+) {}

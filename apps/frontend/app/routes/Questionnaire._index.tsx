@@ -1,4 +1,4 @@
-import type { Questionnaire } from '@assessmentis/clinical-domain/content-management'
+import type { Questionnaire } from '@assessmentis/clinical-domain'
 import { questionnaireTemplates } from '@assessmentis/questionnaire-entities'
 import type { Route } from './+types/Questionnaire._index'
 import { QuestionnaireListItem } from '../modules/resources/Questionnaire/components/QuestionnaireListItem/QuestionnaireListItem'

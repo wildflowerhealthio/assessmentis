@@ -1,21 +1,16 @@
 import { Effect } from 'effect'
 import { VideoCallClient } from '@assessmentis/video-call-domain'
-import { EncounterRepository } from '@assessmentis/clinical-domain/administration'
+import { Encounter, Media } from '@assessmentis/clinical-domain'
+import {
+  EncounterRepository,
+  MediaRepository,
+} from '@assessmentis/clinical-domain/repositories'
 import type {
   UnhandledError,
   ExternalAssertionError,
   NotFoundError,
 } from '@assessmentis/ontology'
-import type { WithId } from '@assessmentis/effectful-store'
-import type {
-  Encounter,
-  EncounterId,
-} from '@assessmentis/clinical-domain/administration'
-import type {
-  Media,
-  MediaId,
-} from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { MediaRepository } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import type { Resource } from '@assessmentis/effectful-store'
 import type { AuthError, AuthzError } from '@assessmentis/ontology'
 
 /**
@@ -25,16 +20,16 @@ import type { AuthError, AuthzError } from '@assessmentis/ontology'
  * @param encounterId - The ID of the encounter to update
  */
 export const updateEncounterRecordingsAndTranscripts = (
-  encounterId: EncounterId
+  encounterId: string
 ): Effect.Effect<
-  WithId<Encounter>,
+  Resource.WithResourceUrl<Encounter>,
   | UnhandledError
   | AuthError
   | AuthzError
   | ExternalAssertionError
-  | NotFoundError<'Encounter', { id: EncounterId }>
-  | NotFoundError<'Media', { id: MediaId }>
-  | NotFoundError<'Recording', { id: string }>,
+  | NotFoundError<'Encounter', { url: string }>
+  | NotFoundError<'Media', { url: string }>
+  | NotFoundError<'Recording', { url: string }>,
   EncounterRepository | VideoCallClient | MediaRepository
 > => {
   return Effect.gen(function* () {
@@ -68,7 +63,7 @@ export const updateEncounterRecordingsAndTranscripts = (
       return encounter
     }
 
-    const updatedMedia: WithId<Media>[] = []
+    const updatedMedia: Resource.WithResourceUrl<Media>[] = []
     const newRecordings: Media[] = []
 
     for (const recording of latestRecordings) {
@@ -79,10 +74,9 @@ export const updateEncounterRecordingsAndTranscripts = (
         )
       )
       if (correspondingMedia) {
-        const updated: WithId<Media> = {
+        const updated: Resource.WithResourceUrl<Media> = {
           ...correspondingMedia,
           content: recording.content,
-          id: correspondingMedia.id,
         }
         updatedMedia.push(updated)
       } else {

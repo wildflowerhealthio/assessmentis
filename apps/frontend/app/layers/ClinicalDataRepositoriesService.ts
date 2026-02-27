@@ -5,21 +5,23 @@ import type {
   ClinicalDataRepository,
   ResourceDataTypes,
 } from '@assessmentis/clinical-domain'
+import type { ReadonlyUrl } from '@assessmentis/effectful-store'
 import {
   Composition,
   Questionnaire,
   QuestionnaireResponse,
-} from '@assessmentis/clinical-domain/content-management'
+} from '@assessmentis/clinical-domain'
 import {
   Encounter,
   Location,
   Patient,
   Practitioner,
-} from '@assessmentis/clinical-domain/administration'
+} from '@assessmentis/clinical-domain'
 import {
+  DiagnosticReport,
   Media,
   Observation,
-} from '@assessmentis/clinical-domain/diagnostic-medicine'
+} from '@assessmentis/clinical-domain'
 import type { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
 import type { AuthError, UnhandledError } from '@assessmentis/ontology'
 import { ExternalAssertionError } from '@assessmentis/ontology'
@@ -66,12 +68,12 @@ export class ClinicalDataRepositoryService extends Effect.Service<ClinicalDataRe
       const clientService = yield* FhirR4ClientService
 
       const clientEffect = <
-        const ResourceType extends string,
-        A extends { id?: string | undefined; resourceType: ResourceType },
-        I extends { id?: string | undefined; resourceType: ResourceType },
+        const DomainType extends string,
+        A extends { domainType: DomainType; url?: ReadonlyUrl | undefined },
+        I,
       >(
         schema: Schema.Schema<A, I, never>,
-        resourceType: ResourceType
+        resourceType: DomainType
       ): Effect.Effect<
         ClinicalDataRepository<A>,
         AuthError | NoSelectedOrgError | UnhandledError,
@@ -86,12 +88,12 @@ export class ClinicalDataRepositoryService extends Effect.Service<ClinicalDataRe
         )
 
       const clientStream = <
-        const ResourceType extends string,
-        A extends { id?: string | undefined; resourceType: ResourceType },
-        I extends { id?: string | undefined; resourceType: ResourceType },
+        const DomainType extends string,
+        A extends { domainType: DomainType; url?: ReadonlyUrl | undefined },
+        I,
       >(
         schema: Schema.Schema<A, I, never>,
-        resourceType: ResourceType
+        resourceType: DomainType
       ): Stream.Stream<
         Either.Either<
           ClinicalDataRepository<A>,
@@ -114,31 +116,33 @@ export class ClinicalDataRepositoryService extends Effect.Service<ClinicalDataRe
         )
 
       const effect: ClinicalDataRepositoryServiceType['effect'] = {
-        Composition: clientEffect(Composition.Schema, 'Composition'),
-        Encounter: clientEffect(Encounter.Schema, 'Encounter'),
-        Location: clientEffect(Location.Schema, 'Location'),
-        Media: clientEffect(Media.Schema, 'Media'),
-        Observation: clientEffect(Observation.Schema, 'Observation'),
-        Patient: clientEffect(Patient.Schema, 'Patient'),
-        Practitioner: clientEffect(Practitioner.Schema, 'Practitioner'),
-        Questionnaire: clientEffect(Questionnaire.Schema, 'Questionnaire'),
+        Composition: clientEffect(Composition, 'Composition'),
+        DiagnosticReport: clientEffect(DiagnosticReport, 'DiagnosticReport'),
+        Encounter: clientEffect(Encounter, 'Encounter'),
+        Location: clientEffect(Location, 'Location'),
+        Media: clientEffect(Media, 'Media'),
+        Observation: clientEffect(Observation, 'Observation'),
+        Patient: clientEffect(Patient, 'Patient'),
+        Practitioner: clientEffect(Practitioner, 'Practitioner'),
+        Questionnaire: clientEffect(Questionnaire, 'Questionnaire'),
         QuestionnaireResponse: clientEffect(
-          QuestionnaireResponse.Schema,
+          QuestionnaireResponse,
           'QuestionnaireResponse'
         ),
       }
 
       const stream: ClinicalDataRepositoryServiceType['stream'] = {
-        Composition: clientStream(Composition.Schema, 'Composition'),
-        Encounter: clientStream(Encounter.Schema, 'Encounter'),
-        Location: clientStream(Location.Schema, 'Location'),
-        Media: clientStream(Media.Schema, 'Media'),
-        Observation: clientStream(Observation.Schema, 'Observation'),
-        Patient: clientStream(Patient.Schema, 'Patient'),
-        Practitioner: clientStream(Practitioner.Schema, 'Practitioner'),
-        Questionnaire: clientStream(Questionnaire.Schema, 'Questionnaire'),
+        Composition: clientStream(Composition, 'Composition'),
+        DiagnosticReport: clientStream(DiagnosticReport, 'DiagnosticReport'),
+        Encounter: clientStream(Encounter, 'Encounter'),
+        Location: clientStream(Location, 'Location'),
+        Media: clientStream(Media, 'Media'),
+        Observation: clientStream(Observation, 'Observation'),
+        Patient: clientStream(Patient, 'Patient'),
+        Practitioner: clientStream(Practitioner, 'Practitioner'),
+        Questionnaire: clientStream(Questionnaire, 'Questionnaire'),
         QuestionnaireResponse: clientStream(
-          QuestionnaireResponse.Schema,
+          QuestionnaireResponse,
           'QuestionnaireResponse'
         ),
       }
@@ -174,7 +178,7 @@ export class ClinicalDataRepositoryService extends Effect.Service<ClinicalDataRe
   repositoryStream<
     TResource extends ResourceDataTypes[keyof ResourceDataTypes],
   >(
-    resourceType: TResource['resourceType']
+    resourceType: TResource['domainType']
   ): Stream.Stream<
     Either.Either<
       ClinicalDataRepository<TResource>,

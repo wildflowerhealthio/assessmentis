@@ -1,36 +1,32 @@
 import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
-import type { CompositionEvent } from '@assessmentis/clinical-domain/content-management'
-import { FhirR4BackboneElement } from '../../../data-types/base/BackboneElement'
-import { FhirR4Reference } from '../../../data-types/complex/IdentifierAndReference'
-import { FhirR4CodeableConcept } from '../../../data-types/complex/CodeableConcept'
-import { FhirR4Period } from '../../../data-types/complex/Period'
+import { type CompositionEventEncoded } from '@assessmentis/clinical-domain'
+import { BackboneElementEncodedFromFhir } from '../../../data-types/base/BackboneElement'
+import { ReferenceEncodedFromFhir } from '../../../data-types/complex/IdentifierAndReference'
+import { CodeableConceptEncodedFromFhir } from '../../../data-types/complex/CodeableConcept'
+import { PeriodEncodedFromFhir } from '../../../data-types/complex/Period'
+import { mutableEncoded } from '@assessmentis/util'
+import type { BaseUrl } from '../../../data-types/UrlIdentification'
 
-const CompositionEventId = Schema.String.pipe(
-  Schema.brand('CompositionEventId')
-)
-
-const FhirR4CompositionEventSchema: Schema.Schema<
-  CompositionEvent,
+export const CompositionEventEncodedFromFhir: Schema.Schema<
+  CompositionEventEncoded,
   FhirR4.CompositionEvent,
-  never
+  BaseUrl
 > = Schema.extend(
-  FhirR4BackboneElement.Schema(CompositionEventId),
-  Schema.Struct({
-    code: Schema.optional(
-      Schema.mutable(
-        Schema.Array(Schema.suspend(() => FhirR4CodeableConcept.Schema))
-      )
-    ),
-    period: Schema.optional(Schema.suspend(() => FhirR4Period.Schema)),
-    detail: Schema.optional(
-      Schema.mutable(
-        Schema.Array(Schema.suspend(() => FhirR4Reference.Schema))
-      )
-    ),
-  })
+  BackboneElementEncodedFromFhir('CompositionEvent'),
+  mutableEncoded(
+    Schema.Struct({
+      code: Schema.optional(
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => CodeableConceptEncodedFromFhir))
+        )
+      ),
+      period: Schema.optional(Schema.suspend(() => PeriodEncodedFromFhir)),
+      detail: Schema.optional(
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => ReferenceEncodedFromFhir))
+        )
+      ),
+    })
+  )
 )
-
-export const FhirR4CompositionEvent = {
-  Schema: FhirR4CompositionEventSchema,
-}

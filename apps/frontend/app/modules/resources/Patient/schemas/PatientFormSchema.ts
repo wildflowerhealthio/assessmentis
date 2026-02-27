@@ -1,11 +1,14 @@
 import { Schema } from 'effect'
-import type { Patient } from '@assessmentis/clinical-domain/administration'
-import { AdministrativeGender } from '@assessmentis/clinical-domain/administration'
+import { Patient } from '@assessmentis/clinical-domain'
+import {
+  AdministrativeGender,
+  IdentifierAndReference,
+} from '@assessmentis/clinical-domain/data-types'
 
 export const PatientFormSchema = Schema.Struct({
   givenName: Schema.String,
   familyName: Schema.String,
-  gender: Schema.optional(AdministrativeGender),
+  gender: Schema.optional(AdministrativeGender.AdministrativeGender),
   birthDate: Schema.optional(Schema.DateFromSelf),
   practitionerId: Schema.optional(Schema.String),
 })
@@ -14,12 +17,11 @@ export type PatientFormData = typeof PatientFormSchema.Type
 
 export function transformToPatient(
   formData: PatientFormData
-): Omit<Patient, 'id'> {
+): Patient {
   const givenName = formData.givenName?.trim()
   const familyName = formData.familyName?.trim()
 
-  return {
-    resourceType: 'Patient' as const,
+  return Patient.make({
     name:
       givenName || familyName
         ? [
@@ -32,8 +34,8 @@ export function transformToPatient(
     gender: formData.gender,
     birthDate: formData.birthDate,
     generalPractitioner: formData.practitionerId
-      ? [{ reference: `Practitioner/${formData.practitionerId}` }]
+      ? [IdentifierAndReference.Reference.make({ reference: `Practitioner/${formData.practitionerId}` })]
       : undefined,
     active: true,
-  }
+  })
 }

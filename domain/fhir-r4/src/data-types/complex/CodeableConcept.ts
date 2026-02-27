@@ -1,27 +1,38 @@
 import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
-import type { CodeableConcept } from '@assessmentis/clinical-domain/data-types'
-import { CodeableConceptId } from '@assessmentis/clinical-domain/data-types'
-import { FhirR4Element } from '../base/Element'
-import { FhirR4Coding } from './Coding'
+import type { CodeableConceptEncoded } from '@assessmentis/clinical-domain/data-types'
+import { CodeableConcept } from '@assessmentis/clinical-domain/data-types'
+import { CodingEncodedFromFhir } from './Coding'
+import { mutableEncoded } from '@assessmentis/util'
+import { ElementIdentification, type BaseUrl } from '../UrlIdentification'
+import { ExtensionEncodedFromFhir } from '../special-purpose'
 
-const FhirR4CodeableConceptSchema: Schema.Schema<
-  CodeableConcept,
+export const CodeableConceptEncodedFromFhir: Schema.Schema<
+  CodeableConceptEncoded,
   FhirR4.CodeableConcept,
-  never
+  BaseUrl
 > = Schema.extend(
-  FhirR4Element.Schema(CodeableConceptId),
-  Schema.mutable(
+  ElementIdentification('CodeableConcept'),
+  mutableEncoded(
     Schema.Struct({
+      extension: Schema.optional(
+        mutableEncoded(Schema.Array(ExtensionEncodedFromFhir))
+      ),
       coding: Schema.optional(
-        Schema.mutable(
-          Schema.Array(Schema.suspend(() => FhirR4Coding.Schema))
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => CodingEncodedFromFhir))
         )
       ),
       text: Schema.optional(Schema.String),
     })
   )
 )
+
+const FhirR4CodeableConceptSchema: Schema.Schema<
+  CodeableConcept,
+  FhirR4.CodeableConcept,
+  BaseUrl
+> = Schema.compose(CodeableConceptEncodedFromFhir, CodeableConcept)
 
 export const FhirR4CodeableConcept = {
   Schema: FhirR4CodeableConceptSchema,

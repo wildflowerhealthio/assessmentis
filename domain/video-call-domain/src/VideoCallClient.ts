@@ -7,7 +7,7 @@ import type {
   MeetingTokenProperties,
   MeetingTokenString,
 } from './records/MeetingToken'
-import type { Media } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import type { Media } from '@assessmentis/clinical-domain'
 import type {
   AuthError,
   UnhandledError,

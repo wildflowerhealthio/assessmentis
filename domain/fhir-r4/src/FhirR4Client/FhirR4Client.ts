@@ -6,7 +6,7 @@ import type {
   AuthError,
   AuthzError,
 } from '@assessmentis/ontology'
-import type { OptionalIdBundle } from '@assessmentis/clinical-domain/foundation-framework'
+import type { Bundle } from '@assessmentis/clinical-domain'
 import { type DeepReadonly } from '@assessmentis/util'
 
 export class FhirR4Client extends Context.Tag('BareFhirR4Client')<
@@ -56,7 +56,7 @@ export class FhirR4Client extends Context.Tag('BareFhirR4Client')<
 
     executeBundle: (
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      bundle: DeepReadonly<OptionalIdBundle<any>>
+      bundle: DeepReadonly<Bundle<any>>
     ) => Effect.Effect<unknown, AuthError | AuthzError | UnhandledError, never>
 
     search: (

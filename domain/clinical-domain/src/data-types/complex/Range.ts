@@ -1,7 +1,7 @@
 import { Schema } from 'effect'
 import type { ElementEncoded } from '../base/Element'
 import { Element } from '../base/Element'
-import * as Quantity from './Quantity'
+import { Quantity } from './Quantity'
 
 export const Key = 'Range'
 export type Key = typeof Key
@@ -10,11 +10,11 @@ const fields = {
   /**
    * The low limit. The boundary is inclusive.
    */
-  low: Schema.optional(Quantity.Quantity),
+  low: Schema.optional(Quantity),
   /**
    * The high limit. The boundary is inclusive.
    */
-  high: Schema.optional(Quantity.Quantity),
+  high: Schema.optional(Quantity),
 } as const satisfies Schema.Struct.Fields
 
 export interface RangeEncoded

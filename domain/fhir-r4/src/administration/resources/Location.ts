@@ -1,53 +1,53 @@
 import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
-import type { Location } from '@assessmentis/clinical-domain/administration'
+import { Location, type LocationEncoded } from '@assessmentis/clinical-domain'
+import { LocationStatus, LocationMode } from '@assessmentis/clinical-domain'
+import { CodingEncodedFromFhir } from '../../data-types/complex/Coding'
+import { ContactPointEncodedFromFhir } from '../../data-types/complex/ContactPoint'
 import {
-  LocationId,
-  LocationStatus,
-  LocationMode,
-} from '@assessmentis/clinical-domain/administration'
-import { FhirR4DomainResource } from '../../data-types/base/DomainResource'
-import { FhirR4Coding } from '../../data-types/complex/Coding'
-import { FhirR4ContactPoint } from '../../data-types/complex/ContactPoint'
-import {
-  FhirR4Identifier,
-  FhirR4Reference,
+  IdentifierEncodedFromFhir,
+  ReferenceEncodedFromFhir,
 } from '../../data-types/complex/IdentifierAndReference'
-import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
-import { FhirR4Address } from '../../data-types/complex/Address'
-import {} from '../../FhirR4ResourceBehaviour'
+import { ResourceEncodedFromFhirR4Resource } from '../../data-types/base/Resource'
+import { CodeableConceptEncodedFromFhir } from '../../data-types/complex/CodeableConcept'
+import { AddressEncodedFromFhir } from '../../data-types/complex/Address'
+import type { BaseUrl } from '../../data-types/UrlIdentification'
+import { mutableEncoded } from '@assessmentis/util'
 
-const FhirR4LocationSchema: Schema.Schema<Location, FhirR4.Location, never> =
-  Schema.extend(
-    FhirR4DomainResource.Schema(LocationId),
+const FhirR4LocationSchema: Schema.Schema<
+  LocationEncoded,
+  FhirR4.Location,
+  BaseUrl
+> = Schema.extend(
+  ResourceEncodedFromFhirR4Resource('Location', 'Location'),
+  mutableEncoded(
     Schema.Struct({
-      resourceType: Schema.Literal('Location'),
       operationalStatus: Schema.optional(
-        Schema.suspend(() => FhirR4Coding.Schema)
+        Schema.suspend(() => CodingEncodedFromFhir)
       ),
       identifier: Schema.optional(
-        Schema.mutable(
-          Schema.Array(Schema.suspend(() => FhirR4Identifier.Schema))
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => IdentifierEncodedFromFhir))
         )
       ),
       name: Schema.optional(Schema.String),
-      alias: Schema.optional(Schema.mutable(Schema.Array(Schema.String))),
+      alias: Schema.optional(mutableEncoded(Schema.Array(Schema.String))),
       description: Schema.optional(Schema.String),
       status: Schema.optional(LocationStatus),
       mode: Schema.optional(LocationMode),
       type: Schema.optional(
-        Schema.mutable(
-          Schema.Array(Schema.suspend(() => FhirR4CodeableConcept.Schema))
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => CodeableConceptEncodedFromFhir))
         )
       ),
       telecom: Schema.optional(
-        Schema.mutable(
-          Schema.Array(Schema.suspend(() => FhirR4ContactPoint.Schema))
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => ContactPointEncodedFromFhir))
         )
       ),
-      address: Schema.optional(Schema.suspend(() => FhirR4Address.Schema)),
+      address: Schema.optional(Schema.suspend(() => AddressEncodedFromFhir)),
       physicalType: Schema.optional(
-        Schema.suspend(() => FhirR4CodeableConcept.Schema)
+        Schema.suspend(() => CodeableConceptEncodedFromFhir)
       ),
       position: Schema.optional(
         Schema.Struct({
@@ -57,13 +57,14 @@ const FhirR4LocationSchema: Schema.Schema<Location, FhirR4.Location, never> =
         })
       ),
       managingOrganization: Schema.optional(
-        Schema.suspend(() => FhirR4Reference.Schema)
+        Schema.suspend(() => ReferenceEncodedFromFhir)
       ),
-      partOf: Schema.optional(Schema.suspend(() => FhirR4Reference.Schema)),
+      partOf: Schema.optional(Schema.suspend(() => ReferenceEncodedFromFhir)),
     })
   )
+)
 
 export const FhirR4Location = {
   resourceType: 'Location',
-  Schema: FhirR4LocationSchema,
+  Schema: Schema.compose(FhirR4LocationSchema, Location),
 }

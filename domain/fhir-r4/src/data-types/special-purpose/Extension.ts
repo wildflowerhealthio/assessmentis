@@ -1,23 +1,42 @@
-import { Schema } from 'effect'
+import { pipe, Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
-import type { Extension } from '@assessmentis/clinical-domain/data-types'
-import { FhirR4ValueElement } from '../primitive/ValueElement'
-import { FhirR4Element } from '../base/Element'
+import {
+  Extension,
+  type ExtensionEncoded,
+} from '@assessmentis/clinical-domain/data-types'
+import type { BaseUrl } from '../UrlIdentification'
+import { ElementIdentification } from '../UrlIdentification'
+import {
+  AllDatatypeKeys,
+  DatatypeChoiceEncodedPassthroughFields,
+} from '@assessmentis/clinical-domain/data-types'
+import { mutableEncoded } from '@assessmentis/util'
 
-const ElementId = Schema.String.pipe(Schema.brand('ElementId'))
-
-const ExtensionSchema: Schema.Schema<Extension, FhirR4.Extension, never> =
+export const ExtensionEncodedFromFhir: Schema.Schema<
+  ExtensionEncoded,
+  FhirR4.Extension,
+  BaseUrl
+> = mutableEncoded(
   Schema.extend(
-    Schema.extend(
-      FhirR4Element.Schema(ElementId),
-      Schema.suspend(() => FhirR4ValueElement.Schema)
-    ),
-    Schema.mutable(
-      Schema.Struct({
-        url: Schema.String,
-      })
-    )
+    Schema.Struct({
+      definitionUrl: pipe(
+        Schema.String,
+        Schema.propertySignature,
+        Schema.fromKey('url')
+      ),
+      extension: Schema.optional(
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => ExtensionEncodedFromFhir))
+        )
+      ),
+      ...DatatypeChoiceEncodedPassthroughFields('value', AllDatatypeKeys),
+    }),
+    ElementIdentification(Extension.Key)
   )
+)
+
+const ExtensionSchema: Schema.Schema<Extension, FhirR4.Extension, BaseUrl> =
+  Schema.compose(ExtensionEncodedFromFhir, Extension)
 
 export const FhirR4Extension = {
   Schema: ExtensionSchema,

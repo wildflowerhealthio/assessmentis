@@ -1,7 +1,7 @@
 import { Schema } from 'effect'
 import { Element, type ElementEncoded } from '../base/Element'
 import { Code } from './Code'
-import { applySchemaMixinTo } from '@assessmentis/util'
+import { MergeClasses } from '@assessmentis/util'
 
 const Key = 'Coding' as const
 type Key = typeof Key
@@ -39,12 +39,4 @@ const ElementMixin = Element(Key)
 export interface CodingEncoded
   extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<Key> {}
 
-class CodingBase extends Schema.Class<CodingBase>(Key)({
-  ...ElementMixin.fields,
-  ...fields,
-}) {}
-
-const CodingWithMixin = applySchemaMixinTo(CodingBase, ElementMixin)
-type CodingWithMixin = CodingBase
-
-export { CodingWithMixin as Coding }
+export class Coding extends MergeClasses<Coding>(Key)(ElementMixin, fields) {}

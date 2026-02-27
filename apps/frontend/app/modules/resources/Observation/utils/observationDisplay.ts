@@ -1,4 +1,4 @@
-import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import type { Observation } from '@assessmentis/clinical-domain'
 import { Effect } from 'effect'
 import {
   humanizeDateTimeForLocalReader,
@@ -42,7 +42,9 @@ export function getObservationCategory(observation: Observation): string {
  * Format observation value as a string for display
  */
 export const formatObservationValue = (
-  observation: Observation | NonNullable<Observation['component']>[number]
+  observation:
+    | Observation
+    | NonNullable<Observation['component']>[number]
 ) =>
   Effect.gen(function* () {
     if ('valueQuantity' in observation && observation.valueQuantity) {

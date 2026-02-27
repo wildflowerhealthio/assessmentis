@@ -1,11 +1,11 @@
 import { useState, type SetStateAction } from 'react'
 import type {
   Questionnaire,
-  QuestionnaireItemLink,
   QuestionnaireResponse,
   QuestionnaireResponseItem,
-} from '@assessmentis/clinical-domain/content-management'
-import { QuestionnaireResponseRepository } from '@assessmentis/clinical-domain/content-management'
+  QuestionnaireItemLink,
+} from '@assessmentis/clinical-domain'
+import { QuestionnaireResponseRepository } from '@assessmentis/clinical-domain/repositories'
 import QuestionnaireItemForm from './components/QuestionnaireItemForm/QuestionnaireItemForm'
 import { Effect } from 'effect'
 import { hasId } from '@assessmentis/effectful-store'

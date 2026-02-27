@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
-import type { Location } from '@assessmentis/clinical-domain/administration'
-import { LocationId } from '@assessmentis/clinical-domain/administration'
+import type { Location } from '@assessmentis/clinical-domain'
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import type { ResourcePagesConfig } from '../ResourcePages/resourcePagesConfigType'
 import { LocationForm } from './components/LocationForm'
 import {
@@ -23,7 +23,7 @@ export const locationConfig: ResourcePagesConfig<
   pluralLabel: 'Locations',
   paramName: 'locationId',
 
-  decodeId: (raw) => Schema.decodeOption(LocationId)(raw),
+  decodeUrl: (raw: string) => Schema.decodeOption(ReadonlyUrl.FromString)(raw),
   getDisplayName: getLocationDisplayName,
 
   schema: LocationFormSchema,

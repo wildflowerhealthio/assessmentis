@@ -5,9 +5,8 @@ import type {
   NotFoundError,
 } from '@assessmentis/ontology'
 import type { WithId } from '@assessmentis/effectful-store'
-import type { EncounterId } from '@assessmentis/clinical-domain/administration'
-import type { Media } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { MediaRepository } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import type { Encounter, Media } from '@assessmentis/clinical-domain'
+import { MediaRepository } from '@assessmentis/clinical-domain/repositories'
 import type { AuthError, AuthzError } from '@assessmentis/ontology'
 
 /**
@@ -17,14 +16,14 @@ import type { AuthError, AuthzError } from '@assessmentis/ontology'
  * @returns Array of Media resources linked to the encounter
  */
 export const getEncounterRecordings = (
-  encounterId: EncounterId
+  encounterId: string
 ): Effect.Effect<
   ReadonlyArray<WithId<Media>>,
   | UnhandledError
   | ExternalAssertionError
   | AuthError
   | AuthzError
-  | NotFoundError<'Encounter', { id: EncounterId }>,
+  | NotFoundError<'Encounter', { id: string }>,
   MediaRepository
 > => {
   return Effect.gen(function* () {

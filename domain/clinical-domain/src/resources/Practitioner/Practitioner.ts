@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { applySchemaMixinTo } from '@assessmentis/util'
+import { MergeClasses } from '@assessmentis/util'
 import { BackboneElement } from '../../data-types/base/BackboneElement'
 import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
 import {
@@ -31,7 +31,6 @@ const PractitionerQualificationSchema = Schema.Struct({
 // --- Practitioner ---
 
 const fields = {
-  resourceType: Schema.Literal('Practitioner'),
   identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
   active: Schema.optional(Schema.Boolean),
   name: Schema.optional(Schema.Array(Schema.suspend(() => HumanName))),
@@ -54,12 +53,7 @@ export interface PractitionerEncoded
 /**
  * A person who is directly or indirectly involved in the provisioning of healthcare.
  */
-class Practitioner extends Schema.Class<Practitioner>(Key)({
-  ...resourceMixin.fields,
-  ...fields,
-}) {}
-
-const PractitionerWithMixin = applySchemaMixinTo(Practitioner, resourceMixin)
-type PractitionerWithMixin = Practitioner
-
-export { PractitionerWithMixin as Practitioner }
+export class Practitioner extends MergeClasses<Practitioner>(Key)(
+  resourceMixin,
+  fields
+) {}

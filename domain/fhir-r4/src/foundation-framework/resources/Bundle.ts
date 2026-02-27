@@ -1,11 +1,8 @@
 import { Schema } from 'effect'
-import { FhirR4BackboneElement } from '../../data-types/base/BackboneElement'
-import { FhirR4Resource } from '../../data-types/base/Resource'
-import { FhirR4Identifier } from '../../data-types/complex/IdentifierAndReference'
-
-const BundleId = Schema.String.pipe(Schema.brand('BundleId'))
-
-const BundleEntryId = Schema.String.pipe(Schema.brand('BundleEntryId'))
+import { BackboneElementEncodedFromFhir } from '../../data-types/base/BackboneElement'
+import { ResourceEncodedFromFhirR4Resource } from '../../data-types/base/Resource'
+import { IdentifierEncodedFromFhir } from '../../data-types/complex/IdentifierAndReference'
+import { mutableEncoded } from '@assessmentis/util'
 
 const BundleType = Schema.Enums({
   document: 'document',
@@ -19,19 +16,15 @@ const BundleType = Schema.Enums({
   collection: 'collection',
 } as const)
 
-const FhirR4BundleEntrySchema = <BundleContentType, BundleContentEncoded>(
-  contentTypeSchema: Schema.Schema<
-    BundleContentType,
-    BundleContentEncoded,
-    never
-  >
+const FhirR4BundleEntrySchema = <BundleContentType, BundleContentEncoded, R>(
+  contentTypeSchema: Schema.Schema<BundleContentType, BundleContentEncoded, R>
 ) =>
   Schema.extend(
-    FhirR4BackboneElement.Schema(BundleEntryId),
-    Schema.mutable(
+    BackboneElementEncodedFromFhir('BundleEntry'),
+    mutableEncoded(
       Schema.Struct({
-        fullUrl: Schema.optional(Schema.URL),
-        link: Schema.optional(Schema.mutable(Schema.Array(Schema.Any))),
+        fullUrl: Schema.optional(Schema.String),
+        link: Schema.optional(mutableEncoded(Schema.Array(Schema.Any))),
         request: Schema.optional(Schema.Any),
         resource: Schema.optional(contentTypeSchema),
         response: Schema.optional(Schema.Any),
@@ -41,27 +34,26 @@ const FhirR4BundleEntrySchema = <BundleContentType, BundleContentEncoded>(
   )
 
 export const FhirR4Bundle = {
-  Schema: <BundleContentType, BundleContentEncoded>(
+  Schema: <BundleContentType, BundleContentEncoded, R>(
     contentTypeSchema: Schema.Schema<
       BundleContentType,
       BundleContentEncoded,
-      never
+      R
     >
   ) =>
     Schema.extend(
-      FhirR4Resource.Schema(BundleId),
-      Schema.mutable(
+      ResourceEncodedFromFhirR4Resource('Bundle', 'Bundle'),
+      mutableEncoded(
         Schema.Struct({
-          resourceType: Schema.Literal('Bundle'),
           entry: Schema.optional(
-            Schema.mutable(
+            mutableEncoded(
               Schema.Array(FhirR4BundleEntrySchema(contentTypeSchema))
             )
           ),
           identifier: Schema.optional(
-            Schema.suspend(() => FhirR4Identifier.Schema)
+            Schema.suspend(() => IdentifierEncodedFromFhir)
           ),
-          link: Schema.optional(Schema.mutable(Schema.Array(Schema.Any))),
+          link: Schema.optional(mutableEncoded(Schema.Array(Schema.Any))),
           signature: Schema.optional(Schema.Any),
           timestamp: Schema.optional(Schema.String),
           total: Schema.optional(Schema.Number),

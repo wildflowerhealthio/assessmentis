@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { applySchemaMixinTo } from '@assessmentis/util'
+import { MergeClasses } from '@assessmentis/util'
 import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
 import { Coding } from '../../data-types/complex/Coding'
 import { Code } from '../../data-types/complex/Code'
@@ -17,7 +17,6 @@ const Key = 'Location' as const
 type Key = typeof Key
 
 const fields = {
-  resourceType: Schema.Literal('Location'),
   operationalStatus: Schema.optional(Schema.suspend(() => Coding)),
   identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
   name: Schema.optional(Schema.String),
@@ -50,15 +49,10 @@ export interface LocationEncoded
  * provided and resources and participants may be stored, found, contained,
  * or accommodated.
  */
-class Location extends Schema.Class<Location>(Key)({
-  ...resourceMixin.fields,
-  ...fields,
-}) {}
-
-const LocationWithMixin = applySchemaMixinTo(Location, resourceMixin)
-type LocationWithMixin = Location
-
-export { LocationWithMixin as Location }
+export class Location extends MergeClasses<Location>(Key)(
+  resourceMixin,
+  fields
+) {}
 
 /**
  * Checks if a location entry represents a virtual location (e.g., video room).

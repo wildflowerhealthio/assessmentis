@@ -1,7 +1,7 @@
 import { Schema } from 'effect'
 import { Code } from './Code'
 import { Element, type ElementEncoded } from '../base/Element'
-import { applySchemaMixinTo } from '@assessmentis/util'
+import { MergeClasses } from '@assessmentis/util'
 
 const Key = 'Attachment'
 export type Key = typeof Key
@@ -51,13 +51,7 @@ const ElementMixin = Element(Key)
  * This data type is used for all attachments including images, documents, etc.
  * Note: Per FHIR spec, if data is present, contentType SHALL be populated.
  */
-class Attachment extends Schema.Class<Attachment>(Key)({
-  ...ElementMixin.fields,
-  ...fields,
-}) {}
-
-const AttachmentWithMixin = applySchemaMixinTo(Attachment, ElementMixin)
-
-type AttachmentWithMixin = InstanceType<typeof AttachmentWithMixin>
-
-export { AttachmentWithMixin as Attachment }
+export class Attachment extends MergeClasses<Attachment>(Key)(
+  ElementMixin,
+  fields
+) {}

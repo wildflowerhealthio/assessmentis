@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
-import type { Patient } from '@assessmentis/clinical-domain/administration'
-import { PatientId } from '@assessmentis/clinical-domain/administration'
+import { Patient } from '@assessmentis/clinical-domain'
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import type { ResourcePagesConfig } from '../ResourcePages/resourcePagesConfigType'
 import { PatientForm } from './components/PatientForm'
 import {
@@ -24,7 +24,7 @@ export const patientConfig: ResourcePagesConfig<
   pluralLabel: 'Patients',
   paramName: 'patientId',
 
-  decodeId: (raw) => Schema.decodeOption(PatientId)(raw),
+  decodeUrl: (raw: string) => Schema.decodeOption(ReadonlyUrl.FromString)(raw),
   getDisplayName: getPatientDisplayName,
 
   schema: PatientFormSchema,

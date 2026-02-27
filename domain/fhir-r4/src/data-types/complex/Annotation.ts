@@ -1,28 +1,35 @@
 import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
-import type { Annotation } from '@assessmentis/clinical-domain/data-types'
-import { AnnotationId } from '@assessmentis/clinical-domain/data-types'
-import { FhirR4Element } from '../base/Element'
-import { FhirR4Reference } from './IdentifierAndReference'
+import { Annotation } from '@assessmentis/clinical-domain/data-types'
+import type { BaseUrl } from '../UrlIdentification'
+import { ElementIdentification } from '../UrlIdentification'
+import { mutableEncoded } from '@assessmentis/util'
+import { ReferenceEncodedFromFhir } from './IdentifierAndReference'
 
-const FhirR4AnnotationSchema: Schema.Schema<
-  Annotation,
+export const AnnotationEncodedFromFhir: Schema.Schema<
+  Annotation.AnnotationEncoded,
   FhirR4.Annotation,
-  never
+  BaseUrl
 > = Schema.extend(
-  FhirR4Element.Schema(AnnotationId),
-  Schema.mutable(
+  ElementIdentification('Annotation'),
+  mutableEncoded(
     Schema.Struct({
       authorString: Schema.optional(Schema.String),
       authorReference: Schema.optional(
-        Schema.suspend(() => FhirR4Reference.Schema)
+        Schema.suspend(() => ReferenceEncodedFromFhir)
       ),
-      time: Schema.optional(Schema.DateTimeUtc),
+      time: Schema.optional(Schema.String),
       text: Schema.String,
     })
   )
 )
 
+const AnnotationSchema: Schema.Schema<
+  Annotation.Annotation,
+  FhirR4.Annotation,
+  BaseUrl
+> = Schema.compose(AnnotationEncodedFromFhir, Annotation.Annotation)
+
 export const FhirR4Annotation = {
-  Schema: FhirR4AnnotationSchema,
+  Schema: AnnotationSchema,
 }

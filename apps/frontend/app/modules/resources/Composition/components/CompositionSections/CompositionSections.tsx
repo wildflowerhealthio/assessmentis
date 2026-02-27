@@ -1,7 +1,4 @@
-import type {
-  Composition,
-  CompositionSection,
-} from '@assessmentis/clinical-domain/content-management'
+import type { Composition, CompositionSection } from '@assessmentis/clinical-domain'
 import classes from './CompositionSections.module.css'
 
 interface CompositionSectionsProps {

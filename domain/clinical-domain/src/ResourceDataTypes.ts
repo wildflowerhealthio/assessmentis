@@ -1,36 +1,37 @@
-import type * as Composition from './resources/Composition'
-import type * as DiagnosticReport from './resources/DiagnosticReport'
-import type * as Encounter from './resources/Encounter'
-import type * as Location from './resources/Location'
-import type * as Media from './resources/Media'
-import type * as Observation from './resources/Observation'
-import type * as Patient from './resources/Patient'
-import type * as Practitioner from './resources/Practitioner'
-import type * as Questionnaire from './resources/Questionnaire'
-import type * as QuestionnaireResponse from './resources/QuestionnaireResponse'
+import type { ReadonlyUrl } from '@assessmentis/effectful-store'
+import type { Composition } from './resources/Composition'
+import type { DiagnosticReport } from './resources/DiagnosticReport'
+import type { Encounter } from './resources/Encounter'
+import type { Location } from './resources/Location'
+import type { Media } from './resources/Media'
+import type { Observation } from './resources/Observation'
+import type { Patient } from './resources/Patient'
+import type { Practitioner } from './resources/Practitioner'
+import type { Questionnaire } from './resources/Questionnaire'
+import type { QuestionnaireResponse } from './resources/QuestionnaireResponse'
 
 export type ResourceType =
-  | typeof Composition.Composition.Key
-  | typeof DiagnosticReport.DiagnosticReport.Key
-  | typeof Encounter.Encounter.Key
-  | typeof Location.Location.Key
-  | typeof Media.Media.Key
-  | typeof Observation.Observation.Key
-  | typeof Patient.Patient.Key
-  | typeof Practitioner.Practitioner.Key
-  | typeof Questionnaire.Questionnaire.Key
-  | typeof QuestionnaireResponse.QuestionnaireResponse.Key
+  | typeof Composition.Key
+  | typeof DiagnosticReport.Key
+  | typeof Encounter.Key
+  | typeof Location.Key
+  | typeof Media.Key
+  | typeof Observation.Key
+  | typeof Patient.Key
+  | typeof Practitioner.Key
+  | typeof Questionnaire.Key
+  | typeof QuestionnaireResponse.Key
 
 export default interface ResourceDataTypes {
-  [key: string]: { resourceType: string; id?: string; domainType: string }
-  Composition: Composition.Composition
-  DiagnosticReport: DiagnosticReport.DiagnosticReport
-  Encounter: Encounter.Encounter
-  Location: Location.Location
-  Media: Media.Media
-  Observation: Observation.Observation
-  Patient: Patient.Patient
-  Practitioner: Practitioner.Practitioner
-  Questionnaire: Questionnaire.Questionnaire
-  QuestionnaireResponse: QuestionnaireResponse.QuestionnaireResponse
+  [key: string]: { domainType: string; url?: ReadonlyUrl }
+  Composition: Composition
+  DiagnosticReport: DiagnosticReport
+  Encounter: Encounter
+  Location: Location
+  Media: Media
+  Observation: Observation
+  Patient: Patient
+  Practitioner: Practitioner
+  Questionnaire: Questionnaire
+  QuestionnaireResponse: QuestionnaireResponse
 }

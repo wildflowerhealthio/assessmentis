@@ -1,98 +1,94 @@
 import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
-import {} from '../../FhirR4ResourceBehaviour'
-import type {
+import {
   Practitioner,
-  PractitionerQualification,
-} from '@assessmentis/clinical-domain/administration'
+  type PractitionerEncoded,
+} from '@assessmentis/clinical-domain'
+import { AdministrativeGender } from '@assessmentis/clinical-domain/data-types'
+import { ResourceEncodedFromFhirR4Resource } from '../../data-types/base/Resource'
+import { BackboneElementEncodedFromFhir } from '../../data-types/base/BackboneElement'
 import {
-  PractitionerId,
-  AdministrativeGender,
-} from '@assessmentis/clinical-domain/administration'
-import { TimelessDateFromString } from '@assessmentis/util'
-import { FhirR4DomainResource } from '../../data-types/base/DomainResource'
-import { FhirR4BackboneElement } from '../../data-types/base/BackboneElement'
-import {
-  FhirR4Identifier,
-  FhirR4Reference,
+  IdentifierEncodedFromFhir,
+  ReferenceEncodedFromFhir,
 } from '../../data-types/complex/IdentifierAndReference'
-import { FhirR4HumanName } from '../../data-types/complex/HumanName'
-import { FhirR4ContactPoint } from '../../data-types/complex/ContactPoint'
-import { FhirR4Address } from '../../data-types/complex/Address'
-import { FhirR4Attachment } from '../../data-types/complex/Attachment'
-import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
-import { FhirR4Period } from '../../data-types/complex/Period'
+import { HumanNameEncodedFromFhir } from '../../data-types/complex/HumanName'
+import { ContactPointEncodedFromFhir } from '../../data-types/complex/ContactPoint'
+import { AddressEncodedFromFhir } from '../../data-types/complex/Address'
+import { AttachmentEncodedFromFhir } from '../../data-types/complex/Attachment'
+import { CodeableConceptEncodedFromFhir } from '../../data-types/complex/CodeableConcept'
+import { PeriodEncodedFromFhir } from '../../data-types/complex/Period'
+import type { BaseUrl } from '../../data-types/UrlIdentification'
+import { mutableEncoded } from '@assessmentis/util'
 
 // --- Sub-component ---
 
-const PractitionerQualificationId = Schema.String.pipe(
-  Schema.brand('PractitionerQualificationId')
-)
-
-const FhirR4PractitionerQualificationSchema: Schema.Schema<
-  PractitionerQualification,
-  FhirR4.PractitionerQualification,
-  never
-> = Schema.extend(
-  FhirR4BackboneElement.Schema(PractitionerQualificationId),
-  Schema.Struct({
-    identifier: Schema.optional(
-      Schema.mutable(
-        Schema.Array(Schema.suspend(() => FhirR4Identifier.Schema))
-      )
-    ),
-    code: Schema.suspend(() => FhirR4CodeableConcept.Schema),
-    period: Schema.optional(Schema.suspend(() => FhirR4Period.Schema)),
-    issuer: Schema.optional(Schema.suspend(() => FhirR4Reference.Schema)),
-  })
+const PractitionerQualificationEncodedFromFhir = Schema.extend(
+  BackboneElementEncodedFromFhir('PractitionerQualification'),
+  mutableEncoded(
+    Schema.Struct({
+      identifier: Schema.optional(
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => IdentifierEncodedFromFhir))
+        )
+      ),
+      code: Schema.suspend(() => CodeableConceptEncodedFromFhir),
+      period: Schema.optional(Schema.suspend(() => PeriodEncodedFromFhir)),
+      issuer: Schema.optional(Schema.suspend(() => ReferenceEncodedFromFhir)),
+    })
+  )
 )
 
 // --- Practitioner ---
 
-const FhirR4PractitionerSchema: Schema.Schema<
-  Practitioner,
+const FhirR4PractitionerEncodedFromFhir: Schema.Schema<
+  PractitionerEncoded,
   FhirR4.Practitioner,
-  never
+  BaseUrl
 > = Schema.extend(
-  FhirR4DomainResource.Schema(PractitionerId),
-  Schema.Struct({
-    resourceType: Schema.Literal('Practitioner'),
-    identifier: Schema.optional(
-      Schema.mutable(
-        Schema.Array(Schema.suspend(() => FhirR4Identifier.Schema))
-      )
-    ),
-    active: Schema.optional(Schema.Boolean),
-    name: Schema.optional(
-      Schema.mutable(Schema.Array(Schema.suspend(() => FhirR4HumanName.Schema)))
-    ),
-    telecom: Schema.optional(
-      Schema.mutable(
-        Schema.Array(Schema.suspend(() => FhirR4ContactPoint.Schema))
-      )
-    ),
-    address: Schema.optional(
-      Schema.mutable(Schema.Array(Schema.suspend(() => FhirR4Address.Schema)))
-    ),
-    gender: Schema.optional(AdministrativeGender),
-    birthDate: Schema.optional(TimelessDateFromString),
-    photo: Schema.optional(
-      Schema.mutable(
-        Schema.Array(Schema.suspend(() => FhirR4Attachment.Schema))
-      )
-    ),
-    qualification: Schema.optional(
-      Schema.mutable(Schema.Array(FhirR4PractitionerQualificationSchema))
-    ),
-    communication: Schema.optional(
-      Schema.mutable(
-        Schema.Array(Schema.suspend(() => FhirR4CodeableConcept.Schema))
-      )
-    ),
-  })
+  ResourceEncodedFromFhirR4Resource('Practitioner', 'Practitioner'),
+  mutableEncoded(
+    Schema.Struct({
+      identifier: Schema.optional(
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => IdentifierEncodedFromFhir))
+        )
+      ),
+      active: Schema.optional(Schema.Boolean),
+      name: Schema.optional(
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => HumanNameEncodedFromFhir))
+        )
+      ),
+      telecom: Schema.optional(
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => ContactPointEncodedFromFhir))
+        )
+      ),
+      address: Schema.optional(
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => AddressEncodedFromFhir))
+        )
+      ),
+      gender: Schema.optional(AdministrativeGender.AdministrativeGender),
+      birthDate: Schema.optional(Schema.String),
+      photo: Schema.optional(
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => AttachmentEncodedFromFhir))
+        )
+      ),
+      qualification: Schema.optional(
+        mutableEncoded(Schema.Array(PractitionerQualificationEncodedFromFhir))
+      ),
+      communication: Schema.optional(
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => CodeableConceptEncodedFromFhir))
+        )
+      ),
+    })
+  )
 )
 
 export const FhirR4Practitioner = {
   resourceType: 'Practitioner',
-  Schema: FhirR4PractitionerSchema,
+  Schema: Schema.compose(FhirR4PractitionerEncodedFromFhir, Practitioner),
 }

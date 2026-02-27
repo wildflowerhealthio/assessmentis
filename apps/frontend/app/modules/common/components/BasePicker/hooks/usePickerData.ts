@@ -19,7 +19,7 @@ export interface UsePickerDataOptions<
   T extends Schema.Schema.Type<(typeof Schemas)[keyof typeof Schemas]>,
   O,
 > {
-  resourceType: T['resourceType']
+  resourceType: T['domainType']
   transform: (item: T) => PickerItem<O>
   enabled?: boolean
 }

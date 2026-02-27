@@ -1,6 +1,5 @@
 import { Either, Option, Schema, Stream } from 'effect'
 import { StreamEither } from '@assessmentis/util'
-import { ObservationId } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/Observation.$observationId._index'
 import { runEffectSyncFlat } from '../runEffectSync'
@@ -21,7 +20,7 @@ import { useEitherStream } from '@assessmentis/react-util'
 import { usePlatformContext } from '../layers/PlatformContext'
 import { Await } from 'react-router'
 
-const tryDecodeObservationId = Schema.decodeOption(ObservationId)
+const tryDecodeObservationId = Schema.decodeOption(Schema.String)
 
 export default function ObservationDetailPage({
   params,
@@ -99,9 +98,9 @@ export default function ObservationDetailPage({
 
           return (
             <ResourceDetailPage
-              editTo={`/Observation/${observation.id}/edit`}
+              editTo={`/Observation/${observation.url?.toString() ?? params.observationId}/edit`}
               title={displayName}
-              subtitle={`Observation ID: ${observation.id}`}
+              subtitle={`Observation: ${observation.url?.toString() ?? params.observationId}`}
               sections={[
                 {
                   id: 'details',

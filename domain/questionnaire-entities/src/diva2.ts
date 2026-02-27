@@ -1,15 +1,12 @@
-import type {
-  QuestionnaireItem,
-  Questionnaire,
-} from '@assessmentis/clinical-domain/content-management'
+import { Questionnaire, QuestionnaireItem } from '@assessmentis/clinical-domain'
 import {
-  QuestionnaireItemType,
-  QuestionnaireItemUIControlCode,
-  QuestionnaireItemUiDisplayLevel,
   QuestionnaireItemLink,
-  questionnaireItemUiControlCodeExtension,
+  QuestionnaireItemType,
+  QuestionnaireItemUiDisplayLevel,
+  QuestionnaireItemUIControlCode,
   questionnaireItemUiDisplayLevelExtension,
-} from '@assessmentis/clinical-domain/content-management'
+  questionnaireItemUiControlCodeExtension,
+} from '@assessmentis/clinical-domain'
 
 const sluggify = (s: string): QuestionnaireItemLink =>
   QuestionnaireItemLink.make(
@@ -30,7 +27,7 @@ interface DivaQuestion {
 }
 
 const part1Preamble: QuestionnaireItem[] = [
-  {
+  QuestionnaireItem.make({
     text: 'Diagnostic Interview for ADHD in adults (DIVA)',
     linkId: sluggify('title'),
     type: QuestionnaireItemType.enums.display,
@@ -39,8 +36,8 @@ const part1Preamble: QuestionnaireItem[] = [
         QuestionnaireItemUiDisplayLevel.enums.heading1
       ),
     ],
-  },
-  {
+  }),
+  QuestionnaireItem.make({
     linkId: sluggify('part-1-title'),
     text: 'Part 1: Symptoms of attention-deficit (DSM-IV criterion A1)',
     type: QuestionnaireItemType.enums.display,
@@ -49,8 +46,8 @@ const part1Preamble: QuestionnaireItem[] = [
         QuestionnaireItemUiDisplayLevel.enums.heading2
       ),
     ],
-  },
-  {
+  }),
+  QuestionnaireItem.make({
     linkId: sluggify('part-1-instructions'),
     text:
       'Instructions: the symptoms in adulthood have to have been present for at least 6 months. ' +
@@ -58,7 +55,7 @@ const part1Preamble: QuestionnaireItem[] = [
       'For a symptom to be ascribed to ADHD it should have a chronic trait-like course and should not be episodic.',
     type: QuestionnaireItemType.enums.display,
     // style: QuestionnaireItemStyle.QUESTION,
-  },
+  }),
 ]
 
 const part1DivaQuestions: DivaQuestion[] = [
@@ -259,7 +256,7 @@ const part1DivaQuestions: DivaQuestion[] = [
 ]
 
 const part1Criteria: QuestionnaireItem[] = [
-  {
+  QuestionnaireItem.make({
     linkId: sluggify('part-1-criterion-a-title'),
     text: 'Supplement criterion A',
     type: QuestionnaireItemType.enums.display,
@@ -268,8 +265,8 @@ const part1Criteria: QuestionnaireItem[] = [
         QuestionnaireItemUiDisplayLevel.enums.heading2
       ),
     ],
-  },
-  {
+  }),
+  QuestionnaireItem.make({
     linkId: sluggify('part-1-criterion-a-adulthood-subtitle'),
     text: 'Adulthood:',
     type: QuestionnaireItemType.enums.display,
@@ -278,14 +275,14 @@ const part1Criteria: QuestionnaireItem[] = [
         QuestionnaireItemUiDisplayLevel.enums.heading3
       ),
     ],
-  },
-  {
+  }),
+  QuestionnaireItem.make({
     linkId: sluggify('part-1-criterion-a-adulthood'),
     text: 'Do you have more of these symptoms of attention deficit than other people, or do you experience these more frequently than other people of your age?',
     // style: QuestionnaireItemStyle.QUESTION,
     type: QuestionnaireItemType.enums.boolean,
-  },
-  {
+  }),
+  QuestionnaireItem.make({
     linkId: sluggify('part-1-criterion-a-childhood-subtitle'),
     text: 'Childhood:',
     type: QuestionnaireItemType.enums.display,
@@ -294,14 +291,14 @@ const part1Criteria: QuestionnaireItem[] = [
         QuestionnaireItemUiDisplayLevel.enums.heading3
       ),
     ],
-  },
-  {
+  }),
+  QuestionnaireItem.make({
     linkId: sluggify('part-1-criterion-a-childhood'),
     text: 'Did you have more of these symptoms of attention deficit than other children of your age, or did you experience these more frequently than other children of your age? ',
     // style: QuestionnaireItemStyle.QUESTION,
     type: QuestionnaireItemType.enums.boolean,
-  },
-  {
+  }),
+  QuestionnaireItem.make({
     text: 'Part 2: Symptoms of hyperactivity-impulsivity  (DSM-IV criterion A2)',
     linkId: sluggify('part-2-title'),
     type: QuestionnaireItemType.enums.display,
@@ -310,11 +307,11 @@ const part1Criteria: QuestionnaireItem[] = [
         QuestionnaireItemUiDisplayLevel.enums.heading2
       ),
     ],
-  },
+  }),
 ]
 
 const part2Preamble: QuestionnaireItem[] = [
-  {
+  QuestionnaireItem.make({
     linkId: sluggify('part-2-instructions'),
     text:
       'Instructions: the symptoms in adulthood have to have been present for at least 6 months. ' +
@@ -322,7 +319,7 @@ const part2Preamble: QuestionnaireItem[] = [
       'For a symptom to be ascribed to ADHD it should have a chronic trait-like course and should not be episodic.',
     type: QuestionnaireItemType.enums.display,
     // style: QuestionnaireItemStyle.QUESTION,
-  },
+  }),
 ]
 
 const part2DivaQuestions: DivaQuestion[] = [
@@ -502,7 +499,7 @@ const part2DivaQuestions: DivaQuestion[] = [
 ]
 
 const part2Criteria: QuestionnaireItem[] = [
-  {
+  QuestionnaireItem.make({
     linkId: sluggify('part-2-criterion-a-title'),
     text: 'Supplement criterion A',
     type: QuestionnaireItemType.enums.display,
@@ -511,8 +508,8 @@ const part2Criteria: QuestionnaireItem[] = [
         QuestionnaireItemUiDisplayLevel.enums.heading2
       ),
     ],
-  },
-  {
+  }),
+  QuestionnaireItem.make({
     text: 'Adulthood:',
     linkId: sluggify('part-2-criterion-a-adulthood-subtitle'),
     type: QuestionnaireItemType.enums.display,
@@ -521,14 +518,14 @@ const part2Criteria: QuestionnaireItem[] = [
         QuestionnaireItemUiDisplayLevel.enums.heading3
       ),
     ],
-  },
-  {
+  }),
+  QuestionnaireItem.make({
     linkId: sluggify('part-2-criterion-a-adulthood'),
     text: 'Do you have more of these symptoms of hyperactivity/impulsivity than other people, or do you experience these more frequently than other people?',
     // style: QuestionnaireItemStyle.QUESTION,
     type: QuestionnaireItemType.enums.boolean,
-  },
-  {
+  }),
+  QuestionnaireItem.make({
     linkId: sluggify('part-2-criterion-a-childhood-subtitle'),
     text: 'Childhood:',
     type: QuestionnaireItemType.enums.display,
@@ -537,17 +534,17 @@ const part2Criteria: QuestionnaireItem[] = [
         QuestionnaireItemUiDisplayLevel.enums.heading3
       ),
     ],
-  },
-  {
+  }),
+  QuestionnaireItem.make({
     linkId: sluggify('part-2-criterion-a-childhood'),
     text: 'Did you have more of these symptoms of hyperactivity/impulsivity than other children of your age, or did you experience these more frequently than other children of your age?',
     // style: QuestionnaireItemStyle.QUESTION,
     type: QuestionnaireItemType.enums.boolean,
-  },
+  }),
 ]
 
 const part3Preamble: QuestionnaireItem[] = [
-  {
+  QuestionnaireItem.make({
     text: 'Part 3: Impairment on account of the symptoms (DSM-IV criteria B, C and D)',
     linkId: sluggify('part-3-title'),
     type: QuestionnaireItemType.enums.display,
@@ -556,8 +553,8 @@ const part3Preamble: QuestionnaireItem[] = [
         QuestionnaireItemUiDisplayLevel.enums.heading2
       ),
     ],
-  },
-  {
+  }),
+  QuestionnaireItem.make({
     linkId: sluggify('part-3-criterion-b-title'),
     text: 'Supplement criterion B',
     type: QuestionnaireItemType.enums.display,
@@ -566,20 +563,20 @@ const part3Preamble: QuestionnaireItem[] = [
         QuestionnaireItemUiDisplayLevel.enums.heading2
       ),
     ],
-  },
-  {
+  }),
+  QuestionnaireItem.make({
     text: 'Have you always had these symptoms of attention deficit and/or hyperactivity/impulsivity? (a number of symptoms were present prior to the 7th year of age)',
     linkId: sluggify('part-3-criterion-b'),
     // style: QuestionnaireItemStyle.QUESTION,
     type: QuestionnaireItemType.enums.boolean,
-  },
-  {
+  }),
+  QuestionnaireItem.make({
     linkId: sluggify('part-3-criterion-b-onset-age'),
     text: 'If no is answered above, starting as from ____ year of age.',
     // style: QuestionnaireItemStyle.WITHIN_QUESTION,
     type: QuestionnaireItemType.enums.text,
-  },
-  {
+  }),
+  QuestionnaireItem.make({
     linkId: sluggify('part-3-criterion-c-title'),
     text: 'Supplement criterion C',
     type: QuestionnaireItemType.enums.display,
@@ -588,8 +585,8 @@ const part3Preamble: QuestionnaireItem[] = [
         QuestionnaireItemUiDisplayLevel.enums.heading2
       ),
     ],
-  },
-  {
+  }),
+  QuestionnaireItem.make({
     linkId: sluggify('part-3-criterion-c-instructions'),
     text: 'In which areas do you have / have you had problems with these symptoms?',
     type: QuestionnaireItemType.enums.display,
@@ -598,7 +595,7 @@ const part3Preamble: QuestionnaireItem[] = [
         QuestionnaireItemUiDisplayLevel.enums.heading3
       ),
     ],
-  },
+  }),
 ]
 
 const part3DivaQuestions: DivaQuestion[] = [
@@ -729,19 +726,19 @@ const part3DivaQuestions: DivaQuestion[] = [
 ]
 
 const conclusionItems: QuestionnaireItem[] = [
-  {
+  QuestionnaireItem.make({
     linkId: sluggify('adulthood-evidence-of-impairment'),
     text: 'Adulthood: Evidence of impairment in two or more areas? ',
     type: QuestionnaireItemType.enums.boolean,
     // style: QuestionnaireItemStyle.QUESTION,
-  },
-  {
+  }),
+  QuestionnaireItem.make({
     linkId: sluggify('childhood-evidence-of-impairment'),
     text: 'Childhood and adolescence: Evidence of impairment in two or more areas?',
     type: QuestionnaireItemType.enums.boolean,
     // style: QuestionnaireItemStyle.QUESTION,
-  },
-  {
+  }),
+  QuestionnaireItem.make({
     linkId: sluggify('end-of-interview-title'),
     text: 'End of the interview. Please continue with the summary',
     type: QuestionnaireItemType.enums.display,
@@ -750,13 +747,13 @@ const conclusionItems: QuestionnaireItem[] = [
         QuestionnaireItemUiDisplayLevel.enums.heading3
       ),
     ],
-  },
-  {
+  }),
+  QuestionnaireItem.make({
     linkId: sluggify('summary'),
     text: 'Potential details:',
     type: QuestionnaireItemType.enums.text,
     // style: QuestionnaireItemStyle.QUESTION,
-  },
+  }),
 ]
 
 const toItems = ({
@@ -773,7 +770,7 @@ const toItems = ({
     prefix + '-childhood-examples'
   )
   return [
-    {
+    QuestionnaireItem.make({
       linkId: sluggify(prefix + '-title'),
       text: questionText,
       modifierExtension: [
@@ -782,8 +779,8 @@ const toItems = ({
         ),
       ],
       type: QuestionnaireItemType.enums.display,
-    },
-    {
+    }),
+    QuestionnaireItem.make({
       text: 'Examples during adulthood:',
       linkId: adultExampleQuestionnaireItemLabel,
       // style: QuestionnaireItemStyle.QUESTION,
@@ -794,27 +791,28 @@ const toItems = ({
         ),
       ],
       item: adultSymptoms.map(
-        (text): QuestionnaireItem => ({
-          linkId: sluggify(prefix + '-adult-example-' + text),
-          text,
-          // style: QuestionnaireItemStyle.WITHIN_QUESTION,
-          type: QuestionnaireItemType.enums.boolean,
-        })
+        (text): QuestionnaireItem =>
+          QuestionnaireItem.make({
+            linkId: sluggify(prefix + '-adult-example-' + text),
+            text,
+            // style: QuestionnaireItemStyle.WITHIN_QUESTION,
+            type: QuestionnaireItemType.enums.boolean,
+          })
       ),
-    },
-    {
+    }),
+    QuestionnaireItem.make({
       linkId: sluggify(prefix + '-other-adult-example'),
       text: 'Other examples during adulthood:',
       // style: QuestionnaireItemStyle.WITHIN_QUESTION,
       type: QuestionnaireItemType.enums.text,
-    },
-    {
+    }),
+    QuestionnaireItem.make({
       linkId: sluggify(prefix + '-adult-symptom-present'),
       text: 'Adult symptom present?',
       // style: QuestionnaireItemStyle.QUESTION,
       type: QuestionnaireItemType.enums.boolean,
-    },
-    {
+    }),
+    QuestionnaireItem.make({
       linkId: sluggify(prefix + '-child-title'),
       text: childQuestionText,
       modifierExtension: [
@@ -823,8 +821,8 @@ const toItems = ({
         ),
       ],
       type: QuestionnaireItemType.enums.display,
-    },
-    {
+    }),
+    QuestionnaireItem.make({
       linkId: childhoodExampleQuestionnaireItemLabel,
       text: 'Examples during childhood:',
       modifierExtension: [
@@ -833,25 +831,27 @@ const toItems = ({
         ),
       ],
       type: QuestionnaireItemType.enums.group,
-      item: childSymptoms.map((text) => ({
-        linkId: sluggify(prefix + '-child-example-' + text),
-        text,
-        // style: QuestionnaireItemStyle.WITHIN_QUESTION,
-        type: QuestionnaireItemType.enums.boolean,
-      })),
-    },
-    {
+      item: childSymptoms.map((text) =>
+        QuestionnaireItem.make({
+          linkId: sluggify(prefix + '-child-example-' + text),
+          text,
+          // style: QuestionnaireItemStyle.WITHIN_QUESTION,
+          type: QuestionnaireItemType.enums.boolean,
+        })
+      ),
+    }),
+    QuestionnaireItem.make({
       linkId: sluggify(prefix + '-other-childhood-example'),
       text: 'Other examples during childhood:',
       // style: QuestionnaireItemStyle.WITHIN_QUESTION,
       type: QuestionnaireItemType.enums.text,
-    },
-    {
+    }),
+    QuestionnaireItem.make({
       linkId: sluggify(prefix + '-childhood-symptom-present'),
       text: 'Childhood symptom present?',
       // style: QuestionnaireItemStyle.QUESTION,
       type: QuestionnaireItemType.enums.boolean,
-    },
+    }),
   ]
 }
 
@@ -868,10 +868,10 @@ const divaQuestionnaireItems: QuestionnaireItem[] = [
 ]
 
 const divaTitle = 'Diagnostic Interview for ADHD in adults (DIVA) 2.0'
-export const questionnaire: Questionnaire = {
-  resourceType: 'Questionnaire',
+export const questionnaire: Questionnaire = Questionnaire.make({
+  domainType: 'Questionnaire',
   title: divaTitle,
   name: 'diva2',
   status: 'draft',
   item: divaQuestionnaireItems,
-}
+})

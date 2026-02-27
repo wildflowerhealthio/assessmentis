@@ -1,105 +1,117 @@
 import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
-import {} from '../../FhirR4ResourceBehaviour'
-import type {
+import {
   DiagnosticReport,
-  DiagnosticReportMedia,
-} from '@assessmentis/clinical-domain/diagnostic-medicine'
-import {
-  DiagnosticReportId,
+  type DiagnosticReportEncoded,
   DiagnosticReportStatus,
-} from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { FhirR4DomainResource } from '../../data-types/base/DomainResource'
-import { FhirR4BackboneElement } from '../../data-types/base/BackboneElement'
+} from '@assessmentis/clinical-domain'
+import { ResourceEncodedFromFhirR4Resource } from '../../data-types/base/Resource'
+import { BackboneElementEncodedFromFhir } from '../../data-types/base/BackboneElement'
 import {
-  FhirR4Identifier,
-  FhirR4Reference,
+  IdentifierEncodedFromFhir,
+  ReferenceEncodedFromFhir,
 } from '../../data-types/complex/IdentifierAndReference'
-import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
-import { FhirR4Attachment } from '../../data-types/complex/Attachment'
-import { FhirR4Period } from '../../data-types/complex/Period'
+import { CodeableConceptEncodedFromFhir } from '../../data-types/complex/CodeableConcept'
+import { AttachmentEncodedFromFhir } from '../../data-types/complex/Attachment'
+import { PeriodEncodedFromFhir } from '../../data-types/complex/Period'
+import type { BaseUrl } from '../../data-types/UrlIdentification'
+import { mutableEncoded } from '@assessmentis/util'
 
 // --- Sub-component ---
 
-const DiagnosticReportMediaId = Schema.String.pipe(
-  Schema.brand('DiagnosticReportMediaId')
-)
-
-const FhirR4DiagnosticReportMediaSchema: Schema.Schema<
-  DiagnosticReportMedia,
-  FhirR4.DiagnosticReportMedia,
-  never
-> = Schema.extend(
-  FhirR4BackboneElement.Schema(DiagnosticReportMediaId),
-  Schema.Struct({
-    comment: Schema.optional(Schema.String),
-    link: Schema.suspend(() => FhirR4Reference.Schema),
-  })
+const DiagnosticReportMediaEncodedFromFhir = Schema.extend(
+  BackboneElementEncodedFromFhir('DiagnosticReportMedia'),
+  mutableEncoded(
+    Schema.Struct({
+      comment: Schema.optional(Schema.String),
+      link: Schema.suspend(() => ReferenceEncodedFromFhir),
+    })
+  )
 )
 
 // --- DiagnosticReport ---
 
-const FhirR4DiagnosticReportSchema: Schema.Schema<
-  DiagnosticReport,
+const FhirR4DiagnosticReportEncodedFromFhir: Schema.Schema<
+  DiagnosticReportEncoded,
   FhirR4.DiagnosticReport,
-  never
+  BaseUrl
 > = Schema.extend(
-  FhirR4DomainResource.Schema(DiagnosticReportId),
-  Schema.Struct({
-    resourceType: Schema.Literal('DiagnosticReport'),
-    identifier: Schema.optional(
-      Schema.mutable(
-        Schema.Array(Schema.suspend(() => FhirR4Identifier.Schema))
-      )
-    ),
-    basedOn: Schema.optional(
-      Schema.mutable(Schema.Array(Schema.suspend(() => FhirR4Reference.Schema)))
-    ),
-    status: DiagnosticReportStatus,
-    category: Schema.optional(
-      Schema.mutable(
-        Schema.Array(Schema.suspend(() => FhirR4CodeableConcept.Schema))
-      )
-    ),
-    code: Schema.suspend(() => FhirR4CodeableConcept.Schema),
-    subject: Schema.optional(Schema.suspend(() => FhirR4Reference.Schema)),
-    encounter: Schema.optional(Schema.suspend(() => FhirR4Reference.Schema)),
-    effectiveDateTime: Schema.optional(Schema.DateTimeUtc),
-    effectivePeriod: Schema.optional(Schema.suspend(() => FhirR4Period.Schema)),
-    issued: Schema.optional(Schema.DateTimeUtc),
-    performer: Schema.optional(
-      Schema.mutable(Schema.Array(Schema.suspend(() => FhirR4Reference.Schema)))
-    ),
-    resultsInterpreter: Schema.optional(
-      Schema.mutable(Schema.Array(Schema.suspend(() => FhirR4Reference.Schema)))
-    ),
-    specimen: Schema.optional(
-      Schema.mutable(Schema.Array(Schema.suspend(() => FhirR4Reference.Schema)))
-    ),
-    result: Schema.optional(
-      Schema.mutable(Schema.Array(Schema.suspend(() => FhirR4Reference.Schema)))
-    ),
-    imagingStudy: Schema.optional(
-      Schema.mutable(Schema.Array(Schema.suspend(() => FhirR4Reference.Schema)))
-    ),
-    media: Schema.optional(
-      Schema.mutable(Schema.Array(FhirR4DiagnosticReportMediaSchema))
-    ),
-    conclusion: Schema.optional(Schema.String),
-    conclusionCode: Schema.optional(
-      Schema.mutable(
-        Schema.Array(Schema.suspend(() => FhirR4CodeableConcept.Schema))
-      )
-    ),
-    presentedForm: Schema.optional(
-      Schema.mutable(
-        Schema.Array(Schema.suspend(() => FhirR4Attachment.Schema))
-      )
-    ),
-  })
+  ResourceEncodedFromFhirR4Resource('DiagnosticReport', 'DiagnosticReport'),
+  mutableEncoded(
+    Schema.Struct({
+      identifier: Schema.optional(
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => IdentifierEncodedFromFhir))
+        )
+      ),
+      basedOn: Schema.optional(
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => ReferenceEncodedFromFhir))
+        )
+      ),
+      status: DiagnosticReportStatus,
+      category: Schema.optional(
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => CodeableConceptEncodedFromFhir))
+        )
+      ),
+      code: Schema.suspend(() => CodeableConceptEncodedFromFhir),
+      subject: Schema.optional(Schema.suspend(() => ReferenceEncodedFromFhir)),
+      encounter: Schema.optional(
+        Schema.suspend(() => ReferenceEncodedFromFhir)
+      ),
+      effectiveDateTime: Schema.optional(Schema.String),
+      effectivePeriod: Schema.optional(
+        Schema.suspend(() => PeriodEncodedFromFhir)
+      ),
+      issued: Schema.optional(Schema.String),
+      performer: Schema.optional(
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => ReferenceEncodedFromFhir))
+        )
+      ),
+      resultsInterpreter: Schema.optional(
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => ReferenceEncodedFromFhir))
+        )
+      ),
+      specimen: Schema.optional(
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => ReferenceEncodedFromFhir))
+        )
+      ),
+      result: Schema.optional(
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => ReferenceEncodedFromFhir))
+        )
+      ),
+      imagingStudy: Schema.optional(
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => ReferenceEncodedFromFhir))
+        )
+      ),
+      media: Schema.optional(
+        mutableEncoded(Schema.Array(DiagnosticReportMediaEncodedFromFhir))
+      ),
+      conclusion: Schema.optional(Schema.String),
+      conclusionCode: Schema.optional(
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => CodeableConceptEncodedFromFhir))
+        )
+      ),
+      presentedForm: Schema.optional(
+        mutableEncoded(
+          Schema.Array(Schema.suspend(() => AttachmentEncodedFromFhir))
+        )
+      ),
+    })
+  )
 )
 
 export const FhirR4DiagnosticReport = {
   resourceType: 'DiagnosticReport',
-  Schema: FhirR4DiagnosticReportSchema,
+  Schema: Schema.compose(
+    FhirR4DiagnosticReportEncodedFromFhir,
+    DiagnosticReport
+  ),
 }

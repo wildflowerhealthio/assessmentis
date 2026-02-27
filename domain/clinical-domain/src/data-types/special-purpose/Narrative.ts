@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 import { Element, type ElementEncoded } from '../base/Element'
-import { applySchemaMixinTo } from '@assessmentis/util'
+import { MergeClasses } from '@assessmentis/util'
 
 const Key = 'Narrative' as const
 type Key = typeof Key
@@ -32,14 +32,9 @@ const ElementMixin = Element(Key)
 export interface NarrativeEncoded
   extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<Key> {}
 
-class Narrative extends Schema.Class<Narrative>(Key)({
-  ...ElementMixin.fields,
-  ...fields,
-}) {
+export class Narrative extends MergeClasses<Narrative>(Key)(
+  ElementMixin,
+  fields
+) {
   static readonly Key = Key
 }
-
-const NarrativeWithMixin = applySchemaMixinTo(Narrative, ElementMixin)
-type NarrativeWithMixin = Narrative
-
-export { NarrativeWithMixin as Narrative }

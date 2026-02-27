@@ -1,27 +1,27 @@
-import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import type { Observation } from '@assessmentis/clinical-domain'
 import type { Coding } from '@assessmentis/clinical-domain/data-types'
 
-import { type WithId } from '@assessmentis/effectful-store'
+import type { Resource } from '@assessmentis/effectful-store'
 
 export type HeaderComponent = React.FC<{ title: string }>
 
 export type ObservationSectionWithMethodComponent = React.FC<{
-  observation: WithId<Observation>
+  observation: Resource.WithResourceUrl<Observation>
 }>
 
 export type ObservationTableRowProps = {
-  observation: WithId<Observation>
-  columnCodings: ReadonlyArray<ReadonlyArray<Coding>>
+  observation: Resource.WithResourceUrl<Observation>
+  columnCodings: ReadonlyArray<ReadonlyArray<Coding.Coding>>
 }
 
 export type ObservationTableRowComponent = React.FC<ObservationTableRowProps>
 
 export type ObservationTableComponent = React.FC<{
   observationLabel: string
-  observations: ReadonlyArray<WithId<Observation>>
+  observations: ReadonlyArray<Resource.WithResourceUrl<Observation>>
   columns: ReadonlyArray<{
     label: string
-    codings: ReadonlyArray<Coding>
+    codings: ReadonlyArray<Coding.Coding>
   }>
 }>
 

@@ -1,4 +1,4 @@
-import type { Encounter } from '@assessmentis/clinical-domain/administration'
+import { Encounter } from '@assessmentis/clinical-domain'
 import {
   getEncounterDisplayName,
   getEncounterStatus,
@@ -26,8 +26,8 @@ export function EncounterListItem({
     <ResourceListItem
       displayName={displayName}
       summaryItems={[status, periodDisplay].filter(Boolean) as string[]}
-      viewPath={`/Encounter/${encounter.id}`}
-      editPath={`/Encounter/${encounter.id}/edit`}
+      viewPath={`/Encounter/${encounter.url?.toString()}`}
+      editPath={`/Encounter/${encounter.url?.toString()}/edit`}
       onDelete={onDelete}
       loading={loading}
     />

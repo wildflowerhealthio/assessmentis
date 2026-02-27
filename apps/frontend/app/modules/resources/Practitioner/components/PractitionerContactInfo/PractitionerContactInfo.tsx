@@ -1,4 +1,4 @@
-import type { Practitioner } from '@assessmentis/clinical-domain/administration'
+import type { Practitioner } from '@assessmentis/clinical-domain'
 import classes from './PractitionerContactInfo.module.css'
 
 interface PractitionerContactInfoProps {

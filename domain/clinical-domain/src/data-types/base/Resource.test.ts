@@ -1,20 +1,15 @@
 import { expect, test, describe, expectTypeOf } from 'vitest'
 import { Resource, type ResourceEncoded } from './Resource'
 import { Arbitrary, Schema } from 'effect'
-import { applySchemaMixinTo } from '@assessmentis/util'
+import { MergeClasses } from '@assessmentis/util'
 import * as fc from 'fast-check'
 import type { Extension } from '../special-purpose/Extension'
 
 const ResourceMixin = Resource('TestResource')
 
-class TestResourcePreMix extends Schema.Class<TestResourcePreMix>(
-  'TestResource'
-)({
-  ...ResourceMixin.fields,
-}) {}
-
-const TestResource = applySchemaMixinTo(TestResourcePreMix, ResourceMixin)
-type TestResource = TestResourcePreMix
+class TestResource extends MergeClasses<TestResource>('TestResource')(
+  ResourceMixin
+) {}
 
 describe('Resource', () => {
   describe('types', () => {

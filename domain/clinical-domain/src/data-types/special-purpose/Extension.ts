@@ -1,6 +1,7 @@
 import { pipe, Schema } from 'effect'
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import { AllDatatypeKeys, DatatypeChoice } from '../Datatype'
+import { MergeClasses } from '@assessmentis/util'
 
 // ---------------------------------------------------------------------------
 // Extension
@@ -9,8 +10,7 @@ import { AllDatatypeKeys, DatatypeChoice } from '../Datatype'
 const ExtensionKey = 'Extension' as const
 type ExtensionKey = typeof ExtensionKey
 
-const ValueMixin = DatatypeChoice('value', [...AllDatatypeKeys])
-
+const ValueMixin = DatatypeChoice('value', AllDatatypeKeys)
 export interface ExtensionEncoded extends Schema.Struct.Encoded<
   typeof ValueMixin.fields
 > {
@@ -25,45 +25,33 @@ const extensionUrlSchema = pipe(
   Schema.brand(`${ExtensionKey}/url`)
 )
 
-export class Extension extends Schema.Class<Extension>('Extension')({
-  domainType: Schema.Literal(ExtensionKey).pipe(
-    Schema.optionalWith({
-      default: (): ExtensionKey => ExtensionKey,
-    })
-  ),
-  url: Schema.optional(extensionUrlSchema),
-  extension: pipe(
-    Schema.Array(
-      Schema.suspend(
-        (): Schema.Schema<Extension, ExtensionEncoded, never> => Extension
-      )
+export class Extension extends MergeClasses<Extension>('Extension')(
+  ValueMixin,
+  {
+    domainType: Schema.Literal(ExtensionKey).pipe(
+      Schema.optionalWith({
+        default: (): ExtensionKey => ExtensionKey,
+      })
     ),
-    Schema.annotations({
-      arbitrary: () => (fc) => fc.constant([]),
-    }),
-    Schema.optionalWith({
-      default: (): ReadonlyArray<Extension> => [],
-    })
-  ),
-  definitionUrl: Schema.String,
-  ...ValueMixin.fields,
-}) {
+    url: Schema.optional(extensionUrlSchema),
+    extension: pipe(
+      Schema.Array(
+        Schema.suspend(
+          (): Schema.Schema<Extension, ExtensionEncoded, never> => Extension
+        )
+      ),
+      Schema.annotations({
+        arbitrary: () => (fc) => fc.constant([]),
+      }),
+      Schema.optionalWith({
+        default: (): ReadonlyArray<Extension> => [],
+      })
+    ),
+    definitionUrl: Schema.String,
+  }
+) {
   static Key = ExtensionKey
   static UrlSchema = extensionUrlSchema
-
-  static allOptionKeys() {
-    return ValueMixin.allOptionKeys()
-  }
-
-  isExactlyOnePresent(): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return ValueMixin.prototype.isExactlyOnePresent.call(this as any)
-  }
-
-  isNonePresent(): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return ValueMixin.prototype.isNonePresent.call(this as any)
-  }
 }
 
 /**

@@ -17,22 +17,13 @@ describe('Patient model', () => {
   })
 
   test('property: missing required fields always fail', () => {
-    // Property: Patient must have resourceType
+    // Property: Patient must have correct domainType or none
     fc.assert(
       fc.property(
         fc.oneof(
-          // Missing resourceType
+          // Wrong domainType
           fc.record({
-            name: fc.array(
-              fc.record({
-                given: fc.array(fc.string()),
-                family: fc.string(),
-              })
-            ),
-          }),
-          // Wrong resourceType
-          fc.record({
-            resourceType: fc.constant('Practitioner' as const),
+            domainType: fc.constant('Practitioner' as const),
           })
         ),
         (incomplete) => {

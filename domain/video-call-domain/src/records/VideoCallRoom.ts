@@ -1,5 +1,4 @@
 import { Schema } from 'effect'
-import { EncounterId } from '@assessmentis/clinical-domain/administration'
 
 export const VideoCallRoomId = Schema.String.pipe(
   Schema.brand('VideoCallRoomId')
@@ -12,6 +11,10 @@ export const VideoCallRoomName = Schema.String.pipe(
 )
 
 export type VideoCallRoomName = typeof VideoCallRoomName.Type
+
+export const EncounterId = Schema.String.pipe(Schema.brand('EncounterId'))
+
+export type EncounterId = typeof EncounterId.Type
 
 export const VideoCallRoom = Schema.Struct({
   encounterId: EncounterId,

@@ -1,4 +1,4 @@
-import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import type { Observation } from '@assessmentis/clinical-domain'
 import { ObservationValue } from '../ObservationValue/ObservationValue'
 import classes from './ObservationComponents.module.css'
 

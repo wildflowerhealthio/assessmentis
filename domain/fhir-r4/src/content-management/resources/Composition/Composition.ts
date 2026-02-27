@@ -1,31 +1,32 @@
 import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
-import {} from '../../../FhirR4ResourceBehaviour'
-import type { Composition } from '@assessmentis/clinical-domain/content-management'
-import { CompositionId } from '@assessmentis/clinical-domain/content-management'
-import { Code } from '@assessmentis/clinical-domain/data-types'
-import { FhirR4DomainResource } from '../../../data-types/base/DomainResource'
-import { FhirR4CodeableConcept } from '../../../data-types/complex/CodeableConcept'
 import {
-  FhirR4Identifier,
-  FhirR4Reference,
-} from '../../../data-types/complex/IdentifierAndReference'
-import { FhirR4CompositionAttester } from './CompositionAttester'
-import { FhirR4CompositionRelatesTo } from './CompositionRelatesTo'
-import { FhirR4CompositionEvent } from './CompositionEvent'
-import { FhirR4CompositionSection } from './CompositionSection'
-
-const FhirR4CompositionSchema: Schema.Schema<
   Composition,
+  type CompositionEncoded,
+} from '@assessmentis/clinical-domain'
+import { ResourceEncodedFromFhirR4Resource } from '../../../data-types/base/Resource'
+import { CodeableConceptEncodedFromFhir } from '../../../data-types/complex/CodeableConcept'
+import {
+  IdentifierEncodedFromFhir,
+  ReferenceEncodedFromFhir,
+} from '../../../data-types/complex/IdentifierAndReference'
+import { CompositionAttesterEncodedFromFhir } from './CompositionAttester'
+import { CompositionRelatesToEncodedFromFhir } from './CompositionRelatesTo'
+import { CompositionEventEncodedFromFhir } from './CompositionEvent'
+import { CompositionSectionEncodedFromFhir } from './CompositionSection'
+import type { BaseUrl } from '../../../data-types/UrlIdentification'
+import { mutableEncoded } from '@assessmentis/util'
+
+const FhirR4CompositionEncodedFromFhir: Schema.Schema<
+  CompositionEncoded,
   FhirR4.Composition,
-  never
+  BaseUrl
 > = Schema.extend(
-  FhirR4DomainResource.Schema(CompositionId),
-  Schema.mutable(
+  ResourceEncodedFromFhirR4Resource('Composition', 'Composition'),
+  mutableEncoded(
     Schema.Struct({
-      resourceType: Schema.Literal('Composition'),
       identifier: Schema.optional(
-        Schema.suspend(() => FhirR4Identifier.Schema)
+        Schema.suspend(() => IdentifierEncodedFromFhir)
       ),
       status: Schema.Union(
         Schema.Literal('preliminary'),
@@ -33,30 +34,36 @@ const FhirR4CompositionSchema: Schema.Schema<
         Schema.Literal('amended'),
         Schema.Literal('entered-in-error')
       ),
-      type: Schema.suspend(() => FhirR4CodeableConcept.Schema),
+      type: Schema.suspend(() => CodeableConceptEncodedFromFhir),
       class: Schema.optional(
-        Schema.suspend(() => FhirR4CodeableConcept.Schema)
+        Schema.suspend(() => CodeableConceptEncodedFromFhir)
       ),
-      subject: Schema.optional(Schema.suspend(() => FhirR4Reference.Schema)),
-      encounter: Schema.optional(Schema.suspend(() => FhirR4Reference.Schema)),
-      date: Schema.DateTimeUtc,
-      author: Schema.mutable(
-        Schema.Array(Schema.suspend(() => FhirR4Reference.Schema))
+      subject: Schema.optional(
+        Schema.suspend(() => ReferenceEncodedFromFhir)
+      ),
+      encounter: Schema.optional(
+        Schema.suspend(() => ReferenceEncodedFromFhir)
+      ),
+      date: Schema.String,
+      author: mutableEncoded(
+        Schema.Array(Schema.suspend(() => ReferenceEncodedFromFhir))
       ),
       title: Schema.String,
-      confidentiality: Schema.optional(Code),
+      confidentiality: Schema.optional(Schema.String),
       attester: Schema.optional(
-        Schema.mutable(Schema.Array(FhirR4CompositionAttester.Schema))
+        mutableEncoded(Schema.Array(CompositionAttesterEncodedFromFhir))
       ),
-      custodian: Schema.optional(Schema.suspend(() => FhirR4Reference.Schema)),
+      custodian: Schema.optional(
+        Schema.suspend(() => ReferenceEncodedFromFhir)
+      ),
       relatesTo: Schema.optional(
-        Schema.mutable(Schema.Array(FhirR4CompositionRelatesTo.Schema))
+        mutableEncoded(Schema.Array(CompositionRelatesToEncodedFromFhir))
       ),
       event: Schema.optional(
-        Schema.mutable(Schema.Array(FhirR4CompositionEvent.Schema))
+        mutableEncoded(Schema.Array(CompositionEventEncodedFromFhir))
       ),
       section: Schema.optional(
-        Schema.mutable(Schema.Array(FhirR4CompositionSection.Schema))
+        mutableEncoded(Schema.Array(CompositionSectionEncodedFromFhir))
       ),
     })
   )
@@ -64,5 +71,5 @@ const FhirR4CompositionSchema: Schema.Schema<
 
 export const FhirR4Composition = {
   resourceType: 'Composition',
-  Schema: FhirR4CompositionSchema,
+  Schema: Schema.compose(FhirR4CompositionEncodedFromFhir, Composition),
 }

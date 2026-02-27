@@ -3,10 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { Arbitrary, FastCheck } from 'effect'
 import { action } from 'storybook/actions'
-import {
-  QuestionnaireItemType,
-  QuestionnaireItem,
-} from '@assessmentis/clinical-domain/content-management'
+import { QuestionnaireItem } from '@assessmentis/clinical-domain'
 import RadioQuestionnaireItemForm, {
   RadioQuestionnaireItemFormGroup,
 } from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/components/RadioQuestionnaireItemForm/RadioQuestionnaireItemForm'
@@ -20,13 +17,13 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 const questionnaireItem = FastCheck.sample(
-  Arbitrary.make(QuestionnaireItem.Schema)
+  Arbitrary.make(QuestionnaireItem)
 )[0]
 
 const arbitraryProps = {
   questionnaireItem: {
     ...questionnaireItem,
-    type: QuestionnaireItemType.enums.boolean,
+    type: 'boolean',
     text: 'Do you often interrupt the activities of others, or intrude on others?',
     answerOption: [{ initialSelected: true }, { initialSelected: false }],
   },

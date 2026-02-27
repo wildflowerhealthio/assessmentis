@@ -2,7 +2,7 @@ import { expect, test, describe } from 'vitest'
 import { Schema } from 'effect'
 import { capitalize } from 'effect/String'
 import * as fc from 'fast-check'
-import { Extension, type ExtensionEncoded } from './Extension'
+import { Extension } from './Extension'
 import { AllDatatypeKeys } from '../Datatype'
 
 const decode = Schema.decodeSync(Extension)
@@ -44,8 +44,8 @@ describe('Extension', () => {
     expect(Extension.Key).toBe('Extension')
   })
 
-  test('DatatypeChoice mixin: allOptionKeys matches all value-prefixed datatype keys', () => {
-    expect(new Set(Extension.allOptionKeys())).toEqual(
+  test('DatatypeChoice mixin: allValueKeys matches all value-prefixed datatype keys', () => {
+    expect(new Set(Extension.allValueKeys())).toEqual(
       new Set(expectedOptionKeys)
     )
   })
@@ -65,7 +65,7 @@ describe('Extension', () => {
     fc.assert(
       fc.property(fc.string({ minLength: 1 }), (url) => {
         const ext = decode({ definitionUrl: url }) as Extension
-        expect(ext.isNonePresent()).toBe(true)
+        expect(ext.isNoValuePresent()).toBe(true)
       })
     )
   })
@@ -77,13 +77,13 @@ describe('Extension', () => {
           definitionUrl: 'http://test',
           [key]: sampleValueForKey(key),
         }) as Extension
-        expect(ext.isExactlyOnePresent()).toBe(true)
-        expect(ext.isNonePresent()).toBe(false)
+        expect(ext.isExactlyOneValuePresent()).toBe(true)
+        expect(ext.isNoValuePresent()).toBe(false)
       })
     )
   })
 
-  test('property: setting two value[x] keys → isExactlyOnePresent false, isNonePresent false', () => {
+  test('property: setting two value[x] keys → isExactlyOneValuePresent false, isNoValuePresent false', () => {
     fc.assert(
       fc.property(twoOptionKeysArb, ([keyA, keyB]) => {
         const ext = decode({
@@ -91,8 +91,8 @@ describe('Extension', () => {
           [keyA]: sampleValueForKey(keyA),
           [keyB]: sampleValueForKey(keyB),
         }) as Extension
-        expect(ext.isExactlyOnePresent()).toBe(false)
-        expect(ext.isNonePresent()).toBe(false)
+        expect(ext.isExactlyOneValuePresent()).toBe(false)
+        expect(ext.isNoValuePresent()).toBe(false)
       })
     )
   })
@@ -112,6 +112,6 @@ describe('Extension', () => {
     expect(ext.extension[0].definitionUrl).toBe('http://inner')
     // Child is also an Extension with mixin methods
     const child = ext.extension[0] as Extension
-    expect(child.isExactlyOnePresent()).toBe(true)
+    expect(child.isExactlyOneValuePresent()).toBe(true)
   })
 })

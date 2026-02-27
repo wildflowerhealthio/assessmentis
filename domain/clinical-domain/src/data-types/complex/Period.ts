@@ -4,9 +4,6 @@ import { Element, type ElementEncoded } from '../base/Element'
 export const Key = 'Period'
 export type Key = typeof Key
 
-export const PeriodId = Schema.String.pipe(Schema.brand('PeriodId'))
-export type PeriodId = typeof PeriodId.Type
-
 export interface PeriodEncoded extends ElementEncoded<Key> {
   start?: string
   end?: string

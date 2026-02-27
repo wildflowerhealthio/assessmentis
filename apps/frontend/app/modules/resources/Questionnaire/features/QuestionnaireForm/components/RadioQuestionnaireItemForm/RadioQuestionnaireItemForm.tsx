@@ -1,16 +1,14 @@
 import { Data, DateTime, Effect, Equal, Match } from 'effect'
 import { type ChangeEventHandler, type SetStateAction } from 'react'
 import classes from './RadioQuestionnaireItemForm.module.css'
-import type {
-  QuestionnaireItem,
-  QuestionnaireItemAnswerOption,
-  QuestionnaireResponseItem,
-  QuestionnaireResponseItemAnswer,
-} from '@assessmentis/clinical-domain/content-management'
 import {
+  type QuestionnaireItem,
+  type QuestionnaireResponseItem,
+  type QuestionnaireResponseItemAnswer,
+  type QuestionnaireItemAnswerOption,
   QuestionnaireItemUIControlCode,
-  withAnsweredAt,
-} from '@assessmentis/clinical-domain/content-management'
+  QuestionnaireItemAnsweredAtExtension,
+} from '@assessmentis/clinical-domain'
 import type { ValueElement } from '@assessmentis/clinical-domain/data-types'
 import { cn } from '@assessmentis/react-util'
 
@@ -70,7 +68,7 @@ const RadioQuestionnaireItemForm = ({
       (qri: QuestionnaireResponseItem): QuestionnaireResponseItem => ({
         ...qri,
         answer: [
-          withAnsweredAt(
+          QuestionnaireItemAnsweredAtExtension.with(
             {
               ...selected,
               id: undefined,
@@ -87,8 +85,8 @@ const RadioQuestionnaireItemForm = ({
 
   const { modifierExtension: _, ...valueElement } = answerValue
   const isSelectedAnswer = (
-    valueElement: ValueElement | undefined,
-    answerValue: ValueElement
+    valueElement: ValueElement.ValueElement | undefined,
+    answerValue: ValueElement.ValueElement
   ) => {
     if (valueElement === undefined) return false
 
