@@ -1,361 +1,342 @@
-import { Array, type Context } from 'effect'
-import { Effect, Record, RequestResolver, Request } from 'effect'
-import type {
-  AuthError,
-  AuthzError,
-  NotFoundError,
-} from '@assessmentis/ontology'
+import {
+  Array,
+  SubscriptionRef,
+  Effect,
+  RequestResolver,
+  Record,
+  Deferred,
+  pipe,
+} from 'effect'
+import { Request as EffectRequest } from 'effect'
+import { type Stream } from 'effect'
+
 import { UnhandledError } from '@assessmentis/ontology'
 import type * as Resource from './Resource'
-import type {
-  InferActiveResourceTypes,
-  SourceBehaviour,
-} from './SourceBehaviour'
+import { type ResourcesConstraint, originCanResolve } from './OriginState'
+import type { OriginState, ReadyOrigin } from './OriginState'
 import type * as ResourceRequest from './ResourceRequest'
-import { StreamEither } from '@assessmentis/util'
-import { NoSuchElementExceptionTypeId } from 'effect/Cause'
+import type { ReadonlyUrl } from './ReadonlyUrl'
+import { SideEffect } from '@assessmentis/util'
 
-export interface Hub<
-  Resources extends {
-    readonly [K: PropertyKey]: Resource.Resource<typeof K>
-  },
-> {
-  get: <K extends keyof Resources>(args: {
-    domainType: K
-    url: Resource.InferResourceUrl<Resources[K]>
-  }) => Effect.Effect<
-    Resource.WithResourceUrl<Resources[K]>,
-    | ResourceRequest.CommonErrors
-    | NotFoundError<
-        Resources[K]['domainType'],
-        { url: Resource.InferResourceUrl<Resources[K]> }
-      >,
-    never
+// --- Pipeline types ---
+
+type AnyEntry<Resources extends ResourcesConstraint> = EffectRequest.Entry<
+  | ResourceRequest.Get<Resources[keyof Resources]>
+  | ResourceRequest.Search<Resources[keyof Resources]>
+  | ResourceRequest.Create<Resources[keyof Resources]>
+  | ResourceRequest.Update<Resources[keyof Resources]>
+  | ResourceRequest.Delete<Resources[keyof Resources]>
+>
+
+type AnyRequest<Resources extends ResourcesConstraint> =
+  | ResourceRequest.Get<Resources[keyof Resources]>
+  | ResourceRequest.Search<Resources[keyof Resources]>
+  | ResourceRequest.Create<Resources[keyof Resources]>
+  | ResourceRequest.Update<Resources[keyof Resources]>
+  | ResourceRequest.Delete<Resources[keyof Resources]>
+
+type OriginBoundEntry<Resources extends ResourcesConstraint> =
+  EffectRequest.Entry<
+    | ResourceRequest.Get<Resources[keyof Resources]>
+    | ResourceRequest.Create<Resources[keyof Resources]>
+    | ResourceRequest.Update<Resources[keyof Resources]>
+    | ResourceRequest.Delete<Resources[keyof Resources]>
+    | (ResourceRequest.Search<Resources[keyof Resources]> & {
+        readonly origin: ReadonlyUrl
+      })
   >
 
-  search: <K extends keyof Resources>(args: {
-    domainType: K
-    params: ResourceRequest.SearchParam<Resources[K]>
-  }) => Effect.Effect<
-    ReadonlyArray<Resource.WithResourceUrl<Resources[K]>>,
-    ResourceRequest.CommonErrors,
-    never
-  >
+const asEntryFailure = <Resources extends ResourcesConstraint>(
+  entry: AnyEntry<Resources>,
+  error: UnhandledError | ResourceRequest.CommonErrors
+): SideEffect.EffectAction => Deferred.fail(entry.result, error)
 
-  create: <K extends keyof Resources>(args: {
-    domainType: K
-    resource: Resources[K]
-  }) => Effect.Effect<
-    Resource.WithResourceUrl<Resources[K]>,
-    ResourceRequest.CommonErrors,
-    never
-  >
+// --- Hub ---
 
-  update: <K extends keyof Resources>(args: {
-    domainType: K
-    resource: Resource.WithResourceUrl<Resources[K]>
-  }) => Effect.Effect<
-    Resource.WithResourceUrl<Resources[K]>,
-    | ResourceRequest.CommonErrors
-    | NotFoundError<
-        Resources[K]['domainType'],
-        { url: Resource.InferResourceUrl<Resources[K]> }
-      >,
-    never
-  >
+export type HubState<Resources extends ResourcesConstraint> = ReadonlyMap<
+  string,
+  OriginState<Resources, never>
+>
 
-  delete: <K extends keyof Resources>(args: {
-    domainType: K
-    url: Resource.InferResourceUrl<Resources[K]>
-  }) => Effect.Effect<
-    void,
-    | ResourceRequest.CommonErrors
-    | NotFoundError<
-        Resources[K]['domainType'],
-        { url: Resource.InferResourceUrl<Resources[K]> }
-      >,
-    never
-  >
-}
+export class Hub<const Resources extends ResourcesConstraint> {
+  activeResources: OriginState<Resources, keyof Resources>['activeResources']
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Identifiers<DependenciesArray extends Array<Context.Tag<any, any>>> = {
-  [K in keyof DependenciesArray]: Effect.Effect.Context<DependenciesArray[K]>
-}[keyof DependenciesArray]
-
-export const make = <
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  DependenciesArray extends Array<Context.Tag<any, any>>,
-  TResources extends {
-    readonly [key: PropertyKey]: Resource.Resource<typeof key>
-  },
-  TSourceResources extends {
-    readonly [SourceUrl: string]: keyof TResources & string
-  },
-  TSources extends {
-    readonly [SourceId in keyof TSourceResources]: SourceBehaviour<
-      TResources,
-      TSourceResources[SourceId],
-      Identifiers<DependenciesArray>
+  constructor(
+    private readonly resources: Resources,
+    private readonly originStatesRef: SubscriptionRef.SubscriptionRef<
+      HubState<Resources>
     >
-  },
->(
-  sources: TSources
-): Effect.Effect<Hub<TResources>, never, Identifiers<DependenciesArray>> =>
-  Effect.gen(function* () {
-    yield* Effect.void // TODO - this is here to force the function to be a generator
+  ) {
+    this.activeResources = Record.keys<
+      keyof Resources & (string | symbol),
+      Resources[keyof Resources]
+    >(resources).reduce(
+      (acc, key) => ({
+        ...acc,
+        [key]: true,
+      }),
+      {} as { [K in keyof Resources]: true }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ) as any
+  }
 
-    const context = yield* Effect.context<Identifiers<DependenciesArray>>()
+  get changes(): Stream.Stream<HubState<Resources>> {
+    return this.originStatesRef.changes
+  }
 
-    return {
-      sourceFor<K extends keyof TResources>(
-        domainType: K
-      ): Effect.Effect<
-        SourceBehaviour<TResources, K, Identifiers<DependenciesArray>>,
-        UnhandledError,
-        never
-      > {
-        return Effect.gen(this, function* () {
-          const sourceEntries = Record.toEntries(sources)
-          const matchingSources = sourceEntries.filter(
-            (
-              sourcePair
-            ): sourcePair is [
-              string,
-              SourceBehaviour<
-                TResources,
-                K | InferActiveResourceTypes<(typeof sourcePair)[1]>,
-                Identifiers<DependenciesArray>
-              >,
-            ] => {
-              const source = sourcePair[1]
-              return !!(
-                domainType in source.activeResources &&
-                source.activeResources[domainType]
-              )
-            }
+  setOriginState<ActiveResources extends keyof Resources>(
+    origin: OriginState<Resources, ActiveResources>
+  ): Effect.Effect<void> {
+    return SubscriptionRef.update(this.originStatesRef, (originState) => {
+      const next = new Map(originState)
+      next.set(origin.originUrl.toString(), origin)
+      return next
+    })
+  }
+
+  deregisterOrigin(originUrl: ReadonlyUrl): Effect.Effect<void> {
+    return SubscriptionRef.update(this.originStatesRef, (originState) => {
+      const next = new Map(originState)
+      next.delete(originUrl.toString())
+      return next
+    })
+  }
+
+  // --- Resolver pipeline ---
+
+  readonly resolver: RequestResolver.RequestResolver<
+    AnyRequest<Resources>,
+    never
+  > = RequestResolver.makeWithEntry((batches) =>
+    Effect.gen(this, function* () {
+      for (const batch of batches) {
+        const originStates = yield* SubscriptionRef.get(this.originStatesRef)
+
+        const { actions } = pipe(
+          SideEffect.of<ReadonlyArray<AnyEntry<Resources>>>(batch, []),
+          SideEffect.flatMap((entries) =>
+            this.fanOutSearches(entries, originStates)
+          ),
+          SideEffect.flatMap((entries) =>
+            this.groupByOrigin(entries, originStates)
+          ),
+          SideEffect.flatMap((groups) => this.filterReadyOrigins(groups)),
+          SideEffect.flatMap((groups) => this.dispatchToResolvers(groups))
+        )
+
+        yield* Effect.all(actions, {
+          concurrency: 'unbounded',
+        }).pipe(Effect.asVoid)
+      }
+    })
+  )
+
+  private fanOutSearches(
+    entries: ReadonlyArray<AnyEntry<Resources>>,
+    originStates: HubState<Resources>
+  ): SideEffect.SideEffect<ReadonlyArray<OriginBoundEntry<Resources>>> {
+    const globalSearches = entries.filter(
+      (
+        entry
+      ): entry is EffectRequest.Entry<
+        ResourceRequest.Search<Resources[keyof Resources]> & {
+          readonly origin: null
+        }
+      > => entry.request._tag === 'Search' && entry.request.origin === null
+    )
+    const otherEntries = entries.filter(
+      (entry): entry is OriginBoundEntry<Resources> =>
+        entry.request._tag != 'Search' || entry.request.origin != null
+    )
+
+    const searchActions = globalSearches.map((entry) =>
+      EffectRequest.completeEffect(
+        entry.request,
+        this.fanOutSearch(entry.request, originStates)
+      )
+    )
+    return SideEffect.of(otherEntries, searchActions)
+  }
+
+  private groupByOrigin(
+    entries: ReadonlyArray<OriginBoundEntry<Resources>>,
+    originStates: HubState<Resources>
+  ): SideEffect.SideEffect<
+    ReadonlyArray<{
+      origin: OriginState<Resources, never>
+      entries: AnyEntry<Resources>[]
+    }>
+  > {
+    const entriesByOrigin = Array.groupBy(
+      entries,
+      (entry) => entry.request.origin?.toString() ?? 'NO_ORIGIN'
+    )
+    const actions: SideEffect.EffectAction[] = []
+    const resolverGroups: {
+      origin: OriginState<Resources, never>
+      entries: AnyEntry<Resources>[]
+    }[] = []
+    for (const [key, group] of Record.toEntries(entriesByOrigin)) {
+      const origin = originStates.get(key) ?? null
+      if (origin) {
+        resolverGroups.push({ origin, entries: group })
+      } else {
+        for (const entry of group) {
+          actions.push(
+            asEntryFailure(
+              entry,
+              new UnhandledError({
+                message: `No origin found for URL ${key}`,
+              })
+            )
           )
+        }
+      }
+    }
+    return SideEffect.of(resolverGroups, actions)
+  }
 
-          if (matchingSources.length > 1) {
-            return yield* Effect.fail(
-              new UnhandledError({
-                message: `Multiple sources found for resource type ${String(domainType)}, unable to determine which to use`,
-              })
-            )
-          }
+  private filterReadyOrigins(
+    resolverGroups: ReadonlyArray<{
+      origin: OriginState<Resources, never>
+      entries: AnyEntry<Resources>[]
+    }>
+  ): SideEffect.SideEffect<
+    ReadonlyArray<{
+      origin: ReadyOrigin<Resources, never>
+      entries: AnyEntry<Resources>[]
+    }>
+  > {
+    const actions: SideEffect.EffectAction[] = []
+    const readyGroups: {
+      origin: ReadyOrigin<Resources, never>
+      entries: AnyEntry<Resources>[]
+    }[] = []
 
-          if (!Array.isNonEmptyArray(matchingSources)) {
-            return yield* Effect.fail(
-              new UnhandledError({
-                message: `No sources found for resource type ${String(domainType)}`,
-              })
-            )
-          }
-
-          const source: SourceBehaviour<
-            TResources,
-            K,
-            Identifiers<DependenciesArray>
-          > = matchingSources[0][1]
-          return source
-        })
-      },
-
-      takeResolver<K extends keyof TResources>(
-        source: SourceBehaviour<TResources, K, Identifiers<DependenciesArray>>
-      ): Effect.Effect<
-        ResourceRequest.MultiResolver<
-          TResources,
-          K,
-          Identifiers<DependenciesArray>
-        >,
-        UnhandledError | AuthError | AuthzError,
-        never
-      > {
-        return Effect.gen(this, function* () {
-          const resolverStream: StreamEither.StreamEither<
-            ResourceRequest.MultiResolver<
-              TResources,
-              K,
-              Identifiers<DependenciesArray>
-            >,
-            UnhandledError | AuthError | AuthzError
-          > = source.resolverStream
-
-          const resolver: ResourceRequest.MultiResolver<
-            TResources,
-            K,
-            Identifiers<DependenciesArray>
-          > = yield* StreamEither.head(resolverStream).pipe(
-            Effect.catchIf(
-              (err) => NoSuchElementExceptionTypeId in err,
-              (err) =>
-                Effect.fail(
-                  new UnhandledError({
-                    message: `No resolvers found for source ${source.sourceId}`,
-                    cause: err,
+    for (const { origin, entries } of resolverGroups) {
+      if (origin.errorStatus) {
+        for (const entry of entries) {
+          actions.push(
+            asEntryFailure(
+              entry,
+              origin.errorStatus._tag === 'Loading'
+                ? new UnhandledError({
+                    message: `Origin at ${origin.originUrl.toString()} is still loading`,
                   })
-                )
+                : origin.errorStatus
             )
           )
+        }
+      } else {
+        readyGroups.push({ origin, entries })
+      }
+    }
 
-          return resolver
-        })
-      },
+    return SideEffect.of(readyGroups, actions)
+  }
 
-      get<K extends keyof TResources>({
-        domainType,
-        url,
-      }: {
-        domainType: K
-        url: Resource.InferResourceUrl<TResources[K]>
-      }): Effect.Effect<
-        Resource.WithResourceUrl<TResources[K]>,
-        | ResourceRequest.CommonErrors
-        | NotFoundError<
-            TResources[K]['domainType'],
-            { url: Resource.InferResourceUrl<TResources[K]> }
-          >,
+  private dispatchToResolvers(
+    resolverGroups: ReadonlyArray<{
+      origin: ReadyOrigin<Resources, never>
+      entries: AnyEntry<Resources>[]
+    }>
+  ): SideEffect.SideEffect<void> {
+    const actions: SideEffect.EffectAction[] = []
+
+    for (const { origin, entries } of resolverGroups) {
+      const validEntries: AnyEntry<Resources>[] = []
+      for (const entry of entries) {
+        if (originCanResolve(origin, entry.request.domainType)) {
+          validEntries.push(entry)
+        } else {
+          actions.push(
+            asEntryFailure(
+              entry,
+              new UnhandledError({
+                message: `Origin at ${origin.originUrl.toString()} doesn't support resource type ${String(entry.request.domainType)}`,
+              })
+            )
+          )
+        }
+      }
+
+      if (validEntries.length > 0) {
+        const resolver = origin.resolver as RequestResolver.RequestResolver<
+          AnyRequest<Resources>,
+          never
+        >
+        actions.push(resolver.runAll([validEntries] as const))
+      }
+    }
+
+    return SideEffect.of<void>(undefined, actions)
+  }
+
+  // --- Private helpers ---
+
+  fanOutSearch(
+    searchRequest: ResourceRequest.Search<Resources[keyof Resources]>,
+    originStates: HubState<Resources>
+  ): Effect.Effect<
+    ReadonlyArray<Resource.WithResourceUrl<Resources[keyof Resources]>>,
+    ResourceRequest.CommonErrors
+  > {
+    const subSearches: Effect.Effect<
+      ReadonlyArray<Resource.WithResourceUrl<Resources[keyof Resources]>>,
+      ResourceRequest.CommonErrors
+    >[] = []
+
+    for (const origin of originStates.values()) {
+      if (!origin.activeResources[searchRequest.domainType]) continue
+
+      if (origin.errorStatus) {
+        return Effect.fail(
+          origin.errorStatus._tag === 'Loading'
+            ? new UnhandledError({
+                message: `Origin at ${origin.originUrl.toString()} is still loading`,
+              })
+            : origin.errorStatus
+        )
+      }
+
+      const resolver = origin.resolver as RequestResolver.RequestResolver<
+        ResourceRequest.Search<Resources[keyof Resources]>,
         never
-      > {
-        return Effect.gen(this, function* () {
-          const source = yield* this.sourceFor(domainType)
-          const resolver = yield* this.takeResolver(source)
+      >
 
-          const getRequest = Request.of<ResourceRequest.Get<TResources[K]>>()({
-            _tag: 'Get',
-            domainType,
-            url,
-          })
-
-          const thisResolver = RequestResolver.provideContext(resolver, context)
-
-          return yield* Effect.request(getRequest, thisResolver)
-        })
-      },
-
-      search<K extends keyof TResources>({
-        domainType,
-        params,
-      }: {
-        domainType: K
-        params: ResourceRequest.SearchParam<TResources[K]>
-      }): Effect.Effect<
-        ReadonlyArray<Resource.WithResourceUrl<TResources[K]>>,
-        ResourceRequest.CommonErrors,
-        never
-      > {
-        return Effect.gen(this, function* () {
-          const source = yield* this.sourceFor(domainType)
-          const resolver = yield* this.takeResolver(source)
-
-          const searchRequest = Request.of<
-            ResourceRequest.Search<TResources[K]>
+      subSearches.push(
+        Effect.request(
+          EffectRequest.of<
+            ResourceRequest.Search<Resources[keyof Resources]>
           >()({
             _tag: 'Search',
-            domainType,
-            params,
-          })
-
-          const thisResolver = RequestResolver.provideContext(resolver, context)
-
-          return yield* Effect.request(searchRequest, thisResolver)
-        })
-      },
-
-      create<K extends keyof TResources>({
-        domainType,
-        resource,
-      }: {
-        domainType: K
-        resource: TResources[K]
-      }): Effect.Effect<
-        Resource.WithResourceUrl<TResources[K]>,
-        ResourceRequest.CommonErrors,
-        never
-      > {
-        return Effect.gen(this, function* () {
-          const source = yield* this.sourceFor(domainType)
-          const resolver = yield* this.takeResolver(source)
-
-          const createRequest = Request.of<
-            ResourceRequest.Create<TResources[K]>
-          >()({
-            _tag: 'Create',
-            domainType,
-            resource,
-          })
-
-          const thisResolver = RequestResolver.provideContext(resolver, context)
-
-          return yield* Effect.request(createRequest, thisResolver)
-        })
-      },
-
-      update<K extends keyof TResources>({
-        domainType,
-        resource,
-      }: {
-        domainType: K
-        resource: Resource.WithResourceUrl<TResources[K]>
-      }): Effect.Effect<
-        Resource.WithResourceUrl<TResources[K]>,
-        | ResourceRequest.CommonErrors
-        | NotFoundError<
-            TResources[K]['domainType'],
-            { url: Resource.InferResourceUrl<TResources[K]> }
-          >,
-        never
-      > {
-        return Effect.gen(this, function* () {
-          const source = yield* this.sourceFor(domainType)
-          const resolver = yield* this.takeResolver(source)
-
-          const updateRequest = Request.of<
-            ResourceRequest.Update<TResources[K]>
-          >()({
-            _tag: 'Update',
-            domainType,
-            resource,
-          })
-
-          const thisResolver = RequestResolver.provideContext(resolver, context)
-
-          return yield* Effect.request(updateRequest, thisResolver)
-        })
-      },
-
-      delete<K extends keyof TResources>({
-        domainType,
-        url,
-      }: {
-        domainType: K
-        url: Resource.InferResourceUrl<TResources[K]>
-      }): Effect.Effect<
-        void,
-        | ResourceRequest.CommonErrors
-        | NotFoundError<
-            TResources[K]['domainType'],
-            { url: Resource.InferResourceUrl<TResources[K]> }
-          >,
-        never
-      > {
-        return Effect.gen(this, function* () {
-          const source = yield* this.sourceFor(domainType)
-          const resolver = yield* this.takeResolver(source)
-
-          const deleteRequest = Request.of<
-            ResourceRequest.Delete<TResources[K]>
-          >()({
-            _tag: 'Delete',
-            domainType,
-            url,
-          })
-
-          const thisResolver = RequestResolver.provideContext(resolver, context)
-
-          return yield* Effect.request(deleteRequest, thisResolver)
-        })
-      },
+            domainType: searchRequest.domainType,
+            params: searchRequest.params,
+            origin: origin.originUrl,
+          }),
+          resolver
+        )
+      )
     }
+
+    if (subSearches.length === 0) {
+      return Effect.fail(
+        new UnhandledError({
+          message: `No origins found for resource type ${String(searchRequest.domainType)}`,
+        })
+      )
+    }
+
+    return Effect.all(subSearches, { concurrency: 'unbounded' }).pipe(
+      Effect.map((results) => results.flat())
+    )
+  }
+}
+
+export const makeHub = <Resources extends ResourcesConstraint>(
+  resources: ConstructorParameters<typeof Hub<Resources>>[0]
+): Effect.Effect<Hub<Resources>> =>
+  Effect.gen(function* () {
+    const stateRef = yield* SubscriptionRef.make<HubState<Resources>>(new Map())
+    return new Hub(resources, stateRef)
   })

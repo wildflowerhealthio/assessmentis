@@ -1,5 +1,4 @@
 import { Schema, Effect, ParseResult } from 'effect'
-
 export class ReadonlyUrl extends Schema.Class<ReadonlyUrl>('ReadonlyUrl')({
   /**
    * The protocol portion of the URL.
@@ -132,11 +131,11 @@ export class ReadonlyUrl extends Schema.Class<ReadonlyUrl>('ReadonlyUrl')({
       }),
   })
 
-  contains(otherUrl: ReadonlyUrl): boolean {
+  hasChild(otherUrl: ReadonlyUrl): boolean {
     return (
       this.protocol === otherUrl.protocol &&
       this.host === otherUrl.host &&
-      this.pathname.startsWith(otherUrl.pathname)
+      otherUrl.pathname.startsWith(this.pathname)
     )
   }
 

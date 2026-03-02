@@ -42,7 +42,7 @@ describe('ObservationFormSchema', () => {
 
       const observation = transformToObservation(formData)
 
-      expect(observation.resourceType).toBe('Observation')
+      expect(observation.domainType).toBe('Observation')
       expect(observation.status).toBe('preliminary')
       expect(observation.code.text).toBe('Blood Pressure')
       expect(observation.subject).toEqual({ reference: 'Patient/patient-123' })
@@ -63,7 +63,7 @@ describe('ObservationFormSchema', () => {
 
       const observation = transformToObservation(formData)
 
-      expect(observation.resourceType).toBe('Observation')
+      expect(observation.domainType).toBe('Observation')
       expect('valueDecimal' in observation && observation.valueDecimal).toBe(
         98.6
       )
@@ -119,7 +119,7 @@ describe('ObservationFormSchema', () => {
         FastCheck.property(observationFormArb, (formData) => {
           const observation = transformToObservation(formData)
 
-          expect(observation.resourceType).toBe('Observation')
+          expect(observation.domainType).toBe('Observation')
           expect(observation.status).toBe('preliminary')
           expect(observation.code.text).toBe(formData.code)
 

@@ -32,7 +32,7 @@ export default function QuestionnairePage(_: Route.ComponentProps) {
         collectionPromise={questionnairesPromise}
         createPath=""
         createLabel="Create Questionnaire"
-        onDelete={deleteQuestionnaire}
+        onDelete={(url) => deleteQuestionnaire(url?.toString())}
         ItemComponent={QuestionnaireListItem}
       />
 

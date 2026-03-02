@@ -1,8 +1,8 @@
 import { Encounter } from '@assessmentis/clinical-domain'
 import { createResourcePicker } from '../../../common/utils/createResourcePicker'
 
-function formatEncounterDisplay(encounter: { id?: string }): string {
-  return `Encounter ${encounter.id || 'Unknown'}`
+function formatEncounterDisplay(encounter: Encounter): string {
+  return `Encounter ${encounter.url?.toString() || 'Unknown'}`
 }
 
 function formatEncounterSecondary(encounter: {

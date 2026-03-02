@@ -5,4 +5,4 @@ export * as Resource from './Resource'
 // TODO: Eliminate the need for this export
 export type { WithId } from './Resource'
 export * as ResourceRequest from './ResourceRequest'
-export * as SourceBehaviour from './SourceBehaviour'
+export * from './OriginState'

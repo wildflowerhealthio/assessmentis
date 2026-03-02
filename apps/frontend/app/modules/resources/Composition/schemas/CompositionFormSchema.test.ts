@@ -52,7 +52,7 @@ describe('CompositionFormSchema', () => {
 
       const composition = transformToComposition(formData)
 
-      expect(composition.resourceType).toBe('Composition')
+      expect(composition.domainType).toBe('Composition')
       expect(composition.title).toBe('Medical History')
       expect(composition.status).toBe('preliminary')
       expect(composition.subject).toEqual({ reference: 'Patient/pat-456' })
@@ -99,7 +99,7 @@ describe('CompositionFormSchema', () => {
             formData as CompositionFormData
           )
 
-          expect(composition.resourceType).toBe('Composition')
+          expect(composition.domainType).toBe('Composition')
           expect(composition.status).toBe('preliminary')
           expect(composition.section).toEqual([])
           expect(composition.date).toBeDefined()

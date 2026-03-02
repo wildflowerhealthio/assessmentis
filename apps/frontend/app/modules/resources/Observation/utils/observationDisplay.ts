@@ -3,7 +3,6 @@ import { Effect } from 'effect'
 import {
   humanizeDateTimeForLocalReader,
   humanizeDateTimeRangeForLocalReader,
-  humanizeTimelessDate,
 } from '../../../common/utils/dateUtils'
 
 /**
@@ -42,9 +41,7 @@ export function getObservationCategory(observation: Observation): string {
  * Format observation value as a string for display
  */
 export const formatObservationValue = (
-  observation:
-    | Observation
-    | NonNullable<Observation['component']>[number]
+  observation: Observation | NonNullable<Observation['component']>[number]
 ) =>
   Effect.gen(function* () {
     if ('valueQuantity' in observation && observation.valueQuantity) {
@@ -61,8 +58,8 @@ export const formatObservationValue = (
       return observation.valueInteger.toString()
     }
 
-    if (observation.valueDecimal != undefined) {
-      return observation.valueDecimal.toString()
+    if (observation.valueRatio != undefined) {
+      return observation.valueRatio.toString()
     }
 
     if (observation.valueCodeableConcept != undefined) {
@@ -81,32 +78,8 @@ export const formatObservationValue = (
       return yield* humanizeDateTimeForLocalReader(observation.valueDateTime)
     }
 
-    if (observation.valueDate) {
-      return yield* humanizeTimelessDate(observation.valueDate)
-    }
-
     if (observation.valueTime) {
       return observation.valueTime
-    }
-
-    if (observation.valueCoding) {
-      return (
-        observation.valueCoding.display ??
-        observation.valueCoding.code ??
-        'Coded value'
-      )
-    }
-
-    if (observation.valueCode) {
-      return observation.valueCode
-    }
-
-    if (observation.valueReference) {
-      return (
-        observation.valueReference.display ??
-        observation.valueReference.reference ??
-        'Reference'
-      )
     }
 
     if (observation.dataAbsentReason) {

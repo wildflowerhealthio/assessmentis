@@ -4,7 +4,7 @@ import type {
   ExternalAssertionError,
   NotFoundError,
 } from '@assessmentis/ontology'
-import type { WithId } from '@assessmentis/effectful-store'
+import type { Resource } from '@assessmentis/effectful-store'
 import type { Encounter, Media } from '@assessmentis/clinical-domain'
 import { MediaRepository } from '@assessmentis/clinical-domain/repositories'
 import type { AuthError, AuthzError } from '@assessmentis/ontology'
@@ -18,12 +18,12 @@ import type { AuthError, AuthzError } from '@assessmentis/ontology'
 export const getEncounterRecordings = (
   encounterId: string
 ): Effect.Effect<
-  ReadonlyArray<WithId<Media>>,
+  ReadonlyArray<Resource.WithResourceUrl<Media>>,
   | UnhandledError
   | ExternalAssertionError
   | AuthError
   | AuthzError
-  | NotFoundError<'Encounter', { id: string }>,
+  | NotFoundError<'Encounter', { url: string }>,
   MediaRepository
 > => {
   return Effect.gen(function* () {

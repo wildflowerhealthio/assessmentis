@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { DateTime, Effect, TestClock, TestContext } from 'effect'
+import { Period } from '@assessmentis/clinical-domain/data-types'
 import {
   humanizeTimelessDate,
   humanizeDateTimeForLocalReader,
@@ -192,34 +193,34 @@ describe('humanizeDateRange', () => {
     },
     {
       testcase: 'empty period returns neitherFallback',
-      period: { start: undefined, end: undefined },
+      period: Period.Period.make({ start: undefined, end: undefined }),
       options: {},
       expected: 'Unknown Range',
     },
     {
       testcase: 'same day range shows compact format with times',
-      period: {
+      period: Period.Period.make({
         start: DateTime.unsafeFromDate(new Date('2024-01-15T10:00:00Z')),
         end: DateTime.unsafeFromDate(new Date('2024-01-15T11:00:00Z')),
-      },
+      }),
       options: {},
       expected: 'January 15th 5 AM - 6 AM',
     },
     {
       testcase: 'missing start uses startFallback',
-      period: {
+      period: Period.Period.make({
         start: undefined,
         end: DateTime.unsafeFromDate(new Date('2024-01-15T10:00:00Z')),
-      },
+      }),
       options: { startFallback: 'Start missing' },
       expected: 'Start missing - Jan 15, 2024',
     },
     {
       testcase: 'missing end uses endFallback',
-      period: {
+      period: Period.Period.make({
         start: DateTime.unsafeFromDate(new Date('2024-01-15T10:00:00Z')),
         end: undefined,
-      },
+      }),
       options: { endFallback: 'Ongoing' },
       expected: 'Jan 15, 2024 - Ongoing',
     },
@@ -239,34 +240,34 @@ describe('humanizeDateTimeRangeForLocalReader', () => {
     },
     {
       testcase: 'empty period returns neitherFallback',
-      period: { start: undefined, end: undefined },
+      period: Period.Period.make({ start: undefined, end: undefined }),
       options: {},
       expected: 'Unknown Range',
     },
     {
       testcase: 'different days use medium style with comma',
-      period: {
+      period: Period.Period.make({
         start: DateTime.unsafeFromDate(new Date('2024-01-15T09:00:00Z')),
         end: DateTime.unsafeFromDate(new Date('2024-01-16T17:30:00Z')),
-      },
+      }),
       options: {},
       expected: 'Jan 15, 2024, 4:00 AM - Jan 16, 2024, 12:30 PM',
     },
     {
       testcase: 'missing start uses startFallback',
-      period: {
+      period: Period.Period.make({
         start: undefined,
         end: DateTime.unsafeFromDate(new Date('2024-01-15T10:00:00Z')),
-      },
+      }),
       options: { startFallback: 'Not specified' },
       expected: 'Not specified - Jan 15, 2024, 5:00 AM',
     },
     {
       testcase: 'missing end uses endFallback',
-      period: {
+      period: Period.Period.make({
         start: DateTime.unsafeFromDate(new Date('2024-01-15T10:00:00Z')),
         end: undefined,
-      },
+      }),
       options: { endFallback: 'Ongoing' },
       expected: 'Jan 15, 2024, 5:00 AM - Ongoing',
     },

@@ -1,3 +1,4 @@
+import type { FastCheck, Arbitrary } from 'effect'
 import { Data } from 'effect'
 
 /**
@@ -20,6 +21,15 @@ export class UnhandledError extends Data.TaggedError('UnhandledError')<{
 
   asUnhandledError() {
     return this
+  }
+
+  static get arbitrary(): Arbitrary.LazyArbitrary<UnhandledError> {
+    return (fc: typeof FastCheck) =>
+      fc
+        .string()
+        .chain((message) =>
+          fc.anything().map((cause) => new UnhandledError({ message, cause }))
+        )
   }
 }
 
@@ -79,8 +89,8 @@ export class BadDataError extends Data.TaggedError('BadDataError')<{
  * Resource not found
  */
 export class NotFoundError<
-  ResourceType extends PropertyKey,
-  Parameters extends Record<string | symbol, unknown>,
+  out ResourceType extends PropertyKey,
+  out Parameters extends Record<string | symbol, unknown>,
 > extends Data.TaggedError('NotFoundError')<{
   resourceType: ResourceType
   params: Parameters
@@ -103,6 +113,8 @@ export class AuthError extends Data.TaggedError('AuthError')<{
   message: string
   cause?: unknown
 }> {
+  static readonly tag = 'AuthError' as const
+
   static Unauthenticated = new AuthError({
     message: 'User is not authenticated',
   })
@@ -113,6 +125,11 @@ export class AuthError extends Data.TaggedError('AuthError')<{
       cause: this.cause,
     })
   }
+
+  static get arbitrary(): Arbitrary.LazyArbitrary<AuthError> {
+    return (fc: typeof FastCheck) =>
+      fc.string().map((message) => new AuthError({ message }))
+  }
 }
 
 /**
@@ -122,10 +139,33 @@ export class AuthzError extends Data.TaggedError('AuthzError')<{
   message: string
   cause?: unknown
 }> {
+  static readonly tag = 'AuthzError' as const
+
   asUnhandledError() {
     return new UnhandledError({
       message: `Authorization error: ${this.message}`,
       cause: this.cause,
     })
+  }
+
+  static get arbitrary(): Arbitrary.LazyArbitrary<AuthzError> {
+    return (fc: typeof FastCheck) =>
+      fc
+        .string()
+        .chain((message) =>
+          fc.anything().map((cause) => new AuthzError({ message, cause }))
+        )
+  }
+}
+
+export class Loading<
+  Entity extends { toString(): string },
+> extends Data.TaggedError('Loading')<{
+  entity: Entity
+}> {
+  static readonly tag = 'Loading' as const
+  constructor(params: { entity: Entity }) {
+    super(params)
+    this.message = `Loading ${params.entity}...`
   }
 }

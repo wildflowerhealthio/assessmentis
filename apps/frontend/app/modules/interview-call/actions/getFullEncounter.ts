@@ -3,6 +3,7 @@ import { Effect, Option, Stream } from 'effect'
 import { StreamEither } from '@assessmentis/util'
 import type {
   Encounter,
+  EncounterLocation,
   Location,
   Questionnaire,
   QuestionnaireResponse,
@@ -71,12 +72,12 @@ export const getFullEncounter = (
 
             // Extract Location IDs from encounter location references
             const locationIds = (encounter.location ?? [])
-              .map((l) => extractReferenceId(l.location))
-              .filter((id): id is string => !!id)
+              .map((l: EncounterLocation) => extractReferenceId(l.location))
+              .filter((id: string | undefined): id is string => !!id)
 
             // Fetch each referenced Location resource
             const _locations = yield* Effect.all(
-              locationIds.map((id) => locationRepo.get(id))
+              locationIds.map((id: string) => locationRepo.get(id))
             )
 
             return { encounter, _locations }

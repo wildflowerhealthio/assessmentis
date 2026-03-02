@@ -1,5 +1,10 @@
 import { DateTime, Effect } from 'effect'
-import { type Encounter, isVirtualLocation } from '@assessmentis/clinical-domain'
+import {
+  type Encounter,
+  EncounterLocation,
+  EncounterParticipant,
+  isVirtualLocation,
+} from '@assessmentis/clinical-domain'
 import { EncounterRepository } from '@assessmentis/clinical-domain/repositories'
 import {
   IdentifierAndReference,
@@ -39,11 +44,13 @@ export const updateEncounter = (
           })
         : undefined,
       // Update participant (practitioners)
-      participant: formData.practitionerIds?.map((practitionerId) => ({
-        individual: IdentifierAndReference.Reference.make({
-          reference: `Practitioner/${practitionerId}`,
-        }),
-      })),
+      participant: formData.practitionerIds?.map((practitionerId) =>
+        EncounterParticipant.make({
+          individual: IdentifierAndReference.Reference.make({
+            reference: `Practitioner/${practitionerId}`,
+          }),
+        })
+      ),
       // Update period
       period:
         formData.periodStart || formData.periodEnd
@@ -61,11 +68,11 @@ export const updateEncounter = (
         // Add user-selected physical location if provided
         ...(formData.locationId
           ? [
-              {
+              EncounterLocation.make({
                 location: IdentifierAndReference.Reference.make({
                   reference: `Location/${formData.locationId}`,
                 }),
-              },
+              }),
             ]
           : []),
       ],

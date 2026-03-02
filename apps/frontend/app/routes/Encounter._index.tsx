@@ -16,7 +16,7 @@ export default function EncounterPage(_: Route.ComponentProps) {
       collectionPromise={collectionPromise}
       createPath="/Encounter/new"
       createLabel="Create New Encounter"
-      onDelete={deleteItem}
+      onDelete={(url) => deleteItem(url?.toString())}
       ItemComponent={EncounterListItem}
       emptyMessage="No encounters found. Create your first encounter to get started."
     />

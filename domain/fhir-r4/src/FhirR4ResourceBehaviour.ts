@@ -17,18 +17,19 @@ import {
   Context,
 } from 'effect'
 import { FhirR4Client } from '@assessmentis/fhir-r4'
-import type { ReadonlyUrl, Resource } from '@assessmentis/effectful-store'
-import {
-  type ResourceRequest,
-  type SourceBehaviour,
+import type {
+  OriginBehaviour,
+  ReadonlyUrl,
+  Resource,
 } from '@assessmentis/effectful-store'
+import { type ResourceRequest } from '@assessmentis/effectful-store'
 import type { AuthError } from '@assessmentis/ontology'
 import {
   UnhandledError,
   ExternalAssertionError,
   NotFoundError,
 } from '@assessmentis/ontology'
-import { StreamEither } from '@assessmentis/util'
+import type { StreamEither } from '@assessmentis/util'
 import { refineOrFail } from '@assessmentis/util'
 import { FhirR4Bundle } from './resources/Bundle'
 import type {
@@ -63,7 +64,7 @@ export const fhirProtocols = {
 export type FhirR4Protocol = (typeof fhirProtocols)[keyof typeof fhirProtocols]
 
 // Type alias (not interface) to provide implicit index signature for
-// compatibility with MultiResolver/SourceBehaviour constraints
+// compatibility with MultiResolver constraints
 type Resources = {
   readonly Composition: Composition
   readonly DiagnosticReport: DiagnosticReport
@@ -104,7 +105,9 @@ const FhirR4Schemas: {
  */
 const extractFhirId = (url: { readonly pathname: string }): string => {
   const segments = url.pathname.split('/')
-  return segments[segments.length - 1]
+  // Any split will have at least one segment (even
+  //if  the pathname is empty), so this is safe
+  return segments[segments.length - 1]!
 }
 
 /**
@@ -213,10 +216,7 @@ const resolverForResource = <K extends keyof Resources>(request: {
     Schema: FhirR4Schemas[request.domainType],
   })
 
-export const FhirR4SourceBehaviour = ({
-  clientStream,
-  sourceId,
-  sourceType,
+export const FhirR4OriginBehaviour = ({
   url,
   provokeReauth,
 }: {
@@ -224,58 +224,46 @@ export const FhirR4SourceBehaviour = ({
     typeof FhirR4Client.Service,
     AuthError | UnhandledError
   >
-  sourceType: string
-  sourceId: string
   url: ReadonlyUrl
   provokeReauth: () => Effect.Effect<void, AuthError, never>
-}): SourceBehaviour.SourceBehaviour<
-  Resources,
-  keyof Resources,
-  FhirR4Client
-> => {
-  const resolverStream = clientStream.pipe(
-    StreamEither.map((client) => {
-      const resolver: ResourceRequest.MultiResolver<
-        Resources,
-        keyof Resources,
-        never
-      > = RequestResolver.fromEffect((request) => {
-        const innerResolver = resolverForResource(request)
+}): Effect.Effect<OriginBehaviour<Resources>, never, FhirR4Client> =>
+  Effect.gen(function* () {
+    const client = yield* FhirR4Client
+    const resolver: ResourceRequest.MultiResolver<
+      Resources,
+      keyof Resources,
+      never
+    > = RequestResolver.fromEffect((request) => {
+      const innerResolver = resolverForResource(request)
 
-        return Effect.request(
-          request,
-          innerResolver.pipe(
-            RequestResolver.provideContext(
-              Context.make(FhirR4Client, client).pipe(Context.add(BaseUrl, url))
-            )
+      return Effect.request(
+        request,
+        innerResolver.pipe(
+          RequestResolver.provideContext(
+            Context.make(FhirR4Client, client).pipe(Context.add(BaseUrl, url))
           )
         )
-      })
-
-      return resolver
+      )
     })
-  )
 
-  return {
-    sourceId,
-    sourceType,
-    url: url.toString(),
-    resolverStream,
-    provokeReauth,
-    activeResources: {
-      Composition: true,
-      DiagnosticReport: true,
-      Encounter: true,
-      Location: true,
-      Media: true,
-      Observation: true,
-      Patient: true,
-      Practitioner: true,
-      Questionnaire: true,
-      QuestionnaireResponse: true,
-    },
-  }
-}
+    return {
+      originUrl: url,
+      resolver,
+      provokeReauth,
+      activeResources: {
+        Composition: true,
+        DiagnosticReport: true,
+        Encounter: true,
+        Location: true,
+        Media: true,
+        Observation: true,
+        Patient: true,
+        Practitioner: true,
+        Questionnaire: true,
+        QuestionnaireResponse: true,
+      },
+    }
+  })
 
 export interface FhirR4ResourceBehaviour<
   T extends Resource.Resource<string>,

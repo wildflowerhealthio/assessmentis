@@ -50,7 +50,7 @@ export function makeResourceListIndexPage<
         collectionPromise={collectionPromise}
         createPath={`/${config.resourceType}/new`}
         createLabel={`Create New ${config.singularLabel}`}
-        onDelete={deleteItem}
+        onDelete={(url) => deleteItem(url?.toString())}
         ItemComponent={ItemComponent}
         emptyMessage={`No ${config.pluralLabel.toLowerCase()} found. Create your first ${config.singularLabel.toLowerCase()} to get started.`}
         filterSlot={

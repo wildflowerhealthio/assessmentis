@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
-import { LocationStatus, LocationMode } from '@assessmentis/clinical-domain'
-import type { Location } from '@assessmentis/clinical-domain'
+import { Location, LocationStatus, LocationMode } from '@assessmentis/clinical-domain'
+import { IdentifierAndReference } from '@assessmentis/clinical-domain/data-types'
 
 export const LocationFormSchema = Schema.Struct({
   name: Schema.String,
@@ -13,17 +13,14 @@ export const LocationFormSchema = Schema.Struct({
 
 export type LocationFormData = typeof LocationFormSchema.Type
 
-export function transformToLocation(
-  formData: LocationFormData
-): Omit<Location, 'id'> {
+export function transformToLocation(formData: LocationFormData): Location {
   const name = formData.name.trim()
   const description = formData.description?.trim()
 
   const system = formData.identifierSystem?.trim()
   const value = formData.identifierValue?.trim()
 
-  return {
-    resourceType: 'Location',
+  return Location.make({
     name: name.length ? name : undefined,
     description: description?.length ? description : undefined,
     status: formData.status,
@@ -31,11 +28,11 @@ export function transformToLocation(
     identifier:
       system?.length || value?.length
         ? [
-            {
+            IdentifierAndReference.Identifier.make({
               system: system?.length ? system : undefined,
               value: value?.length ? value : undefined,
-            },
+            }),
           ]
         : undefined,
-  }
+  })
 }

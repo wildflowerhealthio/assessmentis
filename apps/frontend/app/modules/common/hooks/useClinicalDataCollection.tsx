@@ -9,6 +9,10 @@ import type { ReadonlyUrl } from '@assessmentis/effectful-store'
 
 type AnyResource = Schema.Schema.Type<(typeof Schemas)[keyof typeof Schemas]>
 
+const urlKeyOf = <
+  T extends { url?: ReadonlyUrl | undefined },
+>(item: T): string | undefined => item.url?.toString()
+
 const actions = <
   T extends AnyResource & {
     url?: ReadonlyUrl | undefined
@@ -18,13 +22,11 @@ const actions = <
 >(
   repoEffect: Effect.Effect<ClinicalDataRepository<T>, E, never>
 ) => ({
-  apiDelete: async (url: T['url']) => {
-    if (!url) return
-
+  apiDelete: async (urlKey: string) => {
     return Effect.runPromise(
       Effect.all([
         Effect.sleep('200 millis'),
-        Effect.flatMap(repoEffect, (repo) => repo.delete(url)),
+        Effect.flatMap(repoEffect, (repo) => repo.delete(urlKey)),
       ])
     )
   },
@@ -48,7 +50,7 @@ export function useClinicalDataCollection<
   repoEffect: Effect.Effect<ClinicalDataRepository<T>, E, never>,
   data: ReadonlyArray<T>
 ) {
-  return useCollection<T>(actions(repoEffect), data)
+  return useCollection<T>(actions(repoEffect), data, urlKeyOf)
 }
 
 export function useClinicalDataCollectionPromise<
@@ -61,5 +63,5 @@ export function useClinicalDataCollectionPromise<
   repoEffect: Effect.Effect<ClinicalDataRepository<T>, E, never>,
   dataPromise: Promise<ReadonlyArray<T>>
 ) {
-  return useCollectionPromise<T>(actions(repoEffect), dataPromise)
+  return useCollectionPromise<T>(actions(repoEffect), dataPromise, urlKeyOf)
 }

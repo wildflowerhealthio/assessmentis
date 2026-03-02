@@ -2,9 +2,8 @@ import type { FastCheck } from 'effect'
 import { Arbitrary, Schema } from 'effect'
 import type FhirR4ChoiceElements from './fhirR4ChoiceElements'
 import { capitalize } from 'effect/String'
-import type { extend } from 'effect/Schema'
 
-interface Datatype<Name extends string, A, I> {
+export interface Datatype<Name extends string, A, I> {
   name: Name
   schema: Schema.Schema<A, I, never>
 }
@@ -42,7 +41,7 @@ type FhirR4DatatypeOptionNames =
   FhirR4ChoiceElements[keyof FhirR4ChoiceElements][number]
 
 const UnknownFromAny = Schema.declare<any>(
-  (input: unknown): input is any => true
+  (_input: unknown): _input is any => true
 ).pipe(
   Schema.annotations({
     description: 'A placeholder schema that accepts any value.',
@@ -389,7 +388,7 @@ export const DatatypeChoiceEncodedPassthroughFields = <
       `${prefix}${capitalize(key)}`,
 
       Schema.optional(
-        Schema.declare<any>((input: unknown): input is any => true)
+        Schema.declare<any>((_input: unknown): _input is any => true)
       ),
     ])
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

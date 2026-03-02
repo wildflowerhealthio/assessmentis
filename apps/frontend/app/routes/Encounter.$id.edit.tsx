@@ -16,6 +16,8 @@ import {
   extractReferenceIds,
 } from 'app/modules/common/utils/fhirDisplay'
 import { useMemo } from 'react'
+import type { EncounterParticipant, EncounterLocation } from '@assessmentis/clinical-domain'
+import type { IdentifierAndReference } from '@assessmentis/clinical-domain/data-types'
 import { useEitherStream } from '@assessmentis/react-util'
 import { usePlatformContext } from '../layers/PlatformContext'
 
@@ -64,18 +66,18 @@ export default function EditEncounterPage({ params }: Route.ComponentProps) {
         const practitionerIds = extractReferenceIds(
           encounter.participant
             ?.filter(
-              (p) =>
+              (p: EncounterParticipant) =>
                 p.individual?.reference?.startsWith('Practitioner/') ?? false
             )
-            .map((p) => p.individual)
+            .map((p: EncounterParticipant) => p.individual)
             .filter(
-              (ref): ref is NonNullable<typeof ref> => ref !== undefined
+              (ref: IdentifierAndReference.Reference | undefined): ref is IdentifierAndReference.Reference => ref !== undefined
             ) ?? []
         )
 
         // Extract user-selected location ID (non-virtual location entry)
         const userLocation = encounter.location?.find(
-          (loc) =>
+          (loc: EncounterLocation) =>
             !loc.physicalType?.coding?.some((coding) => coding.code === 'vi')
         )
         const locationId = extractReferenceId(userLocation?.location)

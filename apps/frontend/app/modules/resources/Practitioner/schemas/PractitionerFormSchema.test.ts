@@ -99,7 +99,7 @@ describe('PractitionerFormSchema', () => {
             formData as PractitionerFormData
           )
 
-          expect(practitioner.resourceType).toBe('Practitioner')
+          expect(practitioner.domainType).toBe('Practitioner')
           expect(practitioner.active).toBe(true)
 
           if (formData.givenName.trim() || formData.familyName.trim()) {

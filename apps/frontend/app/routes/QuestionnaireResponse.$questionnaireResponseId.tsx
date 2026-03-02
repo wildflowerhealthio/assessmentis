@@ -15,7 +15,7 @@ import type { Route } from './+types/QuestionnaireResponse.$questionnaireRespons
 import QuestionnaireForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/QuestionnaireForm'
 import { updateEncounterRecordingsAndTranscripts } from '../modules/resources/Encounter/actions/updateEncounterRecordingsAndTranscripts'
 import { getEncounterRecordings } from '../modules/resources/Encounter/actions/getEncounterRecordings'
-import { Encounter, Media, Observation } from '@assessmentis/clinical-domain'
+import { Media, Observation } from '@assessmentis/clinical-domain'
 import {
   EncounterRepository,
   MediaRepository,
@@ -70,8 +70,8 @@ function questionnaireEffect(questionnaireResponseIdStr: string) {
 
     const questionnaireId =
       questionnaireResponse.questionnaire?.split('/')[3] ??
-        questionnaireResponse.questionnaire ??
-        ''
+      questionnaireResponse.questionnaire ??
+      ''
     const encounterId =
       questionnaireResponse.encounter?.reference?.split('/')[1] ?? undefined
 
@@ -146,7 +146,11 @@ const ResponsePage = ({
 
   useBreadcrumbs([
     { label: 'Questionnaire Responses', href: '/QuestionnaireResponse' },
-    { label: questionnaire.title || `Response ${questionnaireResponse.url?.toString() ?? 'Unknown'}` },
+    {
+      label:
+        questionnaire.title ||
+        `Response ${questionnaireResponse.url?.toString() ?? 'Unknown'}`,
+    },
   ])
 
   const repoEffect = useMemo(() => {
@@ -175,10 +179,12 @@ const ResponsePage = ({
     if (questionnaire.code?.[0].code == gad7.codings.questionnaire.code) {
       observations = gad7
         .extractObservationsFromGad7Response(questionnaireResponse)
-        .map((obs) => ({
-          ...obs,
-          status: 'final',
-        }))
+        .map((obs) =>
+          Observation.make({
+            ...obs,
+            status: 'final',
+          })
+        )
     }
     console.log('Extracted observations:', observations)
 
@@ -291,7 +297,7 @@ const ResponsePage = ({
                   marginBottom: 'var(--space-5)',
                   width: '100%',
                 }}
-                onClick={() => deleteMedia(data.url)}
+                onClick={() => deleteMedia(data.url?.toString())}
               >
                 Delete
               </button>

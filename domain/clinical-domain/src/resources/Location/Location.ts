@@ -60,7 +60,7 @@ export class Location extends MergeClasses<Location>(Key)(
  * Virtual locations are identified by a physical type coding with code 'vi'.
  */
 export const isVirtualLocation = (locationEntry: {
-  physicalType?: { coding?: { code?: Code }[] }
+  physicalType?: { coding?: readonly { code?: Code }[] }
 }): boolean => {
   return (
     locationEntry.physicalType?.coding?.some(

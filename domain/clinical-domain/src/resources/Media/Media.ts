@@ -4,6 +4,7 @@ import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
 import {
   Identifier,
   Reference,
+  type ReferenceEncoded,
 } from '../../data-types/complex/IdentifierAndReference'
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import { Attachment } from '../../data-types/complex/Attachment'
@@ -38,7 +39,11 @@ const fields = {
   modality: Schema.optional(Schema.suspend(() => CodeableConcept)),
   view: Schema.optional(Schema.suspend(() => CodeableConcept)),
   subject: Schema.optional(Schema.suspend(() => Reference)),
-  encounter: Schema.optional(Schema.suspend(() => Reference)),
+  encounter: Schema.optional(
+    Schema.suspend(
+      (): Schema.Schema<Reference, ReferenceEncoded, never> => Reference
+    )
+  ),
   createdDateTime: Schema.optional(Schema.DateTimeUtc),
   createdPeriod: Schema.optional(Schema.suspend(() => Period)),
   issued: Schema.optional(Schema.DateTimeUtc),

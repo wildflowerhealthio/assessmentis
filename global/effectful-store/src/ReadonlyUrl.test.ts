@@ -104,6 +104,85 @@ describe('ReadonlyUrl', () => {
     })
   })
 
+  describe('hasChild', () => {
+    test('origin hasChild a resource URL under its pathname', () => {
+      const origin = ReadonlyUrl.make({
+        protocol: 'https:',
+        host: 'example.com',
+        pathname: '/fhir',
+      })
+      const resourceUrl = ReadonlyUrl.make({
+        protocol: 'https:',
+        host: 'example.com',
+        pathname: '/fhir/Patient/123',
+      })
+      expect(origin.hasChild(resourceUrl)).toBe(true)
+    })
+
+    test('origin does not haveChild a URL with a different pathname prefix', () => {
+      const origin = ReadonlyUrl.make({
+        protocol: 'https:',
+        host: 'example.com',
+        pathname: '/fhir',
+      })
+      const otherUrl = ReadonlyUrl.make({
+        protocol: 'https:',
+        host: 'example.com',
+        pathname: '/other/Patient/123',
+      })
+      expect(origin.hasChild(otherUrl)).toBe(false)
+    })
+
+    test('origin does not haveChild a URL with a different host', () => {
+      const origin = ReadonlyUrl.make({
+        protocol: 'https:',
+        host: 'example.com',
+        pathname: '/fhir',
+      })
+      const otherUrl = ReadonlyUrl.make({
+        protocol: 'https:',
+        host: 'other.com',
+        pathname: '/fhir/Patient/123',
+      })
+      expect(origin.hasChild(otherUrl)).toBe(false)
+    })
+
+    test('origin does not haveChild a URL with a different protocol', () => {
+      const origin = ReadonlyUrl.make({
+        protocol: 'https:',
+        host: 'example.com',
+        pathname: '/fhir',
+      })
+      const otherUrl = ReadonlyUrl.make({
+        protocol: 'http:',
+        host: 'example.com',
+        pathname: '/fhir/Patient/123',
+      })
+      expect(origin.hasChild(otherUrl)).toBe(false)
+    })
+
+    test('origin hasChild itself', () => {
+      const url = ReadonlyUrl.make({
+        protocol: 'https:',
+        host: 'example.com',
+        pathname: '/fhir',
+      })
+      expect(url.hasChild(url)).toBe(true)
+    })
+
+    test('property: a URL built with appendToPathname is a child of the original', () => {
+      const suffixArb = fc.stringOf(
+        fc.constantFrom('/', 'a', 'b', '1', '-', '_')
+      )
+      fc.assert(
+        fc.property(readonlyUrlArb, suffixArb, (url, suffix) => {
+          const child = url.appendToPathname(suffix)
+          expect(url.hasChild(child)).toBe(true)
+        })
+      )
+    })
+  })
+
   describe('appendToPathname', () => {
     test('appends a path segment', () => {
       const url = ReadonlyUrl.make({

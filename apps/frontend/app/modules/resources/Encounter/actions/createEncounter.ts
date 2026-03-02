@@ -2,6 +2,7 @@ import { Effect, Schema } from 'effect'
 import { VideoCallClient } from '@assessmentis/video-call-domain'
 import {
   Encounter,
+  EncounterLocation,
   Location,
   QuestionnaireResponse,
   isVirtualLocation,
@@ -84,7 +85,7 @@ export const createEncounter = (
     )
 
     // Build location array with proper references
-    const videoRoomEntry: NonNullable<Encounter['location']>[number] = {
+    const videoRoomEntry = EncounterLocation.make({
       location: IdentifierAndReference.Reference.make({
         reference: `Location/${videoRoomLocation.url.toString()}`,
       }),
@@ -98,12 +99,12 @@ export const createEncounter = (
           }),
         ],
       }),
-    }
+    })
 
     // Add user-selected physical location if provided
-    const userLocationEntries: NonNullable<Encounter['location']>[number][] = (
-      args.location ?? []
-    ).filter((l) => !isVirtualLocation(l))
+    const userLocationEntries = (args.location ?? []).filter(
+      (l: EncounterLocation) => !isVirtualLocation(l)
+    )
 
     const encounterData: Encounter = Encounter.make({
       class: Coding.Coding.make({

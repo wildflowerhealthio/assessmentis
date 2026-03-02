@@ -12,6 +12,14 @@ import {
 } from '@assessmentis/clinical-domain/repositories'
 import { usePlatformContext } from '../layers/PlatformContext'
 import { VideoCallClient } from '@assessmentis/video-call-domain'
+import {
+  EncounterLocation,
+  EncounterParticipant,
+} from '@assessmentis/clinical-domain'
+import {
+  IdentifierAndReference,
+  Period,
+} from '@assessmentis/clinical-domain/data-types'
 
 const decodeQuestionnaireId = Schema.decodeUnknownSync(Schema.String)
 
@@ -40,24 +48,32 @@ export default function CreateEncounterPage() {
     const encounter = await Effect.runPromise(
       createEncounter({
         subject: data.patientId
-          ? { reference: `Patient/${data.patientId}` }
+          ? IdentifierAndReference.Reference.make({
+              reference: `Patient/${data.patientId}`,
+            })
           : undefined,
-        participant: data.practitionerIds?.map((id) => ({
-          individual: { reference: `Practitioner/${id}` },
-        })),
+        participant: data.practitionerIds?.map((id) =>
+          EncounterParticipant.make({
+            individual: IdentifierAndReference.Reference.make({
+              reference: `Practitioner/${id}`,
+            }),
+          })
+        ),
         period:
           data.periodStart || data.periodEnd
-            ? {
+            ? Period.Period.make({
                 start: data.periodStart?.pipe(DateTime.toUtc),
                 end: data.periodEnd?.pipe(DateTime.toUtc),
-              }
+              })
             : undefined,
         // User-selected physical location (video room is created by createEncounter)
         location: data.locationId
           ? [
-              {
-                location: { reference: `Location/${data.locationId}` },
-              },
+              EncounterLocation.make({
+                location: IdentifierAndReference.Reference.make({
+                  reference: `Location/${data.locationId}`,
+                }),
+              }),
             ]
           : undefined,
         questionnaireResponses: data.questionnaireIds.map((id) => ({

@@ -4,6 +4,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { Effect, Option } from 'effect'
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import { makeCreateResourcePage } from './makeCreateResourcePage'
 import type { ResourcePagesConfig } from './resourcePagesConfigType'
 
@@ -54,7 +55,7 @@ function createTestConfig(
     singularLabel: 'Test Resource',
     pluralLabel: 'Test Resources',
     paramName: 'testResourceId',
-    decodeId: (s: string) => Option.some(s),
+    decodeUrl: (s: string) => Option.some(ReadonlyUrl.make({ pathname: s })),
     getDisplayName: () => 'Display Name',
     schema: {} as never,
     FormComponent: TestForm as never,

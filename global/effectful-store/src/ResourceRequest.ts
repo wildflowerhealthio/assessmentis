@@ -1,6 +1,7 @@
 import type { RequestResolver } from 'effect'
 import type { Request } from 'effect'
 import type * as Resource from './Resource'
+import type { ReadonlyUrl } from './ReadonlyUrl'
 
 import type {
   UnhandledError,
@@ -31,14 +32,15 @@ export interface Get<
   readonly _tag: 'Get'
   readonly domainType: TResource['domainType']
   readonly url: Resource.InferResourceUrl<TResource>
+  readonly origin: ReadonlyUrl
 }
 
-export type SearchParam<T extends Resource.AnyResource> = {
+export type SearchParam<out T extends Resource.AnyResource> = {
   readonly [K in keyof T]?: string | ReadonlyArray<string>
 }
 
 export interface Search<
-  TResource extends Resource.AnyResource,
+  out TResource extends Resource.AnyResource,
 > extends Request.Request<
   ReadonlyArray<Resource.WithResourceUrl<TResource>>,
   CommonErrors
@@ -46,19 +48,21 @@ export interface Search<
   readonly _tag: 'Search'
   readonly domainType: TResource['domainType']
   readonly params: SearchParam<TResource>
+  readonly origin: ReadonlyUrl | null
 }
 
 export interface Create<
-  TResource extends Resource.AnyResource,
+  out TResource extends Resource.AnyResource,
 > extends Request.Request<Resource.WithResourceUrl<TResource>, CommonErrors> {
   readonly _tag: 'Create'
   readonly domainType: TResource['domainType']
   readonly requestId?: symbol
   readonly resource: TResource
+  readonly origin: ReadonlyUrl
 }
 
 export interface Update<
-  TResource extends Resource.AnyResource,
+  out TResource extends Resource.AnyResource,
 > extends Request.Request<
   Resource.WithResourceUrl<TResource>,
   | CommonErrors
@@ -70,10 +74,11 @@ export interface Update<
   readonly _tag: 'Update'
   readonly domainType: TResource['domainType']
   readonly resource: Resource.WithResourceUrl<TResource>
+  readonly origin: ReadonlyUrl
 }
 
 export interface Delete<
-  TResource extends Resource.AnyResource,
+  out TResource extends Resource.AnyResource,
 > extends Request.Request<
   null,
   | CommonErrors
@@ -84,12 +89,13 @@ export interface Delete<
 > {
   readonly _tag: 'Delete'
   readonly domainType: TResource['domainType']
-  readonly url: Resource.InferResourceUrl<TResource>
+  readonly resource: { readonly url: Resource.InferResourceUrl<TResource> }
+  readonly origin: ReadonlyUrl
 }
 
 export interface MultiResolver<
   in out TResources extends {
-    readonly [K: PropertyKey]: Resource.Resource<typeof K>
+    readonly [K: string]: Resource.Resource<typeof K>
   },
   in ActiveResourceTypes extends keyof TResources,
   out Dep,

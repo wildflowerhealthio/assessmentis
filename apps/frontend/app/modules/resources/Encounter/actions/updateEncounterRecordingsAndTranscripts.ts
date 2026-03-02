@@ -1,6 +1,7 @@
 import { Effect } from 'effect'
 import { VideoCallClient } from '@assessmentis/video-call-domain'
 import { Encounter, Media } from '@assessmentis/clinical-domain'
+import { IdentifierAndReference } from '@assessmentis/clinical-domain/data-types'
 import {
   EncounterRepository,
   MediaRepository,
@@ -29,7 +30,7 @@ export const updateEncounterRecordingsAndTranscripts = (
   | ExternalAssertionError
   | NotFoundError<'Encounter', { url: string }>
   | NotFoundError<'Media', { url: string }>
-  | NotFoundError<'Recording', { url: string }>,
+  | NotFoundError<'Recording', { id: string }>,
   EncounterRepository | VideoCallClient | MediaRepository
 > => {
   return Effect.gen(function* () {
@@ -69,8 +70,8 @@ export const updateEncounterRecordingsAndTranscripts = (
     for (const recording of latestRecordings) {
       // Find the corresponding existing media and update it with fresh URL
       const correspondingMedia = knownMediaItems.find((known) =>
-        known.identifier?.some((knownId) =>
-          recording.identifier?.some((id) => id.value === knownId.value)
+        known.identifier?.some((knownId: { value?: string }) =>
+          recording.identifier?.some((id: { value?: string }) => id.value === knownId.value)
         )
       )
       if (correspondingMedia) {
@@ -91,11 +92,12 @@ export const updateEncounterRecordingsAndTranscripts = (
     }
 
     // Create new Media resources linked to the encounter
-    const mediaToCreate = newRecordings.map((media) => ({
+    const encounterRef = IdentifierAndReference.Reference.make({
+      reference: `Encounter/${encounterId}`,
+    })
+    const mediaToCreate: Media[] = newRecordings.map((media) => ({
       ...media,
-      encounter: {
-        reference: `Encounter/${encounterId}`,
-      },
+      encounter: encounterRef,
     }))
 
     if (mediaToCreate.length > 0) {

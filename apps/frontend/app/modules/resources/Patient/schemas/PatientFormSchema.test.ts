@@ -131,7 +131,7 @@ describe('PatientFormSchema', () => {
           const patient = transformToPatient(formData as PatientFormData)
 
           // Verify basic structure
-          expect(patient.resourceType).toBe('Patient')
+          expect(patient.domainType).toBe('Patient')
           expect(patient.active).toBe(true)
 
           // If givenName or familyName exist, name should be defined

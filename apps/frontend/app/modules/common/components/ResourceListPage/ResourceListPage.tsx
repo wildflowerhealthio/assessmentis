@@ -90,7 +90,7 @@ const Body = <T extends { url?: ReadonlyUrl }>({
             <ul className={classes.ListPage__list}>
               {items.map(({ data, loading }) => (
                 <li
-                  key={data.url ?? ''}
+                  key={data.url?.toString() ?? ''}
                   className={classes.ListPage__item}
                   data-loading={loading}
                 >

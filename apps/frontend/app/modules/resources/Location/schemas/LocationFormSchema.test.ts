@@ -35,18 +35,22 @@ describe('LocationFormSchema', () => {
       identifierValue: 'clinic-a',
     }
 
-    expect(transformToLocation(formData)).toEqual({
-      resourceType: 'Location',
-      name: 'Clinic A',
-      description: 'Main clinic entrance',
-      status: 'active',
-      mode: 'instance',
-      identifier: [
-        {
-          system: 'urn:example:location',
-          value: 'clinic-a',
-        },
-      ],
-    })
+    const result = transformToLocation(formData)
+    expect(result).toEqual(
+      expect.objectContaining({
+        domainType: 'Location',
+        name: 'Clinic A',
+        description: 'Main clinic entrance',
+        status: 'active',
+        mode: 'instance',
+        identifier: [
+          expect.objectContaining({
+            domainType: 'Identifier',
+            system: 'urn:example:location',
+            value: 'clinic-a',
+          }),
+        ],
+      })
+    )
   })
 })

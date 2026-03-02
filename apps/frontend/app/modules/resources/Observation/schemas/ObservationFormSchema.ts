@@ -9,7 +9,6 @@ import { Schema, DateTime } from 'effect'
 
 export const ValueTypeEnum = Schema.Literal(
   'valueString',
-  'valueDecimal',
   'valueQuantity',
   'valueCodeableConcept'
 )
@@ -18,11 +17,10 @@ export const ObservationFormSchema = Schema.Struct({
   patientId: Schema.optional(Schema.String),
   encounterId: Schema.optional(Schema.String),
   code: Schema.String,
+  effectiveDateTime: Schema.optional(Schema.DateTimeZonedFromSelf),
   valueType: Schema.optional(ValueTypeEnum),
   // Fields for valueString
   valueString: Schema.optional(Schema.String),
-  // Fields for valueDecimal (stored as string, parsed during transform)
-  valueDecimal: Schema.optional(Schema.String),
   // Fields for valueQuantity (stored as string, parsed during transform)
   valueQuantityValue: Schema.optional(Schema.String),
   valueQuantityUnit: Schema.optional(Schema.String),
@@ -31,7 +29,6 @@ export const ObservationFormSchema = Schema.Struct({
   valueCodeableConceptCodingCode: Schema.optional(Schema.String),
   valueCodeableConceptCodingSystem: Schema.optional(Schema.String),
   valueCodeableConceptCodingDisplay: Schema.optional(Schema.String),
-  effectiveDateTime: Schema.optional(Schema.DateTimeZonedFromSelf),
 })
 
 export type ObservationFormData = typeof ObservationFormSchema.Type
@@ -68,15 +65,6 @@ export function transformToObservation(
         ...base,
         valueString: formData.valueString || '',
       })
-    case 'valueDecimal': {
-      const decimalValue = formData.valueDecimal
-        ? parseFloat(formData.valueDecimal)
-        : 0
-      return Observation.make({
-        ...base,
-        valueDecimal: decimalValue,
-      })
-    }
     case 'valueQuantity': {
       const quantityValue = formData.valueQuantityValue
         ? parseFloat(formData.valueQuantityValue)

@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { Practitioner } from '@assessmentis/clinical-domain'
+import { Practitioner, PractitionerQualification } from '@assessmentis/clinical-domain'
 import {
   AdministrativeGender,
   CodeableConcept,
@@ -34,12 +34,12 @@ export function transformToPractitioner(
     gender: formData.gender,
     qualification: qualification
       ? [
-          {
+          PractitionerQualification.make({
             code: CodeableConcept.make({
               text: qualification,
               coding: [],
             }),
-          },
+          }),
         ]
       : undefined,
     active: true,

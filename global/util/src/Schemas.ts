@@ -182,7 +182,7 @@ export const WithSymbolTag =
         strict: true,
         decode: (fromA: A, _fromI: I): A & { [k]: S } => ({ ...fromA, [k]: s }),
         encode: (
-          toI: A & { readonly [x in K]: S },
+          _toI: A & { readonly [x in K]: S },
           toA: A & { readonly [x in K]: S }
         ): A => {
           const { [k]: _, ...justToA } = toA

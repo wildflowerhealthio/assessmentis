@@ -4,6 +4,7 @@ import { render, screen, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { Effect, Option, Either, Stream } from 'effect'
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import { makeEditResourcePage } from './EditResourcePage'
 import type { ResourcePagesConfig } from './resourcePagesConfigType'
 
@@ -71,7 +72,7 @@ function createTestConfig(
     singularLabel: 'Test Resource',
     pluralLabel: 'Test Resources',
     paramName: 'testResourceId',
-    decodeId: (raw) => (raw === 'invalid' ? Option.none() : Option.some(raw)),
+    decodeUrl: (raw: string) => (raw === 'invalid' ? Option.none() : Option.some(ReadonlyUrl.make({ pathname: raw }))),
     getDisplayName: (r: typeof mockResource) => r.name,
     schema: {} as never,
     FormComponent: TestForm as never,
