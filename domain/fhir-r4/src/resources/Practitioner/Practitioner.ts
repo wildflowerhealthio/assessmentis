@@ -18,7 +18,7 @@ import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import { PractitionerQualificationEncodedFromFhir } from './PractitionerQualification'
 import type { BaseUrl } from '../../data-types/UrlIdentification'
 import { mutableEncoded } from '@assessmentis/util'
-import { TwoStepExternalSchema } from '../../TwoStepExternalSchema'
+import { TwoStepExternalSchema } from '@assessmentis/util'
 
 const EncodedFromFhir: Schema.Schema<
   PractitionerEncoded,

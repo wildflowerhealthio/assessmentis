@@ -13,7 +13,7 @@ import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import { FhirR4Address } from '../../data-types/complex/Address'
 import type { BaseUrl } from '../../data-types/UrlIdentification'
 import { mutableEncoded } from '@assessmentis/util'
-import { TwoStepExternalSchema } from '../../TwoStepExternalSchema'
+import { TwoStepExternalSchema } from '@assessmentis/util'
 
 const EncodedFromFhir: Schema.Schema<
   LocationEncoded,

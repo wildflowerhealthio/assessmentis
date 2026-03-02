@@ -7,7 +7,7 @@ import { mutableEncoded } from '@assessmentis/util'
 import type { BaseUrl } from '../UrlIdentification'
 import { ElementIdentification } from '../base/Element'
 import { FhirR4Extension } from '../special-purpose'
-import { TwoStepExternalSchema } from '../../TwoStepExternalSchema'
+import { TwoStepExternalSchema } from '@assessmentis/util'
 
 const EncodedFromFhir: Schema.Schema<
   CodeableConceptEncoded,
@@ -18,15 +18,11 @@ const EncodedFromFhir: Schema.Schema<
   mutableEncoded(
     Schema.Struct({
       extension: Schema.optional(
-        mutableEncoded(
-          Schema.Array(FhirR4Extension.EncodedFromExternal)
-        )
+        mutableEncoded(Schema.Array(FhirR4Extension.EncodedFromExternal))
       ),
       coding: Schema.optional(
         mutableEncoded(
-          Schema.Array(
-            Schema.suspend(() => FhirR4Coding.EncodedFromExternal)
-          )
+          Schema.Array(Schema.suspend(() => FhirR4Coding.EncodedFromExternal))
         )
       ),
       text: Schema.optional(Schema.String),

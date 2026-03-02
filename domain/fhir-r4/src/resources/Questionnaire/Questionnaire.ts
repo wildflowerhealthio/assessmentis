@@ -15,7 +15,7 @@ import { BackboneElementEncodedFromFhir } from '../../data-types/base/BackboneEl
 import { FhirR4Coding } from '../../data-types/complex/Coding'
 import type { BaseUrl } from '../../data-types/UrlIdentification'
 import { mutableEncoded } from '@assessmentis/util'
-import { TwoStepExternalSchema } from '../../TwoStepExternalSchema'
+import { TwoStepExternalSchema } from '@assessmentis/util'
 
 // --- Value sets ---
 

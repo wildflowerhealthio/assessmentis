@@ -11,7 +11,7 @@ import {
   DatatypeChoiceEncodedPassthroughFields,
 } from '@assessmentis/clinical-domain/data-types'
 import { mutableEncoded } from '@assessmentis/util'
-import { TwoStepExternalSchema } from '../../TwoStepExternalSchema'
+import { TwoStepExternalSchema } from '@assessmentis/util'
 
 const EncodedFromFhir: Schema.Schema<
   ExtensionEncoded,
@@ -26,9 +26,7 @@ const EncodedFromFhir: Schema.Schema<
         Schema.fromKey('url')
       ),
       extension: Schema.optional(
-        mutableEncoded(
-          Schema.Array(Schema.suspend(() => EncodedFromFhir))
-        )
+        mutableEncoded(Schema.Array(Schema.suspend(() => EncodedFromFhir)))
       ),
       ...DatatypeChoiceEncodedPassthroughFields('value', AllDatatypeKeys),
     }),

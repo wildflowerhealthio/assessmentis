@@ -1,0 +1,50 @@
+import { Schema } from 'effect'
+import type { ObservationEncoded } from '@assessmentis/clinical-domain'
+import { Observation } from '@assessmentis/clinical-domain'
+
+/**
+ * A single Daily.co transcript entry enriched with its access link
+ * and resource URL. The resolver fetches the access link before decoding
+ * through this schema.
+ */
+export const DailyCoTranscriptInput = Schema.Struct({
+  transcriptId: Schema.String,
+  accessLink: Schema.String,
+  resourceUrl: Schema.String,
+})
+
+/**
+ * Schema that transforms a Daily.co transcript (with access link) into
+ * a clinical-domain Observation resource.
+ *
+ * Pipeline: DailyCoTranscriptInput.Encoded → DailyCoTranscriptInput.Type → ObservationEncoded → Observation
+ */
+export const DailyCoObservation: Schema.Schema<
+  Observation,
+  typeof DailyCoTranscriptInput.Encoded
+> = Schema.transform(DailyCoTranscriptInput, Observation, {
+  strict: true,
+  decode: (transcript): ObservationEncoded => ({
+    status: 'final',
+    code: {
+      coding: [
+        {
+          system: 'http://assessment.is/fhir/observation-type',
+          code: 'video-call-transcript',
+          display: 'Video Call Transcript',
+        },
+      ],
+    },
+    valueString: transcript.accessLink,
+    identifier: [
+      {
+        system: 'http://assessment.is/fhir/daily-co-transcript-id',
+        value: transcript.transcriptId,
+      },
+    ],
+    url: transcript.resourceUrl,
+  }),
+  encode: () => {
+    throw new Error('DailyCoObservation is decode-only')
+  },
+})

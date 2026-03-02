@@ -6,7 +6,7 @@ import { ElementIdentification } from '../base/Element'
 import { mutableEncoded } from '@assessmentis/util'
 import { FhirR4CodeableConcept } from './CodeableConcept'
 import { FhirR4Period } from './Period'
-import { TwoStepExternalSchema } from '../../TwoStepExternalSchema'
+import { TwoStepExternalSchema } from '@assessmentis/util'
 
 const ReferenceEncodedFromFhir: Schema.Schema<
   IdentifierAndReference.ReferenceEncoded,
@@ -56,9 +56,7 @@ const IdentifierEncodedFromFhir: Schema.Schema<
         )
       ),
       value: Schema.optional(Schema.String),
-      assigner: Schema.optional(
-        Schema.suspend(() => ReferenceEncodedFromFhir)
-      ),
+      assigner: Schema.optional(Schema.suspend(() => ReferenceEncodedFromFhir)),
     })
   )
 )

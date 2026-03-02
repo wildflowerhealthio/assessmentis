@@ -1,7 +1,10 @@
+// Origin-based API
+export * from './DailyCoOrigin'
+
 // Legacy (deprecated) — use the repository-based exports below instead
 export * from './DailyCoVideoCallClientLayer'
 
-// New repository-based API
+// Repository-based API (deprecated — will be replaced by DailyCoOrigin)
 export * from './repositories/DailyCoLocationRepository'
 export * from './repositories/DailyCoMediaRepository'
 export * from './repositories/DailyCoTranscriptObservationRepository'

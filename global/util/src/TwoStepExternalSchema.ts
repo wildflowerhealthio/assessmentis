@@ -1,6 +1,5 @@
-import { Schema, Pipeable } from 'effect'
+import { Schema, Pipeable, pipe } from 'effect'
 import type * as AST from 'effect/SchemaAST'
-import type { BaseUrl } from './data-types/UrlIdentification'
 
 /**
  * A schema that transforms from an External type to a Domain type via an
@@ -56,6 +55,70 @@ export class TwoStepExternalSchema<Domain, DomainEncoded, External, R = never>
   ) {
     super()
     this.composed = Schema.compose(this.EncodedFromExternal, DomainFromEncoded)
+    this[Schema.TypeId] = this.composed[Schema.TypeId]
+  }
+}
+
+export class ThreeStepExternalSchema<
+  DomainType,
+  DomainEncoded,
+  IntegrationType,
+  IntegrationEncoded,
+  R = never,
+>
+  extends Pipeable.Class()
+  implements Schema.Schema<DomainType, IntegrationEncoded, R>
+{
+  private readonly composed: Schema.Schema<DomainType, IntegrationEncoded, R>
+
+  readonly [Schema.TypeId]: Schema.Schema<
+    DomainType,
+    IntegrationEncoded,
+    R
+  >[typeof Schema.TypeId]
+
+  get Type(): DomainType {
+    return this.composed.Type
+  }
+
+  get Encoded(): IntegrationEncoded {
+    return this.composed.Encoded
+  }
+
+  get Context(): R {
+    return this.composed.Context
+  }
+
+  get ast(): AST.AST {
+    return this.composed.ast
+  }
+
+  annotations(
+    annotations: Schema.Annotations.GenericSchema<DomainType>
+  ): Schema.Schema<DomainType, IntegrationEncoded, R> {
+    return this.composed.annotations(annotations)
+  }
+
+  constructor(
+    private DomainFromEncoded: Schema.Schema<DomainType, DomainEncoded>,
+    private IntegrationFromEncoded: Schema.Schema<
+      IntegrationType,
+      IntegrationEncoded,
+      R
+    >,
+    public readonly DomainEncodedFromExternalType: Schema.Schema<
+      DomainEncoded,
+      IntegrationType,
+      R
+    >
+  ) {
+    super()
+    this.composed = pipe(
+      this.IntegrationFromEncoded,
+      Schema.compose(this.DomainEncodedFromExternalType),
+      Schema.compose(this.DomainFromEncoded)
+    )
+
     this[Schema.TypeId] = this.composed[Schema.TypeId]
   }
 }

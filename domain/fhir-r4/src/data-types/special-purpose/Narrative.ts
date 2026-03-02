@@ -7,7 +7,7 @@ import {
 import type { BaseUrl } from '../UrlIdentification'
 import { ElementIdentification } from '../base/Element'
 import { mutableEncoded } from '@assessmentis/util'
-import { TwoStepExternalSchema } from '../../TwoStepExternalSchema'
+import { TwoStepExternalSchema } from '@assessmentis/util'
 
 const NarrativeStatus = Schema.Union(
   Schema.Literal('generated'),

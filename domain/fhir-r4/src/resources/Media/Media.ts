@@ -13,7 +13,7 @@ import { FhirR4Annotation } from '../../data-types/complex/Annotation'
 import { FhirR4Period } from '../../data-types/complex/Period'
 import type { BaseUrl } from '../../data-types/UrlIdentification'
 import { mutableEncoded } from '@assessmentis/util'
-import { TwoStepExternalSchema } from '../../TwoStepExternalSchema'
+import { TwoStepExternalSchema } from '@assessmentis/util'
 
 const EncodedFromFhir: Schema.Schema<MediaEncoded, FhirR4.Media, BaseUrl> =
   Schema.extend(

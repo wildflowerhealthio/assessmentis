@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { Effect, Schema } from 'effect'
+import { Schema } from 'effect'
 import { TwoStepExternalSchema } from './TwoStepExternalSchema'
-import { BaseUrl } from './data-types/UrlIdentification'
-import { ReadonlyUrl } from '@assessmentis/effectful-store'
 
 // --- Test schemas ---
 

@@ -3,7 +3,7 @@ import type FhirR4 from 'fhir/r4'
 import { Address } from '@assessmentis/clinical-domain/data-types'
 import type { BaseUrl } from '../UrlIdentification'
 import { mutableEncoded } from '@assessmentis/util'
-import { TwoStepExternalSchema } from '../../TwoStepExternalSchema'
+import { TwoStepExternalSchema } from '@assessmentis/util'
 import { FhirR4Period } from './Period'
 
 const EncodedFromFhir: Schema.Schema<

@@ -7,7 +7,7 @@ interface BaseResource {
 }
 
 export const ClinicalResourceBehaviourImpl = <
-  T extends BaseResource & Resource.Resource<symbol>,
+  T extends BaseResource & Resource.Resource<string>,
   TEncoded,
 >({
   ResourceSymbol,
@@ -28,7 +28,7 @@ export const ClinicalResourceBehaviourImpl = <
 }
 
 export interface ClinicalResourceBehaviour<
-  T extends BaseResource & Resource.Resource<symbol>,
+  T extends BaseResource & Resource.Resource<string>,
   TEncoded,
 > {
   readonly [Resource.ResourceType]: T[Resource.ResourceType]

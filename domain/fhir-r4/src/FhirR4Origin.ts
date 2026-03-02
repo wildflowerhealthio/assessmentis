@@ -18,18 +18,17 @@ import {
 } from 'effect'
 import { FhirR4Client } from '@assessmentis/fhir-r4'
 import type {
-  OriginBehaviour,
   ReadonlyUrl,
   Resource,
+  ReadyOrigin,
 } from '@assessmentis/effectful-store'
 import { type ResourceRequest } from '@assessmentis/effectful-store'
-import type { AuthError } from '@assessmentis/ontology'
+import type { AuthError, AuthzError } from '@assessmentis/ontology'
 import {
   UnhandledError,
   ExternalAssertionError,
   NotFoundError,
 } from '@assessmentis/ontology'
-import type { StreamEither } from '@assessmentis/util'
 import { refineOrFail } from '@assessmentis/util'
 import { FhirR4Bundle } from './resources/Bundle'
 import type {
@@ -216,61 +215,61 @@ const resolverForResource = <K extends keyof Resources>(request: {
     Schema: FhirR4Schemas[request.domainType],
   })
 
-export const FhirR4OriginBehaviour = ({
+export const makeFhirR4ReadyOrigin = ({
+  client,
   url,
-  provokeReauth,
+  provokeReauthenticate,
+  provokeReauthorize,
 }: {
-  clientStream: StreamEither.StreamEither<
-    typeof FhirR4Client.Service,
-    AuthError | UnhandledError
-  >
+  client: FhirR4Client['Type']
   url: ReadonlyUrl
-  provokeReauth: () => Effect.Effect<void, AuthError, never>
-}): Effect.Effect<OriginBehaviour<Resources>, never, FhirR4Client> =>
-  Effect.gen(function* () {
-    const client = yield* FhirR4Client
-    const resolver: ResourceRequest.MultiResolver<
-      Resources,
-      keyof Resources,
-      never
-    > = RequestResolver.fromEffect((request) => {
-      const innerResolver = resolverForResource(request)
+  provokeReauthenticate: () => Effect.Effect<
+    void,
+    AuthError | AuthzError | UnhandledError,
+    never
+  >
+  provokeReauthorize: () => Effect.Effect<
+    void,
+    AuthError | AuthzError | UnhandledError,
+    never
+  >
+}): ReadyOrigin<Resources, keyof Resources> => {
+  const resolver: ResourceRequest.MultiResolver<
+    Resources,
+    keyof Resources,
+    never
+  > = RequestResolver.fromEffect((request) => {
+    const innerResolver = resolverForResource(request)
 
-      return Effect.request(
-        request,
-        innerResolver.pipe(
-          RequestResolver.provideContext(
-            Context.make(FhirR4Client, client).pipe(Context.add(BaseUrl, url))
-          )
+    return Effect.request(
+      request,
+      innerResolver.pipe(
+        RequestResolver.provideContext(
+          Context.make(FhirR4Client, client).pipe(Context.add(BaseUrl, url))
         )
       )
-    })
-
-    return {
-      originUrl: url,
-      resolver,
-      provokeReauth,
-      activeResources: {
-        Composition: true,
-        DiagnosticReport: true,
-        Encounter: true,
-        Location: true,
-        Media: true,
-        Observation: true,
-        Patient: true,
-        Practitioner: true,
-        Questionnaire: true,
-        QuestionnaireResponse: true,
-      },
-    }
+    )
   })
 
-export interface FhirR4ResourceBehaviour<
-  T extends Resource.Resource<string>,
-  TEncoded = unknown,
-> {
-  domainType: T['domainType']
-  Schema: Schema.Schema<T, TEncoded, never>
+  return {
+    originUrl: url,
+    resolver,
+    errorStatus: undefined,
+    provokeReauthenticate,
+    provokeReauthorize,
+    activeResources: {
+      Composition: true,
+      DiagnosticReport: true,
+      Encounter: true,
+      Location: true,
+      Media: true,
+      Observation: true,
+      Patient: true,
+      Practitioner: true,
+      Questionnaire: true,
+      QuestionnaireResponse: true,
+    },
+  }
 }
 
 type AllActionResolver<T extends Resource.Resource<string>> =
@@ -441,14 +440,14 @@ const makeResolverSet = <T extends Resource.Resource<string>>({
         client
           .delete({
             domainType: request.domainType,
-            id: extractFhirId(request.url),
+            id: extractFhirId(request.resource.url),
           })
           .pipe(
             Effect.catchTag('NotFoundError', () =>
               Effect.fail(
                 new NotFoundError({
                   resourceType: request.domainType,
-                  params: { url: request.url },
+                  params: { url: request.resource.url },
                 })
               )
             ),

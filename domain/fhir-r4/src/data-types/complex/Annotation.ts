@@ -4,7 +4,7 @@ import { Annotation } from '@assessmentis/clinical-domain/data-types'
 import type { BaseUrl } from '../UrlIdentification'
 import { ElementIdentification } from '../base/Element'
 import { mutableEncoded } from '@assessmentis/util'
-import { TwoStepExternalSchema } from '../../TwoStepExternalSchema'
+import { TwoStepExternalSchema } from '@assessmentis/util'
 import { FhirR4Reference } from './IdentifierAndReference'
 
 const EncodedFromFhir: Schema.Schema<
