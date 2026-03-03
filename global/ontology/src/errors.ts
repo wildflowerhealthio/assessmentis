@@ -96,6 +96,8 @@ export class NotFoundError<
   params: Parameters
   cause?: unknown
 }> {
+  static readonly _tag = 'NotFoundError'
+
   asUnhandledError() {
     return new UnhandledError({
       message: `Resource of type ${String(this.resourceType)} not found with parameters: ${JSON.stringify(

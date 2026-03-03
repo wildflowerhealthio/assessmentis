@@ -15,7 +15,7 @@ const VIDEO_CALL_ROOM_SYSTEM = 'http://assessment.is/fhir/video-call-room-name'
 
 function InterviewCall({ encounter }: IProps) {
   // Find the video room URL from resolved Location resources
-  const videoRoomLocation = encounter._locations.find((loc) =>
+  const videoRoomLocation = encounter.locations.find((loc) =>
     loc.identifier?.some((id) => id.system === VIDEO_CALL_ROOM_SYSTEM)
   )
   const roomUrl = videoRoomLocation?.identifier?.find(
@@ -29,8 +29,10 @@ function InterviewCall({ encounter }: IProps) {
       right={
         <div className={classes.ActionZone}>
           <QuestionnaireForm
-            questionnaire={encounter.questionnaireResponses[0]._questionnaire}
-            questionnaireResponse={encounter.questionnaireResponses[0]}
+            questionnaire={encounter.questionnaireResponses[0].questionnaire}
+            questionnaireResponse={
+              encounter.questionnaireResponses[0].questionnaireResponse
+            }
           />
         </div>
       }

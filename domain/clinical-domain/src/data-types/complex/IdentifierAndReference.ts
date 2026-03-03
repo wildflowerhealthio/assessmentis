@@ -1,10 +1,16 @@
-import { Schema } from 'effect'
+import { Effect, Schema } from 'effect'
 import type { ElementEncoded } from '../base/'
 import { Element } from '../base/'
 import { CodeableConcept, type CodeableConceptEncoded } from './CodeableConcept'
 import { Period } from './Period'
 import { MergeClasses } from '@assessmentis/util'
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
+import {
+  BadDataError,
+  ExternalAssertionError,
+  UnhandledError,
+} from '@assessmentis/ontology'
+import type { ParseError } from 'effect/ParseResult'
 
 /**
  * Circular dependency note:
@@ -73,6 +79,33 @@ export class Reference extends MergeClasses<Reference>(ReferenceKey)(
     ),
   }
 ) {
+  asResourceUrl<TUrl extends ReadonlyUrl>(t: {
+    readonly Key: string
+    readonly UrlSchema: Schema.Schema<TUrl, string, never>
+  }): Effect.Effect<TUrl, ExternalAssertionError | ParseError, never> {
+    if (this.type != t.Key) {
+      return Effect.fail(
+        new ExternalAssertionError({
+          expected: `a resource of type '${t.Key}' got '${this.type}'`,
+          cause: this,
+        })
+      )
+    }
+
+    if (this.reference == undefined) {
+      return Effect.fail(
+        new ExternalAssertionError({
+          expected: '`reference` to be set on Reference',
+          cause: this,
+        })
+      )
+    }
+
+    const decode = Schema.decode(t.UrlSchema)
+
+    return decode(this.reference)
+  }
+
   static fromResource(
     resource: { url?: ReadonlyUrl | string | undefined; domainType: string },
     display: string | undefined = undefined

@@ -3,11 +3,13 @@ import type {
   Schemas,
 } from '@assessmentis/clinical-domain'
 import { useCollection, useCollectionPromise } from '@assessmentis/react-util'
-import type { Schema } from 'effect'
 import { Effect } from 'effect'
-import type { ReadonlyUrl } from '@assessmentis/effectful-store'
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
+import { Schema } from 'effect'
 
 type AnyResource = Schema.Schema.Type<(typeof Schemas)[keyof typeof Schemas]>
+
+const decodeUrl = Schema.decodeSync(ReadonlyUrl.FromString)
 
 const urlKeyOf = <
   T extends { url?: ReadonlyUrl | undefined },
@@ -23,10 +25,11 @@ const actions = <
   repoEffect: Effect.Effect<ClinicalDataRepository<T>, E, never>
 ) => ({
   apiDelete: async (urlKey: string) => {
+    const url = decodeUrl(urlKey)
     return Effect.runPromise(
       Effect.all([
         Effect.sleep('200 millis'),
-        Effect.flatMap(repoEffect, (repo) => repo.delete(urlKey)),
+        Effect.flatMap(repoEffect, (repo) => repo.delete(url)),
       ])
     )
   },

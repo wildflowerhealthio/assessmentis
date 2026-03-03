@@ -1,6 +1,7 @@
 import { Either, Option, Schema, Stream } from 'effect'
 import { StreamEither } from '@assessmentis/util'
 import { UnhandledError } from '@assessmentis/ontology'
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import type { Route } from './+types/Observation.$observationId._index'
 import { runEffectSyncFlat } from '../runEffectSync'
 import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
@@ -20,7 +21,7 @@ import { useEitherStream } from '@assessmentis/react-util'
 import { usePlatformContext } from '../layers/PlatformContext'
 import { Await } from 'react-router'
 
-const tryDecodeObservationId = Schema.decodeOption(Schema.String)
+const tryDecodeObservationUrl = Schema.decodeOption(ReadonlyUrl.FromString)
 
 export default function ObservationDetailPage({
   params,
@@ -28,12 +29,12 @@ export default function ObservationDetailPage({
   const { clinicalDataRepositoryService } = usePlatformContext()
 
   const observationStream = useMemo(() => {
-    const observationIdMaybe = tryDecodeObservationId(params.observationId)
+    const observationUrlMaybe = tryDecodeObservationUrl(params.observationId)
 
-    return Option.match(observationIdMaybe, {
-      onSome: (observationId) =>
+    return Option.match(observationUrlMaybe, {
+      onSome: (observationUrl) =>
         clinicalDataRepositoryService.stream.Observation.pipe(
-          StreamEither.mapEffect((repo) => repo.get(observationId))
+          StreamEither.mapEffect((repo) => repo.get(observationUrl))
         ),
       onNone: () =>
         Stream.succeed(

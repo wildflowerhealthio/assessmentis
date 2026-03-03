@@ -17,7 +17,10 @@ const fields = {
 class QuestionnaireItemAnswerOptionValue extends DatatypeChoice(
   'QuestionnaireItemAnswerOptionValue',
   'value',
-  FhirR4ChoiceElements['Questionnaire.item.answerOption.value[x]']
+  [
+    'boolean',
+    ...FhirR4ChoiceElements['Questionnaire.item.answerOption.value[x]'],
+  ]
 ) {}
 type AnswerOptionValueMixinEncoded =
   typeof QuestionnaireItemAnswerOptionValue.Encoded

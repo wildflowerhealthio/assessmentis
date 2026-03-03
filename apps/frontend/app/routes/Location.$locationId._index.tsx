@@ -1,6 +1,7 @@
 import { Either, Option, Schema, Stream } from 'effect'
 import { StreamEither } from '@assessmentis/util'
 import { UnhandledError } from '@assessmentis/ontology'
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import type { Route } from './+types/Location.$locationId._index'
 import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
 import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
@@ -12,18 +13,18 @@ import { useEitherStream } from '@assessmentis/react-util'
 import { usePlatformContext } from '../layers/PlatformContext'
 import { Await } from 'react-router'
 
-const tryDecodeLocationId = Schema.decodeOption(Schema.String)
+const tryDecodeLocationUrl = Schema.decodeOption(ReadonlyUrl.FromString)
 
 export default function LocationDetailPage({ params }: Route.ComponentProps) {
   const { clinicalDataRepositoryService } = usePlatformContext()
 
   const locationStream = useMemo(() => {
-    const locationIdMaybe = tryDecodeLocationId(params.locationId)
+    const locationUrlMaybe = tryDecodeLocationUrl(params.locationId)
 
-    return Option.match(locationIdMaybe, {
-      onSome: (locationId) =>
+    return Option.match(locationUrlMaybe, {
+      onSome: (locationUrl) =>
         clinicalDataRepositoryService.stream.Location.pipe(
-          StreamEither.mapEffect((repo) => repo.get(locationId))
+          StreamEither.mapEffect((repo) => repo.get(locationUrl))
         ),
       onNone: () =>
         Stream.succeed(

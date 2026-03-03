@@ -52,10 +52,10 @@ export function makeEditResourcePage<
           )
         ) as Stream.Stream<
           Either.Either<
-            WithUrl<TResource>,
+            TResource,
             | NoSelectedOrgError
             | ClinicalDataRepositoryErrors
-            | NotFoundError<string, { url: string }>
+            | NotFoundError<string, { readonly url: string | ReadonlyUrl }>
           >,
           never,
           Scope.Scope
@@ -92,6 +92,7 @@ export function makeEditResourcePage<
 
     const handleSubmit = async (formData: Schema.Schema.Type<TFormSchema>) => {
       const resource = await resourcePromise
+      if (!resource.url) return
 
       await Effect.runPromise(
         config

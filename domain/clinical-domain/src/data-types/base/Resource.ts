@@ -38,6 +38,96 @@ export interface ResourceEncoded<TDomainType extends string> {
 // Factory
 // ---------------------------------------------------------------------------
 
+const resourceFields = {
+  /**
+   * Metadata about the resource
+   */
+  meta: Schema.optional(Meta),
+  /**
+   * A set of rules under which this content was created
+   */
+  implicitRules: Schema.optional(Schema.URL),
+  /**
+   * Language of the resource content
+   */
+  language: Schema.optional(Code),
+  /**
+   * Text summary of the resource, for human interpretation
+   */
+  text: Schema.optional(Narrative),
+  /**
+   * Contained, inline Resources
+   */
+  contained: Schema.Array(Schema.Any).pipe(
+    Schema.optionalWith({
+      default: (): ReadonlyArray<unknown> => [],
+    })
+  ),
+  /**
+   * Additional content defined by implementations
+   */
+  extension: pipe(
+    Schema.Array(
+      Schema.suspend(
+        (): Schema.Schema<Extension, ExtensionEncoded, never> => Extension
+      )
+    ),
+    Schema.annotations({
+      arbitrary: () => (fc) => fc.constant([]),
+      default: [],
+    }),
+    Schema.optionalWith({
+      default: (): ReadonlyArray<Extension> => [],
+    })
+  ),
+  /**
+   * Extensions that cannot be ignored
+   */
+  modifierExtension: pipe(
+    Schema.Array(
+      Schema.suspend(
+        (): Schema.Schema<Extension, ExtensionEncoded, never> => Extension
+      )
+    ),
+    Schema.annotations({
+      arbitrary: () => (fc) => fc.constant([]),
+      default: [],
+    }),
+    Schema.optionalWith({
+      default: (): ReadonlyArray<Extension> => [],
+    })
+  ),
+} as const satisfies Schema.Struct.Fields
+
+type ResourceFields<TDomainType extends string> = typeof resourceFields & {
+  domainType: Schema.optionalWith<
+    Schema.Literal<[TDomainType]>,
+    { default: () => TDomainType }
+  >
+  url: Schema.optional<
+    Schema.brand<
+      Schema.Schema<ReadonlyUrl, string, never>,
+      `${TDomainType}/url`
+    >
+  >
+}
+
+type ResourceClass<Self, TDomainType extends string> = {
+  readonly Key: TDomainType
+  readonly UrlSchema: Schema.brand<
+    Schema.Schema<ReadonlyUrl, string, never>,
+    `${TDomainType}/url`
+  >
+} & Schema.Class<
+  Self,
+  ResourceFields<TDomainType>,
+  Schema.Struct.Encoded<ResourceFields<TDomainType>>,
+  Schema.Struct.Context<ResourceFields<TDomainType>>,
+  Schema.Struct.Constructor<ResourceFields<TDomainType>>,
+  object,
+  object
+>
+
 export const Resource = <TDomainType extends string>(
   domainType: TDomainType
 ) => {
@@ -46,78 +136,23 @@ export const Resource = <TDomainType extends string>(
     Schema.brand(`${domainType}/url`)
   )
 
-  const resourceFields = {
+  class ResourceMixin extends Schema.Class<ResourceMixin>('Resource')({
+    ...resourceFields,
     domainType: Schema.Literal(domainType).pipe(
       Schema.optionalWith({
         default: (): TDomainType => domainType,
       })
     ),
     url: Schema.optional(urlSchema),
-    /**
-     * Metadata about the resource
-     */
-    meta: Schema.optional(Meta),
-    /**
-     * A set of rules under which this content was created
-     */
-    implicitRules: Schema.optional(Schema.URL),
-    /**
-     * Language of the resource content
-     */
-    language: Schema.optional(Code),
-    /**
-     * Text summary of the resource, for human interpretation
-     */
-    text: Schema.optional(Narrative),
-    /**
-     * Contained, inline Resources
-     */
-    contained: Schema.Array(Schema.Any).pipe(
-      Schema.optionalWith({
-        default: (): ReadonlyArray<unknown> => [],
-      })
-    ),
-    /**
-     * Additional content defined by implementations
-     */
-    extension: pipe(
-      Schema.Array(
-        Schema.suspend(
-          (): Schema.Schema<Extension, ExtensionEncoded, never> => Extension
-        )
-      ),
-      Schema.annotations({
-        arbitrary: () => (fc) => fc.constant([]),
-        default: [],
-      }),
-      Schema.optionalWith({
-        default: (): ReadonlyArray<Extension> => [],
-      })
-    ),
-    /**
-     * Extensions that cannot be ignored
-     */
-    modifierExtension: pipe(
-      Schema.Array(
-        Schema.suspend(
-          (): Schema.Schema<Extension, ExtensionEncoded, never> => Extension
-        )
-      ),
-      Schema.annotations({
-        arbitrary: () => (fc) => fc.constant([]),
-        default: [],
-      }),
-      Schema.optionalWith({
-        default: (): ReadonlyArray<Extension> => [],
-      })
-    ),
-  } as const satisfies Schema.Struct.Fields
-
-  class ResourceMixin extends Schema.Class<ResourceMixin>('Resource')(
-    resourceFields
-  ) {
-    static Key = domainType
-    static UrlSchema = urlSchema
+  }) {
+    static readonly Key = domainType
+    static readonly UrlSchema: Schema.brand<
+      Schema.Schema<ReadonlyUrl, string, never>,
+      `${TDomainType}/url`
+    > = urlSchema
   }
-  return ResourceMixin
+  return ResourceMixin satisfies ResourceClass<
+    ResourceMixin,
+    TDomainType
+  > as ResourceClass<ResourceMixin, TDomainType>
 }

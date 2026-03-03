@@ -1,4 +1,7 @@
-import type { FhirR4Client } from '../../../../domain/fhir-r4/src'
+import {
+  makeFhirR4ReadyOrigin,
+  type FhirR4Client,
+} from '../../../../domain/fhir-r4/src'
 import type {
   LoadedGapiClient,
   LoadedGapiHealthcareClient,
@@ -12,7 +15,16 @@ import {
   BadDataError,
 } from '@assessmentis/ontology'
 import type { Scope, Take } from 'effect'
-import { Context, Effect, Either, Fiber, Match, PubSub, Stream } from 'effect'
+import {
+  Context,
+  Effect,
+  Either,
+  Equal,
+  Fiber,
+  Match,
+  PubSub,
+  Stream,
+} from 'effect'
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
 import type { NoSelectedOrgError, OrgSlug } from '@assessmentis/platform-domain'
 import type { Org } from '@assessmentis/platform-domain'
@@ -20,6 +32,8 @@ import {
   takeOneFromPubSubOrDie,
   pubsubAsPerpetualStream,
 } from '@assessmentis/util'
+import { ReadonlyUrl, type Hub } from '@assessmentis/effectful-store'
+import type { ResourceDataTypes } from '@assessmentis/clinical-domain'
 
 export const createFhirR4ClientPubSub = PubSub.sliding<
   Take.Take<
@@ -52,6 +66,7 @@ export class FhirR4ClientService extends Context.Tag('FhirR4ClientService')<
     shutdown: Effect.Effect<void>
   }
 >() {}
+
 export const startFhirR4ClientService = (
   clientPubSub: PubSub.PubSub<
     Take.Take<
@@ -72,13 +87,15 @@ export const startFhirR4ClientService = (
     >,
     never,
     Scope.Scope
-  >
+  >,
+  hub: Hub.Hub<ResourceDataTypes>
 ): Effect.Effect<
   typeof FhirR4ClientService.Service,
   never,
   Scope.Scope | LoadedGapiClient | LoadedGapiHealthcareClient
 > =>
   Effect.gen(function* () {
+    let lastRegistered: null | ReadonlyUrl = null
     const clientStream = orgStream.pipe(
       Stream.map(
         Either.mapLeft((e) =>
@@ -100,7 +117,7 @@ export const startFhirR4ClientService = (
           > =>
             Match.value(frontendConfig.fhirServer).pipe(
               Match.tag('google_fhir_store', (googleConf) => {
-                const e = startGapiGoogleHealthcareClient.pipe(
+                const e = startGapiGoogleHealthcareClient(hub).pipe(
                   Effect.provideService(LoadedGoogleFhirConfig, googleConf),
                   Effect.mapError((e) =>
                     e instanceof ExternalAssertionError

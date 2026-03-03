@@ -1,5 +1,6 @@
 import { Effect, Either, Option, Schema, DateTime, Stream } from 'effect'
 import { StreamEither } from '@assessmentis/util'
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import { useNavigate } from 'react-router'
 import { runEffectSyncFlat } from 'app/runEffectSync'
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
@@ -11,28 +12,32 @@ import { UnhandledError } from '@assessmentis/ontology'
 import type { Route } from './+types/Encounter.$id.edit'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { getEncounterDisplayName } from '../modules/resources/Encounter/utils/encounterDisplay'
-import {
-  extractReferenceId,
-  extractReferenceIds,
-} from 'app/modules/common/utils/fhirDisplay'
+import { extractReferenceId } from 'app/modules/common/utils/fhirDisplay'
 import { useMemo } from 'react'
-import type { EncounterParticipant, EncounterLocation } from '@assessmentis/clinical-domain'
-import type { IdentifierAndReference } from '@assessmentis/clinical-domain/data-types'
+import type {
+  EncounterParticipant,
+  EncounterLocation,
+} from '@assessmentis/clinical-domain'
 import { useEitherStream } from '@assessmentis/react-util'
 import { usePlatformContext } from '../layers/PlatformContext'
 
-const tryDecodeEncounterId = Schema.decodeOption(Schema.String)
+const hasUrl = <T extends { readonly url?: ReadonlyUrl | undefined }>(
+  resource: T
+): resource is T & { readonly url: NonNullable<T['url']> } =>
+  resource.url !== undefined
+
+const tryDecodeEncounterUrl = Schema.decodeOption(ReadonlyUrl.FromString)
 
 export default function EditEncounterPage({ params }: Route.ComponentProps) {
   const { clinicalDataRepositoryService } = usePlatformContext()
 
   const encounterStream = useMemo(() => {
-    const encounterIdMaybe = tryDecodeEncounterId(params.id)
+    const encounterUrlMaybe = tryDecodeEncounterUrl(params.id)
 
-    return Option.match(encounterIdMaybe, {
-      onSome: (encounterId) =>
+    return Option.match(encounterUrlMaybe, {
+      onSome: (encounterUrl) =>
         clinicalDataRepositoryService.stream.Encounter.pipe(
-          StreamEither.mapEffect((repo) => repo.get(encounterId))
+          StreamEither.mapEffect((repo) => repo.get(encounterUrl))
         ),
       onNone: () =>
         Stream.succeed(
@@ -63,36 +68,35 @@ export default function EditEncounterPage({ params }: Route.ComponentProps) {
     () =>
       encounterPromise.then((encounter) => {
         // Extract participant practitioner IDs
-        const practitionerIds = extractReferenceIds(
+        const practitionerUrls =
           encounter.participant
             ?.filter(
               (p: EncounterParticipant) =>
-                p.individual?.reference?.startsWith('Practitioner/') ?? false
+                p.individual?.reference?.includes('Practitioner/') ?? false
             )
-            .map((p: EncounterParticipant) => p.individual)
+            .map((p: EncounterParticipant) => p.individual?.reference)
             .filter(
-              (ref: IdentifierAndReference.Reference | undefined): ref is IdentifierAndReference.Reference => ref !== undefined
+              (ref: string | undefined): ref is string => ref !== undefined
             ) ?? []
-        )
 
         // Extract user-selected location ID (non-virtual location entry)
         const userLocation = encounter.location?.find(
           (loc: EncounterLocation) =>
             !loc.physicalType?.coding?.some((coding) => coding.code === 'vi')
         )
-        const locationId = extractReferenceId(userLocation?.location)
+        const locationUrl = userLocation?.location.reference
 
         return {
           patientId: extractReferenceId(encounter.subject),
-          practitionerIds,
-          questionnaireIds: [] as ReadonlyArray<string>, // Would need to query related QuestionnaireResponses
+          practitionerUrls,
+          questionnaireUrls: [] as ReadonlyArray<never>, // Would need to query related QuestionnaireResponses
           periodStart: encounter.period?.start?.pipe(
             DateTime.setZone(DateTime.zoneMakeLocal())
           ),
           periodEnd: encounter.period?.end?.pipe(
             DateTime.setZone(DateTime.zoneMakeLocal())
           ),
-          locationId,
+          locationId: locationUrl,
         }
       }),
     [encounterPromise]
@@ -100,6 +104,7 @@ export default function EditEncounterPage({ params }: Route.ComponentProps) {
 
   const handleSubmit = async (data: typeof EncounterFormSchema.Type) => {
     const encounter = await encounterPromise
+    if (!hasUrl(encounter)) return
 
     await Effect.runPromise(
       updateEncounter(encounter, data).pipe(

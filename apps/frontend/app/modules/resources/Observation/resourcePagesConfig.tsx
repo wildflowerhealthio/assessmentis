@@ -1,5 +1,5 @@
 import { DateTime, Effect, Schema } from 'effect'
-import { Observation } from '@assessmentis/clinical-domain'
+import type { Observation } from '@assessmentis/clinical-domain'
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import type { ResourcePagesConfig } from '../ResourcePages/resourcePagesConfigType'
 import { ObservationForm } from './components/ObservationForm'
@@ -43,7 +43,6 @@ export const observationConfig: ResourcePagesConfig<
     code: '',
     valueType: 'valueQuantity',
     valueString: undefined,
-    valueDecimal: undefined,
     valueQuantityValue: undefined,
     valueQuantityUnit: undefined,
     valueCodeableConceptText: undefined,
@@ -54,13 +53,9 @@ export const observationConfig: ResourcePagesConfig<
   },
 
   extractFormValues: (observation) => {
-    let valueType:
-      | 'valueString'
-      | 'valueDecimal'
-      | 'valueQuantity'
-      | 'valueCodeableConcept' = 'valueQuantity'
+    let valueType: 'valueString' | 'valueQuantity' | 'valueCodeableConcept' =
+      'valueQuantity'
     if ('valueString' in observation) valueType = 'valueString'
-    else if ('valueDecimal' in observation) valueType = 'valueDecimal'
     else if ('valueQuantity' in observation) valueType = 'valueQuantity'
     else if ('valueCodeableConcept' in observation)
       valueType = 'valueCodeableConcept'
@@ -77,10 +72,6 @@ export const observationConfig: ResourcePagesConfig<
       valueType,
       valueString:
         'valueString' in observation ? observation.valueString : undefined,
-      valueDecimal:
-        'valueDecimal' in observation
-          ? String(observation.valueDecimal)
-          : undefined,
       valueQuantityValue:
         'valueQuantity' in observation
           ? observation.valueQuantity?.value?.toString()

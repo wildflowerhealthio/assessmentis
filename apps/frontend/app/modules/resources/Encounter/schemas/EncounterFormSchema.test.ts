@@ -32,10 +32,10 @@ describe('EncounterFormSchema', () => {
     }
 
     const result = Schema.decodeUnknownSync(EncounterFormSchema)(minimalData)
-    expect(result.patientId).toBeUndefined()
-    expect(result.practitionerIds).toBeUndefined()
+    expect(result.patientUrl).toBeUndefined()
+    expect(result.practitionerUrls).toBeUndefined()
     expect(result.periodStart).toBeUndefined()
     expect(result.periodEnd).toBeUndefined()
-    expect(result.locationId).toBeUndefined()
+    expect(result.locationUrl).toBeUndefined()
   })
 })

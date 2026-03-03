@@ -1,6 +1,7 @@
 import { Either, Option, Schema, Stream } from 'effect'
 import { StreamEither } from '@assessmentis/util'
 import { UnhandledError } from '@assessmentis/ontology'
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import type { Route } from './+types/Practitioner.$practitionerId._index'
 import { runEffectSyncFlat } from '../runEffectSync'
 import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
@@ -20,7 +21,7 @@ import { useEitherStream } from '@assessmentis/react-util'
 import { usePlatformContext } from '../layers/PlatformContext'
 import { Await } from 'react-router'
 
-const tryDecodePractitionerId = Schema.decodeOption(Schema.String)
+const tryDecodePractitionerUrl = Schema.decodeOption(ReadonlyUrl.FromString)
 
 export default function PractitionerDetailPage({
   params,
@@ -28,12 +29,12 @@ export default function PractitionerDetailPage({
   const { clinicalDataRepositoryService } = usePlatformContext()
 
   const practitionerStream = useMemo(() => {
-    const practitionerIdMaybe = tryDecodePractitionerId(params.practitionerId)
+    const practitionerUrlMaybe = tryDecodePractitionerUrl(params.practitionerId)
 
-    return Option.match(practitionerIdMaybe, {
-      onSome: (practitionerId) =>
+    return Option.match(practitionerUrlMaybe, {
+      onSome: (practitionerUrl) =>
         clinicalDataRepositoryService.stream.Practitioner.pipe(
-          StreamEither.mapEffect((repo) => repo.get(practitionerId))
+          StreamEither.mapEffect((repo) => repo.get(practitionerUrl))
         ),
       onNone: () =>
         Stream.succeed(

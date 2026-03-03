@@ -3,8 +3,8 @@ import { type ChangeEventHandler, type SetStateAction } from 'react'
 import classes from './RadioQuestionnaireItemForm.module.css'
 import {
   type QuestionnaireItem,
-  type QuestionnaireResponseItem,
-  type QuestionnaireResponseItemAnswer,
+  QuestionnaireResponseItem,
+  QuestionnaireResponseItemAnswer,
   type QuestionnaireItemAnswerOption,
   QuestionnaireItemUIControlCode,
   QuestionnaireItemAnsweredAtExtension,
@@ -65,23 +65,28 @@ const RadioQuestionnaireItemForm = ({
     if (!selected) throw new Error("Selected option doesn't match any label")
 
     setQuestionnaireResponseItem(
-      (qri: QuestionnaireResponseItem): QuestionnaireResponseItem => ({
-        ...qri,
-        answer: [
-          QuestionnaireItemAnsweredAtExtension.with(
-            {
+      (qri: QuestionnaireResponseItem): QuestionnaireResponseItem =>
+        QuestionnaireResponseItem.make({
+          ...qri,
+          answer: [
+            QuestionnaireResponseItemAnswer.make({
               ...selected,
-              id: undefined,
-              modifierExtension: [],
-            } satisfies QuestionnaireResponseItemAnswer,
-            Effect.runSync(DateTime.now)
-          ),
-        ],
-      })
+              domainType: 'QuestionnaireResponseItemAnswer',
+              url: undefined,
+              modifierExtension: [
+                QuestionnaireItemAnsweredAtExtension.make({
+                  valueDateTime: Effect.runSync(DateTime.now),
+                }),
+              ],
+            }),
+          ],
+        })
     )
   }
 
-  const answerValue = questionnaireResponseItem.answer?.[0] ?? {}
+  const answerValue = questionnaireResponseItem.answer?.[0] ?? {
+    modifierExtension: [],
+  }
 
   const { modifierExtension: _, ...valueElement } = answerValue
   const isSelectedAnswer = (

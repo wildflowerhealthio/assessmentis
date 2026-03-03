@@ -9,16 +9,11 @@ const EncodedFromDailyCoRoom: Schema.Schema<
   LocationEncoded,
   typeof ApiDailyCoRoomSchema.Type
 > = Schema.Struct({
-  domainType: Schema.Literal('Location').pipe(
-    Schema.optionalWith({ default: () => 'Location' })
-  ),
-  name: Schema.String,
-  status: Schema.Literal('active').pipe(
-    Schema.optionalWith({ default: () => 'active' })
-  ),
-  mode: Schema.Literal('instance').pipe(
-    Schema.optionalWith({ default: () => 'instance' })
-  ),
+  url: Schema.optional(Schema.String),
+  domainType: Schema.optional(Schema.Literal('Location')),
+  name: Schema.optional(Schema.String),
+  status: Schema.optional(Schema.Literal('active', 'suspended', 'inactive')),
+  mode: Schema.optional(Schema.Literal('instance', 'kind')),
 })
 
 export const DailyCoLocation = new ThreeStepExternalSchema<

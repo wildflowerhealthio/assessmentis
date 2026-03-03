@@ -15,7 +15,6 @@ export interface ValueTypePickerProps {
 
 const valueTypeOptions: ReadonlyArray<{ value: ValueType; label: string }> = [
   { value: 'valueString', label: 'Text (String)' },
-  { value: 'valueDecimal', label: 'Decimal Number' },
   { value: 'valueQuantity', label: 'Quantity (with Unit)' },
   { value: 'valueCodeableConcept', label: 'Coded Concept' },
 ]

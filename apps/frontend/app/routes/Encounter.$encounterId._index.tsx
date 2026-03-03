@@ -21,8 +21,10 @@ import { ClinicalDataRepositoryService } from '../layers/ClinicalDataRepositorie
 import { usePlatformContext } from '../layers/PlatformContext'
 import { Await, useAsyncError } from 'react-router'
 import type { NoSelectedOrgError } from '../../../../domain/platform-domain/src/hostedServices'
+import type { ReadonlyUrl, Resource } from '@assessmentis/effectful-store'
+import { Encounter } from '@assessmentis/clinical-domain'
 
-const tryDecodeEncounterId = Schema.decodeOption(Schema.String)
+const tryDecodeEncounterUrl = Schema.decodeOption(Encounter.UrlSchema)
 
 const EncounterError = () => {
   const error = useAsyncError()
@@ -36,27 +38,27 @@ export default function EncounterPage({ params }: Route.ComponentProps) {
   const { clinicalDataRepositoryService } = usePlatformContext()
 
   const encounterStream = useMemo(() => {
-    const encounterIdStr = params.encounterId
-    const encounterIdMaybe = tryDecodeEncounterId(encounterIdStr)
+    const encounterUrl = params.encounterId
+    const encounterUrlMaybe = tryDecodeEncounterUrl(encounterUrl)
     return Option.match<
-      string,
+      Resource.InferResourceUrl<Encounter>,
       Stream.Stream<
         Either.Either<
           FullEncounter,
           | UnhandledError
           | AuthError
           | AuthzError
-          | NotFoundError<'Encounter', { id: string }>
-          | NotFoundError<'Location', { id: string }>
+          | NotFoundError<'Encounter', { readonly url: ReadonlyUrl | string }>
+          | NotFoundError<'Location', { readonly url: ReadonlyUrl | string }>
           | ExternalAssertionError
           | NoSelectedOrgError
         >,
         never,
         Scope.Scope
       >
-    >(encounterIdMaybe, {
-      onSome(encounterId) {
-        return getFullEncounter(encounterId).pipe(
+    >(encounterUrlMaybe, {
+      onSome(encounterUrl) {
+        return getFullEncounter(encounterUrl).pipe(
           Stream.provideService(
             ClinicalDataRepositoryService,
             clinicalDataRepositoryService
@@ -68,7 +70,7 @@ export default function EncounterPage({ params }: Route.ComponentProps) {
           Either.left(
             new NotFoundError({
               resourceType: 'Encounter',
-              params: { id: encounterIdStr },
+              params: { url: encounterUrl },
             })
           )
         )
@@ -82,7 +84,7 @@ export default function EncounterPage({ params }: Route.ComponentProps) {
     return [
       { label: 'Encounters', href: '/Encounter' },
       encounterPromise.then((enc) => ({
-        label: runEffectSync(getEncounterDisplayName(enc)),
+        label: runEffectSync(getEncounterDisplayName(enc.encounter)),
       })),
     ]
   }, [encounterPromise])
@@ -94,8 +96,10 @@ export default function EncounterPage({ params }: Route.ComponentProps) {
       <Await resolve={encounterPromise} errorElement={<EncounterError />}>
         {(encounterData) => (
           <ResourceDetailPage
-            editTo={`/Encounter/${encounterData.url?.toString() ?? params.encounterId}/edit`}
-            title={runEffectSync(getEncounterDisplayName(encounterData))}
+            editTo={`/Encounter/${encounterData.encounter.url?.toString() ?? params.encounterId}/edit`}
+            title={runEffectSync(
+              getEncounterDisplayName(encounterData.encounter)
+            )}
             sections={[
               {
                 id: 'interview',

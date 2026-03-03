@@ -12,7 +12,7 @@ import { ReadonlyUrl } from '../../../../global/effectful-store/src/ReadonlyUrl'
 export const questionnaire: Questionnaire = Questionnaire.make({
   domainType: 'Questionnaire',
   url: Questionnaire.UrlSchema.make(
-    ReadonlyUrl.make({
+    new ReadonlyUrl({
       protocol: 'https',
       pathname: '/ig/HL7/pco-ig/en//Questionnaire-69737-5',
       host: 'build.fhir.org',

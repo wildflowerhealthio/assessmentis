@@ -1,20 +1,24 @@
 import type { DateTime } from 'effect'
-import { Schema } from 'effect'
-import { Element } from '../../data-types'
+import type { Schema } from 'effect'
+import { Extension } from '../../data-types'
 import type { BackboneElement } from '../../data-types/base/BackboneElement'
 
-const ElementMixin = Element('Extension')
+export class QuestionnaireItemAnsweredAtExtension {
+  static make(
+    data: { readonly valueDateTime: DateTime.Utc },
+    options?: Schema.MakeOptions
+  ): Extension {
+    return new Extension(
+      {
+        ...data,
+        definitionUrl: QuestionnaireItemAnsweredAtExtension.definitionUrl,
+      },
+      options
+    )
+  }
 
-export class QuestionnaireItemAnsweredAtExtension extends Schema.Class<QuestionnaireItemAnsweredAtExtension>(
-  'QuestionnaireItemAnsweredAtExtension'
-)({
-  ...ElementMixin.fields,
-  definitionUrl: Schema.Literal(
+  static readonly definitionUrl =
     'http://assessment.is/fhir/questionnaire-item-answered-at'
-  ),
-  valueDateTime: Schema.DateTimeUtc,
-}) {
-  static readonly definitionUrl = this.fields.definitionUrl.literals[0]
 
   static get(be: BackboneElement<string>): DateTime.Utc | undefined {
     const ext = be.modifierExtension.find(
@@ -23,7 +27,7 @@ export class QuestionnaireItemAnsweredAtExtension extends Schema.Class<Questionn
     return ext && 'valueDateTime' in ext ? ext.valueDateTime : undefined
   }
 
-  static with<T extends BackboneElement<string>>(
+  static with<T extends { modifierExtension: ReadonlyArray<Extension> }>(
     t: T,
     valueDateTime: DateTime.Utc | undefined
   ): T {

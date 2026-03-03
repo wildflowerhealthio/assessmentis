@@ -38,16 +38,18 @@ export const updateEncounter = (
     const updatedEncounter: Resource.WithResourceUrl<Encounter> = {
       ...currentEncounter,
       // Update subject (patient)
-      subject: formData.patientId
+      subject: formData.patientUrl
         ? IdentifierAndReference.Reference.make({
-            reference: `Patient/${formData.patientId}`,
+            reference: formData.patientUrl.toString(),
+            type: 'Patient',
           })
         : undefined,
       // Update participant (practitioners)
-      participant: formData.practitionerIds?.map((practitionerId) =>
+      participant: formData.practitionerUrls?.map((practitionerUrl) =>
         EncounterParticipant.make({
           individual: IdentifierAndReference.Reference.make({
-            reference: `Practitioner/${practitionerId}`,
+            reference: practitionerUrl.toString(),
+            type: 'Practitioner',
           }),
         })
       ),
@@ -62,15 +64,15 @@ export const updateEncounter = (
       // Update location references (preserve virtual/video room locations)
       location: [
         // Keep existing virtual location entries (video room)
-        ...(currentEncounter.location?.filter((l) =>
-          isVirtualLocation(l)
-        ) ?? []),
+        ...(currentEncounter.location?.filter((l) => isVirtualLocation(l)) ??
+          []),
         // Add user-selected physical location if provided
-        ...(formData.locationId
+        ...(formData.locationUrl
           ? [
               EncounterLocation.make({
                 location: IdentifierAndReference.Reference.make({
-                  reference: `Location/${formData.locationId}`,
+                  reference: formData.locationUrl.toString(),
+                  type: 'Location',
                 }),
               }),
             ]

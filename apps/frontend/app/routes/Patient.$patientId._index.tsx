@@ -1,6 +1,7 @@
 import { Either, Option, Schema, Stream } from 'effect'
 import { StreamEither } from '@assessmentis/util'
 import { UnhandledError } from '@assessmentis/ontology'
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import type { Route } from './+types/Patient.$patientId._index'
 import { runEffectSyncFlat } from '../runEffectSync'
 import { useMemo, Suspense } from 'react'
@@ -19,18 +20,18 @@ import { useEitherStream } from '@assessmentis/react-util'
 import { usePlatformContext } from '../layers/PlatformContext'
 import { Await } from 'react-router'
 
-const tryDecodePatientId = Schema.decodeOption(Schema.String)
+const tryDecodePatientUrl = Schema.decodeOption(ReadonlyUrl.FromString)
 
 export default function PatientDetailPage({ params }: Route.ComponentProps) {
   const { clinicalDataRepositoryService } = usePlatformContext()
 
   const patientStream = useMemo(() => {
-    const patientIdMaybe = tryDecodePatientId(params.patientId)
+    const patientUrlMaybe = tryDecodePatientUrl(params.patientId)
 
-    return Option.match(patientIdMaybe, {
-      onSome: (patientId) =>
+    return Option.match(patientUrlMaybe, {
+      onSome: (patientUrl) =>
         clinicalDataRepositoryService.stream.Patient.pipe(
-          StreamEither.mapEffect((repo) => repo.get(patientId))
+          StreamEither.mapEffect((repo) => repo.get(patientUrl))
         ),
       onNone: () =>
         Stream.succeed(

@@ -54,21 +54,6 @@ describe('ObservationFormSchema', () => {
       )
     })
 
-    it('should transform form data with valueDecimal', () => {
-      const formData: ObservationFormData = {
-        code: 'Temperature',
-        valueType: 'valueDecimal',
-        valueDecimal: '98.6',
-      }
-
-      const observation = transformToObservation(formData)
-
-      expect(observation.domainType).toBe('Observation')
-      expect('valueDecimal' in observation && observation.valueDecimal).toBe(
-        98.6
-      )
-    })
-
     it('should transform form data with valueQuantity', () => {
       const formData: ObservationFormData = {
         code: 'Weight',

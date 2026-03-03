@@ -7,7 +7,7 @@ import type {
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
-import type { ReadonlyUrl, WithId } from '@assessmentis/effectful-store'
+import type { ReadonlyUrl, Resource } from '@assessmentis/effectful-store'
 import type { Reference } from './data-types/complex/IdentifierAndReference'
 import type ResourceDataTypes from './ResourceDataTypes'
 
@@ -30,7 +30,10 @@ export type ClinicalDataRepositoryErrors =
   | ExternalAssertionError
 
 export type ClinicalDataRepositoryErrorsWithNotFound<
-  T extends { domainType: string; url?: string | undefined },
+  T extends {
+    readonly domainType: string
+    readonly url?: ReadonlyUrl | undefined
+  },
 > =
   | ClinicalDataRepositoryErrors
   | NotFoundError<T['domainType'], { url: NonNullable<T['url']> }>
@@ -52,14 +55,21 @@ export type RepositoryFilters<TResource> = {
 }
 
 export interface ClinicalDataRepository<
-  T extends { domainType: string; url?: ReadonlyUrl | undefined },
+  T extends {
+    readonly domainType: string
+    readonly url?: ReadonlyUrl | undefined
+  },
 > {
   /**
    * Retrieve a single resource by ID
    */
   get: (
-    id: any
-  ) => Effect.Effect<any, ClinicalDataRepositoryErrorsWithNotFound<any>, never>
+    url: ReadonlyUrl
+  ) => Effect.Effect<
+    Resource.WithResourceUrl<T>,
+    ClinicalDataRepositoryErrorsWithNotFound<T>,
+    never
+  >
 
   /**
    * Retrieve all resources matching the given parameters
@@ -67,7 +77,7 @@ export interface ClinicalDataRepository<
   getMany: (
     params?: RepositoryFilters<T>
   ) => Effect.Effect<
-    ReadonlyArray<WithId<any>>,
+    ReadonlyArray<Resource.WithResourceUrl<T>>,
     ClinicalDataRepositoryErrors,
     never
   >
@@ -77,7 +87,11 @@ export interface ClinicalDataRepository<
    */
   create: (
     resource: T
-  ) => Effect.Effect<WithId<any>, ClinicalDataRepositoryErrors, never>
+  ) => Effect.Effect<
+    Resource.WithResourceUrl<T>,
+    ClinicalDataRepositoryErrors,
+    never
+  >
 
   /**
    * Create many new resources
@@ -85,7 +99,7 @@ export interface ClinicalDataRepository<
   createMany: (
     resources: ReadonlyArray<T>
   ) => Effect.Effect<
-    ReadonlyArray<WithId<any>>,
+    ReadonlyArray<Resource.WithResourceUrl<T>>,
     ClinicalDataRepositoryErrors,
     never
   >
@@ -94,10 +108,10 @@ export interface ClinicalDataRepository<
    * Update an existing resource
    */
   update: (
-    resource: any
+    resource: Resource.WithResourceUrl<T>
   ) => Effect.Effect<
-    WithId<any>,
-    ClinicalDataRepositoryErrorsWithNotFound<any>,
+    Resource.WithResourceUrl<T>,
+    ClinicalDataRepositoryErrorsWithNotFound<T>,
     never
   >
 
@@ -105,6 +119,6 @@ export interface ClinicalDataRepository<
    * Delete a resource by ID
    */
   delete(
-    id: any
-  ): Effect.Effect<void, ClinicalDataRepositoryErrorsWithNotFound<any>, never>
+    url: ReadonlyUrl
+  ): Effect.Effect<void, ClinicalDataRepositoryErrorsWithNotFound<T>, never>
 }

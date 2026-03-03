@@ -1,5 +1,5 @@
 import type { Either } from 'effect'
-import { Effect, Layer, pipe, Schema } from 'effect'
+import { Effect, Layer, pipe, Request, Schema } from 'effect'
 import { info, error as logError } from 'firebase-functions/logger'
 import type { VideoCallRoomName } from '@assessmentis/video-call-domain'
 import {
@@ -22,15 +22,16 @@ import {
 } from '@assessmentis/ontology'
 import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
 
-import { VideoCallClientLayerFromOrg } from '../layers/VideoCallClientService'
 import { FhirR4ClientLayerLive } from '../layers/FhirR4ClientService'
 import type { Location } from '@assessmentis/clinical-domain'
 import type { Encounter } from '@assessmentis/clinical-domain'
 import { Media } from '@assessmentis/clinical-domain'
-import type { Hub } from '../../../../global/effectful-store/src/Hub'
 import { Reference } from '../../../../domain/clinical-domain/src/data-types/special-purpose'
 import type { ReadonlyUrl } from '../../../../global/effectful-store/src/ReadonlyUrl'
 import type { WithResourceUrl } from '../../../../global/effectful-store/src/Resource'
+import type { ResourceRequest } from '@assessmentis/effectful-store'
+import type { Hub } from '@assessmentis/effectful-store'
+
 interface SyncOrgResult {
   orgSlug: string
   recordingsSynced: number
@@ -104,25 +105,6 @@ const syncSingleOrgInner = (
 
     // Cache room URLs to avoid redundant API calls
     const roomUrlCache = new Map<string, string>()
-    const getRoomUrl = (
-      roomName: VideoCallRoomName
-    ): Effect.Effect<
-      string,
-      | UnhandledError
-      | ExternalAssertionError
-      | AuthError
-      | NotFoundError<'Room', { name: VideoCallRoomName }>
-    > => {
-      const cached = roomUrlCache.get(roomName)
-      if (cached) return Effect.succeed(cached)
-
-      return videoCallClient.getRoom(roomName).pipe(
-        Effect.map((room) => {
-          roomUrlCache.set(roomName, room.url)
-          return room.url
-        })
-      )
-    }
 
     let recordingsSynced = 0
     let transcriptsSynced = 0
@@ -199,8 +181,11 @@ const syncMediaToFhir = (
 > =>
   Effect.gen(function* () {
     // TODO, supply this with a tag
-    const hub: Hub<{ Location: Location; Encounter: Encounter; Media: Media }> =
-      {} as any
+    const hub: Hub.Hub<{
+      Location: Location
+      Encounter: Encounter
+      Media: Media
+    }> = {} as any
     const mediaUpdates: Record<
       string,
       Either.Either<unknown, UnhandledError>
@@ -215,20 +200,23 @@ const syncMediaToFhir = (
     // Get the full room URL for encounter lookup
 
     // Search for Encounter with matching location identifier
-    const encounterSearchResult = yield* hub
-      .search({
+    const encounterSearchResult = yield* Effect.request(
+      Request.of<ResourceRequest.Search<Encounter>>()({
+        _tag: 'Search',
+        origin: {} as any,
         domainType: 'Encounter',
         params: {},
-      })
-      .pipe(
-        Effect.mapError(
-          (e) =>
-            new UnhandledError({
-              message: 'Error searching for encounter',
-              cause: e,
-            })
-        )
+      }),
+      hub.resolver
+    ).pipe(
+      Effect.mapError(
+        (e) =>
+          new UnhandledError({
+            message: 'Error searching for encounter',
+            cause: e,
+          })
       )
+    )
 
     const encounterEntry = encounterSearchResult[0]
     if (!encounterEntry?.url) {
@@ -237,58 +225,70 @@ const syncMediaToFhir = (
     }
 
     // Check if Media with this identifier already exists
-    const mediaSearchResult = yield* hub
-      .search({
+    const mediaSearchResult = yield* Effect.request(
+      Request.of<ResourceRequest.Search<Media>>()({
+        _tag: 'Search',
+        origin: {} as any,
         domainType: 'Media',
         params: {
           url: mediaUrl,
           encounter: encounterEntry.url.toString(),
         },
-      })
-      .pipe(
-        Effect.mapError(
-          (e) =>
-            new UnhandledError({
-              message: 'Error searching for existing media',
-              cause: e,
-            })
-        )
+      }),
+      hub.resolver
+    ).pipe(
+      Effect.mapError(
+        (e) =>
+          new UnhandledError({
+            message: 'Error searching for existing media',
+            cause: e,
+          })
       )
+    )
 
     const existingMedia: (Media & { url: ReadonlyUrl }) | undefined =
       mediaSearchResult[0]
 
     if (existingMedia) {
-      mediaUpdates[existingMedia.url.toString()] = yield* hub
-        .update({
+      mediaUpdates[existingMedia.url.toString()] = yield* Effect.request(
+        Request.of<ResourceRequest.Update<Media>>()({
+          _tag: 'Update',
           domainType: 'Media',
           resource: Media.make({
             ...existingMedia,
             content: media.content,
           }) as WithResourceUrl<Media>,
-        })
-        .pipe(
-          Effect.mapError(
-            (e) =>
-              new UnhandledError({
-                message: `Error updating media ${existingMedia.url.toString()}`,
-                cause: e,
-              })
-          ),
-          Effect.either
-        )
+          origin: {} as any,
+        }),
+        hub.resolver
+      ).pipe(
+        Effect.mapError(
+          (e) =>
+            new UnhandledError({
+              message: `Error updating media ${existingMedia.url.toString()}`,
+              cause: e,
+            })
+        ),
+        Effect.either
+      )
     } else {
       mediaCreations.push(
         yield* pipe(
-          hub.create({
-            domainType: 'Media',
-            resource: Media.make({
-              ...media,
-              encounter: Reference.make({
-                reference: encounterEntry.url.toString(),
+          Effect.request(
+            Request.of<ResourceRequest.Create<Media>>()({
+              domainType: 'Media',
+              resource: Media.make({
+                ...media,
+                encounter: Reference.make({
+                  reference: encounterEntry.url.toString(),
+                  type: 'Encounter',
+                }),
               }),
-            }) as WithResourceUrl<Media>,
-          }),
+              origin: {} as any,
+              _tag: 'Create',
+            } as const),
+            hub.resolver
+          ),
           Effect.mapError(
             (e) =>
               new UnhandledError({
@@ -302,7 +302,7 @@ const syncMediaToFhir = (
     }
 
     return { mediaUpdates, mediaCreations }
-  })
+  }) as any
 
 /**
  * Main sync effect that processes all eligible orgs.
@@ -341,12 +341,10 @@ export const syncVideoCallRecordingsEffect = Effect.gen(function* () {
     info(`Starting sync for org: ${orgSlug}`)
 
     // Build per-org layer
-    const orgLayer = Layer.mergeAll(
-      VideoCallClientLayerFromOrg,
-      FhirR4ClientLayerLive
-    ).pipe(
-      Layer.provideMerge(LoadedOrgLayer),
-      Layer.provide(
+    const orgLayer = Layer.provideMerge(
+      FhirR4ClientLayerLive,
+      Layer.provideMerge(
+        LoadedOrgLayer,
         Layer.mergeAll(
           Layer.succeed(CurrentOrg, orgSlug),
           Layer.succeed(DocumentStore, documentStore)

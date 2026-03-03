@@ -13,11 +13,9 @@ import {
 
 import type { Route } from './+types/QuestionnaireResponse.$questionnaireResponseId'
 import QuestionnaireForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/QuestionnaireForm'
-import { updateEncounterRecordingsAndTranscripts } from '../modules/resources/Encounter/actions/updateEncounterRecordingsAndTranscripts'
 import { getEncounterRecordings } from '../modules/resources/Encounter/actions/getEncounterRecordings'
 import { Media, Observation } from '@assessmentis/clinical-domain'
 import {
-  EncounterRepository,
   MediaRepository,
   ObservationRepository,
 } from '@assessmentis/clinical-domain/repositories'
@@ -27,14 +25,11 @@ import SplitPane from '../modules/common/components/SplitPane/SplitPane'
 import { gad7 } from '@assessmentis/questionnaire-entities'
 import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
-import { VideoCallClient } from '@assessmentis/video-call-domain'
 import { useEffectTs } from '@assessmentis/react-util'
 
 import { usePlatformContext } from '../layers/PlatformContext'
 import { ErrorBoundary } from 'react-error-boundary'
 import { ClinicalDataRepositoryService } from '../layers/ClinicalDataRepositoriesService'
-
-const tryDecodeQuestionnaireResponseId = Schema.decodeOption(Schema.String)
 
 export const QuestionnaireResponseWithQuestionnaire = Schema.Struct({
   questionnaireResponse: QuestionnaireResponse,
@@ -44,9 +39,9 @@ export const QuestionnaireResponseWithQuestionnaire = Schema.Struct({
 })
 
 function questionnaireEffect(questionnaireResponseIdStr: string) {
-  const questionnaireResponseIdMaybe = tryDecodeQuestionnaireResponseId(
-    questionnaireResponseIdStr
-  )
+  const questionnaireResponseUrlMaybe = Schema.decodeOption(
+    QuestionnaireResponse.UrlSchema
+  )(questionnaireResponseIdStr)
 
   const questionnaireResponseEffect = Effect.gen(function* () {
     const observationRepository = yield* ObservationRepository
@@ -54,9 +49,9 @@ function questionnaireEffect(questionnaireResponseIdStr: string) {
       yield* QuestionnaireResponseRepository
     const questionnaireRepository = yield* QuestionnaireRepository
 
-    const questionnaireResponseId = yield* questionnaireResponseIdMaybe.pipe(
-      Option.map((questionnaireResponseId) =>
-        Effect.succeed(questionnaireResponseId)
+    const questionnaireResponseUrl = yield* questionnaireResponseUrlMaybe.pipe(
+      Option.map((questionnaireResponseUrl) =>
+        Effect.succeed(questionnaireResponseUrl)
       ),
       Option.getOrElse(() =>
         Effect.fail(
@@ -65,13 +60,10 @@ function questionnaireEffect(questionnaireResponseIdStr: string) {
       )
     )
     const questionnaireResponse = yield* questionnaireResponseRepository.get(
-      questionnaireResponseId
+      questionnaireResponseUrl
     )
 
-    const questionnaireId =
-      questionnaireResponse.questionnaire?.split('/')[3] ??
-      questionnaireResponse.questionnaire ??
-      ''
+    const questionnaireUrl = questionnaireResponse.questionnaire
     const encounterId =
       questionnaireResponse.encounter?.reference?.split('/')[1] ?? undefined
 
@@ -79,7 +71,9 @@ function questionnaireEffect(questionnaireResponseIdStr: string) {
       ? yield* getEncounterRecordings(encounterId)
       : []
 
-    const questionnaire = yield* questionnaireRepository.get(questionnaireId)
+    const questionnaire = questionnaireUrl
+      ? yield* questionnaireRepository.get(questionnaireUrl)
+      : undefined
 
     const observations = yield* observationRepository.getMany({
       encounter: `Encounter/${encounterId}`,
@@ -123,7 +117,18 @@ export default function QuestionnaireResponseDetailsPage({
         fallbackRender={({ error }) => <h1>Error: {String(error)}</h1>}
       >
         <Await resolve={dataPromise}>
-          {(data) => <ResponsePage {...data} />}
+          {(data) =>
+            data.questionnaire ? (
+              <ResponsePage
+                questionnaire={data.questionnaire}
+                questionnaireResponse={data.questionnaireResponse}
+                recordings={data.recordings}
+                observations={data.observations}
+              />
+            ) : (
+              <h2>No Questionnaire?</h2>
+            )
+          }
         </Await>
       </ErrorBoundary>
     </Suspense>
@@ -137,8 +142,7 @@ const ResponsePage = ({
   observations,
 }: typeof QuestionnaireResponseWithQuestionnaire.Type) => {
   const navigate = useNavigate()
-  const { clinicalDataRepositoryService, VideoCallClientService } =
-    usePlatformContext()
+  const { clinicalDataRepositoryService } = usePlatformContext()
 
   const [highlightLinks, setHighlightLinks] = useState<
     Set<QuestionnaireItemLink>
@@ -206,13 +210,17 @@ const ResponsePage = ({
   }
 
   const syncVideo = (() => {
-    const encounterIdStr =
-      questionnaireResponse.encounter?.reference?.split('/')[1] ?? undefined
-    if (!encounterIdStr) return undefined
-    const encounterId = encounterIdStr
+    // TODO: Replace with hub based approach
+    return () => navigate(0)
+    /*
+    const encounterReference = questionnaireResponse.encounter?.reference
+    const encounterUrl = encounterReference
+      ? Schema.decodeOption(Encounter.UrlSchema)(encounterReference)
+      : Option.none()
+    if (Option.isNone(encounterUrl)) return undefined
 
     const updateEffect = updateEncounterRecordingsAndTranscripts(
-      encounterId
+      encounterUrl.value
     ).pipe(
       Effect.provideServiceEffect(
         MediaRepository,
@@ -229,6 +237,7 @@ const ResponsePage = ({
     )
 
     return () => Effect.runPromise(updateEffect).then(() => navigate(0))
+    */
   })()
 
   return (

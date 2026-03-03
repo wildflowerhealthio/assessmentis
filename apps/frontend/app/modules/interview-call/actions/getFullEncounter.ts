@@ -1,12 +1,12 @@
 import type { Either, Scope } from 'effect'
-import { Effect, Option, Stream } from 'effect'
+import { Effect, Equal, Option, Stream } from 'effect'
 import { StreamEither } from '@assessmentis/util'
-import type {
-  Encounter,
-  EncounterLocation,
+import {
   Location,
-  Questionnaire,
-  QuestionnaireResponse,
+  type Encounter,
+  type EncounterLocation,
+  type Questionnaire,
+  type QuestionnaireResponse,
 } from '@assessmentis/clinical-domain'
 import type {
   AuthError,
@@ -15,30 +15,29 @@ import type {
   ExternalAssertionError,
 } from '@assessmentis/ontology'
 import { UnhandledError } from '@assessmentis/ontology'
-import type { Resource } from '@assessmentis/effectful-store'
-import { extractReferenceId } from '@assessmentis/clinical-domain/data-types'
+import type { ReadonlyUrl, Resource } from '@assessmentis/effectful-store'
 import type { NoSelectedOrgError } from '@assessmentis/platform-domain'
 import { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
 
-export type FullEncounter = Resource.WithResourceUrl<Encounter> & {
-  questionnaireResponses: Array<
-    Resource.WithResourceUrl<QuestionnaireResponse> & {
-      _questionnaire: Questionnaire
-    }
-  >
-  _locations: Array<Resource.WithResourceUrl<Location>>
+export type FullEncounter = {
+  encounter: Resource.WithResourceUrl<Encounter>
+  questionnaireResponses: Array<{
+    questionnaireResponse: Resource.WithResourceUrl<QuestionnaireResponse>
+    questionnaire: Resource.WithResourceUrl<Questionnaire>
+  }>
+  locations: Array<Resource.WithResourceUrl<Location>>
 }
 
 export const getFullEncounter = (
-  encounterId: string
+  encounterUrl: Resource.InferResourceUrl<Encounter>
 ): Stream.Stream<
   Either.Either<
     FullEncounter,
     | UnhandledError
     | AuthError
     | AuthzError
-    | NotFoundError<'Encounter', { url: string }>
-    | NotFoundError<'Location', { url: string }>
+    | NotFoundError<'Encounter', { readonly url: string | ReadonlyUrl }>
+    | NotFoundError<'Location', { readonly url: string | ReadonlyUrl }>
     | ExternalAssertionError
     | NoSelectedOrgError
   >,
@@ -57,7 +56,7 @@ export const getFullEncounter = (
         clinicalDataRepositoryService.stream.Questionnaire
       const questionnaireResponseRepositoryStream =
         clinicalDataRepositoryService.stream.QuestionnaireResponse
-      yield* Effect.logDebug('Getting full encounter with ID ', encounterId)
+      yield* Effect.logDebug('Getting full encounter with ID ', encounterUrl)
 
       yield* Effect.logDebug('encounterEffect started')
 
@@ -68,19 +67,21 @@ export const getFullEncounter = (
       ).pipe(
         StreamEither.mapEffect(([encounterRepo, locationRepo]) =>
           Effect.gen(function* () {
-            const encounter = yield* encounterRepo.get(encounterId)
+            const encounter = yield* encounterRepo.get(encounterUrl)
 
             // Extract Location IDs from encounter location references
-            const locationIds = (encounter.location ?? [])
-              .map((l: EncounterLocation) => extractReferenceId(l.location))
-              .filter((id: string | undefined): id is string => !!id)
-
-            // Fetch each referenced Location resource
-            const _locations = yield* Effect.all(
-              locationIds.map((id: string) => locationRepo.get(id))
+            const locationUrls = (encounter.location ?? []).map(
+              (l: EncounterLocation) => l.location.asResourceUrl(Location)
             )
 
-            return { encounter, _locations }
+            // Fetch each referenced Location resource
+            const locations = yield* Effect.allSuccesses(
+              locationUrls.map((urlEffect) =>
+                Effect.flatMap(urlEffect, (url) => locationRepo.get(url))
+              )
+            )
+
+            return { encounter, locations }
           })
         )
       )
@@ -94,38 +95,34 @@ export const getFullEncounter = (
             Effect.gen(function* () {
               const allQuestionnaires = yield* questionnaireRepository.getMany()
               const responses = yield* questionnaireResponseRepository.getMany({
-                encounter: `Encounter/${encounterId}`,
+                encounter: encounterUrl.toString(),
               })
 
               return yield* Effect.all(
-                responses.map(
-                  (
-                    qr
-                  ): Effect.Effect<
-                    FullEncounter['questionnaireResponses'][0],
-                    UnhandledError
-                  > =>
-                    Option.fromNullable<Questionnaire | undefined>(
-                      allQuestionnaires.find(
-                        (q) => q.url?.toString() === qr.questionnaire
-                      )
-                    ).pipe(
-                      Option.map((_questionnaire: Questionnaire) =>
-                        Effect.succeed<
-                          FullEncounter['questionnaireResponses'][0]
-                        >({
-                          ...qr,
-                          _questionnaire,
+                responses.map((questionnaireResponse) =>
+                  Option.fromNullable<
+                    Resource.WithResourceUrl<Questionnaire> | undefined
+                  >(
+                    allQuestionnaires.find((q) =>
+                      Equal.equals(q.url, questionnaireResponse.questionnaire)
+                    )
+                  ).pipe(
+                    Option.map((questionnaire) =>
+                      Effect.succeed<
+                        FullEncounter['questionnaireResponses'][0]
+                      >({
+                        questionnaireResponse,
+                        questionnaire,
+                      })
+                    ),
+                    Option.getOrElse(() =>
+                      Effect.fail(
+                        new UnhandledError({
+                          message: `Questionnaire Response's Questionnaire '${questionnaireResponse.questionnaire}' could not be found`,
                         })
-                      ),
-                      Option.getOrElse(() =>
-                        Effect.fail(
-                          new UnhandledError({
-                            message: `Questionnaire Response's Questionnaire '${qr.questionnaire}' could not be found`,
-                          })
-                        )
                       )
                     )
+                  )
                 )
               )
             })
@@ -135,9 +132,9 @@ export const getFullEncounter = (
       return StreamEither.zipLatestWith(
         encounterWithLocationsStream,
         responseStream,
-        ({ encounter, _locations }, questionnaireResponses) => ({
-          ...encounter,
-          _locations,
+        ({ encounter, locations }, questionnaireResponses) => ({
+          encounter,
+          locations,
           questionnaireResponses,
         })
       )

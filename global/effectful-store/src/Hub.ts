@@ -59,26 +59,11 @@ export type HubState<Resources extends ResourcesConstraint> = ReadonlyMap<
 >
 
 export class Hub<const Resources extends ResourcesConstraint> {
-  activeResources: OriginState<Resources, keyof Resources>['activeResources']
-
   constructor(
-    private readonly resources: Resources,
     private readonly originStatesRef: SubscriptionRef.SubscriptionRef<
       HubState<Resources>
     >
-  ) {
-    this.activeResources = Record.keys<
-      keyof Resources & (string | symbol),
-      Resources[keyof Resources]
-    >(resources).reduce(
-      (acc, key) => ({
-        ...acc,
-        [key]: true,
-      }),
-      {} as { [K in keyof Resources]: true }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ) as any
-  }
+  ) {}
 
   get changes(): Stream.Stream<HubState<Resources>> {
     return this.originStatesRef.changes
@@ -86,7 +71,7 @@ export class Hub<const Resources extends ResourcesConstraint> {
 
   setOriginState<ActiveResources extends keyof Resources>(
     origin: OriginState<Resources, ActiveResources>
-  ): Effect.Effect<void> {
+  ): Effect.Effect<void, never, never> {
     return SubscriptionRef.update(this.originStatesRef, (originState) => {
       const next = new Map(originState)
       next.set(origin.originUrl.toString(), origin)
@@ -333,10 +318,10 @@ export class Hub<const Resources extends ResourcesConstraint> {
   }
 }
 
-export const makeHub = <Resources extends ResourcesConstraint>(
-  resources: ConstructorParameters<typeof Hub<Resources>>[0]
-): Effect.Effect<Hub<Resources>> =>
+export const makeHub = <Resources extends ResourcesConstraint>(): Effect.Effect<
+  Hub<Resources>
+> =>
   Effect.gen(function* () {
     const stateRef = yield* SubscriptionRef.make<HubState<Resources>>(new Map())
-    return new Hub(resources, stateRef)
+    return new Hub(stateRef)
   })

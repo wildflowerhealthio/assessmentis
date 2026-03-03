@@ -12,6 +12,8 @@ import {
   LoadedGapiHealthcareClient,
 } from '@assessmentis/google-fhir-web-infrastructure'
 import { neverUsedMock } from '@assessmentis/util'
+import { Hub } from '@assessmentis/effectful-store'
+import type { ResourceDataTypes } from '@assessmentis/clinical-domain'
 
 // Generate arbitrary Org values using the schema
 const orgArb = Arbitrary.make(Org)
@@ -29,9 +31,11 @@ describe('FhirR4ClientService', () => {
 
           // Create service with org stream
           const orgStream = Stream.make(Either.right(org))
+          const hub = yield* Hub.makeHub<ResourceDataTypes>()
           const service = yield* startFhirR4ClientService(
             pubsub,
-            orgStream
+            orgStream,
+            hub
           ).pipe(
             Effect.provide(
               Layer.succeed(

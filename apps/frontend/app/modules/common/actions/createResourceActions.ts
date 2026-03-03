@@ -1,8 +1,9 @@
 import type {
   ClinicalDataRepositoryErrors,
   ResourceDataTypes,
+  ResourceType,
 } from '@assessmentis/clinical-domain'
-import type { ReadonlyUrl, Resource } from '@assessmentis/effectful-store'
+import type { Resource } from '@assessmentis/effectful-store'
 import type { NotFoundError } from '@assessmentis/ontology'
 import { Effect } from 'effect'
 import { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
@@ -35,7 +36,7 @@ import type { NoSelectedOrgError } from '../../../../../../domain/platform-domai
  */
 export function createResourceCreateAction<
   TFormData,
-  Key extends keyof ResourceDataTypes,
+  Key extends ResourceType,
 >(
   resourceType: Key,
   transform: (data: TFormData) => ResourceDataTypes[Key]
@@ -92,30 +93,30 @@ export function createResourceCreateAction<
  */
 export function createResourceUpdateAction<
   TFormData,
-  Key extends keyof ResourceDataTypes,
+  Key extends ResourceType,
 >(
   resourceType: Key,
   transform: (data: TFormData) => Omit<ResourceDataTypes[Key], ''>
 ): (
-  url: ReadonlyUrl,
+  url: NonNullable<ResourceDataTypes[Key]['url']>,
   current: ResourceDataTypes[Key],
   formData: TFormData
 ) => Effect.Effect<
   ResourceDataTypes[Key],
   | ClinicalDataRepositoryErrors
   | NoSelectedOrgError
-  | NotFoundError<ResourceDataTypes[Key]['domainType'], { url: ReadonlyUrl }>,
+  | NotFoundError<ResourceDataTypes[Key]['domainType'], { url: NonNullable<ResourceDataTypes[Key]['url']> }>,
   ClinicalDataRepositoryService
 > {
   return (
-    url: ReadonlyUrl,
+    url: NonNullable<ResourceDataTypes[Key]['url']>,
     current: ResourceDataTypes[Key],
     formData: TFormData
   ): Effect.Effect<
     ResourceDataTypes[Key],
     | ClinicalDataRepositoryErrors
     | NoSelectedOrgError
-    | NotFoundError<ResourceDataTypes[Key]['domainType'], { url: ReadonlyUrl }>,
+    | NotFoundError<ResourceDataTypes[Key]['domainType'], { url: NonNullable<ResourceDataTypes[Key]['url']> }>,
     ClinicalDataRepositoryService
   > => {
     return Effect.gen(function* () {

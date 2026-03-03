@@ -38,11 +38,6 @@ type TestResources = {
 
 type TR = TestResources['TestResource']
 
-const testResourcesMap: TestResources = {
-  TestResource: { domainType: 'TestResource', name: '' },
-  OtherResource: { domainType: 'OtherResource', value: 0 },
-}
-
 // --- Builders ---
 
 const noopProvoke = () => Effect.void
@@ -185,7 +180,7 @@ const requestTagArb: fc.Arbitrary<RequestTag> = fc.oneof(
 
 const arbitraryEmptyHubEffect: fc.Arbitrary<
   Effect.Effect<Hub<TestResources>, never, never>
-> = fc.constant(makeHub<TestResources>(testResourcesMap))
+> = fc.constant(makeHub<TestResources>())
 
 const arbitraryReadyOrigin = <
   ActiveResources extends keyof TestResources = keyof TestResources,
@@ -458,7 +453,7 @@ describe('Hub', () => {
       },
       ({ notReady, requestTag }) =>
         Effect.gen(function* () {
-          const hub = yield* makeHub<TestResources>(testResourcesMap)
+          const hub = yield* makeHub<TestResources>()
           yield* hub.setOriginState(notReady.origin)
 
           const exit = yield* Effect.request(
@@ -555,7 +550,7 @@ describe('Hub', () => {
       { origin: originUrlArb },
       ({ origin }) =>
         Effect.gen(function* () {
-          const hub = yield* makeHub<TestResources>(testResourcesMap)
+          const hub = yield* makeHub<TestResources>()
           const { handler, resolver, requestGenerators } =
             makeTrackedResolver(origin)
 

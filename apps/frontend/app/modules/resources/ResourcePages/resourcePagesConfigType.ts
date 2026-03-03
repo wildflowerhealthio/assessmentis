@@ -61,14 +61,14 @@ export interface ResourcePagesConfig<
     ClinicalDataRepositoryService
   >
   updateAction: (
-    url: ReadonlyUrl,
+    url: NonNullable<TResource['url']>,
     current: TResource,
     formData: Schema.Schema.Type<TFormSchema>
   ) => Effect.Effect<
     TResource,
     | ClinicalDataRepositoryErrors
     | NoSelectedOrgError
-    | NotFoundError<TResource['domainType'], { url: ReadonlyUrl }>,
+    | NotFoundError<TResource['domainType'], { url: NonNullable<TResource['url']> }>,
     ClinicalDataRepositoryService
   >
 

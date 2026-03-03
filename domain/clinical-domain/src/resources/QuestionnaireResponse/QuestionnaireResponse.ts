@@ -8,6 +8,7 @@ import {
 import { QuestionnaireResponseItem } from './QuestionnaireResponseItem'
 import type { QuestionnaireResponseItemEncoded } from './QuestionnaireResponseItem'
 import { QuestionnaireItemAnsweredAtExtension } from '../Questionnaire/QuestionnaireItemAnsweredAt'
+import { Questionnaire } from '../Questionnaire/Questionnaire'
 
 const Key = 'QuestionnaireResponse' as const
 type Key = typeof Key
@@ -27,7 +28,7 @@ const fields = {
   encounter: Schema.optional(Schema.suspend(() => Reference)),
   identifier: Schema.optional(Schema.suspend(() => Identifier)),
   partOf: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
-  questionnaire: Schema.optional(Schema.String),
+  questionnaire: Schema.optional(Questionnaire.UrlSchema),
   source: Schema.optional(Schema.suspend(() => Reference)),
   status: QuestionnaireResponseStatus,
   subject: Schema.optional(Schema.suspend(() => Reference)),

@@ -10,17 +10,21 @@ import {
 import type { Route } from './+types/QuestionnaireResponse._index'
 import { QuestionnaireResponseListItem } from '../modules/resources/Questionnaire/components/QuestionnaireResponseListItem/QuestionnaireResponseListItem'
 import { ResourceListPage } from '../modules/common/components/ResourceListPage/ResourceListPage'
-import type {
-  ExternalAssertionError,
-  UnhandledError,
-  AuthError,
-  AuthzError,
+import {
+  type ExternalAssertionError,
+  type UnhandledError,
+  type AuthError,
+  type AuthzError,
+  NotFoundError,
 } from '@assessmentis/ontology'
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { createResourceCollectionHook } from '../modules/common/utils/createResourceCollectionHook'
 
 const _getQuestionnaireResponses = (): Effect.Effect<
-  (QuestionnaireResponse & { _questionnaire: Questionnaire | undefined })[],
+  {
+    questionnaireResponse: QuestionnaireResponse
+    questionnaire: Questionnaire | undefined
+  }[],
   UnhandledError | ExternalAssertionError | AuthError | AuthzError,
   QuestionnaireRepository | QuestionnaireResponseRepository
 > => {
@@ -28,20 +32,35 @@ const _getQuestionnaireResponses = (): Effect.Effect<
     const questionnaireRepository = yield* QuestionnaireRepository
     const questionnaireResponseRepository =
       yield* QuestionnaireResponseRepository
-    const [questionnaires, responses] = yield* Effect.all([
-      questionnaireRepository.getMany(),
-      questionnaireResponseRepository.getMany(),
-    ])
-    return responses.map(
-      (
-        r
-      ): QuestionnaireResponse & {
-        _questionnaire: Questionnaire | undefined
-      } => ({
-        ...r,
-        _questionnaire:
-          questionnaires.find((q) => q.id == r.questionnaire) ?? undefined,
-      })
+    const responses = yield* questionnaireResponseRepository.getMany()
+    return yield* Effect.all(
+      responses.map(
+        (
+          r
+        ): Effect.Effect<
+          {
+            questionnaireResponse: QuestionnaireResponse
+            questionnaire: Questionnaire | undefined
+          },
+          UnhandledError | ExternalAssertionError | AuthError | AuthzError,
+          never
+        > =>
+          Effect.map(
+            r.questionnaire
+              ? questionnaireRepository
+                  .get(r.questionnaire)
+                  .pipe(
+                    Effect.catchTag(NotFoundError._tag, (_err) =>
+                      Effect.succeed(undefined)
+                    )
+                  )
+              : Effect.succeed(undefined),
+            (questionnaire) => ({
+              questionnaireResponse: r,
+              questionnaire,
+            })
+          )
+      )
     )
   })
 }

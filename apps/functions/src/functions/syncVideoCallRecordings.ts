@@ -1,7 +1,6 @@
 import { onSchedule } from 'firebase-functions/v2/scheduler'
 import { info, error as logError } from 'firebase-functions/logger'
 import { Exit, Layer } from 'effect'
-import { syncVideoCallRecordingsEffect } from '../effects/syncVideoCallRecordingsEffect'
 import { makeAdminRuntime } from '../util/BaseLayer'
 
 /**
@@ -17,7 +16,9 @@ export const syncVideoCallRecordingsScheduled = onSchedule(
   async () => {
     info('Starting scheduled video call recordings sync')
     const runtime = makeAdminRuntime(Layer.empty)
-    const exit = await runtime.runPromiseExit(syncVideoCallRecordingsEffect)
+    // TODO: Add a body
+    const exit = Exit.fail('Not Implemented')
+    // const exit = await runtime.runPromiseExit(syncVideoCallRecordingsEffect)
 
     Exit.match(exit, {
       onSuccess: (results) => {

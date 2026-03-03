@@ -20,10 +20,10 @@ interface EncounterFormProps {
 }
 
 const encounterFormFields = {
-  patientId: transformProps(
+  patientUrl: transformProps(
     PatientPicker,
     (props: CommonFieldProps<string | undefined>) => ({
-      name: 'patientId',
+      name: 'patientUrl',
       label: 'Patient (Subject)',
       picking: {
         onChange: props.onChange,
@@ -33,10 +33,10 @@ const encounterFormFields = {
       placeholder: 'Select the patient for this encounter...',
     })
   ),
-  practitionerIds: transformProps(
+  practitionerUrls: transformProps(
     PractitionerPicker,
     (props: CommonFieldProps<ReadonlyArray<string> | undefined>) => ({
-      name: 'practitionerIds',
+      name: 'practitionerUrls',
       label: 'Practitioners (Participants)',
       picking: {
         onChange: props.onChange,
@@ -54,10 +54,10 @@ const encounterFormFields = {
     name: 'periodEnd',
     label: 'End Date/Time',
   }),
-  locationId: transformProps(
+  locationUrl: transformProps(
     LocationPicker,
     (props: CommonFieldProps<string | undefined>) => ({
-      name: 'locationId',
+      name: 'locationUrl',
       label: 'Location',
       picking: {
         onChange: props.onChange,
@@ -67,10 +67,10 @@ const encounterFormFields = {
       placeholder: 'Select a location...',
     })
   ),
-  questionnaireIds: transformProps(
+  questionnaireUrls: transformProps(
     QuestionnairePicker,
     (props: CommonFieldProps<ReadonlyArray<string>>) => ({
-      name: 'questionnaireIds',
+      name: 'questionnaireUrls',
       label: 'Questionnaires',
       picking: {
         onChange: (value: ReadonlyArray<string> | undefined) => {
@@ -87,12 +87,12 @@ const encounterFormFields = {
 } as const
 
 const fieldOrder = [
-  'patientId',
-  'practitionerIds',
+  'patientUrl',
+  'practitionerUrls',
   'periodStart',
   'periodEnd',
-  'locationId',
-  'questionnaireIds',
+  'locationUrl',
+  'questionnaireUrls',
 ] as const
 
 export function EncounterForm({

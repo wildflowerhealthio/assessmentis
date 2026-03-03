@@ -4,7 +4,11 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Arbitrary, FastCheck } from 'effect'
 import { action } from 'storybook/actions'
 import { Code } from '@assessmentis/clinical-domain/data-types'
-import { QuestionnaireItem } from '@assessmentis/clinical-domain'
+import {
+  QuestionnaireItem,
+  QuestionnaireResponseItem,
+  QuestionnaireResponseItemAnswer,
+} from '@assessmentis/clinical-domain'
 import TextQuestionnaireItemForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/components/TextQuestionnaireItemForm/TextQuestionnaireItemForm'
 
 //👇 This default export determines where your story goes in the story list
@@ -15,20 +19,20 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-const questionnaireItem = FastCheck.sample(
-  Arbitrary.make(QuestionnaireItem)
-)[0]
+const questionnaireItem = FastCheck.sample(Arbitrary.make(QuestionnaireItem))[0]
 
 const arbitraryProps = {
-  questionnaireItem: {
+  questionnaireItem: QuestionnaireItem.make({
     ...questionnaireItem,
     type: 'text',
     text: 'Do you often interrupt the activities of others, or intrude on others?',
-  },
-  questionnaireResponseItem: {
+  }),
+  questionnaireResponseItem: QuestionnaireResponseItem.make({
     linkId: questionnaireItem.linkId,
-    answer: [{ valueString: 'some text' }],
-  },
+    answer: [
+      QuestionnaireResponseItemAnswer.make({ valueString: 'some text' }),
+    ],
+  }),
   setQuestionnaireResponseItem: action('setQuestionnaireResponseItem'),
   uiControl: undefined,
 }
@@ -36,10 +40,10 @@ const arbitraryProps = {
 export const RegularQuestion: Story = {
   args: {
     ...arbitraryProps,
-    questionnaireItem: {
+    questionnaireItem: QuestionnaireItem.make({
       ...arbitraryProps.questionnaireItem,
       // style: QuestionnaireItemStyle.QUESTION,
-    },
+    }),
   },
 }
 

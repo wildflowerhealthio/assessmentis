@@ -1,11 +1,12 @@
 'use client'
 
+import type { QuestionnaireItemUIControlCode } from '@assessmentis/clinical-domain'
 import {
   type QuestionnaireItem,
-  type QuestionnaireResponseItem,
+  QuestionnaireResponseItem,
   type QuestionnaireItemLink,
-  QuestionnaireItemUIControlCode,
   getUiControlCode,
+  QuestionnaireItemAnswerOption,
 } from '@assessmentis/clinical-domain'
 import DisplayQuestionnaireItemForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/components/DisplayQuestionnaireItemForm/DisplayQuestionnaireItemForm'
 import RadioQuestionnaireItemForm, {
@@ -91,29 +92,33 @@ const QuestionnaireItemForm = ({
               questionnaireResponseItem={
                 questionnaireResponseItem.item?.find(
                   ({ linkId }) => linkId == qi.linkId
-                ) ?? { linkId: qi.linkId }
+                ) ?? QuestionnaireResponseItem.make({ linkId: qi.linkId })
               }
               setQuestionnaireResponseItem={(
                 update: SetStateAction<QuestionnaireResponseItem>
               ) =>
                 setQuestionnaireResponseItem(
-                  (
-                    qri: QuestionnaireResponseItem
-                  ): QuestionnaireResponseItem => ({
-                    ...qri,
-                    item: [
-                      ...(qri.item?.filter(
-                        ({ linkId }) => linkId != qi.linkId
-                      ) ?? []),
-                      typeof update == 'function'
-                        ? update(
-                            qri.item?.find(
-                              ({ linkId }) => linkId == qi.linkId
-                            ) ?? { linkId: qi.linkId }
-                          )
-                        : update,
-                    ],
-                  })
+                  (qri: QuestionnaireResponseItem): QuestionnaireResponseItem =>
+                    QuestionnaireResponseItem.make({
+                      ...qri,
+                      item: [
+                        ...(qri.item?.filter(
+                          ({ linkId }) => linkId != qi.linkId
+                        ) ?? []),
+                        typeof update == 'function'
+                          ? QuestionnaireResponseItem.make(
+                              update(
+                                qri.item?.find(
+                                  ({ linkId }) => linkId == qi.linkId
+                                ) ??
+                                  QuestionnaireResponseItem.make({
+                                    linkId: qi.linkId,
+                                  })
+                              )
+                            )
+                          : update,
+                      ],
+                    })
                 )
               }
               uiControl={getUiControlCode(questionnaireItem)}
@@ -122,17 +127,15 @@ const QuestionnaireItemForm = ({
         </>
       )
       if (
-        questionnaireItems.every(
-          (item) => item.type == 'boolean'
-        ) &&
+        questionnaireItems.every((item) => item.type == 'boolean') &&
         getUiControlCode(questionnaireItem) == 'table'
       ) {
         return (
           <RadioQuestionnaireItemFormGroup
             key={questionnaireItem.linkId}
             answerOption={[
-              { initialSelected: true },
-              { initialSelected: false },
+              QuestionnaireItemAnswerOption.make({ valueBoolean: true }),
+              QuestionnaireItemAnswerOption.make({ valueBoolean: false }),
             ]}
           >
             {items}

@@ -217,12 +217,12 @@ const resolverForResource = <K extends keyof Resources>(request: {
 
 export const makeFhirR4ReadyOrigin = ({
   client,
-  url,
+  originUrl,
   provokeReauthenticate,
   provokeReauthorize,
 }: {
   client: FhirR4Client['Type']
-  url: ReadonlyUrl
+  originUrl: ReadonlyUrl
   provokeReauthenticate: () => Effect.Effect<
     void,
     AuthError | AuthzError | UnhandledError,
@@ -245,14 +245,16 @@ export const makeFhirR4ReadyOrigin = ({
       request,
       innerResolver.pipe(
         RequestResolver.provideContext(
-          Context.make(FhirR4Client, client).pipe(Context.add(BaseUrl, url))
+          Context.make(FhirR4Client, client).pipe(
+            Context.add(BaseUrl, originUrl)
+          )
         )
       )
     )
   })
 
   return {
-    originUrl: url,
+    originUrl,
     resolver,
     errorStatus: undefined,
     provokeReauthenticate,

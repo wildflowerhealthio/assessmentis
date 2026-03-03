@@ -39,7 +39,7 @@ const fields = {
   partOf: Schema.optional(Schema.suspend(() => Reference)),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(Key)
+const LocationResource = Resource(Key)
 
 export interface LocationEncoded
   extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<Key> {}
@@ -51,7 +51,7 @@ export interface LocationEncoded
  */
 export class Location extends MergeClasses<Location>(Key)(
   [],
-  resourceMixin,
+  LocationResource,
   fields
 ) {}
 

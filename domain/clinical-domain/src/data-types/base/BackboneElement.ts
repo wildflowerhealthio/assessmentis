@@ -1,7 +1,8 @@
 import { pipe, Schema } from 'effect'
-import { Element, type ElementEncoded } from './Element'
+import { Element, type ElementEncoded, type ElementFields } from './Element'
 import { Extension, type ExtensionEncoded } from '../special-purpose/Extension'
 import { MergeClasses } from '@assessmentis/util'
+import type { ReadonlyUrl } from '@assessmentis/effectful-store'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -13,6 +14,23 @@ export interface BackboneElement<
   readonly modifierExtension: ReadonlyArray<Extension>
 }
 
+const fields = {
+  modifierExtension: pipe(
+    Schema.Array(
+      Schema.suspend(
+        (): Schema.Schema<Extension, ExtensionEncoded> => Extension
+      )
+    ),
+    Schema.annotations({
+      arbitrary: () => (fc) => fc.constant([]),
+      default: [],
+    }),
+    Schema.optionalWith({
+      default: (): ReadonlyArray<Extension> => [],
+    })
+  ),
+} as const satisfies Schema.Struct.Fields
+
 export type BackboneElementEncoded<TDomainType extends string> =
   ElementEncoded<TDomainType> & {
     readonly modifierExtension?: ReadonlyArray<ExtensionEncoded> | undefined
@@ -22,30 +40,37 @@ export type BackboneElementEncoded<TDomainType extends string> =
 // Factory
 // ---------------------------------------------------------------------------
 
+type BackboneElementFields<TDomainType extends string> =
+  ElementFields<TDomainType> & typeof fields
+
+type BackboneElementClass<Self, TDomainType extends string> = {
+  readonly Key: TDomainType
+  readonly UrlSchema: Schema.brand<
+    Schema.Schema<ReadonlyUrl, string, never>,
+    `${TDomainType}/url`
+  >
+} & Schema.Class<
+  Self,
+  BackboneElementFields<TDomainType>,
+  Schema.Struct.Encoded<BackboneElementFields<TDomainType>>,
+  Schema.Struct.Context<BackboneElementFields<TDomainType>>,
+  Schema.Struct.Constructor<BackboneElementFields<TDomainType>>,
+  object,
+  object
+>
+
 export const BackboneElement = <TDomainType extends string>(
   domainType: TDomainType
 ) => {
   const ElementBase = Element(domainType)
   class BackboneElementMixin extends ElementBase.extend<BackboneElementMixin>(
     'BackboneElement'
-  )({
-    modifierExtension: pipe(
-      Schema.Array(
-        Schema.suspend(
-          (): Schema.Schema<Extension, ExtensionEncoded> => Extension
-        )
-      ),
-      Schema.annotations({
-        arbitrary: () => (fc) => fc.constant([]),
-        default: [],
-      }),
-      Schema.optionalWith({
-        default: (): ReadonlyArray<Extension> => [],
-      })
-    ),
-  }) {
+  )(fields) {
     static Key = ElementBase.Key
     static UrlSchema = ElementBase.UrlSchema
   }
-  return BackboneElementMixin
+  return BackboneElementMixin satisfies BackboneElementClass<
+    BackboneElementMixin,
+    TDomainType
+  > as BackboneElementClass<BackboneElementMixin, TDomainType>
 }

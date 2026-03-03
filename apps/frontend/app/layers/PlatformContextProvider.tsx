@@ -26,7 +26,6 @@ import {
   startFhirR4ClientService,
 } from './FhirR4ClientService'
 import { ClinicalDataRepositoryService } from './ClinicalDataRepositoriesService'
-import { startVideoCallClientService } from './VideoCallClientService'
 import { Await } from 'react-router'
 import { useEffectTs } from '@assessmentis/react-util'
 import NavHeaderContainer, {
@@ -36,6 +35,8 @@ import { PageLoader } from '../modules/common/components/PageLoader/PageLoader'
 import { ErrorBoundary } from 'react-error-boundary'
 import { PlatformlessErrorFallback } from './PlatformAwareErrorFallback'
 import { ErrorHandlerBody } from '../modules/common/components/ErrorHandlerBody'
+import { makeHub } from '../../../../global/effectful-store/src/Hub'
+import type { ResourceDataTypes } from '@assessmentis/clinical-domain'
 
 const platformEffect = Effect.gen(function* () {
   const authDataPubSub = yield* createAuthDataPubSub
@@ -50,10 +51,12 @@ const platformEffect = Effect.gen(function* () {
     Effect.provideService(AuthDataService, authDataService)
   )
   yield* startAccessTokenSyncer(authDataService.authDataStream)
+  const hub = yield* makeHub<ResourceDataTypes>()
 
   const fhirR4ClientService = yield* startFhirR4ClientService(
     fhirR4ClientPubSub,
-    orgService.activeOrgStream
+    orgService.activeOrgStream,
+    hub
   )
 
   const clinicalDataRepositoryService =
@@ -65,18 +68,13 @@ const platformEffect = Effect.gen(function* () {
       )
     )
 
-  const VideoCallClientService = yield* startVideoCallClientService(
-    authDataService,
-    orgService.activeOrg
-  )
-
   return {
     authDataService,
     orgService,
     userService,
     fhirR4ClientService,
     clinicalDataRepositoryService,
-    VideoCallClientService,
+    hub,
   }
 }).pipe(
   Effect.provide(

@@ -4,6 +4,7 @@ import type {
   ClinicalDomainRepositoryTagClass,
   ClinicalDataRepository,
   ResourceDataTypes,
+  ResourceType,
 } from '@assessmentis/clinical-domain'
 import type { ReadonlyUrl } from '@assessmentis/effectful-store'
 import {
@@ -42,14 +43,14 @@ export type GoogleFhirWebLayer<Key extends keyof ResourceDataTypes> =
 
 export type ClinicalDataRepositoryServiceType = {
   effect: {
-    [Key in keyof ResourceDataTypes]: Effect.Effect<
+    [Key in ResourceType]: Effect.Effect<
       ClinicalDataRepository<ResourceDataTypes[Key]>,
       AuthError | NoSelectedOrgError | UnhandledError
     >
   }
 
   stream: {
-    [Key in keyof ResourceDataTypes]: Stream.Stream<
+    [Key in ResourceType]: Stream.Stream<
       Either.Either<
         ClinicalDataRepository<ResourceDataTypes[Key]>,
         AuthError | NoSelectedOrgError | UnhandledError
@@ -154,7 +155,7 @@ export class ClinicalDataRepositoryService extends Effect.Service<ClinicalDataRe
     }),
   }
 ) {
-  repositoryEffect<TResourceType extends keyof ResourceDataTypes>(
+  repositoryEffect<TResourceType extends ResourceType>(
     resourceType: TResourceType
   ): Effect.Effect<
     ClinicalDataRepository<ResourceDataTypes[TResourceType]>,
@@ -175,9 +176,7 @@ export class ClinicalDataRepositoryService extends Effect.Service<ClinicalDataRe
     )
   }
 
-  repositoryStream<
-    TResource extends ResourceDataTypes[keyof ResourceDataTypes],
-  >(
+  repositoryStream<TResource extends ResourceDataTypes[ResourceType]>(
     resourceType: TResource['domainType']
   ): Stream.Stream<
     Either.Either<

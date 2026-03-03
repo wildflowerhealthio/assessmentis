@@ -13,7 +13,7 @@ import {
 } from '@assessmentis/clinical-domain/data-types'
 import type { DailyCoConfig } from '@assessmentis/config-domain'
 import { UnhandledError } from '@assessmentis/ontology'
-import { ApiDailyCoRoomSchema } from '../../models/ApiDailyCoRoomSchema'
+import { CompleteApiDailyCoRoom } from '../../models/ApiDailyCoRoomSchema'
 import {
   getRequestFromHeaders,
   postRequestFromHeaders,
@@ -30,7 +30,6 @@ import { extractIdFromUrl } from '../../resolverUtils'
  * Build a Location from a Daily.co room API response.
  */
 const roomToLocation = (room: {
-  id: string
   name: string
   url: string
 }): Resource.WithResourceUrl<Location> => {
@@ -78,7 +77,7 @@ export const makeLocationResolver = (
           handleHttpClientError('HTTP Client Error while fetching room'),
           handle404('Location', { url: request.url }),
           assertStatus(200),
-          parseAs(ApiDailyCoRoomSchema),
+          parseAs(CompleteApiDailyCoRoom),
           Effect.map((apiRoom) => roomToLocation(apiRoom))
         )
       }
@@ -90,7 +89,7 @@ export const makeLocationResolver = (
           assertStatus(200),
           parseAs(
             Schema.Struct({
-              data: Schema.Array(ApiDailyCoRoomSchema),
+              data: Schema.Array(CompleteApiDailyCoRoom),
             })
           ),
           Effect.map((response) =>
@@ -150,7 +149,7 @@ export const makeLocationResolver = (
             ),
             handleHttpClientError('HTTP Client Error while creating room'),
             assertStatus(200),
-            parseAs(ApiDailyCoRoomSchema),
+            parseAs(CompleteApiDailyCoRoom),
             Effect.map((apiRoom) => roomToLocation(apiRoom))
           )
         })

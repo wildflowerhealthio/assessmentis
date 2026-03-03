@@ -12,6 +12,51 @@ import { Extension, type ExtensionEncoded } from '../special-purpose/Extension'
 // Element
 // ---------------------------------------------------------------------------
 
+const fields = {
+  extension: pipe(
+    Schema.Array(
+      Schema.suspend(
+        (): Schema.Schema<Extension, ExtensionEncoded, never> => Extension
+      )
+    ),
+    Schema.annotations({
+      arbitrary: () => (fc) => fc.constant([]),
+    }),
+    Schema.optionalWith({
+      default: (): ReadonlyArray<Extension> => [],
+    })
+  ),
+} as const satisfies Schema.Struct.Fields
+
+export type ElementFields<TDomainType extends string> = typeof fields & {
+  domainType: Schema.optionalWith<
+    Schema.Literal<[TDomainType]>,
+    { default: () => TDomainType }
+  >
+  url: Schema.optional<
+    Schema.brand<
+      Schema.Schema<ReadonlyUrl, string, never>,
+      `${TDomainType}/url`
+    >
+  >
+}
+
+type ElementClass<Self, TDomainType extends string> = {
+  readonly Key: TDomainType
+  readonly UrlSchema: Schema.brand<
+    Schema.Schema<ReadonlyUrl, string, never>,
+    `${TDomainType}/url`
+  >
+} & Schema.Class<
+  Self,
+  ElementFields<TDomainType>,
+  Schema.Struct.Encoded<ElementFields<TDomainType>>,
+  Schema.Struct.Context<ElementFields<TDomainType>>,
+  Schema.Struct.Constructor<ElementFields<TDomainType>>,
+  object,
+  object
+>
+
 export const Element = <TDomainType extends string>(
   domainType: TDomainType
 ) => {
@@ -20,34 +65,23 @@ export const Element = <TDomainType extends string>(
     Schema.brand(`${domainType}/url`)
   )
 
-  const fields = {
+  class ElementMixin extends Schema.Class<ElementMixin>('Element')({
     domainType: Schema.Literal(domainType).pipe(
       Schema.optionalWith({
         default: (): TDomainType => domainType,
       })
     ),
     url: Schema.optional(urlSchema),
-    extension: pipe(
-      Schema.Array(
-        Schema.suspend(
-          (): Schema.Schema<Extension, ExtensionEncoded, never> => Extension
-        )
-      ),
-      Schema.annotations({
-        arbitrary: () => (fc) => fc.constant([]),
-      }),
-      Schema.optionalWith({
-        default: (): ReadonlyArray<Extension> => [],
-      })
-    ),
-  } as const satisfies Schema.Struct.Fields
-
-  return class ElementMixin extends Schema.Class<ElementMixin>('Element')(
-    fields
-  ) {
+    ...fields,
+  }) {
     static Key = domainType
     static UrlSchema = urlSchema
   }
+
+  return ElementMixin satisfies ElementClass<
+    ElementMixin,
+    TDomainType
+  > as ElementClass<ElementMixin, TDomainType>
 }
 
 export type Element<TDomainType extends string> = {

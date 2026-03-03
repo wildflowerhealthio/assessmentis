@@ -8,6 +8,8 @@ import {
   startGapiGoogleHealthcareClient,
 } from '../../src'
 import { isPromiseLike } from 'effect/Predicate'
+import type { Hub } from '@assessmentis/effectful-store'
+import type { ResourceDataTypes } from '@assessmentis/clinical-domain'
 /**
  * Get access token from gcloud CLI
  */
@@ -61,8 +63,11 @@ export const setupClientOnWindow = async () => {
       console.log('Polling for gapi availability...')
       await new Promise((r) => setTimeout(r, 1000))
     }
-
-    const clientEffect = startGapiGoogleHealthcareClient.pipe(
+    const hub = {
+      setOriginState: (...args: unknown[]) =>
+        Effect.log('setOriginState', ...args),
+    } as Hub.Hub<ResourceDataTypes> // Placeholder hub for client initialization
+    const clientEffect = startGapiGoogleHealthcareClient(hub).pipe(
       Effect.provide(
         Layer.mergeAll(
           Layer.succeed(LoadedGoogleFhirConfig, testConfig),

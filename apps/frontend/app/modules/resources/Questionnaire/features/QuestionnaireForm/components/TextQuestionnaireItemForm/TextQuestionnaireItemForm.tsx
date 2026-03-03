@@ -2,11 +2,12 @@
 
 import { type ChangeEventHandler, type SetStateAction } from 'react'
 import classes from './TextQuestionnaireItemForm.module.css'
+import type { QuestionnaireItemUIControlCode } from '@assessmentis/clinical-domain'
 import {
   type QuestionnaireItem,
-  type QuestionnaireResponseItem,
-  QuestionnaireItemUIControlCode,
   QuestionnaireItemAnsweredAtExtension,
+  QuestionnaireResponseItem,
+  QuestionnaireResponseItemAnswer,
 } from '@assessmentis/clinical-domain'
 import { cn } from '@assessmentis/react-util'
 import { DateTime, Effect } from 'effect'
@@ -32,15 +33,20 @@ const TextQuestionnaireItemForm = ({
   ) => {
     const valueString = ev.currentTarget.value
     setQuestionnaireResponseItem(
-      (qri: QuestionnaireResponseItem): QuestionnaireResponseItem => ({
-        ...qri,
-        answer: [
-          QuestionnaireItemAnsweredAtExtension.with(
-            { valueString, modifierExtension: [] },
-            Effect.runSync(DateTime.now)
-          ),
-        ],
-      })
+      (qri: QuestionnaireResponseItem): QuestionnaireResponseItem =>
+        QuestionnaireResponseItem.make({
+          ...qri,
+          answer: [
+            QuestionnaireResponseItemAnswer.make({
+              valueString,
+              modifierExtension: [
+                QuestionnaireItemAnsweredAtExtension.make({
+                  valueDateTime: Effect.runSync(DateTime.now),
+                }),
+              ],
+            }),
+          ],
+        })
     )
   }
 

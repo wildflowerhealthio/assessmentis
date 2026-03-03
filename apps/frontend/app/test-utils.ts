@@ -48,6 +48,5 @@ export function createMockPlatformContext(
     clinicalDataRepositoryService: neverUsedMock(
       'clinicalDataRepositoryService'
     ),
-    VideoCallClientService: neverUsedMock('VideoCallClientService'),
   }
 }

@@ -3,7 +3,11 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { Arbitrary, FastCheck } from 'effect'
 import { action } from 'storybook/actions'
-import { QuestionnaireItem } from '@assessmentis/clinical-domain'
+import {
+  QuestionnaireItem,
+  QuestionnaireItemAnswerOption,
+  QuestionnaireResponseItem,
+} from '@assessmentis/clinical-domain'
 import RadioQuestionnaireItemForm, {
   RadioQuestionnaireItemFormGroup,
 } from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/components/RadioQuestionnaireItemForm/RadioQuestionnaireItemForm'
@@ -16,20 +20,21 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-const questionnaireItem = FastCheck.sample(
-  Arbitrary.make(QuestionnaireItem)
-)[0]
+const questionnaireItem = FastCheck.sample(Arbitrary.make(QuestionnaireItem))[0]
 
 const arbitraryProps = {
-  questionnaireItem: {
+  questionnaireItem: QuestionnaireItem.make({
     ...questionnaireItem,
     type: 'boolean',
     text: 'Do you often interrupt the activities of others, or intrude on others?',
-    answerOption: [{ initialSelected: true }, { initialSelected: false }],
-  },
-  questionnaireResponseItem: {
+    answerOption: [
+      QuestionnaireItemAnswerOption.make({ valueBoolean: true }),
+      QuestionnaireItemAnswerOption.make({ valueBoolean: false }),
+    ],
+  }),
+  questionnaireResponseItem: QuestionnaireResponseItem.make({
     linkId: questionnaireItem.linkId,
-  },
+  }),
   setQuestionnaireResponseItem: action('setQuestionnaireResponseItem'),
   uiControl: undefined,
 }
@@ -37,22 +42,21 @@ const arbitraryProps = {
 export const RegularBooleanQuestion: Story = {
   args: {
     ...arbitraryProps,
-    questionnaireItem: {
+    questionnaireItem: QuestionnaireItem.make({
       ...arbitraryProps.questionnaireItem,
       // style: QuestionnaireItemStyle.QUESTION,
-    },
+    }),
   },
 }
 
 export const GridStyleBooleanQuestion: Story = {
   args: {
     ...arbitraryProps,
-    questionnaireItem: {
+    questionnaireItem: QuestionnaireItem.make({
       ...arbitraryProps.questionnaireItem,
       // style: QuestionnaireItemStyle.WITHIN_QUESTION,
-    },
+    }),
   },
-
   render: (args) => (
     <RadioQuestionnaireItemFormGroup
       answerOption={args.questionnaireItem.answerOption ?? []}
@@ -67,30 +71,30 @@ export const GridStyleBooleanQuestion: Story = {
 export const StringQuestion: Story = {
   args: {
     ...arbitraryProps,
-    questionnaireItem: {
+    questionnaireItem: QuestionnaireItem.make({
       ...arbitraryProps.questionnaireItem,
       // style: QuestionnaireItemStyle.QUESTION,
       answerOption: [
-        { valueString: 'Red' },
-        { valueString: 'Green' },
-        { valueString: 'Blue' },
+        QuestionnaireItemAnswerOption.make({ valueString: 'Red' }),
+        QuestionnaireItemAnswerOption.make({ valueString: 'Green' }),
+        QuestionnaireItemAnswerOption.make({ valueString: 'Blue' }),
       ],
-    },
+    }),
   },
 }
 
 export const GridStyleStringQuestion: Story = {
   args: {
     ...arbitraryProps,
-    questionnaireItem: {
+    questionnaireItem: QuestionnaireItem.make({
       ...arbitraryProps.questionnaireItem,
       // style: QuestionnaireItemStyle.WITHIN_QUESTION,
       answerOption: [
-        { valueString: 'Red' },
-        { valueString: 'Green' },
-        { valueString: 'Blue' },
+        QuestionnaireItemAnswerOption.make({ valueString: 'Red' }),
+        QuestionnaireItemAnswerOption.make({ valueString: 'Green' }),
+        QuestionnaireItemAnswerOption.make({ valueString: 'Blue' }),
       ],
-    },
+    }),
   },
 
   render: (args) => (

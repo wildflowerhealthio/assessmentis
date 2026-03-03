@@ -69,13 +69,6 @@ export function ObservationForm({
           placeholder: 'e.g., Normal, Abnormal, Positive',
           helpText: 'Used when Value Type is "Text (String)"',
         }),
-        valueDecimal: applyPartialProps(TextField, {
-          name: 'valueDecimal',
-          label: 'Value (Decimal)',
-          placeholder: 'e.g., 98.6, 120.5',
-          type: 'number',
-          helpText: 'Used when Value Type is "Decimal Number"',
-        }),
         valueQuantityValue: applyPartialProps(TextField, {
           name: 'valueQuantityValue',
           label: 'Quantity Value',
@@ -128,7 +121,6 @@ export function ObservationForm({
         'code',
         'valueType',
         'valueString',
-        'valueDecimal',
         'valueQuantityValue',
         'valueQuantityUnit',
         'valueCodeableConceptText',

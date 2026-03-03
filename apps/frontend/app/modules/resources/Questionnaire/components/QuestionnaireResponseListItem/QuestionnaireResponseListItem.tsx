@@ -12,7 +12,8 @@ export function QuestionnaireResponseListItem({
   onDelete,
   loading,
 }: QuestionnaireResponseListItemProps) {
-  const displayName = item.questionnaire ?? item.url?.toString() ?? 'Unnamed Response'
+  const displayName =
+    item.questionnaire?.toString() ?? item.url?.toString() ?? 'Unnamed Response'
   const lastUpdated = item.meta?.lastUpdated
     ? new Date(item.meta.lastUpdated.epochMillis).toLocaleDateString()
     : null

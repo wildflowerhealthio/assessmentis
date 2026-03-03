@@ -1,6 +1,6 @@
 import { Effect } from 'effect'
 import { VideoCallClient } from '@assessmentis/video-call-domain'
-import { Encounter, Media } from '@assessmentis/clinical-domain'
+import type { Encounter, Media } from '@assessmentis/clinical-domain'
 import { IdentifierAndReference } from '@assessmentis/clinical-domain/data-types'
 import {
   EncounterRepository,
@@ -18,18 +18,18 @@ import type { AuthError, AuthzError } from '@assessmentis/ontology'
  * Fetches recordings for an encounter's video call room and creates Media resources
  * linked to the encounter.
  *
- * @param encounterId - The ID of the encounter to update
+ * @param encounterUrl - The URL of the encounter to update
  */
 export const updateEncounterRecordingsAndTranscripts = (
-  encounterId: string
+  encounterUrl: Resource.InferResourceUrl<Encounter>
 ): Effect.Effect<
   Resource.WithResourceUrl<Encounter>,
   | UnhandledError
   | AuthError
   | AuthzError
   | ExternalAssertionError
-  | NotFoundError<'Encounter', { url: string }>
-  | NotFoundError<'Media', { url: string }>
+  | NotFoundError<'Encounter', { url: Resource.InferResourceUrl<Encounter> }>
+  | NotFoundError<'Media', { url: Resource.InferResourceUrl<Media> }>
   | NotFoundError<'Recording', { id: string }>,
   EncounterRepository | VideoCallClient | MediaRepository
 > => {
@@ -39,7 +39,7 @@ export const updateEncounterRecordingsAndTranscripts = (
     const mediaRepository = yield* MediaRepository
 
     // Get the current encounter
-    const encounter = yield* encounterRepository.get(encounterId)
+    const encounter = yield* encounterRepository.get(encounterUrl)
 
     // Extract the room name from the encounter location
     const roomUrl = encounter.location?.[0]?.location?.identifier?.value
@@ -53,7 +53,7 @@ export const updateEncounterRecordingsAndTranscripts = (
 
     // Fetch all existing Media resources
     const knownMediaItems = yield* mediaRepository.getMany({
-      encounter: `Encounter/${encounterId}`,
+      encounter: `Encounter/${encounterUrl}`,
     })
 
     // Get media with fresh URLs from the video call service
@@ -71,7 +71,9 @@ export const updateEncounterRecordingsAndTranscripts = (
       // Find the corresponding existing media and update it with fresh URL
       const correspondingMedia = knownMediaItems.find((known) =>
         known.identifier?.some((knownId: { value?: string }) =>
-          recording.identifier?.some((id: { value?: string }) => id.value === knownId.value)
+          recording.identifier?.some(
+            (id: { value?: string }) => id.value === knownId.value
+          )
         )
       )
       if (correspondingMedia) {
@@ -93,7 +95,7 @@ export const updateEncounterRecordingsAndTranscripts = (
 
     // Create new Media resources linked to the encounter
     const encounterRef = IdentifierAndReference.Reference.make({
-      reference: `Encounter/${encounterId}`,
+      reference: `Encounter/${encounterUrl}`,
     })
     const mediaToCreate: Media[] = newRecordings.map((media) => ({
       ...media,
