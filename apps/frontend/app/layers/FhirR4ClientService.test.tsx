@@ -9,7 +9,7 @@ import {
   LoadedGapiHealthcareClient,
 } from '@assessmentis/google-fhir-web-infrastructure'
 import { Org } from '@assessmentis/platform-domain'
-import { neverUsedMock } from '@assessmentis/util'
+import { neverUsedMock } from '@assessmentis/testing-utils'
 
 import {
   createFhirR4ClientPubSub,

@@ -1,6 +1,8 @@
 export * from './DeepReadonly'
 export * from './DeepWriteable'
 export * from './NotEmpty'
+export * from './TupleToIntersection'
+export * from './tuples'
 
 export type Simplfy<T> = { [K in keyof T]: T[K] } & {}
 

@@ -2,7 +2,7 @@
 import { Effect, Stream, type Either } from 'effect'
 
 import type { NoSelectedOrgError, Org } from '@assessmentis/platform-domain'
-import { neverUsedMock } from '@assessmentis/util'
+import { neverUsedMock } from '@assessmentis/testing-utils'
 
 import type { PlatformContext } from './layers/PlatformContext'
 

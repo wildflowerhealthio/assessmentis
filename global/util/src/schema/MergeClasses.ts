@@ -3,7 +3,7 @@
 import { Array, Schema } from 'effect'
 import type { NonEmptyReadonlyArray } from 'effect/Array'
 
-import type { TupleToIntersection } from './TupleToIntersection'
+import type { TupleToIntersection } from '../types/TupleToIntersection'
 
 const SchemaClassKeys = [
   'prototype',

@@ -2,7 +2,7 @@
 
 import { Arbitrary, Schema, type FastCheck } from 'effect'
 
-import type { TupleToIntersection } from './TupleToIntersection'
+import type { TupleToIntersection } from '../types/TupleToIntersection'
 
 /**
  * Something `mergeArbitraries` can extract an arbitrary from:

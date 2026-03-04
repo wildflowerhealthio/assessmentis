@@ -5,7 +5,7 @@ import {
   Coding,
 } from '@assessmentis/clinical-domain/data-types'
 
-import { literalOf } from '../../../../global/util/src/addLiteralSupportToBrandedSchema'
+import { literalOf } from '@assessmentis/util'
 
 const surveyCategory = CodeableConcept.make({
   coding: [
