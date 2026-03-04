@@ -1,5 +1,4 @@
 import { assert, describe, expect, vi } from 'vitest'
-import { it } from '@effect/vitest'
 import {
   Array,
   Cause,
@@ -9,8 +8,14 @@ import {
   Request,
   RequestResolver,
 } from 'effect'
+import { it } from '@effect/vitest'
 
-import { AuthError, AuthzError, Loading } from '@assessmentis/ontology'
+import {
+  AuthError,
+  AuthzError,
+  Loading,
+  NotFoundError,
+} from '@assessmentis/ontology'
 
 import { makeHub, type Hub } from './Hub'
 import type { NotReadyOrigin, ReadyOrigin } from './OriginState'
@@ -181,7 +186,7 @@ const requestTagArb: fc.Arbitrary<RequestTag> = fc.oneof(
 
 const arbitraryEmptyHubEffect: fc.Arbitrary<
   Effect.Effect<Hub<TestResources>, never, never>
-> = fc.constant(makeHub<TestResources>())
+> = fc.constant(makeHub<TestResources>(['TestResource', 'OtherResource']))
 
 const arbitraryReadyOrigin = <
   ActiveResources extends keyof TestResources = keyof TestResources,
@@ -454,7 +459,10 @@ describe('Hub', () => {
       },
       ({ notReady, requestTag }) =>
         Effect.gen(function* () {
-          const hub = yield* makeHub<TestResources>()
+          const hub = yield* makeHub<TestResources>([
+            'TestResource',
+            'OtherResource',
+          ])
           yield* hub.setOriginState(notReady.origin)
 
           const exit = yield* Effect.request(
@@ -551,7 +559,10 @@ describe('Hub', () => {
       { origin: originUrlArb },
       ({ origin }) =>
         Effect.gen(function* () {
-          const hub = yield* makeHub<TestResources>()
+          const hub = yield* makeHub<TestResources>([
+            'TestResource',
+            'OtherResource',
+          ])
           const { handler, resolver, requestGenerators } =
             makeTrackedResolver(origin)
 
@@ -679,6 +690,238 @@ describe('Hub', () => {
             hub.resolver
           ).pipe(Effect.asVoid)
           expect(ready.handler).toHaveBeenCalledOnce()
+        })
+    )
+  })
+
+  describe('HubRepository', () => {
+    it.effect.prop(
+      'get infers origin from URL and returns the resource',
+      { ready: arbitraryReadyOrigin(), arbitraryEmptyHubEffect },
+      ({ ready, arbitraryEmptyHubEffect }) =>
+        Effect.gen(function* () {
+          const hub = yield* arbitraryEmptyHubEffect
+          yield* hub.setOriginState(ready.origin)
+
+          const url = ready.url.appendToPathname('/TestResource/1')
+          const result = yield* hub.getTestResource(url)
+
+          expect(result.url).toEqual(url)
+          expect(ready.handler).toHaveBeenCalledWith(
+            expect.objectContaining({ _tag: 'Get', url })
+          )
+        })
+    )
+
+    it.effect.prop(
+      'get fails with NotFoundError when no origin matches the URL',
+      { origin: originUrlArb, arbitraryEmptyHubEffect },
+      ({ origin, arbitraryEmptyHubEffect }) =>
+        Effect.gen(function* () {
+          const hub = yield* arbitraryEmptyHubEffect
+          const unregisteredUrl = origin.appendToPathname('/TestResource/1')
+
+          const exit = yield* hub
+            .getTestResource(unregisteredUrl)
+            .pipe(Effect.exit)
+
+          expect(squashFailure(exit)).toBeInstanceOf(NotFoundError)
+        })
+    )
+
+    it.effect.prop(
+      'get fails with UnhandledError when multiple origins match the URL',
+      {
+        origin: originUrlArb,
+        arbitraryEmptyHubEffect,
+      },
+      ({ origin, arbitraryEmptyHubEffect }) =>
+        Effect.gen(function* () {
+          const hub = yield* arbitraryEmptyHubEffect
+          const { resolver: resolver1 } = makeTrackedResolver(origin)
+          const { resolver: resolver2 } = makeTrackedResolver(origin)
+
+          // Register two origins where one is a parent of the other
+          const childOrigin = origin.appendToPathname('/sub')
+          yield* hub.setOriginState({
+            originUrl: origin,
+            activeResources: { TestResource: true, OtherResource: true },
+            resolver: resolver1,
+            errorStatus: undefined,
+            provokeReauthenticate: noopProvoke,
+            provokeReauthorize: noopProvoke,
+          })
+          yield* hub.setOriginState({
+            originUrl: childOrigin,
+            activeResources: { TestResource: true, OtherResource: true },
+            resolver: resolver2,
+            errorStatus: undefined,
+            provokeReauthenticate: noopProvoke,
+            provokeReauthorize: noopProvoke,
+          })
+
+          const ambiguousUrl = childOrigin.appendToPathname('/TestResource/1')
+          const exit = yield* hub
+            .getTestResource(ambiguousUrl)
+            .pipe(Effect.exit)
+
+          expect(squashFailure(exit)._tag).toBe('UnhandledError')
+        })
+    )
+
+    it.effect.prop(
+      'getMany fans out search to all origins',
+      { arbitraryHubWithAllReadyOriginsEffect },
+      ({ arbitraryHubWithAllReadyOriginsEffect }) =>
+        Effect.gen(function* () {
+          const { hub, origins } = yield* arbitraryHubWithAllReadyOriginsEffect
+
+          const results = yield* hub.searchTestResource()
+
+          expect(results).toHaveLength(origins.length)
+          origins.forEach((o) =>
+            expect(o.handler).toHaveBeenCalledWith(
+              expect.objectContaining({ _tag: 'Search' })
+            )
+          )
+        })
+    )
+
+    it.effect.prop(
+      'create with explicit origin routes to that origin',
+      { ready: arbitraryReadyOrigin() },
+      ({ ready }) =>
+        Effect.gen(function* () {
+          const hub = yield* makeHub<TestResources>([
+            'TestResource',
+            'OtherResource',
+          ])
+          yield* hub.setOriginState(ready.origin)
+
+          const result = yield* hub.createTestResource(
+            { domainType: 'TestResource', name: 'new' },
+            ready.url
+          )
+
+          expect(result.url).toBeDefined()
+          expect(ready.handler).toHaveBeenCalledWith(
+            expect.objectContaining({
+              _tag: 'Create',
+              origin: ready.url,
+            })
+          )
+        })
+    )
+
+    it.effect.prop(
+      'create without origin infers the single matching origin',
+      { ready: arbitraryReadyOrigin() },
+      ({ ready }) =>
+        Effect.gen(function* () {
+          const hub = yield* makeHub<TestResources>([
+            'TestResource',
+            'OtherResource',
+          ])
+          yield* hub.setOriginState(ready.origin)
+
+          const result = yield* hub.createTestResource({
+            domainType: 'TestResource',
+            name: 'new',
+          })
+
+          expect(result.url).toBeDefined()
+          expect(ready.handler).toHaveBeenCalledWith(
+            expect.objectContaining({ _tag: 'Create' })
+          )
+        })
+    )
+
+    it.effect(
+      'create without origin fails with UnhandledError when no origins exist',
+      () =>
+        Effect.gen(function* () {
+          const hub = yield* makeHub<TestResources>([
+            'TestResource',
+            'OtherResource',
+          ])
+
+          const exit = yield* hub
+            .createTestResource({
+              domainType: 'TestResource',
+              name: 'new',
+            })
+            .pipe(Effect.exit)
+
+          expect(squashFailure(exit)._tag).toBe('UnhandledError')
+        })
+    )
+
+    it.effect.prop(
+      'createMany creates multiple resources in one batch',
+      { ready: arbitraryReadyOrigin() },
+      ({ ready }) =>
+        Effect.gen(function* () {
+          const hub = yield* makeHub<TestResources>([
+            'TestResource',
+            'OtherResource',
+          ])
+          yield* hub.setOriginState(ready.origin)
+
+          const results = yield* hub.createManyTestResource(
+            [
+              { domainType: 'TestResource', name: 'a' },
+              { domainType: 'TestResource', name: 'b' },
+            ],
+            ready.url
+          )
+
+          expect(results).toHaveLength(2)
+          expect(ready.handler).toHaveBeenCalledTimes(2)
+        })
+    )
+
+    it.effect.prop(
+      'update infers origin from resource URL',
+      { ready: arbitraryReadyOrigin() },
+      ({ ready }) =>
+        Effect.gen(function* () {
+          const hub = yield* makeHub<TestResources>([
+            'TestResource',
+            'OtherResource',
+          ])
+          yield* hub.setOriginState(ready.origin)
+
+          const url = ready.url.appendToPathname('/TestResource/1')
+          const result = yield* hub.updateTestResource({
+            domainType: 'TestResource',
+            url,
+            name: 'updated',
+          })
+
+          expect(result.url).toEqual(url)
+          expect(ready.handler).toHaveBeenCalledWith(
+            expect.objectContaining({ _tag: 'Update' })
+          )
+        })
+    )
+
+    it.effect.prop(
+      'delete infers origin from URL',
+      { ready: arbitraryReadyOrigin() },
+      ({ ready }) =>
+        Effect.gen(function* () {
+          const hub = yield* makeHub<TestResources>([
+            'TestResource',
+            'OtherResource',
+          ])
+          yield* hub.setOriginState(ready.origin)
+
+          const url = ready.url.appendToPathname('/TestResource/1')
+          yield* hub.deleteTestResource(url)
+
+          expect(ready.handler).toHaveBeenCalledWith(
+            expect.objectContaining({ _tag: 'Delete' })
+          )
         })
     )
   })

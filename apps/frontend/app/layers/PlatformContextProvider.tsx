@@ -54,7 +54,18 @@ const platformEffect = Effect.gen(function* () {
     Effect.provideService(AuthDataService, authDataService)
   )
   yield* startAccessTokenSyncer(authDataService.authDataStream)
-  const hub = yield* makeHub<ResourceDataTypes>()
+  const hub = yield* makeHub<ResourceDataTypes>([
+    'Composition',
+    'DiagnosticReport',
+    'Encounter',
+    'Location',
+    'Media',
+    'Observation',
+    'Patient',
+    'Practitioner',
+    'Questionnaire',
+    'QuestionnaireResponse',
+  ])
 
   const fhirR4ClientService = yield* startFhirR4ClientService(
     fhirR4ClientPubSub,

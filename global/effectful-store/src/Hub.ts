@@ -10,7 +10,7 @@ import {
   type Stream,
 } from 'effect'
 
-import { UnhandledError } from '@assessmentis/ontology'
+import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
 import { SideEffect } from '@assessmentis/util'
 
 import {
@@ -56,277 +56,540 @@ const asEntryFailure = <Resources extends ResourcesConstraint>(
   error: UnhandledError | ResourceRequest.CommonErrors
 ): SideEffect.EffectAction => Deferred.fail(entry.result, error)
 
-// --- Hub ---
+// --- Hub type ---
 
 export type HubState<Resources extends ResourcesConstraint> = ReadonlyMap<
   string,
   OriginState<Resources, never>
 >
 
-export class Hub<const Resources extends ResourcesConstraint> {
-  constructor(
-    private readonly originStatesRef: SubscriptionRef.SubscriptionRef<
-      HubState<Resources>
-    >
-  ) {}
-
-  get changes(): Stream.Stream<HubState<Resources>> {
-    return this.originStatesRef.changes
-  }
-
-  setOriginState<ActiveResources extends keyof Resources>(
+export type Hub<Resources extends ResourcesConstraint> = {
+  readonly changes: Stream.Stream<HubState<Resources>>
+  readonly setOriginState: <ActiveResources extends keyof Resources>(
     origin: OriginState<Resources, ActiveResources>
-  ): Effect.Effect<void, never, never> {
-    return SubscriptionRef.update(this.originStatesRef, (originState) => {
-      const next = new Map(originState)
-      next.set(origin.originUrl.toString(), origin)
-      return next
-    })
-  }
-
-  deregisterOrigin(originUrl: ReadonlyUrl): Effect.Effect<void> {
-    return SubscriptionRef.update(this.originStatesRef, (originState) => {
-      const next = new Map(originState)
-      next.delete(originUrl.toString())
-      return next
-    })
-  }
-
-  // --- Resolver pipeline ---
-
+  ) => Effect.Effect<void, never, never>
+  readonly deregisterOrigin: (originUrl: ReadonlyUrl) => Effect.Effect<void>
   readonly resolver: RequestResolver.RequestResolver<
     AnyRequest<Resources>,
     never
-  > = RequestResolver.makeWithEntry((batches) =>
-    Effect.gen(this, function* () {
-      for (const batch of batches) {
-        const originStates = yield* SubscriptionRef.get(this.originStatesRef)
+  >
+} & HubResourceMethods<Resources>
 
-        const { actions } = pipe(
-          SideEffect.of<ReadonlyArray<AnyEntry<Resources>>>(batch, []),
-          SideEffect.flatMap((entries) =>
-            this.fanOutSearches(entries, originStates)
-          ),
-          SideEffect.flatMap((entries) =>
-            this.groupByOrigin(entries, originStates)
-          ),
-          SideEffect.flatMap((groups) => this.filterReadyOrigins(groups)),
-          SideEffect.flatMap((groups) => this.dispatchToResolvers(groups))
-        )
-
-        yield* Effect.all(actions, {
-          concurrency: 'unbounded',
-        }).pipe(Effect.asVoid)
-      }
-    })
-  )
-
-  private fanOutSearches(
-    entries: ReadonlyArray<AnyEntry<Resources>>,
-    originStates: HubState<Resources>
-  ): SideEffect.SideEffect<ReadonlyArray<OriginBoundEntry<Resources>>> {
-    const globalSearches = entries.filter(
-      (
-        entry
-      ): entry is EffectRequest.Entry<
-        ResourceRequest.Search<Resources[keyof Resources]> & {
-          readonly origin: null
-        }
-      > => entry.request._tag === 'Search' && entry.request.origin === null
-    )
-    const otherEntries = entries.filter(
-      (entry): entry is OriginBoundEntry<Resources> =>
-        entry.request._tag != 'Search' || entry.request.origin != null
-    )
-
-    const searchActions = globalSearches.map((entry) =>
-      EffectRequest.completeEffect(
-        entry.request,
-        this.fanOutSearch(entry.request, originStates)
-      )
-    )
-    return SideEffect.of(otherEntries, searchActions)
-  }
-
-  private groupByOrigin(
-    entries: ReadonlyArray<OriginBoundEntry<Resources>>,
-    originStates: HubState<Resources>
-  ): SideEffect.SideEffect<
-    ReadonlyArray<{
-      origin: OriginState<Resources, never>
-      entries: AnyEntry<Resources>[]
-    }>
-  > {
-    const entriesByOrigin = Array.groupBy(
-      entries,
-      (entry) => entry.request.origin?.toString() ?? 'NO_ORIGIN'
-    )
-    const actions: SideEffect.EffectAction[] = []
-    const resolverGroups: {
-      origin: OriginState<Resources, never>
-      entries: AnyEntry<Resources>[]
-    }[] = []
-    for (const [key, group] of Record.toEntries(entriesByOrigin)) {
-      const origin = originStates.get(key) ?? null
-      if (origin) {
-        resolverGroups.push({ origin, entries: group })
-      } else {
-        for (const entry of group) {
-          actions.push(
-            asEntryFailure(
-              entry,
-              new UnhandledError({
-                message: `No origin found for URL ${key}`,
-              })
-            )
-          )
-        }
-      }
-    }
-    return SideEffect.of(resolverGroups, actions)
-  }
-
-  private filterReadyOrigins(
-    resolverGroups: ReadonlyArray<{
-      origin: OriginState<Resources, never>
-      entries: AnyEntry<Resources>[]
-    }>
-  ): SideEffect.SideEffect<
-    ReadonlyArray<{
-      origin: ReadyOrigin<Resources, never>
-      entries: AnyEntry<Resources>[]
-    }>
-  > {
-    const actions: SideEffect.EffectAction[] = []
-    const readyGroups: {
-      origin: ReadyOrigin<Resources, never>
-      entries: AnyEntry<Resources>[]
-    }[] = []
-
-    for (const { origin, entries } of resolverGroups) {
-      if (origin.errorStatus) {
-        for (const entry of entries) {
-          actions.push(
-            asEntryFailure(
-              entry,
-              origin.errorStatus._tag === 'Loading'
-                ? new UnhandledError({
-                    message: `Origin at ${origin.originUrl.toString()} is still loading`,
-                  })
-                : origin.errorStatus
-            )
-          )
-        }
-      } else {
-        readyGroups.push({ origin, entries })
-      }
-    }
-
-    return SideEffect.of(readyGroups, actions)
-  }
-
-  private dispatchToResolvers(
-    resolverGroups: ReadonlyArray<{
-      origin: ReadyOrigin<Resources, never>
-      entries: AnyEntry<Resources>[]
-    }>
-  ): SideEffect.SideEffect<void> {
-    const actions: SideEffect.EffectAction[] = []
-
-    for (const { origin, entries } of resolverGroups) {
-      const validEntries: AnyEntry<Resources>[] = []
-      for (const entry of entries) {
-        if (originCanResolve(origin, entry.request.domainType)) {
-          validEntries.push(entry)
-        } else {
-          actions.push(
-            asEntryFailure(
-              entry,
-              new UnhandledError({
-                message: `Origin at ${origin.originUrl.toString()} doesn't support resource type ${String(entry.request.domainType)}`,
-              })
-            )
-          )
-        }
-      }
-
-      if (validEntries.length > 0) {
-        const resolver = origin.resolver as RequestResolver.RequestResolver<
-          AnyRequest<Resources>,
-          never
-        >
-        actions.push(resolver.runAll([validEntries] as const))
-      }
-    }
-
-    return SideEffect.of<void>(undefined, actions)
-  }
-
-  // --- Private helpers ---
-
-  fanOutSearch(
-    searchRequest: ResourceRequest.Search<Resources[keyof Resources]>,
-    originStates: HubState<Resources>
-  ): Effect.Effect<
-    ReadonlyArray<Resource.WithResourceUrl<Resources[keyof Resources]>>,
-    ResourceRequest.CommonErrors
-  > {
-    const subSearches: Effect.Effect<
-      ReadonlyArray<Resource.WithResourceUrl<Resources[keyof Resources]>>,
-      ResourceRequest.CommonErrors
-    >[] = []
-
-    for (const origin of originStates.values()) {
-      if (!origin.activeResources[searchRequest.domainType]) continue
-
-      if (origin.errorStatus) {
-        return Effect.fail(
-          origin.errorStatus._tag === 'Loading'
-            ? new UnhandledError({
-                message: `Origin at ${origin.originUrl.toString()} is still loading`,
-              })
-            : origin.errorStatus
-        )
-      }
-
-      const resolver = origin.resolver as RequestResolver.RequestResolver<
-        ResourceRequest.Search<Resources[keyof Resources]>,
-        never
-      >
-
-      subSearches.push(
-        Effect.request(
-          EffectRequest.of<
-            ResourceRequest.Search<Resources[keyof Resources]>
-          >()({
-            _tag: 'Search',
-            domainType: searchRequest.domainType,
-            params: searchRequest.params,
-            origin: origin.originUrl,
-          }),
-          resolver
-        )
-      )
-    }
-
-    if (subSearches.length === 0) {
-      return Effect.fail(
-        new UnhandledError({
-          message: `No origins found for resource type ${String(searchRequest.domainType)}`,
-        })
-      )
-    }
-
-    return Effect.all(subSearches, { concurrency: 'unbounded' }).pipe(
-      Effect.map((results) => results.flat())
-    )
-  }
+type HubResourceMethods<Resources extends ResourcesConstraint> = {
+  readonly [R in keyof Resources & string as `get${R}`]: (
+    url: ReadonlyUrl
+  ) => Effect.Effect<
+    Resource.WithResourceUrl<Resources[R]>,
+    | ResourceRequest.CommonErrors
+    | NotFoundError<
+        Resources[R]['domainType'],
+        { url: Resource.InferResourceUrl<Resources[R]> }
+      >,
+    never
+  >
+} & {
+  readonly [R in keyof Resources & string as `search${R}`]: (
+    params?: ResourceRequest.SearchParam<Resources[R]>
+  ) => Effect.Effect<
+    ReadonlyArray<Resource.WithResourceUrl<Resources[R]>>,
+    ResourceRequest.CommonErrors,
+    never
+  >
+} & {
+  readonly [R in keyof Resources & string as `create${R}`]: (
+    resource: Resources[R],
+    origin?: ReadonlyUrl
+  ) => Effect.Effect<
+    Resource.WithResourceUrl<Resources[R]>,
+    ResourceRequest.CommonErrors,
+    never
+  >
+} & {
+  readonly [R in keyof Resources & string as `createMany${R}`]: (
+    resources: ReadonlyArray<Resources[R]>,
+    origin?: ReadonlyUrl
+  ) => Effect.Effect<
+    ReadonlyArray<Resource.WithResourceUrl<Resources[R]>>,
+    ResourceRequest.CommonErrors,
+    never
+  >
+} & {
+  readonly [R in keyof Resources & string as `update${R}`]: (
+    resource: Resource.WithResourceUrl<Resources[R]>
+  ) => Effect.Effect<
+    Resource.WithResourceUrl<Resources[R]>,
+    | ResourceRequest.CommonErrors
+    | NotFoundError<
+        Resources[R]['domainType'],
+        { url: Resource.InferResourceUrl<Resources[R]> }
+      >,
+    never
+  >
+} & {
+  readonly [R in keyof Resources & string as `delete${R}`]: (
+    url: ReadonlyUrl
+  ) => Effect.Effect<
+    void,
+    | ResourceRequest.CommonErrors
+    | NotFoundError<
+        Resources[R]['domainType'],
+        { url: Resource.InferResourceUrl<Resources[R]> }
+      >,
+    never
+  >
 }
 
-export const makeHub = <Resources extends ResourcesConstraint>(): Effect.Effect<
-  Hub<Resources>
+// --- Resolver pipeline ---
+
+const fanOutSearches = <Resources extends ResourcesConstraint>(
+  entries: ReadonlyArray<AnyEntry<Resources>>,
+  originStates: HubState<Resources>,
+  fanOutSearch: (
+    searchRequest: ResourceRequest.Search<Resources[keyof Resources]>,
+    originStates: HubState<Resources>
+  ) => Effect.Effect<
+    ReadonlyArray<Resource.WithResourceUrl<Resources[keyof Resources]>>,
+    ResourceRequest.CommonErrors
+  >
+): SideEffect.SideEffect<ReadonlyArray<OriginBoundEntry<Resources>>> => {
+  const globalSearches = entries.filter(
+    (
+      entry
+    ): entry is EffectRequest.Entry<
+      ResourceRequest.Search<Resources[keyof Resources]> & {
+        readonly origin: null
+      }
+    > => entry.request._tag === 'Search' && entry.request.origin === null
+  )
+  const otherEntries = entries.filter(
+    (entry): entry is OriginBoundEntry<Resources> =>
+      entry.request._tag != 'Search' || entry.request.origin != null
+  )
+
+  const searchActions = globalSearches.map((entry) =>
+    EffectRequest.completeEffect(
+      entry.request,
+      fanOutSearch(entry.request, originStates)
+    )
+  )
+  return SideEffect.of(otherEntries, searchActions)
+}
+
+const groupByOrigin = <Resources extends ResourcesConstraint>(
+  entries: ReadonlyArray<OriginBoundEntry<Resources>>,
+  originStates: HubState<Resources>
+): SideEffect.SideEffect<
+  ReadonlyArray<{
+    origin: OriginState<Resources, never>
+    entries: AnyEntry<Resources>[]
+  }>
+> => {
+  const entriesByOrigin = Array.groupBy(
+    entries,
+    (entry) => entry.request.origin?.toString() ?? 'NO_ORIGIN'
+  )
+  const actions: SideEffect.EffectAction[] = []
+  const resolverGroups: {
+    origin: OriginState<Resources, never>
+    entries: AnyEntry<Resources>[]
+  }[] = []
+  for (const [key, group] of Record.toEntries(entriesByOrigin)) {
+    const origin = originStates.get(key) ?? null
+    if (origin) {
+      resolverGroups.push({ origin, entries: group })
+    } else {
+      for (const entry of group) {
+        actions.push(
+          asEntryFailure(
+            entry,
+            new UnhandledError({
+              message: `No origin found for URL ${key}`,
+            })
+          )
+        )
+      }
+    }
+  }
+  return SideEffect.of(resolverGroups, actions)
+}
+
+const filterReadyOrigins = <Resources extends ResourcesConstraint>(
+  resolverGroups: ReadonlyArray<{
+    origin: OriginState<Resources, never>
+    entries: AnyEntry<Resources>[]
+  }>
+): SideEffect.SideEffect<
+  ReadonlyArray<{
+    origin: ReadyOrigin<Resources, never>
+    entries: AnyEntry<Resources>[]
+  }>
+> => {
+  const actions: SideEffect.EffectAction[] = []
+  const readyGroups: {
+    origin: ReadyOrigin<Resources, never>
+    entries: AnyEntry<Resources>[]
+  }[] = []
+
+  for (const { origin, entries } of resolverGroups) {
+    if (origin.errorStatus) {
+      for (const entry of entries) {
+        actions.push(
+          asEntryFailure(
+            entry,
+            origin.errorStatus._tag === 'Loading'
+              ? new UnhandledError({
+                  message: `Origin at ${origin.originUrl.toString()} is still loading`,
+                })
+              : origin.errorStatus
+          )
+        )
+      }
+    } else {
+      readyGroups.push({ origin, entries })
+    }
+  }
+
+  return SideEffect.of(readyGroups, actions)
+}
+
+const dispatchToResolvers = <Resources extends ResourcesConstraint>(
+  resolverGroups: ReadonlyArray<{
+    origin: ReadyOrigin<Resources, never>
+    entries: AnyEntry<Resources>[]
+  }>
+): SideEffect.SideEffect<void> => {
+  const actions: SideEffect.EffectAction[] = []
+
+  for (const { origin, entries } of resolverGroups) {
+    const validEntries: AnyEntry<Resources>[] = []
+    for (const entry of entries) {
+      if (originCanResolve(origin, entry.request.domainType)) {
+        validEntries.push(entry)
+      } else {
+        actions.push(
+          asEntryFailure(
+            entry,
+            new UnhandledError({
+              message: `Origin at ${origin.originUrl.toString()} doesn't support resource type ${String(entry.request.domainType)}`,
+            })
+          )
+        )
+      }
+    }
+
+    if (validEntries.length > 0) {
+      const resolver = origin.resolver as RequestResolver.RequestResolver<
+        AnyRequest<Resources>,
+        never
+      >
+      actions.push(resolver.runAll([validEntries] as const))
+    }
+  }
+
+  return SideEffect.of<void>(undefined, actions)
+}
+
+const fanOutSearch = <Resources extends ResourcesConstraint>(
+  searchRequest: ResourceRequest.Search<Resources[keyof Resources]>,
+  originStates: HubState<Resources>
+): Effect.Effect<
+  ReadonlyArray<Resource.WithResourceUrl<Resources[keyof Resources]>>,
+  ResourceRequest.CommonErrors
+> => {
+  const subSearches: Effect.Effect<
+    ReadonlyArray<Resource.WithResourceUrl<Resources[keyof Resources]>>,
+    ResourceRequest.CommonErrors
+  >[] = []
+
+  for (const origin of originStates.values()) {
+    if (!origin.activeResources[searchRequest.domainType]) continue
+
+    if (origin.errorStatus) {
+      return Effect.fail(
+        origin.errorStatus._tag === 'Loading'
+          ? new UnhandledError({
+              message: `Origin at ${origin.originUrl.toString()} is still loading`,
+            })
+          : origin.errorStatus
+      )
+    }
+
+    const resolver = origin.resolver as RequestResolver.RequestResolver<
+      ResourceRequest.Search<Resources[keyof Resources]>,
+      never
+    >
+
+    subSearches.push(
+      Effect.request(
+        EffectRequest.of<ResourceRequest.Search<Resources[keyof Resources]>>()({
+          _tag: 'Search',
+          domainType: searchRequest.domainType,
+          params: searchRequest.params,
+          origin: origin.originUrl,
+        }),
+        resolver
+      )
+    )
+  }
+
+  if (subSearches.length === 0) {
+    return Effect.fail(
+      new UnhandledError({
+        message: `No origins found for resource type ${String(searchRequest.domainType)}`,
+      })
+    )
+  }
+
+  return Effect.all(subSearches, { concurrency: 'unbounded' }).pipe(
+    Effect.map((results) => results.flat())
+  )
+}
+
+// --- Origin inference ---
+
+const resolveOriginFromUrl = <
+  Resources extends ResourcesConstraint,
+  K extends string,
+>(
+  stateRef: SubscriptionRef.SubscriptionRef<HubState<Resources>>,
+  url: ReadonlyUrl,
+  domainType: K
+): Effect.Effect<
+  ReadonlyUrl,
+  NotFoundError<K, { url: ReadonlyUrl }> | UnhandledError
 > =>
   Effect.gen(function* () {
+    const states = yield* SubscriptionRef.get(stateRef)
+    let match: ReadonlyUrl | undefined
+    let matchCount = 0
+    for (const origin of states.values()) {
+      if (origin.originUrl.hasChild(url)) {
+        match = origin.originUrl
+        matchCount++
+      }
+    }
+    if (!match) {
+      return yield* new NotFoundError({
+        resourceType: domainType,
+        params: { url },
+      })
+    }
+    if (matchCount > 1) {
+      return yield* new UnhandledError({
+        message: `Ambiguous origin for URL ${url.toString()}: ${matchCount} origins match`,
+      })
+    }
+    return match
+  })
+
+const resolveOriginForCreate = <Resources extends ResourcesConstraint>(
+  stateRef: SubscriptionRef.SubscriptionRef<HubState<Resources>>,
+  domainType: keyof Resources & string,
+  explicitOrigin: ReadonlyUrl | undefined
+): Effect.Effect<ReadonlyUrl, UnhandledError> =>
+  explicitOrigin
+    ? Effect.succeed(explicitOrigin)
+    : Effect.gen(function* () {
+        const states = yield* SubscriptionRef.get(stateRef)
+        let match: ReadonlyUrl | undefined
+        let matchCount = 0
+        for (const origin of states.values()) {
+          if (origin.activeResources[domainType]) {
+            match = origin.originUrl
+            matchCount++
+          }
+        }
+        if (!match) {
+          return yield* new UnhandledError({
+            message: `No origins found for resource type ${domainType}`,
+          })
+        }
+        if (matchCount > 1) {
+          return yield* new UnhandledError({
+            message: `Ambiguous origin for resource type ${domainType}: ${matchCount} origins match`,
+          })
+        }
+        return match
+      })
+
+// --- Resource method builder ---
+
+const makeResourceMethods = <
+  Resources extends ResourcesConstraint,
+  K extends keyof Resources & string,
+>(
+  domainType: K,
+  stateRef: SubscriptionRef.SubscriptionRef<HubState<Resources>>,
+  resolver: RequestResolver.RequestResolver<AnyRequest<Resources>, never>
+): HubResourceMethods<Pick<Resources, K>> => {
+  type T = Resources[K]
+
+  return {
+    [`get${domainType}`]: (url: ReadonlyUrl) =>
+      Effect.flatMap(
+        resolveOriginFromUrl(stateRef, url, domainType),
+        (origin) =>
+          Effect.request(
+            EffectRequest.of<ResourceRequest.Get<T>>()({
+              _tag: 'Get',
+              domainType,
+              url,
+              origin,
+            }),
+            resolver
+          )
+      ),
+
+    [`search${domainType}`]: (params?: ResourceRequest.SearchParam<T>) =>
+      Effect.request(
+        EffectRequest.of<ResourceRequest.Search<T>>()({
+          _tag: 'Search',
+          domainType,
+          params: params ?? {},
+          origin: null,
+        }),
+        resolver
+      ),
+
+    [`create${domainType}`]: (resource: T, origin?: ReadonlyUrl) =>
+      Effect.flatMap(
+        resolveOriginForCreate(stateRef, domainType, origin),
+        (resolvedOrigin) =>
+          Effect.request(
+            EffectRequest.of<ResourceRequest.Create<T>>()({
+              _tag: 'Create',
+              domainType,
+              resource,
+              origin: resolvedOrigin,
+            }),
+            resolver
+          )
+      ),
+
+    [`createMany${domainType}`]: (
+      resources: ReadonlyArray<T>,
+      origin?: ReadonlyUrl
+    ) =>
+      Effect.flatMap(
+        resolveOriginForCreate(stateRef, domainType, origin),
+        (resolvedOrigin) =>
+          Effect.all(
+            resources.map((resource) =>
+              Effect.request(
+                EffectRequest.of<ResourceRequest.Create<T>>()({
+                  _tag: 'Create',
+                  domainType,
+                  resource,
+                  origin: resolvedOrigin,
+                }),
+                resolver
+              )
+            ),
+            { concurrency: 'unbounded' }
+          )
+      ),
+
+    [`update${domainType}`]: (resource: Resource.WithResourceUrl<T>) =>
+      Effect.flatMap(
+        resolveOriginFromUrl(stateRef, resource.url, domainType),
+        (origin) =>
+          Effect.request(
+            EffectRequest.of<ResourceRequest.Update<T>>()({
+              _tag: 'Update',
+              domainType,
+              resource,
+              origin,
+            }),
+            resolver
+          )
+      ),
+
+    [`delete${domainType}`]: (url: ReadonlyUrl) =>
+      Effect.flatMap(
+        resolveOriginFromUrl(stateRef, url, domainType),
+        (origin) =>
+          Effect.request(
+            EffectRequest.of<ResourceRequest.Delete<T>>()({
+              _tag: 'Delete',
+              domainType,
+              resource: { url },
+              origin,
+            }),
+            resolver
+          ).pipe(Effect.asVoid)
+      ),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as const as any
+}
+
+// --- makeHub ---
+
+// Justified cast: Object.assign dynamically adds resource methods whose
+// names are computed from resourceKeys (e.g. getPatient, searchPatient).
+// TypeScript cannot verify template-literal mapped types from dynamic
+// property assignment.
+export const makeHub = <Resources extends ResourcesConstraint>(
+  resourceKeys: ReadonlyArray<keyof Resources & string>
+): Effect.Effect<Hub<Resources>> =>
+  Effect.gen(function* () {
     const stateRef = yield* SubscriptionRef.make<HubState<Resources>>(new Map())
-    return new Hub(stateRef)
+
+    const resolver: RequestResolver.RequestResolver<
+      AnyRequest<Resources>,
+      never
+    > = RequestResolver.makeWithEntry((batches) =>
+      Effect.gen(function* () {
+        for (const batch of batches) {
+          const originStates = yield* SubscriptionRef.get(stateRef)
+
+          const { actions } = pipe(
+            SideEffect.of<ReadonlyArray<AnyEntry<Resources>>>(batch, []),
+            SideEffect.flatMap((entries) =>
+              fanOutSearches(entries, originStates, fanOutSearch)
+            ),
+            SideEffect.flatMap((entries) =>
+              groupByOrigin(entries, originStates)
+            ),
+            SideEffect.flatMap((groups) => filterReadyOrigins(groups)),
+            SideEffect.flatMap((groups) => dispatchToResolvers(groups))
+          )
+
+          yield* Effect.all(actions, {
+            concurrency: 'unbounded',
+          }).pipe(Effect.asVoid)
+        }
+      })
+    )
+
+    const hub = {
+      changes: stateRef.changes,
+
+      setOriginState: <ActiveResources extends keyof Resources>(
+        origin: OriginState<Resources, ActiveResources>
+      ): Effect.Effect<void, never, never> =>
+        SubscriptionRef.update(stateRef, (originState) => {
+          const next = new Map(originState)
+          next.set(origin.originUrl.toString(), origin)
+          return next
+        }),
+
+      deregisterOrigin: (originUrl: ReadonlyUrl): Effect.Effect<void> =>
+        SubscriptionRef.update(stateRef, (originState) => {
+          const next = new Map(originState)
+          next.delete(originUrl.toString())
+          return next
+        }),
+
+      resolver,
+    }
+
+    let methods = {}
+    for (const key of resourceKeys) {
+      methods = Object.assign(
+        methods,
+        makeResourceMethods(key, stateRef, resolver)
+      )
+    }
+
+    return Object.assign(hub, methods) as Hub<Resources>
   })

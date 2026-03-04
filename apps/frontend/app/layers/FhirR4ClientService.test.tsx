@@ -33,7 +33,18 @@ describe('FhirR4ClientService', () => {
 
           // Create service with org stream
           const orgStream = Stream.make(Either.right(org))
-          const hub = yield* Hub.makeHub<ResourceDataTypes>()
+          const hub = yield* Hub.makeHub<ResourceDataTypes>([
+            'Composition',
+            'DiagnosticReport',
+            'Encounter',
+            'Location',
+            'Media',
+            'Observation',
+            'Patient',
+            'Practitioner',
+            'Questionnaire',
+            'QuestionnaireResponse',
+          ])
           const service = yield* startFhirR4ClientService(
             pubsub,
             orgStream,

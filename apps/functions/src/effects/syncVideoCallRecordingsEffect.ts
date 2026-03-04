@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Effect, Layer, pipe, Request, Schema, type Either } from 'effect'
 import { info, error as logError } from 'firebase-functions/logger'
 
@@ -104,9 +105,6 @@ const syncSingleOrgInner = (
     info(
       `Found ${recordings.length} recordings and ${transcripts.length} transcripts for org ${orgSlug}`
     )
-
-    // Cache room URLs to avoid redundant API calls
-    const roomUrlCache = new Map<string, string>()
 
     let recordingsSynced = 0
     let transcriptsSynced = 0
