@@ -1,4 +1,3 @@
-import type { FastCheck } from 'effect'
 import { pipe, Schema } from 'effect'
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import { AllDatatypeKeys, DatatypeChoice } from '../Datatype'
@@ -57,17 +56,18 @@ const extensionFields = {
 export class Extension extends MergeClasses<Extension>('Extension')(
   [
     {
-      arbitrary: mergeArbitraries(
-        (props) => new Extension(props),
-        ExtensionValue.arbitraryValueOneOrNone,
-        extensionFields
-      ),
+      arbitrary: () =>
+        mergeArbitraries(
+          (props) => new Extension(props),
+          ExtensionValue.arbitraryValueOneOrNone,
+          extensionFields
+        ),
     },
   ],
   ExtensionValue,
   extensionFields
 ) {
-  static Key = ExtensionKey
+  static DomainType = ExtensionKey
   static UrlSchema = extensionUrlSchema
 }
 

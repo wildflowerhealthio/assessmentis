@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 import { Location, LocationStatus, LocationMode } from '@assessmentis/clinical-domain'
-import { IdentifierAndReference } from '@assessmentis/clinical-domain/data-types'
+import { Identifier } from '@assessmentis/clinical-domain/data-types'
 
 export const LocationFormSchema = Schema.Struct({
   name: Schema.String,
@@ -28,7 +28,7 @@ export function transformToLocation(formData: LocationFormData): Location {
     identifier:
       system?.length || value?.length
         ? [
-            IdentifierAndReference.Identifier.make({
+            Identifier.make({
               system: system?.length ? system : undefined,
               value: value?.length ? value : undefined,
             }),

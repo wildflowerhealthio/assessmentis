@@ -16,7 +16,6 @@ import {
   getCompositionDisplayName,
   getCompositionType,
 } from './utils/compositionDisplay'
-import { extractReferenceId } from '../../common/utils/fhirDisplay'
 
 export const compositionConfig: ResourcePagesConfig<
   Composition,
@@ -35,12 +34,12 @@ export const compositionConfig: ResourcePagesConfig<
 
   defaultFormValues: {
     title: '',
-    patientId: undefined,
+    patientUrl: undefined,
   },
 
   extractFormValues: (composition) => ({
     title: composition.title ?? '',
-    patientId: extractReferenceId(composition.subject),
+    patientUrl: composition.subject?.reference,
   }),
 
   createAction: createResourceCreateAction<CompositionFormData, 'Composition'>(

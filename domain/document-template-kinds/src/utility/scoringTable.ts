@@ -23,7 +23,7 @@ export const makeScoringTable =
   (
     items: QuestionnaireItem[],
     score: (item: QuestionnaireResponseItem) => undefined | number,
-    headerCodes: ReadonlyArray<Coding.Coding>
+    headerCodes: ReadonlyArray<Coding>
   ) =>
   (
     responseItems: QuestionnaireResponseItem[]
@@ -39,7 +39,7 @@ export const makeScoringTable =
               headerCodes.some(
                 (hc) =>
                   hc.code ===
-                  (option.valueCoding as Coding.Coding | undefined)?.code
+                  (option.valueCoding as Coding | undefined)?.code
               )
           ) ?? false
       )
@@ -57,7 +57,7 @@ export const makeScoringTable =
       const answer = responseItem?.answer?.[0]
       const answerCode =
         answer && answer.valueCoding
-          ? (answer.valueCoding as Coding.Coding)?.code
+          ? (answer.valueCoding as Coding)?.code
           : undefined
       const itemScore = (answerCode && score(responseItem)) ?? undefined
       totalScore += itemScore ?? 0

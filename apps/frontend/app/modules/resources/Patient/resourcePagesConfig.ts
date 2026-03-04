@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { Patient } from '@assessmentis/clinical-domain'
+import type { Patient } from '@assessmentis/clinical-domain'
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import type { ResourcePagesConfig } from '../ResourcePages/resourcePagesConfigType'
 import { PatientForm } from './components/PatientForm'
@@ -13,7 +13,6 @@ import {
   createResourceUpdateAction,
 } from '../../common/actions/createResourceActions'
 import { getPatientDisplayName } from './utils/patientDisplay'
-import { extractReferenceId } from '../../common/utils/fhirDisplay'
 
 export const patientConfig: ResourcePagesConfig<
   Patient,
@@ -35,7 +34,7 @@ export const patientConfig: ResourcePagesConfig<
     familyName: '',
     gender: undefined,
     birthDate: undefined,
-    practitionerId: undefined,
+    practitionerUrl: undefined,
   },
 
   extractFormValues: (patient) => ({
@@ -43,7 +42,7 @@ export const patientConfig: ResourcePagesConfig<
     familyName: patient.name?.[0]?.family ?? '',
     gender: patient.gender,
     birthDate: patient.birthDate,
-    practitionerId: extractReferenceId(patient.generalPractitioner?.[0]),
+    practitionerUrl: patient.generalPractitioner?.[0]?.reference,
   }),
 
   createAction: createResourceCreateAction<PatientFormData, 'Patient'>(

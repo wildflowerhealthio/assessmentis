@@ -15,7 +15,7 @@ import {
 interface PatientFormProps {
   onSubmit: (data: PatientFormData) => void | Promise<void>
   submitLabel: string
-  initialValues: Promise<Partial<PatientFormData>>
+  initialValues: Promise<Partial<typeof PatientFormSchema.Encoded>>
 }
 
 export function PatientForm({
@@ -45,10 +45,10 @@ export function PatientForm({
           name: 'birthDate',
           label: 'Birth Date',
         }),
-        practitionerId: transformProps(
+        practitionerUrl: transformProps(
           PractitionerPicker,
           (props: CommonFieldProps<string | undefined>) => ({
-            name: 'practitionerId',
+            name: 'practitionerUrl',
             label: 'General Practitioner',
             picking: {
               onChange: props.onChange,
@@ -63,7 +63,7 @@ export function PatientForm({
         'familyName',
         'gender',
         'birthDate',
-        'practitionerId',
+        'practitionerUrl',
       ]}
       onSubmit={onSubmit}
       submitLabel={submitLabel}

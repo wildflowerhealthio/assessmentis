@@ -41,7 +41,7 @@ describe('BackboneElement', () => {
   })
 
   test('Key static equals the domain type', () => {
-    expect(TestBackbone.Key).toBe('TestBackbone')
+    expect(TestBackbone.DomainType).toBe('TestBackbone')
   })
 
   test('property: encode-decode round-trip', () => {

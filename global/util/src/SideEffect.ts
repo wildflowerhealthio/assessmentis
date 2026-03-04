@@ -1,4 +1,4 @@
-import { Effect } from 'effect'
+import type { Effect } from 'effect'
 
 export type EffectAction = Effect.Effect<void, never, never>
 

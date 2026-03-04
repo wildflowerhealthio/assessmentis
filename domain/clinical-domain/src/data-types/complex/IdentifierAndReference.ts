@@ -3,13 +3,9 @@ import type { ElementEncoded } from '../base/'
 import { Element } from '../base/'
 import { CodeableConcept, type CodeableConceptEncoded } from './CodeableConcept'
 import { Period } from './Period'
-import { MergeClasses } from '@assessmentis/util'
+import { mergeArbitraries, MergeClasses } from '@assessmentis/util'
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
-import {
-  BadDataError,
-  ExternalAssertionError,
-  UnhandledError,
-} from '@assessmentis/ontology'
+import { ExternalAssertionError } from '@assessmentis/ontology'
 import type { ParseError } from 'effect/ParseResult'
 
 /**
@@ -23,8 +19,8 @@ import type { ParseError } from 'effect/ParseResult'
  * reference at runtime by lazily evaluating the schema when needed.
  */
 
-export const ReferenceKey = 'Reference'
-export type ReferenceKey = typeof ReferenceKey
+const ReferenceKey = 'Reference'
+type ReferenceKey = typeof ReferenceKey
 
 const referenceFields = {
   /**
@@ -59,7 +55,16 @@ export interface ReferenceEncoded
 const referenceElement = Element(ReferenceKey)
 
 export class Reference extends MergeClasses<Reference>(ReferenceKey)(
-  [],
+  [
+    {
+      arbitrary: () =>
+        mergeArbitraries(
+          (props) => new Reference(props),
+          referenceElement,
+          referenceFields
+        ),
+    },
+  ],
   referenceElement,
   referenceFields,
   {
@@ -80,13 +85,13 @@ export class Reference extends MergeClasses<Reference>(ReferenceKey)(
   }
 ) {
   asResourceUrl<TUrl extends ReadonlyUrl>(t: {
-    readonly Key: string
+    readonly DomainType: string
     readonly UrlSchema: Schema.Schema<TUrl, string, never>
   }): Effect.Effect<TUrl, ExternalAssertionError | ParseError, never> {
-    if (this.type != t.Key) {
+    if (this.type != t.DomainType) {
       return Effect.fail(
         new ExternalAssertionError({
-          expected: `a resource of type '${t.Key}' got '${this.type}'`,
+          expected: `a resource of type '${t.DomainType}' got '${this.type}'`,
           cause: this,
         })
       )
@@ -123,8 +128,8 @@ export class Reference extends MergeClasses<Reference>(ReferenceKey)(
   }
 }
 
-export const IdentifierKey = 'Identifier'
-export type IdentifierKey = typeof IdentifierKey
+const IdentifierKey = 'Identifier'
+type IdentifierKey = typeof IdentifierKey
 
 export const IdentifierUse = Schema.Enums({
   usual: 'usual',
@@ -183,7 +188,16 @@ export interface IdentifierEncoded
 const IdentifierElementMixin = Element(IdentifierKey)
 
 export class Identifier extends MergeClasses<Identifier>(IdentifierKey)(
-  [],
+  [
+    {
+      arbitrary: () =>
+        mergeArbitraries(
+          (props) => new Identifier(props),
+          IdentifierElementMixin,
+          identifierFields
+        ),
+    },
+  ],
   IdentifierElementMixin,
   identifierFields,
   {

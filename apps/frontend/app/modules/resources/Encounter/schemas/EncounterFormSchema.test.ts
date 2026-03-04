@@ -28,7 +28,7 @@ describe('EncounterFormSchema', () => {
 
   it('should allow optional fields to be undefined', () => {
     const minimalData = {
-      questionnaireIds: ['questionnaire-123'],
+      questionnaireUrls: ['http://questionnaires.com/questionnaire-123'],
     }
 
     const result = Schema.decodeUnknownSync(EncounterFormSchema)(minimalData)

@@ -14,11 +14,7 @@ import { Extension, type ExtensionEncoded } from '../special-purpose/Extension'
 
 const fields = {
   extension: pipe(
-    Schema.Array(
-      Schema.suspend(
-        (): Schema.Schema<Extension, ExtensionEncoded, never> => Extension
-      )
-    ),
+    Schema.Array(Extension),
     Schema.annotations({
       arbitrary: () => (fc) => fc.constant([]),
     }),
@@ -42,7 +38,7 @@ export type ElementFields<TDomainType extends string> = typeof fields & {
 }
 
 type ElementClass<Self, TDomainType extends string> = {
-  readonly Key: TDomainType
+  readonly DomainType: TDomainType
   readonly UrlSchema: Schema.brand<
     Schema.Schema<ReadonlyUrl, string, never>,
     `${TDomainType}/url`
@@ -74,7 +70,7 @@ export const Element = <TDomainType extends string>(
     url: Schema.optional(urlSchema),
     ...fields,
   }) {
-    static Key = domainType
+    static DomainType = domainType
     static UrlSchema = urlSchema
   }
 

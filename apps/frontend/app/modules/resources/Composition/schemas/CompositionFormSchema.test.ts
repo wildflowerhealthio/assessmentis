@@ -5,25 +5,30 @@ import {
   CompositionFormSchema,
   transformToComposition,
 } from './CompositionFormSchema'
+import { Patient } from '@assessmentis/clinical-domain'
 
 describe('CompositionFormSchema', () => {
   describe('schema validation', () => {
     it('should validate correct form data', () => {
       const validData: typeof CompositionFormSchema.Encoded = {
         title: 'Patient Assessment',
-        patientId: 'patient-123',
+        patientUrl: 'http://patients.com/patient-123',
       }
 
       const result = Schema.decodeUnknownSync(CompositionFormSchema)(validData)
-      expect(result).toEqual({
+      expect(result).toMatchObject({
         title: 'Patient Assessment',
-        patientId: 'patient-123',
+        patientUrl: {
+          protocol: 'http:',
+          host: 'patients.com',
+          pathname: '/patient-123',
+        },
       })
     })
 
     it('should require title', () => {
       const invalidData = {
-        patientId: 'patient-123',
+        patientUrl: 'http://patients.com/patient-123',
       }
 
       expect(() =>
@@ -39,7 +44,7 @@ describe('CompositionFormSchema', () => {
       const result = Schema.decodeUnknownSync(CompositionFormSchema)(
         minimalData
       )
-      expect(result.patientId).toBeUndefined()
+      expect(result.patientUrl).toBeUndefined()
     })
   })
 
@@ -47,7 +52,9 @@ describe('CompositionFormSchema', () => {
     it('should transform form data to Composition domain model', () => {
       const formData: CompositionFormData = {
         title: 'Medical History',
-        patientId: 'pat-456',
+        patientUrl: Schema.decodeSync(Patient.UrlSchema)(
+          'http://patients.com/patient-456'
+        ),
       }
 
       const composition = transformToComposition(formData)
@@ -55,7 +62,9 @@ describe('CompositionFormSchema', () => {
       expect(composition.domainType).toBe('Composition')
       expect(composition.title).toBe('Medical History')
       expect(composition.status).toBe('preliminary')
-      expect(composition.subject).toEqual({ reference: 'Patient/pat-456' })
+      expect(composition.subject).toMatchObject({
+        reference: 'http://patients.com/patient-456',
+      })
       expect(composition.section).toEqual([])
     })
 
@@ -67,7 +76,7 @@ describe('CompositionFormSchema', () => {
       const composition = transformToComposition(formData)
 
       expect(composition.title).toBe('Quick Note')
-      expect(composition.subject).toEqual({})
+      expect(composition.subject).toBeUndefined()
       expect(composition.date).toBeDefined() // Should have current date
     })
 
@@ -86,18 +95,16 @@ describe('CompositionFormSchema', () => {
     it('should transform any valid form data without throwing', () => {
       const genFormData = FastCheck.record({
         title: FastCheck.string({ minLength: 0, maxLength: 200 }),
-        patientId: FastCheck.option(FastCheck.uuid(), { nil: undefined }),
+        patientUrl: FastCheck.option(FastCheck.webUrl(), { nil: undefined }),
         date: FastCheck.option(
           FastCheck.date().map((d) => d.toISOString().split('T')[0]),
           { nil: undefined }
         ),
-      })
+      }).map(Schema.decodeSync(CompositionFormSchema))
 
       FastCheck.assert(
         FastCheck.property(genFormData, (formData) => {
-          const composition = transformToComposition(
-            formData as CompositionFormData
-          )
+          const composition = transformToComposition(formData)
 
           expect(composition.domainType).toBe('Composition')
           expect(composition.status).toBe('preliminary')
@@ -111,13 +118,15 @@ describe('CompositionFormSchema', () => {
             expect(composition.title).toBe('New Composition')
           }
 
-          // If patientId was provided, subject should reference it
-          if (formData.patientId) {
+          // If patientUrl was provided, subject should reference it
+          if (formData.patientUrl) {
             expect(composition.subject).toEqual({
-              reference: `Patient/${formData.patientId}`,
+              domainType: 'Reference',
+              extension: [],
+              reference: formData.patientUrl.toString(),
             })
           } else {
-            expect(composition.subject).toEqual({})
+            expect(composition.subject).toBeUndefined()
           }
         }),
         { numRuns: 100 }
@@ -127,7 +136,7 @@ describe('CompositionFormSchema', () => {
     it('should maintain field values through transformation', () => {
       const genFormData = FastCheck.record({
         title: FastCheck.string({ minLength: 1, maxLength: 200 }),
-        patientId: FastCheck.option(FastCheck.uuid(), { nil: undefined }),
+        patientUrl: FastCheck.option(FastCheck.webUrl(), { nil: undefined }),
         date: FastCheck.option(
           FastCheck.date().map((d) => d.toISOString().split('T')[0]),
           { nil: undefined }
@@ -143,11 +152,9 @@ describe('CompositionFormSchema', () => {
           // Title should be preserved (not empty in this test)
           expect(composition.title).toBe(formData.title)
 
-          // Patient ID should be in subject reference
-          if (formData.patientId) {
-            expect(composition.subject?.reference).toBe(
-              `Patient/${formData.patientId}`
-            )
+          // Patient URL should be in subject reference
+          if (formData.patientUrl) {
+            expect(composition.subject?.reference).toBe(formData.patientUrl)
           }
         }),
         { numRuns: 100 }

@@ -1,8 +1,7 @@
 import { Schema } from 'effect'
-import * as Period from './Period'
+import { Period } from './Period'
 
-export const Key = 'HumanName'
-export type Key = typeof Key
+const Key = 'HumanName'
 
 const fields = {
   /**
@@ -43,7 +42,7 @@ const fields = {
   /**
    * Indicates the period of time when this name was valid for the named person.
    */
-  period: Schema.optional(Schema.suspend(() => Period.Period)),
+  period: Schema.optional(Schema.suspend(() => Period)),
 } as const
 
 export interface HumanNameEncoded extends Schema.Struct.Encoded<
@@ -53,4 +52,6 @@ export interface HumanNameEncoded extends Schema.Struct.Encoded<
 /**
  * A human's name with the ability to identify parts and usage.
  */
-export class HumanName extends Schema.Class<HumanName>(Key)(fields) {}
+export class HumanName extends Schema.Class<HumanName>(Key)(fields) {
+  static readonly DomainType = Key
+}

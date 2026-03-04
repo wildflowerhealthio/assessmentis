@@ -1,7 +1,7 @@
 import { Effect } from 'effect'
 import { VideoCallClient } from '@assessmentis/video-call-domain'
 import type { Encounter, Media } from '@assessmentis/clinical-domain'
-import { IdentifierAndReference } from '@assessmentis/clinical-domain/data-types'
+import { Reference } from '@assessmentis/clinical-domain/data-types'
 import {
   EncounterRepository,
   MediaRepository,
@@ -94,7 +94,7 @@ export const updateEncounterRecordingsAndTranscripts = (
     }
 
     // Create new Media resources linked to the encounter
-    const encounterRef = IdentifierAndReference.Reference.make({
+    const encounterRef = Reference.make({
       reference: `Encounter/${encounterUrl}`,
     })
     const mediaToCreate: Media[] = newRecordings.map((media) => ({

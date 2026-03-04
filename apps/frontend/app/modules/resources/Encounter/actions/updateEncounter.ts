@@ -7,8 +7,8 @@ import {
 } from '@assessmentis/clinical-domain'
 import { EncounterRepository } from '@assessmentis/clinical-domain/repositories'
 import {
-  IdentifierAndReference,
   Period,
+  Reference,
 } from '@assessmentis/clinical-domain/data-types'
 import type {
   ExternalAssertionError,
@@ -39,7 +39,7 @@ export const updateEncounter = (
       ...currentEncounter,
       // Update subject (patient)
       subject: formData.patientUrl
-        ? IdentifierAndReference.Reference.make({
+        ? Reference.make({
             reference: formData.patientUrl.toString(),
             type: 'Patient',
           })
@@ -47,7 +47,7 @@ export const updateEncounter = (
       // Update participant (practitioners)
       participant: formData.practitionerUrls?.map((practitionerUrl) =>
         EncounterParticipant.make({
-          individual: IdentifierAndReference.Reference.make({
+          individual: Reference.make({
             reference: practitionerUrl.toString(),
             type: 'Practitioner',
           }),
@@ -56,7 +56,7 @@ export const updateEncounter = (
       // Update period
       period:
         formData.periodStart || formData.periodEnd
-          ? Period.Period.make({
+          ? Period.make({
               start: formData.periodStart?.pipe(DateTime.toUtc),
               end: formData.periodEnd?.pipe(DateTime.toUtc),
             })
@@ -70,7 +70,7 @@ export const updateEncounter = (
         ...(formData.locationUrl
           ? [
               EncounterLocation.make({
-                location: IdentifierAndReference.Reference.make({
+                location: Reference.make({
                   reference: formData.locationUrl.toString(),
                   type: 'Location',
                 }),

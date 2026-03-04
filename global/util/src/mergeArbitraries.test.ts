@@ -29,11 +29,12 @@ const plainFields = { extra: Schema.String } as const as Schema.Struct.Fields
 
 describe('mergeArbitraries', () => {
   it('merges a Schema.Class with plain fields', () => {
-    const lazy = mergeArbitraries(
-      (x): Alpha & Schema.Struct.Type<typeof plainFields> => x,
-      Alpha,
-      plainFields
-    )
+    const lazy = (_: unknown) =>
+      mergeArbitraries(
+        (x): Alpha & Schema.Struct.Type<typeof plainFields> => x,
+        Alpha,
+        plainFields
+      )
     const arb = lazy({ maxDepth: 2 })(fc)
     const samples = fc.sample(arb, 10)
     for (const s of samples) {
@@ -45,11 +46,12 @@ describe('mergeArbitraries', () => {
   })
 
   it('merges a Schema.Class with custom arbitrary + plain fields', () => {
-    const lazy = mergeArbitraries(
-      (x): WithCustomArb & Schema.Struct.Type<typeof plainFields> => x,
-      WithCustomArb,
-      plainFields
-    )
+    const lazy = (_: unknown) =>
+      mergeArbitraries(
+        (x): WithCustomArb & Schema.Struct.Type<typeof plainFields> => x,
+        WithCustomArb,
+        plainFields
+      )
     const arb = lazy({ maxDepth: 2 })(fc)
     const samples = fc.sample(arb, 20)
     for (const s of samples) {
@@ -62,11 +64,12 @@ describe('mergeArbitraries', () => {
 
   it('merges a LazyArbitrary with plain fields', () => {
     const lazyArb = (fc: typeof FastCheck) => fc.constant({ custom: 'lazy' })
-    const lazy = mergeArbitraries(
-      (x): { custom: 'lazy' } & Schema.Struct.Type<typeof plainFields> => x,
-      lazyArb,
-      plainFields
-    )
+    const lazy = (_: unknown) =>
+      mergeArbitraries(
+        (x): { custom: 'lazy' } & Schema.Struct.Type<typeof plainFields> => x,
+        lazyArb,
+        plainFields
+      )
     const arb = lazy({ maxDepth: 2 })(fc)
     const samples = fc.sample(arb, 5)
     for (const s of samples) {
@@ -76,11 +79,12 @@ describe('mergeArbitraries', () => {
   })
 
   it('merges two plain field objects', () => {
-    const lazy = mergeArbitraries(
-      (x): { a: string; b: number } => x,
-      { a: Schema.String },
-      { b: Schema.Number }
-    )
+    const lazy = (_: unknown) =>
+      mergeArbitraries(
+        (x): { a: string; b: number } => x,
+        { a: Schema.String },
+        { b: Schema.Number }
+      )
     const arb = lazy({ maxDepth: 2 })(fc)
     const samples = fc.sample(arb, 10)
     for (const s of samples) {
@@ -90,7 +94,7 @@ describe('mergeArbitraries', () => {
   })
 
   it('returns a LazyArbitrary (double-invocation pattern)', () => {
-    const lazy = mergeArbitraries((x) => x, plainFields)
+    const lazy = (_: unknown) => mergeArbitraries((x) => x, plainFields)
     expect(typeof lazy).toBe('function')
     const inner = lazy({ maxDepth: 2 })
     expect(typeof inner).toBe('function')

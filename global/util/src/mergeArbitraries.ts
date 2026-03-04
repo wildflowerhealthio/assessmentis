@@ -56,16 +56,6 @@ export const mergeArbitraries =
   <Sources extends ReadonlyArray<ArbitrarySource>>(
     mapper: (x: any) => any,
     ...sources: Sources
-  ) =>
-  <TypeParameters extends ReadonlyArray<any> = readonly []>(
-    ..._arbitraries: [
-      ...{
-        readonly [K in keyof TypeParameters]: Arbitrary.LazyArbitrary<
-          TypeParameters[K]
-        >
-      },
-      ctx: Arbitrary.ArbitraryGenerationContext,
-    ]
   ): Arbitrary.LazyArbitrary<any> =>
   (fc: typeof FastCheck): FastCheck.Arbitrary<any> => {
     const arbs = sources.map((src) => {

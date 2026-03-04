@@ -229,7 +229,7 @@ describe('MergeClasses', () => {
     )(
       [
         {
-          arbitrary: mergeArbitraries(choiceArbitrary, extraFields),
+          arbitrary: () => mergeArbitraries(choiceArbitrary, extraFields),
         },
       ],
       choiceFields,

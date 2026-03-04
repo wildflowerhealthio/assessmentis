@@ -22,7 +22,9 @@ export const BackboneElementEncodedFromFhir = <DomainType extends string>(
       Schema.Struct({
         modifierExtension: Schema.optional(
           mutableEncoded(
-            Schema.Array(Schema.suspend(() => FhirR4Extension.EncodedFromExternal))
+            Schema.Array(
+              Schema.suspend(() => FhirR4Extension.EncodedFromExternal)
+            )
           )
         ),
       })

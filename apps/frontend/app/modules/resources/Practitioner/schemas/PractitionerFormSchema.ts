@@ -1,14 +1,18 @@
 import { Schema } from 'effect'
-import { Practitioner, PractitionerQualification } from '@assessmentis/clinical-domain'
+import {
+  Practitioner,
+  PractitionerQualification,
+} from '@assessmentis/clinical-domain'
 import {
   AdministrativeGender,
   CodeableConcept,
+  HumanName,
 } from '@assessmentis/clinical-domain/data-types'
 
 export const PractitionerFormSchema = Schema.Struct({
   givenName: Schema.String,
   familyName: Schema.String,
-  gender: Schema.optional(AdministrativeGender.AdministrativeGender),
+  gender: Schema.optional(AdministrativeGender),
   qualification: Schema.optional(Schema.String),
 })
 
@@ -25,10 +29,10 @@ export function transformToPractitioner(
     name:
       givenName || familyName
         ? [
-            {
+            HumanName.make({
               given: givenName ? [givenName] : undefined,
               family: familyName || undefined,
-            },
+            }),
           ]
         : undefined,
     gender: formData.gender,

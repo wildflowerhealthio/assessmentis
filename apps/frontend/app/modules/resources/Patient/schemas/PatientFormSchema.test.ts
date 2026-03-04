@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { Schema, FastCheck } from 'effect'
-import type { PatientFormData } from './PatientFormSchema'
-import { PatientFormSchema, transformToPatient } from './PatientFormSchema'
+import { type PatientFormData, PatientFormSchema } from './PatientFormSchema'
+import { transformToPatient } from './PatientFormSchema'
 import type { AdministrativeGender } from '@assessmentis/clinical-domain/data-types'
+import { Practitioner } from '@assessmentis/clinical-domain'
 
 // NOTE: This test requires vitest to be installed
 // Run: npm install --save-dev vitest @effect/vitest
@@ -10,16 +11,24 @@ import type { AdministrativeGender } from '@assessmentis/clinical-domain/data-ty
 describe('PatientFormSchema', () => {
   describe('schema validation', () => {
     it('should validate correct form data', () => {
-      const validData: PatientFormData = {
+      const validData: typeof PatientFormSchema.Encoded = {
         givenName: 'John',
         familyName: 'Doe',
         gender: 'male',
         birthDate: new Date('1990-01-01'),
-        practitionerId: 'practitioner-123',
+        practitionerUrl: 'http://example.com/fhir/Practitioner/prac-123',
       }
 
       const result = Schema.decodeUnknownSync(PatientFormSchema)(validData)
-      expect(result).toEqual(validData)
+      expect(result).toEqual({
+        givenName: 'John',
+        familyName: 'Doe',
+        gender: 'male',
+        birthDate: new Date('1990-01-01'),
+        practitionerUrl: Schema.decodeSync(Practitioner.UrlSchema)(
+          'http://example.com/fhir/Practitioner/prac-123'
+        ),
+      } satisfies typeof PatientFormSchema.Type)
     })
 
     it('should require givenName and familyName', () => {
@@ -41,24 +50,26 @@ describe('PatientFormSchema', () => {
       const result = Schema.decodeUnknownSync(PatientFormSchema)(minimalData)
       expect(result.gender).toBeUndefined()
       expect(result.birthDate).toBeUndefined()
-      expect(result.practitionerId).toBeUndefined()
+      expect(result.practitionerUrl).toBeUndefined()
     })
   })
 
   describe('transformToPatient', () => {
     it('should transform form data to Patient domain model', () => {
-      const formData: PatientFormData = {
+      const formData: PatientFormData = PatientFormSchema.make({
         givenName: 'John',
         familyName: 'Doe',
         gender: 'male',
         birthDate: new Date('1990-01-01'),
-        practitionerId: 'prac-123',
-      }
+        practitionerUrl: Schema.decodeSync(Practitioner.UrlSchema)(
+          'http://example.com/fhir/Practitioner/prac-123'
+        ),
+      })
 
       const patient = transformToPatient(formData)
 
-      expect(patient).toEqual({
-        resourceType: 'Patient',
+      expect(patient).toMatchObject({
+        domainType: 'Patient',
         name: [
           {
             given: ['John'],
@@ -67,7 +78,11 @@ describe('PatientFormSchema', () => {
         ],
         gender: 'male',
         birthDate: new Date('1990-01-01'),
-        generalPractitioner: [{ reference: 'Practitioner/prac-123' }],
+        generalPractitioner: [
+          {
+            reference: 'http://example.com/fhir/Practitioner/prac-123',
+          },
+        ],
         active: true,
       })
     })
@@ -108,53 +123,7 @@ describe('PatientFormSchema', () => {
   describe('property-based tests', () => {
     // Property-based test: any valid form data should transform to a valid Patient
     it('should transform any valid form data to Patient without throwing', () => {
-      const genGender = FastCheck.constantFrom<AdministrativeGender.AdministrativeGender>(
-        'male',
-        'female',
-        'other',
-        'unknown'
-      )
-
-      const genFormData = FastCheck.record({
-        givenName: FastCheck.string({ minLength: 1, maxLength: 50 }),
-        familyName: FastCheck.string({ minLength: 1, maxLength: 50 }),
-        gender: FastCheck.option(genGender, { nil: undefined }),
-        birthDate: FastCheck.option(FastCheck.string(), { nil: undefined }),
-        practitionerId: FastCheck.option(FastCheck.string(), {
-          nil: undefined,
-        }),
-      })
-
-      FastCheck.assert(
-        FastCheck.property(genFormData, (formData) => {
-          // Should not throw
-          const patient = transformToPatient(formData as PatientFormData)
-
-          // Verify basic structure
-          expect(patient.domainType).toBe('Patient')
-          expect(patient.active).toBe(true)
-
-          // If givenName or familyName exist, name should be defined
-          if (formData.givenName || formData.familyName) {
-            expect(patient.name).toBeDefined()
-            expect(Array.isArray(patient.name)).toBe(true)
-          }
-
-          // If practitionerId exists, generalPractitioner should be defined
-          if (formData.practitionerId) {
-            expect(patient.generalPractitioner).toBeDefined()
-            expect(patient.generalPractitioner?.[0].reference).toBe(
-              `Practitioner/${formData.practitionerId}`
-            )
-          }
-        }),
-        { numRuns: 100 }
-      )
-    })
-
-    // Property-based test: transformation should be idempotent for the core fields
-    it('should maintain field values through transformation', () => {
-      const genGender = FastCheck.constantFrom<AdministrativeGender.AdministrativeGender>(
+      const genGender = FastCheck.constantFrom<AdministrativeGender>(
         'male',
         'female',
         'other',
@@ -166,15 +135,72 @@ describe('PatientFormSchema', () => {
         familyName: FastCheck.string({ minLength: 1, maxLength: 50 }),
         gender: FastCheck.option(genGender, { nil: undefined }),
         birthDate: FastCheck.option(
-          FastCheck.date().map((d) => d.toISOString().split('T')[0]),
+          FastCheck.date()
+            .map((d) => d.toISOString().split('T')[0])
+            .filter((s) => s.length === 10)
+            .map((s) => new Date(s)),
           { nil: undefined }
         ),
-        practitionerId: FastCheck.option(FastCheck.uuid(), { nil: undefined }),
-      })
+        practitionerUrl: FastCheck.option(FastCheck.webUrl(), {
+          nil: undefined,
+        }),
+      }).map(Schema.decodeSync(PatientFormSchema))
 
       FastCheck.assert(
         FastCheck.property(genFormData, (formData) => {
-          const patient = transformToPatient(formData as PatientFormData)
+          // Should not throw
+          const patient = transformToPatient(formData)
+
+          // Verify basic structure
+          expect(patient.domainType).toBe('Patient')
+          expect(patient.active).toBe(true)
+
+          // If givenName or familyName exist, name should be defined
+          if (formData.givenName.trim() || formData.familyName.trim()) {
+            expect(patient.name).toBeDefined()
+            expect(Array.isArray(patient.name)).toBe(true)
+          }
+
+          // If practitionerId exists, generalPractitioner should be defined
+          if (formData.practitionerUrl) {
+            expect(patient.generalPractitioner).toBeDefined()
+            expect(patient.generalPractitioner?.[0].reference).toBe(
+              formData.practitionerUrl.toString()
+            )
+          }
+        }),
+        { numRuns: 100 }
+      )
+    })
+
+    // Property-based test: transformation should be idempotent for the core fields
+    it('should maintain field values through transformation', () => {
+      const genGender = FastCheck.constantFrom<AdministrativeGender>(
+        'male',
+        'female',
+        'other',
+        'unknown'
+      )
+
+      const genFormData = FastCheck.record({
+        givenName: FastCheck.string({ minLength: 1, maxLength: 50 }),
+        familyName: FastCheck.string({ minLength: 1, maxLength: 50 }),
+        gender: FastCheck.option(genGender, { nil: undefined }),
+        birthDate: FastCheck.option(
+          FastCheck.date()
+            .map((d) => d.toISOString().split('T')[0])
+            .filter((s) => s.length === 10)
+            .map((s) => new Date(s)),
+          { nil: undefined }
+        ),
+        practitionerUrl: FastCheck.option(FastCheck.webUrl(), {
+          nil: undefined,
+        }),
+      }).map(Schema.decodeSync(PatientFormSchema))
+
+      FastCheck.assert(
+        FastCheck.property(genFormData, (formData) => {
+          const patient = transformToPatient(formData)
 
           // Gender should be preserved
           expect(patient.gender).toBe(formData.gender)

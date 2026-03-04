@@ -35,7 +35,9 @@ export const makeCreateResourcePage = <
             )
           )
       )
-      navigate(`/${config.resourceType}/${created.url.toString()}`)
+      navigate(
+        `/${config.resourceType}/${encodeURIComponent(created.url.toString())}`
+      )
     }
 
     return (

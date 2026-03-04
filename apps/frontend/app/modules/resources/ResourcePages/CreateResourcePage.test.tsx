@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/consistent-type-imports */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -98,7 +97,10 @@ describe('CreateResourcePage', () => {
 
   it('calls createAction and navigates to detail page on submit', async () => {
     const createAction = vi.fn(() =>
-      Effect.succeed({ id: 'new-456', resourceType: 'TestResource' })
+      Effect.succeed({
+        url: 'http://example.com/new-456',
+        domainType: 'TestResource',
+      })
     )
     const config = createTestConfig({ createAction })
 
@@ -108,6 +110,8 @@ describe('CreateResourcePage', () => {
     await user.click(screen.getByText('Save'))
 
     expect(createAction).toHaveBeenCalledWith({ name: 'New Item' })
-    expect(mockNavigate).toHaveBeenCalledWith('/TestResource/new-456')
+    expect(mockNavigate).toHaveBeenCalledWith(
+      `/TestResource/${encodeURIComponent('http://example.com/new-456')}`
+    )
   })
 })

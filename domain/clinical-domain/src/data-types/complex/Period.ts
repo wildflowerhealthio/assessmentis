@@ -1,20 +1,11 @@
 import { Schema } from 'effect'
 import { Element, type ElementEncoded } from '../base/Element'
+import { MergeClasses } from '@assessmentis/util'
+import { Datatype } from '../Datatype'
 
-export const Key = 'Period'
-export type Key = typeof Key
+const Key = 'Period'
 
-export interface PeriodEncoded extends ElementEncoded<Key> {
-  start?: string
-  end?: string
-}
-
-/**
- * A time period defined by a start and end date/time.
- * A period specifies a range of times. The context of use will specify whether the entire period applies (e.g. "the patient was an inpatient of the hospital for this time range") or one value from the period applies (e.g. "give to the patient between 2 and 4 pm on 24-Jun 2013").
- */
-export class Period extends Schema.Class<Period>(Key)({
-  ...Element(Key).fields,
+const fields = {
   /**
    * The start of the period. The boundary is inclusive.
    * If the low element is missing, the meaning is that the low boundary is not known.
@@ -25,7 +16,24 @@ export class Period extends Schema.Class<Period>(Key)({
    * The high value includes any matching date/time. i.e. 2012-02-03T10:00:00 is in a period that has an end value of 2012-02-03.
    */
   end: Schema.optional(Schema.DateTimeUtc),
-}) {
-  static readonly Key = Key
-  static readonly UrlSchema = this.fields.url.from
+} as const satisfies Schema.Struct.Fields
+
+const ElementMixin = Element(Key)
+
+export interface PeriodEncoded
+  extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<typeof Key> {}
+
+/**
+ * A time period defined by a start and end date/time.
+ * A period specifies a range of times. The context of use will specify whether the entire period applies (e.g. "the patient was an inpatient of the hospital for this time range") or one value from the period applies (e.g. "give to the patient between 2 and 4 pm on 24-Jun 2013").
+ */
+export class Period extends MergeClasses<Period>(Key)(
+  [],
+  ElementMixin,
+  fields
+) {
+  static Datatype: Datatype<'Period', Period, PeriodEncoded> = Datatype(
+    'Period',
+    Period
+  )
 }

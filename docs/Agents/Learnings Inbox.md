@@ -82,6 +82,24 @@ Append-only log for agent-discovered knowledge. Agents add entries here during w
 **Learning**: Extension is a special case — it's defined in the same file as Element to break circular imports, and it needs both Element fields and DatatypeChoice value[x] fields. Rather than chaining `applySchemaMixinTo` twice, Extension is a plain `Schema.Class` that manually delegates DatatypeChoice instance methods (`isExactlyOnePresent`, `isNonePresent`) by calling `ValueMixin.prototype.method.call(this)`, and wraps the static `allOptionKeys()`. This avoids complex mixin composition and keeps the Extension definition readable.
 **Suggested destination**: domain/clinical-domain/docs/FHIR Modeling Reference.md
 
+### Schema.extend cannot combine FinalTransformation with TypeLiteralTransformation
+
+**Discovered during**: ruthmarks/refactor/seperate-fhir-from-data-types (debugging runtime Schema.extend failures)
+**Learning**: Effect's `Schema.extend` handles many AST combinations but specifically CANNOT combine a `FinalTransformation` (created by `Schema.transformOrFail`) with a `TypeLiteralTransformation` (created by `Schema.fromKey` inside a struct). It falls through to "Unsupported schema or overlapping types". `Schema.extend(FinalTransformation, plainStruct)` WORKS fine — the issue is only when the struct side also contains property signature transforms like `fromKey`. In fhir-r4, this affects Extension.ts, Attachment.ts, and Questionnaire.ts (all use `fromKey('url')` in their field structs combined with `ElementIdentification`/`ResourceIdentification` which are `transformOrFail`). The ~40 other consumers with plain structs work fine. See `node_modules/effect/src/Schema.ts` lines 3524-3657. Full analysis in TODO.md.
+**Suggested destination**: domain/clinical-domain/docs/FHIR Modeling Reference.md
+
+### Effect Schema.Class instances cannot be reconstructed via Object.create + Object.assign
+
+**Discovered during**: ruthmarks/refactor/seperate-fhir-from-data-types (deepAssignBaseUrls for FHIR arbitrary URL coordination)
+**Learning**: Effect's `Schema.Class` (and by extension `MergeClasses`) instances carry internal state set up by the constructor — `_tag`, hash codes, and structural equality metadata from `Data.Class`. Reconstructing instances via `Object.create(Object.getPrototypeOf(v)) + Object.assign(result, fields)` produces objects that pass `instanceof` checks but fail during `Schema.encode` with errors like `Cannot read properties of undefined (reading '_tag')` or `Receiver must be an instance of class URL`. Using `ctor.make(rebuiltFields)` is closer but also fails because `make` expects the constructor input shape, not an arbitrary bag of walked properties. When you need to produce a modified copy of a Schema.Class instance for testing, consider mutating in-place (if not frozen), or doing a Schema encode→modify→decode round-trip through the plain encoded representation.
+**Suggested destination**: docs/Testing/Testing Reference.md
+
+### Native URL objects must be skipped in recursive object walkers
+
+**Discovered during**: ruthmarks/refactor/seperate-fhir-from-data-types (deepAssignBaseUrls)
+**Learning**: When recursively walking Effect Schema-generated values, native `URL` instances (used by `Schema.URLFromSelf`) look like plain objects to `typeof v === 'object'` checks. If walked and reconstructed, they lose their `URL` prototype and fail with `Receiver must be an instance of class URL` during encoding. Add `if (v instanceof URL) return v` alongside guards for `Date`, `ReadonlyUrl`, and other built-in types. General rule: any recursive object walker over schema-generated values needs explicit guards for all non-POJO built-in types that might appear in the tree.
+**Suggested destination**: docs/Testing/Testing Reference.md
+
 ### applySchemaMixinTo has been eliminated — entries above are outdated
 
 **Discovered during**: ruthmarks/refactor/seperate-fhir-from-data-types (applySchemaMixinTo elimination)

@@ -1,19 +1,24 @@
 import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
-import { IdentifierAndReference } from '@assessmentis/clinical-domain/data-types'
+import {
+  Reference,
+  type ReferenceEncoded,
+  Identifier,
+  type IdentifierEncoded,
+} from '@assessmentis/clinical-domain/data-types'
 import type { BaseUrl } from '../UrlIdentification'
-import { ElementIdentification } from '../base/Element'
+import { ElementEncodedFromFhir } from '../base/Element'
 import { mutableEncoded } from '@assessmentis/util'
 import { FhirR4CodeableConcept } from './CodeableConcept'
 import { FhirR4Period } from './Period'
 import { TwoStepExternalSchema } from '@assessmentis/util'
 
 const ReferenceEncodedFromFhir: Schema.Schema<
-  IdentifierAndReference.ReferenceEncoded,
+  ReferenceEncoded,
   FhirR4.Reference,
   BaseUrl
 > = Schema.extend(
-  ElementIdentification('Reference'),
+  ElementEncodedFromFhir('Reference'),
   mutableEncoded(
     Schema.Struct({
       display: Schema.optional(Schema.String),
@@ -27,16 +32,16 @@ const ReferenceEncodedFromFhir: Schema.Schema<
 )
 
 export const FhirR4Reference = new TwoStepExternalSchema(
-  IdentifierAndReference.Reference,
+  Reference,
   ReferenceEncodedFromFhir
 )
 
 const IdentifierEncodedFromFhir: Schema.Schema<
-  IdentifierAndReference.IdentifierEncoded,
+  IdentifierEncoded,
   FhirR4.Identifier,
   BaseUrl
 > = Schema.extend(
-  ElementIdentification('Identifier'),
+  ElementEncodedFromFhir('Identifier'),
   mutableEncoded(
     Schema.Struct({
       period: Schema.optional(
@@ -62,6 +67,6 @@ const IdentifierEncodedFromFhir: Schema.Schema<
 )
 
 export const FhirR4Identifier = new TwoStepExternalSchema(
-  IdentifierAndReference.Identifier,
+  Identifier,
   IdentifierEncodedFromFhir
 )

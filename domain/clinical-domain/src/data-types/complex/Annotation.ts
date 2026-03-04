@@ -35,4 +35,6 @@ export interface AnnotationEncoded
 export class Annotation extends Schema.Class<Annotation>(Key)({
   ...Element(Key).fields,
   ...fields,
-}) {}
+}) {
+  static readonly DomainType = Key
+}

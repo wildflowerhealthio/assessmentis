@@ -30,10 +30,10 @@ export function CompositionForm({
           label: 'Title',
           required: true,
         }),
-        patientId: transformProps(
+        patientUrl: transformProps(
           PatientPicker,
           (props: CommonFieldProps<string | undefined>) => ({
-            name: 'patientId',
+            name: 'patientUrl',
             label: 'Subject (Patient)',
             picking: {
               onChange: props.onChange,
@@ -43,7 +43,7 @@ export function CompositionForm({
           })
         ),
       }}
-      fieldOrder={['title', 'patientId']}
+      fieldOrder={['title', 'patientUrl']}
       onSubmit={onSubmit}
       submitLabel={submitLabel}
       initialValues={initialValues}

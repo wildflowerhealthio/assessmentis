@@ -193,13 +193,13 @@ describe('humanizeDateRange', () => {
     },
     {
       testcase: 'empty period returns neitherFallback',
-      period: Period.Period.make({ start: undefined, end: undefined }),
+      period: Period.make({ start: undefined, end: undefined }),
       options: {},
       expected: 'Unknown Range',
     },
     {
       testcase: 'same day range shows compact format with times',
-      period: Period.Period.make({
+      period: Period.make({
         start: DateTime.unsafeFromDate(new Date('2024-01-15T10:00:00Z')),
         end: DateTime.unsafeFromDate(new Date('2024-01-15T11:00:00Z')),
       }),
@@ -208,7 +208,7 @@ describe('humanizeDateRange', () => {
     },
     {
       testcase: 'missing start uses startFallback',
-      period: Period.Period.make({
+      period: Period.make({
         start: undefined,
         end: DateTime.unsafeFromDate(new Date('2024-01-15T10:00:00Z')),
       }),
@@ -217,7 +217,7 @@ describe('humanizeDateRange', () => {
     },
     {
       testcase: 'missing end uses endFallback',
-      period: Period.Period.make({
+      period: Period.make({
         start: DateTime.unsafeFromDate(new Date('2024-01-15T10:00:00Z')),
         end: undefined,
       }),
@@ -240,13 +240,13 @@ describe('humanizeDateTimeRangeForLocalReader', () => {
     },
     {
       testcase: 'empty period returns neitherFallback',
-      period: Period.Period.make({ start: undefined, end: undefined }),
+      period: Period.make({ start: undefined, end: undefined }),
       options: {},
       expected: 'Unknown Range',
     },
     {
       testcase: 'different days use medium style with comma',
-      period: Period.Period.make({
+      period: Period.make({
         start: DateTime.unsafeFromDate(new Date('2024-01-15T09:00:00Z')),
         end: DateTime.unsafeFromDate(new Date('2024-01-16T17:30:00Z')),
       }),
@@ -255,7 +255,7 @@ describe('humanizeDateTimeRangeForLocalReader', () => {
     },
     {
       testcase: 'missing start uses startFallback',
-      period: Period.Period.make({
+      period: Period.make({
         start: undefined,
         end: DateTime.unsafeFromDate(new Date('2024-01-15T10:00:00Z')),
       }),
@@ -264,7 +264,7 @@ describe('humanizeDateTimeRangeForLocalReader', () => {
     },
     {
       testcase: 'missing end uses endFallback',
-      period: Period.Period.make({
+      period: Period.make({
         start: DateTime.unsafeFromDate(new Date('2024-01-15T10:00:00Z')),
         end: undefined,
       }),

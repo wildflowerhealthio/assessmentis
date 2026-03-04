@@ -108,7 +108,7 @@ export const startGapiGoogleHealthcareClient = (
       yield* LoadedGoogleFhirConfig
     const client = yield* yield* LoadedGapiClient
     const baseUrl = new ReadonlyUrl({
-      protocol: 'https',
+      protocol: 'https:',
       host: 'healthcare.googleapis.com',
       pathname: [
         `/v1/projects/`,
@@ -129,16 +129,16 @@ export const startGapiGoogleHealthcareClient = (
       resolver: undefined,
       errorStatus: undefined,
       activeResources: {
-        [Composition.Key]: true,
-        [DiagnosticReport.Key]: true,
-        [Encounter.Key]: true,
-        [Location.Key]: true,
-        [Media.Key]: true,
-        [Observation.Key]: true,
-        [Patient.Key]: true,
-        [Practitioner.Key]: true,
-        [Questionnaire.Key]: true,
-        [QuestionnaireResponse.Key]: true,
+        [Composition.DomainType]: true,
+        [DiagnosticReport.DomainType]: true,
+        [Encounter.DomainType]: true,
+        [Location.DomainType]: true,
+        [Media.DomainType]: true,
+        [Observation.DomainType]: true,
+        [Patient.DomainType]: true,
+        [Practitioner.DomainType]: true,
+        [Questionnaire.DomainType]: true,
+        [QuestionnaireResponse.DomainType]: true,
       },
     } as const
 

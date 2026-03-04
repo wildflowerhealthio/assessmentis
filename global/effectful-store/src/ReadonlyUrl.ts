@@ -113,7 +113,11 @@ export class ReadonlyUrl extends Schema.Class<ReadonlyUrl>('ReadonlyUrl')({
         return Effect.succeed(url.href)
       } catch {
         return Effect.fail(
-          new ParseResult.Forbidden(ast, toA, 'Cannot encode as URL string')
+          new ParseResult.Forbidden(
+            ast,
+            toA,
+            `Cannot encode as URL string ${JSON.stringify(toA)} `
+          )
         )
       }
     },

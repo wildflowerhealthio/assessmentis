@@ -50,7 +50,7 @@ describe('Resource', () => {
   })
 
   test('Key static equals the domain type', () => {
-    expect(TestResource.Key).toBe('TestResource')
+    expect(TestResource.DomainType).toBe('TestResource')
   })
 
   test('property: encode-decode round-trip', () => {

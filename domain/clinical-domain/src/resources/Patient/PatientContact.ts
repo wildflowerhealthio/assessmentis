@@ -5,7 +5,7 @@ import {
   ContactPoint,
   Address,
   AdministrativeGender,
-  IdentifierAndReference,
+  Reference,
   Period,
   BackboneElement,
   type BackboneElementEncoded,
@@ -15,16 +15,12 @@ const fields = {
   relationship: Schema.optional(
     Schema.Array(Schema.suspend(() => CodeableConcept))
   ),
-  name: Schema.optional(Schema.suspend(() => HumanName.HumanName)),
-  telecom: Schema.optional(
-    Schema.Array(Schema.suspend(() => ContactPoint.ContactPoint))
-  ),
-  address: Schema.optional(Schema.suspend(() => Address.Address)),
-  gender: Schema.optional(AdministrativeGender.AdministrativeGender),
-  organization: Schema.optional(
-    Schema.suspend(() => IdentifierAndReference.Reference)
-  ),
-  period: Schema.optional(Schema.suspend(() => Period.Period)),
+  name: Schema.optional(Schema.suspend(() => HumanName)),
+  telecom: Schema.optional(Schema.Array(Schema.suspend(() => ContactPoint))),
+  address: Schema.optional(Schema.suspend(() => Address)),
+  gender: Schema.optional(AdministrativeGender),
+  organization: Schema.optional(Schema.suspend(() => Reference)),
+  period: Schema.optional(Schema.suspend(() => Period)),
 } as const satisfies Schema.Struct.Fields
 
 export interface PatientContactEncoded

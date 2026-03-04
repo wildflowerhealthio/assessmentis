@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { MergeClasses } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary, MergeClasses } from '@assessmentis/util'
 import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
 import { Coding } from '../../data-types/complex/Coding'
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
@@ -27,17 +27,41 @@ type Key = typeof Key
 const fields = {
   identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
   status: EncounterStatus,
-  statusHistory: Schema.optional(Schema.Array(EncounterStatusHistory)),
+  statusHistory: Schema.optional(
+    Schema.Array(EncounterStatusHistory).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   class: Schema.suspend(() => Coding),
-  classHistory: Schema.optional(Schema.Array(EncounterClassHistory)),
+  classHistory: Schema.optional(
+    Schema.Array(EncounterClassHistory).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   type: Schema.optional(Schema.Array(Schema.suspend(() => CodeableConcept))),
   serviceType: Schema.optional(Schema.suspend(() => CodeableConcept)),
   priority: Schema.optional(Schema.suspend(() => CodeableConcept)),
   subject: Schema.optional(Schema.suspend(() => Reference)),
-  episodeOfCare: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
-  basedOn: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
-  participant: Schema.optional(Schema.Array(EncounterParticipant)),
-  appointment: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
+  episodeOfCare: Schema.optional(
+    Schema.Array(Schema.suspend(() => Reference)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
+  basedOn: Schema.optional(
+    Schema.Array(Schema.suspend(() => Reference)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
+  participant: Schema.optional(
+    Schema.Array(EncounterParticipant).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
+  appointment: Schema.optional(
+    Schema.Array(Schema.suspend(() => Reference)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   period: Schema.optional(Schema.suspend(() => Period)),
   length: Schema.optional(Schema.suspend(() => Quantity)),
   reasonCode: Schema.optional(
@@ -46,10 +70,22 @@ const fields = {
   reasonReference: Schema.optional(
     Schema.Array(Schema.suspend(() => Reference))
   ),
-  diagnosis: Schema.optional(Schema.Array(EncounterDiagnosis)),
-  account: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
+  diagnosis: Schema.optional(
+    Schema.Array(EncounterDiagnosis).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
+  account: Schema.optional(
+    Schema.Array(Schema.suspend(() => Reference)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   hospitalization: Schema.optional(EncounterHospitalization),
-  location: Schema.optional(Schema.Array(EncounterLocation)),
+  location: Schema.optional(
+    Schema.Array(EncounterLocation).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   serviceProvider: Schema.optional(Schema.suspend(() => Reference)),
   partOf: Schema.optional(Schema.suspend(() => Reference)),
 } as const satisfies Schema.Struct.Fields

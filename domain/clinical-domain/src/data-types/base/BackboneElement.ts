@@ -44,7 +44,7 @@ type BackboneElementFields<TDomainType extends string> =
   ElementFields<TDomainType> & typeof fields
 
 type BackboneElementClass<Self, TDomainType extends string> = {
-  readonly Key: TDomainType
+  readonly DomainType: TDomainType
   readonly UrlSchema: Schema.brand<
     Schema.Schema<ReadonlyUrl, string, never>,
     `${TDomainType}/url`
@@ -66,7 +66,7 @@ export const BackboneElement = <TDomainType extends string>(
   class BackboneElementMixin extends ElementBase.extend<BackboneElementMixin>(
     'BackboneElement'
   )(fields) {
-    static Key = ElementBase.Key
+    static DomainType = ElementBase.DomainType
     static UrlSchema = ElementBase.UrlSchema
   }
   return BackboneElementMixin satisfies BackboneElementClass<

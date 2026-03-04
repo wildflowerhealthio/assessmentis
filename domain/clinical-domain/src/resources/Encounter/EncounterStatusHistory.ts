@@ -19,7 +19,7 @@ export const EncounterStatus = Schema.Union(
 
 const fields = {
   status: EncounterStatus,
-  period: Schema.suspend(() => Period.Period),
+  period: Schema.suspend(() => Period),
 } as const satisfies Schema.Struct.Fields
 
 export interface EncounterStatusHistoryEncoded

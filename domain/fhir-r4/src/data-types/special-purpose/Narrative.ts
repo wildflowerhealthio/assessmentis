@@ -5,7 +5,7 @@ import {
   type NarrativeEncoded,
 } from '@assessmentis/clinical-domain/data-types'
 import type { BaseUrl } from '../UrlIdentification'
-import { ElementIdentification } from '../base/Element'
+import { ElementEncodedFromFhir } from '../base/Element'
 import { mutableEncoded } from '@assessmentis/util'
 import { TwoStepExternalSchema } from '@assessmentis/util'
 
@@ -21,7 +21,7 @@ const EncodedFromFhir: Schema.Schema<
   FhirR4.Narrative,
   BaseUrl
 > = Schema.extend(
-  ElementIdentification('Narrative'),
+  ElementEncodedFromFhir('Narrative'),
   mutableEncoded(
     Schema.Struct({
       status: NarrativeStatus,

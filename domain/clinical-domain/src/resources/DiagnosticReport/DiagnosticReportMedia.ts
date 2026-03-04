@@ -1,6 +1,7 @@
 import { Schema } from 'effect'
 import {
-  IdentifierAndReference,
+  Reference,
+  type ReferenceEncoded,
   BackboneElement,
   type BackboneElementEncoded,
 } from '../../data-types'
@@ -11,10 +12,7 @@ type DomainType = typeof DomainType
 const fields = {
   comment: Schema.optional(Schema.String),
   link: Schema.suspend(
-    (): Schema.Schema<
-      IdentifierAndReference.Reference,
-      IdentifierAndReference.ReferenceEncoded
-    > => IdentifierAndReference.Reference
+    (): Schema.Schema<Reference, ReferenceEncoded> => Reference
   ),
 } as const satisfies Schema.Struct.Fields
 

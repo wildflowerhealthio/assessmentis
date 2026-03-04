@@ -1,4 +1,5 @@
-import { Schema } from 'effect'
+import type { FastCheck } from 'effect'
+import { pipe, Schema } from 'effect'
 import {
   Coding,
   BackboneElement,
@@ -6,6 +7,7 @@ import {
 } from '../../data-types'
 import { QuestionnaireItemAnswerOption } from './QuestionnaireItemAnswerOption'
 import { QuestionnaireItemLink } from './QuestionnaireItemLink'
+import { mergeArbitraries, MergeClasses } from '@assessmentis/util'
 
 export type QuestionItemType =
   | 'group'
@@ -49,7 +51,7 @@ export const QuestionItemType = Schema.Union(
 const questionnaireItemFields = {
   answerOption: Schema.optional(Schema.Array(QuestionnaireItemAnswerOption)),
   answerValueSet: Schema.optional(Schema.String),
-  code: Schema.optional(Schema.Array(Schema.suspend(() => Coding.Coding))),
+  code: Schema.optional(Schema.Array(Schema.suspend(() => Coding))),
   definition: Schema.optional(Schema.String),
   enableBehavior: Schema.optional(
     Schema.Union(Schema.Literal('all'), Schema.Literal('any'), Schema.Undefined)
@@ -73,20 +75,59 @@ export interface QuestionnaireItemEncoded
   item?: ReadonlyArray<QuestionnaireItemEncoded> | undefined
 }
 
+const BackboneElementMixin = BackboneElement('QuestionnaireItem')
 /**
  * The content of the questionnaire is constructed from an ordered,
  * hierarchical collection of items.
  */
-export class QuestionnaireItem extends BackboneElement(
+export class QuestionnaireItem extends MergeClasses<QuestionnaireItem>(
   'QuestionnaireItem'
-).extend<QuestionnaireItem>('QuestionnaireItem')({
-  ...questionnaireItemFields,
-  item: Schema.optional(
-    Schema.Array(
-      Schema.suspend(
-        (): Schema.Schema<QuestionnaireItem, QuestionnaireItemEncoded> =>
-          QuestionnaireItem
+)(
+  [
+    {
+      arbitrary:
+        () =>
+        (fc: typeof FastCheck): FastCheck.Arbitrary<QuestionnaireItem> =>
+          fc.letrec<{ self: QuestionnaireItem }>((tie) => ({
+            self: mergeArbitraries(
+              (props) => new QuestionnaireItem(props),
+              questionnaireItemFields,
+              BackboneElementMixin,
+              (
+                fc
+              ): FastCheck.Arbitrary<{
+                item: ReadonlyArray<QuestionnaireItem> | undefined
+              }> =>
+                fc.record({
+                  item: fc.oneof(
+                    {
+                      depthSize: 'small',
+                      depthIdentifier: 'id:QuestionnaireItem',
+                    },
+                    fc.constant<ReadonlyArray<never>>([]),
+                    fc.constant<ReadonlyArray<never>>([]),
+                    fc.array<QuestionnaireItem>(tie('self'), {
+                      depthIdentifier: 'id:self',
+                      maxLength: 2,
+                    })
+                  ),
+                })
+            )(fc),
+          })).self,
+    },
+  ],
+  BackboneElementMixin,
+  {
+    ...questionnaireItemFields,
+    item: Schema.optional(
+      pipe(
+        Schema.Array(
+          Schema.suspend(
+            (): Schema.Schema<QuestionnaireItem, QuestionnaireItemEncoded> =>
+              QuestionnaireItem
+          )
+        )
       )
-    )
-  ),
-}) {}
+    ),
+  }
+) {}

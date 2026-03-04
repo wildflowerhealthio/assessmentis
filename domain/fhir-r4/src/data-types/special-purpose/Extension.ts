@@ -5,12 +5,12 @@ import {
   type ExtensionEncoded,
 } from '@assessmentis/clinical-domain/data-types'
 import type { BaseUrl } from '../UrlIdentification'
-import { ElementIdentification } from '../base/Element'
+import { ElementIdentification } from '../base/ElementIdentification'
 import {
   AllDatatypeKeys,
   DatatypeChoiceEncodedPassthroughFields,
 } from '@assessmentis/clinical-domain/data-types'
-import { mutableEncoded } from '@assessmentis/util'
+import { extendObjectSchemas, mutableEncoded } from '@assessmentis/util'
 import { TwoStepExternalSchema } from '@assessmentis/util'
 
 const EncodedFromFhir: Schema.Schema<
@@ -18,7 +18,7 @@ const EncodedFromFhir: Schema.Schema<
   FhirR4.Extension,
   BaseUrl
 > = mutableEncoded(
-  Schema.extend(
+  extendObjectSchemas(
     Schema.Struct({
       definitionUrl: pipe(
         Schema.String,
@@ -26,11 +26,18 @@ const EncodedFromFhir: Schema.Schema<
         Schema.fromKey('url')
       ),
       extension: Schema.optional(
-        mutableEncoded(Schema.Array(Schema.suspend(() => EncodedFromFhir)))
+        mutableEncoded(
+          Schema.Array(
+            Schema.suspend(
+              (): Schema.Schema<ExtensionEncoded, FhirR4.Extension, BaseUrl> =>
+                EncodedFromFhir
+            )
+          )
+        )
       ),
       ...DatatypeChoiceEncodedPassthroughFields('value', AllDatatypeKeys),
     }),
-    ElementIdentification(Extension.Key)
+    ElementIdentification(Extension.DomainType)
   )
 )
 

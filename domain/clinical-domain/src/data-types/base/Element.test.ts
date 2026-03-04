@@ -50,7 +50,7 @@ describe('Element', () => {
   })
 
   test('domainType literal is accessible on the Element result', () => {
-    expect(TestElement.Key).toBe('TestElement')
+    expect(TestElement.DomainType).toBe('TestElement')
   })
 
   test('property: encode-decode round-trip', () => {

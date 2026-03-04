@@ -41,7 +41,7 @@ const twoOptionKeysArb = fc
 
 describe('Extension', () => {
   test('Element mixin: Key static equals "Extension"', () => {
-    expect(Extension.Key).toBe('Extension')
+    expect(Extension.DomainType).toBe('Extension')
   })
 
   test('DatatypeChoice mixin: allValueKeys matches all value-prefixed datatype keys', () => {

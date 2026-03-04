@@ -28,10 +28,10 @@ export function ObservationForm({
     <ResourceForm
       schema={ObservationFormSchema}
       fields={{
-        patientId: transformProps(
+        patientUrl: transformProps(
           PatientPicker,
           (props: CommonFieldProps<string | undefined>) => ({
-            name: 'patientId',
+            name: 'patientUrl',
             label: 'Subject (Patient)',
             picking: {
               onChange: props.onChange,
@@ -40,10 +40,10 @@ export function ObservationForm({
             },
           })
         ),
-        encounterId: transformProps(
+        encounterUrl: transformProps(
           EncounterPicker,
           (props: CommonFieldProps<string | undefined>) => ({
-            name: 'encounterId',
+            name: 'encounterUrl',
             label: 'Encounter',
             picking: {
               onChange: props.onChange,
@@ -116,8 +116,8 @@ export function ObservationForm({
         }),
       }}
       fieldOrder={[
-        'patientId',
-        'encounterId',
+        'patientUrl',
+        'encounterUrl',
         'code',
         'valueType',
         'valueString',

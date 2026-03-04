@@ -1,5 +1,11 @@
+import type { FastCheck } from 'effect'
+import type { Arbitrary } from 'effect'
 import { Schema } from 'effect'
-import { mergeArbitraries, MergeClasses } from '@assessmentis/util'
+import {
+  AnnotateArrayWithArbitrary,
+  mergeArbitraries,
+  MergeClasses,
+} from '@assessmentis/util'
 import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
 import {
   Identifier,
@@ -12,6 +18,8 @@ import { DatatypeChoice } from '../../data-types/Datatype'
 import FhirR4ChoiceElements from '../../data-types/fhirR4ChoiceElements'
 import { ObservationComponent } from './ObservationComponent'
 import { ObservationReferenceRange } from './ObservationReferenceRange'
+import { omit } from 'effect/Struct'
+import type { constant } from 'effect/Function'
 
 const Key = 'Observation' as const
 type Key = typeof Key
@@ -50,7 +58,11 @@ const fields = {
   ),
   code: Schema.suspend(() => CodeableConcept),
   subject: Schema.optional(Schema.suspend(() => Reference)),
-  focus: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
+  focus: Schema.optional(
+    Schema.Array(Schema.suspend(() => Reference)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   encounter: Schema.optional(Schema.suspend(() => Reference)),
   effectiveDateTime: Schema.optional(Schema.DateTimeUtc),
   effectivePeriod: Schema.optional(Schema.suspend(() => Period)),
@@ -66,10 +78,18 @@ const fields = {
   method: Schema.optional(Schema.suspend(() => CodeableConcept)),
   specimen: Schema.optional(Schema.suspend(() => Reference)),
   device: Schema.optional(Schema.suspend(() => Reference)),
-  referenceRange: Schema.optional(Schema.Array(ObservationReferenceRange)),
+  referenceRange: Schema.optional(
+    Schema.Array(ObservationReferenceRange).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   hasMember: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
   derivedFrom: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
-  component: Schema.optional(Schema.Array(ObservationComponent)),
+  component: Schema.optional(
+    Schema.Array(ObservationComponent).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
 } as const satisfies Schema.Struct.Fields
 
 const resourceMixin = Resource(Key)
@@ -87,12 +107,13 @@ export interface ObservationEncoded
 export class Observation extends MergeClasses<Observation>(Key)(
   [
     {
-      arbitrary: mergeArbitraries(
-        (props) => new Observation(props),
-        resourceMixin,
-        ObservationValue.arbitraryValueOneOrNone,
-        fields
-      ),
+      arbitrary: (): Arbitrary.LazyArbitrary<Observation> =>
+        mergeArbitraries(
+          (props) => new Observation(props),
+          resourceMixin,
+          ObservationValue.arbitraryValueOneOrNone,
+          fields
+        ),
     },
   ],
   fields,

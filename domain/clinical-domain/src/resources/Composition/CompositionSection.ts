@@ -1,4 +1,6 @@
-import { Schema } from 'effect'
+import type { FastCheck } from 'effect'
+import { Arbitrary } from 'effect'
+import { pipe, Schema } from 'effect'
 import {
   BackboneElement,
   type BackboneElementEncoded,
@@ -6,6 +8,7 @@ import {
 import { Reference } from '../../data-types/complex/IdentifierAndReference'
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import { Narrative } from '../../data-types/special-purpose/Narrative'
+import { mergeArbitraries, MergeClasses } from '@assessmentis/util'
 
 const fields = {
   title: Schema.optional(Schema.String),
@@ -30,20 +33,58 @@ export interface CompositionSectionEncoded
   section?: ReadonlyArray<CompositionSectionEncoded> | undefined
 }
 
+const BackboneElementMixin = BackboneElement('CompositionSection')
 /**
  * Composition is broken into sections
  */
-export class CompositionSection extends Schema.Class<CompositionSection>(
+export class CompositionSection extends MergeClasses<CompositionSection>(
   'CompositionSection'
-)({
-  ...BackboneElement('CompositionSection').fields,
-  ...fields,
-  section: Schema.optional(
-    Schema.Array(
-      Schema.suspend(
-        (): Schema.Schema<CompositionSection, CompositionSectionEncoded> =>
-          CompositionSection
+)(
+  [
+    {
+      arbitrary:
+        () =>
+        (fc: typeof FastCheck): FastCheck.Arbitrary<CompositionSection> =>
+          fc.letrec<{ self: CompositionSection }>((tie) => ({
+            self: mergeArbitraries(
+              (props) => new CompositionSection(props),
+              fields,
+              BackboneElementMixin,
+              (
+                fc
+              ): FastCheck.Arbitrary<{
+                section: ReadonlyArray<CompositionSection> | undefined
+              }> =>
+                fc.record({
+                  section: fc.oneof(
+                    {
+                      depthSize: 'small',
+                      depthIdentifier: 'id:CompositionSection',
+                    },
+                    fc.constant<ReadonlyArray<never>>([]),
+                    fc.constant<ReadonlyArray<never>>([]),
+                    fc.array<CompositionSection>(tie('self'), {
+                      depthIdentifier: 'id:self',
+                      maxLength: 2,
+                    })
+                  ),
+                })
+            )(fc),
+          })).self,
+    },
+  ],
+  BackboneElementMixin,
+  {
+    ...fields,
+    section: Schema.optional(
+      pipe(
+        Schema.Array(
+          Schema.suspend(
+            (): Schema.Schema<CompositionSection, CompositionSectionEncoded> =>
+              CompositionSection
+          )
+        )
       )
-    )
-  ),
-}) {}
+    ),
+  }
+) {}

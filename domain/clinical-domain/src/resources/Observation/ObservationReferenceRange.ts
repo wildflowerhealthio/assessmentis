@@ -18,7 +18,7 @@ const fields = {
   appliesTo: Schema.optional(
     Schema.Array(Schema.suspend(() => CodeableConcept))
   ),
-  age: Schema.optional(Schema.suspend(() => Range.Range)),
+  age: Schema.optional(Schema.suspend(() => Range)),
   text: Schema.optional(Schema.String),
 } as const satisfies Schema.Struct.Fields
 

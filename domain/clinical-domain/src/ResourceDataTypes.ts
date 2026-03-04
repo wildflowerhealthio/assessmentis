@@ -11,16 +11,16 @@ import { Questionnaire } from './resources/Questionnaire'
 import { QuestionnaireResponse } from './resources/QuestionnaireResponse'
 
 export type ResourceType =
-  | typeof Composition.Key
-  | typeof DiagnosticReport.Key
-  | typeof Encounter.Key
-  | typeof Location.Key
-  | typeof Media.Key
-  | typeof Observation.Key
-  | typeof Patient.Key
-  | typeof Practitioner.Key
-  | typeof Questionnaire.Key
-  | typeof QuestionnaireResponse.Key
+  | typeof Composition.DomainType
+  | typeof DiagnosticReport.DomainType
+  | typeof Encounter.DomainType
+  | typeof Location.DomainType
+  | typeof Media.DomainType
+  | typeof Observation.DomainType
+  | typeof Patient.DomainType
+  | typeof Practitioner.DomainType
+  | typeof Questionnaire.DomainType
+  | typeof QuestionnaireResponse.DomainType
 
 interface ResourceDataTypes {
   [key: string]: { domainType: string; url?: ReadonlyUrl }
@@ -37,16 +37,16 @@ interface ResourceDataTypes {
 }
 
 const ResourceDataTypes = {
-  [Composition.Key]: Composition,
-  [DiagnosticReport.Key]: DiagnosticReport,
-  [Encounter.Key]: Encounter,
-  [Location.Key]: Location,
-  [Media.Key]: Media,
-  [Observation.Key]: Observation,
-  [Patient.Key]: Patient,
-  [Practitioner.Key]: Practitioner,
-  [Questionnaire.Key]: Questionnaire,
-  [QuestionnaireResponse.Key]: QuestionnaireResponse,
+  [Composition.DomainType]: Composition,
+  [DiagnosticReport.DomainType]: DiagnosticReport,
+  [Encounter.DomainType]: Encounter,
+  [Location.DomainType]: Location,
+  [Media.DomainType]: Media,
+  [Observation.DomainType]: Observation,
+  [Patient.DomainType]: Patient,
+  [Practitioner.DomainType]: Practitioner,
+  [Questionnaire.DomainType]: Questionnaire,
+  [QuestionnaireResponse.DomainType]: QuestionnaireResponse,
 } as const
 
 export default ResourceDataTypes

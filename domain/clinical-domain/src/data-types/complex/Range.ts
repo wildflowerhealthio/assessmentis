@@ -1,10 +1,9 @@
 import { Schema } from 'effect'
-import type { ElementEncoded } from '../base/Element'
-import { Element } from '../base/Element'
+import { Element, type ElementEncoded } from '../base/Element'
 import { Quantity } from './Quantity'
+import { MergeClasses } from '@assessmentis/util'
 
-export const Key = 'Range'
-export type Key = typeof Key
+const Key = 'Range'
 
 const fields = {
   /**
@@ -17,8 +16,10 @@ const fields = {
   high: Schema.optional(Quantity),
 } as const satisfies Schema.Struct.Fields
 
+const ElementMixin = Element(Key)
+
 export interface RangeEncoded
-  extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<Key> {}
+  extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<typeof Key> {}
 
 /**
  * A set of ordered Quantities defined by a low and high limit.
@@ -26,9 +27,4 @@ export interface RangeEncoded
  * A Range specifies a set of possible values; usually, one value from the range applies
  * (e.g. "give the patient between 2 and 4 tablets"). Ranges are typically used in instructions.
  */
-export class Range extends Schema.Class<Range>(Key)({
-  ...Element(Key).fields,
-  ...fields,
-}) {
-  public static readonly Key = Key
-}
+export class Range extends MergeClasses<Range>(Key)([], ElementMixin, fields) {}

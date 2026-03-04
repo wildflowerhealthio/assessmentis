@@ -14,7 +14,7 @@ import { ResourceEncodedFromFhirR4Resource } from '../../data-types/base/Resourc
 import { BackboneElementEncodedFromFhir } from '../../data-types/base/BackboneElement'
 import { FhirR4Coding } from '../../data-types/complex/Coding'
 import type { BaseUrl } from '../../data-types/UrlIdentification'
-import { mutableEncoded } from '@assessmentis/util'
+import { mutableEncoded, extendObjectSchemas } from '@assessmentis/util'
 import { TwoStepExternalSchema } from '@assessmentis/util'
 
 // --- Value sets ---
@@ -110,7 +110,7 @@ const EncodedFromFhir: Schema.Schema<
   QuestionnaireEncoded,
   FhirR4.Questionnaire,
   BaseUrl
-> = Schema.extend(
+> = extendObjectSchemas(
   ResourceEncodedFromFhirR4Resource('Questionnaire', 'Questionnaire'),
   mutableEncoded(
     Schema.Struct({

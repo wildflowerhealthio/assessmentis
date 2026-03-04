@@ -7,8 +7,8 @@ import {
 } from '../../data-types'
 
 const fields = {
-  class: Schema.suspend(() => Coding.Coding),
-  period: Schema.suspend(() => Period.Period),
+  class: Schema.suspend(() => Coding),
+  period: Schema.suspend(() => Period),
 } as const satisfies Schema.Struct.Fields
 
 export interface EncounterClassHistoryEncoded

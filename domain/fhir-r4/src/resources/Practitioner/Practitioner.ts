@@ -55,7 +55,7 @@ const EncodedFromFhir: Schema.Schema<
           Schema.Array(Schema.suspend(() => FhirR4Address.EncodedFromExternal))
         )
       ),
-      gender: Schema.optional(AdministrativeGender.AdministrativeGender),
+      gender: Schema.optional(AdministrativeGender),
       birthDate: Schema.optional(Schema.String),
       photo: Schema.optional(
         mutableEncoded(

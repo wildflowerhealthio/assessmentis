@@ -6,6 +6,7 @@ import type FhirR4 from 'fhir/r4'
 import { mutableEncoded } from '@assessmentis/util'
 import { Effect, ParseResult, Schema } from 'effect'
 import { FhirR4Narrative, FhirR4Extension } from '../special-purpose'
+import { FhirR4Meta } from './Meta'
 import { BaseUrl, domainIdentification } from '../UrlIdentification'
 
 const fhirR4ResourceIdentification = <TResourceType extends string>(
@@ -42,6 +43,9 @@ export const ResourceIdentification = <
         Effect.gen(function* () {
           const baseUrl = yield* BaseUrl
 
+          if (domainType.url == undefined)
+            return { resourceType, id: undefined }
+
           if (!domainType.url?.startsWith(baseUrl.toString())) {
             return yield* Effect.fail(
               new ParseResult.Type(
@@ -61,9 +65,13 @@ export const ResourceIdentification = <
         Effect.gen(function* () {
           const baseUrl = yield* BaseUrl
 
+          if (fhirType.id == undefined) {
+            return { url: undefined, domainType }
+          }
+
           return {
             url: baseUrl
-              .appendToPathname(`${fhirType.resourceType}/${fhirType.id}`)
+              .appendToPathname(`/${fhirType.resourceType}/${fhirType.id}`)
               .toString(),
             domainType: domainType,
           } as const
@@ -102,14 +110,13 @@ export const ResourceEncodedFromFhirR4Resource = <
     ResourceIdentification(domainType, resourceType),
     mutableEncoded(
       Schema.Struct({
+        meta: Schema.optional(FhirR4Meta.Schema),
+        implicitRules: Schema.optional(Schema.String),
+        language: Schema.optional(Schema.String),
         text: Schema.optional(FhirR4Narrative.EncodedFromExternal),
         contained: Schema.optional(mutableEncoded(Schema.Array(Schema.Any))),
         extension: Schema.optional(
-          mutableEncoded(
-            Schema.Array(
-              Schema.suspend(() => FhirR4Extension.EncodedFromExternal)
-            )
-          )
+          mutableEncoded(Schema.Array(FhirR4Extension.EncodedFromExternal))
         ),
         modifierExtension: Schema.optional(
           mutableEncoded(

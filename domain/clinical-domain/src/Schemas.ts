@@ -14,16 +14,16 @@ import {
 import type ResourceDataTypes from './ResourceDataTypes'
 
 const Schemas = {
-  [Composition.Key]: Composition,
-  [DiagnosticReport.Key]: DiagnosticReport,
-  [Encounter.Key]: Encounter,
-  [Location.Key]: Location,
-  [Media.Key]: Media,
-  [Observation.Key]: Observation,
-  [Patient.Key]: Patient,
-  [Practitioner.Key]: Practitioner,
-  [Questionnaire.Key]: Questionnaire,
-  [QuestionnaireResponse.Key]: QuestionnaireResponse,
+  [Composition.DomainType]: Composition,
+  [DiagnosticReport.DomainType]: DiagnosticReport,
+  [Encounter.DomainType]: Encounter,
+  [Location.DomainType]: Location,
+  [Media.DomainType]: Media,
+  [Observation.DomainType]: Observation,
+  [Patient.DomainType]: Patient,
+  [Practitioner.DomainType]: Practitioner,
+  [Questionnaire.DomainType]: Questionnaire,
+  [QuestionnaireResponse.DomainType]: QuestionnaireResponse,
 } as const
 
 // A small inline validation

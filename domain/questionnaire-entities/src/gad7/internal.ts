@@ -5,7 +5,7 @@ import { literalOf } from '../../../../global/util/src/addLiteralSupportToBrande
 
 const surveyCategory = CodeableConcept.make({
   coding: [
-    Coding.Coding.make({
+    Coding.make({
       system: 'http://terminology.hl7.org/CodeSystem/observation-category',
       code: literalOf(Code)('survey'),
       display: 'Survey',

@@ -1,18 +1,15 @@
 import { Schema } from 'effect'
 import {
   CodeableConcept,
-  IdentifierAndReference,
+  Reference,
+  Identifier,
   BackboneElement,
   type BackboneElementEncoded,
 } from '../../data-types'
 
 const fields = {
-  preAdmissionIdentifier: Schema.optional(
-    Schema.suspend(() => IdentifierAndReference.Identifier)
-  ),
-  origin: Schema.optional(
-    Schema.suspend(() => IdentifierAndReference.Reference)
-  ),
+  preAdmissionIdentifier: Schema.optional(Schema.suspend(() => Identifier)),
+  origin: Schema.optional(Schema.suspend(() => Reference)),
   admitSource: Schema.optional(Schema.suspend(() => CodeableConcept)),
   reAdmission: Schema.optional(Schema.suspend(() => CodeableConcept)),
   dietPreference: Schema.optional(
@@ -24,12 +21,8 @@ const fields = {
   specialArrangement: Schema.optional(
     Schema.Array(Schema.suspend(() => CodeableConcept))
   ),
-  destination: Schema.optional(
-    Schema.suspend(() => IdentifierAndReference.Reference)
-  ),
-  dischargeDisposition: Schema.optional(
-    Schema.suspend(() => CodeableConcept)
-  ),
+  destination: Schema.optional(Schema.suspend(() => Reference)),
+  dischargeDisposition: Schema.optional(Schema.suspend(() => CodeableConcept)),
 } as const satisfies Schema.Struct.Fields
 
 export interface EncounterHospitalizationEncoded

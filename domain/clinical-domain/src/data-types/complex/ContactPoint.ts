@@ -1,8 +1,7 @@
 import { Schema } from 'effect'
-import * as Period from './Period'
+import { Period } from './Period'
 
-export const Key = 'ContactPoint'
-export type Key = typeof Key
+const Key = 'ContactPoint'
 
 export interface Type {
   /**
@@ -26,7 +25,7 @@ export interface Type {
   /**
    * Time period when the contact point was/is in use.
    */
-  period?: Period.Period
+  period?: Period
 }
 
 const fields = {
@@ -69,7 +68,7 @@ const fields = {
   /**
    * Time period when the contact point was/is in use.
    */
-  period: Schema.optional(Schema.suspend(() => Period.Period)),
+  period: Schema.optional(Schema.suspend(() => Period)),
 } as const
 
 export interface ContactPointEncoded extends Schema.Struct.Encoded<
@@ -80,5 +79,5 @@ export interface ContactPointEncoded extends Schema.Struct.Encoded<
  * Details for all kinds of technology mediated contact points for a person or organization, including telephone, email, etc.
  */
 export class ContactPoint extends Schema.Class<ContactPoint>(Key)(fields) {
-  static readonly Key = Key
+  static readonly DomainType = Key
 }

@@ -1,23 +1,22 @@
 import { Schema } from 'effect'
-import { Patient } from '@assessmentis/clinical-domain'
+import { Patient, Practitioner } from '@assessmentis/clinical-domain'
 import {
   AdministrativeGender,
-  IdentifierAndReference,
+  HumanName,
+  Reference,
 } from '@assessmentis/clinical-domain/data-types'
 
 export const PatientFormSchema = Schema.Struct({
   givenName: Schema.String,
   familyName: Schema.String,
-  gender: Schema.optional(AdministrativeGender.AdministrativeGender),
+  gender: Schema.optional(AdministrativeGender),
   birthDate: Schema.optional(Schema.DateFromSelf),
-  practitionerId: Schema.optional(Schema.String),
+  practitionerUrl: Schema.optional(Practitioner.UrlSchema),
 })
 
 export type PatientFormData = typeof PatientFormSchema.Type
 
-export function transformToPatient(
-  formData: PatientFormData
-): Patient {
+export function transformToPatient(formData: PatientFormData): Patient {
   const givenName = formData.givenName?.trim()
   const familyName = formData.familyName?.trim()
 
@@ -25,16 +24,20 @@ export function transformToPatient(
     name:
       givenName || familyName
         ? [
-            {
+            HumanName.make({
               given: givenName ? [givenName] : undefined,
               family: familyName || undefined,
-            },
+            }),
           ]
         : undefined,
     gender: formData.gender,
-    birthDate: formData.birthDate,
-    generalPractitioner: formData.practitionerId
-      ? [IdentifierAndReference.Reference.make({ reference: `Practitioner/${formData.practitionerId}` })]
+    birthDate: formData.birthDate ? formData.birthDate : undefined,
+    generalPractitioner: formData.practitionerUrl
+      ? [
+          Reference.make({
+            reference: formData.practitionerUrl.toString(),
+          }),
+        ]
       : undefined,
     active: true,
   })

@@ -40,7 +40,7 @@ const roomToLocation = (room: {
     mode: 'instance' as const,
     physicalType: CodeableConcept.make({
       coding: [
-        Coding.Coding.make({
+        Coding.make({
           system:
             'http://terminology.hl7.org/CodeSystem/location-physical-type',
           code: Code.make('vi'),

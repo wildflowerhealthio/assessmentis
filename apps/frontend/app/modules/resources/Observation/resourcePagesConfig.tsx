@@ -38,8 +38,8 @@ export const observationConfig: ResourcePagesConfig<
   FormComponent: ObservationForm,
 
   defaultFormValues: {
-    patientId: undefined,
-    encounterId: undefined,
+    patientUrl: undefined,
+    encounterUrl: undefined,
     code: '',
     valueType: 'valueQuantity',
     valueString: undefined,
@@ -66,8 +66,8 @@ export const observationConfig: ResourcePagesConfig<
         : undefined
 
     return {
-      patientId: extractReferenceId(observation.subject) ?? '',
-      encounterId: extractReferenceId(observation.encounter),
+      patientUrl: observation.subject?.reference,
+      encounterUrl: observation.encounter?.reference,
       code: observation.code.text ?? '',
       valueType,
       valueString:

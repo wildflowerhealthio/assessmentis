@@ -4,7 +4,6 @@ import { Element, type ElementEncoded } from '../base/Element'
 import { MergeClasses } from '@assessmentis/util'
 
 const Key = 'Attachment'
-export type Key = typeof Key
 
 const fields = {
   /**
@@ -43,7 +42,7 @@ const fields = {
 } as const satisfies Schema.Struct.Fields
 
 export interface AttachmentEncoded
-  extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<Key> {}
+  extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<typeof Key> {}
 
 const ElementMixin = Element(Key)
 /**

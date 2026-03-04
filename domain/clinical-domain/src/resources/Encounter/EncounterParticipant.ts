@@ -2,7 +2,7 @@ import { Schema } from 'effect'
 import {
   CodeableConcept,
   Period,
-  IdentifierAndReference,
+  Reference,
   BackboneElement,
   type BackboneElementEncoded,
 } from '../../data-types'
@@ -11,9 +11,9 @@ const fields = {
   type: Schema.optional(
     Schema.Array(Schema.suspend(() => CodeableConcept))
   ),
-  period: Schema.optional(Schema.suspend(() => Period.Period)),
+  period: Schema.optional(Schema.suspend(() => Period)),
   individual: Schema.optional(
-    Schema.suspend(() => IdentifierAndReference.Reference)
+    Schema.suspend(() => Reference)
   ),
 } as const satisfies Schema.Struct.Fields
 

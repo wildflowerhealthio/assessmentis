@@ -49,7 +49,7 @@ const findAnswerCoding = (
     ?.answer?.[0]
   return firstAnswer && firstAnswer.valueCoding
     ? CodeableConcept.make({
-        coding: [firstAnswer.valueCoding as Coding.Coding],
+        coding: [firstAnswer.valueCoding as Coding],
       })
     : undefined
 }

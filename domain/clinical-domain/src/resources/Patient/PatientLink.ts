@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 import {
-  IdentifierAndReference,
+  Reference,
   BackboneElement,
   type BackboneElementEncoded,
 } from '../../data-types'
@@ -19,7 +19,7 @@ export const PatientLinkType = Schema.Enums({
 export type PatientLinkType = typeof PatientLinkType.Type
 
 const fields = {
-  other: Schema.suspend(() => IdentifierAndReference.Reference),
+  other: Schema.suspend(() => Reference),
   type: PatientLinkType,
 } as const satisfies Schema.Struct.Fields
 

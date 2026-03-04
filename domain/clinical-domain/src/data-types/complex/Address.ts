@@ -1,8 +1,7 @@
 import { Schema } from 'effect'
-import * as Period from './Period'
+import { Period } from './Period'
 
-export const Key = 'Address'
-export type Key = typeof Key
+const Key = 'Address'
 
 const fields = {
   /**
@@ -60,7 +59,7 @@ const fields = {
   /**
    * Time period when address was/is in use.
    */
-  period: Schema.optional(Schema.suspend(() => Period.Period)),
+  period: Schema.optional(Schema.suspend(() => Period)),
 } as const
 
 export interface AddressEncoded extends Schema.Struct.Encoded<typeof fields> {}
@@ -69,5 +68,5 @@ export interface AddressEncoded extends Schema.Struct.Encoded<typeof fields> {}
  * An address expressed using postal conventions (as opposed to GPS or other location definition formats).
  */
 export class Address extends Schema.Class<Address>(Key)(fields) {
-  static readonly Key = Key
+  static readonly DomainType = Key
 }

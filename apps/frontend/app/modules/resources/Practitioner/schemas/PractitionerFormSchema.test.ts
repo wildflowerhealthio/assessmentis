@@ -43,8 +43,8 @@ describe('PractitionerFormSchema', () => {
 
       const practitioner = transformToPractitioner(formData)
 
-      expect(practitioner).toEqual({
-        resourceType: 'Practitioner',
+      expect(practitioner).toMatchObject({
+        domainType: 'Practitioner',
         name: [
           {
             given: ['Jane'],
@@ -79,7 +79,7 @@ describe('PractitionerFormSchema', () => {
 
   describe('property-based tests', () => {
     it('should transform any valid form data without throwing', () => {
-      const genGender = FastCheck.constantFrom<AdministrativeGender.AdministrativeGender>(
+      const genGender = FastCheck.constantFrom<AdministrativeGender>(
         'male',
         'female',
         'other',
@@ -91,13 +91,11 @@ describe('PractitionerFormSchema', () => {
         familyName: FastCheck.string({ minLength: 1, maxLength: 50 }),
         gender: FastCheck.option(genGender, { nil: undefined }),
         qualification: FastCheck.option(FastCheck.string(), { nil: undefined }),
-      })
+      }).map(Schema.decodeSync(PractitionerFormSchema))
 
       FastCheck.assert(
         FastCheck.property(genFormData, (formData) => {
-          const practitioner = transformToPractitioner(
-            formData as PractitionerFormData
-          )
+          const practitioner = transformToPractitioner(formData)
 
           expect(practitioner.domainType).toBe('Practitioner')
           expect(practitioner.active).toBe(true)

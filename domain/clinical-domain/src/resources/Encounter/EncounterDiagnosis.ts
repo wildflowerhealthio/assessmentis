@@ -1,13 +1,13 @@
 import { Schema } from 'effect'
 import {
   CodeableConcept,
-  IdentifierAndReference,
+  Reference,
   BackboneElement,
   type BackboneElementEncoded,
 } from '../../data-types'
 
 const fields = {
-  condition: Schema.suspend(() => IdentifierAndReference.Reference),
+  condition: Schema.suspend(() => Reference),
   use: Schema.optional(Schema.suspend(() => CodeableConcept)),
   rank: Schema.optional(Schema.Int.pipe(Schema.positive())),
 } as const satisfies Schema.Struct.Fields

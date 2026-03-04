@@ -20,27 +20,27 @@ import { QuestionnaireRepository } from './repositories/QuestionnaireRepository'
 import { QuestionnaireResponseRepository } from './repositories/QuestionnaireResponseRepository'
 
 const Repositories = {
-  [Composition.Key]: CompositionRepository,
-  [Encounter.Key]: EncounterRepository,
-  [Location.Key]: LocationRepository,
-  [Media.Key]: MediaRepository,
-  [Observation.Key]: ObservationRepository,
-  [Patient.Key]: PatientRepository,
-  [Practitioner.Key]: PractitionerRepository,
-  [Questionnaire.Key]: QuestionnaireRepository,
-  [QuestionnaireResponse.Key]: QuestionnaireResponseRepository,
+  [Composition.DomainType]: CompositionRepository,
+  [Encounter.DomainType]: EncounterRepository,
+  [Location.DomainType]: LocationRepository,
+  [Media.DomainType]: MediaRepository,
+  [Observation.DomainType]: ObservationRepository,
+  [Patient.DomainType]: PatientRepository,
+  [Practitioner.DomainType]: PractitionerRepository,
+  [Questionnaire.DomainType]: QuestionnaireRepository,
+  [QuestionnaireResponse.DomainType]: QuestionnaireResponseRepository,
 } as const
 
 export interface RepositoriesType {
-  [Composition.Key]: typeof CompositionRepository
-  [Encounter.Key]: typeof EncounterRepository
-  [Location.Key]: typeof LocationRepository
-  [Media.Key]: typeof MediaRepository
-  [Observation.Key]: typeof ObservationRepository
-  [Patient.Key]: typeof PatientRepository
-  [Practitioner.Key]: typeof PractitionerRepository
-  [Questionnaire.Key]: typeof QuestionnaireRepository
-  [QuestionnaireResponse.Key]: typeof QuestionnaireResponseRepository
+  [Composition.DomainType]: typeof CompositionRepository
+  [Encounter.DomainType]: typeof EncounterRepository
+  [Location.DomainType]: typeof LocationRepository
+  [Media.DomainType]: typeof MediaRepository
+  [Observation.DomainType]: typeof ObservationRepository
+  [Patient.DomainType]: typeof PatientRepository
+  [Practitioner.DomainType]: typeof PractitionerRepository
+  [Questionnaire.DomainType]: typeof QuestionnaireRepository
+  [QuestionnaireResponse.DomainType]: typeof QuestionnaireResponseRepository
 }
 
 export default Repositories

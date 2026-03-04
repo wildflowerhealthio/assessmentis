@@ -7,13 +7,13 @@ import {
 import { Extension } from '@assessmentis/clinical-domain/data-types'
 import { codings } from './codings'
 import { DateTime } from 'effect'
-import { ReadonlyUrl } from '../../../../global/effectful-store/src/ReadonlyUrl'
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
 
 export const questionnaire: Questionnaire = Questionnaire.make({
   domainType: 'Questionnaire',
   url: Questionnaire.UrlSchema.make(
     new ReadonlyUrl({
-      protocol: 'https',
+      protocol: 'https:',
       pathname: '/ig/HL7/pco-ig/en//Questionnaire-69737-5',
       host: 'build.fhir.org',
     })

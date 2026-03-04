@@ -2,9 +2,9 @@ import {
   Coding,
   Code,
   CodeableConcept,
-  IdentifierAndReference,
+  Reference,
 } from '@assessmentis/clinical-domain/data-types'
-import { Observation } from '@assessmentis/clinical-domain'
+import { Encounter, Observation, Patient } from '@assessmentis/clinical-domain'
 import { Schema, DateTime } from 'effect'
 
 export const ValueTypeEnum = Schema.Literal(
@@ -14,8 +14,8 @@ export const ValueTypeEnum = Schema.Literal(
 )
 
 export const ObservationFormSchema = Schema.Struct({
-  patientId: Schema.optional(Schema.String),
-  encounterId: Schema.optional(Schema.String),
+  patientUrl: Schema.optional(Patient.UrlSchema),
+  encounterUrl: Schema.optional(Encounter.UrlSchema),
   code: Schema.String,
   effectiveDateTime: Schema.optional(Schema.DateTimeZonedFromSelf),
   valueType: Schema.optional(ValueTypeEnum),
@@ -42,14 +42,14 @@ export function transformToObservation(
       text: formData.code,
       coding: [],
     }),
-    subject: formData.patientId
-      ? IdentifierAndReference.Reference.make({
-          reference: `Patient/${formData.patientId}`,
+    subject: formData.patientUrl
+      ? Reference.make({
+          reference: formData.patientUrl.toString(),
         })
       : undefined,
-    encounter: formData.encounterId
-      ? IdentifierAndReference.Reference.make({
-          reference: `Encounter/${formData.encounterId}`,
+    encounter: formData.encounterUrl
+      ? Reference.make({
+          reference: formData.encounterUrl.toString(),
         })
       : undefined,
     effectiveDateTime: formData.effectiveDateTime?.pipe(DateTime.toUtc),
@@ -80,7 +80,7 @@ export function transformToObservation(
     case 'valueCodeableConcept': {
       const coding = formData.valueCodeableConceptCodingCode
         ? [
-            Coding.Coding.make({
+            Coding.make({
               system: formData.valueCodeableConceptCodingSystem,
               code: Code.make(formData.valueCodeableConceptCodingCode),
               display: formData.valueCodeableConceptCodingDisplay,

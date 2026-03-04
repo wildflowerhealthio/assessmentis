@@ -2,7 +2,7 @@ import { Schema } from 'effect'
 import {
   CodeableConcept,
   Period,
-  IdentifierAndReference,
+  Reference,
   BackboneElement,
   type BackboneElementEncoded,
 } from '../../data-types'
@@ -15,10 +15,10 @@ export const EncounterLocationStatus = Schema.Union(
 )
 
 const fields = {
-  location: Schema.suspend(() => IdentifierAndReference.Reference),
+  location: Schema.suspend(() => Reference),
   status: Schema.optional(EncounterLocationStatus),
   physicalType: Schema.optional(Schema.suspend(() => CodeableConcept)),
-  period: Schema.optional(Schema.suspend(() => Period.Period)),
+  period: Schema.optional(Schema.suspend(() => Period)),
 } as const satisfies Schema.Struct.Fields
 
 export interface EncounterLocationEncoded

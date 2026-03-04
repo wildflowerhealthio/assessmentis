@@ -15,23 +15,23 @@ const gad7ScoreByAnswerCode: Readonly<Record<string, number | undefined>> = {
   'LA6571-9': 3,
 }
 
-const headerCodes: ReadonlyArray<Coding.Coding> = [
-  Coding.Coding.make({
+const headerCodes: ReadonlyArray<Coding> = [
+  Coding.make({
     system: 'http://loinc.org',
     code: Code.make('LA6568-5'),
     display: 'Not at all',
   }),
-  Coding.Coding.make({
+  Coding.make({
     system: 'http://loinc.org',
     code: Code.make('LA6569-3'),
     display: 'Several days',
   }),
-  Coding.Coding.make({
+  Coding.make({
     system: 'http://loinc.org',
     code: Code.make('LA6570-1'),
     display: 'More than half the days',
   }),
-  Coding.Coding.make({
+  Coding.make({
     system: 'http://loinc.org',
     code: Code.make('LA6571-9'),
     display: 'Nearly every day',
@@ -57,7 +57,7 @@ export const makeGad7ScoringTable: (
     const answer = item?.answer?.[0]
     const answerCode =
       answer && 'valueCoding' in answer
-        ? (answer.valueCoding as Coding.Coding | undefined)?.code
+        ? (answer.valueCoding as Coding | undefined)?.code
         : undefined
     return answerCode && answerCode in gad7ScoreByAnswerCode
       ? gad7ScoreByAnswerCode[answerCode]

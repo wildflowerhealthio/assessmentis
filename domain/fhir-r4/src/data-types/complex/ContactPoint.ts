@@ -1,13 +1,16 @@
 import { Schema } from 'effect'
 import type FhirR4 from 'fhir/r4'
-import { ContactPoint } from '@assessmentis/clinical-domain/data-types'
+import {
+  ContactPoint,
+  type ContactPointEncoded,
+} from '@assessmentis/clinical-domain/data-types'
 import type { BaseUrl } from '../UrlIdentification'
 import { mutableEncoded } from '@assessmentis/util'
 import { TwoStepExternalSchema } from '@assessmentis/util'
 import { FhirR4Period } from './Period'
 
 const EncodedFromFhir: Schema.Schema<
-  ContactPoint.ContactPointEncoded,
+  ContactPointEncoded,
   FhirR4.ContactPoint,
   BaseUrl
 > = mutableEncoded(
@@ -41,6 +44,6 @@ const EncodedFromFhir: Schema.Schema<
 )
 
 export const FhirR4ContactPoint = new TwoStepExternalSchema(
-  ContactPoint.ContactPoint,
+  ContactPoint,
   EncodedFromFhir
 )

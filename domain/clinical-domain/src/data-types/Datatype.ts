@@ -3,9 +3,9 @@ import { Arbitrary, Schema } from 'effect'
 import type FhirR4ChoiceElements from './fhirR4ChoiceElements'
 import { capitalize } from 'effect/String'
 
-export interface Datatype<Name extends string, A, I> {
-  name: Name
-  schema: Schema.Schema<A, I, never>
+export interface Datatype<out Name extends string, A, I> {
+  readonly name: Name
+  readonly schema: Schema.Schema<A, I, never>
 }
 
 /**
@@ -40,7 +40,9 @@ export const CanonicalDatatype = Datatype('canonical', Schema.String)
 type FhirR4DatatypeOptionNames =
   FhirR4ChoiceElements[keyof FhirR4ChoiceElements][number]
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const UnknownFromAny = Schema.declare<any>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (_input: unknown): _input is any => true
 ).pipe(
   Schema.annotations({
@@ -272,7 +274,7 @@ type DatatypeMixinClass<
       this: Schema.Struct.Type<PrefixedFields>
     ) => boolean
   },
-  {}
+  object
 > & {
   readonly [P in Prefix as `all${Capitalize<P>}Keys`]: () => ReadonlyArray<
     keyof PrefixedFields
@@ -287,19 +289,38 @@ export function DatatypeChoice<
   Self,
   const Prefix extends string,
   const PickedKeys extends ReadonlyArray<DatatypeFieldKey>,
+  const OverrideFields extends ReadonlyArray<
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Datatype<PickedKeys[number], any, any>
+  > = [],
 >(
   identifier: string,
   prefix: Prefix,
-  pickedKeys: PickedKeys
+  pickedKeys: PickedKeys,
+  overrideFields?: OverrideFields
 ): DatatypeMixinClass<
   Self,
   Prefix,
   {
-    [K in PickedKeys[number] as `${Prefix}${Capitalize<K>}`]: (typeof datatypeFields)[K]
+    [K in Exclude<
+      PickedKeys[number],
+      OverrideFields[number]['name']
+    > as `${Prefix}${Capitalize<K>}`]: (typeof datatypeFields)[K]
+  } & {
+    [K in OverrideFields[number]['name'] as `${Prefix}${Capitalize<K>}`]: Schema.optional<
+      Extract<OverrideFields[number], { name: K }>['schema']
+    >
   }
 > {
   type PrefixedFields = {
-    [K in PickedKeys[number] as `${Prefix}${Capitalize<K>}`]: (typeof datatypeFields)[K]
+    [K in Exclude<
+      PickedKeys[number],
+      OverrideFields[number]['name']
+    > as `${Prefix}${Capitalize<K>}`]: (typeof datatypeFields)[K]
+  } & {
+    [K in OverrideFields[number]['name'] as `${Prefix}${Capitalize<K>}`]: Schema.optional<
+      Extract<OverrideFields[number], { name: K }>['schema']
+    >
   }
   type FieldType = Schema.Struct.Type<PrefixedFields>
 
@@ -315,6 +336,12 @@ export function DatatypeChoice<
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       fields[prefixedKey] = (datatypeFields as any)[key]
     }
+  }
+  for (const override of overrideFields ?? []) {
+    const prefixedKey =
+      `${prefix}${capitalize(override.name)}` satisfies `${Prefix}${Capitalize<OverrideFields[number]['name']>}` as keyof PrefixedFields
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    fields[prefixedKey] = Schema.optional(override.schema) as any
   }
 
   const DatatypeMixin = Schema.Class<Self>(identifier)(fields, {
@@ -365,6 +392,7 @@ export function DatatypeChoice<
     },
   })
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return DatatypeMixin as any
 }
 
@@ -388,6 +416,7 @@ export const DatatypeChoiceEncodedPassthroughFields = <
       `${prefix}${capitalize(key)}`,
 
       Schema.optional(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         Schema.declare<any>((_input: unknown): _input is any => true)
       ),
     ])

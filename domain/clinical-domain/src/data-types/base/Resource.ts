@@ -67,11 +67,7 @@ const resourceFields = {
    * Additional content defined by implementations
    */
   extension: pipe(
-    Schema.Array(
-      Schema.suspend(
-        (): Schema.Schema<Extension, ExtensionEncoded, never> => Extension
-      )
-    ),
+    Schema.Array(Extension),
     Schema.annotations({
       arbitrary: () => (fc) => fc.constant([]),
       default: [],
@@ -113,7 +109,7 @@ type ResourceFields<TDomainType extends string> = typeof resourceFields & {
 }
 
 type ResourceClass<Self, TDomainType extends string> = {
-  readonly Key: TDomainType
+  readonly DomainType: TDomainType
   readonly UrlSchema: Schema.brand<
     Schema.Schema<ReadonlyUrl, string, never>,
     `${TDomainType}/url`
@@ -145,7 +141,7 @@ export const Resource = <TDomainType extends string>(
     ),
     url: Schema.optional(urlSchema),
   }) {
-    static readonly Key = domainType
+    static readonly DomainType = domainType
     static readonly UrlSchema: Schema.brand<
       Schema.Schema<ReadonlyUrl, string, never>,
       `${TDomainType}/url`

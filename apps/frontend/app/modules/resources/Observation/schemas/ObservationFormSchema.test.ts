@@ -32,22 +32,28 @@ describe('ObservationFormSchema', () => {
 
   describe('transformToObservation', () => {
     it('should transform form data with valueString', () => {
-      const formData: ObservationFormData = {
-        patientId: 'patient-123',
-        encounterId: 'encounter-456',
+      const formData = Schema.decodeSync(ObservationFormSchema)({
+        patientUrl: 'http://patients.com/patient-123',
+        encounterUrl: 'http://encounters.com/encounter-456',
         code: 'Blood Pressure',
         valueType: 'valueString',
         valueString: '120/80',
-      }
+      })
 
       const observation = transformToObservation(formData)
 
       expect(observation.domainType).toBe('Observation')
       expect(observation.status).toBe('preliminary')
       expect(observation.code.text).toBe('Blood Pressure')
-      expect(observation.subject).toEqual({ reference: 'Patient/patient-123' })
+      expect(observation.subject).toEqual({
+        domainType: 'Reference',
+        extension: [],
+        reference: 'http://patients.com/patient-123',
+      })
       expect(observation.encounter).toEqual({
-        reference: 'Encounter/encounter-456',
+        domainType: 'Reference',
+        extension: [],
+        reference: 'http://encounters.com/encounter-456',
       })
       expect('valueString' in observation && observation.valueString).toBe(
         '120/80'
@@ -87,7 +93,7 @@ describe('ObservationFormSchema', () => {
       expect(
         'valueCodeableConcept' in observation &&
           observation.valueCodeableConcept
-      ).toEqual({
+      ).toMatchObject({
         text: 'Moderate pain',
         coding: [
           {
@@ -108,15 +114,15 @@ describe('ObservationFormSchema', () => {
           expect(observation.status).toBe('preliminary')
           expect(observation.code.text).toBe(formData.code)
 
-          if (formData.patientId) {
+          if (formData.patientUrl) {
             expect(observation.subject?.reference).toBe(
-              `Patient/${formData.patientId}`
+              formData.patientUrl.toString()
             )
           }
 
-          if (formData.encounterId) {
+          if (formData.encounterUrl) {
             expect(observation.encounter?.reference).toBe(
-              `Encounter/${formData.encounterId}`
+              formData.encounterUrl.toString()
             )
           }
         }),

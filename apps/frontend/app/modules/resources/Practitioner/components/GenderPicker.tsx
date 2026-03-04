@@ -7,12 +7,12 @@ export interface GenderPickerProps {
   label?: string
   required?: boolean
   error?: string | undefined
-  value: AdministrativeGender.AdministrativeGender | undefined
-  onChange: (data: AdministrativeGender.AdministrativeGender | undefined) => void
+  value: AdministrativeGender | undefined
+  onChange: (data: AdministrativeGender | undefined) => void
 }
 
 const genderOptions: ReadonlyArray<{
-  value: AdministrativeGender.AdministrativeGender
+  value: AdministrativeGender
   label: string
 }> = [
   { value: 'male', label: 'Male' },
@@ -48,7 +48,7 @@ export function GenderPicker({
         value={value ?? ''}
         onChange={(e) => {
           const selected = e.target.value
-          onChange(selected ? (selected as AdministrativeGender.AdministrativeGender) : undefined)
+          onChange(selected ? (selected as AdministrativeGender) : undefined)
         }}
       >
         <option value="">Select {label || 'gender'}...</option>

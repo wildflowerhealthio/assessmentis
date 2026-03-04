@@ -10,6 +10,7 @@ import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
 import { DatatypeChoice } from '../../data-types/Datatype'
 import FhirR4ChoiceElements from '../../data-types/fhirR4ChoiceElements'
 import { DiagnosticReportMedia } from './DiagnosticReportMedia'
+import { Period } from '../../data-types'
 
 const Key = 'DiagnosticReport' as const
 type Key = typeof Key
@@ -64,7 +65,8 @@ const fields = {
 class DiagnosticReportEffective extends DatatypeChoice(
   'DiagnosticReportEffective',
   'effective',
-  FhirR4ChoiceElements['DiagnosticReport.effective[x]']
+  FhirR4ChoiceElements['DiagnosticReport.effective[x]'],
+  [Period.Datatype]
 ) {}
 
 type effectiveMixinEncoded = typeof DiagnosticReportEffective.Encoded

@@ -22,7 +22,8 @@ import {
   Code,
   CodeableConcept,
   Coding,
-  IdentifierAndReference,
+  Identifier,
+  Reference,
 } from '@assessmentis/clinical-domain/data-types'
 
 export const CreateEncounterArg: Schema.Schema<
@@ -82,7 +83,7 @@ export const createEncounter = (
       Location.make({
         name: 'Video Room',
         identifier: [
-          IdentifierAndReference.Identifier.make({
+          Identifier.make({
             system: 'http://assessment.is/fhir/video-call-room-name',
             value: externalVideoCallRoom.url,
           }),
@@ -94,12 +95,12 @@ export const createEncounter = (
 
     // Build location array with proper references
     const videoRoomEntry = EncounterLocation.make({
-      location: IdentifierAndReference.Reference.make({
+      location: Reference.make({
         reference: `Location/${videoRoomLocation.url.toString()}`,
       }),
       physicalType: CodeableConcept.make({
         coding: [
-          Coding.Coding.make({
+          Coding.make({
             system:
               'http://terminology.hl7.org/CodeSystem/location-physical-type',
             code: Code.make('vi'),
@@ -110,7 +111,7 @@ export const createEncounter = (
     })
 
     const encounterData: Encounter = Encounter.make({
-      class: Coding.Coding.make({
+      class: Coding.make({
         display: 'virtual',
         system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
         code: Code.make('VR'),
@@ -126,7 +127,7 @@ export const createEncounter = (
       questionnaireResponseRepository.createMany(
         args.questionnaireResponses.map((questionnaireResponse) =>
           QuestionnaireResponse.make({
-            encounter: IdentifierAndReference.Reference.make({
+            encounter: Reference.make({
               reference: createdEncounter.url.toString(),
             }),
             ...questionnaireResponse,

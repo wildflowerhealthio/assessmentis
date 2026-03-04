@@ -1,21 +1,18 @@
 import { Schema } from 'effect'
 import {
   CodeableConcept,
-  IdentifierAndReference,
+  Identifier,
+  Reference,
   Period,
   BackboneElement,
   type BackboneElementEncoded,
 } from '../../data-types'
 
 const fields = {
-  identifier: Schema.optional(
-    Schema.Array(Schema.suspend(() => IdentifierAndReference.Identifier))
-  ),
+  identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
   code: Schema.suspend(() => CodeableConcept),
-  period: Schema.optional(Schema.suspend(() => Period.Period)),
-  issuer: Schema.optional(
-    Schema.suspend(() => IdentifierAndReference.Reference)
-  ),
+  period: Schema.optional(Schema.suspend(() => Period)),
+  issuer: Schema.optional(Schema.suspend(() => Reference)),
 } as const satisfies Schema.Struct.Fields
 
 export interface PractitionerQualificationEncoded

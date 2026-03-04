@@ -4,7 +4,6 @@ import { Code } from './Code'
 import { MergeClasses } from '@assessmentis/util'
 
 const Key = 'Coding' as const
-type Key = typeof Key
 
 const fields = {
   /**
@@ -37,7 +36,7 @@ const fields = {
 const ElementMixin = Element(Key)
 
 export interface CodingEncoded
-  extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<Key> {}
+  extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<typeof Key> {}
 
 export class Coding extends MergeClasses<Coding>(Key)(
   [],

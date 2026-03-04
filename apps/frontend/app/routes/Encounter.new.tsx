@@ -16,8 +16,8 @@ import {
   EncounterParticipant,
 } from '@assessmentis/clinical-domain'
 import {
-  IdentifierAndReference,
   Period,
+  Reference,
 } from '@assessmentis/clinical-domain/data-types'
 
 // Provide default values to prevent uncontrolled input warnings
@@ -45,21 +45,21 @@ export default function CreateEncounterPage() {
       createEncounter({
         encounter: {
           subject: data.patientUrl
-            ? IdentifierAndReference.Reference.make({
+            ? Reference.make({
                 reference: data.patientUrl.toString(),
                 type: 'Patient',
               })
             : undefined,
           participant: data.practitionerUrls?.map((id) =>
             EncounterParticipant.make({
-              individual: IdentifierAndReference.Reference.make({
+              individual: Reference.make({
                 reference: `Practitioner/${id}`,
               }),
             })
           ),
           period:
             data.periodStart || data.periodEnd
-              ? Period.Period.make({
+              ? Period.make({
                   start: data.periodStart?.pipe(DateTime.toUtc),
                   end: data.periodEnd?.pipe(DateTime.toUtc),
                 })
@@ -68,7 +68,7 @@ export default function CreateEncounterPage() {
           location: data.locationUrl
             ? [
                 EncounterLocation.make({
-                  location: IdentifierAndReference.Reference.make({
+                  location: Reference.make({
                     reference: data.locationUrl.toString(),
                     type: 'Location',
                   }),

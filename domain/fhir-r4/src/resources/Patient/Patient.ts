@@ -46,7 +46,7 @@ const EncodedFromFhir: Schema.Schema<PatientEncoded, FhirR4.Patient, BaseUrl> =
             )
           )
         ),
-        gender: Schema.optional(AdministrativeGender.AdministrativeGender),
+        gender: Schema.optional(AdministrativeGender),
         birthDate: Schema.optional(Schema.String),
         deceasedBoolean: Schema.optional(Schema.Boolean),
         deceasedDateTime: Schema.optional(Schema.String),

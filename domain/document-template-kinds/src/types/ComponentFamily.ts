@@ -11,7 +11,7 @@ export type ObservationSectionWithMethodComponent = React.FC<{
 
 export type ObservationTableRowProps = {
   observation: Resource.WithResourceUrl<Observation>
-  columnCodings: ReadonlyArray<ReadonlyArray<Coding.Coding>>
+  columnCodings: ReadonlyArray<ReadonlyArray<Coding>>
 }
 
 export type ObservationTableRowComponent = React.FC<ObservationTableRowProps>
@@ -21,7 +21,7 @@ export type ObservationTableComponent = React.FC<{
   observations: ReadonlyArray<Resource.WithResourceUrl<Observation>>
   columns: ReadonlyArray<{
     label: string
-    codings: ReadonlyArray<Coding.Coding>
+    codings: ReadonlyArray<Coding>
   }>
 }>
 

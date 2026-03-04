@@ -40,7 +40,7 @@ export const PatientContactEncodedFromFhir: Schema.Schema<
       address: Schema.optional(
         Schema.suspend(() => FhirR4Address.EncodedFromExternal)
       ),
-      gender: Schema.optional(AdministrativeGender.AdministrativeGender),
+      gender: Schema.optional(AdministrativeGender),
       organization: Schema.optional(
         Schema.suspend(() => FhirR4Reference.EncodedFromExternal)
       ),

@@ -108,10 +108,7 @@ function collectionMethods<T>(
   }
 
   const createItem = async (t: T) => {
-    updateCache((current) => [
-      { data: t, loading: true },
-      ...current,
-    ])
+    updateCache((current) => [{ data: t, loading: true }, ...current])
     apiCreate(t)
       .then((created) =>
         updateCache((current) => {
