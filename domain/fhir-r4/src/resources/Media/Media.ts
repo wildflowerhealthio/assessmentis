@@ -1,19 +1,24 @@
 import { Schema } from 'effect'
+
+import {
+  Media,
+  MediaStatus,
+  type MediaEncoded,
+} from '@assessmentis/clinical-domain'
+import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
+
 import type FhirR4 from 'fhir/r4'
-import { Media, type MediaEncoded } from '@assessmentis/clinical-domain'
-import { MediaStatus } from '@assessmentis/clinical-domain'
+
 import { ResourceEncodedFromFhirR4Resource } from '../../data-types/base/Resource'
+import { FhirR4Annotation } from '../../data-types/complex/Annotation'
+import { FhirR4Attachment } from '../../data-types/complex/Attachment'
+import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import {
   FhirR4Identifier,
   FhirR4Reference,
 } from '../../data-types/complex/IdentifierAndReference'
-import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
-import { FhirR4Attachment } from '../../data-types/complex/Attachment'
-import { FhirR4Annotation } from '../../data-types/complex/Annotation'
 import { FhirR4Period } from '../../data-types/complex/Period'
 import type { BaseUrl } from '../../data-types/UrlIdentification'
-import { mutableEncoded } from '@assessmentis/util'
-import { TwoStepExternalSchema } from '@assessmentis/util'
 
 const EncodedFromFhir: Schema.Schema<MediaEncoded, FhirR4.Media, BaseUrl> =
   Schema.extend(

@@ -1,6 +1,13 @@
-import type { SubscriptionRef, Either } from 'effect'
-import { Subscribable, Readable, Effect, Stream } from 'effect'
+import {
+  Effect,
+  Readable,
+  Stream,
+  Subscribable,
+  type Either,
+  type SubscriptionRef,
+} from 'effect'
 import { pipeArguments } from 'effect/Pipeable'
+
 import { unwrap } from './StreamEither'
 
 export const subscriptionRefToSubscribable = <A, E>(

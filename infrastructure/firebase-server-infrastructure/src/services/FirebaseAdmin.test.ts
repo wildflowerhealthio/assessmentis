@@ -1,5 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Effect, Exit } from 'effect'
+
+import { getApp, initializeApp } from 'firebase-admin/app'
+import { getAuth } from 'firebase-admin/auth'
+import { getFirestore } from 'firebase-admin/firestore'
+
+import { FirebaseAdmin } from './FirebaseAdmin'
 
 // Mock firebase-admin modules before imports
 vi.mock('firebase-admin/app', () => ({
@@ -14,11 +20,6 @@ vi.mock('firebase-admin/auth', () => ({
 vi.mock('firebase-admin/firestore', () => ({
   getFirestore: vi.fn(),
 }))
-
-import { FirebaseAdmin } from './FirebaseAdmin'
-import { getApp, initializeApp } from 'firebase-admin/app'
-import { getAuth } from 'firebase-admin/auth'
-import { getFirestore } from 'firebase-admin/firestore'
 
 const mockGetApp = vi.mocked(getApp)
 const mockInitializeApp = vi.mocked(initializeApp)

@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+
 import { useArgs } from 'storybook/preview-api'
+
 import { SelectField } from './SelectField'
 
 const meta: Meta<typeof SelectField> = {

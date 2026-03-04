@@ -1,14 +1,15 @@
-import type { RequestResolver } from 'effect'
-import { type Effect } from 'effect'
+import { type Effect, type RequestResolver } from 'effect'
+
 import type {
   AuthError,
   AuthzError,
   Loading,
   UnhandledError,
 } from '@assessmentis/ontology'
+
+import type { ReadonlyUrl } from './ReadonlyUrl'
 import type * as Resource from './Resource'
 import type * as ResourceRequest from './ResourceRequest'
-import type { ReadonlyUrl } from './ReadonlyUrl'
 
 export type ResourcesConstraint = {
   readonly [K: string]: Resource.Resource<typeof K>

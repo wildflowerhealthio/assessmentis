@@ -1,6 +1,5 @@
 import type { Observation } from '@assessmentis/clinical-domain'
 import type { Coding } from '@assessmentis/clinical-domain/data-types'
-
 import type { Resource } from '@assessmentis/effectful-store'
 
 export type HeaderComponent = React.FC<{ title: string }>

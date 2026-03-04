@@ -1,22 +1,24 @@
 import { Schema } from 'effect'
-import type FhirR4 from 'fhir/r4'
+
 import {
   Composition,
   type CompositionEncoded,
 } from '@assessmentis/clinical-domain'
+import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
+
+import type FhirR4 from 'fhir/r4'
+
 import { ResourceEncodedFromFhirR4Resource } from '../../data-types/base/Resource'
 import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import {
   FhirR4Identifier,
   FhirR4Reference,
 } from '../../data-types/complex/IdentifierAndReference'
-import { CompositionAttesterEncodedFromFhir } from './CompositionAttester'
-import { CompositionRelatesToEncodedFromFhir } from './CompositionRelatesTo'
-import { CompositionEventEncodedFromFhir } from './CompositionEvent'
-import { CompositionSectionEncodedFromFhir } from './CompositionSection'
 import type { BaseUrl } from '../../data-types/UrlIdentification'
-import { mutableEncoded } from '@assessmentis/util'
-import { TwoStepExternalSchema } from '@assessmentis/util'
+import { CompositionAttesterEncodedFromFhir } from './CompositionAttester'
+import { CompositionEventEncodedFromFhir } from './CompositionEvent'
+import { CompositionRelatesToEncodedFromFhir } from './CompositionRelatesTo'
+import { CompositionSectionEncodedFromFhir } from './CompositionSection'
 
 const EncodedFromFhir: Schema.Schema<
   CompositionEncoded,

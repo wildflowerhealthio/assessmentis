@@ -1,4 +1,5 @@
 import type { Patient } from '@assessmentis/clinical-domain'
+
 import classes from './PatientContactInfo.module.css'
 
 interface PatientContactInfoProps {

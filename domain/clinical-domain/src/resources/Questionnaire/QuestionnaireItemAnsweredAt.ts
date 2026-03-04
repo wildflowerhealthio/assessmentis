@@ -1,5 +1,5 @@
-import type { DateTime } from 'effect'
-import type { Schema } from 'effect'
+import type { DateTime, Schema } from 'effect'
+
 import { Extension } from '../../data-types'
 import type { BackboneElement } from '../../data-types/base/BackboneElement'
 

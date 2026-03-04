@@ -1,17 +1,19 @@
 import { applyPartialProps, transformProps } from '@assessmentis/react-util'
+
 import {
-  ResourceForm,
   DateTimeField,
+  ResourceForm,
   TextField,
 } from 'app/modules/common/components/ResourceForm'
-import { ValueTypePicker } from './ValueTypePicker'
-import { PatientPicker } from 'app/modules/resources/Patient/components/PatientPicker'
-import { EncounterPicker } from 'app/modules/resources/Encounter/components/EncounterPicker'
 import type { CommonFieldProps } from 'app/modules/common/components/ResourceForm/ResourceForm'
+import { EncounterPicker } from 'app/modules/resources/Encounter/components/EncounterPicker'
+import { PatientPicker } from 'app/modules/resources/Patient/components/PatientPicker'
+
 import {
   ObservationFormSchema,
   type ObservationFormData,
 } from '../schemas/ObservationFormSchema'
+import { ValueTypePicker } from './ValueTypePicker'
 
 interface ObservationFormProps {
   onSubmit: (data: ObservationFormData) => void | Promise<void>

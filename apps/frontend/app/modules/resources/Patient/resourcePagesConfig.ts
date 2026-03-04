@@ -1,6 +1,12 @@
 import { Schema } from 'effect'
+
 import type { Patient } from '@assessmentis/clinical-domain'
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
+
+import {
+  createResourceCreateAction,
+  createResourceUpdateAction,
+} from '../../common/actions/createResourceActions'
 import type { ResourcePagesConfig } from '../ResourcePages/resourcePagesConfigType'
 import { PatientForm } from './components/PatientForm'
 import {
@@ -8,10 +14,6 @@ import {
   transformToPatient,
   type PatientFormData,
 } from './schemas/PatientFormSchema'
-import {
-  createResourceCreateAction,
-  createResourceUpdateAction,
-} from '../../common/actions/createResourceActions'
 import { getPatientDisplayName } from './utils/patientDisplay'
 
 export const patientConfig: ResourcePagesConfig<

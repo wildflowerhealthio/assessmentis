@@ -1,9 +1,12 @@
 import { Schema } from 'effect'
-import type FhirR4 from 'fhir/r4'
+
 import type { MetaEncoded } from '@assessmentis/clinical-domain/data-types'
+import { mutableEncoded } from '@assessmentis/util'
+
+import type FhirR4 from 'fhir/r4'
+
 import { FhirR4Coding } from '../complex/Coding'
 import type { BaseUrl } from '../UrlIdentification'
-import { mutableEncoded } from '@assessmentis/util'
 
 const FhirR4MetaSchema: Schema.Schema<MetaEncoded, FhirR4.Meta, BaseUrl> =
   mutableEncoded(

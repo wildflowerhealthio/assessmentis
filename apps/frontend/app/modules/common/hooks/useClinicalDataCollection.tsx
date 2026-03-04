@@ -1,19 +1,19 @@
+import { Effect, Schema } from 'effect'
+
 import type {
   ClinicalDataRepository,
   Schemas,
 } from '@assessmentis/clinical-domain'
-import { useCollection, useCollectionPromise } from '@assessmentis/react-util'
-import { Effect } from 'effect'
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
-import { Schema } from 'effect'
+import { useCollection, useCollectionPromise } from '@assessmentis/react-util'
 
 type AnyResource = Schema.Schema.Type<(typeof Schemas)[keyof typeof Schemas]>
 
 const decodeUrl = Schema.decodeSync(ReadonlyUrl.FromString)
 
-const urlKeyOf = <
-  T extends { url?: ReadonlyUrl | undefined },
->(item: T): string | undefined => item.url?.toString()
+const urlKeyOf = <T extends { url?: ReadonlyUrl | undefined }>(
+  item: T
+): string | undefined => item.url?.toString()
 
 const actions = <
   T extends AnyResource & {

@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
-import type { MediaEncoded } from '@assessmentis/clinical-domain'
-import { Media } from '@assessmentis/clinical-domain'
+
+import { Media, type MediaEncoded } from '@assessmentis/clinical-domain'
 
 /**
  * A single Daily.co recording entry enriched with its signed download link

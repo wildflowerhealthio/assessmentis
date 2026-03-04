@@ -1,12 +1,13 @@
-import { expect, test, describe } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import { DateTime } from 'effect'
+
+import { Extension } from './Extension'
 import {
+  findVideoCallRoomConfig,
   makeVideoCallRoomConfigExtension,
   parseVideoCallRoomConfigExtension,
-  findVideoCallRoomConfig,
   VIDEO_CALL_ROOM_CONFIG_URL,
 } from './VideoCallRoomConfigExtension'
-import { Extension } from './Extension'
 
 describe('VideoCallRoomConfigExtension', () => {
   test('round-trip: make then parse preserves all fields', () => {

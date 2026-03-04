@@ -1,25 +1,28 @@
 import { Either, Option, Schema, Stream } from 'effect'
-import { StreamEither } from '@assessmentis/util'
-import { UnhandledError } from '@assessmentis/ontology'
-import { ReadonlyUrl } from '@assessmentis/effectful-store'
-import type { Route } from './+types/Practitioner.$practitionerId._index'
-import { runEffectSyncFlat } from '../runEffectSync'
-import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
-import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
-import {
-  getPractitionerDisplayName,
-  formatPractitionerDemographics,
-} from '../modules/resources/Practitioner/utils/practitionerDisplay'
-import { PractitionerQualifications } from '../modules/resources/Practitioner/components/PractitionerQualifications/PractitionerQualifications'
-import { PractitionerContactInfo } from '../modules/resources/Practitioner/components/PractitionerContactInfo/PractitionerContactInfo'
-import { PractitionerAddresses } from '../modules/resources/Practitioner/components/PractitionerAddresses/PractitionerAddresses'
-import { PractitionerLanguages } from '../modules/resources/Practitioner/components/PractitionerLanguages/PractitionerLanguages'
-import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { Suspense, useMemo } from 'react'
-import Skeleton from 'react-loading-skeleton'
-import { useEitherStream } from '@assessmentis/react-util'
-import { usePlatformContext } from '../layers/PlatformContext'
 import { Await } from 'react-router'
+
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
+import { UnhandledError } from '@assessmentis/ontology'
+import { useEitherStream } from '@assessmentis/react-util'
+import { StreamEither } from '@assessmentis/util'
+
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
+import Skeleton from 'react-loading-skeleton'
+
+import { usePlatformContext } from '../layers/PlatformContext'
+import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
+import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
+import { PractitionerAddresses } from '../modules/resources/Practitioner/components/PractitionerAddresses/PractitionerAddresses'
+import { PractitionerContactInfo } from '../modules/resources/Practitioner/components/PractitionerContactInfo/PractitionerContactInfo'
+import { PractitionerLanguages } from '../modules/resources/Practitioner/components/PractitionerLanguages/PractitionerLanguages'
+import { PractitionerQualifications } from '../modules/resources/Practitioner/components/PractitionerQualifications/PractitionerQualifications'
+import {
+  formatPractitionerDemographics,
+  getPractitionerDisplayName,
+} from '../modules/resources/Practitioner/utils/practitionerDisplay'
+import { runEffectSyncFlat } from '../runEffectSync'
+import type { Route } from './+types/Practitioner.$practitionerId._index'
 
 const tryDecodePractitionerUrl = Schema.decodeOption(ReadonlyUrl.FromString)
 

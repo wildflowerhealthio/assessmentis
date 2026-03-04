@@ -1,8 +1,11 @@
 import 'dotenv/config'
-import { http } from 'msw'
-import { beforeAll, afterAll, afterEach } from 'vitest'
-import { setupNodeIntercepting } from '@assessmentis/testing-utils/vcr-js/node'
+
+import { afterAll, afterEach, beforeAll } from 'vitest'
+
 import type { DailyCoConfig } from '@assessmentis/config-domain'
+import { setupNodeIntercepting } from '@assessmentis/testing-utils/vcr-js/node'
+
+import { http } from 'msw'
 
 export const DAILY_CO_API_BASE = 'https://api.daily.co'
 

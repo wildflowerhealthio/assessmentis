@@ -1,14 +1,18 @@
-import { DateTime, Schema, Option } from 'effect'
+import { DateTime, Option, Schema } from 'effect'
+
 import { MergeClasses } from '@assessmentis/util'
+
 import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
 import {
   Identifier,
   Reference,
 } from '../../data-types/complex/IdentifierAndReference'
-import { QuestionnaireResponseItem } from './QuestionnaireResponseItem'
-import type { QuestionnaireResponseItemEncoded } from './QuestionnaireResponseItem'
-import { QuestionnaireItemAnsweredAtExtension } from '../Questionnaire/QuestionnaireItemAnsweredAt'
 import { Questionnaire } from '../Questionnaire/Questionnaire'
+import { QuestionnaireItemAnsweredAtExtension } from '../Questionnaire/QuestionnaireItemAnsweredAt'
+import {
+  QuestionnaireResponseItem,
+  type QuestionnaireResponseItemEncoded,
+} from './QuestionnaireResponseItem'
 
 const Key = 'QuestionnaireResponse' as const
 type Key = typeof Key

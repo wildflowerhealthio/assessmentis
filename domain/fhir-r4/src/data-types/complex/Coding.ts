@@ -1,13 +1,15 @@
 import { Schema } from 'effect'
-import type FhirR4 from 'fhir/r4'
+
 import {
   Coding,
   type CodingEncoded,
 } from '@assessmentis/clinical-domain/data-types'
-import type { BaseUrl } from '../UrlIdentification'
+import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
+
+import type FhirR4 from 'fhir/r4'
+
 import { ElementEncodedFromFhir } from '../base/Element'
-import { mutableEncoded } from '@assessmentis/util'
-import { TwoStepExternalSchema } from '@assessmentis/util'
+import type { BaseUrl } from '../UrlIdentification'
 
 const EncodedFromFhir: Schema.Schema<CodingEncoded, FhirR4.Coding, BaseUrl> =
   Schema.extend(

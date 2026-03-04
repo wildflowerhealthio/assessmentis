@@ -1,5 +1,6 @@
-import { Resource, type WithId } from '@assessmentis/effectful-store'
 import { Data, type Schema } from 'effect'
+
+import { Resource, type WithId } from '@assessmentis/effectful-store'
 
 interface BaseResource {
   resourceType: string

@@ -1,7 +1,8 @@
-import { expect, test, describe } from 'vitest'
-import * as HumanName from './HumanName'
-import { Schema, Arbitrary } from 'effect'
 import * as fc from 'fast-check'
+import { describe, expect, test } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
+
+import * as HumanName from './HumanName'
 
 const humanNameArb = Arbitrary.make(HumanName.HumanName)
 

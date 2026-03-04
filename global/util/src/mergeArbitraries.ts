@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import type { FastCheck } from 'effect'
-import { Arbitrary, Schema } from 'effect'
+import { Arbitrary, Schema, type FastCheck } from 'effect'
+
 import type { TupleToIntersection } from './TupleToIntersection'
 
 /**

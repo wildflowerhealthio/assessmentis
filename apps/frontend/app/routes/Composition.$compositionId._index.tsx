@@ -1,21 +1,24 @@
 import { Either, Option, Schema, Stream } from 'effect'
-import { StreamEither } from '@assessmentis/util'
-import { UnhandledError } from '@assessmentis/ontology'
-import { ReadonlyUrl } from '@assessmentis/effectful-store'
-import type { Route } from './+types/Composition.$compositionId._index'
-import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
-import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
-import {
-  getCompositionDisplayName,
-  formatCompositionDetails,
-} from '../modules/resources/Composition/utils/compositionDisplay'
-import { CompositionSections } from '../modules/resources/Composition/components/CompositionSections/CompositionSections'
-import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { Suspense, useMemo } from 'react'
-import Skeleton from 'react-loading-skeleton'
-import { useEitherStream } from '@assessmentis/react-util'
-import { usePlatformContext } from '../layers/PlatformContext'
 import { Await } from 'react-router'
+
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
+import { UnhandledError } from '@assessmentis/ontology'
+import { useEitherStream } from '@assessmentis/react-util'
+import { StreamEither } from '@assessmentis/util'
+
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
+import Skeleton from 'react-loading-skeleton'
+
+import { usePlatformContext } from '../layers/PlatformContext'
+import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
+import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
+import { CompositionSections } from '../modules/resources/Composition/components/CompositionSections/CompositionSections'
+import {
+  formatCompositionDetails,
+  getCompositionDisplayName,
+} from '../modules/resources/Composition/utils/compositionDisplay'
+import type { Route } from './+types/Composition.$compositionId._index'
 
 const tryDecodeCompositionUrl = Schema.decodeOption(ReadonlyUrl.FromString)
 

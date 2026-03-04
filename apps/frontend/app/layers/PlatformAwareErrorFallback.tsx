@@ -1,7 +1,9 @@
+import { Stream } from 'effect'
+
 import type { FallbackProps } from 'react-error-boundary'
+
 import { ErrorHandlerBody } from '../modules/common/components/ErrorHandlerBody'
 import { TextHeader } from '../modules/global/components/NavHeader/NavHeader'
-import { Stream } from 'effect'
 
 export const PlatformlessErrorFallback = ({
   error,

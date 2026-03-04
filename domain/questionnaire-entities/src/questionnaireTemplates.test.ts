@@ -1,6 +1,6 @@
-import { Schema } from 'effect'
 import * as fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
+import { Schema } from 'effect'
 
 import { Questionnaire } from '@assessmentis/clinical-domain'
 

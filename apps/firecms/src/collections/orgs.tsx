@@ -1,3 +1,8 @@
+import { SchemaAST } from 'effect'
+import { IdentifierAnnotationId } from 'effect/SchemaAST'
+
+import { Org } from '@assessmentis/platform-domain'
+
 import {
   BooleanProperty,
   buildCollection,
@@ -10,10 +15,7 @@ import {
   StringProperty,
   useModeController,
 } from '@firecms/core'
-import { SchemaAST } from 'effect'
-import { IdentifierAnnotationId } from 'effect/SchemaAST'
 
-import { Org } from '@assessmentis/platform-domain'
 import { EditableJsonView } from './EditableJsonView'
 
 type PropertySets =

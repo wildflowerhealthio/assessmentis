@@ -1,19 +1,20 @@
 import { Schema } from 'effect'
-import { MergeClasses } from '@assessmentis/util'
+
+import { MergeClasses, TimelessDateFromString } from '@assessmentis/util'
+
 import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
+import { Address } from '../../data-types/complex/Address'
+import { AdministrativeGender } from '../../data-types/complex/AdministrativeGender'
+import { Attachment } from '../../data-types/complex/Attachment'
+import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
+import { ContactPoint } from '../../data-types/complex/ContactPoint'
+import { HumanName } from '../../data-types/complex/HumanName'
 import {
   Identifier,
   Reference,
 } from '../../data-types/complex/IdentifierAndReference'
-import { HumanName } from '../../data-types/complex/HumanName'
-import { ContactPoint } from '../../data-types/complex/ContactPoint'
-import { Address } from '../../data-types/complex/Address'
-import { Attachment } from '../../data-types/complex/Attachment'
-import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
-import { AdministrativeGender } from '../../data-types/complex/AdministrativeGender'
-import { TimelessDateFromString } from '@assessmentis/util'
-import { PatientContact } from './PatientContact'
 import { PatientCommunication } from './PatientCommunication'
+import { PatientContact } from './PatientContact'
 import { PatientLink } from './PatientLink'
 
 const Key = 'Patient' as const

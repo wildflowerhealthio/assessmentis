@@ -1,18 +1,17 @@
 'use client'
 
+import { Link } from 'react-router'
+
 import type {
   Questionnaire,
   QuestionnaireResponse,
 } from '@assessmentis/clinical-domain'
-import { Link } from 'react-router'
 
 const QuestionnaireResponseList = ({
   deleteQuestionnaireResponse,
   questionnaireResponses,
 }: {
-  deleteQuestionnaireResponse: (
-    id: string | undefined
-  ) => Promise<unknown>
+  deleteQuestionnaireResponse: (id: string | undefined) => Promise<unknown>
   questionnaireResponses: {
     data: QuestionnaireResponse & { _questionnaire: Questionnaire | undefined }
     loading: boolean
@@ -22,14 +21,20 @@ const QuestionnaireResponseList = ({
     <li>
       {questionnaireResponses.map(
         ({ data: { _questionnaire: questionnaire, url, meta }, loading }) => (
-          <ul key={url?.toString()} style={loading ? { color: 'rgba(0,0,0,0.5)' } : {}}>
+          <ul
+            key={url?.toString()}
+            style={loading ? { color: 'rgba(0,0,0,0.5)' } : {}}
+          >
             <button
               onClick={() => deleteQuestionnaireResponse(url?.toString())}
               style={{ border: 'none' }}
             >
               ❌
             </button>
-            <Link to={`/QuestionnaireResponse/${url?.toString() ?? ''}`} className="body-3">
+            <Link
+              to={`/QuestionnaireResponse/${url?.toString() ?? ''}`}
+              className="body-3"
+            >
               {questionnaire?.title ?? url?.toString()}
               {meta?.lastUpdated && (
                 <span

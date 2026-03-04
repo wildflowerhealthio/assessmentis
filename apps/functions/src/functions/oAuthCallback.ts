@@ -1,17 +1,21 @@
-import { onRequest } from 'firebase-functions/v2/https'
-import type { Request } from 'firebase-functions/v2/https'
-import { type Response } from 'express'
-import { google } from 'googleapis'
-import { info, error } from 'firebase-functions/logger'
 import { Effect, Exit } from 'effect'
+import { type Response } from 'express'
+import { error, info } from 'firebase-functions/logger'
+import { onRequest, type Request } from 'firebase-functions/v2/https'
+
+import { AuthRepository } from '@assessmentis/firebase-server-infrastructure'
+import {
+  AuthError,
+  type AuthzError,
+  type UnhandledError,
+} from '@assessmentis/ontology'
 import { UserId } from '@assessmentis/platform-domain'
-import type { AuthzError } from '@assessmentis/ontology'
-import { AuthError } from '@assessmentis/ontology'
+
+import { google } from 'googleapis'
+
+import { makeRequestRuntime } from '../util/BaseLayer'
 import { defaultHttpOptions, oauth2Client } from '../util/functionContext'
 import { handleError } from '../util/handleError'
-import type { UnhandledError } from '@assessmentis/ontology'
-import { AuthRepository } from '@assessmentis/firebase-server-infrastructure'
-import { makeRequestRuntime } from '../util/BaseLayer'
 
 /**
  * Process OAuth callback with authorization code

@@ -1,23 +1,25 @@
 import { Schema } from 'effect'
+
 import { AnnotateArrayWithArbitrary, MergeClasses } from '@assessmentis/util'
+
 import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
-import { Coding } from '../../data-types/complex/Coding'
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
+import { Coding } from '../../data-types/complex/Coding'
 import {
-  Reference,
   Identifier,
+  Reference,
 } from '../../data-types/complex/IdentifierAndReference'
 import { Period } from '../../data-types/complex/Period'
 import { Quantity } from '../../data-types/complex/Quantity'
+import { EncounterClassHistory } from './EncounterClassHistory'
+import { EncounterDiagnosis } from './EncounterDiagnosis'
+import { EncounterHospitalization } from './EncounterHospitalization'
+import { EncounterLocation } from './EncounterLocation'
+import { EncounterParticipant } from './EncounterParticipant'
 import {
   EncounterStatus,
   EncounterStatusHistory,
 } from './EncounterStatusHistory'
-import { EncounterClassHistory } from './EncounterClassHistory'
-import { EncounterParticipant } from './EncounterParticipant'
-import { EncounterDiagnosis } from './EncounterDiagnosis'
-import { EncounterHospitalization } from './EncounterHospitalization'
-import { EncounterLocation } from './EncounterLocation'
 
 const Key = 'Encounter' as const
 type Key = typeof Key

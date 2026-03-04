@@ -1,9 +1,11 @@
 import { Schema } from 'effect'
-import { Reference } from './complex/IdentifierAndReference'
+
 import type {
   Resource as EffectResource,
   ReadonlyUrl,
 } from '@assessmentis/effectful-store'
+
+import { Reference } from './complex/IdentifierAndReference'
 
 export const referenceFromResource = (
   resource: { url?: string | undefined; domainType: string },

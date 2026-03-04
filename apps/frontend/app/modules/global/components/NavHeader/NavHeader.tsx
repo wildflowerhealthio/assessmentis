@@ -1,24 +1,30 @@
-import { OrgPicker } from '../../../../layers/OrgPicker'
-import { NavBurger } from './NavBurger'
-import { OptionalBackButton } from './OptionalBackButton'
-import type { Effect, Scope } from 'effect'
-import { Either, Stream, Option } from 'effect'
-import type { Org, User, OrgSlug, UserId } from '@assessmentis/platform-domain'
-import { NoSelectedOrgError } from '@assessmentis/platform-domain'
-import classes from './NavHeader.module.css'
+import { Either, Option, Stream, type Effect, type Scope } from 'effect'
+import React, { Suspense, useMemo } from 'react'
+import { Await } from 'react-router'
+
 import {
   AuthError,
   BadDataError,
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
-import { cn } from '../../../../../../../global/react-util/src/functions'
-import React, { Suspense, useMemo } from 'react'
-import { Await } from 'react-router'
-import { signIn } from '../../../../firebase'
+import {
+  NoSelectedOrgError,
+  type Org,
+  type OrgSlug,
+  type User,
+  type UserId,
+} from '@assessmentis/platform-domain'
 import { useStream } from '@assessmentis/react-util'
 import { StreamEither } from '@assessmentis/util'
+
+import { cn } from '../../../../../../../global/react-util/src/functions'
+import { signIn } from '../../../../firebase'
+import { OrgPicker } from '../../../../layers/OrgPicker'
 import { HeaderBreadcrumbs } from './HeaderBreadcrumbs'
+import { NavBurger } from './NavBurger'
+import classes from './NavHeader.module.css'
+import { OptionalBackButton } from './OptionalBackButton'
 
 interface NavHeaderProps {
   activeOrgStream: Stream.Stream<

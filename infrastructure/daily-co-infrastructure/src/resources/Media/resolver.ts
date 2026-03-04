@@ -1,17 +1,22 @@
 import { Effect, pipe, RequestResolver, Schema } from 'effect'
 import type { HttpClient } from '@effect/platform/HttpClient'
-import type { Resource } from '@assessmentis/effectful-store'
+
 import type { Media } from '@assessmentis/clinical-domain'
+import type { Resource } from '@assessmentis/effectful-store'
 import { UnhandledError } from '@assessmentis/ontology'
-import { ApiDailyCoRecordingSchema } from '../../models/ApiDailyCoRecordingSchema'
+
 import {
+  assertStatus,
   getRequestFromHeaders,
   handleHttpClientError,
-  assertStatus,
   parseAs,
 } from '../../httpHelpers'
-import type { AnyRequest, HeadersEffect } from '../../resolverUtils'
-import { fetchRecordingFileUrl } from '../../resolverUtils'
+import { ApiDailyCoRecordingSchema } from '../../models/ApiDailyCoRecordingSchema'
+import {
+  fetchRecordingFileUrl,
+  type AnyRequest,
+  type HeadersEffect,
+} from '../../resolverUtils'
 import { DailyCoMedia } from './DailyCoMedia'
 
 const decodeMedia = Schema.decodeSync(DailyCoMedia)

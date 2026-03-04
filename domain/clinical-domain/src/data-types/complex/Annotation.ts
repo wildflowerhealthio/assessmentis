@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
-import type { ElementEncoded } from '../base/Element'
-import { Element } from '../base/Element'
+
+import { Element, type ElementEncoded } from '../base/Element'
 import { Reference } from './IdentifierAndReference'
 
 const Key = 'Annotation'

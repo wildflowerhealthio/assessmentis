@@ -9,6 +9,7 @@ const config = {
     '<BUILTIN_MODULES>',
     'fast-check',
     '^vitest(/.*)?$',
+    'vite',
     // Framework: Effect, React, TanStack, Firebase
     '^effect(/.*)?$',
     '^@effect/',

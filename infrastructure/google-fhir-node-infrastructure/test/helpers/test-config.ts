@@ -1,11 +1,15 @@
 import 'dotenv/config'
-import { http, HttpResponse } from 'msw'
+
 import { execSync } from 'node:child_process'
 import { Layer } from 'effect'
-import { setupNodeIntercepting } from '@assessmentis/testing-utils/vcr-js/node'
+
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
-import { NodeGoogleHealthcareFhirR4ClientLayer } from '../../src/NodeGoogleHealthcareClientLayer'
+import { setupNodeIntercepting } from '@assessmentis/testing-utils/vcr-js/node'
+
+import { http, HttpResponse } from 'msw'
+
 import { GCloudAccessToken } from '../../src/GCloudAccessToken'
+import { NodeGoogleHealthcareFhirR4ClientLayer } from '../../src/NodeGoogleHealthcareClientLayer'
 
 export const testConfig = {
   _tag: 'google_fhir_store' as const,

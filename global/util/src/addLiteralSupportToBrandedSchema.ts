@@ -1,5 +1,4 @@
-import type { Schema } from 'effect'
-import { Brand } from 'effect'
+import { Brand, type Schema } from 'effect'
 
 export const literalOf =
   <A, I, R, B extends string | symbol>(

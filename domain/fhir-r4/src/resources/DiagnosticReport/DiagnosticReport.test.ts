@@ -1,11 +1,14 @@
+import * as fc from 'fast-check'
 import { describe, expect, test } from 'vitest'
 import { Arbitrary, Effect, Layer, Schema } from 'effect'
-import type FhirR4 from 'fhir/r4'
-import * as fc from 'fast-check'
-import { ReadonlyUrl } from '@assessmentis/effectful-store'
-import { deepAssignBaseUrls } from '../../deepAssignBaseUrls'
+
 import { DiagnosticReport } from '@assessmentis/clinical-domain'
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
+
+import type FhirR4 from 'fhir/r4'
+
 import { BaseUrl } from '../../data-types/UrlIdentification'
+import { deepAssignBaseUrls } from '../../deepAssignBaseUrls'
 import { FhirR4DiagnosticReport } from './DiagnosticReport'
 
 const baseUrl = ReadonlyUrl.make({
@@ -20,7 +23,9 @@ describe('FhirR4DiagnosticReport', () => {
   test('property: FHIR encode-decode round-trip', async () => {
     await fc.assert(
       fc.asyncProperty(
-        Arbitrary.make(DiagnosticReport).map((v) => deepAssignBaseUrls(v, baseUrl)),
+        Arbitrary.make(DiagnosticReport).map((v) =>
+          deepAssignBaseUrls(v, baseUrl)
+        ),
         async (diagnosticReport) => {
           const decoded = await Effect.runPromise(
             Effect.gen(function* () {

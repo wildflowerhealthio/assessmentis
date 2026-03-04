@@ -1,4 +1,5 @@
 import { Schema } from 'effect'
+
 import { AllDatatypeKeys, DatatypeChoice } from '../Datatype'
 import { Extension } from './Extension'
 

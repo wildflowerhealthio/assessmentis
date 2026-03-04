@@ -1,5 +1,7 @@
 import { Link } from 'react-router'
+
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
+
 import classes from './ResourceListItem.module.css'
 
 interface ResourceListItemProps {

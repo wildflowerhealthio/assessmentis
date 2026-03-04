@@ -9,28 +9,14 @@
 
 import {
   Array,
-  Record,
+  Context,
   Effect,
+  Record,
   Request,
   RequestResolver,
   Schema,
-  Context,
 } from 'effect'
-import { FhirR4Client } from '@assessmentis/fhir-r4'
-import type {
-  ReadonlyUrl,
-  Resource,
-  ReadyOrigin,
-} from '@assessmentis/effectful-store'
-import { type ResourceRequest } from '@assessmentis/effectful-store'
-import type { AuthError, AuthzError } from '@assessmentis/ontology'
-import {
-  UnhandledError,
-  ExternalAssertionError,
-  NotFoundError,
-} from '@assessmentis/ontology'
-import { refineOrFail } from '@assessmentis/util'
-import { FhirR4Bundle } from './resources/Bundle'
+
 import type {
   Composition,
   DiagnosticReport,
@@ -43,6 +29,24 @@ import type {
   Questionnaire,
   QuestionnaireResponse,
 } from '@assessmentis/clinical-domain'
+import {
+  type ReadonlyUrl,
+  type ReadyOrigin,
+  type Resource,
+  type ResourceRequest,
+} from '@assessmentis/effectful-store'
+import { FhirR4Client } from '@assessmentis/fhir-r4'
+import {
+  ExternalAssertionError,
+  NotFoundError,
+  UnhandledError,
+  type AuthError,
+  type AuthzError,
+} from '@assessmentis/ontology'
+import { refineOrFail } from '@assessmentis/util'
+
+import { BaseUrl } from './data-types/UrlIdentification'
+import { FhirR4Bundle } from './resources/Bundle'
 import { FhirR4Composition } from './resources/Composition'
 import { FhirR4DiagnosticReport } from './resources/DiagnosticReport'
 import { FhirR4Encounter } from './resources/Encounter'
@@ -53,7 +57,6 @@ import { FhirR4Patient } from './resources/Patient'
 import { FhirR4Practitioner } from './resources/Practitioner'
 import { FhirR4Questionnaire } from './resources/Questionnaire'
 import { FhirR4QuestionnaireResponse } from './resources/QuestionnaireResponse'
-import { BaseUrl } from './data-types/UrlIdentification'
 
 export const fhirProtocols = {
   http: 'fhir-r4+http:',

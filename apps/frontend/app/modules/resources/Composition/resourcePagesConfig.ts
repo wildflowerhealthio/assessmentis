@@ -1,6 +1,12 @@
 import { Schema } from 'effect'
+
 import type { Composition } from '@assessmentis/clinical-domain'
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
+
+import {
+  createResourceCreateAction,
+  createResourceUpdateAction,
+} from '../../common/actions/createResourceActions'
 import type { ResourcePagesConfig } from '../ResourcePages/resourcePagesConfigType'
 import { CompositionForm } from './components/CompositionForm'
 import {
@@ -8,10 +14,6 @@ import {
   transformToComposition,
   type CompositionFormData,
 } from './schemas/CompositionFormSchema'
-import {
-  createResourceCreateAction,
-  createResourceUpdateAction,
-} from '../../common/actions/createResourceActions'
 import {
   getCompositionDisplayName,
   getCompositionType,

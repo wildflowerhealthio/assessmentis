@@ -1,12 +1,11 @@
 import type { Observation } from '@assessmentis/clinical-domain'
+
+import { runEffectSyncFlat } from '../../../../../runEffectSync'
 import { formatObservationValue } from '../../utils/observationDisplay'
 import classes from './ObservationValue.module.css'
-import { runEffectSyncFlat } from '../../../../../runEffectSync'
 
 interface ObservationValueProps {
-  observation:
-    | Observation
-    | NonNullable<Observation['component']>[number]
+  observation: Observation | NonNullable<Observation['component']>[number]
 }
 
 export function ObservationValue({ observation }: ObservationValueProps) {

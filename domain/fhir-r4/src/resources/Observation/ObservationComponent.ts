@@ -1,15 +1,18 @@
 import { Schema } from 'effect'
-import type FhirR4 from 'fhir/r4'
+
+import type { ObservationComponentEncoded } from '@assessmentis/clinical-domain'
 import {
   AllDatatypeKeys,
   DatatypeChoiceEncodedPassthroughFields,
 } from '@assessmentis/clinical-domain/data-types'
+import { mutableEncoded } from '@assessmentis/util'
+
+import type FhirR4 from 'fhir/r4'
+
 import { BackboneElementEncodedFromFhir } from '../../data-types/base/BackboneElement'
 import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
-import { ObservationReferenceRangeEncodedFromFhir } from './ObservationReferenceRange'
-import { mutableEncoded } from '@assessmentis/util'
 import type { BaseUrl } from '../../data-types/UrlIdentification'
-import type { ObservationComponentEncoded } from '@assessmentis/clinical-domain'
+import { ObservationReferenceRangeEncodedFromFhir } from './ObservationReferenceRange'
 
 export const ObservationComponentEncodedFromFhir: Schema.Schema<
   ObservationComponentEncoded,

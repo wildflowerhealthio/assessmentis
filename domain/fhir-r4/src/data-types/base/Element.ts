@@ -1,8 +1,11 @@
 import { Schema } from 'effect'
-import type FhirR4 from 'fhir/r4'
+
 import type { ElementEncoded } from '@assessmentis/clinical-domain/data-types'
-import { FhirR4Extension } from '../special-purpose/Extension'
 import { mutableEncoded } from '@assessmentis/util'
+
+import type FhirR4 from 'fhir/r4'
+
+import { FhirR4Extension } from '../special-purpose/Extension'
 import type { BaseUrl } from '../UrlIdentification'
 import { ElementIdentification } from './ElementIdentification'
 

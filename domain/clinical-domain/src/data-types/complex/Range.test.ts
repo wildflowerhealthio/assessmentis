@@ -1,7 +1,8 @@
-import { expect, test, describe } from 'vitest'
-import * as Range from './Range'
-import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
+import { describe, expect, test } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
+
+import * as Range from './Range'
 
 const rangeArb = Arbitrary.make(Range.Range)
 

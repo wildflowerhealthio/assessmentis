@@ -1,7 +1,8 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
+
 import {
-  buildFhirStoreParent,
   buildFhirResourcePath,
+  buildFhirStoreParent,
   buildFhirTypePath,
   type GoogleHealthcareConfig,
 } from './GoogleHealthcarePaths'

@@ -63,7 +63,10 @@ export const deepAssignBaseUrls = <T>(value: T, baseUrl: ReadonlyUrl): T => {
     if (typeof ctor.make === 'function') {
       return ctor.make(rebuilt)
     }
-    return Object.assign(Object.create(Object.getPrototypeOf(v) as object), rebuilt)
+    return Object.assign(
+      Object.create(Object.getPrototypeOf(v) as object),
+      rebuilt
+    )
   }
 
   return walk(value) as T

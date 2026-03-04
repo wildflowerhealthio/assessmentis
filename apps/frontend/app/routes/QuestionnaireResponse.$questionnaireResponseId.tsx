@@ -1,35 +1,34 @@
-import { Suspense, useMemo } from 'react'
-import { Schema, Option, Effect, DateTime } from 'effect'
-import { UnhandledError } from '@assessmentis/ontology'
+import { DateTime, Effect, Option, Schema } from 'effect'
+import { Suspense, useMemo, useState } from 'react'
+import { Await, useNavigate } from 'react-router'
+
 import {
+  Media,
+  Observation,
   Questionnaire,
   QuestionnaireResponse,
   type QuestionnaireItemLink,
 } from '@assessmentis/clinical-domain'
 import {
+  MediaRepository,
+  ObservationRepository,
   QuestionnaireRepository,
   QuestionnaireResponseRepository,
 } from '@assessmentis/clinical-domain/repositories'
-
-import type { Route } from './+types/QuestionnaireResponse.$questionnaireResponseId'
-import QuestionnaireForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/QuestionnaireForm'
-import { getEncounterRecordings } from '../modules/resources/Encounter/actions/getEncounterRecordings'
-import { Media, Observation } from '@assessmentis/clinical-domain'
-import {
-  MediaRepository,
-  ObservationRepository,
-} from '@assessmentis/clinical-domain/repositories'
-import { Await, useNavigate } from 'react-router'
-import { useState } from 'react'
-import SplitPane from '../modules/common/components/SplitPane/SplitPane'
+import { UnhandledError } from '@assessmentis/ontology'
 import { gad7 } from '@assessmentis/questionnaire-entities'
-import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
-import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { useEffectTs } from '@assessmentis/react-util'
 
-import { usePlatformContext } from '../layers/PlatformContext'
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
+import QuestionnaireForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/QuestionnaireForm'
 import { ErrorBoundary } from 'react-error-boundary'
+
 import { ClinicalDataRepositoryService } from '../layers/ClinicalDataRepositoriesService'
+import { usePlatformContext } from '../layers/PlatformContext'
+import SplitPane from '../modules/common/components/SplitPane/SplitPane'
+import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'
+import { getEncounterRecordings } from '../modules/resources/Encounter/actions/getEncounterRecordings'
+import type { Route } from './+types/QuestionnaireResponse.$questionnaireResponseId'
 
 export const QuestionnaireResponseWithQuestionnaire = Schema.Struct({
   questionnaireResponse: QuestionnaireResponse,

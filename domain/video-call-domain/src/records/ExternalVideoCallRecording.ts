@@ -1,7 +1,8 @@
 import { Schema } from 'effect'
+import { DateTimeUtc, DurationFromMillis } from 'effect/Schema'
+
 import { ExternalVideoCallRecordingId } from './VideoCallRecording'
 import { VideoCallRoomName } from './VideoCallRoom'
-import { DateTimeUtc, DurationFromMillis } from 'effect/Schema'
 
 export const ExternalVideoCallRecordingUri = Schema.String.pipe(
   Schema.brand('ExternalVideoCallRecordingUri')

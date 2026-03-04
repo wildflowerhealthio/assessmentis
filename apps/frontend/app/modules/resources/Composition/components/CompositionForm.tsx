@@ -1,10 +1,12 @@
 import { applyPartialProps, transformProps } from '@assessmentis/react-util'
+
 import {
   ResourceForm,
   TextField,
 } from 'app/modules/common/components/ResourceForm'
-import { PatientPicker } from 'app/modules/resources/Patient/components/PatientPicker'
 import type { CommonFieldProps } from 'app/modules/common/components/ResourceForm/ResourceForm'
+import { PatientPicker } from 'app/modules/resources/Patient/components/PatientPicker'
+
 import {
   CompositionFormSchema,
   type CompositionFormData,

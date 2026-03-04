@@ -1,7 +1,8 @@
-import { expect, test, describe } from 'vitest'
-import { Observation } from './Observation'
-import { Schema, Arbitrary, Either } from 'effect'
 import * as fc from 'fast-check'
+import { describe, expect, test } from 'vitest'
+import { Arbitrary, Either, Schema } from 'effect'
+
+import { Observation } from './Observation'
 
 const observationArb = Arbitrary.make(Observation)
 

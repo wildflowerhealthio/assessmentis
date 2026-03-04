@@ -1,18 +1,20 @@
 import { Effect, Layer, Option } from 'effect'
+import { UnknownException } from 'effect/Cause'
+
+import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
+import {
+  buildFhirResourcePath,
+  buildFhirStoreParent,
+  createFhirResponseHandlers,
+  FhirR4Client,
+} from '@assessmentis/fhir-r4'
+import { UnhandledError } from '@assessmentis/ontology'
+import { flattenSearchParams } from '@assessmentis/util'
+
 import type { healthcare_v1 } from '@googleapis/healthcare'
 import { google } from 'googleapis'
-import type { GaxiosResponseWithHTTP2 } from 'googleapis-common'
-import { GaxiosError } from 'googleapis-common'
-import {
-  FhirR4Client,
-  buildFhirStoreParent,
-  buildFhirResourcePath,
-  createFhirResponseHandlers,
-} from '@assessmentis/fhir-r4'
-import { flattenSearchParams } from '@assessmentis/util'
-import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
-import { UnknownException } from 'effect/Cause'
-import { UnhandledError } from '@assessmentis/ontology'
+import { GaxiosError, type GaxiosResponseWithHTTP2 } from 'googleapis-common'
+
 import { GCloudAccessToken } from './GCloudAccessToken'
 
 const recoverGaxiosError: <A, E, R>(

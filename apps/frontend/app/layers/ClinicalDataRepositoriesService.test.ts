@@ -1,10 +1,12 @@
-import { describe, it, expect, test } from 'vitest'
-import { Effect, Either, Layer, Stream } from 'effect'
 import * as fc from 'fast-check'
+import { describe, expect, it, test } from 'vitest'
+import { Effect, Either, Layer, Stream } from 'effect'
+
+import { UnhandledError } from '@assessmentis/ontology'
+
+import type { FhirR4Client } from '../../../../domain/fhir-r4/src'
 import { ClinicalDataRepositoryService } from './ClinicalDataRepositoriesService'
 import { FhirR4ClientService } from './FhirR4ClientService'
-import type { FhirR4Client } from '../../../../domain/fhir-r4/src'
-import { UnhandledError } from '@assessmentis/ontology'
 
 describe('ClinicalDataRepositoryService', () => {
   const mockFhirClient = {} as typeof FhirR4Client.Service

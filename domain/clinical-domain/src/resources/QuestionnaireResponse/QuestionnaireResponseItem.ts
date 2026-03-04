@@ -1,15 +1,17 @@
-import type { FastCheck } from 'effect'
-import { pipe, Schema } from 'effect'
-import { QuestionnaireItemLink } from '../Questionnaire/QuestionnaireItemLink'
+import { pipe, Schema, type FastCheck } from 'effect'
+
+import { mergeArbitraries, MergeClasses } from '@assessmentis/util'
+
 import {
   BackboneElement,
   type BackboneElementEncoded,
 } from '../../data-types/base/BackboneElement'
-import FhirR4ChoiceElements from '../../data-types/fhirR4ChoiceElements'
 import { DatatypeChoice } from '../../data-types/Datatype'
-import { mergeArbitraries, MergeClasses } from '@assessmentis/util'
+import FhirR4ChoiceElements from '../../data-types/fhirR4ChoiceElements'
+import { QuestionnaireItemLink } from '../Questionnaire/QuestionnaireItemLink'
 
-const questionnaireResponseItemAnswerFields = {} as const satisfies Schema.Struct.Fields
+const questionnaireResponseItemAnswerFields =
+  {} as const satisfies Schema.Struct.Fields
 
 class QuestionnaireResponseItemAnswerValue extends DatatypeChoice(
   'QuestionnaireResponseItemAnswerValue',
@@ -27,7 +29,9 @@ export interface QuestionnaireResponseItemAnswerEncoded
   item?: ReadonlyArray<QuestionnaireResponseItemEncoded> | undefined
 }
 
-const AnswerBackboneElementMixin = BackboneElement('QuestionnaireResponseItemAnswer')
+const AnswerBackboneElementMixin = BackboneElement(
+  'QuestionnaireResponseItemAnswer'
+)
 /**
  * The value is nested because we cannot have a repeating structure that has variable type.
  */
@@ -38,7 +42,9 @@ export class QuestionnaireResponseItemAnswer extends MergeClasses<QuestionnaireR
     {
       arbitrary:
         () =>
-        (fc: typeof FastCheck): FastCheck.Arbitrary<QuestionnaireResponseItemAnswer> =>
+        (
+          fc: typeof FastCheck
+        ): FastCheck.Arbitrary<QuestionnaireResponseItemAnswer> =>
           qrLetrec(fc).answer,
     },
   ],
@@ -89,7 +95,9 @@ export class QuestionnaireResponseItem extends MergeClasses<QuestionnaireRespons
     {
       arbitrary:
         () =>
-        (fc: typeof FastCheck): FastCheck.Arbitrary<QuestionnaireResponseItem> =>
+        (
+          fc: typeof FastCheck
+        ): FastCheck.Arbitrary<QuestionnaireResponseItem> =>
           qrLetrec(fc).item,
     },
   ],

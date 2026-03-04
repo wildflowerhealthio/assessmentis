@@ -1,7 +1,9 @@
 import { Schema } from 'effect'
-import { Code } from './Code'
-import { Element, type ElementEncoded } from '../base/Element'
+
 import { MergeClasses } from '@assessmentis/util'
+
+import { Element, type ElementEncoded } from '../base/Element'
+import { Code } from './Code'
 
 const Key = 'Attachment'
 

@@ -1,21 +1,4 @@
 import {
-  makeFhirR4ReadyOrigin,
-  type FhirR4Client,
-} from '../../../../domain/fhir-r4/src'
-import type {
-  LoadedGapiClient,
-  LoadedGapiHealthcareClient,
-} from '@assessmentis/google-fhir-web-infrastructure'
-import { startGapiGoogleHealthcareClient } from '@assessmentis/google-fhir-web-infrastructure'
-import type { AuthError } from '@assessmentis/ontology'
-import {
-  UnhandledError,
-  NotFoundError,
-  ExternalAssertionError,
-  BadDataError,
-} from '@assessmentis/ontology'
-import type { Scope, Take } from 'effect'
-import {
   Context,
   Effect,
   Either,
@@ -24,16 +7,39 @@ import {
   Match,
   PubSub,
   Stream,
+  type Scope,
+  type Take,
 } from 'effect'
-import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
-import type { NoSelectedOrgError, OrgSlug } from '@assessmentis/platform-domain'
-import type { Org } from '@assessmentis/platform-domain'
-import {
-  takeOneFromPubSubOrDie,
-  pubsubAsPerpetualStream,
-} from '@assessmentis/util'
-import { ReadonlyUrl, type Hub } from '@assessmentis/effectful-store'
+
 import type { ResourceDataTypes } from '@assessmentis/clinical-domain'
+import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
+import { ReadonlyUrl, type Hub } from '@assessmentis/effectful-store'
+import {
+  startGapiGoogleHealthcareClient,
+  type LoadedGapiClient,
+  type LoadedGapiHealthcareClient,
+} from '@assessmentis/google-fhir-web-infrastructure'
+import {
+  BadDataError,
+  ExternalAssertionError,
+  NotFoundError,
+  UnhandledError,
+  type AuthError,
+} from '@assessmentis/ontology'
+import type {
+  NoSelectedOrgError,
+  Org,
+  OrgSlug,
+} from '@assessmentis/platform-domain'
+import {
+  pubsubAsPerpetualStream,
+  takeOneFromPubSubOrDie,
+} from '@assessmentis/util'
+
+import {
+  makeFhirR4ReadyOrigin,
+  type FhirR4Client,
+} from '../../../../domain/fhir-r4/src'
 
 export const createFhirR4ClientPubSub = PubSub.sliding<
   Take.Take<

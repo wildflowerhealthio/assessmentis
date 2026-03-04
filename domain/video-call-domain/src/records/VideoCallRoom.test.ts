@@ -1,10 +1,11 @@
-import { expect, test, describe } from 'vitest'
-import { Schema, Either } from 'effect'
 import * as fc from 'fast-check'
+import { describe, expect, test } from 'vitest'
+import { Either, Schema } from 'effect'
+
 import {
+  VideoCallRoom,
   VideoCallRoomId,
   VideoCallRoomName,
-  VideoCallRoom,
 } from './VideoCallRoom'
 
 describe('VideoCallRoom Models', () => {

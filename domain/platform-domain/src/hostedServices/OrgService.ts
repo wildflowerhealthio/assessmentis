@@ -1,21 +1,24 @@
-import type { Scope } from 'effect'
 import {
+  Context,
+  Data,
   Effect,
+  Either,
+  Fiber,
   Option,
+  PubSub,
+  Queue,
+  Schema,
   Stream,
   Take,
-  PubSub,
-  Schema,
-  Fiber,
-  Data,
-  Context,
-  Queue,
-  Either,
+  type Scope,
 } from 'effect'
-import type { OrgSlug } from '@assessmentis/platform-domain'
-import { DocumentStore, Org } from '@assessmentis/platform-domain'
-import type { UnhandledError } from '@assessmentis/ontology'
-import { BadDataError, NotFoundError } from '@assessmentis/ontology'
+
+import {
+  BadDataError,
+  NotFoundError,
+  type UnhandledError,
+} from '@assessmentis/ontology'
+import { DocumentStore, Org, type OrgSlug } from '@assessmentis/platform-domain'
 import {
   pubsubAsPerpetualStream,
   StreamEither,

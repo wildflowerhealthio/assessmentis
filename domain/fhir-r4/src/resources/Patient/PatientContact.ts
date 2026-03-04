@@ -1,16 +1,19 @@
 import { Schema } from 'effect'
-import type FhirR4 from 'fhir/r4'
+
+import type { PatientContactEncoded } from '@assessmentis/clinical-domain'
 import { AdministrativeGender } from '@assessmentis/clinical-domain/data-types'
+import { mutableEncoded } from '@assessmentis/util'
+
+import type FhirR4 from 'fhir/r4'
+
 import { BackboneElementEncodedFromFhir } from '../../data-types/base/BackboneElement'
-import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
-import { FhirR4HumanName } from '../../data-types/complex/HumanName'
-import { FhirR4ContactPoint } from '../../data-types/complex/ContactPoint'
 import { FhirR4Address } from '../../data-types/complex/Address'
+import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
+import { FhirR4ContactPoint } from '../../data-types/complex/ContactPoint'
+import { FhirR4HumanName } from '../../data-types/complex/HumanName'
 import { FhirR4Reference } from '../../data-types/complex/IdentifierAndReference'
 import { FhirR4Period } from '../../data-types/complex/Period'
-import { mutableEncoded } from '@assessmentis/util'
 import type { BaseUrl } from '../../data-types/UrlIdentification'
-import type { PatientContactEncoded } from '@assessmentis/clinical-domain'
 
 export const PatientContactEncodedFromFhir: Schema.Schema<
   PatientContactEncoded,

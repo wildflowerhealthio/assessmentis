@@ -1,8 +1,9 @@
-import { Coding } from '@assessmentis/clinical-domain/data-types'
-import { Code } from '@assessmentis/clinical-domain/data-types'
-import type { QuestionnaireResponseItem } from '@assessmentis/clinical-domain'
 import type { Effect } from 'effect'
+
+import type { QuestionnaireResponseItem } from '@assessmentis/clinical-domain'
+import { Code, Coding } from '@assessmentis/clinical-domain/data-types'
 import { gad7 } from '@assessmentis/questionnaire-entities'
+
 import {
   makeScoringTable as makeScoringTableFunction,
   type ScoringTable,

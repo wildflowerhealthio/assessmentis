@@ -1,8 +1,9 @@
-import { useOutsideClickHandler, cn } from '@assessmentis/react-util'
-import { useState, useRef } from 'react'
+import { useRef, useState } from 'react'
 import { Link } from 'react-router'
-import { LoginButton } from '../LoginButton'
 
+import { cn, useOutsideClickHandler } from '@assessmentis/react-util'
+
+import { LoginButton } from '../LoginButton'
 import classes from './NavBurger.module.css'
 
 export const NavBurger = () => {

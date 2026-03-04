@@ -1,30 +1,36 @@
 import { DateTime, Effect, pipe, RequestResolver, Schema } from 'effect'
 import type { HttpClient } from '@effect/platform/HttpClient'
-import type { Resource } from '@assessmentis/effectful-store'
-import { ReadonlyUrl } from '@assessmentis/effectful-store'
-import type { Location } from '@assessmentis/clinical-domain'
-import { Location as LocationClass } from '@assessmentis/clinical-domain'
+
 import {
-  VideoCallRoomIdentifier,
-  findVideoCallRoomConfig,
+  Location as LocationClass,
+  type Location,
+} from '@assessmentis/clinical-domain'
+import {
+  Code,
   CodeableConcept,
   Coding,
-  Code,
+  findVideoCallRoomConfig,
+  VideoCallRoomIdentifier,
 } from '@assessmentis/clinical-domain/data-types'
 import type { DailyCoConfig } from '@assessmentis/config-domain'
+import { ReadonlyUrl, type Resource } from '@assessmentis/effectful-store'
 import { UnhandledError } from '@assessmentis/ontology'
+
+import {
+  assertStatus,
+  deleteRequestFromHeaders,
+  getRequestFromHeaders,
+  handle404,
+  handleHttpClientError,
+  parseAs,
+  postRequestFromHeaders,
+} from '../../httpHelpers'
 import { CompleteApiDailyCoRoom } from '../../models/ApiDailyCoRoomSchema'
 import {
-  getRequestFromHeaders,
-  postRequestFromHeaders,
-  deleteRequestFromHeaders,
-  handleHttpClientError,
-  handle404,
-  assertStatus,
-  parseAs,
-} from '../../httpHelpers'
-import type { AnyRequest, HeadersEffect } from '../../resolverUtils'
-import { extractIdFromUrl } from '../../resolverUtils'
+  extractIdFromUrl,
+  type AnyRequest,
+  type HeadersEffect,
+} from '../../resolverUtils'
 
 /**
  * Build a Location from a Daily.co room API response.

@@ -5,9 +5,9 @@
  * rather than in the stream's error channel. This module provides ergonomic
  * operations that work on the Either inside the stream.
  */
-import { dual } from 'effect/Function'
 import { Effect, Either, Stream } from 'effect'
 import type { NoSuchElementException } from 'effect/Cause'
+import { dual } from 'effect/Function'
 
 export interface StreamEither<
   out A,

@@ -1,12 +1,13 @@
-import { expect, test, describe } from 'vitest'
+import * as fc from 'fast-check'
+import { describe, expect, test } from 'vitest'
+import { Arbitrary } from 'effect'
+
+import { BackboneElement } from '../../data-types/base/BackboneElement'
 import {
-  QuestionnaireItemUiDisplayLevel,
   getUiDisplayLevel,
+  QuestionnaireItemUiDisplayLevel,
   withUiDisplayLevel,
 } from './QuestionnaireItemUiDisplayLevel'
-import { Arbitrary } from 'effect'
-import * as fc from 'fast-check'
-import { BackboneElement } from '../../data-types/base/BackboneElement'
 
 const TestBackboneElement = BackboneElement('Test')
 const backboneElementArb = Arbitrary.make(TestBackboneElement)

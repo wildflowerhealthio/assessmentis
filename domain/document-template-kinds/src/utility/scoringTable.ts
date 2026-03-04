@@ -1,4 +1,5 @@
 import { Effect, Schema } from 'effect'
+
 import type {
   QuestionnaireItem,
   QuestionnaireResponseItem,
@@ -38,8 +39,7 @@ export const makeScoringTable =
               'valueCoding' in option &&
               headerCodes.some(
                 (hc) =>
-                  hc.code ===
-                  (option.valueCoding as Coding | undefined)?.code
+                  hc.code === (option.valueCoding as Coding | undefined)?.code
               )
           ) ?? false
       )

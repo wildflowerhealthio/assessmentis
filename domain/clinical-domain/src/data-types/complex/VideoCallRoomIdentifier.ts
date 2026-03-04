@@ -1,14 +1,16 @@
 import { Schema } from 'effect'
+
+import { MergeClasses } from '@assessmentis/util'
+
+import { Element } from '../base/'
+import { CodeableConcept, type CodeableConceptEncoded } from './CodeableConcept'
 import {
   Identifier,
   IdentifierUse,
   Reference,
   type ReferenceEncoded,
 } from './IdentifierAndReference'
-import { CodeableConcept, type CodeableConceptEncoded } from './CodeableConcept'
 import { Period } from './Period'
-import { Element } from '../base/'
-import { MergeClasses } from '@assessmentis/util'
 
 /**
  * The FHIR system URL used to identify video call room names.

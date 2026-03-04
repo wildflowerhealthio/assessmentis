@@ -1,25 +1,28 @@
-import { Effect, Either, Option, Schema, DateTime, Stream } from 'effect'
-import { StreamEither } from '@assessmentis/util'
-import { ReadonlyUrl } from '@assessmentis/effectful-store'
-import { useNavigate } from 'react-router'
-import { runEffectSyncFlat } from 'app/runEffectSync'
-import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
-import { EncounterForm } from 'app/modules/resources/Encounter/components/EncounterForm'
-import { updateEncounter } from 'app/modules/resources/Encounter/actions/updateEncounter'
-import type { EncounterFormSchema } from 'app/modules/resources/Encounter/schemas/EncounterFormSchema'
-import { EncounterRepository } from '@assessmentis/clinical-domain/repositories'
-import { UnhandledError } from '@assessmentis/ontology'
-import type { Route } from './+types/Encounter.$id.edit'
-import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
-import { getEncounterDisplayName } from '../modules/resources/Encounter/utils/encounterDisplay'
-import { extractReferenceId } from 'app/modules/common/utils/fhirDisplay'
+import { DateTime, Effect, Either, Option, Schema, Stream } from 'effect'
 import { useMemo } from 'react'
+import { useNavigate } from 'react-router'
+
 import type {
-  EncounterParticipant,
   EncounterLocation,
+  EncounterParticipant,
 } from '@assessmentis/clinical-domain'
+import { EncounterRepository } from '@assessmentis/clinical-domain/repositories'
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
+import { UnhandledError } from '@assessmentis/ontology'
 import { useEitherStream } from '@assessmentis/react-util'
+import { StreamEither } from '@assessmentis/util'
+
+import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
+import { extractReferenceId } from 'app/modules/common/utils/fhirDisplay'
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
+import { updateEncounter } from 'app/modules/resources/Encounter/actions/updateEncounter'
+import { EncounterForm } from 'app/modules/resources/Encounter/components/EncounterForm'
+import type { EncounterFormSchema } from 'app/modules/resources/Encounter/schemas/EncounterFormSchema'
+import { runEffectSyncFlat } from 'app/runEffectSync'
+
 import { usePlatformContext } from '../layers/PlatformContext'
+import { getEncounterDisplayName } from '../modules/resources/Encounter/utils/encounterDisplay'
+import type { Route } from './+types/Encounter.$id.edit'
 
 const hasUrl = <T extends { readonly url?: ReadonlyUrl | undefined }>(
   resource: T

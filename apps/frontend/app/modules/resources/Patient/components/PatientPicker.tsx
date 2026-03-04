@@ -1,10 +1,11 @@
 import type { Patient } from '@assessmentis/clinical-domain'
+
+import { createResourcePicker } from '../../../common/utils/createResourcePicker'
+import { humanizeTimelessDate } from '../../../common/utils/dateUtils'
 import {
   formatGender,
   formatHumanName,
 } from '../../../common/utils/fhirDisplay'
-import { humanizeTimelessDate } from '../../../common/utils/dateUtils'
-import { createResourcePicker } from '../../../common/utils/createResourcePicker'
 
 export const PatientPicker = createResourcePicker({
   resourceType: 'Patient',

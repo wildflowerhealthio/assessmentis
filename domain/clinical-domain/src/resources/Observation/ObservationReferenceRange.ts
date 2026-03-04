@@ -1,12 +1,14 @@
 import { Schema } from 'effect'
+
+import { MergeClasses } from '@assessmentis/util'
+
 import {
+  BackboneElement,
   CodeableConcept,
   Quantity,
   Range,
-  BackboneElement,
   type BackboneElementEncoded,
 } from '../../data-types'
-import { MergeClasses } from '@assessmentis/util'
 
 const DomainType = 'ObservationReferenceRange' as const
 type DomainType = typeof DomainType

@@ -1,16 +1,19 @@
+import { Effect } from 'effect'
 import { useState, type SetStateAction } from 'react'
+
 import {
   QuestionnaireResponse,
-  type Questionnaire,
   QuestionnaireResponseItem,
+  type Questionnaire,
   type QuestionnaireItemLink,
 } from '@assessmentis/clinical-domain'
 import { QuestionnaireResponseRepository } from '@assessmentis/clinical-domain/repositories'
-import QuestionnaireItemForm from './components/QuestionnaireItemForm/QuestionnaireItemForm'
-import { Effect } from 'effect'
 import type { ReadonlyUrl } from '@assessmentis/effectful-store'
+
 import { useAutoSave } from 'app/modules/common/hooks/useAutoSave'
+
 import { usePlatformContext } from '../../../../../layers/PlatformContext'
+import QuestionnaireItemForm from './components/QuestionnaireItemForm/QuestionnaireItemForm'
 
 const hasUrl = <T extends { readonly url?: ReadonlyUrl | undefined }>(
   resource: T

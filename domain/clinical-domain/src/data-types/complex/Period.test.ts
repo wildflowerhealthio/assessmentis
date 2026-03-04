@@ -1,7 +1,8 @@
-import { expect, test, describe, expectTypeOf } from 'vitest'
-import { Period, type PeriodEncoded } from './Period'
-import { Arbitrary, DateTime, Schema } from 'effect'
 import * as fc from 'fast-check'
+import { describe, expect, expectTypeOf, test } from 'vitest'
+import { Arbitrary, DateTime, Schema } from 'effect'
+
+import { Period, type PeriodEncoded } from './Period'
 
 const periodArb = Arbitrary.make(Period)
 

@@ -1,21 +1,23 @@
-import type { Schema, Scope } from 'effect'
-import { Either, Option, Stream } from 'effect'
-import { Effect } from 'effect'
-import { StreamEither } from '@assessmentis/util'
+import { Effect, Either, Option, Stream, type Schema, type Scope } from 'effect'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router'
+
+import type {
+  ClinicalDataRepositoryErrors,
+  Schemas,
+} from '@assessmentis/clinical-domain'
+import type { ReadonlyUrl } from '@assessmentis/effectful-store'
+import { NotFoundError } from '@assessmentis/ontology'
+import type { NoSelectedOrgError } from '@assessmentis/platform-domain'
 import { useEitherStream } from '@assessmentis/react-util'
+import { StreamEither } from '@assessmentis/util'
+
+import { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
+import { usePlatformContext } from '../../../layers/PlatformContext'
 import { FormPage } from '../../common/components/FormPage/FormPage'
 import { Generic404Content } from '../../common/components/Generic404Content'
 import { useBreadcrumbs } from '../../global/components/BreadcrumbProvider/useBreadcrumbs'
-import { useMemo } from 'react'
-import { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
-import { usePlatformContext } from '../../../layers/PlatformContext'
 import type { ResourcePagesConfig } from './resourcePagesConfigType'
-import { NotFoundError } from '@assessmentis/ontology'
-import type { Schemas } from '@assessmentis/clinical-domain'
-import type { ReadonlyUrl } from '@assessmentis/effectful-store'
-import type { NoSelectedOrgError } from '@assessmentis/platform-domain'
-import type { ClinicalDataRepositoryErrors } from '@assessmentis/clinical-domain'
 
 export interface EditResourcePageProps {
   params: { id: string }

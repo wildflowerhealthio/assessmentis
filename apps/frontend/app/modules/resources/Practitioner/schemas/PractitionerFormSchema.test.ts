@@ -1,11 +1,13 @@
-import { describe, it, expect } from 'vitest'
-import { Schema, FastCheck } from 'effect'
-import type { PractitionerFormData } from './PractitionerFormSchema'
+import { describe, expect, it } from 'vitest'
+import { FastCheck, Schema } from 'effect'
+
+import type { AdministrativeGender } from '@assessmentis/clinical-domain/data-types'
+
 import {
   PractitionerFormSchema,
   transformToPractitioner,
+  type PractitionerFormData,
 } from './PractitionerFormSchema'
-import type { AdministrativeGender } from '@assessmentis/clinical-domain/data-types'
 
 describe('PractitionerFormSchema', () => {
   describe('schema validation', () => {

@@ -1,4 +1,5 @@
 import { Effect, Schema } from 'effect'
+
 import {
   Encounter,
   EncounterLocation,
@@ -8,6 +9,13 @@ import {
   type QuestionnaireResponseEncoded,
 } from '@assessmentis/clinical-domain'
 import {
+  Code,
+  CodeableConcept,
+  Coding,
+  Identifier,
+  Reference,
+} from '@assessmentis/clinical-domain/data-types'
+import {
   EncounterRepository,
   LocationRepository,
   QuestionnaireResponseRepository,
@@ -15,16 +23,9 @@ import {
 import type {
   AuthError,
   AuthzError,
-  UnhandledError,
   ExternalAssertionError,
+  UnhandledError,
 } from '@assessmentis/ontology'
-import {
-  Code,
-  CodeableConcept,
-  Coding,
-  Identifier,
-  Reference,
-} from '@assessmentis/clinical-domain/data-types'
 
 export const CreateEncounterArg: Schema.Schema<
   {

@@ -1,11 +1,10 @@
+import * as fc from 'fast-check'
 import { describe, expect, test } from 'vitest'
 import { Arbitrary } from 'effect'
-import {
-  Range,
-  Quantity,
-} from '@assessmentis/clinical-domain/data-types'
+
+import { Quantity, Range } from '@assessmentis/clinical-domain/data-types'
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
-import * as fc from 'fast-check'
+
 import { deepAssignBaseUrls } from './deepAssignBaseUrls'
 
 const baseUrl = ReadonlyUrl.make({

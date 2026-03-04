@@ -1,4 +1,5 @@
-import { type RefObject, useEffect, useState } from 'react'
+import { useEffect, useState, type RefObject } from 'react'
+
 import { useStatePromise } from './effectHooks'
 
 export * from './effectHooks'

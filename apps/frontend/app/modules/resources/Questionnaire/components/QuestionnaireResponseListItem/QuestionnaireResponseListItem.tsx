@@ -1,4 +1,5 @@
 import type { QuestionnaireResponse } from '@assessmentis/clinical-domain'
+
 import { ResourceListItem } from '../../../ResourcePages/ResourceListItem/ResourceListItem'
 
 interface QuestionnaireResponseListItemProps {

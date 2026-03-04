@@ -1,15 +1,16 @@
+import type { Effect, Option, Schema } from 'effect'
 import type { ComponentType } from 'react'
-import type { Schema } from 'effect'
-import type { Effect, Option } from 'effect'
+
 import type {
   ClinicalDataRepositoryErrors,
   RepositoryFilters,
   Schemas,
 } from '@assessmentis/clinical-domain'
 import type { ReadonlyUrl } from '@assessmentis/effectful-store'
-import type { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
-import type { NoSelectedOrgError } from '@assessmentis/platform-domain'
 import type { NotFoundError } from '@assessmentis/ontology'
+import type { NoSelectedOrgError } from '@assessmentis/platform-domain'
+
+import type { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
 
 type AnyResource = Schema.Schema.Type<(typeof Schemas)[keyof typeof Schemas]>
 
@@ -68,7 +69,10 @@ export interface ResourcePagesConfig<
     TResource,
     | ClinicalDataRepositoryErrors
     | NoSelectedOrgError
-    | NotFoundError<TResource['domainType'], { url: NonNullable<TResource['url']> }>,
+    | NotFoundError<
+        TResource['domainType'],
+        { url: NonNullable<TResource['url']> }
+      >,
     ClinicalDataRepositoryService
   >
 

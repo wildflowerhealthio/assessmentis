@@ -1,8 +1,9 @@
-import { expect, test, describe } from 'vitest'
-import { QuestionnaireItemAnsweredAtExtension } from './QuestionnaireItemAnsweredAt'
-import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
+import { describe, expect, test } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
+
 import { BackboneElement } from '../../data-types/base/BackboneElement'
+import { QuestionnaireItemAnsweredAtExtension } from './QuestionnaireItemAnsweredAt'
 
 const TestBackboneElement = BackboneElement('Test')
 const backboneElementArb = Arbitrary.make(TestBackboneElement)

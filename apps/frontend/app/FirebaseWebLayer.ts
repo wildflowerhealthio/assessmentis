@@ -1,8 +1,10 @@
 import { Layer } from 'effect'
-import { type FirebaseOptions, initializeApp } from 'firebase/app'
+
+import { FirebaseWeb } from '@assessmentis/firebase-web-infrastructure'
+
+import { initializeApp, type FirebaseOptions } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
-import { FirebaseWeb } from '@assessmentis/firebase-web-infrastructure'
 
 // Your web app's Firebase configuration
 const firebaseConfig = {

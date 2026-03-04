@@ -1,10 +1,13 @@
 import { Schema } from 'effect'
-import type FhirR4 from 'fhir/r4'
+
 import type { EncounterClassHistoryEncoded } from '@assessmentis/clinical-domain'
+import { mutableEncoded } from '@assessmentis/util'
+
+import type FhirR4 from 'fhir/r4'
+
 import { BackboneElementEncodedFromFhir } from '../../data-types/base/BackboneElement'
 import { FhirR4Coding } from '../../data-types/complex/Coding'
 import { FhirR4Period } from '../../data-types/complex/Period'
-import { mutableEncoded } from '@assessmentis/util'
 import type { BaseUrl } from '../../data-types/UrlIdentification'
 
 export const EncounterClassHistoryEncodedFromFhir: Schema.Schema<

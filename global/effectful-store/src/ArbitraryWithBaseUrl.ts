@@ -1,5 +1,5 @@
-import type { Schema } from 'effect'
-import { Arbitrary } from 'effect'
+import { Arbitrary, type Schema } from 'effect'
+
 import type { ReadonlyUrl } from './ReadonlyUrl'
 
 /**

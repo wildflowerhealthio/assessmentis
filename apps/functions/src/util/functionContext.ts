@@ -1,4 +1,5 @@
 import type { HttpsOptions } from 'firebase-functions/https'
+
 import { google } from 'googleapis'
 
 /**

@@ -1,10 +1,12 @@
 import { Schema } from 'effect'
+
+import { mutableEncoded } from '@assessmentis/util'
+
 import { BackboneElementEncodedFromFhir } from '../../data-types/base/BackboneElement'
 import {
   FhirR4Identifier,
   FhirR4Reference,
 } from '../../data-types/complex/IdentifierAndReference'
-import { mutableEncoded } from '@assessmentis/util'
 
 export const CompositionRelatesToEncodedFromFhir = Schema.extend(
   BackboneElementEncodedFromFhir('CompositionRelatesTo'),

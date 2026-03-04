@@ -1,19 +1,21 @@
 import { Schema } from 'effect'
-import type FhirR4 from 'fhir/r4'
+
 import {
   QuestionnaireResponse,
-  type QuestionnaireResponseEncoded,
   QuestionnaireResponseStatus,
+  type QuestionnaireResponseEncoded,
 } from '@assessmentis/clinical-domain'
+import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
+
+import type FhirR4 from 'fhir/r4'
+
 import { ResourceEncodedFromFhirR4Resource } from '../../data-types/base/Resource'
 import {
   FhirR4Identifier,
   FhirR4Reference,
 } from '../../data-types/complex/IdentifierAndReference'
-import { QuestionnaireResponseItemEncodedFromFhir } from './QuestionnaireResponseItem'
 import type { BaseUrl } from '../../data-types/UrlIdentification'
-import { mutableEncoded } from '@assessmentis/util'
-import { TwoStepExternalSchema } from '@assessmentis/util'
+import { QuestionnaireResponseItemEncodedFromFhir } from './QuestionnaireResponseItem'
 
 const EncodedFromFhir: Schema.Schema<
   QuestionnaireResponseEncoded,

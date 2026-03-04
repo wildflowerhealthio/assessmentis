@@ -1,6 +1,8 @@
 import { Effect, Layer, Scope } from 'effect'
 import { Suspense, useMemo } from 'react'
-import { PlatformContext } from './PlatformContext'
+import { Await } from 'react-router'
+
+import type { ResourceDataTypes } from '@assessmentis/clinical-domain'
 import {
   FirebaseWebDocumentStoreLayer,
   startAuthDataService,
@@ -10,7 +12,6 @@ import {
   LoadedGapiHealthcareClient,
   startAccessTokenSyncer,
 } from '@assessmentis/google-fhir-web-infrastructure'
-import { FirebaseWebLayer } from '../FirebaseWebLayer'
 import {
   AuthDataService,
   createAuthDataPubSub,
@@ -20,23 +21,25 @@ import {
   startOrgService,
   startUserService,
 } from '@assessmentis/platform-domain'
+import { useEffectTs } from '@assessmentis/react-util'
+
+import { ErrorBoundary } from 'react-error-boundary'
+
+import { makeHub } from '../../../../global/effectful-store/src/Hub'
+import { FirebaseWebLayer } from '../FirebaseWebLayer'
+import { ErrorHandlerBody } from '../modules/common/components/ErrorHandlerBody'
+import { PageLoader } from '../modules/common/components/PageLoader/PageLoader'
+import NavHeaderContainer, {
+  TextHeader,
+} from '../modules/global/components/NavHeader/NavHeader'
+import { ClinicalDataRepositoryService } from './ClinicalDataRepositoriesService'
 import {
   createFhirR4ClientPubSub,
   FhirR4ClientService,
   startFhirR4ClientService,
 } from './FhirR4ClientService'
-import { ClinicalDataRepositoryService } from './ClinicalDataRepositoriesService'
-import { Await } from 'react-router'
-import { useEffectTs } from '@assessmentis/react-util'
-import NavHeaderContainer, {
-  TextHeader,
-} from '../modules/global/components/NavHeader/NavHeader'
-import { PageLoader } from '../modules/common/components/PageLoader/PageLoader'
-import { ErrorBoundary } from 'react-error-boundary'
 import { PlatformlessErrorFallback } from './PlatformAwareErrorFallback'
-import { ErrorHandlerBody } from '../modules/common/components/ErrorHandlerBody'
-import { makeHub } from '../../../../global/effectful-store/src/Hub'
-import type { ResourceDataTypes } from '@assessmentis/clinical-domain'
+import { PlatformContext } from './PlatformContext'
 
 const platformEffect = Effect.gen(function* () {
   const authDataPubSub = yield* createAuthDataPubSub

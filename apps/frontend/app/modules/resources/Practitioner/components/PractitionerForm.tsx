@@ -1,13 +1,15 @@
 import { applyPartialProps } from '@assessmentis/react-util'
+
 import {
   ResourceForm,
   TextField,
 } from 'app/modules/common/components/ResourceForm'
-import { GenderPicker } from './GenderPicker'
+
 import {
   PractitionerFormSchema,
   type PractitionerFormData,
 } from '../schemas/PractitionerFormSchema'
+import { GenderPicker } from './GenderPicker'
 
 interface PractitionerFormProps {
   onSubmit: (data: PractitionerFormData) => void | Promise<void>

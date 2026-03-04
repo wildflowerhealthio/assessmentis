@@ -1,9 +1,11 @@
+import * as fc from 'fast-check'
 import { assert, describe, expect, test } from 'vitest'
 import { Arbitrary, Schema } from 'effect'
 import { capitalize } from 'effect/String'
-import * as fc from 'fast-check'
-import { DatatypeChoice } from './Datatype'
+
 import { MergeClasses } from '@assessmentis/util'
+
+import { DatatypeChoice } from './Datatype'
 
 // ---------------------------------------------------------------------------
 // Arbitraries

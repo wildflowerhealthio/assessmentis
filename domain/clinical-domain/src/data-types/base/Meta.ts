@@ -1,4 +1,5 @@
 import { Schema } from 'effect'
+
 import { Coding, type CodingEncoded } from '../complex/Coding'
 
 const Key = 'Meta' as const

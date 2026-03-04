@@ -1,9 +1,10 @@
-import { expect, test, describe } from 'vitest'
-import {
-  VideoCallRoomIdentifier,
-  VIDEO_CALL_ROOM_NAME_SYSTEM,
-} from './VideoCallRoomIdentifier'
+import { describe, expect, test } from 'vitest'
+
 import { Identifier } from './IdentifierAndReference'
+import {
+  VIDEO_CALL_ROOM_NAME_SYSTEM,
+  VideoCallRoomIdentifier,
+} from './VideoCallRoomIdentifier'
 
 describe('VideoCallRoomIdentifier', () => {
   test('make sets system to VIDEO_CALL_ROOM_NAME_SYSTEM', () => {

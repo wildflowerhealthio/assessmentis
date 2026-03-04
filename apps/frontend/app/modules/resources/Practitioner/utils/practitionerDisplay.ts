@@ -1,7 +1,9 @@
-import type { Practitioner } from '@assessmentis/clinical-domain'
 import { Effect } from 'effect'
-import { formatHumanName } from '../../../common/utils/fhirDisplay'
+
+import type { Practitioner } from '@assessmentis/clinical-domain'
+
 import { humanizeTimelessDate } from '../../../common/utils/dateUtils'
+import { formatHumanName } from '../../../common/utils/fhirDisplay'
 
 /**
  * Get a display-friendly name for a practitioner

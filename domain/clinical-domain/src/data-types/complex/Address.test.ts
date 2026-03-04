@@ -1,8 +1,8 @@
-import { expect, test, describe, expectTypeOf } from 'vitest'
-import { Address } from './Address'
-import type { AddressEncoded } from './Address'
-import { Schema, Arbitrary } from 'effect'
 import * as fc from 'fast-check'
+import { describe, expect, expectTypeOf, test } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
+
+import { Address, type AddressEncoded } from './Address'
 
 const addressArb = Arbitrary.make(Address)
 

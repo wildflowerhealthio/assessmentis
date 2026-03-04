@@ -1,5 +1,7 @@
 import { Schema } from 'effect'
+
 import { MergeClasses } from '@assessmentis/util'
+
 import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
 import { Code } from '../../data-types/complex/Code'
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
@@ -8,8 +10,8 @@ import {
   Reference,
 } from '../../data-types/complex/IdentifierAndReference'
 import { CompositionAttesterSchema } from './CompositionAttester'
-import { CompositionRelatesToSchema } from './CompositionRelatesTo'
 import { CompositionEventSchema } from './CompositionEvent'
+import { CompositionRelatesToSchema } from './CompositionRelatesTo'
 import { CompositionSection } from './CompositionSection'
 
 const Key = 'Composition' as const

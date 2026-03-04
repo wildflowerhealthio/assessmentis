@@ -1,13 +1,15 @@
 import { Effect } from 'effect'
-import type {
-  UnhandledError,
-  ExternalAssertionError,
-  NotFoundError,
-} from '@assessmentis/ontology'
-import type { Resource } from '@assessmentis/effectful-store'
+
 import type { Encounter, Media } from '@assessmentis/clinical-domain'
 import { MediaRepository } from '@assessmentis/clinical-domain/repositories'
-import type { AuthError, AuthzError } from '@assessmentis/ontology'
+import type { Resource } from '@assessmentis/effectful-store'
+import type {
+  AuthError,
+  AuthzError,
+  ExternalAssertionError,
+  NotFoundError,
+  UnhandledError,
+} from '@assessmentis/ontology'
 
 /**
  * Fetches Media resources (recordings) linked to an encounter.

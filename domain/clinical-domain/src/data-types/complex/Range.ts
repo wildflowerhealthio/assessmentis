@@ -1,7 +1,9 @@
 import { Schema } from 'effect'
+
+import { MergeClasses } from '@assessmentis/util'
+
 import { Element, type ElementEncoded } from '../base/Element'
 import { Quantity } from './Quantity'
-import { MergeClasses } from '@assessmentis/util'
 
 const Key = 'Range'
 

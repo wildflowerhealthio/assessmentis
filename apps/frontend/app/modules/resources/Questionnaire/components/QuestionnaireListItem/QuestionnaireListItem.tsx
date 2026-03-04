@@ -1,4 +1,5 @@
 import type { Questionnaire } from '@assessmentis/clinical-domain'
+
 import { ResourceListItem } from '../../../ResourcePages/ResourceListItem/ResourceListItem'
 
 interface QuestionnaireListItemProps {
@@ -12,7 +13,8 @@ export function QuestionnaireListItem({
   onDelete,
   loading,
 }: QuestionnaireListItemProps) {
-  const displayName = item.title ?? item.url?.toString() ?? 'Unnamed Questionnaire'
+  const displayName =
+    item.title ?? item.url?.toString() ?? 'Unnamed Questionnaire'
   const status = item.status ?? 'unknown'
 
   return (

@@ -1,14 +1,14 @@
-import type { HttpClientError } from '@effect/platform'
-import { HttpBody } from '@effect/platform'
-import type { HttpClient } from '@effect/platform/HttpClient'
 import { Effect, pipe, Schema } from 'effect'
+import { HttpBody, type HttpClientError } from '@effect/platform'
+import type { HttpClient } from '@effect/platform/HttpClient'
+import { isHttpClientError } from '@effect/platform/HttpClientError'
+import type { HttpClientResponse } from '@effect/platform/HttpClientResponse'
+
 import {
-  UnhandledError,
   ExternalAssertionError,
   NotFoundError,
+  UnhandledError,
 } from '@assessmentis/ontology'
-import type { HttpClientResponse } from '@effect/platform/HttpClientResponse'
-import { isHttpClientError } from '@effect/platform/HttpClientError'
 
 export const getRequestFromHeaders =
   (

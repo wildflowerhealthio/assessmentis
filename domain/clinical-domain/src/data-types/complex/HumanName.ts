@@ -1,4 +1,5 @@
 import { Schema } from 'effect'
+
 import { Period } from './Period'
 
 const Key = 'HumanName'

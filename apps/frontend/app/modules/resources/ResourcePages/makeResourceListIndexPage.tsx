@@ -1,11 +1,13 @@
 import type { Schema } from 'effect'
-import { ResourceListPage } from '../../common/components/ResourceListPage/ResourceListPage'
-import { ResourceListItem } from './ResourceListItem/ResourceListItem'
-import { useBreadcrumbs } from '../../global/components/BreadcrumbProvider/useBreadcrumbs'
-import type { ResourcePagesConfig } from './resourcePagesConfigType'
-import type { RepositoryFilters, Schemas } from '@assessmentis/clinical-domain'
-import { createResourceCollectionHook } from '../../common/utils/createResourceCollectionHook'
 import { useState } from 'react'
+
+import type { RepositoryFilters, Schemas } from '@assessmentis/clinical-domain'
+
+import { ResourceListPage } from '../../common/components/ResourceListPage/ResourceListPage'
+import { createResourceCollectionHook } from '../../common/utils/createResourceCollectionHook'
+import { useBreadcrumbs } from '../../global/components/BreadcrumbProvider/useBreadcrumbs'
+import { ResourceListItem } from './ResourceListItem/ResourceListItem'
+import type { ResourcePagesConfig } from './resourcePagesConfigType'
 
 const emptyFilters = {}
 

@@ -1,14 +1,17 @@
 import { Schema } from 'effect'
-import type FhirR4 from 'fhir/r4'
-import { FhirR4Narrative } from '../special-purpose/Narrative'
-import { FhirR4Extension } from '../special-purpose/Extension'
+
 import {
   Resource,
   type ResourceEncoded,
 } from '@assessmentis/clinical-domain/data-types'
+import { mutableEncoded } from '@assessmentis/util'
+
+import type FhirR4 from 'fhir/r4'
+
+import { FhirR4Extension } from '../special-purpose/Extension'
+import { FhirR4Narrative } from '../special-purpose/Narrative'
 import type { BaseUrl } from '../UrlIdentification'
 import { ResourceIdentification } from './Resource'
-import { mutableEncoded } from '@assessmentis/util'
 
 export const FhirR4DomainResource = <
   DomainType extends string,

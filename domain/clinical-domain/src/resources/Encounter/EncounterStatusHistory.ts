@@ -1,7 +1,8 @@
 import { Schema } from 'effect'
+
 import {
-  Period,
   BackboneElement,
+  Period,
   type BackboneElementEncoded,
 } from '../../data-types'
 

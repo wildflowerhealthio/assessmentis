@@ -1,8 +1,8 @@
-import { expect, test, describe, expectTypeOf } from 'vitest'
-import { ValueElement } from './ValueElement'
-import type { ValueElementEncoded } from './ValueElement'
-import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
+import { describe, expect, expectTypeOf, test } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
+
+import { ValueElement, type ValueElementEncoded } from './ValueElement'
 
 const valueElementArb = Arbitrary.make(ValueElement)
 

@@ -1,4 +1,4 @@
-import { Schema, Pipeable, pipe } from 'effect'
+import { pipe, Pipeable, Schema } from 'effect'
 import type * as AST from 'effect/SchemaAST'
 
 /**

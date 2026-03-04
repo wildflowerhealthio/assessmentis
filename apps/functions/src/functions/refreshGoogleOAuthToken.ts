@@ -1,16 +1,20 @@
+import { Effect, Exit, Layer } from 'effect'
 import type { Response } from 'express'
 import { onRequest, type Request } from 'firebase-functions/https'
 import { info } from 'firebase-functions/logger'
-import { Effect, Exit, Layer } from 'effect'
-import { CurrentUserId } from '@assessmentis/platform-domain'
-import { AuthError } from '@assessmentis/ontology'
-import { defaultHttpOptions, oauth2Client } from '../util/functionContext'
-import { CurrentUserIdLayerLive } from '../layers/CurrentUserIdLayerLive'
-import { handleError } from '../util/handleError'
-import type { UnhandledError } from '@assessmentis/ontology'
-import { NotFoundError } from '@assessmentis/ontology'
+
 import { AuthRepository } from '@assessmentis/firebase-server-infrastructure'
+import {
+  AuthError,
+  NotFoundError,
+  type UnhandledError,
+} from '@assessmentis/ontology'
+import { CurrentUserId } from '@assessmentis/platform-domain'
+
+import { CurrentUserIdLayerLive } from '../layers/CurrentUserIdLayerLive'
 import { makeRequestRuntime } from '../util/BaseLayer'
+import { defaultHttpOptions, oauth2Client } from '../util/functionContext'
+import { handleError } from '../util/handleError'
 
 /**
  * Refresh Google OAuth access token for a verified user

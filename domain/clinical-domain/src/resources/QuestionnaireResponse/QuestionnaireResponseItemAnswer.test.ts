@@ -1,7 +1,8 @@
-import { expect, test, describe } from 'vitest'
-import { QuestionnaireResponseItemAnswer } from './QuestionnaireResponseItem.js'
-import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
+import { describe, expect, test } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
+
+import { QuestionnaireResponseItemAnswer } from './QuestionnaireResponseItem.js'
 
 const answerArb = Arbitrary.make(QuestionnaireResponseItemAnswer)
 

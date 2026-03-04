@@ -1,4 +1,5 @@
 import { Effect } from 'effect'
+
 import { FhirR4Client } from '@assessmentis/fhir-r4'
 
 export interface TrackedResource {

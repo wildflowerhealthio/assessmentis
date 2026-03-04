@@ -1,9 +1,10 @@
 import { Schema } from 'effect'
+
 import {
+  BackboneElement,
   CodeableConcept,
   Period,
   Reference,
-  BackboneElement,
   type BackboneElementEncoded,
 } from '../../data-types'
 

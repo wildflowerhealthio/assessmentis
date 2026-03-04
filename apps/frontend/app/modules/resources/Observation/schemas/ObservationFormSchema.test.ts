@@ -1,9 +1,10 @@
-import { describe, it, expect } from 'vitest'
-import { Arbitrary, Schema, FastCheck } from 'effect'
-import type { ObservationFormData } from './ObservationFormSchema'
+import { describe, expect, it } from 'vitest'
+import { Arbitrary, FastCheck, Schema } from 'effect'
+
 import {
   ObservationFormSchema,
   transformToObservation,
+  type ObservationFormData,
 } from './ObservationFormSchema'
 
 const observationFormArb = Arbitrary.make(ObservationFormSchema)

@@ -1,12 +1,15 @@
 import { Schema } from 'effect'
-import type FhirR4 from 'fhir/r4'
+
 import { type CompositionSectionEncoded } from '@assessmentis/clinical-domain'
+import { mutableEncoded } from '@assessmentis/util'
+
+import type FhirR4 from 'fhir/r4'
+
 import { BackboneElementEncodedFromFhir } from '../../data-types/base/BackboneElement'
-import { FhirR4Reference } from '../../data-types/complex/IdentifierAndReference'
 import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
+import { FhirR4Reference } from '../../data-types/complex/IdentifierAndReference'
 import { FhirR4Narrative } from '../../data-types/special-purpose/Narrative'
 import type { BaseUrl } from '../../data-types/UrlIdentification'
-import { mutableEncoded } from '@assessmentis/util'
 
 export const CompositionSectionEncodedFromFhir: Schema.Schema<
   CompositionSectionEncoded,
@@ -20,7 +23,9 @@ export const CompositionSectionEncodedFromFhir: Schema.Schema<
       code: Schema.optional(
         Schema.suspend(() => FhirR4CodeableConcept.EncodedFromExternal)
       ),
-      text: Schema.optional(Schema.suspend(() => FhirR4Narrative.EncodedFromExternal)),
+      text: Schema.optional(
+        Schema.suspend(() => FhirR4Narrative.EncodedFromExternal)
+      ),
       mode: Schema.optional(
         Schema.Union(
           Schema.Literal('working'),
@@ -33,7 +38,9 @@ export const CompositionSectionEncodedFromFhir: Schema.Schema<
       ),
       entry: Schema.optional(
         mutableEncoded(
-          Schema.Array(Schema.suspend(() => FhirR4Reference.EncodedFromExternal))
+          Schema.Array(
+            Schema.suspend(() => FhirR4Reference.EncodedFromExternal)
+          )
         )
       ),
       emptyReason: Schema.optional(
@@ -41,9 +48,7 @@ export const CompositionSectionEncodedFromFhir: Schema.Schema<
       ),
       section: Schema.optional(
         mutableEncoded(
-          Schema.Array(
-            Schema.suspend(() => CompositionSectionEncodedFromFhir)
-          )
+          Schema.Array(Schema.suspend(() => CompositionSectionEncodedFromFhir))
         )
       ),
     })

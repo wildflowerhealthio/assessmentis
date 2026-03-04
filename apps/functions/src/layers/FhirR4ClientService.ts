@@ -1,8 +1,9 @@
+import { Effect, Layer, Match } from 'effect'
+
+import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
 import type { FhirR4Client } from '@assessmentis/fhir-r4'
 import { NodeGoogleHealthcareFhirR4ClientLayer } from '@assessmentis/google-fhir-node-infrastructure'
-import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
 import { UnhandledError } from '@assessmentis/ontology'
-import { Effect, Layer, Match } from 'effect'
 import { LoadedOrg } from '@assessmentis/platform-domain'
 
 /**

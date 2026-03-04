@@ -1,7 +1,9 @@
 import { pipe, Schema } from 'effect'
+
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
+import { mergeArbitraries, MergeClasses } from '@assessmentis/util'
+
 import { AllDatatypeKeys, DatatypeChoice } from '../Datatype'
-import { MergeClasses, mergeArbitraries } from '@assessmentis/util'
 
 // ---------------------------------------------------------------------------
 // Extension

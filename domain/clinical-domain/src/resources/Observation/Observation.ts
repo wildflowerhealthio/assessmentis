@@ -1,25 +1,25 @@
-import type { FastCheck } from 'effect'
-import type { Arbitrary } from 'effect'
-import { Schema } from 'effect'
+import { Schema, type Arbitrary, type FastCheck } from 'effect'
+import type { constant } from 'effect/Function'
+import { omit } from 'effect/Struct'
+
 import {
   AnnotateArrayWithArbitrary,
   mergeArbitraries,
   MergeClasses,
 } from '@assessmentis/util'
+
 import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
+import { Annotation } from '../../data-types/complex/Annotation'
+import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import {
   Identifier,
   Reference,
 } from '../../data-types/complex/IdentifierAndReference'
-import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
-import { Annotation } from '../../data-types/complex/Annotation'
 import { Period } from '../../data-types/complex/Period'
 import { DatatypeChoice } from '../../data-types/Datatype'
 import FhirR4ChoiceElements from '../../data-types/fhirR4ChoiceElements'
 import { ObservationComponent } from './ObservationComponent'
 import { ObservationReferenceRange } from './ObservationReferenceRange'
-import { omit } from 'effect/Struct'
-import type { constant } from 'effect/Function'
 
 const Key = 'Observation' as const
 type Key = typeof Key

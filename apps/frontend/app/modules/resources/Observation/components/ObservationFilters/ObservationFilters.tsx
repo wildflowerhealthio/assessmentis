@@ -1,5 +1,5 @@
-import { PatientPicker } from '../../../Patient/components/PatientPicker'
 import { EncounterPicker } from '../../../Encounter/components/EncounterPicker'
+import { PatientPicker } from '../../../Patient/components/PatientPicker'
 import classes from './ObservationFilters.module.css'
 
 interface ObservationFiltersProps {

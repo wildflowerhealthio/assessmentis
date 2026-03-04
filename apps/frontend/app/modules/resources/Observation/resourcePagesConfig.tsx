@@ -1,7 +1,16 @@
 import { DateTime, Effect, Schema } from 'effect'
+
 import type { Observation } from '@assessmentis/clinical-domain'
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
+
+import { runEffectSyncFlat } from '../../../runEffectSync'
+import {
+  createResourceCreateAction,
+  createResourceUpdateAction,
+} from '../../common/actions/createResourceActions'
+import { extractReferenceId } from '../../common/utils/fhirDisplay'
 import type { ResourcePagesConfig } from '../ResourcePages/resourcePagesConfigType'
+import { ObservationFiltersBridge } from './components/ObservationFiltersBridge'
 import { ObservationForm } from './components/ObservationForm'
 import {
   ObservationFormSchema,
@@ -9,18 +18,11 @@ import {
   type ObservationFormData,
 } from './schemas/ObservationFormSchema'
 import {
-  createResourceCreateAction,
-  createResourceUpdateAction,
-} from '../../common/actions/createResourceActions'
-import {
-  getObservationDisplayName,
-  getObservationStatus,
-  getObservationEffectiveDate,
   formatObservationValue,
+  getObservationDisplayName,
+  getObservationEffectiveDate,
+  getObservationStatus,
 } from './utils/observationDisplay'
-import { extractReferenceId } from '../../common/utils/fhirDisplay'
-import { runEffectSyncFlat } from '../../../runEffectSync'
-import { ObservationFiltersBridge } from './components/ObservationFiltersBridge'
 
 export const observationConfig: ResourcePagesConfig<
   Observation,

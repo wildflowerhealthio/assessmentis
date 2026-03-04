@@ -1,10 +1,11 @@
-import type { Brand } from 'effect'
-import { pipe, Schema } from 'effect'
+import { pipe, Schema, type Brand } from 'effect'
+
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
+
 import { Code } from '../complex/Code'
-import { Meta } from './Meta'
 import { Extension, type ExtensionEncoded } from '../special-purpose/Extension'
 import { Narrative } from '../special-purpose/Narrative'
+import { Meta } from './Meta'
 
 // ---------------------------------------------------------------------------
 // Types

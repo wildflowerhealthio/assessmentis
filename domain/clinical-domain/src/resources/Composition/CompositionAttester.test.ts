@@ -1,6 +1,7 @@
-import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
+
 import { CompositionAttesterSchema } from './CompositionAttester'
 
 const attesterArb = Arbitrary.make(CompositionAttesterSchema)

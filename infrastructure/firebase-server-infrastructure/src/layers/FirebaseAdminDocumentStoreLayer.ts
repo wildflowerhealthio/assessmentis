@@ -1,10 +1,16 @@
-import { UnhandledError, NotFoundError } from '@assessmentis/ontology'
-import type { DocumentData, DocumentPath } from '@assessmentis/platform-domain'
-import { DocumentStore } from '@assessmentis/platform-domain'
-import { Layer, Effect, Either } from 'effect'
-import { FirebaseAdmin } from '../services'
-import type { Firestore } from 'firebase-admin/firestore'
+import { Effect, Either, Layer } from 'effect'
+
+import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
+import {
+  DocumentStore,
+  type DocumentData,
+  type DocumentPath,
+} from '@assessmentis/platform-domain'
 import { unsubscribableCallbackAsStream } from '@assessmentis/util'
+
+import type { Firestore } from 'firebase-admin/firestore'
+
+import { FirebaseAdmin } from '../services'
 
 const doc = (db: Firestore, path: DocumentPath) => {
   let doc = db.collection(path[0]).doc(path[1])

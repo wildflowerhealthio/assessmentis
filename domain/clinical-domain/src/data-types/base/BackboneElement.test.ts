@@ -1,8 +1,10 @@
-import { expect, test, describe, expectTypeOf } from 'vitest'
-import { BackboneElement, type BackboneElementEncoded } from './BackboneElement'
-import { Arbitrary, Schema } from 'effect'
-import { MergeClasses } from '@assessmentis/util'
 import * as fc from 'fast-check'
+import { describe, expect, expectTypeOf, test } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
+
+import { MergeClasses } from '@assessmentis/util'
+
+import { BackboneElement, type BackboneElementEncoded } from './BackboneElement'
 
 const BackboneMixin = BackboneElement('TestBackbone')
 

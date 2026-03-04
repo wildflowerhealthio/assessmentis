@@ -1,19 +1,22 @@
-import type { Schema, Scope } from 'effect'
-import { Effect, Either, Stream } from 'effect'
-import { StreamEither } from '@assessmentis/util'
-import { useState, useMemo } from 'react'
-import type { PickerItem } from '../types/PickerTypes'
+import { Effect, Either, Stream, type Schema, type Scope } from 'effect'
+import { useMemo, useState } from 'react'
+
 import type {
   ClinicalDataRepository,
   ClinicalDataRepositoryErrors,
   Schemas,
 } from '@assessmentis/clinical-domain'
-import { useEitherStream } from '@assessmentis/react-util'
-import { usePlatformContext } from '../../../../../layers/PlatformContext'
-import type { ClinicalDataRepositoryServiceType } from '../../../../../layers/ClinicalDataRepositoriesService'
-import { ClinicalDataRepositoryService } from '../../../../../layers/ClinicalDataRepositoriesService'
 import type { AuthError, UnhandledError } from '@assessmentis/ontology'
 import type { NoSelectedOrgError } from '@assessmentis/platform-domain'
+import { useEitherStream } from '@assessmentis/react-util'
+import { StreamEither } from '@assessmentis/util'
+
+import {
+  ClinicalDataRepositoryService,
+  type ClinicalDataRepositoryServiceType,
+} from '../../../../../layers/ClinicalDataRepositoriesService'
+import { usePlatformContext } from '../../../../../layers/PlatformContext'
+import type { PickerItem } from '../types/PickerTypes'
 
 export interface UsePickerDataOptions<
   T extends Schema.Schema.Type<(typeof Schemas)[keyof typeof Schemas]>,

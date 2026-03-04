@@ -1,6 +1,12 @@
 import { Schema } from 'effect'
+
 import type { Location } from '@assessmentis/clinical-domain'
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
+
+import {
+  createResourceCreateAction,
+  createResourceUpdateAction,
+} from '../../common/actions/createResourceActions'
 import type { ResourcePagesConfig } from '../ResourcePages/resourcePagesConfigType'
 import { LocationForm } from './components/LocationForm'
 import {
@@ -8,10 +14,6 @@ import {
   transformToLocation,
   type LocationFormData,
 } from './schemas/LocationFormSchema'
-import {
-  createResourceCreateAction,
-  createResourceUpdateAction,
-} from '../../common/actions/createResourceActions'
 import { getLocationDisplayName } from './utils/locationDisplay'
 
 export const locationConfig: ResourcePagesConfig<

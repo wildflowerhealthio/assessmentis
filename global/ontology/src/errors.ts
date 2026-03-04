@@ -1,5 +1,4 @@
-import type { FastCheck, Arbitrary } from 'effect'
-import { Data } from 'effect'
+import { Data, type Arbitrary, type FastCheck } from 'effect'
 
 /**
  * An error that was not anticipated has occurred, no specific handling exists

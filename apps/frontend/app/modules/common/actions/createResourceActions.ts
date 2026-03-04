@@ -1,3 +1,5 @@
+import { Effect } from 'effect'
+
 import type {
   ClinicalDataRepositoryErrors,
   ResourceDataTypes,
@@ -5,9 +7,9 @@ import type {
 } from '@assessmentis/clinical-domain'
 import type { Resource } from '@assessmentis/effectful-store'
 import type { NotFoundError } from '@assessmentis/ontology'
-import { Effect } from 'effect'
-import { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
+
 import type { NoSelectedOrgError } from '../../../../../../domain/platform-domain/src/hostedServices'
+import { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
 
 /**
  * Creates a generic create action for a resource
@@ -34,10 +36,7 @@ import type { NoSelectedOrgError } from '../../../../../../domain/platform-domai
  * >(PatientRepository, transformToPatient)
  * ```
  */
-export function createResourceCreateAction<
-  TFormData,
-  Key extends ResourceType,
->(
+export function createResourceCreateAction<TFormData, Key extends ResourceType>(
   resourceType: Key,
   transform: (data: TFormData) => ResourceDataTypes[Key]
 ): (
@@ -91,10 +90,7 @@ export function createResourceCreateAction<
  * >(PatientRepository, transformToPatient)
  * ```
  */
-export function createResourceUpdateAction<
-  TFormData,
-  Key extends ResourceType,
->(
+export function createResourceUpdateAction<TFormData, Key extends ResourceType>(
   resourceType: Key,
   transform: (data: TFormData) => Omit<ResourceDataTypes[Key], ''>
 ): (
@@ -105,7 +101,10 @@ export function createResourceUpdateAction<
   ResourceDataTypes[Key],
   | ClinicalDataRepositoryErrors
   | NoSelectedOrgError
-  | NotFoundError<ResourceDataTypes[Key]['domainType'], { url: NonNullable<ResourceDataTypes[Key]['url']> }>,
+  | NotFoundError<
+      ResourceDataTypes[Key]['domainType'],
+      { url: NonNullable<ResourceDataTypes[Key]['url']> }
+    >,
   ClinicalDataRepositoryService
 > {
   return (
@@ -116,7 +115,10 @@ export function createResourceUpdateAction<
     ResourceDataTypes[Key],
     | ClinicalDataRepositoryErrors
     | NoSelectedOrgError
-    | NotFoundError<ResourceDataTypes[Key]['domainType'], { url: NonNullable<ResourceDataTypes[Key]['url']> }>,
+    | NotFoundError<
+        ResourceDataTypes[Key]['domainType'],
+        { url: NonNullable<ResourceDataTypes[Key]['url']> }
+      >,
     ClinicalDataRepositoryService
   > => {
     return Effect.gen(function* () {

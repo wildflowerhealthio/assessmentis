@@ -1,17 +1,22 @@
 import { Context, Effect, Layer, pipe, Schema } from 'effect'
 import { HttpClient } from '@effect/platform/HttpClient'
-import { ExternalAssertionError } from '@assessmentis/ontology'
-import type { AuthError, UnhandledError } from '@assessmentis/ontology'
+
 import { DailyCoContext } from '@assessmentis/config-domain'
+import {
+  ExternalAssertionError,
+  type AuthError,
+  type UnhandledError,
+} from '@assessmentis/ontology'
+
+import {
+  assertStatus,
+  handleHttpClientError,
+  parseAs,
+  postRequestFromHeaders,
+} from '../httpHelpers'
 import { MeetingTokenString } from '../MeetingTokenString'
 import { ApiDailyCoMeetingTokenSchema } from '../models/ApiDailyCoMeetingTokenSchema'
 import { DailyCoMeetingTokenPayloadSchema } from '../models/DailyCoMeetingTokenPayloadSchema'
-import {
-  postRequestFromHeaders,
-  handleHttpClientError,
-  assertStatus,
-  parseAs,
-} from '../httpHelpers'
 
 export interface MeetingTokenProperties {
   readonly roomName: string
@@ -93,9 +98,7 @@ export const DailyCoMeetingTokenLayer: Layer.Layer<
 
           const payloadJson = yield* Effect.try({
             try: () => {
-              const base64 = payloadString
-                .replace(/-/g, '+')
-                .replace(/_/g, '/')
+              const base64 = payloadString.replace(/-/g, '+').replace(/_/g, '/')
               const json = atob(base64)
               return JSON.parse(json) as unknown
             },

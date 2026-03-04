@@ -1,7 +1,9 @@
-import type { OAuthTokens, UserId } from '@assessmentis/platform-domain'
 import { Effect } from 'effect'
-import { FirebaseAdmin } from './FirebaseAdmin'
+
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
+import type { OAuthTokens, UserId } from '@assessmentis/platform-domain'
+
+import { FirebaseAdmin } from './FirebaseAdmin'
 
 export class AuthRepository extends Effect.Service<AuthRepository>()(
   'AuthRepository',

@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+
 import { EntityCustomViewParams } from '@firecms/core'
 
 /**
@@ -52,7 +53,11 @@ export function EditableJsonView<M extends Record<string, any>>({
       const parsedValues = JSON.parse(jsonText)
 
       // Ensure it's an object
-      if (typeof parsedValues !== 'object' || parsedValues === null || Array.isArray(parsedValues)) {
+      if (
+        typeof parsedValues !== 'object' ||
+        parsedValues === null ||
+        Array.isArray(parsedValues)
+      ) {
         setError('JSON must be an object (not an array or primitive value)')
         return
       }
@@ -60,21 +65,23 @@ export function EditableJsonView<M extends Record<string, any>>({
       // Update form values
       if (formContext.setFieldValue) {
         const currentValues = modifiedValues || entity?.values || {}
-        
+
         // Remove fields that were deleted from the JSON
         Object.keys(currentValues).forEach((key) => {
           if (!(key in parsedValues)) {
             formContext.setFieldValue(key, undefined)
           }
         })
-        
+
         // Update all fields with the new values
         Object.entries(parsedValues).forEach(([key, value]) => {
           formContext.setFieldValue(key, value)
         })
 
         setError(null)
-        setSuccessMessage('JSON saved successfully! Click the main Save button to persist changes.')
+        setSuccessMessage(
+          'JSON saved successfully! Click the main Save button to persist changes.'
+        )
         setIsEdited(false)
 
         // Clear success message after timeout with cleanup check
@@ -91,7 +98,13 @@ export function EditableJsonView<M extends Record<string, any>>({
         setError('An error occurred while saving')
       }
     }
-  }, [jsonText, formContext, entity, modifiedValues, SUCCESS_MESSAGE_TIMEOUT_MS])
+  }, [
+    jsonText,
+    formContext,
+    entity,
+    modifiedValues,
+    SUCCESS_MESSAGE_TIMEOUT_MS,
+  ])
 
   // Reset to original values
   const handleReset = useCallback(() => {
@@ -133,8 +146,22 @@ export function EditableJsonView<M extends Record<string, any>>({
   }
 
   return (
-    <div style={{ padding: '24px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+    <div
+      style={{
+        padding: '24px',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <div
+        style={{
+          marginBottom: '16px',
+          display: 'flex',
+          gap: '8px',
+          alignItems: 'center',
+        }}
+      >
         <button
           onClick={handleSave}
           disabled={!isEdited}
@@ -177,7 +204,8 @@ export function EditableJsonView<M extends Record<string, any>>({
       />
       {!entity && (
         <div style={{ marginTop: '12px', fontSize: '14px', color: '#666' }}>
-          Note: This is a new entity. The JSON will be populated once you save the form.
+          Note: This is a new entity. The JSON will be populated once you save
+          the form.
         </div>
       )}
     </div>

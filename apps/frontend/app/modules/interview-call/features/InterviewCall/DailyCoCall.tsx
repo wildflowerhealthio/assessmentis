@@ -1,15 +1,16 @@
 'use client'
 
-import { type DailyEvent } from '@daily-co/daily-js'
-import { DailyAudio, DailyProvider, useCallObject } from '@daily-co/daily-react'
-
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router'
+
 import {
   Call,
   HairCheck,
   Tray,
 } from '@assessmentis/daily-co-components/components'
-import { useNavigate } from 'react-router'
+
+import { type DailyEvent } from '@daily-co/daily-js'
+import { DailyAudio, DailyProvider, useCallObject } from '@daily-co/daily-react'
 
 enum VideoCallState {
   STATE_IDLE = 'STATE_IDLE',

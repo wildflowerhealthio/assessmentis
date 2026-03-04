@@ -1,6 +1,12 @@
 import { Schema } from 'effect'
+
 import { Practitioner } from '@assessmentis/clinical-domain'
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
+
+import {
+  createResourceCreateAction,
+  createResourceUpdateAction,
+} from '../../common/actions/createResourceActions'
 import type { ResourcePagesConfig } from '../ResourcePages/resourcePagesConfigType'
 import { PractitionerForm } from './components/PractitionerForm'
 import {
@@ -8,10 +14,6 @@ import {
   transformToPractitioner,
   type PractitionerFormData,
 } from './schemas/PractitionerFormSchema'
-import {
-  createResourceCreateAction,
-  createResourceUpdateAction,
-} from '../../common/actions/createResourceActions'
 import {
   getPractitionerDisplayName,
   getPractitionerQualification,

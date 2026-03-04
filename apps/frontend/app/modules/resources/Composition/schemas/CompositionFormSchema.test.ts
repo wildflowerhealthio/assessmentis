@@ -1,11 +1,13 @@
-import { describe, it, expect } from 'vitest'
-import { Schema, FastCheck } from 'effect'
-import type { CompositionFormData } from './CompositionFormSchema'
+import { describe, expect, it } from 'vitest'
+import { FastCheck, Schema } from 'effect'
+
+import { Patient } from '@assessmentis/clinical-domain'
+
 import {
   CompositionFormSchema,
   transformToComposition,
+  type CompositionFormData,
 } from './CompositionFormSchema'
-import { Patient } from '@assessmentis/clinical-domain'
 
 describe('CompositionFormSchema', () => {
   describe('schema validation', () => {

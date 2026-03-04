@@ -1,11 +1,12 @@
-import { Questionnaire, QuestionnaireItem } from '@assessmentis/clinical-domain'
 import {
+  Questionnaire,
+  QuestionnaireItem,
   QuestionnaireItemLink,
   QuestionnaireItemType,
-  QuestionnaireItemUiDisplayLevel,
   QuestionnaireItemUIControlCode,
-  questionnaireItemUiDisplayLevelExtension,
   questionnaireItemUiControlCodeExtension,
+  QuestionnaireItemUiDisplayLevel,
+  questionnaireItemUiDisplayLevelExtension,
 } from '@assessmentis/clinical-domain'
 
 const sluggify = (s: string): QuestionnaireItemLink =>

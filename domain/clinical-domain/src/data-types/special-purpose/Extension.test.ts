@@ -1,9 +1,10 @@
-import { expect, test, describe } from 'vitest'
+import * as fc from 'fast-check'
+import { describe, expect, test } from 'vitest'
 import { Arbitrary, Schema } from 'effect'
 import { capitalize } from 'effect/String'
-import * as fc from 'fast-check'
-import { Extension } from './Extension'
+
 import { AllDatatypeKeys } from '../Datatype'
+import { Extension } from './Extension'
 
 const decode = Schema.decodeSync(Extension)
 

@@ -1,8 +1,24 @@
-import type { SuiteCollector, SuiteFactory } from 'vitest'
-import { afterEach, beforeEach, describe, expect } from 'vitest'
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  type SuiteCollector,
+  type SuiteFactory,
+} from 'vitest'
 import { it } from '@effect/vitest'
-import type { Layer, DateTime } from 'effect'
-import { Effect, Exit, Cause, pipe, Option, TestClock, Console } from 'effect'
+import {
+  Cause,
+  Console,
+  Effect,
+  Exit,
+  Option,
+  pipe,
+  TestClock,
+  type DateTime,
+  type Layer,
+} from 'effect'
+
 import {
   VideoCallClient,
   VideoCallRoomName,

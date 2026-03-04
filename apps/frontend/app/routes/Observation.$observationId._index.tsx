@@ -1,25 +1,28 @@
 import { Either, Option, Schema, Stream } from 'effect'
-import { StreamEither } from '@assessmentis/util'
-import { UnhandledError } from '@assessmentis/ontology'
-import { ReadonlyUrl } from '@assessmentis/effectful-store'
-import type { Route } from './+types/Observation.$observationId._index'
-import { runEffectSyncFlat } from '../runEffectSync'
-import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
-import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
-import {
-  getObservationDisplayName,
-  formatObservationDetails,
-} from '../modules/resources/Observation/utils/observationDisplay'
-import { ObservationValue } from '../modules/resources/Observation/components/ObservationValue/ObservationValue'
-import { ObservationInterpretation } from '../modules/resources/Observation/components/ObservationInterpretation/ObservationInterpretation'
-import { ObservationComponents } from '../modules/resources/Observation/components/ObservationComponents/ObservationComponents'
-import { ObservationAdditionalDetails } from '../modules/resources/Observation/components/ObservationAdditionalDetails/ObservationAdditionalDetails'
-import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 import { Suspense, useMemo } from 'react'
-import Skeleton from 'react-loading-skeleton'
-import { useEitherStream } from '@assessmentis/react-util'
-import { usePlatformContext } from '../layers/PlatformContext'
 import { Await } from 'react-router'
+
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
+import { UnhandledError } from '@assessmentis/ontology'
+import { useEitherStream } from '@assessmentis/react-util'
+import { StreamEither } from '@assessmentis/util'
+
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
+import Skeleton from 'react-loading-skeleton'
+
+import { usePlatformContext } from '../layers/PlatformContext'
+import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
+import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
+import { ObservationAdditionalDetails } from '../modules/resources/Observation/components/ObservationAdditionalDetails/ObservationAdditionalDetails'
+import { ObservationComponents } from '../modules/resources/Observation/components/ObservationComponents/ObservationComponents'
+import { ObservationInterpretation } from '../modules/resources/Observation/components/ObservationInterpretation/ObservationInterpretation'
+import { ObservationValue } from '../modules/resources/Observation/components/ObservationValue/ObservationValue'
+import {
+  formatObservationDetails,
+  getObservationDisplayName,
+} from '../modules/resources/Observation/utils/observationDisplay'
+import { runEffectSyncFlat } from '../runEffectSync'
+import type { Route } from './+types/Observation.$observationId._index'
 
 const tryDecodeObservationUrl = Schema.decodeOption(ReadonlyUrl.FromString)
 

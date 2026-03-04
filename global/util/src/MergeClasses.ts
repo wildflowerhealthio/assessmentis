@@ -2,6 +2,7 @@
 
 import { Array, Schema } from 'effect'
 import type { NonEmptyReadonlyArray } from 'effect/Array'
+
 import type { TupleToIntersection } from './TupleToIntersection'
 
 const SchemaClassKeys = [

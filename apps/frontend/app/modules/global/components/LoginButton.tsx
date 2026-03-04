@@ -1,7 +1,9 @@
-import { signOut } from 'firebase/auth'
-import { useState, useEffect } from 'react'
-import { signIn } from '../../../firebase'
+import { useEffect, useState } from 'react'
+
 import { auth } from 'app/FirebaseWebLayer'
+import { signOut } from 'firebase/auth'
+
+import { signIn } from '../../../firebase'
 
 export const LoginButton = (props: {
   className: string

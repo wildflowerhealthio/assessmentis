@@ -1,23 +1,23 @@
 import { DateTime, Effect } from 'effect'
+
 import {
-  type Encounter,
   EncounterLocation,
   EncounterParticipant,
   isVirtualLocation,
+  type Encounter,
 } from '@assessmentis/clinical-domain'
+import { Period, Reference } from '@assessmentis/clinical-domain/data-types'
 import { EncounterRepository } from '@assessmentis/clinical-domain/repositories'
-import {
-  Period,
-  Reference,
-} from '@assessmentis/clinical-domain/data-types'
+import type { ReadonlyUrl, Resource } from '@assessmentis/effectful-store'
 import type {
+  AuthError,
+  AuthzError,
   ExternalAssertionError,
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
-import type { ReadonlyUrl, Resource } from '@assessmentis/effectful-store'
+
 import type { EncounterFormData } from '../schemas/EncounterFormSchema'
-import type { AuthError, AuthzError } from '@assessmentis/ontology'
 
 export const updateEncounter = (
   currentEncounter: Resource.WithResourceUrl<Encounter>,

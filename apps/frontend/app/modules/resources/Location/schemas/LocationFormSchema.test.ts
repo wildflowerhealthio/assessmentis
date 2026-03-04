@@ -1,9 +1,10 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { Schema } from 'effect'
+
 import {
-  type LocationFormData,
   LocationFormSchema,
   transformToLocation,
+  type LocationFormData,
 } from './LocationFormSchema'
 
 describe('LocationFormSchema', () => {

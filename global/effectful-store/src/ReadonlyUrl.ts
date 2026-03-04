@@ -1,4 +1,5 @@
-import { Schema, Effect, ParseResult } from 'effect'
+import { Effect, ParseResult, Schema } from 'effect'
+
 export class ReadonlyUrl extends Schema.Class<ReadonlyUrl>('ReadonlyUrl')({
   /**
    * The protocol portion of the URL.

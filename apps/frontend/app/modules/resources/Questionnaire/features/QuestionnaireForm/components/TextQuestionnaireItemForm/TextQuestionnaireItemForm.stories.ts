@@ -1,15 +1,16 @@
 // Replace your-framework with the framework you are using, e.g. react-vite, nextjs, nextjs-vite, etc.
 import type { Meta, StoryObj } from '@storybook/react-vite'
-
 import { Arbitrary, FastCheck } from 'effect'
-import { action } from 'storybook/actions'
-import { Code } from '@assessmentis/clinical-domain/data-types'
+
 import {
   QuestionnaireItem,
   QuestionnaireResponseItem,
   QuestionnaireResponseItemAnswer,
 } from '@assessmentis/clinical-domain'
+import { Code } from '@assessmentis/clinical-domain/data-types'
+
 import TextQuestionnaireItemForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/components/TextQuestionnaireItemForm/TextQuestionnaireItemForm'
+import { action } from 'storybook/actions'
 
 //👇 This default export determines where your story goes in the story list
 const meta = {

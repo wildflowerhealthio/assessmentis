@@ -1,7 +1,8 @@
-import { expect, test, describe } from 'vitest'
-import { CodeableConcept } from './CodeableConcept'
-import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
+import { describe, expect, test } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
+
+import { CodeableConcept } from './CodeableConcept'
 
 const codeableConceptArb = Arbitrary.make(CodeableConcept)
 

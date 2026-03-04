@@ -1,3 +1,5 @@
+import { useCallback, useState } from 'react'
+
 import {
   useAppMessage,
   useAudioTrack,
@@ -6,12 +8,12 @@ import {
   useScreenShare,
   useVideoTrack,
 } from '@daily-co/daily-react'
-import { useCallback, useState } from 'react'
 
 import Chat from '../Chat/Chat'
 import MeetingInformation from '../MeetingInformation/MeetingInformation'
 
 import './Tray.css'
+
 import {
   CameraOff,
   CameraOn,

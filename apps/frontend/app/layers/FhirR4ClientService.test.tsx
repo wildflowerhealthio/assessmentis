@@ -1,19 +1,21 @@
-import { describe, it, expect } from 'vitest'
-import { Effect, Either, Stream, Take, Layer, Arbitrary } from 'effect'
 import * as fc from 'fast-check'
-import {
-  createFhirR4ClientPubSub,
-  startFhirR4ClientService,
-  FhirR4ClientService,
-} from './FhirR4ClientService'
-import { Org } from '@assessmentis/platform-domain'
+import { describe, expect, it } from 'vitest'
+import { Arbitrary, Effect, Either, Layer, Stream, Take } from 'effect'
+
+import type { ResourceDataTypes } from '@assessmentis/clinical-domain'
+import { Hub } from '@assessmentis/effectful-store'
 import {
   LoadedGapiClient,
   LoadedGapiHealthcareClient,
 } from '@assessmentis/google-fhir-web-infrastructure'
+import { Org } from '@assessmentis/platform-domain'
 import { neverUsedMock } from '@assessmentis/util'
-import { Hub } from '@assessmentis/effectful-store'
-import type { ResourceDataTypes } from '@assessmentis/clinical-domain'
+
+import {
+  createFhirR4ClientPubSub,
+  FhirR4ClientService,
+  startFhirR4ClientService,
+} from './FhirR4ClientService'
 
 // Generate arbitrary Org values using the schema
 const orgArb = Arbitrary.make(Org)

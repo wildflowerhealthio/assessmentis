@@ -1,6 +1,8 @@
 import { Schema } from 'effect'
-import { Element, type ElementEncoded } from '../base/Element'
+
 import { MergeClasses } from '@assessmentis/util'
+
+import { Element, type ElementEncoded } from '../base/Element'
 
 const Key = 'Narrative' as const
 type Key = typeof Key

@@ -1,9 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { Effect, Option } from 'effect'
+import { MemoryRouter } from 'react-router'
+
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
+
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router'
-import { Effect, Option } from 'effect'
-import { ReadonlyUrl } from '@assessmentis/effectful-store'
+
 import { makeCreateResourcePage } from './makeCreateResourcePage'
 import type { ResourcePagesConfig } from './resourcePagesConfigType'
 

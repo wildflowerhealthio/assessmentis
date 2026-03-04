@@ -1,6 +1,9 @@
 import { Schema } from 'effect'
-import type { ObservationEncoded } from '@assessmentis/clinical-domain'
-import { Observation } from '@assessmentis/clinical-domain'
+
+import {
+  Observation,
+  type ObservationEncoded,
+} from '@assessmentis/clinical-domain'
 
 /**
  * A single Daily.co transcript entry enriched with its access link

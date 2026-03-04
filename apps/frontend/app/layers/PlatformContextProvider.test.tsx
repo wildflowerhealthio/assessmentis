@@ -1,7 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Effect, Layer, Stream } from 'effect'
 import { MemoryRouter } from 'react-router'
+
+import { render, screen, waitFor } from '@testing-library/react'
+
 import { PlatformContextProvider } from './PlatformContextProvider'
 
 // Mock infrastructure modules

@@ -1,8 +1,9 @@
+import * as fc from 'fast-check'
 import { describe, expect, expectTypeOf, it } from 'vitest'
 import { Arbitrary, Schema } from 'effect'
-import * as fc from 'fast-check'
-import { MergeClasses } from './MergeClasses'
+
 import { mergeArbitraries } from './mergeArbitraries'
+import { MergeClasses } from './MergeClasses'
 
 // --- MergeClasses fixtures ---
 

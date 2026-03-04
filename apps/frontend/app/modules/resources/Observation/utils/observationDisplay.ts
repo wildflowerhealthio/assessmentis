@@ -1,5 +1,7 @@
-import type { Observation } from '@assessmentis/clinical-domain'
 import { Effect } from 'effect'
+
+import type { Observation } from '@assessmentis/clinical-domain'
+
 import {
   humanizeDateTimeForLocalReader,
   humanizeDateTimeRangeForLocalReader,

@@ -1,6 +1,16 @@
-import type { Scope, Stream } from 'effect'
-import { Cause, Chunk, Effect, Either, Exit, Fiber, pipe } from 'effect'
-import { useState, useEffect, useRef, useMemo } from 'react'
+import {
+  Cause,
+  Chunk,
+  Effect,
+  Either,
+  Exit,
+  Fiber,
+  pipe,
+  type Scope,
+  type Stream,
+} from 'effect'
+import { useEffect, useMemo, useRef, useState } from 'react'
+
 import { useStream } from './useStream'
 
 export const useEitherStream = <A, E>(

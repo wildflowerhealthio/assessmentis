@@ -1,7 +1,8 @@
 import { Schema } from 'effect'
+
+import { Resource } from '../../data-types'
 import { BackboneElement } from '../../data-types/base/BackboneElement'
 import { Identifier } from '../../data-types/complex/IdentifierAndReference'
-import { Resource } from '../../data-types'
 
 const BundleType = Schema.Enums({
   document: 'document',

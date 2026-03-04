@@ -1,21 +1,27 @@
 import { pipe, Schema } from 'effect'
-import type FhirR4 from 'fhir/r4'
+
 import {
   Questionnaire,
-  type QuestionnaireEncoded,
   QuestionnaireItem,
+  type QuestionnaireEncoded,
   type QuestionnaireItemEncoded,
 } from '@assessmentis/clinical-domain'
 import {
   AllDatatypeKeys,
   DatatypeChoiceEncodedPassthroughFields,
 } from '@assessmentis/clinical-domain/data-types'
-import { ResourceEncodedFromFhirR4Resource } from '../../data-types/base/Resource'
+import {
+  extendObjectSchemas,
+  mutableEncoded,
+  TwoStepExternalSchema,
+} from '@assessmentis/util'
+
+import type FhirR4 from 'fhir/r4'
+
 import { BackboneElementEncodedFromFhir } from '../../data-types/base/BackboneElement'
+import { ResourceEncodedFromFhirR4Resource } from '../../data-types/base/Resource'
 import { FhirR4Coding } from '../../data-types/complex/Coding'
 import type { BaseUrl } from '../../data-types/UrlIdentification'
-import { mutableEncoded, extendObjectSchemas } from '@assessmentis/util'
-import { TwoStepExternalSchema } from '@assessmentis/util'
 
 // --- Value sets ---
 

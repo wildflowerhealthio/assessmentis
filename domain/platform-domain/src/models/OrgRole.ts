@@ -1,4 +1,5 @@
 import { Schema } from 'effect'
+
 import { OrgSlug, Role } from './IdTypes'
 
 export const OrgRole = Schema.Struct({

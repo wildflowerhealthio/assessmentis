@@ -12,7 +12,10 @@ export const QuestionnairesList = ({
   return (
     <ul>
       {questionnaires.map(({ data: { title, url, status }, loading }) => (
-        <li key={url?.toString()} style={loading ? { color: 'rgba(0,0,0,0.5)' } : {}}>
+        <li
+          key={url?.toString()}
+          style={loading ? { color: 'rgba(0,0,0,0.5)' } : {}}
+        >
           <button
             onClick={() => deleteQuestionnaire(url?.toString())}
             style={{ border: 'none' }}

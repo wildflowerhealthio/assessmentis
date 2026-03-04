@@ -1,9 +1,11 @@
-import { expect, test, describe, expectTypeOf } from 'vitest'
-import { Resource, type ResourceEncoded } from './Resource'
-import { Arbitrary, Schema } from 'effect'
-import { MergeClasses } from '@assessmentis/util'
 import * as fc from 'fast-check'
+import { describe, expect, expectTypeOf, test } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
+
+import { MergeClasses } from '@assessmentis/util'
+
 import type { Extension } from '../special-purpose/Extension'
+import { Resource, type ResourceEncoded } from './Resource'
 
 const ResourceMixin = Resource('TestResource')
 

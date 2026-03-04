@@ -1,27 +1,29 @@
 import { Schema } from 'effect'
-import type FhirR4 from 'fhir/r4'
+
 import { Encounter, type EncounterEncoded } from '@assessmentis/clinical-domain'
+import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
+
+import type FhirR4 from 'fhir/r4'
+
 import { ResourceEncodedFromFhirR4Resource } from '../../data-types/base/Resource'
-import { FhirR4Coding } from '../../data-types/complex/Coding'
 import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
+import { FhirR4Coding } from '../../data-types/complex/Coding'
 import {
   FhirR4Identifier,
   FhirR4Reference,
 } from '../../data-types/complex/IdentifierAndReference'
 import { FhirR4Period } from '../../data-types/complex/Period'
 import { FhirR4Quantity } from '../../data-types/complex/Quantity'
+import type { BaseUrl } from '../../data-types/UrlIdentification'
+import { EncounterClassHistoryEncodedFromFhir } from './EncounterClassHistory'
+import { EncounterDiagnosisEncodedFromFhir } from './EncounterDiagnosis'
+import { EncounterHospitalizationEncodedFromFhir } from './EncounterHospitalization'
+import { EncounterLocationEncodedFromFhir } from './EncounterLocation'
+import { EncounterParticipantEncodedFromFhir } from './EncounterParticipant'
 import {
   EncounterStatus,
   EncounterStatusHistoryEncodedFromFhir,
 } from './EncounterStatusHistory'
-import { EncounterClassHistoryEncodedFromFhir } from './EncounterClassHistory'
-import { EncounterParticipantEncodedFromFhir } from './EncounterParticipant'
-import { EncounterDiagnosisEncodedFromFhir } from './EncounterDiagnosis'
-import { EncounterHospitalizationEncodedFromFhir } from './EncounterHospitalization'
-import { EncounterLocationEncodedFromFhir } from './EncounterLocation'
-import type { BaseUrl } from '../../data-types/UrlIdentification'
-import { mutableEncoded } from '@assessmentis/util'
-import { TwoStepExternalSchema } from '@assessmentis/util'
 
 const EncodedFromFhir: Schema.Schema<
   EncounterEncoded,

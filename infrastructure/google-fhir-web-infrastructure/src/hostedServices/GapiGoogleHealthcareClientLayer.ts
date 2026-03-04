@@ -1,24 +1,10 @@
-import type { Scope } from 'effect'
-import { Effect, Schedule } from 'effect'
-import type { FhirR4Client } from '@assessmentis/fhir-r4'
-import {
-  buildFhirStoreParent,
-  buildFhirResourcePath,
-  createFhirResponseHandlers,
-  makeFhirR4ReadyOrigin,
-} from '@assessmentis/fhir-r4'
-import { buildSearchParams } from '@assessmentis/util'
-import { LoadedGapiClient } from '../services/LoadedGapiClient'
-import { LoadedGapiHealthcareClient } from '../services/LoadedGapiHealthcareClient'
-import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
-import type { ExternalAssertionError } from '@assessmentis/ontology'
-import { AuthError, UnhandledError } from '@assessmentis/ontology'
+import { Effect, Schedule, type Scope } from 'effect'
 import type { UnknownException } from 'effect/Cause'
-import { ReadonlyUrl } from '@assessmentis/effectful-store'
-import type { Hub } from '@assessmentis/effectful-store'
+
 import {
+  Composition,
   DiagnosticReport,
-  type ResourceDataTypes,
+  Encounter,
   Location,
   Media,
   Observation,
@@ -26,9 +12,26 @@ import {
   Practitioner,
   Questionnaire,
   QuestionnaireResponse,
-  Composition,
-  Encounter,
+  type ResourceDataTypes,
 } from '@assessmentis/clinical-domain'
+import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
+import { ReadonlyUrl, type Hub } from '@assessmentis/effectful-store'
+import {
+  buildFhirResourcePath,
+  buildFhirStoreParent,
+  createFhirResponseHandlers,
+  makeFhirR4ReadyOrigin,
+  type FhirR4Client,
+} from '@assessmentis/fhir-r4'
+import {
+  AuthError,
+  UnhandledError,
+  type ExternalAssertionError,
+} from '@assessmentis/ontology'
+import { buildSearchParams } from '@assessmentis/util'
+
+import { LoadedGapiClient } from '../services/LoadedGapiClient'
+import { LoadedGapiHealthcareClient } from '../services/LoadedGapiHealthcareClient'
 
 const _retryGoogle502s = <A extends { status: number }, E>(
   innerCall: Effect.Effect<A, E>

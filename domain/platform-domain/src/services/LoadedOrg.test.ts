@@ -1,14 +1,16 @@
-import { describe, it, expect, vi } from 'vitest'
-import { Effect, Layer, Exit, Cause } from 'effect'
-import { LoadedOrg, LiteralLoadedOrgLayer, LoadedOrgLayer } from './LoadedOrg'
-import { CurrentOrg, DocumentStore } from '../tagClasses'
-import { OrgSlug } from '../models/IdTypes'
+import { describe, expect, it, vi } from 'vitest'
+import { Cause, Effect, Exit, Layer } from 'effect'
+
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
+
+import { OrgSlug } from '../models/IdTypes'
+import { CurrentOrg, DocumentStore } from '../tagClasses'
 import {
+  defaultOrg,
   mockDocumentStore,
   mockDocumentStoreImplementations,
-  defaultOrg,
 } from './__tests__/mocks'
+import { LiteralLoadedOrgLayer, LoadedOrg, LoadedOrgLayer } from './LoadedOrg'
 
 describe('LoadedOrg', () => {
   const testOrgSlug = OrgSlug.make('test-org')

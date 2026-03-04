@@ -1,6 +1,7 @@
+import * as fc from 'fast-check'
 import { describe, expect, test } from 'vitest'
 import { Arbitrary, Schema } from 'effect'
-import * as fc from 'fast-check'
+
 import { ReadonlyUrl } from './ReadonlyUrl'
 
 const readonlyUrlArb = Arbitrary.make(ReadonlyUrl)

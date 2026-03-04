@@ -1,15 +1,17 @@
 import { Schema } from 'effect'
+
 import { MergeClasses } from '@assessmentis/util'
+
 import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
-import { Coding } from '../../data-types/complex/Coding'
+import { Address } from '../../data-types/complex/Address'
 import { Code } from '../../data-types/complex/Code'
+import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
+import { Coding } from '../../data-types/complex/Coding'
 import { ContactPoint } from '../../data-types/complex/ContactPoint'
 import {
   Identifier,
   Reference,
 } from '../../data-types/complex/IdentifierAndReference'
-import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
-import { Address } from '../../data-types/complex/Address'
 import { LocationMode } from './LocationMode'
 import { LocationStatus } from './LocationStatus'
 

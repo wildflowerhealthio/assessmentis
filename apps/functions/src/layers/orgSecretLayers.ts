@@ -1,13 +1,13 @@
-import type { OrgSlug } from '@assessmentis/platform-domain'
+import { Effect, Layer, Schema, type Context } from 'effect'
+
+import { BadDataError, NotFoundError } from '@assessmentis/ontology'
 import {
   CurrentOrg,
+  DailyCoSecret,
   DocumentStore,
   LoadedDailyCoSecret,
-  DailyCoSecret,
+  type OrgSlug,
 } from '@assessmentis/platform-domain'
-import type { Context } from 'effect'
-import { Effect, Layer, Schema } from 'effect'
-import { BadDataError, NotFoundError } from '@assessmentis/ontology'
 
 const makeOrgSecretLayer = <Label, A, E>(
   secretTag: Context.Tag<Label, A>,

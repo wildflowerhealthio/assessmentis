@@ -1,7 +1,8 @@
-import { expect, test, describe } from 'vitest'
-import * as Coding from './Coding'
-import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
+import { describe, expect, test } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
+
+import * as Coding from './Coding'
 
 const codingArb = Arbitrary.make(Coding.Coding)
 

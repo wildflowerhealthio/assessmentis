@@ -1,11 +1,12 @@
-import type { FormEvent } from 'react'
-import React, { Suspense, use, useRef, useState } from 'react'
 import { Either, Schema } from 'effect'
+import React, { Suspense, use, useRef, useState, type FormEvent } from 'react'
+
 import { cn } from '@assessmentis/react-util'
-import type { FormError } from './types/FormTypes'
-import { extractFormErrors } from './utils/validation'
-import { getFieldError, getFieldLabel } from './utils/errorFormatting'
+
 import classes from './ResourceForm.module.css'
+import type { FormError } from './types/FormTypes'
+import { getFieldError, getFieldLabel } from './utils/errorFormatting'
+import { extractFormErrors } from './utils/validation'
 
 export type CommonFieldProps<T> = {
   error?: string | undefined

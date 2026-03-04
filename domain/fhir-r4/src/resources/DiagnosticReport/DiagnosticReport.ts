@@ -1,22 +1,24 @@
 import { Schema } from 'effect'
-import type FhirR4 from 'fhir/r4'
+
 import {
   DiagnosticReport,
-  type DiagnosticReportEncoded,
   DiagnosticReportStatus,
+  type DiagnosticReportEncoded,
 } from '@assessmentis/clinical-domain'
+import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
+
+import type FhirR4 from 'fhir/r4'
+
 import { ResourceEncodedFromFhirR4Resource } from '../../data-types/base/Resource'
+import { FhirR4Attachment } from '../../data-types/complex/Attachment'
+import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import {
   FhirR4Identifier,
   FhirR4Reference,
 } from '../../data-types/complex/IdentifierAndReference'
-import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
-import { FhirR4Attachment } from '../../data-types/complex/Attachment'
 import { FhirR4Period } from '../../data-types/complex/Period'
-import { DiagnosticReportMediaEncodedFromFhir } from './DiagnosticReportMedia'
 import type { BaseUrl } from '../../data-types/UrlIdentification'
-import { mutableEncoded } from '@assessmentis/util'
-import { TwoStepExternalSchema } from '@assessmentis/util'
+import { DiagnosticReportMediaEncodedFromFhir } from './DiagnosticReportMedia'
 
 const EncodedFromFhir: Schema.Schema<
   DiagnosticReportEncoded,

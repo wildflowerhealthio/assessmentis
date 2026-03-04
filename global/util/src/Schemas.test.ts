@@ -1,8 +1,9 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { DateTime, Schema } from 'effect'
+
 import {
-  TimelessDateFromString,
   DateTimeUtcFromFirebaseTimestamp,
+  TimelessDateFromString,
 } from './Schemas'
 
 describe('TimelessDateFromString', () => {

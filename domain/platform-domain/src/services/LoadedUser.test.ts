@@ -1,17 +1,19 @@
-import { describe, it, expect, vi } from 'vitest'
-import { Effect, Layer, Exit, Cause } from 'effect'
-import {
-  LoadedUser,
-  LiteralLoadedUserLayer,
-  LoadedUserLayer,
-} from './LoadedUser'
-import { CurrentUserId, DocumentStore } from '../tagClasses'
-import { UserId } from '../models/UserId'
+import { describe, expect, it, vi } from 'vitest'
+import { Cause, Effect, Exit, Layer } from 'effect'
+
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
+
+import { UserId } from '../models/UserId'
+import { CurrentUserId, DocumentStore } from '../tagClasses'
 import {
   mockDocumentStore,
   mockDocumentStoreImplementations,
 } from './__tests__/mocks'
+import {
+  LiteralLoadedUserLayer,
+  LoadedUser,
+  LoadedUserLayer,
+} from './LoadedUser'
 
 describe('LoadedUser', () => {
   const testUserId = UserId.make('user-123')

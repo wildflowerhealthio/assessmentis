@@ -1,13 +1,16 @@
+import { Effect, ParseResult, Schema } from 'effect'
+
 import {
   Resource,
   type ResourceEncoded,
 } from '@assessmentis/clinical-domain/data-types'
-import type FhirR4 from 'fhir/r4'
 import { mutableEncoded } from '@assessmentis/util'
-import { Effect, ParseResult, Schema } from 'effect'
-import { FhirR4Narrative, FhirR4Extension } from '../special-purpose'
-import { FhirR4Meta } from './Meta'
+
+import type FhirR4 from 'fhir/r4'
+
+import { FhirR4Extension, FhirR4Narrative } from '../special-purpose'
 import { BaseUrl, domainIdentification } from '../UrlIdentification'
+import { FhirR4Meta } from './Meta'
 
 const fhirR4ResourceIdentification = <TResourceType extends string>(
   resourceType: TResourceType

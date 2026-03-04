@@ -1,17 +1,21 @@
 import { pipe, Schema } from 'effect'
-import type FhirR4 from 'fhir/r4'
-import {
-  Extension,
-  type ExtensionEncoded,
-} from '@assessmentis/clinical-domain/data-types'
-import type { BaseUrl } from '../UrlIdentification'
-import { ElementIdentification } from '../base/ElementIdentification'
+
 import {
   AllDatatypeKeys,
   DatatypeChoiceEncodedPassthroughFields,
+  Extension,
+  type ExtensionEncoded,
 } from '@assessmentis/clinical-domain/data-types'
-import { extendObjectSchemas, mutableEncoded } from '@assessmentis/util'
-import { TwoStepExternalSchema } from '@assessmentis/util'
+import {
+  extendObjectSchemas,
+  mutableEncoded,
+  TwoStepExternalSchema,
+} from '@assessmentis/util'
+
+import type FhirR4 from 'fhir/r4'
+
+import { ElementIdentification } from '../base/ElementIdentification'
+import type { BaseUrl } from '../UrlIdentification'
 
 const EncodedFromFhir: Schema.Schema<
   ExtensionEncoded,

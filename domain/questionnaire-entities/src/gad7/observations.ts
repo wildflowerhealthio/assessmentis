@@ -1,11 +1,11 @@
+import { ObservationReferenceRange } from '@assessmentis/clinical-domain'
 import {
   CodeableConcept,
   Quantity,
 } from '@assessmentis/clinical-domain/data-types'
+
 import codings from './codings'
-import type { ObservationTemplate } from './internal'
-import { baseChoiceObservation } from './internal'
-import { ObservationReferenceRange } from '@assessmentis/clinical-domain'
+import { baseChoiceObservation, type ObservationTemplate } from './internal'
 
 export const totalScore = {
   ...baseChoiceObservation,

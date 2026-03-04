@@ -1,27 +1,29 @@
 import { Schema } from 'effect'
-import type FhirR4 from 'fhir/r4'
+
 import {
   Observation,
-  type ObservationEncoded,
   ObservationStatus,
+  type ObservationEncoded,
 } from '@assessmentis/clinical-domain'
 import {
   AllDatatypeKeys,
   DatatypeChoiceEncodedPassthroughFields,
 } from '@assessmentis/clinical-domain/data-types'
+import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
+
+import type FhirR4 from 'fhir/r4'
+
 import { ResourceEncodedFromFhirR4Resource } from '../../data-types/base/Resource'
+import { FhirR4Annotation } from '../../data-types/complex/Annotation'
+import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import {
   FhirR4Identifier,
   FhirR4Reference,
 } from '../../data-types/complex/IdentifierAndReference'
-import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
-import { FhirR4Annotation } from '../../data-types/complex/Annotation'
 import { FhirR4Period } from '../../data-types/complex/Period'
-import { ObservationReferenceRangeEncodedFromFhir } from './ObservationReferenceRange'
-import { ObservationComponentEncodedFromFhir } from './ObservationComponent'
 import type { BaseUrl } from '../../data-types/UrlIdentification'
-import { mutableEncoded } from '@assessmentis/util'
-import { TwoStepExternalSchema } from '@assessmentis/util'
+import { ObservationComponentEncodedFromFhir } from './ObservationComponent'
+import { ObservationReferenceRangeEncodedFromFhir } from './ObservationReferenceRange'
 
 const EncodedFromFhir: Schema.Schema<
   ObservationEncoded,

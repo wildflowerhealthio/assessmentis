@@ -1,13 +1,16 @@
-import { auth, db, FirebaseWebLayer } from 'app/FirebaseWebLayer'
-import { DailyCoConfig } from '@assessmentis/config-domain'
-import { DocumentStore, FrontendConfig } from '@assessmentis/platform-domain'
-import type { Route } from './+types/orgs.$orgSlug'
-import { Form } from 'react-router'
 import { Effect, pipe } from 'effect'
+import { Form } from 'react-router'
+
+import { DailyCoConfig } from '@assessmentis/config-domain'
 import {
   FirebaseWebDocumentStoreLayer,
   setDocument,
 } from '@assessmentis/firebase-web-infrastructure'
+import { DocumentStore, FrontendConfig } from '@assessmentis/platform-domain'
+
+import { auth, db, FirebaseWebLayer } from 'app/FirebaseWebLayer'
+
+import type { Route } from './+types/orgs.$orgSlug'
 
 const frontendConfig = (): FrontendConfig => {
   const fhirStore: FrontendConfig['fhirServer'] = {

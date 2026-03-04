@@ -1,11 +1,13 @@
-import { expect, test, describe, expectTypeOf } from 'vitest'
-import { Arbitrary, Schema } from 'effect'
-import { Identifier, Reference } from './IdentifierAndReference'
-import type {
-  IdentifierEncoded,
-  ReferenceEncoded,
-} from './IdentifierAndReference'
 import * as fc from 'fast-check'
+import { describe, expect, expectTypeOf, test } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
+
+import {
+  Identifier,
+  Reference,
+  type IdentifierEncoded,
+  type ReferenceEncoded,
+} from './IdentifierAndReference'
 
 const referenceArb = Arbitrary.make(Reference)
 

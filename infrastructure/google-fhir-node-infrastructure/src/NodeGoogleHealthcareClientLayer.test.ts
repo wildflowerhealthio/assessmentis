@@ -1,10 +1,13 @@
-import { describe, expect, vi } from 'vitest'
-import { Effect, Layer } from 'effect'
-import { it } from '@effect/vitest'
 import * as fc from 'fast-check'
-import { FhirR4Client, buildFhirStoreParent } from '@assessmentis/fhir-r4'
+import { describe, expect, vi } from 'vitest'
+import { it } from '@effect/vitest'
+import { Effect, Layer } from 'effect'
+
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
+import { buildFhirStoreParent, FhirR4Client } from '@assessmentis/fhir-r4'
 import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
+
+import { NodeGoogleHealthcareFhirR4ClientLayer } from './NodeGoogleHealthcareClientLayer'
 
 // Use vi.hoisted to ensure mocks are available and configured before vi.mock runs
 const {
@@ -131,8 +134,6 @@ vi.mock('firebase-admin/firestore', () => ({
     settings: vi.fn(),
   })),
 }))
-
-import { NodeGoogleHealthcareFhirR4ClientLayer } from './NodeGoogleHealthcareClientLayer'
 
 /**
  * These tests verify that NodeGoogleHealthcareFhirR4ClientLayer correctly:

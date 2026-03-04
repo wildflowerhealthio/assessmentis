@@ -1,7 +1,8 @@
-import { expect, test, describe, expectTypeOf } from 'vitest'
-import { Attachment, type AttachmentEncoded } from './Attachment'
-import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
+import { describe, expect, expectTypeOf, test } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
+
+import { Attachment, type AttachmentEncoded } from './Attachment'
 
 const attachmentArb = Arbitrary.make(Attachment)
 

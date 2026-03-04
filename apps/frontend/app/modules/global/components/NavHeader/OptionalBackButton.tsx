@@ -1,5 +1,6 @@
+import { useLocation, useNavigate } from 'react-router'
+
 import { cn } from '@assessmentis/react-util'
-import { useNavigate, useLocation } from 'react-router'
 
 import classes from './OptionalBackButton.module.css'
 

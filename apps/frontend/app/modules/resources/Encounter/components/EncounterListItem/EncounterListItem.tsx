@@ -1,11 +1,12 @@
 import { Encounter } from '@assessmentis/clinical-domain'
-import {
-  getEncounterDisplayName,
-  getEncounterStatus,
-  getEncounterPeriodDisplay,
-} from '../../utils/encounterDisplay'
+
 import { runEffectSyncFlat } from '../../../../../runEffectSync'
 import { ResourceListItem } from '../../../ResourcePages/ResourceListItem/ResourceListItem'
+import {
+  getEncounterDisplayName,
+  getEncounterPeriodDisplay,
+  getEncounterStatus,
+} from '../../utils/encounterDisplay'
 
 interface EncounterListItemProps {
   item: Encounter

@@ -28,8 +28,8 @@ import {
 } from '@firecms/firebase'
 import { CenteredView } from '@firecms/ui'
 
-import { firebaseConfig } from './firebase_config'
 import { orgsCollection } from './collections/orgs'
+import { firebaseConfig } from './firebase_config'
 
 function App() {
   // Use your own authentication logic here

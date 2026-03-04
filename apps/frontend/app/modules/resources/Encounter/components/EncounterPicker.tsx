@@ -1,4 +1,5 @@
 import { Encounter } from '@assessmentis/clinical-domain'
+
 import { createResourcePicker } from '../../../common/utils/createResourcePicker'
 
 function formatEncounterDisplay(encounter: Encounter): string {

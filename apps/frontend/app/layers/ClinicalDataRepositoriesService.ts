@@ -1,33 +1,39 @@
-import type { Layer, Schema, Scope } from 'effect'
-import { Effect, Either, pipe, Stream } from 'effect'
-import type {
-  ClinicalDomainRepositoryTagClass,
-  ClinicalDataRepository,
-  ResourceDataTypes,
-  ResourceType,
-} from '@assessmentis/clinical-domain'
-import type { ReadonlyUrl } from '@assessmentis/effectful-store'
+import {
+  Effect,
+  Either,
+  pipe,
+  Stream,
+  type Layer,
+  type Schema,
+  type Scope,
+} from 'effect'
+
 import {
   Composition,
-  Questionnaire,
-  QuestionnaireResponse,
-} from '@assessmentis/clinical-domain'
-import {
+  DiagnosticReport,
   Encounter,
   Location,
-  Patient,
-  Practitioner,
-} from '@assessmentis/clinical-domain'
-import {
-  DiagnosticReport,
   Media,
   Observation,
+  Patient,
+  Practitioner,
+  Questionnaire,
+  QuestionnaireResponse,
+  type ClinicalDataRepository,
+  type ClinicalDomainRepositoryTagClass,
+  type ResourceDataTypes,
+  type ResourceType,
 } from '@assessmentis/clinical-domain'
 import type { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
-import type { AuthError, UnhandledError } from '@assessmentis/ontology'
-import { ExternalAssertionError } from '@assessmentis/ontology'
-import { FhirR4ClientService } from './FhirR4ClientService'
+import type { ReadonlyUrl } from '@assessmentis/effectful-store'
+import {
+  ExternalAssertionError,
+  type AuthError,
+  type UnhandledError,
+} from '@assessmentis/ontology'
 import type { NoSelectedOrgError } from '@assessmentis/platform-domain'
+
+import { FhirR4ClientService } from './FhirR4ClientService'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const makeClinicalDataRepository = (..._args: any[]): any => {

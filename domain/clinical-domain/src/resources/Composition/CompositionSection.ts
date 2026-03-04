@@ -1,14 +1,14 @@
-import type { FastCheck } from 'effect'
-import { Arbitrary } from 'effect'
-import { pipe, Schema } from 'effect'
+import { Arbitrary, pipe, Schema, type FastCheck } from 'effect'
+
+import { mergeArbitraries, MergeClasses } from '@assessmentis/util'
+
 import {
   BackboneElement,
   type BackboneElementEncoded,
 } from '../../data-types/base/BackboneElement'
-import { Reference } from '../../data-types/complex/IdentifierAndReference'
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
+import { Reference } from '../../data-types/complex/IdentifierAndReference'
 import { Narrative } from '../../data-types/special-purpose/Narrative'
-import { mergeArbitraries, MergeClasses } from '@assessmentis/util'
 
 const fields = {
   title: Schema.optional(Schema.String),

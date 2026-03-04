@@ -1,11 +1,13 @@
 import { Schema } from 'effect'
+
+import { MergeClasses } from '@assessmentis/util'
+
 import {
   BackboneElement,
-  type BackboneElementEncoded,
   DatatypeChoice,
+  type BackboneElementEncoded,
 } from '../../data-types'
 import FhirR4ChoiceElements from '../../data-types/fhirR4ChoiceElements'
-import { MergeClasses } from '@assessmentis/util'
 
 const DomainType = 'QuestionnaireItemAnswerOption' as const
 type DomainType = typeof DomainType

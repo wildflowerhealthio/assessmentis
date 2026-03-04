@@ -1,11 +1,13 @@
 import { createContext, useContext } from 'react'
+
 import type {
   AuthDataService,
   OrgService,
   UserService,
 } from '@assessmentis/platform-domain'
-import type { FhirR4ClientService } from './FhirR4ClientService'
+
 import type { ClinicalDataRepositoryService } from './ClinicalDataRepositoriesService'
+import type { FhirR4ClientService } from './FhirR4ClientService'
 
 export interface PlatformContext {
   authDataService: typeof AuthDataService.Service

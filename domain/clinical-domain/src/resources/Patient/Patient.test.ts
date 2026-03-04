@@ -1,7 +1,8 @@
-import { expect, test, describe } from 'vitest'
-import * as Patient from './Patient'
-import { Schema, Arbitrary, Either } from 'effect'
 import * as fc from 'fast-check'
+import { describe, expect, test } from 'vitest'
+import { Arbitrary, Either, Schema } from 'effect'
+
+import * as Patient from './Patient'
 
 const patientArb = Arbitrary.make(Patient.Patient)
 

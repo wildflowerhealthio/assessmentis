@@ -1,4 +1,5 @@
-import { type ComponentType, type FC, Suspense, use } from 'react'
+import { Suspense, use, type ComponentType, type FC } from 'react'
+
 import { ErrorBoundary } from 'react-error-boundary'
 
 /**

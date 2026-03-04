@@ -1,8 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, act } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { Effect, Option } from 'effect'
 import { MemoryRouter } from 'react-router'
-import { Option, Effect } from 'effect'
+
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
+
+import { act, render, screen } from '@testing-library/react'
+
 import { makeResourceListIndexPage } from './makeResourceListIndexPage'
 import type { ResourcePagesConfig } from './resourcePagesConfigType'
 
@@ -49,7 +52,8 @@ function createTestConfig(
     singularLabel: 'Test Resource',
     pluralLabel: 'Test Resources',
     paramName: 'testResourceId',
-    decodeUrl: (raw: string) => Option.some(ReadonlyUrl.make({ pathname: raw })),
+    decodeUrl: (raw: string) =>
+      Option.some(ReadonlyUrl.make({ pathname: raw })),
     getDisplayName: (r: { name: string }) => r.name,
     schema: {} as never,
     FormComponent: (() => null) as never,

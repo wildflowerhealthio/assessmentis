@@ -9,8 +9,8 @@ import {
   type SuiteFactory,
 } from 'vitest'
 import { it } from '@effect/vitest'
-import type { Layer } from 'effect'
-import { Effect, Exit, Cause, pipe, Option, Console } from 'effect'
+import { Cause, Console, Effect, Exit, Option, pipe, type Layer } from 'effect'
+
 import { FhirR4Client } from './FhirR4Client'
 
 /**

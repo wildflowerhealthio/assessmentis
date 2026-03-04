@@ -1,6 +1,8 @@
-import type { ValueTypeEnum } from '../schemas/ObservationFormSchema'
 import { cn } from '@assessmentis/react-util'
+
 import classes from 'app/modules/common/components/ResourceForm/ResourceForm.module.css'
+
+import type { ValueTypeEnum } from '../schemas/ObservationFormSchema'
 
 type ValueType = typeof ValueTypeEnum.Type
 

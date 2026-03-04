@@ -1,5 +1,10 @@
 import { Schema } from 'effect'
-import { Location, LocationStatus, LocationMode } from '@assessmentis/clinical-domain'
+
+import {
+  Location,
+  LocationMode,
+  LocationStatus,
+} from '@assessmentis/clinical-domain'
 import { Identifier } from '@assessmentis/clinical-domain/data-types'
 
 export const LocationFormSchema = Schema.Struct({

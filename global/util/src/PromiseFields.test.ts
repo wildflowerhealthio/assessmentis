@@ -1,9 +1,10 @@
-import { describe, it, expect } from 'vitest'
 import * as fc from 'fast-check'
+import { describe, expect, it } from 'vitest'
+
 import {
-  promiseFieldsFromPromise,
-  promiseFieldsFromObject,
   fromPromiseFields,
+  promiseFieldsFromObject,
+  promiseFieldsFromPromise,
 } from './PromiseFields'
 
 describe('PromiseFields', () => {

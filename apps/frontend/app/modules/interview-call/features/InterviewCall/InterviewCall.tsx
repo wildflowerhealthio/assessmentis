@@ -1,11 +1,11 @@
 'use client'
 
-import classes from './InterviewCall.module.css'
-
 import type { FullEncounter } from 'app/modules/interview-call/actions/getFullEncounter'
 import QuestionnaireForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/QuestionnaireForm'
+
 import SplitPane from '../../../common/components/SplitPane/SplitPane'
 import DailyCoCall from './DailyCoCall'
+import classes from './InterviewCall.module.css'
 
 interface IProps {
   encounter: FullEncounter

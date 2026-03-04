@@ -1,19 +1,25 @@
 import { Schema } from 'effect'
+
+import {
+  Location,
+  LocationMode,
+  LocationStatus,
+  type LocationEncoded,
+} from '@assessmentis/clinical-domain'
+import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
+
 import type FhirR4 from 'fhir/r4'
-import { Location, type LocationEncoded } from '@assessmentis/clinical-domain'
-import { LocationStatus, LocationMode } from '@assessmentis/clinical-domain'
+
+import { ResourceEncodedFromFhirR4Resource } from '../../data-types/base/Resource'
+import { FhirR4Address } from '../../data-types/complex/Address'
+import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import { FhirR4Coding } from '../../data-types/complex/Coding'
 import { FhirR4ContactPoint } from '../../data-types/complex/ContactPoint'
 import {
   FhirR4Identifier,
   FhirR4Reference,
 } from '../../data-types/complex/IdentifierAndReference'
-import { ResourceEncodedFromFhirR4Resource } from '../../data-types/base/Resource'
-import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
-import { FhirR4Address } from '../../data-types/complex/Address'
 import type { BaseUrl } from '../../data-types/UrlIdentification'
-import { mutableEncoded } from '@assessmentis/util'
-import { TwoStepExternalSchema } from '@assessmentis/util'
 
 const EncodedFromFhir: Schema.Schema<
   LocationEncoded,

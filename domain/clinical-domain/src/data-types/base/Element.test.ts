@@ -1,9 +1,11 @@
-import { expect, test, describe, expectTypeOf } from 'vitest'
-import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
-import { Element } from './Element'
-import { Extension, type ExtensionEncoded } from '../special-purpose/Extension'
+import { describe, expect, expectTypeOf, test } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
+
 import { MergeClasses } from '@assessmentis/util'
+
+import { Extension, type ExtensionEncoded } from '../special-purpose/Extension'
+import { Element } from './Element'
 
 // ---------------------------------------------------------------------------
 // Element tests

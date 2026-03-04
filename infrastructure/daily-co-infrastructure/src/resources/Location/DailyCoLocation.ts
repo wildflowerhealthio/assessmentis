@@ -1,9 +1,11 @@
-import { ThreeStepExternalSchema } from '@assessmentis/util'
-import type { LocationEncoded } from '@assessmentis/clinical-domain'
-import { Location } from '@assessmentis/clinical-domain'
 import { Schema } from 'effect'
+
+import { Location, type LocationEncoded } from '@assessmentis/clinical-domain'
+import { ThreeStepExternalSchema } from '@assessmentis/util'
+
 import { ApiDailyCoRoomSchema } from '../../models/ApiDailyCoRoomSchema'
-import {} from '@assessmentis/clinical-domain'
+
+import '@assessmentis/clinical-domain'
 
 const EncodedFromDailyCoRoom: Schema.Schema<
   LocationEncoded,

@@ -1,17 +1,22 @@
 import { Effect, pipe, RequestResolver, Schema } from 'effect'
 import type { HttpClient } from '@effect/platform/HttpClient'
-import type { Resource } from '@assessmentis/effectful-store'
+
 import type { Observation } from '@assessmentis/clinical-domain'
+import type { Resource } from '@assessmentis/effectful-store'
 import { UnhandledError } from '@assessmentis/ontology'
-import { ApiDailyCoTranscriptSchema } from '../../models/ApiDailyCoTranscriptSchema'
+
 import {
+  assertStatus,
   getRequestFromHeaders,
   handleHttpClientError,
-  assertStatus,
   parseAs,
 } from '../../httpHelpers'
-import type { AnyRequest, HeadersEffect } from '../../resolverUtils'
-import { fetchTranscriptAccessLink } from '../../resolverUtils'
+import { ApiDailyCoTranscriptSchema } from '../../models/ApiDailyCoTranscriptSchema'
+import {
+  fetchTranscriptAccessLink,
+  type AnyRequest,
+  type HeadersEffect,
+} from '../../resolverUtils'
 import { DailyCoObservation } from './DailyCoObservation'
 
 const decodeObservation = Schema.decodeSync(DailyCoObservation)

@@ -1,7 +1,8 @@
-import { expect, test, describe, expectTypeOf } from 'vitest'
-import { Narrative, type NarrativeEncoded } from './Narrative'
-import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
+import { describe, expect, expectTypeOf, test } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
+
+import { Narrative, type NarrativeEncoded } from './Narrative'
 
 const narrativeArb = Arbitrary.make(Narrative)
 

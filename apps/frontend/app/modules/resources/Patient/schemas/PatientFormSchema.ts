@@ -1,4 +1,5 @@
 import { Schema } from 'effect'
+
 import { Patient, Practitioner } from '@assessmentis/clinical-domain'
 import {
   AdministrativeGender,

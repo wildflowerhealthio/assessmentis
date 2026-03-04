@@ -1,6 +1,7 @@
 import { Context } from 'effect'
-import type { ClinicalDataRepository } from '../types'
+
 import type { Practitioner } from '../resources/Practitioner/Practitioner'
+import type { ClinicalDataRepository } from '../types'
 
 export class PractitionerRepository extends Context.Tag(
   'PractitionerRepository'

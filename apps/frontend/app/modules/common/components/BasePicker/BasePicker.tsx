@@ -1,5 +1,9 @@
-import { useState, useMemo, Suspense } from 'react'
+import { Suspense, useMemo, useState } from 'react'
+import { Await } from 'react-router'
+
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
+import { cn } from '@assessmentis/react-util'
+
 import {
   Combobox,
   ComboboxButton,
@@ -7,13 +11,12 @@ import {
   ComboboxOption,
   ComboboxOptions,
 } from '@headlessui/react'
-import { cn } from '@assessmentis/react-util'
-import type { BasePickerProps, PromisedPickerProps } from './types/PickerTypes'
+import { ErrorBoundary } from 'react-error-boundary'
+
+import classes from './BasePicker.module.css'
 import { usePickerFilter } from './hooks/usePickerFilter'
 import { usePickerSelection } from './hooks/usePickerSelection'
-import classes from './BasePicker.module.css'
-import { ErrorBoundary } from 'react-error-boundary'
-import { Await } from 'react-router'
+import type { BasePickerProps, PromisedPickerProps } from './types/PickerTypes'
 
 function ChevronIcon({ className }: { className?: string }) {
   return (

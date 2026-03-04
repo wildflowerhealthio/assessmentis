@@ -1,9 +1,10 @@
 import { Schema } from 'effect'
+
 import {
-  Reference,
-  type ReferenceEncoded,
   BackboneElement,
+  Reference,
   type BackboneElementEncoded,
+  type ReferenceEncoded,
 } from '../../data-types'
 
 const DomainType = 'DiagnosticReportMedia' as const

@@ -1,6 +1,9 @@
 import { useEffect } from 'react'
-import type { BreadcrumbSegment } from '../../contexts/BreadcrumbContext'
-import { useBreadcrumbContext } from '../../contexts/BreadcrumbContext'
+
+import {
+  useBreadcrumbContext,
+  type BreadcrumbSegment,
+} from '../../contexts/BreadcrumbContext'
 
 // Hook for pages to set breadcrumbs (declarative API)
 

@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest'
-import { Arbitrary, Schema, FastCheck } from 'effect'
+import { describe, expect, it } from 'vitest'
+import { Arbitrary, FastCheck, Schema } from 'effect'
+
 import { EncounterFormSchema } from './EncounterFormSchema'
 
 const encounterFormArb = Arbitrary.make(EncounterFormSchema)

@@ -1,11 +1,17 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { Effect, Either, Stream } from 'effect'
+
+import {
+  NoSelectedOrgError,
+  OrgSlug,
+  type Org,
+} from '@assessmentis/platform-domain'
+
 import { render, screen, waitFor } from '@testing-library/react'
-import { Either, Effect, Stream } from 'effect'
+
+import { createMockPlatformContext } from '../test-utils'
 import { OrgContextProvider } from './OrgContextProvider'
 import { usePlatformContext } from './PlatformContext'
-import { OrgSlug, NoSelectedOrgError } from '@assessmentis/platform-domain'
-import type { Org } from '@assessmentis/platform-domain'
-import { createMockPlatformContext } from '../test-utils'
 
 // Mock the PlatformContext
 vi.mock('./PlatformContext', () => ({

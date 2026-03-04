@@ -1,6 +1,8 @@
-import { describe, it, expect, vi } from 'vitest'
-import { renderHook, act, waitFor } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+
+import { act, renderHook, waitFor } from '@testing-library/react'
 import { JSDOM } from 'jsdom'
+
 import { useCollection } from './index'
 
 // Ensure DOM globals are available when tests run outside jsdom-configured env

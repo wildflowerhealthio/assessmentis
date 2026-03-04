@@ -1,16 +1,18 @@
 import { Schema } from 'effect'
+
 import { MergeClasses } from '@assessmentis/util'
+
+import { Period } from '../../data-types'
+import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
+import { Attachment } from '../../data-types/complex/Attachment'
+import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import {
   Identifier,
   Reference,
 } from '../../data-types/complex/IdentifierAndReference'
-import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
-import { Attachment } from '../../data-types/complex/Attachment'
-import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
 import { DatatypeChoice } from '../../data-types/Datatype'
 import FhirR4ChoiceElements from '../../data-types/fhirR4ChoiceElements'
 import { DiagnosticReportMedia } from './DiagnosticReportMedia'
-import { Period } from '../../data-types'
 
 const Key = 'DiagnosticReport' as const
 type Key = typeof Key

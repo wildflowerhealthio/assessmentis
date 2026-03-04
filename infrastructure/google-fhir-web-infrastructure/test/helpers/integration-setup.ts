@@ -1,15 +1,19 @@
 import { Effect, Layer, pipe } from 'effect'
-import type { GoogleFhirConfig } from '@assessmentis/config-domain'
-import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
+import { isPromiseLike } from 'effect/Predicate'
+
+import type { ResourceDataTypes } from '@assessmentis/clinical-domain'
+import {
+  LoadedGoogleFhirConfig,
+  type GoogleFhirConfig,
+} from '@assessmentis/config-domain'
+import type { Hub } from '@assessmentis/effectful-store'
 
 import {
   LoadedGapiClient,
   LoadedGapiHealthcareClient,
   startGapiGoogleHealthcareClient,
 } from '../../src'
-import { isPromiseLike } from 'effect/Predicate'
-import type { Hub } from '@assessmentis/effectful-store'
-import type { ResourceDataTypes } from '@assessmentis/clinical-domain'
+
 /**
  * Get access token from gcloud CLI
  */

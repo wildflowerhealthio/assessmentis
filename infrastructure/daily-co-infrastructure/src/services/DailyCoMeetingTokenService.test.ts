@@ -2,12 +2,14 @@ import { describe, expect } from 'vitest'
 import { it } from '@effect/vitest'
 import { Effect, Layer } from 'effect'
 import { HttpClient } from '@effect/platform/HttpClient'
+
 import { DailyCoContext } from '@assessmentis/config-domain'
-import {
-  DailyCoMeetingTokenService,
-  DailyCoMeetingTokenLayer,
-} from './DailyCoMeetingTokenService'
+
 import { MeetingTokenString } from '../MeetingTokenString'
+import {
+  DailyCoMeetingTokenLayer,
+  DailyCoMeetingTokenService,
+} from './DailyCoMeetingTokenService'
 
 /**
  * Create a fake JWT with the given payload.

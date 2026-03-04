@@ -1,6 +1,5 @@
-import type { Either, Scope } from 'effect'
-import { Effect, Equal, Option, Stream } from 'effect'
-import { StreamEither } from '@assessmentis/util'
+import { Effect, Equal, Option, Stream, type Either, type Scope } from 'effect'
+
 import {
   Location,
   type Encounter,
@@ -8,15 +7,17 @@ import {
   type Questionnaire,
   type QuestionnaireResponse,
 } from '@assessmentis/clinical-domain'
-import type {
-  AuthError,
-  AuthzError,
-  NotFoundError,
-  ExternalAssertionError,
-} from '@assessmentis/ontology'
-import { UnhandledError } from '@assessmentis/ontology'
 import type { ReadonlyUrl, Resource } from '@assessmentis/effectful-store'
+import {
+  UnhandledError,
+  type AuthError,
+  type AuthzError,
+  type ExternalAssertionError,
+  type NotFoundError,
+} from '@assessmentis/ontology'
 import type { NoSelectedOrgError } from '@assessmentis/platform-domain'
+import { StreamEither } from '@assessmentis/util'
+
 import { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
 
 export type FullEncounter = {

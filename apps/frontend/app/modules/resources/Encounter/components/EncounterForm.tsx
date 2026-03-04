@@ -1,13 +1,15 @@
 import { applyPartialProps, transformProps } from '@assessmentis/react-util'
+
 import {
-  ResourceForm,
   DateTimeField,
+  ResourceForm,
 } from 'app/modules/common/components/ResourceForm'
+import type { CommonFieldProps } from 'app/modules/common/components/ResourceForm/ResourceForm'
+import { LocationPicker } from 'app/modules/resources/Location/components/LocationPicker'
 import { PatientPicker } from 'app/modules/resources/Patient/components/PatientPicker'
 import { PractitionerPicker } from 'app/modules/resources/Practitioner/components/PractitionerPicker'
 import { QuestionnairePicker } from 'app/modules/resources/Questionnaire/components/QuestionnairePicker/QuestionnairePicker'
-import { LocationPicker } from 'app/modules/resources/Location/components/LocationPicker'
-import type { CommonFieldProps } from 'app/modules/common/components/ResourceForm/ResourceForm'
+
 import {
   EncounterFormSchema,
   type EncounterFormData,

@@ -2,20 +2,21 @@ import { assert, describe, expect, vi } from 'vitest'
 import { it } from '@effect/vitest'
 import {
   Array,
+  Cause,
   Effect,
   Exit,
-  Cause,
-  RequestResolver,
   FastCheck as fc,
   Request,
+  RequestResolver,
 } from 'effect'
-import { makeHub } from './Hub'
-import type { Hub } from './Hub'
-import type { ReadyOrigin, NotReadyOrigin } from './OriginState'
-import type * as ResourceRequest from './ResourceRequest'
-import type * as Resource from './Resource'
-import { ReadonlyUrl } from './ReadonlyUrl'
+
 import { AuthError, AuthzError, Loading } from '@assessmentis/ontology'
+
+import { makeHub, type Hub } from './Hub'
+import type { NotReadyOrigin, ReadyOrigin } from './OriginState'
+import { ReadonlyUrl } from './ReadonlyUrl'
+import type * as Resource from './Resource'
+import type * as ResourceRequest from './ResourceRequest'
 
 // --- Resource types ---
 

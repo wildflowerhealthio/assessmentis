@@ -1,24 +1,32 @@
 import { Either, Option, Schema, Stream } from 'effect'
-import { StreamEither } from '@assessmentis/util'
-import { UnhandledError } from '@assessmentis/ontology'
+import { Suspense, useMemo } from 'react'
+
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
-import type { Route } from './+types/Patient.$patientId._index'
-import { runEffectSyncFlat } from '../runEffectSync'
-import { useMemo, Suspense } from 'react'
+import { UnhandledError } from '@assessmentis/ontology'
+import { StreamEither } from '@assessmentis/util'
+
 import Skeleton from 'react-loading-skeleton'
+
+import { runEffectSyncFlat } from '../runEffectSync'
+import type { Route } from './+types/Patient.$patientId._index'
+
 import 'react-loading-skeleton/dist/skeleton.css'
-import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
-import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
-import { PatientContactInfo } from '../modules/resources/Patient/components/PatientContactInfo/PatientContactInfo'
-import { PatientAddresses } from '../modules/resources/Patient/components/PatientAddresses/PatientAddresses'
-import {
-  getPatientDisplayName,
-  formatPatientDemographics,
-} from '../modules/resources/Patient/utils/patientDisplay'
-import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
-import { useEitherStream } from '@assessmentis/react-util'
-import { usePlatformContext } from '../layers/PlatformContext'
+
 import { Await } from 'react-router'
+
+import { useEitherStream } from '@assessmentis/react-util'
+
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
+
+import { usePlatformContext } from '../layers/PlatformContext'
+import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
+import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
+import { PatientAddresses } from '../modules/resources/Patient/components/PatientAddresses/PatientAddresses'
+import { PatientContactInfo } from '../modules/resources/Patient/components/PatientContactInfo/PatientContactInfo'
+import {
+  formatPatientDemographics,
+  getPatientDisplayName,
+} from '../modules/resources/Patient/utils/patientDisplay'
 
 const tryDecodePatientUrl = Schema.decodeOption(ReadonlyUrl.FromString)
 

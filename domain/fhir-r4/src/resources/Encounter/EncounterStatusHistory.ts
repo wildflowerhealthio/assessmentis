@@ -1,7 +1,9 @@
 import { Schema } from 'effect'
+
+import { mutableEncoded } from '@assessmentis/util'
+
 import { BackboneElementEncodedFromFhir } from '../../data-types/base/BackboneElement'
 import { FhirR4Period } from '../../data-types/complex/Period'
-import { mutableEncoded } from '@assessmentis/util'
 
 export const EncounterStatus = Schema.Union(
   Schema.Literal('planned'),

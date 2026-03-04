@@ -1,7 +1,8 @@
-import { expect, test, describe } from 'vitest'
-import { QuestionnaireResponse } from './QuestionnaireResponse'
-import { Arbitrary, Schema, DateTime } from 'effect'
 import * as fc from 'fast-check'
+import { describe, expect, test } from 'vitest'
+import { Arbitrary, DateTime, Schema } from 'effect'
+
+import { QuestionnaireResponse } from './QuestionnaireResponse'
 
 const questionnaireResponseArb = Arbitrary.make(QuestionnaireResponse)
 

@@ -1,5 +1,4 @@
-import type { FastCheck } from 'effect'
-import { Schema, Arbitrary } from 'effect'
+import { Arbitrary, Schema, type FastCheck } from 'effect'
 
 export const AnnotateArrayWithArbitrary =
   (constraints: FastCheck.ArrayConstraints) =>

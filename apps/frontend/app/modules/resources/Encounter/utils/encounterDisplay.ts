@@ -1,11 +1,13 @@
-import { Encounter } from '@assessmentis/clinical-domain'
 import { Effect } from 'effect'
-import { capitalizeFirst } from '../../../common/utils/fhirDisplay'
+import type { CurrentTimeZone } from 'effect/DateTime'
+
+import { Encounter } from '@assessmentis/clinical-domain'
+
 import {
   humanizeDateTimeForLocalReader,
   humanizeDateTimeRangeForLocalReader,
 } from '../../../common/utils/dateUtils'
-import type { CurrentTimeZone } from 'effect/DateTime'
+import { capitalizeFirst } from '../../../common/utils/fhirDisplay'
 
 /**
  * Get a display-friendly name for an encounter

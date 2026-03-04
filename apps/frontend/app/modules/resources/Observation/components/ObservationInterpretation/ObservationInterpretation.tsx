@@ -1,4 +1,5 @@
 import type { Observation } from '@assessmentis/clinical-domain'
+
 import classes from './ObservationInterpretation.module.css'
 
 interface ObservationInterpretationProps {

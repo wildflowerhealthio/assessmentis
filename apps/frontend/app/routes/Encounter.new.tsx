@@ -1,24 +1,24 @@
-import { useNavigate } from 'react-router'
-import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
-import { EncounterForm } from 'app/modules/resources/Encounter/components/EncounterForm'
-import { createEncounter } from 'app/modules/resources/Encounter/actions/createEncounter'
-import type { EncounterFormSchema } from 'app/modules/resources/Encounter/schemas/EncounterFormSchema'
 import { DateTime, Effect } from 'effect'
-import { QuestionnaireResponseRepository } from '@assessmentis/clinical-domain/repositories'
-import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
-import {
-  EncounterRepository,
-  LocationRepository,
-} from '@assessmentis/clinical-domain/repositories'
-import { usePlatformContext } from '../layers/PlatformContext'
+import { useNavigate } from 'react-router'
+
 import {
   EncounterLocation,
   EncounterParticipant,
 } from '@assessmentis/clinical-domain'
+import { Period, Reference } from '@assessmentis/clinical-domain/data-types'
 import {
-  Period,
-  Reference,
-} from '@assessmentis/clinical-domain/data-types'
+  EncounterRepository,
+  LocationRepository,
+  QuestionnaireResponseRepository,
+} from '@assessmentis/clinical-domain/repositories'
+
+import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
+import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
+import { createEncounter } from 'app/modules/resources/Encounter/actions/createEncounter'
+import { EncounterForm } from 'app/modules/resources/Encounter/components/EncounterForm'
+import type { EncounterFormSchema } from 'app/modules/resources/Encounter/schemas/EncounterFormSchema'
+
+import { usePlatformContext } from '../layers/PlatformContext'
 
 // Provide default values to prevent uncontrolled input warnings
 const defaultValues: Promise<typeof EncounterFormSchema.Encoded> =

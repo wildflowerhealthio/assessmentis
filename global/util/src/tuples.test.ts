@@ -1,5 +1,6 @@
-import { describe, test, expect, expectTypeOf } from 'vitest'
 import * as fc from 'fast-check'
+import { describe, expect, expectTypeOf, test } from 'vitest'
+
 import {
   tupleFilter,
   tupleIndexMap,

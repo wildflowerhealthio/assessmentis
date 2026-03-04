@@ -1,22 +1,27 @@
 import {
   Array,
-  SubscriptionRef,
-  Effect,
-  RequestResolver,
-  Record,
   Deferred,
+  Effect,
+  Request as EffectRequest,
   pipe,
+  Record,
+  RequestResolver,
+  SubscriptionRef,
+  type Stream,
 } from 'effect'
-import { Request as EffectRequest } from 'effect'
-import { type Stream } from 'effect'
 
 import { UnhandledError } from '@assessmentis/ontology'
-import type * as Resource from './Resource'
-import { type ResourcesConstraint, originCanResolve } from './OriginState'
-import type { OriginState, ReadyOrigin } from './OriginState'
-import type * as ResourceRequest from './ResourceRequest'
-import type { ReadonlyUrl } from './ReadonlyUrl'
 import { SideEffect } from '@assessmentis/util'
+
+import {
+  originCanResolve,
+  type OriginState,
+  type ReadyOrigin,
+  type ResourcesConstraint,
+} from './OriginState'
+import type { ReadonlyUrl } from './ReadonlyUrl'
+import type * as Resource from './Resource'
+import type * as ResourceRequest from './ResourceRequest'
 
 // --- Pipeline types ---
 

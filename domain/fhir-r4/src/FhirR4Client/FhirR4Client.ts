@@ -1,12 +1,12 @@
-import type { Effect } from 'effect'
-import { Context } from 'effect'
+import { Context, type Effect } from 'effect'
+
+import type { Bundle } from '@assessmentis/clinical-domain'
 import type {
-  NotFoundError,
-  UnhandledError,
   AuthError,
   AuthzError,
+  NotFoundError,
+  UnhandledError,
 } from '@assessmentis/ontology'
-import type { Bundle } from '@assessmentis/clinical-domain'
 import { type DeepReadonly } from '@assessmentis/util'
 
 export class FhirR4Client extends Context.Tag('BareFhirR4Client')<

@@ -1,10 +1,11 @@
-import {
-  Practitioner,
-  Location,
-  Questionnaire,
-  Patient,
-} from '@assessmentis/clinical-domain'
 import { Schema } from 'effect'
+
+import {
+  Location,
+  Patient,
+  Practitioner,
+  Questionnaire,
+} from '@assessmentis/clinical-domain'
 
 // Form schema for Encounter create/edit
 // Note: This is simpler than CreateEncounterArg which includes video call setup

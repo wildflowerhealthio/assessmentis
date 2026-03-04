@@ -1,5 +1,7 @@
 import type fhir4 from 'fhir/r4'
+
 import type ResourceDataTypes from './ResourceDataTypes'
+
 // import type {
 //   CompositionFromFhirR4,
 //   QuestionnaireFromFhirR4,

@@ -1,5 +1,6 @@
-import { describe, it, expect, expectTypeOf } from 'vitest'
+import { describe, expect, expectTypeOf, it } from 'vitest'
 import { Effect, pipe, Schema } from 'effect'
+
 import { extendObjectSchemas } from './extendObjectSchemas'
 
 describe('extendObjectSchemas', () => {

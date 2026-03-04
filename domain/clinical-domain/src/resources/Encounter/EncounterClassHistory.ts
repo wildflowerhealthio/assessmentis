@@ -1,9 +1,10 @@
 import { Schema } from 'effect'
+
 import {
+  BackboneElement,
   Coding,
   Period,
   type BackboneElementEncoded,
-  BackboneElement,
 } from '../../data-types'
 
 const fields = {

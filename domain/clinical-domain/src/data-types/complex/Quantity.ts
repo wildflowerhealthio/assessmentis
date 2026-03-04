@@ -1,5 +1,7 @@
 import { Schema } from 'effect'
+
 import { MergeClasses } from '@assessmentis/util'
+
 import { Element, type ElementEncoded } from '../base/Element'
 
 const fields = {

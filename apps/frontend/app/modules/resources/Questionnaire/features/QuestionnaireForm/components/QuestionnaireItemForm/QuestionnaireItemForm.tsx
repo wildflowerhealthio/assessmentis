@@ -1,19 +1,21 @@
 'use client'
 
-import type { QuestionnaireItemUIControlCode } from '@assessmentis/clinical-domain'
+import type { SetStateAction } from 'react'
+
 import {
-  type QuestionnaireItem,
-  QuestionnaireResponseItem,
-  type QuestionnaireItemLink,
   getUiControlCode,
   QuestionnaireItemAnswerOption,
+  QuestionnaireResponseItem,
+  type QuestionnaireItem,
+  type QuestionnaireItemLink,
+  type QuestionnaireItemUIControlCode,
 } from '@assessmentis/clinical-domain'
+
 import DisplayQuestionnaireItemForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/components/DisplayQuestionnaireItemForm/DisplayQuestionnaireItemForm'
 import RadioQuestionnaireItemForm, {
   RadioQuestionnaireItemFormGroup,
 } from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/components/RadioQuestionnaireItemForm/RadioQuestionnaireItemForm'
 import TextQuestionnaireItemForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/components/TextQuestionnaireItemForm/TextQuestionnaireItemForm'
-import type { SetStateAction } from 'react'
 
 interface IProps {
   questionnaireItem: QuestionnaireItem

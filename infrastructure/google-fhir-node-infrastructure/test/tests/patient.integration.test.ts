@@ -1,15 +1,17 @@
-import { describe, expect, afterEach, beforeAll } from 'vitest'
+import { afterEach, beforeAll, describe, expect } from 'vitest'
 import { it } from '@effect/vitest'
 import { Effect } from 'effect'
+
 import { FhirR4Client } from '@assessmentis/fhir-r4'
 import { describeAsFhirR4PatientClient } from '@assessmentis/fhir-r4/interface-tests'
+
+import { createTracker } from '../helpers/cleanup'
 import {
   LiveTestLayer,
-  verifyGcloudAuth,
-  testConfig,
   setMswContext,
+  testConfig,
+  verifyGcloudAuth,
 } from '../helpers/test-config'
-import { createTracker } from '../helpers/cleanup'
 
 /**
  * Live E2E tests for Patient CRUD operations against Google Healthcare API.

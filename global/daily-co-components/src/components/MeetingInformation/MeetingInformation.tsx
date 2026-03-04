@@ -4,6 +4,7 @@ import {
   useParticipantIds,
   useRoom,
 } from '@daily-co/daily-react'
+
 import './MeetingInformation.css'
 
 export default function MeetingInformation() {

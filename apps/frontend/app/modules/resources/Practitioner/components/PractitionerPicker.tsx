@@ -1,6 +1,7 @@
 import type { Practitioner } from '@assessmentis/clinical-domain'
-import { formatHumanName } from '../../../common/utils/fhirDisplay'
+
 import { createResourcePicker } from '../../../common/utils/createResourcePicker'
+import { formatHumanName } from '../../../common/utils/fhirDisplay'
 
 function formatQualification(practitioner: {
   qualification?: ReadonlyArray<{ code?: { text?: string } }>

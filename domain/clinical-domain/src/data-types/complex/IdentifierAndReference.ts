@@ -1,12 +1,13 @@
 import { Effect, Schema } from 'effect'
-import type { ElementEncoded } from '../base/'
-import { Element } from '../base/'
-import { CodeableConcept, type CodeableConceptEncoded } from './CodeableConcept'
-import { Period } from './Period'
-import { mergeArbitraries, MergeClasses } from '@assessmentis/util'
+import type { ParseError } from 'effect/ParseResult'
+
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import { ExternalAssertionError } from '@assessmentis/ontology'
-import type { ParseError } from 'effect/ParseResult'
+import { mergeArbitraries, MergeClasses } from '@assessmentis/util'
+
+import { Element, type ElementEncoded } from '../base/'
+import { CodeableConcept, type CodeableConceptEncoded } from './CodeableConcept'
+import { Period } from './Period'
 
 /**
  * Circular dependency note:

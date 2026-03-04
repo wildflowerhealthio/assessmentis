@@ -1,11 +1,13 @@
 import { Schema } from 'effect'
+
+import { mutableEncoded } from '@assessmentis/util'
+
 import { BackboneElementEncodedFromFhir } from '../../data-types/base/BackboneElement'
 import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import {
   FhirR4Identifier,
   FhirR4Reference,
 } from '../../data-types/complex/IdentifierAndReference'
-import { mutableEncoded } from '@assessmentis/util'
 
 export const EncounterHospitalizationEncodedFromFhir = Schema.extend(
   BackboneElementEncodedFromFhir('EncounterHospitalization'),
@@ -14,7 +16,9 @@ export const EncounterHospitalizationEncodedFromFhir = Schema.extend(
       preAdmissionIdentifier: Schema.optional(
         Schema.suspend(() => FhirR4Identifier.EncodedFromExternal)
       ),
-      origin: Schema.optional(Schema.suspend(() => FhirR4Reference.EncodedFromExternal)),
+      origin: Schema.optional(
+        Schema.suspend(() => FhirR4Reference.EncodedFromExternal)
+      ),
       admitSource: Schema.optional(
         Schema.suspend(() => FhirR4CodeableConcept.EncodedFromExternal)
       ),
@@ -23,17 +27,23 @@ export const EncounterHospitalizationEncodedFromFhir = Schema.extend(
       ),
       dietPreference: Schema.optional(
         mutableEncoded(
-          Schema.Array(Schema.suspend(() => FhirR4CodeableConcept.EncodedFromExternal))
+          Schema.Array(
+            Schema.suspend(() => FhirR4CodeableConcept.EncodedFromExternal)
+          )
         )
       ),
       specialCourtesy: Schema.optional(
         mutableEncoded(
-          Schema.Array(Schema.suspend(() => FhirR4CodeableConcept.EncodedFromExternal))
+          Schema.Array(
+            Schema.suspend(() => FhirR4CodeableConcept.EncodedFromExternal)
+          )
         )
       ),
       specialArrangement: Schema.optional(
         mutableEncoded(
-          Schema.Array(Schema.suspend(() => FhirR4CodeableConcept.EncodedFromExternal))
+          Schema.Array(
+            Schema.suspend(() => FhirR4CodeableConcept.EncodedFromExternal)
+          )
         )
       ),
       destination: Schema.optional(

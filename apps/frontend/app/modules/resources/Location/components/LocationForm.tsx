@@ -1,4 +1,9 @@
+import type {
+  LocationMode,
+  LocationStatus,
+} from '@assessmentis/clinical-domain'
 import { applyPartialProps } from '@assessmentis/react-util'
+
 import {
   ResourceForm,
   SelectField,
@@ -6,10 +11,10 @@ import {
   TextField,
 } from 'app/modules/common/components/ResourceForm'
 import type { CommonFieldProps } from 'app/modules/common/components/ResourceForm/ResourceForm'
-import type { LocationStatus, LocationMode } from '@assessmentis/clinical-domain'
+
 import {
-  type LocationFormData,
   LocationFormSchema,
+  type LocationFormData,
 } from '../schemas/LocationFormSchema'
 
 const statusOptions = [

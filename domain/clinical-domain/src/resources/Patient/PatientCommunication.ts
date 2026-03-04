@@ -1,7 +1,8 @@
 import { Schema } from 'effect'
+
 import {
-  CodeableConcept,
   BackboneElement,
+  CodeableConcept,
   type BackboneElementEncoded,
 } from '../../data-types'
 

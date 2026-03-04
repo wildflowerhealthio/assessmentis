@@ -1,7 +1,15 @@
-import type { UserId } from '@assessmentis/platform-domain'
+import {
+  Context,
+  PubSub,
+  type Effect,
+  type Either,
+  type Scope,
+  type Stream,
+  type Take,
+} from 'effect'
+
 import type { AuthError } from '@assessmentis/ontology'
-import type { Effect, Either, Scope, Stream, Take } from 'effect'
-import { Context, PubSub } from 'effect'
+import type { UserId } from '@assessmentis/platform-domain'
 
 export interface AuthData {
   userId: UserId

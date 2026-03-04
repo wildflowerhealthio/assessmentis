@@ -1,8 +1,10 @@
 import { describe, expect } from 'vitest'
 import { it } from '@effect/vitest'
 import { Effect, Layer } from 'effect'
+
 import { FhirR4Client } from '@assessmentis/fhir-r4'
 import { describeAsFhirR4PatientClient } from '@assessmentis/fhir-r4/interface-tests'
+
 import { createTracker } from '../helpers/cleanup'
 import { setupClientOnWindow } from '../helpers/integration-setup'
 

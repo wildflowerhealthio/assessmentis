@@ -1,13 +1,16 @@
 import { Schema } from 'effect'
-import type FhirR4 from 'fhir/r4'
+
 import {
   BackboneElement,
   type BackboneElementEncoded,
 } from '@assessmentis/clinical-domain/data-types'
-import { ElementEncodedFromFhir } from './Element'
-import { FhirR4Extension } from '../special-purpose/Extension'
 import { mutableEncoded } from '@assessmentis/util'
+
+import type FhirR4 from 'fhir/r4'
+
+import { FhirR4Extension } from '../special-purpose/Extension'
 import type { BaseUrl } from '../UrlIdentification'
+import { ElementEncodedFromFhir } from './Element'
 
 export const BackboneElementEncodedFromFhir = <DomainType extends string>(
   domainType: DomainType

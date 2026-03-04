@@ -1,8 +1,10 @@
 import { Schema } from 'effect'
-import { Coding, type CodingEncoded } from './Coding'
-import { Element, type ElementEncoded } from '../base/Element'
+
 import { MergeClasses } from '@assessmentis/util'
+
+import { Element, type ElementEncoded } from '../base/Element'
 import { Datatype } from '../Datatype'
+import { Coding, type CodingEncoded } from './Coding'
 
 export const Key = 'CodeableConcept'
 export type Key = typeof Key

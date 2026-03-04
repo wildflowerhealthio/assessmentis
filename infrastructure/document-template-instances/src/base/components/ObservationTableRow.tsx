@@ -1,4 +1,5 @@
 import React from 'react'
+
 import type { ObservationTableRowProps } from '@assessmentis/document-template-kinds'
 
 export const ObservationTableRow: React.FC<ObservationTableRowProps> = ({

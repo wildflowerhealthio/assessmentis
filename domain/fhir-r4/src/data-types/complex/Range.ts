@@ -1,13 +1,15 @@
 import { Schema } from 'effect'
-import type FhirR4 from 'fhir/r4'
+
 import {
   Range,
   type RangeEncoded,
 } from '@assessmentis/clinical-domain/data-types'
-import type { BaseUrl } from '../UrlIdentification'
+import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
+
+import type FhirR4 from 'fhir/r4'
+
 import { ElementEncodedFromFhir } from '../base/Element'
-import { mutableEncoded } from '@assessmentis/util'
-import { TwoStepExternalSchema } from '@assessmentis/util'
+import type { BaseUrl } from '../UrlIdentification'
 import { FhirR4Quantity } from './Quantity'
 
 const EncodedFromFhir: Schema.Schema<RangeEncoded, FhirR4.Range, BaseUrl> =

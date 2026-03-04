@@ -1,4 +1,5 @@
-import { useMemo, useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
+
 import type { PickerItem } from '../types/PickerTypes'
 
 export interface SinglePickerProps {
@@ -42,7 +43,9 @@ export function usePickerSelection<T>(
   const handleSelect = useCallback(
     (item: PickerItem<T>) => {
       if (props.multiple) {
-        const isCurrentlySelected = normalizedValue.includes(item.url.toString())
+        const isCurrentlySelected = normalizedValue.includes(
+          item.url.toString()
+        )
 
         const newIds = isCurrentlySelected
           ? normalizedValue.filter((id) => id !== item.url.toString())

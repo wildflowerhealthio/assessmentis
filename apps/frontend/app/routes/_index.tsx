@@ -1,4 +1,5 @@
 import { Effect } from 'effect'
+
 import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
 
 export default function Home() {

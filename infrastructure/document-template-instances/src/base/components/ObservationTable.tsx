@@ -1,6 +1,8 @@
 import React from 'react'
-import { ObservationTableRow } from './ObservationTableRow'
+
 import type { ObservationTableComponent } from '@assessmentis/document-template-kinds'
+
+import { ObservationTableRow } from './ObservationTableRow'
 
 export const ObservationTable: ObservationTableComponent = ({
   observationLabel,

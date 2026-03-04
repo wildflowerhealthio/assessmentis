@@ -1,4 +1,5 @@
-import { Schema, Option } from 'effect'
+import { Option, Schema } from 'effect'
+
 import type { BackboneElement } from '../../data-types/base/BackboneElement'
 import { Code } from '../../data-types/complex/Code'
 import { Extension } from '../../data-types/special-purpose/Extension'

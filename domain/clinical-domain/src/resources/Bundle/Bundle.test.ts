@@ -1,7 +1,8 @@
-import { expect, test, describe } from 'vitest'
-import { Bundle } from './Bundle'
-import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
+import { describe, expect, test } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
+
+import { Bundle } from './Bundle'
 
 // Create a concrete Bundle type for testing
 const TestBundle = Bundle.Schema(Schema.String)

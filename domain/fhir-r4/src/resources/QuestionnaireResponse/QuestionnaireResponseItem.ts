@@ -1,16 +1,19 @@
 import { Schema } from 'effect'
-import type FhirR4 from 'fhir/r4'
+
 import {
-  type QuestionnaireResponseItemEncoded,
   type QuestionnaireResponseItemAnswerEncoded,
+  type QuestionnaireResponseItemEncoded,
 } from '@assessmentis/clinical-domain'
 import {
   AllDatatypeKeys,
   DatatypeChoiceEncodedPassthroughFields,
 } from '@assessmentis/clinical-domain/data-types'
+import { mutableEncoded } from '@assessmentis/util'
+
+import type FhirR4 from 'fhir/r4'
+
 import { BackboneElementEncodedFromFhir } from '../../data-types/base/BackboneElement'
 import type { BaseUrl } from '../../data-types/UrlIdentification'
-import { mutableEncoded } from '@assessmentis/util'
 
 const QuestionnaireResponseItemAnswerEncodedFromFhir: Schema.Schema<
   QuestionnaireResponseItemAnswerEncoded,
@@ -23,9 +26,7 @@ const QuestionnaireResponseItemAnswerEncodedFromFhir: Schema.Schema<
       item: Schema.optional(
         mutableEncoded(
           Schema.Array(
-            Schema.suspend(
-              () => QuestionnaireResponseItemEncodedFromFhir
-            )
+            Schema.suspend(() => QuestionnaireResponseItemEncodedFromFhir)
           )
         )
       ),
@@ -48,18 +49,14 @@ export const QuestionnaireResponseItemEncodedFromFhir: Schema.Schema<
       item: Schema.optional(
         mutableEncoded(
           Schema.Array(
-            Schema.suspend(
-              () => QuestionnaireResponseItemEncodedFromFhir
-            )
+            Schema.suspend(() => QuestionnaireResponseItemEncodedFromFhir)
           )
         )
       ),
       answer: Schema.optional(
         mutableEncoded(
           Schema.Array(
-            Schema.suspend(
-              () => QuestionnaireResponseItemAnswerEncodedFromFhir
-            )
+            Schema.suspend(() => QuestionnaireResponseItemAnswerEncodedFromFhir)
           )
         )
       ),

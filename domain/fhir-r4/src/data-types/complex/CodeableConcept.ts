@@ -1,12 +1,16 @@
 import { Schema } from 'effect'
+
+import {
+  CodeableConcept,
+  type CodeableConceptEncoded,
+} from '@assessmentis/clinical-domain/data-types'
+import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
+
 import type FhirR4 from 'fhir/r4'
-import type { CodeableConceptEncoded } from '@assessmentis/clinical-domain/data-types'
-import { CodeableConcept } from '@assessmentis/clinical-domain/data-types'
-import { FhirR4Coding } from './Coding'
-import { mutableEncoded } from '@assessmentis/util'
-import type { BaseUrl } from '../UrlIdentification'
+
 import { ElementEncodedFromFhir } from '../base/Element'
-import { TwoStepExternalSchema } from '@assessmentis/util'
+import type { BaseUrl } from '../UrlIdentification'
+import { FhirR4Coding } from './Coding'
 
 const EncodedFromFhir: Schema.Schema<
   CodeableConceptEncoded,

@@ -1,8 +1,9 @@
+import { Schema } from 'effect'
+
 import {
   ExternalVideoCallRecordingId,
   VideoCallRoomName,
 } from '@assessmentis/video-call-domain'
-import { Schema } from 'effect'
 
 export const ApiDailyCoRecordingSchema = Schema.Struct({
   total_count: Schema.Number,

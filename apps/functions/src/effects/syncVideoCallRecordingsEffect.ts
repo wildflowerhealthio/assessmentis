@@ -1,12 +1,21 @@
-import type { Either } from 'effect'
-import { Effect, Layer, pipe, Request, Schema } from 'effect'
+import { Effect, Layer, pipe, Request, Schema, type Either } from 'effect'
 import { info, error as logError } from 'firebase-functions/logger'
-import type { VideoCallRoomName } from '@assessmentis/video-call-domain'
+
 import {
-  VideoCallClient,
-  type MediaWithRoom,
-} from '@assessmentis/video-call-domain'
+  Media,
+  type Encounter,
+  type Location,
+} from '@assessmentis/clinical-domain'
+import type { Hub, ResourceRequest } from '@assessmentis/effectful-store'
 import { FhirR4Client } from '@assessmentis/fhir-r4'
+import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
+import {
+  BadDataError,
+  NotFoundError,
+  UnhandledError,
+  type AuthError,
+  type ExternalAssertionError,
+} from '@assessmentis/ontology'
 import {
   CurrentOrg,
   DocumentStore,
@@ -14,23 +23,16 @@ import {
   Org,
   OrgSlug,
 } from '@assessmentis/platform-domain'
-import type { ExternalAssertionError, AuthError } from '@assessmentis/ontology'
 import {
-  UnhandledError,
-  NotFoundError,
-  BadDataError,
-} from '@assessmentis/ontology'
-import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
+  VideoCallClient,
+  type MediaWithRoom,
+  type VideoCallRoomName,
+} from '@assessmentis/video-call-domain'
 
-import { FhirR4ClientLayerLive } from '../layers/FhirR4ClientService'
-import type { Location } from '@assessmentis/clinical-domain'
-import type { Encounter } from '@assessmentis/clinical-domain'
-import { Media } from '@assessmentis/clinical-domain'
 import { Reference } from '../../../../domain/clinical-domain/src/data-types/special-purpose'
 import type { ReadonlyUrl } from '../../../../global/effectful-store/src/ReadonlyUrl'
 import type { WithResourceUrl } from '../../../../global/effectful-store/src/Resource'
-import type { ResourceRequest } from '@assessmentis/effectful-store'
-import type { Hub } from '@assessmentis/effectful-store'
+import { FhirR4ClientLayerLive } from '../layers/FhirR4ClientService'
 
 interface SyncOrgResult {
   orgSlug: string

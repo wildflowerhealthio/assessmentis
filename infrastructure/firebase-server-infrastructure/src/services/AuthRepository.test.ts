@@ -1,7 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { Effect, Exit, Cause } from 'effect'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { Cause, Effect, Exit } from 'effect'
+
 import type { UserId } from '@assessmentis/platform-domain'
+
 import { createMockFirestore } from './__tests__/mocks'
+import { AuthRepository } from './AuthRepository'
+import { FirebaseAdmin } from './FirebaseAdmin'
 
 // Mock firebase-admin modules before imports
 const mockFirestore = createMockFirestore()
@@ -18,9 +22,6 @@ vi.mock('firebase-admin/auth', () => ({
 vi.mock('firebase-admin/firestore', () => ({
   getFirestore: vi.fn(() => mockFirestore),
 }))
-
-import { AuthRepository } from './AuthRepository'
-import { FirebaseAdmin } from './FirebaseAdmin'
 
 describe('AuthRepository', () => {
   const testUserId = 'test-user-123' as UserId

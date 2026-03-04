@@ -1,8 +1,10 @@
 import { Schema } from 'effect'
+
+import { mutableEncoded } from '@assessmentis/util'
+
 import { BackboneElementEncodedFromFhir } from '../../data-types/base/BackboneElement'
 import { ResourceEncodedFromFhirR4Resource } from '../../data-types/base/Resource'
 import { FhirR4Identifier } from '../../data-types/complex/IdentifierAndReference'
-import { mutableEncoded } from '@assessmentis/util'
 
 const BundleType = Schema.Enums({
   document: 'document',
@@ -35,11 +37,7 @@ const FhirR4BundleEntrySchema = <BundleContentType, BundleContentEncoded, R>(
 
 export const FhirR4Bundle = {
   Schema: <BundleContentType, BundleContentEncoded, R>(
-    contentTypeSchema: Schema.Schema<
-      BundleContentType,
-      BundleContentEncoded,
-      R
-    >
+    contentTypeSchema: Schema.Schema<BundleContentType, BundleContentEncoded, R>
   ) =>
     Schema.extend(
       ResourceEncodedFromFhirR4Resource('Bundle', 'Bundle'),

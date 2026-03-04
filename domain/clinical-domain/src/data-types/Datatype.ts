@@ -1,7 +1,7 @@
-import type { FastCheck } from 'effect'
-import { Arbitrary, Schema } from 'effect'
-import type FhirR4ChoiceElements from './fhirR4ChoiceElements'
+import { Arbitrary, Schema, type FastCheck } from 'effect'
 import { capitalize } from 'effect/String'
+
+import type FhirR4ChoiceElements from './fhirR4ChoiceElements'
 
 export interface Datatype<out Name extends string, A, I> {
   readonly name: Name

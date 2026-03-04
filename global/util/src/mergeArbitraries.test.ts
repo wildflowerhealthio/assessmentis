@@ -1,6 +1,7 @@
+import * as fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
 import { Arbitrary, FastCheck, Schema } from 'effect'
-import * as fc from 'fast-check'
+
 import { mergeArbitraries } from './mergeArbitraries'
 
 // --- fixtures ---

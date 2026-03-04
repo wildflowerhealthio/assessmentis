@@ -1,10 +1,13 @@
+import * as fc from 'fast-check'
 import { describe, expect, test } from 'vitest'
 import { Arbitrary, Effect, Layer, Schema } from 'effect'
-import type FhirR4 from 'fhir/r4'
-import * as fc from 'fast-check'
-import { ReadonlyUrl } from '@assessmentis/effectful-store'
-import { deepAssignBaseUrls } from '../../deepAssignBaseUrls'
+
 import { Extension } from '@assessmentis/clinical-domain/data-types'
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
+
+import type FhirR4 from 'fhir/r4'
+
+import { deepAssignBaseUrls } from '../../deepAssignBaseUrls'
 import { BaseUrl } from '../UrlIdentification'
 import { FhirR4Extension } from './Extension'
 

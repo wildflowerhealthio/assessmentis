@@ -1,5 +1,4 @@
-import { Coding } from '@assessmentis/clinical-domain/data-types'
-import { Code } from '@assessmentis/clinical-domain/data-types'
+import { Code, Coding } from '@assessmentis/clinical-domain/data-types'
 import { literalOf } from '@assessmentis/util'
 
 const codeLiteral = literalOf(Code)

@@ -1,12 +1,14 @@
 import { Schema } from 'effect'
-import type FhirR4 from 'fhir/r4'
+
 import {
   Address,
   type AddressEncoded,
 } from '@assessmentis/clinical-domain/data-types'
+import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
+
+import type FhirR4 from 'fhir/r4'
+
 import type { BaseUrl } from '../UrlIdentification'
-import { mutableEncoded } from '@assessmentis/util'
-import { TwoStepExternalSchema } from '@assessmentis/util'
 import { FhirR4Period } from './Period'
 
 const EncodedFromFhir: Schema.Schema<AddressEncoded, FhirR4.Address, BaseUrl> =

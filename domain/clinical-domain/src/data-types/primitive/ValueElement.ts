@@ -1,16 +1,17 @@
 import { Schema } from 'effect'
+
 import { Element } from '../base/Element'
-import { Coding, type CodingEncoded } from '../complex/Coding'
+import { Attachment, type AttachmentEncoded } from '../complex/Attachment'
 import { Code } from '../complex/Code'
-import {
-  Reference,
-  type ReferenceEncoded,
-} from '../complex/IdentifierAndReference'
 import {
   CodeableConcept,
   type CodeableConceptEncoded,
 } from '../complex/CodeableConcept'
-import { Attachment, type AttachmentEncoded } from '../complex/Attachment'
+import { Coding, type CodingEncoded } from '../complex/Coding'
+import {
+  Reference,
+  type ReferenceEncoded,
+} from '../complex/IdentifierAndReference'
 import { Quantity, type QuantityEncoded } from '../complex/Quantity'
 
 const valueCode = Element('valueCode')

@@ -1,11 +1,13 @@
-import { useNavigate } from 'react-router'
 import { Effect, type Schema } from 'effect'
+import { useNavigate } from 'react-router'
+
+import type { Schemas } from '@assessmentis/clinical-domain'
+
+import { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
+import { usePlatformContext } from '../../../layers/PlatformContext'
 import { FormPage } from '../../common/components/FormPage/FormPage'
 import { useBreadcrumbs } from '../../global/components/BreadcrumbProvider/useBreadcrumbs'
-import { usePlatformContext } from '../../../layers/PlatformContext'
-import { ClinicalDataRepositoryService } from '../../../layers/ClinicalDataRepositoriesService'
 import type { ResourcePagesConfig } from './resourcePagesConfigType'
-import type { Schemas } from '@assessmentis/clinical-domain'
 
 export const makeCreateResourcePage = <
   TResource extends Schema.Schema.Type<(typeof Schemas)[keyof typeof Schemas]>,

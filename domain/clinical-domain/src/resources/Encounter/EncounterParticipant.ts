@@ -1,20 +1,17 @@
 import { Schema } from 'effect'
+
 import {
+  BackboneElement,
   CodeableConcept,
   Period,
   Reference,
-  BackboneElement,
   type BackboneElementEncoded,
 } from '../../data-types'
 
 const fields = {
-  type: Schema.optional(
-    Schema.Array(Schema.suspend(() => CodeableConcept))
-  ),
+  type: Schema.optional(Schema.Array(Schema.suspend(() => CodeableConcept))),
   period: Schema.optional(Schema.suspend(() => Period)),
-  individual: Schema.optional(
-    Schema.suspend(() => Reference)
-  ),
+  individual: Schema.optional(Schema.suspend(() => Reference)),
 } as const satisfies Schema.Struct.Fields
 
 export interface EncounterParticipantEncoded

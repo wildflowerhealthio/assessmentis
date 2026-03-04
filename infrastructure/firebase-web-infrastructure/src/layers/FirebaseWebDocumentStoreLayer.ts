@@ -1,10 +1,12 @@
-import type { DocumentData } from '@assessmentis/platform-domain'
-import { DocumentStore } from '@assessmentis/platform-domain'
 import { Effect, Either, Layer, Stream } from 'effect'
-import { FirebaseWeb } from '../tagClasses'
+
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
-import { doc, getDoc, onSnapshot, setDoc } from 'firebase/firestore'
+import { DocumentStore, type DocumentData } from '@assessmentis/platform-domain'
 import { unsubscribableCallbackAsStream } from '@assessmentis/util'
+
+import { doc, getDoc, onSnapshot, setDoc } from 'firebase/firestore'
+
+import { FirebaseWeb } from '../tagClasses'
 
 const resourceTypeFromPath = (path: ReadonlyArray<string>) =>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

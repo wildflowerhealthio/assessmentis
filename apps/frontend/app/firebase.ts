@@ -1,15 +1,16 @@
+import { Effect } from 'effect'
+
 import type { FirebaseError } from 'firebase/app'
 import {
-  GoogleAuthProvider,
   getAuth,
   getRedirectResult,
+  GoogleAuthProvider,
   signInWithPopup,
   signInWithRedirect,
 } from 'firebase/auth'
 
-import { auth } from './FirebaseWebLayer'
 import { FirebaseWeb } from '../../../infrastructure/firebase-web-infrastructure/src/tagClasses'
-import { Effect } from 'effect'
+import { auth } from './FirebaseWebLayer'
 
 export const googleAuthProvider = new GoogleAuthProvider()
 

@@ -1,11 +1,15 @@
-import type { ComponentType, ReactNode } from 'react'
-import { Suspense } from 'react'
+import { Suspense, type ComponentType, type ReactNode } from 'react'
 import { Await, Link } from 'react-router'
+
 import { cn } from '@assessmentis/react-util'
+
 import Skeleton from 'react-loading-skeleton'
+
 import 'react-loading-skeleton/dist/skeleton.css'
-import classes from './ResourceListPage.module.css'
+
 import type { ReadonlyUrl } from '@assessmentis/effectful-store'
+
+import classes from './ResourceListPage.module.css'
 
 interface ResourceListPageProps<T extends { url?: ReadonlyUrl }> {
   // Page metadata

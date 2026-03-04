@@ -1,13 +1,14 @@
 import { Schema } from 'effect'
+
 import {
-  CodeableConcept,
-  HumanName,
-  ContactPoint,
   Address,
   AdministrativeGender,
-  Reference,
-  Period,
   BackboneElement,
+  CodeableConcept,
+  ContactPoint,
+  HumanName,
+  Period,
+  Reference,
   type BackboneElementEncoded,
 } from '../../data-types'
 
