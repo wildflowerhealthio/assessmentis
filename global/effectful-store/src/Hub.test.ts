@@ -2,11 +2,16 @@ import { assert, describe, expect, vi } from 'vitest'
 import {
   Array,
   Cause,
+  Chunk,
+  Deferred,
   Effect,
+  Either,
   Exit,
   FastCheck as fc,
+  Fiber,
   Request,
   RequestResolver,
+  Stream,
 } from 'effect'
 import { it } from '@effect/vitest'
 
@@ -690,6 +695,304 @@ describe('Hub', () => {
             hub.resolver
           ).pipe(Effect.asVoid)
           expect(ready.handler).toHaveBeenCalledOnce()
+        })
+    )
+  })
+
+  describe('subscribeTestResource', () => {
+    it.effect.prop(
+      'emits the resource when origin is ready',
+      { ready: arbitraryReadyOrigin(), arbitraryEmptyHubEffect },
+      ({ ready, arbitraryEmptyHubEffect }) =>
+        Effect.gen(function* () {
+          const hub = yield* arbitraryEmptyHubEffect
+          yield* hub.setOriginState(ready.origin)
+
+          const url = ready.url.appendToPathname('/TestResource/1')
+          const results = yield* hub
+            .subscribeTestResource(url)
+            .pipe(Stream.take(1), Stream.runCollect)
+
+          const items = Chunk.toReadonlyArray(results)
+          expect(items).toHaveLength(1)
+          expect(Either.isRight(items[0]!)).toBe(true)
+        })
+    )
+
+    it.effect.prop(
+      'emits Left when no origin matches, then Right when origin becomes available',
+      { ready: arbitraryReadyOrigin(), arbitraryEmptyHubEffect },
+      ({ ready, arbitraryEmptyHubEffect }) =>
+        Effect.gen(function* () {
+          const hub = yield* arbitraryEmptyHubEffect
+          const url = ready.url.appendToPathname('/TestResource/1')
+
+          const latch = yield* Deferred.make<void>()
+          const fiber = yield* hub.subscribeTestResource(url).pipe(
+            Stream.tap(() => Deferred.succeed(latch, void 0)),
+            Stream.take(2),
+            Stream.runCollect,
+            Effect.fork
+          )
+
+          yield* Deferred.await(latch) // ensure subscription is active
+          yield* hub.setOriginState(ready.origin)
+
+          const results = Chunk.toReadonlyArray(yield* Fiber.join(fiber))
+          expect(results).toHaveLength(2)
+          expect(Either.isLeft(results[0]!)).toBe(true)
+          expect(Either.isRight(results[1]!)).toBe(true)
+        })
+    )
+
+    it.effect.prop(
+      're-emits when the matching origin is replaced',
+      {
+        arbitraryEmptyHubEffect,
+        origins: originUrlArb.chain((baseUrl) =>
+          fc.record({
+            first: arbitraryReadyOrigin({ originUrl: fc.constant(baseUrl) }),
+            second: arbitraryReadyOrigin({ originUrl: fc.constant(baseUrl) }),
+          })
+        ),
+      },
+      ({ arbitraryEmptyHubEffect, origins: { first, second } }) =>
+        Effect.gen(function* () {
+          const hub = yield* arbitraryEmptyHubEffect
+          yield* hub.setOriginState(first.origin)
+
+          const resourceUrl = first.url.appendToPathname('/TestResource/1')
+          const latch = yield* Deferred.make<void>()
+          const fiber = yield* hub.subscribeTestResource(resourceUrl).pipe(
+            Stream.tap(() => Deferred.succeed(latch, void 0)),
+            Stream.take(2),
+            Stream.runCollect,
+            Effect.fork
+          )
+
+          yield* Deferred.await(latch)
+          yield* hub.setOriginState(second.origin)
+
+          const results = Chunk.toReadonlyArray(yield* Fiber.join(fiber))
+          expect(results).toHaveLength(2)
+          expect(results.every(Either.isRight)).toBe(true)
+        })
+    )
+
+    it.effect.prop(
+      'does not re-emit when an unrelated origin changes',
+      {
+        arbitraryEmptyHubEffect,
+        origins: fc
+          .record({
+            target: originUrlArb.chain((baseUrl) =>
+              fc.record({
+                first: arbitraryReadyOrigin({
+                  originUrl: fc.constant(baseUrl),
+                }),
+                second: arbitraryReadyOrigin({
+                  originUrl: fc.constant(baseUrl),
+                }),
+              })
+            ),
+            unrelated: originUrlArb.chain((baseUrl) =>
+              fc.record({
+                first: arbitraryReadyOrigin({
+                  originUrl: fc.constant(baseUrl),
+                }),
+                second: arbitraryReadyOrigin({
+                  originUrl: fc.constant(baseUrl),
+                }),
+              })
+            ),
+          })
+          .filter(
+            ({ target, unrelated }) =>
+              !target.first.url.hasChild(unrelated.first.url) &&
+              !unrelated.first.url.hasChild(target.first.url)
+          ),
+      },
+      ({ arbitraryEmptyHubEffect, origins: { target, unrelated } }) =>
+        Effect.gen(function* () {
+          const hub = yield* arbitraryEmptyHubEffect
+          yield* hub.setOriginState(target.first.origin)
+          yield* hub.setOriginState(unrelated.first.origin)
+
+          const resourceUrl =
+            target.first.url.appendToPathname('/TestResource/1')
+          const latch = yield* Deferred.make<void>()
+          const fiber = yield* hub.subscribeTestResource(resourceUrl).pipe(
+            Stream.tap(() => Deferred.succeed(latch, void 0)),
+            Stream.take(2),
+            Stream.runCollect,
+            Effect.fork
+          )
+
+          yield* Deferred.await(latch)
+          // Change unrelated origin (should NOT trigger emission)
+          yield* hub.setOriginState(unrelated.second.origin)
+          // Change target origin (SHOULD trigger emission, completing take(2))
+          yield* hub.setOriginState(target.second.origin)
+
+          const results = Chunk.toReadonlyArray(yield* Fiber.join(fiber))
+          expect(results).toHaveLength(2)
+          expect(results.every(Either.isRight)).toBe(true)
+          // Second emission used the replacement target resolver
+          expect(target.second.handler).toHaveBeenCalledTimes(1)
+        })
+    )
+  })
+
+  describe('subscribeSearchTestResource', () => {
+    it.effect.prop(
+      'emits search results when origins are ready',
+      { arbitraryHubWithAllReadyOriginsEffect },
+      ({ arbitraryHubWithAllReadyOriginsEffect }) =>
+        Effect.gen(function* () {
+          const { hub, origins } = yield* arbitraryHubWithAllReadyOriginsEffect
+
+          const results = yield* hub
+            .subscribeSearchTestResource()
+            .pipe(Stream.take(1), Stream.runCollect)
+
+          const items = Chunk.toReadonlyArray(results)
+          expect(items).toHaveLength(1)
+          expect(Either.isRight(items[0]!)).toBe(true)
+          expect(Either.getOrThrow(items[0]!)).toHaveLength(origins.length)
+        })
+    )
+
+    it.effect.prop(
+      'emits Left when no origins exist, then Right when one is registered',
+      { ready: arbitraryReadyOrigin(), arbitraryEmptyHubEffect },
+      ({ ready, arbitraryEmptyHubEffect }) =>
+        Effect.gen(function* () {
+          const hub = yield* arbitraryEmptyHubEffect
+
+          const latch = yield* Deferred.make<void>()
+          const fiber = yield* hub.subscribeSearchTestResource().pipe(
+            Stream.tap(() => Deferred.succeed(latch, void 0)),
+            Stream.take(2),
+            Stream.runCollect,
+            Effect.fork
+          )
+
+          yield* Deferred.await(latch)
+          yield* hub.setOriginState(ready.origin)
+
+          const results = Chunk.toReadonlyArray(yield* Fiber.join(fiber))
+          expect(results).toHaveLength(2)
+          expect(Either.isLeft(results[0]!)).toBe(true)
+          expect(Either.isRight(results[1]!)).toBe(true)
+        })
+    )
+
+    it.effect.prop(
+      're-emits when a relevant origin is replaced',
+      {
+        arbitraryEmptyHubEffect,
+        origins: originUrlArb.chain((baseUrl) =>
+          fc.record({
+            first: arbitraryReadyOrigin({ originUrl: fc.constant(baseUrl) }),
+            second: arbitraryReadyOrigin({ originUrl: fc.constant(baseUrl) }),
+          })
+        ),
+      },
+      ({ arbitraryEmptyHubEffect, origins: { first, second } }) =>
+        Effect.gen(function* () {
+          const hub = yield* arbitraryEmptyHubEffect
+          yield* hub.setOriginState(first.origin)
+
+          const latch = yield* Deferred.make<void>()
+          const fiber = yield* hub.subscribeSearchTestResource().pipe(
+            Stream.tap(() => Deferred.succeed(latch, void 0)),
+            Stream.take(2),
+            Stream.runCollect,
+            Effect.fork
+          )
+
+          yield* Deferred.await(latch)
+          yield* hub.setOriginState(second.origin)
+
+          const results = Chunk.toReadonlyArray(yield* Fiber.join(fiber))
+          expect(results).toHaveLength(2)
+          expect(results.every(Either.isRight)).toBe(true)
+        })
+    )
+
+    it.effect.prop(
+      'does not re-emit when an origin with unrelated resource types changes',
+      {
+        arbitraryEmptyHubEffect,
+        origins: fc
+          .record({
+            testOnly: originUrlArb.chain((baseUrl) =>
+              fc.record({
+                first: arbitraryReadyOrigin<'TestResource'>({
+                  originUrl: fc.constant(baseUrl),
+                  activeResources: {
+                    TestResource: true,
+                    OtherResource: false,
+                  },
+                }),
+                second: arbitraryReadyOrigin<'TestResource'>({
+                  originUrl: fc.constant(baseUrl),
+                  activeResources: {
+                    TestResource: true,
+                    OtherResource: false,
+                  },
+                }),
+              })
+            ),
+            otherOnly: originUrlArb.chain((baseUrl) =>
+              fc.record({
+                first: arbitraryReadyOrigin<'OtherResource'>({
+                  originUrl: fc.constant(baseUrl),
+                  activeResources: {
+                    OtherResource: true,
+                    TestResource: false,
+                  },
+                }),
+                second: arbitraryReadyOrigin<'OtherResource'>({
+                  originUrl: fc.constant(baseUrl),
+                  activeResources: {
+                    OtherResource: true,
+                    TestResource: false,
+                  },
+                }),
+              })
+            ),
+          })
+          .filter(
+            ({ testOnly, otherOnly }) =>
+              testOnly.first.url.toString() !== otherOnly.first.url.toString()
+          ),
+      },
+      ({ arbitraryEmptyHubEffect, origins: { testOnly, otherOnly } }) =>
+        Effect.gen(function* () {
+          const hub = yield* arbitraryEmptyHubEffect
+          yield* hub.setOriginState(testOnly.first.origin)
+          yield* hub.setOriginState(otherOnly.first.origin)
+
+          const latch = yield* Deferred.make<void>()
+          const fiber = yield* hub.subscribeSearchTestResource().pipe(
+            Stream.tap(() => Deferred.succeed(latch, void 0)),
+            Stream.take(2),
+            Stream.runCollect,
+            Effect.fork
+          )
+
+          yield* Deferred.await(latch)
+          // Change OtherResource-only origin (should NOT trigger re-emit)
+          yield* hub.setOriginState(otherOnly.second.origin)
+          // Change TestResource origin (SHOULD trigger re-emit, completing take(2))
+          yield* hub.setOriginState(testOnly.second.origin)
+
+          const results = Chunk.toReadonlyArray(yield* Fiber.join(fiber))
+          expect(results).toHaveLength(2)
+          expect(results.every(Either.isRight)).toBe(true)
+          // Second emission used the replacement TestResource resolver
+          expect(testOnly.second.handler).toHaveBeenCalledTimes(1)
         })
     )
   })

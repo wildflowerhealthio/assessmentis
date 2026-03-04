@@ -6,12 +6,12 @@ import {
   pipe,
   Record,
   RequestResolver,
+  Stream,
   SubscriptionRef,
-  type Stream,
 } from 'effect'
 
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
-import { SideEffect } from '@assessmentis/util'
+import { SideEffect, StreamEither } from '@assessmentis/util'
 
 import {
   originCanResolve,
@@ -88,9 +88,29 @@ type HubResourceMethods<Resources extends ResourcesConstraint> = {
     never
   >
 } & {
+  readonly [R in keyof Resources & string as `subscribe${R}`]: (
+    url: ReadonlyUrl
+  ) => StreamEither.StreamEither<
+    Resource.WithResourceUrl<Resources[R]>,
+    | ResourceRequest.CommonErrors
+    | NotFoundError<
+        Resources[R]['domainType'],
+        { url: Resource.InferResourceUrl<Resources[R]> }
+      >,
+    never
+  >
+} & {
   readonly [R in keyof Resources & string as `search${R}`]: (
     params?: ResourceRequest.SearchParam<Resources[R]>
   ) => Effect.Effect<
+    ReadonlyArray<Resource.WithResourceUrl<Resources[R]>>,
+    ResourceRequest.CommonErrors,
+    never
+  >
+} & {
+  readonly [R in keyof Resources & string as `subscribeSearch${R}`]: (
+    params?: ResourceRequest.SearchParam<Resources[R]>
+  ) => StreamEither.StreamEither<
     ReadonlyArray<Resource.WithResourceUrl<Resources[R]>>,
     ResourceRequest.CommonErrors,
     never
@@ -412,6 +432,38 @@ const resolveOriginForCreate = <Resources extends ResourcesConstraint>(
         return match
       })
 
+// --- Origin change detection ---
+
+/**
+ * Filters a HubState changes stream to only emit when relevant origins change.
+ *
+ * - `null` matches all origins that support `domainType` (for fan-out search)
+ * - A specific URL matches origins whose `originUrl.hasChild(url)` (for get by URL)
+ *
+ * Uses reference equality on OriginState objects: a new emission passes through
+ * only when the set of matching origins differs in length or identity.
+ */
+const whenOriginChanges = <Resources extends ResourcesConstraint>(
+  stateChanges: Stream.Stream<HubState<Resources>>,
+  domainType: keyof Resources & string,
+  url: ReadonlyUrl | null
+): Stream.Stream<HubState<Resources>> => {
+  const selectRelevant = (state: HubState<Resources>) =>
+    [...state.values()].filter((o) =>
+      url === null ? o.activeResources[domainType] : o.originUrl.hasChild(url)
+    )
+
+  return pipe(
+    stateChanges,
+    Stream.changesWith((prev, next) => {
+      const prevOrigins = selectRelevant(prev)
+      const nextOrigins = selectRelevant(next)
+      if (prevOrigins.length !== nextOrigins.length) return false
+      return prevOrigins.every((o, i) => o === nextOrigins[i])
+    })
+  )
+}
+
 // --- Resource method builder ---
 
 const makeResourceMethods = <
@@ -517,6 +569,48 @@ const makeResourceMethods = <
             }),
             resolver
           ).pipe(Effect.asVoid)
+      ),
+
+    [`subscribe${domainType}`]: (url: ReadonlyUrl) =>
+      pipe(
+        whenOriginChanges(stateRef.changes, domainType, url),
+        Stream.mapEffect(() =>
+          Effect.either(
+            Effect.flatMap(
+              resolveOriginFromUrl(stateRef, url, domainType),
+              (origin) =>
+                Effect.request(
+                  EffectRequest.of<ResourceRequest.Get<T>>()({
+                    _tag: 'Get',
+                    domainType,
+                    url,
+                    origin,
+                  }),
+                  resolver
+                )
+            )
+          )
+        )
+      ),
+
+    [`subscribeSearch${domainType}`]: (
+      params?: ResourceRequest.SearchParam<T>
+    ) =>
+      pipe(
+        whenOriginChanges(stateRef.changes, domainType, null),
+        Stream.mapEffect(() =>
+          Effect.either(
+            Effect.request(
+              EffectRequest.of<ResourceRequest.Search<T>>()({
+                _tag: 'Search',
+                domainType,
+                params: params ?? {},
+                origin: null,
+              }),
+              resolver
+            )
+          )
+        )
       ),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as const as any
