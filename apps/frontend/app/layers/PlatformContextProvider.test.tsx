@@ -80,13 +80,6 @@ vi.mock('./FhirR4ClientService', () => ({
   ),
 }))
 
-vi.mock('./ClinicalDataRepositoriesService', () => ({
-  ClinicalDataRepositoryService: Effect.succeed({
-    repository: {},
-  }),
-  Default: Layer.empty,
-}))
-
 vi.mock('./VideoCallClientService', () => ({
   startVideoCallClientService: vi.fn(() =>
     Effect.succeed({

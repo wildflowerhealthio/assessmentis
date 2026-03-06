@@ -1,6 +1,7 @@
 import { Effect, Schema } from 'effect'
 
 import {
+  ClinicalDomainHub,
   Encounter,
   EncounterLocation,
   Location,
@@ -15,11 +16,6 @@ import {
   Identifier,
   Reference,
 } from '@assessmentis/clinical-domain/data-types'
-import {
-  EncounterRepository,
-  LocationRepository,
-  QuestionnaireResponseRepository,
-} from '@assessmentis/clinical-domain/repositories'
 import type {
   AuthError,
   AuthzError,
@@ -65,13 +61,10 @@ export const createEncounter = (
 ): Effect.Effect<
   CreateEncounterResponse,
   UnhandledError | AuthError | AuthzError | ExternalAssertionError,
-  EncounterRepository | QuestionnaireResponseRepository | LocationRepository
+  ClinicalDomainHub
 > => {
   return Effect.gen(function* () {
-    const encounterRepository = yield* EncounterRepository
-    const questionnaireResponseRepository =
-      yield* QuestionnaireResponseRepository
-    const locationRepository = yield* LocationRepository
+    const hub = yield* ClinicalDomainHub
 
     // TODO: replace with hubs
     const externalVideoCallRoom = { url: undefined }
@@ -80,7 +73,7 @@ export const createEncounter = (
     // })
 
     // Create a standalone Location resource for the video room
-    const videoRoomLocation = yield* locationRepository.create(
+    const videoRoomLocation = yield* hub.createLocation(
       Location.make({
         name: 'Video Room',
         identifier: [
@@ -122,10 +115,10 @@ export const createEncounter = (
       location: [videoRoomEntry],
     })
 
-    const createdEncounter = yield* encounterRepository.create(encounterData)
+    const createdEncounter = yield* hub.createEncounter(encounterData)
 
-    const questionnaireResponsesEffect =
-      questionnaireResponseRepository.createMany(
+    const questionnaireResponseRows =
+      yield* hub.createManyQuestionnaireResponse(
         args.questionnaireResponses.map((questionnaireResponse) =>
           QuestionnaireResponse.make({
             encounter: Reference.make({
@@ -137,23 +130,11 @@ export const createEncounter = (
         )
       )
 
-    const [
-      encounterRow,
-      //rooms,
-      questionnaireResponseRows,
-    ] = yield* Effect.all([
-      Effect.succeed(createdEncounter),
-      // roomInsertsEffect,
-      questionnaireResponsesEffect,
-    ] as const)
-
-    // const videoCallRooms: VideoCallRoom[] = rooms;
     const questionnaireResponses: ReadonlyArray<QuestionnaireResponse> =
       questionnaireResponseRows
 
     return {
-      ...encounterRow,
-      // videoCallRooms,
+      ...createdEncounter,
       questionnaireResponses,
     }
   })

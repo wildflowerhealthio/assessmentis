@@ -2,23 +2,23 @@ import { DateTime, Effect } from 'effect'
 import { useNavigate } from 'react-router'
 
 import {
+  ClinicalDomainHub,
+  Encounter,
   EncounterLocation,
   EncounterParticipant,
 } from '@assessmentis/clinical-domain'
 import { Period, Reference } from '@assessmentis/clinical-domain/data-types'
-import {
-  EncounterRepository,
-  LocationRepository,
-  QuestionnaireResponseRepository,
-} from '@assessmentis/clinical-domain/repositories'
 
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
-import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
+
+import 'app/traits/Link/implementations/Encounter'
+
+import { useBreadcrumbs } from 'app/modules/Breadcrumbs/useBreadcrumbs'
 import { createEncounter } from 'app/modules/resources/Encounter/actions/createEncounter'
 import { EncounterForm } from 'app/modules/resources/Encounter/components/EncounterForm'
 import type { EncounterFormSchema } from 'app/modules/resources/Encounter/schemas/EncounterFormSchema'
 
-import { usePlatformContext } from '../layers/PlatformContext'
+import { useHub } from '../layers/useHub'
 
 // Provide default values to prevent uncontrolled input warnings
 const defaultValues: Promise<typeof EncounterFormSchema.Encoded> =
@@ -32,13 +32,10 @@ const defaultValues: Promise<typeof EncounterFormSchema.Encoded> =
   })
 
 export default function CreateEncounterPage() {
-  const { clinicalDataRepositoryService } = usePlatformContext()
+  const hub = useHub()
   const navigate = useNavigate()
 
-  useBreadcrumbs([
-    { label: 'Encounters', href: '/Encounter' },
-    { label: 'New' },
-  ])
+  useBreadcrumbs(Encounter, { label: 'New' })
 
   const handleSubmit = async (data: typeof EncounterFormSchema.Type) => {
     const encounter = await Effect.runPromise(
@@ -79,24 +76,10 @@ export default function CreateEncounterPage() {
         questionnaireResponses: data.questionnaireUrls.map((questionnaire) => ({
           questionnaire,
         })),
-      }).pipe(
-        Effect.provideServiceEffect(
-          QuestionnaireResponseRepository,
-          clinicalDataRepositoryService.effect.QuestionnaireResponse
-        ),
-        Effect.provideServiceEffect(
-          EncounterRepository,
-          clinicalDataRepositoryService.effect.Encounter
-        ),
-        Effect.provideServiceEffect(
-          LocationRepository,
-          clinicalDataRepositoryService.effect.Location
-        )
-      )
+      }).pipe(Effect.provideService(ClinicalDomainHub, hub))
     )
 
-    // Navigate to the created encounter
-    navigate(`/Encounter/${encounter.url?.toString() ?? ''}`)
+    navigate(encounter.Link)
   }
 
   return (

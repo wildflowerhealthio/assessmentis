@@ -2,17 +2,17 @@ import { Effect } from 'effect'
 import { useState, type SetStateAction } from 'react'
 
 import {
+  ClinicalDomainHub,
   QuestionnaireResponse,
   QuestionnaireResponseItem,
   type Questionnaire,
   type QuestionnaireItemLink,
 } from '@assessmentis/clinical-domain'
-import { QuestionnaireResponseRepository } from '@assessmentis/clinical-domain/repositories'
 import type { ReadonlyUrl } from '@assessmentis/effectful-store'
 
 import { useAutoSave } from 'app/modules/common/hooks/useAutoSave'
 
-import { usePlatformContext } from '../../../../../layers/PlatformContext'
+import { useHub } from '../../../../../layers/useHub'
 import QuestionnaireItemForm from './components/QuestionnaireItemForm/QuestionnaireItemForm'
 
 const hasUrl = <T extends { readonly url?: ReadonlyUrl | undefined }>(
@@ -31,7 +31,7 @@ const QuestionnaireForm = ({
   questionnaireResponse: loadedQuestionnaireResponse,
   highlightLinks,
 }: IProps) => {
-  const { clinicalDataRepositoryService } = usePlatformContext()
+  const hub = useHub()
   const [questionnaireResponse, setQuestionnaireResponse] =
     useState<QuestionnaireResponse>(loadedQuestionnaireResponse)
 
@@ -41,16 +41,10 @@ const QuestionnaireForm = ({
     onSave: async (data) => {
       await Effect.runPromise(
         Effect.gen(function* () {
-          const questionnaireResponseClient =
-            yield* QuestionnaireResponseRepository
+          const h = yield* ClinicalDomainHub
           if (!data || !hasUrl(data)) return
-          return yield* questionnaireResponseClient.update(data)
-        }).pipe(
-          Effect.provideServiceEffect(
-            QuestionnaireResponseRepository,
-            clinicalDataRepositoryService.effect.QuestionnaireResponse
-          )
-        )
+          return yield* h.updateQuestionnaireResponse(data)
+        }).pipe(Effect.provideService(ClinicalDomainHub, hub))
       )
     },
     delay: 5000,

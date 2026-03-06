@@ -23,8 +23,7 @@ export type ResourceType =
   | typeof Questionnaire.DomainType
   | typeof QuestionnaireResponse.DomainType
 
-interface ResourceDataTypes {
-  [key: string]: { domainType: string; url?: ReadonlyUrl }
+type ResourceDataTypes = {
   Composition: Composition
   DiagnosticReport: DiagnosticReport
   Encounter: Encounter

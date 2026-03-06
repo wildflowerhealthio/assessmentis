@@ -1,11 +1,11 @@
 import { Effect } from 'effect'
 
-import type { Encounter, Media } from '@assessmentis/clinical-domain'
-import { Reference } from '@assessmentis/clinical-domain/data-types'
 import {
-  EncounterRepository,
-  MediaRepository,
-} from '@assessmentis/clinical-domain/repositories'
+  ClinicalDomainHub,
+  type Encounter,
+  type Media,
+} from '@assessmentis/clinical-domain'
+import { Reference } from '@assessmentis/clinical-domain/data-types'
 import type { Resource } from '@assessmentis/effectful-store'
 import type {
   AuthError,
@@ -33,15 +33,14 @@ export const updateEncounterRecordingsAndTranscripts = (
   | NotFoundError<'Encounter', { url: Resource.InferResourceUrl<Encounter> }>
   | NotFoundError<'Media', { url: Resource.InferResourceUrl<Media> }>
   | NotFoundError<'Recording', { id: string }>,
-  EncounterRepository | VideoCallClient | MediaRepository
+  ClinicalDomainHub | VideoCallClient
 > => {
   return Effect.gen(function* () {
-    const encounterRepository = yield* EncounterRepository
+    const hub = yield* ClinicalDomainHub
     const videoCalls = yield* VideoCallClient
-    const mediaRepository = yield* MediaRepository
 
     // Get the current encounter
-    const encounter = yield* encounterRepository.get(encounterUrl)
+    const encounter = yield* hub.getEncounter(encounterUrl)
 
     // Extract the room name from the encounter location
     const roomUrl = encounter.location?.[0]?.location?.identifier?.value
@@ -54,7 +53,7 @@ export const updateEncounterRecordingsAndTranscripts = (
     if (!roomName) return encounter
 
     // Fetch all existing Media resources
-    const knownMediaItems = yield* mediaRepository.getMany({
+    const knownMediaItems = yield* hub.searchMedia({
       encounter: `Encounter/${encounterUrl}`,
     })
 
@@ -89,11 +88,7 @@ export const updateEncounterRecordingsAndTranscripts = (
       }
     }
 
-    // Update existing Media resources with fresh URLs
-    // TODO: Investigate bulk update support in MediaRepository
-    for (const media of updatedMedia) {
-      yield* mediaRepository.update(media)
-    }
+    yield* Effect.all(updatedMedia.map((media) => hub.updateMedia(media)))
 
     // Create new Media resources linked to the encounter
     const encounterRef = Reference.make({
@@ -105,7 +100,7 @@ export const updateEncounterRecordingsAndTranscripts = (
     }))
 
     if (mediaToCreate.length > 0) {
-      yield* mediaRepository.createMany(mediaToCreate)
+      yield* hub.createManyMedia(mediaToCreate)
     }
 
     return encounter

@@ -1,5 +1,19 @@
-import { practitionerConfig } from 'app/modules/resources/Practitioner/resourcePagesConfig'
-import { makeCreateResourcePage } from 'app/modules/resources/ResourcePages/makeCreateResourcePage'
+import { Practitioner } from '@assessmentis/clinical-domain'
 
-const PractitionerNewPage = makeCreateResourcePage(practitionerConfig)
-export default PractitionerNewPage
+import 'app/traits/BreadcrumbLabel/implementations/Practitioner'
+import 'app/traits/Labeled/implementations/Practitioner'
+import 'app/traits/Link/implementations/Practitioner'
+
+import { CreateResourcePage } from 'app/modules/forms/CreateResourcePage'
+import { PractitionerForm } from 'app/modules/forms/Practitioner/PractitionerForm'
+import { PractitionerFormData } from 'app/modules/forms/Practitioner/PractitionerFormData'
+
+export default function PractitionerNewPage() {
+  return (
+    <CreateResourcePage
+      klass={Practitioner}
+      Form={PractitionerFormData}
+      FormComponent={PractitionerForm}
+    />
+  )
+}

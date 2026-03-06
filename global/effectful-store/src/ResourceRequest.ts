@@ -20,7 +20,7 @@ export type CommonErrors =
   | ExternalAssertionError
 
 export interface Get<
-  TResource extends Resource.AnyResource,
+  out TResource extends Resource.AnyResource,
 > extends Request.Request<
   Resource.WithResourceUrl<TResource>,
   | CommonErrors

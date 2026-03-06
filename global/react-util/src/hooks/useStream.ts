@@ -3,9 +3,9 @@ import { useEffect } from 'react'
 
 import { useStatePromise } from './effectHooks'
 
-export const useStream = <A, E>(
+export function useStream<A, E>(
   stream: Stream.Stream<A, E, Scope.Scope>
-): Promise<A> => {
+): Promise<A> {
   const [promise, { resolve, reject, reset }] = useStatePromise<A>()
 
   useEffect(() => {

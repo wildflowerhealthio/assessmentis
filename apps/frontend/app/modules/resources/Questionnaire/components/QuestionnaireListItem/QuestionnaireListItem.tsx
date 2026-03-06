@@ -21,8 +21,8 @@ export function QuestionnaireListItem({
     <ResourceListItem
       displayName={displayName}
       summaryItems={[` Status: ${status}`]}
-      viewPath={`/Questionnaire/${item.url?.toString()}`}
-      editPath={`/Questionnaire/${item.url?.toString()}`}
+      viewPath={`/Questionnaire/${item.url?.asUriComponent() ?? ''}`}
+      editPath={`/Questionnaire/${item.url?.asUriComponent() ?? ''}`}
       onDelete={onDelete}
       loading={loading}
     />

@@ -24,8 +24,8 @@ import * as firebase from 'app/firebase'
 
 import * as auth from './FirebaseWebLayer'
 import { PlatformContextProvider } from './layers/PlatformContextProvider'
+import { BreadcrumbProvider } from './modules/Breadcrumbs/BreadcrumbProvider'
 import { PageLoader } from './modules/common/components/PageLoader/PageLoader'
-import { BreadcrumbProvider } from './modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
 import { shouldShowRawData } from './util/debugHelpers'
 
 // HydrateFallback is rendered while the client loader is running

@@ -1,13 +1,13 @@
 import { DateTime, Effect } from 'effect'
 
 import {
+  ClinicalDomainHub,
   EncounterLocation,
   EncounterParticipant,
   isVirtualLocation,
   type Encounter,
 } from '@assessmentis/clinical-domain'
 import { Period, Reference } from '@assessmentis/clinical-domain/data-types'
-import { EncounterRepository } from '@assessmentis/clinical-domain/repositories'
 import type { ReadonlyUrl, Resource } from '@assessmentis/effectful-store'
 import type {
   AuthError,
@@ -29,10 +29,10 @@ export const updateEncounter = (
   | AuthzError
   | ExternalAssertionError
   | NotFoundError<'Encounter', { url: ReadonlyUrl }>,
-  EncounterRepository
+  ClinicalDomainHub
 > => {
   return Effect.gen(function* () {
-    const repository = yield* EncounterRepository
+    const hub = yield* ClinicalDomainHub
 
     // Build updated encounter with form data
     const updatedEncounter: Resource.WithResourceUrl<Encounter> = {
@@ -80,6 +80,6 @@ export const updateEncounter = (
       ],
     }
 
-    return yield* repository.update(updatedEncounter)
+    return yield* hub.updateEncounter(updatedEncounter)
   })
 }

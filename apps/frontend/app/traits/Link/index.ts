@@ -1,0 +1,7 @@
+export * from './implementations/Composition'
+export * from './implementations/Encounter'
+export * from './implementations/Location'
+export * from './implementations/Observation'
+export * from './implementations/Patient'
+export * from './implementations/Practitioner'
+export * from './Link'

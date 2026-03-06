@@ -13,9 +13,9 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { useStream } from './useStream'
 
-export const useEitherStream = <A, E>(
+export function useEitherStream<A, E>(
   stream: Stream.Stream<Either.Either<A, E>, never, Scope.Scope>
-): Promise<A> => {
+): Promise<A> {
   const eitherPromise = useStream(stream)
 
   return useMemo(
@@ -85,9 +85,15 @@ export const useStatePromise = <A>() => {
 
   return [promise, callbacks] as const
 }
-export const useEffectTs = <A, E>(
+export function useEffectTs<A, E>(
+  effect: Effect.Effect<A, E, never>
+): Promise<A>
+export function useEffectTs<A, E>(
   effect: Effect.Effect<A, E, Scope.Scope>
-): Promise<A> => {
+): Promise<A>
+export function useEffectTs<A, E>(
+  effect: Effect.Effect<A, E, Scope.Scope> | Effect.Effect<A, E, never>
+): Promise<A> {
   const [promise, { resolve, reject, reset }] = useStatePromise<A>()
 
   useEffect(() => {

@@ -1,10 +1,9 @@
 export * from './DeepReadonly'
 export * from './DeepWriteable'
 export * from './NotEmpty'
+export * from './Simplify'
 export * from './TupleToIntersection'
 export * from './tuples'
-
-export type Simplfy<T> = { [K in keyof T]: T[K] } & {}
 
 /**
  * Make all properties in T optional

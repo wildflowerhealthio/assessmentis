@@ -1,12 +1,13 @@
 import { createContext, useContext } from 'react'
 
+import type { ResourceDataTypes } from '@assessmentis/clinical-domain'
+import type { Hub } from '@assessmentis/effectful-store'
 import type {
   AuthDataService,
   OrgService,
   UserService,
 } from '@assessmentis/platform-domain'
 
-import type { ClinicalDataRepositoryService } from './ClinicalDataRepositoriesService'
 import type { FhirR4ClientService } from './FhirR4ClientService'
 
 export interface PlatformContext {
@@ -14,7 +15,7 @@ export interface PlatformContext {
   orgService: typeof OrgService.Service
   userService: typeof UserService.Service
   fhirR4ClientService: typeof FhirR4ClientService.Service
-  clinicalDataRepositoryService: typeof ClinicalDataRepositoryService.Service
+  hub: Hub.Hub<ResourceDataTypes>
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

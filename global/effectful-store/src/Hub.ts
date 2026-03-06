@@ -8,10 +8,11 @@ import {
   RequestResolver,
   Stream,
   SubscriptionRef,
+  type Either,
 } from 'effect'
 
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
-import { SideEffect, StreamEither } from '@assessmentis/util'
+import { SideEffect } from '@assessmentis/util'
 
 import {
   originCanResolve,
@@ -73,9 +74,116 @@ export type Hub<Resources extends ResourcesConstraint> = {
     AnyRequest<Resources>,
     never
   >
-} & HubResourceMethods<Resources>
+} & NamedResourceRepositoryMethods<Resources> &
+  MultiResourceRepository<Resources>
+export interface ResourceRepository<
+  TResource extends Resource.Resource<string>,
+> {
+  readonly get: (
+    url: ReadonlyUrl
+  ) => Effect.Effect<
+    Resource.WithResourceUrl<TResource>,
+    | ResourceRequest.CommonErrors
+    | NotFoundError<
+        TResource['domainType'],
+        { url: Resource.InferResourceUrl<TResource> }
+      >,
+    never
+  >
+  readonly subscribe: (
+    url: ReadonlyUrl
+  ) => Stream.Stream<
+    Either.Either<
+      Resource.WithResourceUrl<TResource>,
+      | ResourceRequest.CommonErrors
+      | NotFoundError<
+          TResource['domainType'],
+          { url: Resource.InferResourceUrl<TResource> }
+        >
+    >,
+    never,
+    never
+  >
+  readonly search: (
+    params?: ResourceRequest.SearchParam<TResource>
+  ) => Effect.Effect<
+    ReadonlyArray<Resource.WithResourceUrl<TResource>>,
+    ResourceRequest.CommonErrors,
+    never
+  >
+  readonly subscribeSearch: (
+    params?: ResourceRequest.SearchParam<TResource>
+  ) => Stream.Stream<
+    Either.Either<
+      ReadonlyArray<Resource.WithResourceUrl<TResource>>,
+      ResourceRequest.CommonErrors
+    >,
+    never,
+    never
+  >
+  readonly create: (
+    resource: TResource,
+    origin?: ReadonlyUrl
+  ) => Effect.Effect<
+    Resource.WithResourceUrl<TResource>,
+    ResourceRequest.CommonErrors,
+    never
+  >
+  readonly createMany: (
+    resources: ReadonlyArray<TResource>,
+    origin?: ReadonlyUrl
+  ) => Effect.Effect<
+    ReadonlyArray<Resource.WithResourceUrl<TResource>>,
+    ResourceRequest.CommonErrors,
+    never
+  >
+  readonly update: (
+    resource: Resource.WithResourceUrl<TResource>
+  ) => Effect.Effect<
+    Resource.WithResourceUrl<TResource>,
+    | ResourceRequest.CommonErrors
+    | NotFoundError<
+        TResource['domainType'],
+        { url: Resource.InferResourceUrl<TResource> }
+      >,
+    never
+  >
+  readonly delete: (
+    url: ReadonlyUrl
+  ) => Effect.Effect<
+    void,
+    | ResourceRequest.CommonErrors
+    | NotFoundError<
+        TResource['domainType'],
+        { url: Resource.InferResourceUrl<TResource> }
+      >,
+    never
+  >
+}
 
-type HubResourceMethods<Resources extends ResourcesConstraint> = {
+export type MultiResourceRepository<Resources extends ResourcesConstraint> = {
+  [K in keyof ResourceRepository<Resource.Resource<string>>]: <
+    R extends keyof Resources & string,
+  >(
+    domainType: R,
+    ...args: Parameters<ResourceRepository<Resources[R]>[K]>
+  ) => ReturnType<ResourceRepository<Resources[R]>[K]>
+}
+
+type Cross<A extends string, B extends string> = {
+  [a in A]: {
+    [b in B]: [a, b]
+  }[B]
+}[A]
+
+type NamedResourceRepositoryMethods<Resources extends ResourcesConstraint> = {
+  readonly [M in Cross<
+    keyof MultiResourceRepository<Resources>,
+    keyof Resources & string
+  > as `${M[0]}${M[1]}`]: ResourceRepository<Resources[M[1]]>[M[0]]
+}
+
+/*& {
   readonly [R in keyof Resources & string as `get${R}`]: (
     url: ReadonlyUrl
   ) => Effect.Effect<
@@ -90,13 +198,16 @@ type HubResourceMethods<Resources extends ResourcesConstraint> = {
 } & {
   readonly [R in keyof Resources & string as `subscribe${R}`]: (
     url: ReadonlyUrl
-  ) => StreamEither.StreamEither<
-    Resource.WithResourceUrl<Resources[R]>,
-    | ResourceRequest.CommonErrors
-    | NotFoundError<
-        Resources[R]['domainType'],
-        { url: Resource.InferResourceUrl<Resources[R]> }
-      >,
+  ) => Stream.Stream<
+    Either.Either<
+      Resource.WithResourceUrl<Resources[R]>,
+      | ResourceRequest.CommonErrors
+      | NotFoundError<
+          Resources[R]['domainType'],
+          { url: Resource.InferResourceUrl<Resources[R]> }
+        >
+    >,
+    never,
     never
   >
 } & {
@@ -110,9 +221,12 @@ type HubResourceMethods<Resources extends ResourcesConstraint> = {
 } & {
   readonly [R in keyof Resources & string as `subscribeSearch${R}`]: (
     params?: ResourceRequest.SearchParam<Resources[R]>
-  ) => StreamEither.StreamEither<
-    ReadonlyArray<Resource.WithResourceUrl<Resources[R]>>,
-    ResourceRequest.CommonErrors,
+  ) => Stream.Stream<
+    Either.Either<
+      ReadonlyArray<Resource.WithResourceUrl<Resources[R]>>,
+      ResourceRequest.CommonErrors
+    >,
+    never,
     never
   >
 } & {
@@ -157,7 +271,7 @@ type HubResourceMethods<Resources extends ResourcesConstraint> = {
       >,
     never
   >
-}
+} */
 
 // --- Resolver pipeline ---
 
@@ -464,25 +578,19 @@ const whenOriginChanges = <Resources extends ResourcesConstraint>(
   )
 }
 
-// --- Resource method builder ---
+// --- MultiResourceRepository method builder ---
 
-const makeResourceMethods = <
-  Resources extends ResourcesConstraint,
-  K extends keyof Resources & string,
->(
-  domainType: K,
+const makeMultiResourceRepository = <Resources extends ResourcesConstraint>(
   stateRef: SubscriptionRef.SubscriptionRef<HubState<Resources>>,
   resolver: RequestResolver.RequestResolver<AnyRequest<Resources>, never>
-): HubResourceMethods<Pick<Resources, K>> => {
-  type T = Resources[K]
-
+): MultiResourceRepository<Resources> => {
   return {
-    [`get${domainType}`]: (url: ReadonlyUrl) =>
-      Effect.flatMap(
+    get<R extends keyof Resources & string>(domainType: R, url: ReadonlyUrl) {
+      return Effect.flatMap(
         resolveOriginFromUrl(stateRef, url, domainType),
         (origin) =>
           Effect.request(
-            EffectRequest.of<ResourceRequest.Get<T>>()({
+            EffectRequest.of<ResourceRequest.Get<Resources[R]>>()({
               _tag: 'Get',
               domainType,
               url,
@@ -490,25 +598,33 @@ const makeResourceMethods = <
             }),
             resolver
           )
-      ),
-
-    [`search${domainType}`]: (params?: ResourceRequest.SearchParam<T>) =>
-      Effect.request(
-        EffectRequest.of<ResourceRequest.Search<T>>()({
+      )
+    },
+    search<R extends keyof Resources & string>(
+      domainType: R,
+      params?: ResourceRequest.SearchParam<Resources[R]>
+    ) {
+      return Effect.request(
+        EffectRequest.of<ResourceRequest.Search<Resources[R]>>()({
           _tag: 'Search',
           domainType,
           params: params ?? {},
           origin: null,
         }),
         resolver
-      ),
+      )
+    },
 
-    [`create${domainType}`]: (resource: T, origin?: ReadonlyUrl) =>
-      Effect.flatMap(
+    create<R extends keyof Resources & string>(
+      domainType: R,
+      resource: Resources[R],
+      origin?: ReadonlyUrl
+    ) {
+      return Effect.flatMap(
         resolveOriginForCreate(stateRef, domainType, origin),
         (resolvedOrigin) =>
           Effect.request(
-            EffectRequest.of<ResourceRequest.Create<T>>()({
+            EffectRequest.of<ResourceRequest.Create<Resources[R]>>()({
               _tag: 'Create',
               domainType,
               resource,
@@ -516,19 +632,21 @@ const makeResourceMethods = <
             }),
             resolver
           )
-      ),
+      )
+    },
 
-    [`createMany${domainType}`]: (
-      resources: ReadonlyArray<T>,
+    createMany<R extends keyof Resources & string>(
+      domainType: R,
+      resources: ReadonlyArray<Resources[R]>,
       origin?: ReadonlyUrl
-    ) =>
-      Effect.flatMap(
+    ) {
+      return Effect.flatMap(
         resolveOriginForCreate(stateRef, domainType, origin),
         (resolvedOrigin) =>
           Effect.all(
             resources.map((resource) =>
               Effect.request(
-                EffectRequest.of<ResourceRequest.Create<T>>()({
+                EffectRequest.of<ResourceRequest.Create<Resources[R]>>()({
                   _tag: 'Create',
                   domainType,
                   resource,
@@ -539,14 +657,18 @@ const makeResourceMethods = <
             ),
             { concurrency: 'unbounded' }
           )
-      ),
+      )
+    },
 
-    [`update${domainType}`]: (resource: Resource.WithResourceUrl<T>) =>
-      Effect.flatMap(
+    update<R extends keyof Resources & string>(
+      domainType: R,
+      resource: Resource.WithResourceUrl<Resources[R]>
+    ) {
+      return Effect.flatMap(
         resolveOriginFromUrl(stateRef, resource.url, domainType),
         (origin) =>
           Effect.request(
-            EffectRequest.of<ResourceRequest.Update<T>>()({
+            EffectRequest.of<ResourceRequest.Update<Resources[R]>>()({
               _tag: 'Update',
               domainType,
               resource,
@@ -554,14 +676,18 @@ const makeResourceMethods = <
             }),
             resolver
           )
-      ),
+      )
+    },
 
-    [`delete${domainType}`]: (url: ReadonlyUrl) =>
-      Effect.flatMap(
+    delete<R extends keyof Resources & string>(
+      domainType: R,
+      url: ReadonlyUrl
+    ) {
+      return Effect.flatMap(
         resolveOriginFromUrl(stateRef, url, domainType),
         (origin) =>
           Effect.request(
-            EffectRequest.of<ResourceRequest.Delete<T>>()({
+            EffectRequest.of<ResourceRequest.Delete<Resources[R]>>()({
               _tag: 'Delete',
               domainType,
               resource: { url },
@@ -569,49 +695,59 @@ const makeResourceMethods = <
             }),
             resolver
           ).pipe(Effect.asVoid)
-      ),
+      )
+    },
 
-    [`subscribe${domainType}`]: (url: ReadonlyUrl) =>
-      pipe(
+    subscribe<R extends keyof Resources & string>(
+      domainType: R,
+      url: ReadonlyUrl
+    ) {
+      return pipe(
         whenOriginChanges(stateRef.changes, domainType, url),
-        Stream.mapEffect(() =>
-          Effect.either(
-            Effect.flatMap(
-              resolveOriginFromUrl(stateRef, url, domainType),
-              (origin) =>
-                Effect.request(
-                  EffectRequest.of<ResourceRequest.Get<T>>()({
-                    _tag: 'Get',
-                    domainType,
-                    url,
-                    origin,
-                  }),
-                  resolver
-                )
-            )
-          )
-        )
-      ),
-
-    [`subscribeSearch${domainType}`]: (
-      params?: ResourceRequest.SearchParam<T>
-    ) =>
-      pipe(
+        Stream.mapEffect(() => Effect.either(this.get(domainType, url)))
+      )
+    },
+    subscribeSearch<R extends keyof Resources & string>(
+      domainType: R,
+      params?: ResourceRequest.SearchParam<Resources[R]>
+    ) {
+      return pipe(
         whenOriginChanges(stateRef.changes, domainType, null),
-        Stream.mapEffect(() =>
-          Effect.either(
-            Effect.request(
-              EffectRequest.of<ResourceRequest.Search<T>>()({
-                _tag: 'Search',
-                domainType,
-                params: params ?? {},
-                origin: null,
-              }),
-              resolver
-            )
-          )
-        )
-      ),
+        Stream.mapEffect(() => Effect.either(this.search(domainType, params)))
+      )
+    },
+  }
+}
+// --- Named resource method builder ---
+
+const makeNamedResourceMethods = <
+  Resources extends ResourcesConstraint,
+  K extends keyof Resources & string,
+>(
+  domainType: K,
+  generic: MultiResourceRepository<Resources>
+): NamedResourceRepositoryMethods<Pick<Resources, K>> => {
+  return {
+    [`get${domainType}`]: (url: ReadonlyUrl) => generic.get(domainType, url),
+    [`search${domainType}`]: (
+      params?: ResourceRequest.SearchParam<Resources[K]>
+    ) => generic.search(domainType, params),
+    [`create${domainType}`]: (resource: Resources[K], origin?: ReadonlyUrl) =>
+      generic.create(domainType, resource, origin),
+    [`createMany${domainType}`]: (
+      resources: ReadonlyArray<Resources[K]>,
+      origin?: ReadonlyUrl
+    ) => generic.createMany(domainType, resources, origin),
+    [`update${domainType}`]: (
+      resource: Resource.WithResourceUrl<Resources[K]>
+    ) => generic.update(domainType, resource),
+    [`delete${domainType}`]: (url: ReadonlyUrl) =>
+      generic.delete(domainType, url),
+    [`subscribe${domainType}`]: (url: ReadonlyUrl) =>
+      generic.subscribe(domainType, url),
+    [`subscribeSearch${domainType}`]: (
+      params?: ResourceRequest.SearchParam<Resources[K]>
+    ) => generic.subscribeSearch(domainType, params),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as const as any
 }
@@ -655,6 +791,8 @@ export const makeHub = <Resources extends ResourcesConstraint>(
       })
     )
 
+    const generic = makeMultiResourceRepository(stateRef, resolver)
+
     const hub = {
       changes: stateRef.changes,
 
@@ -675,15 +813,17 @@ export const makeHub = <Resources extends ResourcesConstraint>(
         }),
 
       resolver,
+
+      ...generic,
     }
 
-    let methods = {}
+    let namedMethods = {}
     for (const key of resourceKeys) {
-      methods = Object.assign(
-        methods,
-        makeResourceMethods(key, stateRef, resolver)
+      namedMethods = Object.assign(
+        namedMethods,
+        makeNamedResourceMethods(key, generic)
       )
     }
 
-    return Object.assign(hub, methods) as Hub<Resources>
+    return Object.assign(hub, namedMethods) as Hub<Resources>
   })

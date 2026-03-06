@@ -1,4 +1,5 @@
 import { assert, describe, expect, vi } from 'vitest'
+import { it } from '@effect/vitest'
 import {
   Array,
   Cause,
@@ -13,7 +14,6 @@ import {
   RequestResolver,
   Stream,
 } from 'effect'
-import { it } from '@effect/vitest'
 
 import {
   AuthError,

@@ -23,8 +23,8 @@ export function QuestionnaireResponseListItem({
     <ResourceListItem
       displayName={displayName}
       summaryItems={lastUpdated ? [`Updated: ${lastUpdated}`] : []}
-      viewPath={`/QuestionnaireResponse/${item.url?.toString()}`}
-      editPath={`/QuestionnaireResponse/${item.url?.toString()}`}
+      viewPath={`/QuestionnaireResponse/${item.url?.asUriComponent() ?? ''}`}
+      editPath={`/QuestionnaireResponse/${item.url?.asUriComponent() ?? ''}`}
       onDelete={onDelete}
       loading={loading}
     />

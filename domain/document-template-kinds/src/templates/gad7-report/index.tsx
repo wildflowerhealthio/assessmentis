@@ -2,9 +2,11 @@ import { string } from 'fast-check'
 import { Effect } from 'effect'
 import type { JSX } from 'react'
 
-import type { Observation } from '@assessmentis/clinical-domain'
+import {
+  ClinicalDomainHub,
+  type Observation,
+} from '@assessmentis/clinical-domain'
 import type { Reference } from '@assessmentis/clinical-domain/data-types'
-import { ObservationRepository } from '@assessmentis/clinical-domain/repositories'
 import type { Resource } from '@assessmentis/effectful-store'
 import { gad7 } from '@assessmentis/questionnaire-entities'
 
@@ -20,12 +22,12 @@ export const gad7Report = (
     },
   }: ComponentFamily,
   patientReference: Reference
-): Effect.Effect<JSX.Element, unknown, ObservationRepository> =>
+): Effect.Effect<JSX.Element, unknown, ClinicalDomainHub> =>
   Effect.gen(function* () {
-    const observationRepository = yield* ObservationRepository
+    const hub = yield* ClinicalDomainHub
     const title = <TitleComponent title="GAD-7 Report" />
 
-    const observations = yield* observationRepository.getMany({
+    const observations = yield* hub.search('Observation', {
       subject: patientReference.reference,
     } as const)
 

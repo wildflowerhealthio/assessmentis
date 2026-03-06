@@ -1,6 +1,19 @@
-import { observationConfig } from 'app/modules/resources/Observation/resourcePagesConfig'
-import { makeCreateResourcePage } from 'app/modules/resources/ResourcePages/makeCreateResourcePage'
+import { Observation } from '@assessmentis/clinical-domain'
 
-const ObservationNewPage = makeCreateResourcePage(observationConfig)
+import 'app/traits/BreadcrumbLabel/implementations/Observation'
+import 'app/traits/Labeled/implementations/Observation'
+import 'app/traits/Link/implementations/Observation'
 
-export default ObservationNewPage
+import { CreateResourcePage } from 'app/modules/forms/CreateResourcePage'
+import { ObservationForm } from 'app/modules/forms/Observation/ObservationForm'
+import { ObservationFormData } from 'app/modules/forms/Observation/ObservationFormData'
+
+export default function ObservationNewPage() {
+  return (
+    <CreateResourcePage
+      klass={Observation}
+      Form={ObservationFormData}
+      FormComponent={ObservationForm}
+    />
+  )
+}

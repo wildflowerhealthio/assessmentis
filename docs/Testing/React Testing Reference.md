@@ -53,26 +53,29 @@ await waitFor(() => {
 Create factories to reduce boilerplate for complex mocks:
 
 ```typescript
-const createMockPlatformContext = (
-  overrides: {
-    activeOrgStream?: Stream.Stream<Either.Either<Org, Error>>
-    activeOrg?: Effect.Effect<Org | null>
-    userOrgs?: Record<string, string>
-  } = {}
-) => ({
-  authDataService: {} as any,
-  orgService: {
-    activeOrgStream: overrides.activeOrgStream ?? Stream.empty,
-    activeOrg: overrides.activeOrg ?? Effect.succeed(mockOrg),
-    setActiveOrgSlug: mockSetActiveOrgSlug,
-  } as any,
-  userService: {
-    user: Effect.succeed({
-      org_roles: overrides.userOrgs ?? { 'test-org': 'admin' },
+import { createMockPlatformContext, createMockHub } from '~/test-utils'
+
+// Use the built-in createMockPlatformContext
+vi.mocked(usePlatformContext).mockReturnValue(
+  createMockPlatformContext({
+    activeOrgStream: Stream.succeed(Either.right(mockOrg)),
+    activeOrg: Effect.succeed(mockOrg),
+    userOrgs: { 'test-org': 'admin' },
+  })
+)
+
+// Or provide a custom hub mock
+vi.mocked(usePlatformContext).mockReturnValue(
+  createMockPlatformContext({
+    hub: createMockHub({
+      get: vi.fn(() => Effect.succeed(mockResource)),
+      subscribe: vi.fn(() => Stream.succeed(Either.right(mockResource))),
     }),
-  } as any,
-})
+  })
+)
 ```
+
+The `createMockHub` helper provides sensible defaults for all Hub methods. Override only what you need for your test.
 
 ## Testing Hooks with Effects
 

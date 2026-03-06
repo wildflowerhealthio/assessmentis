@@ -32,10 +32,8 @@ import { PageLoader } from '../modules/common/components/PageLoader/PageLoader'
 import NavHeaderContainer, {
   TextHeader,
 } from '../modules/global/components/NavHeader/NavHeader'
-import { ClinicalDataRepositoryService } from './ClinicalDataRepositoriesService'
 import {
   createFhirR4ClientPubSub,
-  FhirR4ClientService,
   startFhirR4ClientService,
 } from './FhirR4ClientService'
 import { PlatformlessErrorFallback } from './PlatformAwareErrorFallback'
@@ -73,21 +71,11 @@ const platformEffect = Effect.gen(function* () {
     hub
   )
 
-  const clinicalDataRepositoryService =
-    yield* ClinicalDataRepositoryService.pipe(
-      Effect.provide(
-        ClinicalDataRepositoryService.Default.pipe(
-          Layer.provide(Layer.succeed(FhirR4ClientService, fhirR4ClientService))
-        )
-      )
-    )
-
   return {
     authDataService,
     orgService,
     userService,
     fhirR4ClientService,
-    clinicalDataRepositoryService,
     hub,
   }
 }).pipe(

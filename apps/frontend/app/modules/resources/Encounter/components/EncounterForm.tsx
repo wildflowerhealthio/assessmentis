@@ -1,3 +1,9 @@
+import {
+  Location,
+  Patient,
+  Practitioner,
+  Questionnaire,
+} from '@assessmentis/clinical-domain'
 import { applyPartialProps, transformProps } from '@assessmentis/react-util'
 
 import {
@@ -5,11 +11,8 @@ import {
   ResourceForm,
 } from 'app/modules/common/components/ResourceForm'
 import type { CommonFieldProps } from 'app/modules/common/components/ResourceForm/ResourceForm'
-import { LocationPicker } from 'app/modules/resources/Location/components/LocationPicker'
-import { PatientPicker } from 'app/modules/resources/Patient/components/PatientPicker'
-import { PractitionerPicker } from 'app/modules/resources/Practitioner/components/PractitionerPicker'
-import { QuestionnairePicker } from 'app/modules/resources/Questionnaire/components/QuestionnairePicker/QuestionnairePicker'
 
+import { ResourcePicker } from '../../../ResourcePicker/ResourcePicker'
 import {
   EncounterFormSchema,
   type EncounterFormData,
@@ -23,9 +26,10 @@ interface EncounterFormProps {
 
 const encounterFormFields = {
   patientUrl: transformProps(
-    PatientPicker,
+    ResourcePicker,
     (props: CommonFieldProps<string | undefined>) => ({
       name: 'patientUrl',
+      klass: Patient,
       label: 'Patient (Subject)',
       picking: {
         onChange: props.onChange,
@@ -36,9 +40,10 @@ const encounterFormFields = {
     })
   ),
   practitionerUrls: transformProps(
-    PractitionerPicker,
+    ResourcePicker,
     (props: CommonFieldProps<ReadonlyArray<string> | undefined>) => ({
       name: 'practitionerUrls',
+      klass: Practitioner,
       label: 'Practitioners (Participants)',
       picking: {
         onChange: props.onChange,
@@ -57,22 +62,22 @@ const encounterFormFields = {
     label: 'End Date/Time',
   }),
   locationUrl: transformProps(
-    LocationPicker,
+    ResourcePicker,
     (props: CommonFieldProps<string | undefined>) => ({
       name: 'locationUrl',
-      label: 'Location',
+      klass: Location,
       picking: {
         onChange: props.onChange,
         value: props.value,
         multiple: false as const,
       },
-      placeholder: 'Select a location...',
     })
   ),
   questionnaireUrls: transformProps(
-    QuestionnairePicker,
+    ResourcePicker,
     (props: CommonFieldProps<ReadonlyArray<string>>) => ({
       name: 'questionnaireUrls',
+      klass: Questionnaire,
       label: 'Questionnaires',
       picking: {
         onChange: (value: ReadonlyArray<string> | undefined) => {

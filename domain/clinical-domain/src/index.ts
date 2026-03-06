@@ -13,10 +13,10 @@ export * from './resources/QuestionnaireResponse'
 
 // Registry types
 export { default as Schemas } from './Schemas'
-export { default as Repositories, type RepositoriesType } from './Repositories'
 export type {
   default as ResourceDataTypes,
   ResourceType,
 } from './ResourceDataTypes'
 export type { default as FhirResourceDataTypes } from './FhirResourceDataTypes'
 export * from './types'
+export { ClinicalDomainHub as ClinicalDomainHub } from './ClinicalDomainHub'

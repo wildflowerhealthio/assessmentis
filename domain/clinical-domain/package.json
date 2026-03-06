@@ -8,8 +8,7 @@
   "prettier": "@assessmentis/prettier-config",
   "exports": {
     ".": "./src/index.ts",
-    "./data-types": "./src/data-types/index.ts",
-    "./repositories": "./src/repositories/index.ts"
+    "./data-types": "./src/data-types/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

@@ -5,7 +5,7 @@ import { cn } from '@assessmentis/react-util'
 
 import Skeleton from 'react-loading-skeleton'
 
-import { useBreadcrumbContext } from '../../contexts/BreadcrumbContext'
+import { useBreadcrumbContext } from '../../../Breadcrumbs/BreadcrumbContext'
 import classes from './HeaderBreadcrumbs.module.css'
 
 export const HeaderBreadcrumbs = () => {

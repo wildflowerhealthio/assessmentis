@@ -42,5 +42,4 @@ Use `Clinical Resource` wording in docs, comments, and test naming for this work
 
 - Repository service wiring: [../../layers/ClinicalDataRepositoriesService.ts](../../layers/ClinicalDataRepositoriesService.ts)
 - Repository service tests: [../../layers/ClinicalDataRepositoriesService.test.ts](../../layers/ClinicalDataRepositoriesService.test.ts)
-- Generic resource actions: [../common/actions/createResourceActions.ts](../common/actions/createResourceActions.ts)
 - Resource CRUD patterns: [./Resource CRUD Reference.md](./Resource%20CRUD%20Reference.md)

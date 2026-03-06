@@ -1,5 +1,6 @@
-import { EncounterPicker } from '../../../Encounter/components/EncounterPicker'
-import { PatientPicker } from '../../../Patient/components/PatientPicker'
+import { Encounter, Patient } from '@assessmentis/clinical-domain'
+
+import { ResourcePicker } from '../../../../ResourcePicker/ResourcePicker'
 import classes from './ObservationFilters.module.css'
 
 interface ObservationFiltersProps {
@@ -23,7 +24,8 @@ export function ObservationFilters({
     <section className={classes.Filters}>
       <h2 className="heading-4">Filter Observations</h2>
       <div className={classes.Filters__grid}>
-        <PatientPicker
+        <ResourcePicker
+          klass={Patient}
           picking={{
             value: patientId ?? undefined,
             onChange: onPatientChange,
@@ -32,7 +34,8 @@ export function ObservationFilters({
           label="Filter by Patient"
           placeholder="All patients..."
         />
-        <EncounterPicker
+        <ResourcePicker
+          klass={Encounter}
           picking={{
             value: selectedEncounterIds,
             onChange: onEncounterChange,

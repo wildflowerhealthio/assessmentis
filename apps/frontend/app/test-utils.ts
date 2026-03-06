@@ -1,10 +1,34 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Effect, Stream, type Either } from 'effect'
+import { Effect, Either, Stream } from 'effect'
 
 import type { NoSelectedOrgError, Org } from '@assessmentis/platform-domain'
 import { neverUsedMock } from '@assessmentis/testing-utils'
 
 import type { PlatformContext } from './layers/PlatformContext'
+
+/**
+ * Creates a mock Hub with sensible defaults for testing.
+ * Returns success cases for all methods by default.
+ */
+export function createMockHub(overrides: Partial<any> = {}): any {
+  return {
+    get: (_domainType: string, _url: any) => Effect.succeed({}),
+    subscribe: (_domainType: string, _url: any) =>
+      Stream.succeed(Either.right({})),
+    search: (_domainType: string, _params?: any) => Effect.succeed([]),
+    subscribeSearch: (_domainType: string, _params?: any) =>
+      Stream.succeed(Either.right([])),
+    create: (_domainType: string, resource: any, _origin?: any) =>
+      Effect.succeed({ ...resource, url: 'http://example.com/test' }),
+    createMany: (_domainType: string, resources: any[], _origin?: any) =>
+      Effect.succeed(
+        resources.map((r) => ({ ...r, url: 'http://example.com/test' }))
+      ),
+    update: (_domainType: string, resource: any) => Effect.succeed(resource),
+    delete: (_domainType: string, _url: any) => Effect.succeed(undefined),
+    ...overrides,
+  }
+}
 
 /**
  * Creates a mock PlatformContext with sensible defaults.
@@ -29,6 +53,7 @@ export function createMockPlatformContext(
     userOrgs?: Record<string, string>
 
     setActiveOrgSlug?: (...args: any[]) => Effect.Effect<void>
+    hub?: any
   } = {}
 ): PlatformContext {
   const defaultSetActiveOrgSlug = () => Effect.succeed(undefined as void)
@@ -46,8 +71,6 @@ export function createMockPlatformContext(
       }),
     } as any,
     fhirR4ClientService: neverUsedMock('fhirR4ClientService'),
-    clinicalDataRepositoryService: neverUsedMock(
-      'clinicalDataRepositoryService'
-    ),
+    hub: overrides.hub ?? createMockHub(),
   }
 }

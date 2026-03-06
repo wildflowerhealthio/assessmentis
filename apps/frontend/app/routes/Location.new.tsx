@@ -1,6 +1,19 @@
-import { locationConfig } from 'app/modules/resources/Location/resourcePagesConfig'
-import { makeCreateResourcePage } from 'app/modules/resources/ResourcePages/makeCreateResourcePage'
+import { Location } from '@assessmentis/clinical-domain'
 
-const LocationNewPage = makeCreateResourcePage(locationConfig)
+import 'app/traits/BreadcrumbLabel/implementations/Location'
+import 'app/traits/Labeled/implementations/Location'
+import 'app/traits/Link/implementations/Location'
 
-export default LocationNewPage
+import { CreateResourcePage } from 'app/modules/forms/CreateResourcePage'
+import { LocationForm } from 'app/modules/forms/Location/LocationForm'
+import { LocationFormData } from 'app/modules/forms/Location/LocationFormData'
+
+export default function LocationNewPage() {
+  return (
+    <CreateResourcePage
+      klass={Location}
+      Form={LocationFormData}
+      FormComponent={LocationForm}
+    />
+  )
+}

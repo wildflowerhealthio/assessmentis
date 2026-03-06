@@ -151,6 +151,10 @@ export class ReadonlyUrl extends Schema.Class<ReadonlyUrl>('ReadonlyUrl')({
     return url.href
   }
 
+  asUriComponent(): string {
+    return encodeURIComponent(this.toString())
+  }
+
   appendToPathname(path: string): ReadonlyUrl {
     return ReadonlyUrl.make({
       host: this.host,

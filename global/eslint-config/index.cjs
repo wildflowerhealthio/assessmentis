@@ -23,6 +23,7 @@ module.exports = defineConfig([
       },
     },
     rules: {
+      '@typescript-eslint/no-namespace': ['off'],
       '@typescript-eslint/no-empty-object-type': [
         'error',
         { allowInterfaces: 'always' },
