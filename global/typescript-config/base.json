@@ -18,6 +18,7 @@
     "skipLibCheck": true,
     "strict": true,
     "verbatimModuleSyntax": true,
+    "resolveJsonModule": true,
     "plugins": [
       {
         "name": "@effect/language-service"
