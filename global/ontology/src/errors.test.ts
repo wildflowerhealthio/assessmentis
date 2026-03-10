@@ -1,5 +1,6 @@
-import { describe, expect, test } from 'vitest'
 import * as fc from 'fast-check'
+import { describe, expect, test } from 'vitest'
+
 import { ExternalAssertionError, NotFoundError, UnhandledError } from './errors'
 
 describe('Domain Errors', () => {

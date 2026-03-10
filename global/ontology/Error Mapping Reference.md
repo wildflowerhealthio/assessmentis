@@ -51,7 +51,6 @@ This reference describes the canonical error taxonomy and how to map errors acro
 
 - Canonical error definitions: [src/errors.ts](src/errors.ts)
 - Stream error normalization: [../../apps/frontend/app/layers/OrgContextProvider.tsx](../../apps/frontend/app/layers/OrgContextProvider.tsx)
-- FHIR client stream mapping: [../../apps/frontend/app/layers/FhirR4ClientService.tsx](../../apps/frontend/app/layers/FhirR4ClientService.tsx)
-- Clinical repository mapping: [../../apps/frontend/app/layers/ClinicalDataRepositoriesService.ts](../../apps/frontend/app/layers/ClinicalDataRepositoriesService.ts)
-- Video call client mapping: [../../apps/frontend/app/layers/VideoCallClientService.tsx](../../apps/frontend/app/layers/VideoCallClientService.tsx)
+- Hub access hook: [../../apps/frontend/app/layers/useHub.ts](../../apps/frontend/app/layers/useHub.ts)
+- Hub Tag (domain): [../../domain/clinical-domain/src/ClinicalDomainHub.ts](../../domain/clinical-domain/src/ClinicalDomainHub.ts)
 - Domain-level mapping example: [../../domain/platform-domain/src/services/LoadedUser.ts](../../domain/platform-domain/src/services/LoadedUser.ts)

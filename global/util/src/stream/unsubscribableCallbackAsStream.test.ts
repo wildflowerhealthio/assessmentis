@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest'
 import * as fc from 'fast-check'
-import { Effect, Either, Stream, Chunk, Deferred, Ref } from 'effect'
+import { describe, expect, it } from 'vitest'
+import { Chunk, Deferred, Effect, Either, Ref, Stream } from 'effect'
+
 import { unsubscribableCallbackAsStream } from './unsubscribableCallbackAsStream'
 
 describe('unsubscribableCallbackAsStream', () => {

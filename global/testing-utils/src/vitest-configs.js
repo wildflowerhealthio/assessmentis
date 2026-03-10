@@ -8,6 +8,7 @@ const base = defineConfig(({ mode }) => ({
   test: {
     globals: true,
     plugins: [tsconfigPaths()],
+    setupFiles: ['../../global/testing-utils/src/vitest.setup.ts'],
     // eslint-disable-next-line no-undef
     env: loadEnv(mode, process.cwd(), ''),
   },

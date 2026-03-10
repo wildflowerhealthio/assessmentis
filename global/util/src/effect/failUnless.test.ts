@@ -1,11 +1,12 @@
-import { describe, it, expect } from 'vitest'
 import * as fc from 'fast-check'
+import { describe, expect, it } from 'vitest'
 import { Effect } from 'effect'
+
 import {
-  refineOrFail,
-  refineEffectOrFail,
-  failUnless,
   failEffectUnless,
+  failUnless,
+  refineEffectOrFail,
+  refineOrFail,
 } from './failUnless'
 
 describe('failUnless', () => {
