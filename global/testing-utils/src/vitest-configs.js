@@ -5,12 +5,16 @@ import react from '@vitejs/plugin-react'
 import { playwright } from '@vitest/browser-playwright'
 import { loadEnv, mergeConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
+import { fileURLToPath } from 'url'
+import path from 'path'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const base = defineConfig(({ mode }) => ({
   test: {
     globals: true,
     plugins: [tsconfigPaths()],
-    setupFiles: ['../../global/testing-utils/src/vitest.setup.ts'],
+    setupFiles: [path.resolve(__dirname, 'vitest.setup.ts')],
     // eslint-disable-next-line no-undef
     env: loadEnv(mode, process.cwd(), ''),
   },
