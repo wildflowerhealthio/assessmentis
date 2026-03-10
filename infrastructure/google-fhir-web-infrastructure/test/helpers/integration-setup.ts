@@ -1,17 +1,12 @@
-import { Effect, Layer, pipe } from 'effect'
+import { Effect, Layer } from 'effect'
 import { isPromiseLike } from 'effect/Predicate'
 
-import type { ResourceDataTypes } from '@assessmentis/clinical-domain'
-import {
-  LoadedGoogleFhirConfig,
-  type GoogleFhirConfig,
-} from '@assessmentis/config-domain'
-import type { Hub } from '@assessmentis/effectful-store'
+import type { GoogleFhirConfig } from '@assessmentis/config-domain'
 
 import {
   LoadedGapiClient,
   LoadedGapiHealthcareClient,
-  startGapiGoogleHealthcareClient,
+  makeGapiGoogleHealthcareClient,
 } from '../../src'
 
 /**
@@ -41,7 +36,6 @@ export const setupClientOnWindow = async () => {
 
   const testConfig: GoogleFhirConfig = {
     _tag: 'google_fhir_store' as const,
-    apiKey: null,
     projectId: import.meta.env.VITE_FHIR_PROJECT_ID || 'assessmentis',
     region: import.meta.env.VITE_FHIR_REGION || 'northamerica-northeast2',
     dataset: import.meta.env.VITE_FHIR_DATASET || 'integration-test',
@@ -67,90 +61,73 @@ export const setupClientOnWindow = async () => {
       console.log('Polling for gapi availability...')
       await new Promise((r) => setTimeout(r, 1000))
     }
-    const hub = {
-      setOriginState: (...args: unknown[]) =>
-        Effect.log('setOriginState', ...args),
-    } as Hub.Hub<ResourceDataTypes> // Placeholder hub for client initialization
-    const clientEffect = startGapiGoogleHealthcareClient(hub).pipe(
-      Effect.provide(
-        Layer.mergeAll(
-          Layer.succeed(LoadedGoogleFhirConfig, testConfig),
-          Layer.provideMerge(
-            pipe(
-              Effect.gen(function* () {
-                console.log('Initializing gapi healthcare client')
-                const healthcare = yield* LoadedGapiHealthcareClient
+    const resolveGapiEffect = Effect.gen(function* () {
+      const gapiClientEffect = yield* LoadedGapiClient
+      const gapiClient = yield* gapiClientEffect
+      console.log('Setting gapi client token')
+      gapiClient.setToken({ access_token: getGcloudToken() })
 
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const handler1: ProxyHandler<any> = {
-                  get(target, prop, receiver) {
-                    const gotten = target[prop]
-                    if (gotten instanceof Function) {
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      return function (this: unknown, ...args: any[]) {
-                        const res = gotten.apply(
-                          this === receiver ? target : this,
-                          args
-                        )
-                        if (isPromiseLike(res)) {
-                          res.then(
-                            (r) =>
-                              console.log({
-                                prop: String(prop),
-                                args,
-                                resolved: r,
-                              }),
-                            (e) =>
-                              console.log({
-                                prop: String(prop),
-                                args,
-                                error: e,
-                              })
-                          )
-                        } else {
-                          console.log({
-                            prop: String(prop),
-                            args,
-                            immediate: res,
-                          })
-                        }
-                        return res
-                      }
-                    }
-                    return gotten
-                  },
-                }
-                healthcare.projects.locations.datasets.fhirStores.fhir =
-                  new Proxy(
-                    healthcare.projects.locations.datasets.fhirStores.fhir,
-                    handler1
-                  )
+      console.log('Initializing gapi healthcare client')
+      const healthcare = yield* LoadedGapiHealthcareClient
 
-                return healthcare
-              }),
-              Effect.provide(LoadedGapiHealthcareClient.Default),
-              Layer.effect(LoadedGapiHealthcareClient)
-            ),
-            pipe(
-              LoadedGapiClient,
-              Effect.flatMap((clientEffect) =>
-                Effect.map(clientEffect, (client) => {
-                  console.log('Setting gapi client token')
-                  client.setToken({ access_token: getGcloudToken() })
-                  return clientEffect
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const handler1: ProxyHandler<any> = {
+        get(target, prop, receiver) {
+          const gotten = target[prop]
+          if (gotten instanceof Function) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            return function (this: unknown, ...args: any[]) {
+              const res = gotten.apply(this === receiver ? target : this, args)
+              if (isPromiseLike(res)) {
+                res.then(
+                  (r) =>
+                    console.log({
+                      prop: String(prop),
+                      args,
+                      resolved: r,
+                    }),
+                  (e) =>
+                    console.log({
+                      prop: String(prop),
+                      args,
+                      error: e,
+                    })
+                )
+              } else {
+                console.log({
+                  prop: String(prop),
+                  args,
+                  immediate: res,
                 })
-              ),
-              Effect.provide(LoadedGapiClient.Default),
-              Layer.effect(LoadedGapiClient)
-            )
-          )
+              }
+              return res
+            }
+          }
+          return gotten
+        },
+      }
+      healthcare.projects.locations.datasets.fhirStores.fhir = new Proxy(
+        healthcare.projects.locations.datasets.fhirStores.fhir,
+        handler1
+      )
+
+      return makeGapiGoogleHealthcareClient({
+        getAccessToken: Effect.succeed(getGcloudToken()),
+        gapiClient,
+        healthcare,
+        config: testConfig,
+      })
+    }).pipe(
+      Effect.provide(
+        Layer.provideMerge(
+          LoadedGapiHealthcareClient.Default,
+          LoadedGapiClient.Default
         )
       ),
-      Effect.orDie,
-      Effect.scoped
+      Effect.orDie
     )
     // @ts-expect-error Using window for test setup
-    window['client'] = await Effect.runPromise(clientEffect).catch((e) => {
+    window['client'] = await Effect.runPromise(resolveGapiEffect).catch((e) => {
       console.error('Error initializing FHIR client', e)
       throw e
     })

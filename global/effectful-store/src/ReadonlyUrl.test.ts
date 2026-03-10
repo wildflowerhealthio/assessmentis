@@ -1,8 +1,8 @@
 import * as fc from 'fast-check'
 import { describe, expect, test } from 'vitest'
-import { Arbitrary, Schema } from 'effect'
+import { Arbitrary, Either, Schema } from 'effect'
 
-import { ReadonlyUrl } from './ReadonlyUrl'
+import { ReadonlyUrl, UriEncodedOriginUrl } from './ReadonlyUrl'
 
 const readonlyUrlArb = Arbitrary.make(ReadonlyUrl)
 
@@ -243,5 +243,49 @@ describe('ReadonlyUrl', () => {
         })
       )
     })
+  })
+})
+
+describe('UriEncodedOriginUrl', () => {
+  test('property: decode-encode cycle preserves string values', () => {
+    fc.assert(
+      fc.property(fc.string(), (str) => {
+        const decode = Schema.decodeUnknownEither(UriEncodedOriginUrl)
+        const encode = Schema.encodeUnknownEither(UriEncodedOriginUrl)
+
+        const decoded = decode(str)
+        if (Either.isRight(decoded)) {
+          const encoded = encode(decoded.right)
+          expect(Either.isRight(encoded)).toBe(true)
+          if (Either.isRight(encoded)) {
+            expect(encoded.right).toBe(str)
+          }
+        }
+      })
+    )
+  })
+
+  test('property: fromReadonlyUrl produces a valid UriEncodedOriginUrl', () => {
+    const readonlyUrlArb = Arbitrary.make(ReadonlyUrl.FromString)
+
+    fc.assert(
+      fc.property(readonlyUrlArb, (url) => {
+        const encoded = url.asUriComponent()
+        const decode = Schema.decodeUnknownEither(UriEncodedOriginUrl)
+        const result = decode(encoded)
+        expect(Either.isRight(result)).toBe(true)
+      })
+    )
+  })
+
+  test('property: fromReadonlyUrl matches asUriComponent', () => {
+    const readonlyUrlArb = Arbitrary.make(ReadonlyUrl.FromString)
+
+    fc.assert(
+      fc.property(readonlyUrlArb, (url) => {
+        const encoded = url.asUriComponent()
+        expect(encoded).toBe(url.asUriComponent())
+      })
+    )
   })
 })

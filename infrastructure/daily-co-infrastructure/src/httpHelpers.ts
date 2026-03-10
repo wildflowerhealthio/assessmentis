@@ -5,21 +5,66 @@ import { isHttpClientError } from '@effect/platform/HttpClientError'
 import type { HttpClientResponse } from '@effect/platform/HttpClientResponse'
 
 import {
+  AuthError,
   ExternalAssertionError,
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
 
-export const getRequestFromHeaders =
-  (
-    httpClient: HttpClient,
-    url: URL,
-    options: Parameters<HttpClient['get']>[1]
-  ) =>
-  <E, R>(effect: Effect.Effect<Record<string, string>, E, R>) =>
-    Effect.flatMap(effect, (authHeaders) => {
-      return httpClient.get(url, {
+import type { AuthReadable } from './resolverUtils'
+
+/** Read auth headers from a Readable, mapping CredentialError → AuthError. */
+const readHeaders = (auth: AuthReadable) =>
+  auth.get.pipe(
+    Effect.map((token) => token.asHeaders()),
+    Effect.mapError(
+      (cause) => new AuthError({ message: 'Credential unavailable', cause })
+    )
+  )
+
+export const getRequest = (
+  httpClient: HttpClient,
+  url: URL,
+  options: Parameters<HttpClient['get']>[1],
+  auth: AuthReadable
+) =>
+  Effect.flatMap(readHeaders(auth), (authHeaders) =>
+    httpClient.get(url, {
+      ...options,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        ...(options?.headers ?? {}),
+        ...authHeaders,
+      },
+    })
+  )
+
+export const postRequest = (
+  httpClient: HttpClient,
+  url: URL,
+  body: unknown,
+  options: Parameters<HttpClient['post']>[1],
+  auth: AuthReadable
+) =>
+  pipe(
+    readHeaders(auth),
+    Effect.flatMap((authHeaders) =>
+      HttpBody.json(body).pipe(
+        Effect.mapError(
+          (cause) =>
+            new UnhandledError({
+              cause,
+              message: 'Error serializing request body JSON',
+            })
+        ),
+        Effect.map((jsonBody) => [authHeaders, jsonBody] as const)
+      )
+    ),
+    Effect.flatMap(([authHeaders, jsonBody]) =>
+      httpClient.post(url, {
         ...options,
+        body: jsonBody,
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
@@ -27,75 +72,26 @@ export const getRequestFromHeaders =
           ...authHeaders,
         },
       })
+    )
+  )
+
+export const deleteRequest = (
+  httpClient: HttpClient,
+  url: URL,
+  options: Parameters<HttpClient['del']>[1],
+  auth: AuthReadable
+) =>
+  Effect.flatMap(readHeaders(auth), (authHeaders) =>
+    httpClient.del(url, {
+      ...options,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        ...(options?.headers ?? {}),
+        ...authHeaders,
+      },
     })
-
-export const postRequestFromHeaders =
-  (
-    httpClient: HttpClient,
-    url: URL,
-    body: unknown,
-    options: Parameters<HttpClient['post']>[1]
-  ) =>
-  <E, R>(
-    effect: Effect.Effect<Record<string, string>, E, R>
-  ): Effect.Effect<
-    HttpClientResponse,
-    E | UnhandledError | HttpClientError.HttpClientError,
-    R
-  > =>
-    effect.pipe(
-      Effect.flatMap((authHeaders) =>
-        HttpBody.json(body).pipe(
-          Effect.mapError(
-            (cause) =>
-              new UnhandledError({
-                cause,
-                message: 'Error serializing request body JSON',
-              })
-          ),
-          Effect.map((body) => [authHeaders, body] as const)
-        )
-      ),
-      Effect.flatMap(([authHeaders, body]) => {
-        return httpClient.post(url, {
-          ...options,
-          body,
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            ...(options?.headers ?? {}),
-            ...authHeaders,
-          },
-        })
-      })
-    )
-
-export const deleteRequestFromHeaders =
-  (
-    httpClient: HttpClient,
-    url: URL,
-    options: Parameters<HttpClient['del']>[1]
-  ) =>
-  <E, R>(
-    effect: Effect.Effect<Record<string, string>, E, R>
-  ): Effect.Effect<
-    HttpClientResponse,
-    E | UnhandledError | HttpClientError.HttpClientError,
-    R
-  > =>
-    effect.pipe(
-      Effect.flatMap((authHeaders) => {
-        return httpClient.del(url, {
-          ...options,
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            ...(options?.headers ?? {}),
-            ...authHeaders,
-          },
-        })
-      })
-    )
+  )
 
 export const handleHttpClientError =
   (message: string) =>

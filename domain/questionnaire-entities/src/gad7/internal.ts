@@ -4,7 +4,6 @@ import {
   CodeableConcept,
   Coding,
 } from '@assessmentis/clinical-domain/data-types'
-
 import { literalOf } from '@assessmentis/util'
 
 const surveyCategory = CodeableConcept.make({

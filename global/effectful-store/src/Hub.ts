@@ -3,15 +3,17 @@ import {
   Deferred,
   Effect,
   Request as EffectRequest,
+  Either,
+  Option,
   pipe,
   Record,
   RequestResolver,
   Stream,
   SubscriptionRef,
-  type Either,
+  type Scope,
 } from 'effect'
 
-import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
+import { Loading, NotFoundError, UnhandledError } from '@assessmentis/ontology'
 import { SideEffect } from '@assessmentis/util'
 
 import {
@@ -59,17 +61,20 @@ const asEntryFailure = <Resources extends ResourcesConstraint>(
 
 // --- Hub type ---
 
+export type HubError =
+  | Loading<{ toString(): string }>
+  | ResourceRequest.CommonErrors
+
 export type HubState<Resources extends ResourcesConstraint> = ReadonlyMap<
   string,
   OriginState<Resources, never>
 >
 
+type HubRef<Resources extends ResourcesConstraint> =
+  SubscriptionRef.SubscriptionRef<Either.Either<HubState<Resources>, HubError>>
+
 export type Hub<Resources extends ResourcesConstraint> = {
-  readonly changes: Stream.Stream<HubState<Resources>>
-  readonly setOriginState: <ActiveResources extends keyof Resources>(
-    origin: OriginState<Resources, ActiveResources>
-  ) => Effect.Effect<void, never, never>
-  readonly deregisterOrigin: (originUrl: ReadonlyUrl) => Effect.Effect<void>
+  readonly changes: Stream.Stream<Either.Either<HubState<Resources>, HubError>>
   readonly resolver: RequestResolver.RequestResolver<
     AnyRequest<Resources>,
     never
@@ -183,95 +188,44 @@ type NamedResourceRepositoryMethods<Resources extends ResourcesConstraint> = {
   > as `${M[0]}${M[1]}`]: ResourceRepository<Resources[M[1]]>[M[0]]
 }
 
-/*& {
-  readonly [R in keyof Resources & string as `get${R}`]: (
-    url: ReadonlyUrl
-  ) => Effect.Effect<
-    Resource.WithResourceUrl<Resources[R]>,
-    | ResourceRequest.CommonErrors
-    | NotFoundError<
-        Resources[R]['domainType'],
-        { url: Resource.InferResourceUrl<Resources[R]> }
-      >,
-    never
-  >
-} & {
-  readonly [R in keyof Resources & string as `subscribe${R}`]: (
-    url: ReadonlyUrl
-  ) => Stream.Stream<
-    Either.Either<
-      Resource.WithResourceUrl<Resources[R]>,
-      | ResourceRequest.CommonErrors
-      | NotFoundError<
-          Resources[R]['domainType'],
-          { url: Resource.InferResourceUrl<Resources[R]> }
-        >
-    >,
-    never,
-    never
-  >
-} & {
-  readonly [R in keyof Resources & string as `search${R}`]: (
-    params?: ResourceRequest.SearchParam<Resources[R]>
-  ) => Effect.Effect<
-    ReadonlyArray<Resource.WithResourceUrl<Resources[R]>>,
-    ResourceRequest.CommonErrors,
-    never
-  >
-} & {
-  readonly [R in keyof Resources & string as `subscribeSearch${R}`]: (
-    params?: ResourceRequest.SearchParam<Resources[R]>
-  ) => Stream.Stream<
-    Either.Either<
-      ReadonlyArray<Resource.WithResourceUrl<Resources[R]>>,
-      ResourceRequest.CommonErrors
-    >,
-    never,
-    never
-  >
-} & {
-  readonly [R in keyof Resources & string as `create${R}`]: (
-    resource: Resources[R],
-    origin?: ReadonlyUrl
-  ) => Effect.Effect<
-    Resource.WithResourceUrl<Resources[R]>,
-    ResourceRequest.CommonErrors,
-    never
-  >
-} & {
-  readonly [R in keyof Resources & string as `createMany${R}`]: (
-    resources: ReadonlyArray<Resources[R]>,
-    origin?: ReadonlyUrl
-  ) => Effect.Effect<
-    ReadonlyArray<Resource.WithResourceUrl<Resources[R]>>,
-    ResourceRequest.CommonErrors,
-    never
-  >
-} & {
-  readonly [R in keyof Resources & string as `update${R}`]: (
-    resource: Resource.WithResourceUrl<Resources[R]>
-  ) => Effect.Effect<
-    Resource.WithResourceUrl<Resources[R]>,
-    | ResourceRequest.CommonErrors
-    | NotFoundError<
-        Resources[R]['domainType'],
-        { url: Resource.InferResourceUrl<Resources[R]> }
-      >,
-    never
-  >
-} & {
-  readonly [R in keyof Resources & string as `delete${R}`]: (
-    url: ReadonlyUrl
-  ) => Effect.Effect<
-    void,
-    | ResourceRequest.CommonErrors
-    | NotFoundError<
-        Resources[R]['domainType'],
-        { url: Resource.InferResourceUrl<Resources[R]> }
-      >,
-    never
-  >
-} */
+// --- State access ---
+
+/**
+ * Wait for the Hub to have a ready state. Loading defers until a value or
+ * error arrives. Non-Loading errors are returned immediately.
+ */
+const awaitReady = <Resources extends ResourcesConstraint>(
+  stateRef: HubRef<Resources>
+): Effect.Effect<HubState<Resources>, ResourceRequest.CommonErrors> =>
+  Effect.flatMap(SubscriptionRef.get(stateRef), (current) => {
+    if (Either.isRight(current)) return Effect.succeed(current.right)
+    const error = current.left
+    if (error._tag !== 'Loading') return Effect.fail(error)
+    return stateRef.changes.pipe(
+      Stream.dropWhile((e) => Either.isLeft(e) && e.left._tag === 'Loading'),
+      Stream.runHead,
+      Effect.flatMap(
+        Option.match({
+          onNone: () =>
+            Effect.fail(
+              new UnhandledError({
+                message: 'Hub stream ended while loading',
+              })
+            ),
+          onSome: (either) => {
+            if (Either.isRight(either)) return Effect.succeed(either.right)
+            if (either.left._tag === 'Loading')
+              return Effect.fail(
+                new UnhandledError({
+                  message: 'Unexpected Loading after filter',
+                })
+              )
+            return Effect.fail(either.left)
+          },
+        })
+      )
+    )
+  })
 
 // --- Resolver pipeline ---
 
@@ -485,15 +439,15 @@ const resolveOriginFromUrl = <
   Resources extends ResourcesConstraint,
   K extends string,
 >(
-  stateRef: SubscriptionRef.SubscriptionRef<HubState<Resources>>,
+  stateRef: HubRef<Resources>,
   url: ReadonlyUrl,
   domainType: K
 ): Effect.Effect<
   ReadonlyUrl,
-  NotFoundError<K, { url: ReadonlyUrl }> | UnhandledError
+  NotFoundError<K, { url: ReadonlyUrl }> | ResourceRequest.CommonErrors
 > =>
   Effect.gen(function* () {
-    const states = yield* SubscriptionRef.get(stateRef)
+    const states = yield* awaitReady(stateRef)
     let match: ReadonlyUrl | undefined
     let matchCount = 0
     for (const origin of states.values()) {
@@ -517,14 +471,14 @@ const resolveOriginFromUrl = <
   })
 
 const resolveOriginForCreate = <Resources extends ResourcesConstraint>(
-  stateRef: SubscriptionRef.SubscriptionRef<HubState<Resources>>,
+  stateRef: HubRef<Resources>,
   domainType: keyof Resources & string,
   explicitOrigin: ReadonlyUrl | undefined
-): Effect.Effect<ReadonlyUrl, UnhandledError> =>
+): Effect.Effect<ReadonlyUrl, ResourceRequest.CommonErrors> =>
   explicitOrigin
     ? Effect.succeed(explicitOrigin)
     : Effect.gen(function* () {
-        const states = yield* SubscriptionRef.get(stateRef)
+        const states = yield* awaitReady(stateRef)
         let match: ReadonlyUrl | undefined
         let matchCount = 0
         for (const origin of states.values()) {
@@ -549,7 +503,8 @@ const resolveOriginForCreate = <Resources extends ResourcesConstraint>(
 // --- Origin change detection ---
 
 /**
- * Filters a HubState changes stream to only emit when relevant origins change.
+ * Filters a Hub changes stream to only emit when relevant origins change.
+ * Skips Loading and error states (subscriptions wait silently).
  *
  * - `null` matches all origins that support `domainType` (for fan-out search)
  * - A specific URL matches origins whose `originUrl.hasChild(url)` (for get by URL)
@@ -558,7 +513,7 @@ const resolveOriginForCreate = <Resources extends ResourcesConstraint>(
  * only when the set of matching origins differs in length or identity.
  */
 const whenOriginChanges = <Resources extends ResourcesConstraint>(
-  stateChanges: Stream.Stream<HubState<Resources>>,
+  stateChanges: Stream.Stream<Either.Either<HubState<Resources>, HubError>>,
   domainType: keyof Resources & string,
   url: ReadonlyUrl | null
 ): Stream.Stream<HubState<Resources>> => {
@@ -569,6 +524,7 @@ const whenOriginChanges = <Resources extends ResourcesConstraint>(
 
   return pipe(
     stateChanges,
+    Stream.filterMap(Either.getRight),
     Stream.changesWith((prev, next) => {
       const prevOrigins = selectRelevant(prev)
       const nextOrigins = selectRelevant(next)
@@ -581,7 +537,7 @@ const whenOriginChanges = <Resources extends ResourcesConstraint>(
 // --- MultiResourceRepository method builder ---
 
 const makeMultiResourceRepository = <Resources extends ResourcesConstraint>(
-  stateRef: SubscriptionRef.SubscriptionRef<HubState<Resources>>,
+  stateRef: HubRef<Resources>,
   resolver: RequestResolver.RequestResolver<AnyRequest<Resources>, never>
 ): MultiResourceRepository<Resources> => {
   return {
@@ -758,72 +714,84 @@ const makeNamedResourceMethods = <
 // names are computed from resourceKeys (e.g. getPatient, searchPatient).
 // TypeScript cannot verify template-literal mapped types from dynamic
 // property assignment.
-export const makeHub = <Resources extends ResourcesConstraint>(
-  resourceKeys: ReadonlyArray<keyof Resources & string>
-): Effect.Effect<Hub<Resources>> =>
-  Effect.gen(function* () {
-    const stateRef = yield* SubscriptionRef.make<HubState<Resources>>(new Map())
 
-    const resolver: RequestResolver.RequestResolver<
-      AnyRequest<Resources>,
-      never
-    > = RequestResolver.makeWithEntry((batches) =>
-      Effect.gen(function* () {
-        for (const batch of batches) {
-          const originStates = yield* SubscriptionRef.get(stateRef)
+/** Build a Hub from a pre-existing SubscriptionRef. No fiber management. */
+export const makeHubFromRef = <Resources extends ResourcesConstraint>(
+  resourceKeys: ReadonlyArray<keyof Resources & string>,
+  stateRef: HubRef<Resources>
+): Hub<Resources> => {
+  const resolver: RequestResolver.RequestResolver<
+    AnyRequest<Resources>,
+    never
+  > = RequestResolver.makeWithEntry((batches) =>
+    Effect.gen(function* () {
+      for (const batch of batches) {
+        const stateResult = yield* Effect.either(awaitReady(stateRef))
 
-          const { actions } = pipe(
-            SideEffect.of<ReadonlyArray<AnyEntry<Resources>>>(batch, []),
-            SideEffect.flatMap((entries) =>
-              fanOutSearches(entries, originStates, fanOutSearch)
-            ),
-            SideEffect.flatMap((entries) =>
-              groupByOrigin(entries, originStates)
-            ),
-            SideEffect.flatMap((groups) => filterReadyOrigins(groups)),
-            SideEffect.flatMap((groups) => dispatchToResolvers(groups))
-          )
-
-          yield* Effect.all(actions, {
-            concurrency: 'unbounded',
-          }).pipe(Effect.asVoid)
+        if (Either.isLeft(stateResult)) {
+          yield* Effect.all(
+            batch.map((entry) => asEntryFailure(entry, stateResult.left)),
+            { concurrency: 'unbounded' }
+          ).pipe(Effect.asVoid)
+          continue
         }
-      })
+
+        const originStates = stateResult.right
+
+        const { actions } = pipe(
+          SideEffect.of<ReadonlyArray<AnyEntry<Resources>>>(batch, []),
+          SideEffect.flatMap((entries) =>
+            fanOutSearches(entries, originStates, fanOutSearch)
+          ),
+          SideEffect.flatMap((entries) => groupByOrigin(entries, originStates)),
+          SideEffect.flatMap((groups) => filterReadyOrigins(groups)),
+          SideEffect.flatMap((groups) => dispatchToResolvers(groups))
+        )
+
+        yield* Effect.all(actions, {
+          concurrency: 'unbounded',
+        }).pipe(Effect.asVoid)
+      }
+    })
+  )
+
+  const generic = makeMultiResourceRepository(stateRef, resolver)
+
+  const hub = {
+    changes: stateRef.changes,
+    resolver,
+    ...generic,
+  }
+
+  let namedMethods = {}
+  for (const key of resourceKeys) {
+    namedMethods = Object.assign(
+      namedMethods,
+      makeNamedResourceMethods(key, generic)
+    )
+  }
+
+  return Object.assign(hub, namedMethods) as Hub<Resources>
+}
+
+/** Build a Hub driven by a state stream. Forks a scoped fiber to consume the stream. */
+export const makeHub = <Resources extends ResourcesConstraint>(
+  resourceKeys: ReadonlyArray<keyof Resources & string>,
+  stateStream: Stream.Stream<
+    Either.Either<HubState<Resources>, HubError>,
+    never,
+    Scope.Scope
+  >
+): Effect.Effect<Hub<Resources>, never, Scope.Scope> =>
+  Effect.gen(function* () {
+    const stateRef = yield* SubscriptionRef.make<
+      Either.Either<HubState<Resources>, HubError>
+    >(Either.left(new Loading({ entity: 'Hub' })))
+
+    yield* stateStream.pipe(
+      Stream.runForEach((state) => SubscriptionRef.set(stateRef, state)),
+      Effect.forkScoped
     )
 
-    const generic = makeMultiResourceRepository(stateRef, resolver)
-
-    const hub = {
-      changes: stateRef.changes,
-
-      setOriginState: <ActiveResources extends keyof Resources>(
-        origin: OriginState<Resources, ActiveResources>
-      ): Effect.Effect<void, never, never> =>
-        SubscriptionRef.update(stateRef, (originState) => {
-          const next = new Map(originState)
-          next.set(origin.originUrl.toString(), origin)
-          return next
-        }),
-
-      deregisterOrigin: (originUrl: ReadonlyUrl): Effect.Effect<void> =>
-        SubscriptionRef.update(stateRef, (originState) => {
-          const next = new Map(originState)
-          next.delete(originUrl.toString())
-          return next
-        }),
-
-      resolver,
-
-      ...generic,
-    }
-
-    let namedMethods = {}
-    for (const key of resourceKeys) {
-      namedMethods = Object.assign(
-        namedMethods,
-        makeNamedResourceMethods(key, generic)
-      )
-    }
-
-    return Object.assign(hub, namedMethods) as Hub<Resources>
+    return makeHubFromRef(resourceKeys, stateRef)
   })

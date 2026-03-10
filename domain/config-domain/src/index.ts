@@ -1,2 +1,2 @@
-export * from './DailyCoConfig'
+export * from './CredentialId'
 export * from './GoogleFhirConfig'

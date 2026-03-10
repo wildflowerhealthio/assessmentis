@@ -28,17 +28,19 @@ A source can be registered with the Hub even when its resolver is in an error st
 
 The Hub is a plain class instance backed by a `SubscriptionRef`. Its internal state is a map of origin string to the current state of each registered source:
 
-```
+```typescript
 SubscriptionRef<ReadonlyMap<string, SourceEntry>>
 ```
 
 Each `SourceEntry` captures:
+
 - The source's `origin`
 - Which resource types it supports (`activeResources`)
 - Its current `status`: either a working `MultiResolver` (Right) or an error (Left)
 - Its `provokeReauth` callback
 
 The SubscriptionRef serves two purposes:
+
 1. **Operations** (`get`, `search`, etc.) read the current state to find the right source and resolver.
 2. **Subscribers** can observe `hub.changes` to react when sources connect, disconnect, or change state (e.g., a UI showing connection status, or a hook that re-fetches when the underlying source recovers from an auth error).
 
@@ -46,13 +48,13 @@ The SubscriptionRef serves two purposes:
 
 Different operations use different routing strategies:
 
-| Operation | Routing strategy | Rationale |
-|-----------|-----------------|-----------|
-| `get` | URL prefix match | The resource URL tells you which source owns it |
-| `update` | URL prefix match | The resource already has a source-scoped URL |
-| `delete` | URL prefix match | Same |
-| `search` | Fan-out by resource type | No URL to route by; merge results from all capable sources |
-| `create` | Explicit `origin` parameter | Caller must decide where to write |
+| Operation | Routing strategy            | Rationale                                                  |
+| --------- | --------------------------- | ---------------------------------------------------------- |
+| `get`     | URL prefix match            | The resource URL tells you which source owns it            |
+| `update`  | URL prefix match            | The resource already has a source-scoped URL               |
+| `delete`  | URL prefix match            | Same                                                       |
+| `search`  | Fan-out by resource type    | No URL to route by; merge results from all capable sources |
+| `create`  | Explicit `origin` parameter | Caller must decide where to write                          |
 
 For `search`, the Hub finds all registered sources where `activeResources[domainType]` is true and fans out the request, merging results. An optional `origin` parameter scopes the search to a single source.
 
@@ -65,12 +67,14 @@ When an operation routes to a source whose status is Left (e.g., `AuthError`), t
 Sources register and unregister individually via `hub.addSource()` and `hub.removeSource()`.
 
 When `addSource` is called:
+
 1. The source is added to the SubscriptionRef state (initially with Left status until the first resolver arrives).
 2. A fiber is forked that subscribes to the source's `resolverStream`.
 3. Each emission (Right or Left) updates that source's entry in the SubscriptionRef.
 4. The fiber is tied to a `Scope` and cancels automatically when the scope closes.
 
 When `removeSource` is called:
+
 1. The source's subscription fiber is cancelled.
 2. The source is removed from the SubscriptionRef state.
 

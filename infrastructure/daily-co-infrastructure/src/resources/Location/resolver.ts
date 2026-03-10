@@ -12,24 +12,24 @@ import {
   findVideoCallRoomConfig,
   VideoCallRoomIdentifier,
 } from '@assessmentis/clinical-domain/data-types'
-import type { DailyCoConfig } from '@assessmentis/config-domain'
 import { ReadonlyUrl, type Resource } from '@assessmentis/effectful-store'
 import { UnhandledError } from '@assessmentis/ontology'
 
+import type { DailyCoOriginDefinition } from '../../DailyCoOriginDefinition'
 import {
   assertStatus,
-  deleteRequestFromHeaders,
-  getRequestFromHeaders,
+  deleteRequest,
+  getRequest,
   handle404,
   handleHttpClientError,
   parseAs,
-  postRequestFromHeaders,
+  postRequest,
 } from '../../httpHelpers'
 import { CompleteApiDailyCoRoom } from '../../models/ApiDailyCoRoomSchema'
 import {
   extractIdFromUrl,
   type AnyRequest,
-  type HeadersEffect,
+  type AuthReadable,
 } from '../../resolverUtils'
 
 /**
@@ -66,19 +66,19 @@ const roomToLocation = (room: {
 export const makeLocationResolver = (
   httpClient: HttpClient,
   baseUrl: string,
-  headersEffect: HeadersEffect,
-  config: DailyCoConfig
-): RequestResolver.RequestResolver<AnyRequest<Location>, never> =>
+  auth: AuthReadable,
+  config: DailyCoOriginDefinition
+) =>
   RequestResolver.fromEffect((request: AnyRequest<Location>) => {
     switch (request._tag) {
       case 'Get': {
         const roomName = extractIdFromUrl(request.url)
         return pipe(
-          headersEffect,
-          getRequestFromHeaders(
+          getRequest(
             httpClient,
             new URL(`${baseUrl}/rooms/${roomName}`),
-            {}
+            {},
+            auth
           ),
           handleHttpClientError('HTTP Client Error while fetching room'),
           handle404('Location', { url: request.url }),
@@ -89,8 +89,7 @@ export const makeLocationResolver = (
       }
       case 'Search':
         return pipe(
-          headersEffect,
-          getRequestFromHeaders(httpClient, new URL(`${baseUrl}/rooms`), {}),
+          getRequest(httpClient, new URL(`${baseUrl}/rooms`), {}, auth),
           handleHttpClientError('HTTP Client Error while listing rooms'),
           assertStatus(200),
           parseAs(
@@ -146,12 +145,12 @@ export const makeLocationResolver = (
           }
 
           return yield* pipe(
-            headersEffect,
-            postRequestFromHeaders(
+            postRequest(
               httpClient,
               new URL(`${baseUrl}/rooms`),
               body,
-              {}
+              {},
+              auth
             ),
             handleHttpClientError('HTTP Client Error while creating room'),
             assertStatus(200),
@@ -168,11 +167,11 @@ export const makeLocationResolver = (
       case 'Delete': {
         const roomName = extractIdFromUrl(request.resource.url)
         return pipe(
-          headersEffect,
-          deleteRequestFromHeaders(
+          deleteRequest(
             httpClient,
             new URL(`${baseUrl}/rooms/${roomName}`),
-            {}
+            {},
+            auth
           ),
           handleHttpClientError('HTTP Client Error while deleting room'),
           handle404('Location', { url: request.resource.url }),

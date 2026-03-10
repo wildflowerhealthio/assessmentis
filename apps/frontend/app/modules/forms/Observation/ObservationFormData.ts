@@ -158,9 +158,7 @@ export class ObservationFormData extends Schema.Class<ObservationFormData>(
     return this.toResource()
   }
 
-  toUpdatePayload(
-    base: Observation
-  ): Resource.WithResourceUrl<Observation> {
+  toUpdatePayload(base: Observation): Resource.WithResourceUrl<Observation> {
     if (!base.url) throw new Error('Cannot update resource without url')
     return { ...base, ...this.toResource(), url: base.url }
   }

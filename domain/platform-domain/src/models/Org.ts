@@ -1,14 +1,22 @@
 import { Schema } from 'effect'
 
+import { UriEncodedOriginUrl } from '@assessmentis/effectful-store'
 import { DateTimeUtcFromFirebaseTimestamp } from '@assessmentis/util'
 
-import { FrontendConfig } from './FrontendConfig'
+import { BaseOriginDefinition } from './BaseOriginDefinition'
 import { OrgSlug } from './IdTypes'
 
 export const Org = Schema.Struct({
   slug: OrgSlug,
   emoji: Schema.String,
-  frontendConfig: FrontendConfig,
+  origins: Schema.optionalWith(
+    Schema.Record({ key: UriEncodedOriginUrl, value: BaseOriginDefinition }),
+    { default: () => ({}) }
+  ),
+  originConfigs: Schema.optionalWith(
+    Schema.Record({ key: UriEncodedOriginUrl, value: Schema.Unknown }),
+    { default: () => ({}) }
+  ),
   lastRecordingSyncTimestamp: Schema.optional(DateTimeUtcFromFirebaseTimestamp),
   lastTranscriptSyncTimestamp: Schema.optional(
     DateTimeUtcFromFirebaseTimestamp

@@ -11,10 +11,16 @@ Look at your resource's type parameter. If it's currently:
 ```typescript
 const MyResourceFromFhirR4 = Schema.Struct({
   // ... fields
-}).annotations({ identifier: 'MyResourceFromFhirR4' })
+})
+  .annotations({ identifier: 'MyResourceFromFhirR4' })
   .pipe(
     Schema.extend(DomainResource(MyResourceId)),
-    Schema.compose(Schema.typeSchema(Schema.Unknown) as Schema.Schema<MyResource, DeepReadonly<FhirMyResource>>)
+    Schema.compose(
+      Schema.typeSchema(Schema.Unknown) as Schema.Schema<
+        MyResource,
+        DeepReadonly<FhirMyResource>
+      >
+    )
   )
 ```
 
@@ -41,7 +47,10 @@ Schema.compose(
   Schema.typeSchema(Schema.Unknown) as Schema.Schema<
     MyResource,
     DeepReadonly<
-      Omit<AsDefinedFhirDomainResource<FhirMyResource>, 'identifier' | 'period'> & {
+      Omit<
+        AsDefinedFhirDomainResource<FhirMyResource>,
+        'identifier' | 'period'
+      > & {
         identifier?: typeof IdentifierFromFhirR4.Encoded
         period?: typeof PeriodFromFhirR4.Encoded
       }
@@ -65,21 +74,23 @@ If your resource has nested BackboneElement structures (like `Patient.contact` o
 ```typescript
 const PatientContactFromFhirR4 = Schema.Struct({
   // ... fields
-})
-  .pipe(
-    Schema.extend(BackboneElement),
-    Schema.compose(
-      Schema.typeSchema(Schema.Unknown) as Schema.Schema<
-        PatientContact,
-        DeepReadonly<
-          Omit<AsDefinedFhirBackboneElement<FhirPatientContact>, 'relationship' | 'name'> & {
-            relationship?: ReadonlyArray<typeof CodeableConceptFromFhirR4.Encoded>
-            name?: typeof HumanNameFromFhirR4.Encoded
-          }
-        >
+}).pipe(
+  Schema.extend(BackboneElement),
+  Schema.compose(
+    Schema.typeSchema(Schema.Unknown) as Schema.Schema<
+      PatientContact,
+      DeepReadonly<
+        Omit<
+          AsDefinedFhirBackboneElement<FhirPatientContact>,
+          'relationship' | 'name'
+        > & {
+          relationship?: ReadonlyArray<typeof CodeableConceptFromFhirR4.Encoded>
+          name?: typeof HumanNameFromFhirR4.Encoded
+        }
       >
-    )
+    >
   )
+)
 ```
 
 Use `AsDefinedFhirBackboneElement<T>` for BackboneElements instead of `AsDefinedFhirDomainResource<T>`.
@@ -89,9 +100,13 @@ Use `AsDefinedFhirBackboneElement<T>` for BackboneElements instead of `AsDefined
 Add imports at the top of your file:
 
 ```typescript
-import { IdentifierFromFhirR4, ReferenceFromFhirR4 } from '../../data-types/complex/IdentifierAndReference.js'
 import { CodeableConceptFromFhirR4 } from '../../data-types/complex/CodeableConcept.js'
+import {
+  IdentifierFromFhirR4,
+  ReferenceFromFhirR4,
+} from '../../data-types/complex/IdentifierAndReference.js'
 import { PeriodFromFhirR4 } from '../../data-types/complex/Period.js'
+
 // ... etc
 ```
 
@@ -158,6 +173,6 @@ DeepReadonly<
 
 ## Most-used code locations
 
-- Example schemas: [../src/administration/resources/Patient.ts](../src/administration/resources/Patient.ts), [../src/diagnostic-medicine/resources/Observation.ts](../src/diagnostic-medicine/resources/Observation.ts)
+- Example schemas: [../src/resources/Patient/Patient.ts](../src/resources/Patient/Patient.ts), [../src/resources/Observation/Observation.ts](../src/resources/Observation/Observation.ts)
 - FromFhirR4 schemas: [../src/data-types/complex/](../src/data-types/complex/)
-- Base type definitions: [../src/data-types/base/DomainResource.ts](../src/data-types/base/DomainResource.ts), [../src/data-types/base/BackboneElement.ts](../src/data-types/base/BackboneElement.ts)
+- Base type definitions: [../src/data-types/base/Resource.ts](../src/data-types/base/Resource.ts), [../src/data-types/base/BackboneElement.ts](../src/data-types/base/BackboneElement.ts), and [../src/data-types/base/Element.ts](../src/data-types/base/Element.ts)

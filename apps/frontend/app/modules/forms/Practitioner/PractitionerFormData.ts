@@ -35,8 +35,7 @@ export class PractitionerFormData extends Schema.Class<PractitionerFormData>(
       givenName: practitioner.name?.[0]?.given?.[0] ?? '',
       familyName: practitioner.name?.[0]?.family ?? '',
       gender: practitioner.gender ?? undefined,
-      qualification:
-        practitioner.qualification?.[0]?.code?.text ?? undefined,
+      qualification: practitioner.qualification?.[0]?.code?.text ?? undefined,
     }
   }
 
@@ -74,9 +73,7 @@ export class PractitionerFormData extends Schema.Class<PractitionerFormData>(
     return this.toResource()
   }
 
-  toUpdatePayload(
-    base: Practitioner
-  ): Resource.WithResourceUrl<Practitioner> {
+  toUpdatePayload(base: Practitioner): Resource.WithResourceUrl<Practitioner> {
     if (!base.url) throw new Error('Cannot update resource without url')
     return { ...base, ...this.toResource(), url: base.url }
   }

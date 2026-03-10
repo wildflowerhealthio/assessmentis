@@ -15,10 +15,7 @@ import { FhirR4Attachment } from '../../data-types/complex/Attachment'
 import { FhirR4CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import { FhirR4ContactPoint } from '../../data-types/complex/ContactPoint'
 import { FhirR4HumanName } from '../../data-types/complex/HumanName'
-import {
-  FhirR4Identifier,
-  FhirR4Reference,
-} from '../../data-types/complex/IdentifierAndReference'
+import { FhirR4Identifier } from '../../data-types/complex/IdentifierAndReference'
 import type { BaseUrl } from '../../data-types/UrlIdentification'
 import { PractitionerQualificationEncodedFromFhir } from './PractitionerQualification'
 

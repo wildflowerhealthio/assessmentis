@@ -3,8 +3,9 @@ import { type Response } from 'express'
 import { onRequest, type Request } from 'firebase-functions/https'
 import { error, info } from 'firebase-functions/logger'
 
+import { DailyCoApiKeyLiveCredential } from '@assessmentis/daily-co-infrastructure'
 import {
-  LoadedDailyCoSecret,
+  CurrentOrg,
   OrgSlug,
   OrgUserService,
   OrgUserServiceLayer,
@@ -15,7 +16,6 @@ import { type ParsedQs } from 'qs'
 
 import { CurrentOrgLayerLive } from '../layers/CurrentOrgLayerLive'
 import { CurrentUserIdLayerLive } from '../layers/CurrentUserIdLayerLive'
-import { DailyCoSecretLayerLive } from '../layers/orgSecretLayers'
 import { makeRequestRuntime } from '../util/BaseLayer'
 import { defaultHttpOptions } from '../util/functionContext'
 import { handleError } from '../util/handleError'
@@ -47,7 +47,8 @@ export const dailycoEffect = (
     const rolesWithDailyCoAccess = ['admin', 'clinician'] as const
     yield* orgContext.ensureRole(rolesWithDailyCoAccess)
 
-    const secret = yield* LoadedDailyCoSecret
+    const orgSlug = yield* CurrentOrg
+    const secret = yield* DailyCoApiKeyLiveCredential.readOnce({ orgSlug })
 
     // Build Daily.co API URL
     const queryParams = new URLSearchParams(
@@ -117,11 +118,10 @@ export const dailyco = onRequest(
     const [_, orgSlugStr, destination] = urlMatch
     const orgSlug = OrgSlug.make(orgSlugStr)
     const runtime = makeRequestRuntime(
-      Layer.mergeAll(OrgUserServiceLayer, DailyCoSecretLayerLive).pipe(
+      Layer.mergeAll(OrgUserServiceLayer, CurrentOrgLayerLive).pipe(
         Layer.provide(CurrentOrgLayerLive),
         Layer.provide(CurrentUserIdLayerLive)
       ),
-
       { request, orgSlug }
     )
     await runtime

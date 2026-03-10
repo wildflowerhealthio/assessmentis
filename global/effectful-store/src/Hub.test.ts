@@ -13,6 +13,7 @@ import {
   Request,
   RequestResolver,
   Stream,
+  SubscriptionRef,
 } from 'effect'
 
 import {
@@ -22,8 +23,8 @@ import {
   NotFoundError,
 } from '@assessmentis/ontology'
 
-import { makeHub, type Hub } from './Hub'
-import type { NotReadyOrigin, ReadyOrigin } from './OriginState'
+import { makeHubFromRef, type HubError, type HubState } from './Hub'
+import type { NotReadyOrigin, OriginState, ReadyOrigin } from './OriginState'
 import { ReadonlyUrl } from './ReadonlyUrl'
 import type * as Resource from './Resource'
 import type * as ResourceRequest from './ResourceRequest'
@@ -48,6 +49,43 @@ type TestResources = {
 }
 
 type TR = TestResources['TestResource']
+
+// --- Mutable hub test harness ---
+
+const makeMutableHub = <
+  Resources extends Record<string, Resource.Resource<string>>,
+>(
+  resourceKeys: ReadonlyArray<keyof Resources & string>
+) =>
+  Effect.gen(function* () {
+    const stateRef = yield* SubscriptionRef.make<
+      Either.Either<HubState<Resources>, HubError>
+    >(Either.right(new Map()))
+    const hub = makeHubFromRef(resourceKeys, stateRef)
+
+    const setOriginState = <ActiveResources extends keyof Resources>(
+      origin: OriginState<Resources, ActiveResources>
+    ): Effect.Effect<void> =>
+      SubscriptionRef.update(stateRef, (current) => {
+        const state = Either.isRight(current) ? current.right : new Map()
+        const next = new Map(state)
+        next.set(origin.originUrl.toString(), origin)
+        return Either.right(next)
+      })
+
+    const deregisterOrigin = (originUrl: ReadonlyUrl): Effect.Effect<void> =>
+      SubscriptionRef.update(stateRef, (current) => {
+        const state = Either.isRight(current) ? current.right : new Map()
+        const next = new Map(state)
+        next.delete(originUrl.toString())
+        return Either.right(next)
+      })
+
+    const setHubError = (error: HubError): Effect.Effect<void> =>
+      SubscriptionRef.set(stateRef, Either.left(error))
+
+    return { hub, setOriginState, setHubError, deregisterOrigin }
+  })
 
 // --- Builders ---
 
@@ -189,9 +227,9 @@ const requestTagArb: fc.Arbitrary<RequestTag> = fc.oneof(
 
 // --- Composite arbitraries ---
 
-const arbitraryEmptyHubEffect: fc.Arbitrary<
-  Effect.Effect<Hub<TestResources>, never, never>
-> = fc.constant(makeHub<TestResources>(['TestResource', 'OtherResource']))
+const arbitraryEmptyMutableHubEffect = fc.constant(
+  makeMutableHub<TestResources>(['TestResource', 'OtherResource'])
+)
 
 const arbitraryReadyOrigin = <
   ActiveResources extends keyof TestResources = keyof TestResources,
@@ -281,7 +319,7 @@ const arbitraryNotReadyOrigin = ({
 
 const arbitraryHubWithAllReadyOriginsEffect = fc
   .tuple(
-    arbitraryEmptyHubEffect,
+    arbitraryEmptyMutableHubEffect,
     fc.uniqueArray(arbitraryReadyOrigin(), {
       minLength: 1,
       maxLength: 4,
@@ -290,15 +328,15 @@ const arbitraryHubWithAllReadyOriginsEffect = fc
   )
   .map(([emptyHubEffect, readyOrigins]) =>
     Effect.gen(function* () {
-      const hub = yield* emptyHubEffect
-      yield* Effect.all(readyOrigins.map((o) => hub.setOriginState(o.origin)))
-      return { hub, origins: readyOrigins }
+      const { hub, setOriginState } = yield* emptyHubEffect
+      yield* Effect.all(readyOrigins.map((o) => setOriginState(o.origin)))
+      return { hub, setOriginState, origins: readyOrigins }
     })
   )
 
 const arbitraryHubWithSomeErrorOriginsEffect = fc
   .tuple(
-    arbitraryEmptyHubEffect,
+    arbitraryEmptyMutableHubEffect,
     fc.uniqueArray(arbitraryReadyOrigin(), {
       minLength: 1,
       maxLength: 3,
@@ -316,74 +354,14 @@ const arbitraryHubWithSomeErrorOriginsEffect = fc
   })
   .map(([emptyHubEffect, readyOrigins, errorOrigins]) =>
     Effect.gen(function* () {
-      const hub = yield* emptyHubEffect
+      const { hub, setOriginState } = yield* emptyHubEffect
       yield* Effect.all([
-        ...readyOrigins.map((o) => hub.setOriginState(o.origin)),
-        ...errorOrigins.map((o) => hub.setOriginState(o.origin)),
+        ...readyOrigins.map((o) => setOriginState(o.origin)),
+        ...errorOrigins.map((o) => setOriginState(o.origin)),
       ])
-      return { hub, readyOrigins, errorOrigins }
+      return { hub, setOriginState, readyOrigins, errorOrigins }
     })
   )
-
-const sendRequest = (
-  hub: Hub<TestResources>,
-  origin: ReadonlyUrl,
-  tag: RequestTag
-) => {
-  const url = origin.appendToPathname('/TestResource/1')
-  switch (tag) {
-    case 'Get':
-      return Effect.request(
-        Request.of<ResourceRequest.Get<TR>>()({
-          _tag: 'Get',
-          domainType: 'TestResource',
-          url,
-          origin,
-        }),
-        hub.resolver
-      ).pipe(Effect.asVoid)
-    case 'Search':
-      return Effect.request(
-        Request.of<ResourceRequest.Search<TR>>()({
-          _tag: 'Search',
-          domainType: 'TestResource',
-          params: {},
-          origin,
-        }),
-        hub.resolver
-      ).pipe(Effect.asVoid)
-    case 'Create':
-      return Effect.request(
-        Request.of<ResourceRequest.Create<TR>>()({
-          _tag: 'Create',
-          domainType: 'TestResource',
-          resource: { domainType: 'TestResource', name: 'new' },
-          origin,
-        }),
-        hub.resolver
-      ).pipe(Effect.asVoid)
-    case 'Update':
-      return Effect.request(
-        Request.of<ResourceRequest.Update<TR>>()({
-          _tag: 'Update',
-          domainType: 'TestResource',
-          resource: { domainType: 'TestResource', url, name: 'x' },
-          origin,
-        }),
-        hub.resolver
-      ).pipe(Effect.asVoid)
-    case 'Delete':
-      return Effect.request(
-        Request.of<ResourceRequest.Delete<TR>>()({
-          _tag: 'Delete',
-          domainType: 'TestResource',
-          resource: { url },
-          origin,
-        }),
-        hub.resolver
-      ).pipe(Effect.asVoid)
-  }
-}
 
 const squashFailure = <A, E>(exit: Exit.Exit<A, E>): E => {
   if (Exit.isFailure(exit)) return Cause.squash(exit.cause) as E
@@ -464,11 +442,11 @@ describe('Hub', () => {
       },
       ({ notReady, requestTag }) =>
         Effect.gen(function* () {
-          const hub = yield* makeHub<TestResources>([
+          const { hub, setOriginState } = yield* makeMutableHub<TestResources>([
             'TestResource',
             'OtherResource',
           ])
-          yield* hub.setOriginState(notReady.origin)
+          yield* setOriginState(notReady.origin)
 
           const exit = yield* Effect.request(
             notReady.requestGenerators[requestTag](),
@@ -512,12 +490,12 @@ describe('Hub', () => {
     it.effect.prop(
       'requests to unregistered origins fail with UnhandledError',
       {
-        arbitraryEmptyHubEffect,
+        arbitraryEmptyMutableHubEffect,
         origin: originUrlArb,
       },
-      ({ arbitraryEmptyHubEffect, origin }) =>
+      ({ arbitraryEmptyMutableHubEffect, origin }) =>
         Effect.gen(function* () {
-          const hub = yield* arbitraryEmptyHubEffect
+          const { hub } = yield* arbitraryEmptyMutableHubEffect
 
           const exit = yield* Effect.request(
             Request.of<ResourceRequest.Search<TR>>()({
@@ -537,18 +515,18 @@ describe('Hub', () => {
     it.effect.prop(
       'requests for a resource type the origin does not support fail with UnhandledError',
       {
-        arbitraryEmptyHubEffect,
+        arbitraryEmptyMutableHubEffect,
         readyOrigin: arbitraryReadyOrigin<'OtherResource'>({
           activeResources: { OtherResource: true, TestResource: false },
         }),
         requestTag: requestTagArb,
       },
-      ({ arbitraryEmptyHubEffect, readyOrigin, requestTag }) =>
+      ({ arbitraryEmptyMutableHubEffect, readyOrigin, requestTag }) =>
         Effect.gen(function* () {
-          const hub = yield* arbitraryEmptyHubEffect
-          const { handler, origin, requestGenerators } = readyOrigin //makeTrackedResolver(origin)
+          const { hub, setOriginState } = yield* arbitraryEmptyMutableHubEffect
+          const { handler, origin, requestGenerators } = readyOrigin
 
-          yield* hub.setOriginState<'OtherResource'>(origin)
+          yield* setOriginState(origin)
 
           const exit = yield* Effect.request(
             requestGenerators[requestTag](),
@@ -564,14 +542,14 @@ describe('Hub', () => {
       { origin: originUrlArb },
       ({ origin }) =>
         Effect.gen(function* () {
-          const hub = yield* makeHub<TestResources>([
+          const { hub, setOriginState } = yield* makeMutableHub<TestResources>([
             'TestResource',
             'OtherResource',
           ])
           const { handler, resolver, requestGenerators } =
             makeTrackedResolver(origin)
 
-          yield* hub.setOriginState<'OtherResource'>({
+          yield* setOriginState({
             originUrl: origin,
             activeResources: { OtherResource: true },
             resolver,
@@ -595,20 +573,21 @@ describe('Hub', () => {
     it.effect.prop(
       'setOriginState makes the origin reachable; deregisterOrigin removes it',
       {
-        arbitraryEmptyHubEffect,
+        arbitraryEmptyMutableHubEffect,
         ready: arbitraryReadyOrigin(),
         requestTag: requestTagArb,
       },
-      ({ arbitraryEmptyHubEffect, ready, requestTag }) =>
+      ({ arbitraryEmptyMutableHubEffect, ready, requestTag }) =>
         Effect.gen(function* () {
-          const hub = yield* arbitraryEmptyHubEffect
-          yield* hub.setOriginState(ready.origin)
+          const { hub, setOriginState, deregisterOrigin } =
+            yield* arbitraryEmptyMutableHubEffect
+          yield* setOriginState(ready.origin)
           yield* Effect.request(
             ready.requestGenerators[requestTag](),
             hub.resolver
           ).pipe(Effect.asVoid)
 
-          yield* hub.deregisterOrigin(ready.url)
+          yield* deregisterOrigin(ready.url)
           const exit = yield* Effect.request(
             ready.requestGenerators[requestTag](),
             hub.resolver
@@ -634,20 +613,20 @@ describe('Hub', () => {
     it.effect.prop(
       'setOriginState replaces the previous resolver — only the latest is called',
       {
-        arbitraryEmptyHubEffect,
+        arbitraryEmptyMutableHubEffect,
         twinnedReadyOrigins: twinnedReadyOrigins(),
         requestTag: requestTagArb,
       },
       ({
-        arbitraryEmptyHubEffect,
-        twinnedReadyOrigins: { origin, firstOrigin, secondOrigin },
+        arbitraryEmptyMutableHubEffect,
+        twinnedReadyOrigins: { firstOrigin, secondOrigin },
         requestTag,
       }) =>
         Effect.gen(function* () {
-          const hub = yield* arbitraryEmptyHubEffect
+          const { hub, setOriginState } = yield* arbitraryEmptyMutableHubEffect
 
-          yield* hub.setOriginState(firstOrigin.origin)
-          yield* hub.setOriginState(secondOrigin.origin)
+          yield* setOriginState(firstOrigin.origin)
+          yield* setOriginState(secondOrigin.origin)
           yield* Effect.request(
             secondOrigin.requestGenerators[requestTag](),
             hub.resolver
@@ -675,21 +654,25 @@ describe('Hub', () => {
     it.effect.prop(
       'recovery: any error state can be resolved by setting a ready origin',
       {
-        arbitraryEmptyHubEffect,
+        arbitraryEmptyMutableHubEffect,
         origins: twinnedReadyAndNotReadyOrigins(),
         requestTag: requestTagArb,
       },
-      ({ arbitraryEmptyHubEffect, origins: { ready, notReady }, requestTag }) =>
+      ({
+        arbitraryEmptyMutableHubEffect,
+        origins: { ready, notReady },
+        requestTag,
+      }) =>
         Effect.gen(function* () {
-          const hub = yield* arbitraryEmptyHubEffect
-          yield* hub.setOriginState(notReady.origin)
+          const { hub, setOriginState } = yield* arbitraryEmptyMutableHubEffect
+          yield* setOriginState(notReady.origin)
           const failExit = yield* Effect.request(
             notReady.requestGenerators[requestTag](),
             hub.resolver
           ).pipe(Effect.asVoid, Effect.exit)
           expect(Exit.isFailure(failExit)).toBe(true)
 
-          yield* hub.setOriginState(ready.origin)
+          yield* setOriginState(ready.origin)
           yield* Effect.request(
             notReady.requestGenerators[requestTag](),
             hub.resolver
@@ -702,11 +685,11 @@ describe('Hub', () => {
   describe('subscribeTestResource', () => {
     it.effect.prop(
       'emits the resource when origin is ready',
-      { ready: arbitraryReadyOrigin(), arbitraryEmptyHubEffect },
-      ({ ready, arbitraryEmptyHubEffect }) =>
+      { ready: arbitraryReadyOrigin(), arbitraryEmptyMutableHubEffect },
+      ({ ready, arbitraryEmptyMutableHubEffect }) =>
         Effect.gen(function* () {
-          const hub = yield* arbitraryEmptyHubEffect
-          yield* hub.setOriginState(ready.origin)
+          const { hub, setOriginState } = yield* arbitraryEmptyMutableHubEffect
+          yield* setOriginState(ready.origin)
 
           const url = ready.url.appendToPathname('/TestResource/1')
           const results = yield* hub
@@ -721,10 +704,10 @@ describe('Hub', () => {
 
     it.effect.prop(
       'emits Left when no origin matches, then Right when origin becomes available',
-      { ready: arbitraryReadyOrigin(), arbitraryEmptyHubEffect },
-      ({ ready, arbitraryEmptyHubEffect }) =>
+      { ready: arbitraryReadyOrigin(), arbitraryEmptyMutableHubEffect },
+      ({ ready, arbitraryEmptyMutableHubEffect }) =>
         Effect.gen(function* () {
-          const hub = yield* arbitraryEmptyHubEffect
+          const { hub, setOriginState } = yield* arbitraryEmptyMutableHubEffect
           const url = ready.url.appendToPathname('/TestResource/1')
 
           const latch = yield* Deferred.make<void>()
@@ -736,7 +719,7 @@ describe('Hub', () => {
           )
 
           yield* Deferred.await(latch) // ensure subscription is active
-          yield* hub.setOriginState(ready.origin)
+          yield* setOriginState(ready.origin)
 
           const results = Chunk.toReadonlyArray(yield* Fiber.join(fiber))
           expect(results).toHaveLength(2)
@@ -748,7 +731,7 @@ describe('Hub', () => {
     it.effect.prop(
       're-emits when the matching origin is replaced',
       {
-        arbitraryEmptyHubEffect,
+        arbitraryEmptyMutableHubEffect,
         origins: originUrlArb.chain((baseUrl) =>
           fc.record({
             first: arbitraryReadyOrigin({ originUrl: fc.constant(baseUrl) }),
@@ -756,10 +739,10 @@ describe('Hub', () => {
           })
         ),
       },
-      ({ arbitraryEmptyHubEffect, origins: { first, second } }) =>
+      ({ arbitraryEmptyMutableHubEffect, origins: { first, second } }) =>
         Effect.gen(function* () {
-          const hub = yield* arbitraryEmptyHubEffect
-          yield* hub.setOriginState(first.origin)
+          const { hub, setOriginState } = yield* arbitraryEmptyMutableHubEffect
+          yield* setOriginState(first.origin)
 
           const resourceUrl = first.url.appendToPathname('/TestResource/1')
           const latch = yield* Deferred.make<void>()
@@ -771,7 +754,7 @@ describe('Hub', () => {
           )
 
           yield* Deferred.await(latch)
-          yield* hub.setOriginState(second.origin)
+          yield* setOriginState(second.origin)
 
           const results = Chunk.toReadonlyArray(yield* Fiber.join(fiber))
           expect(results).toHaveLength(2)
@@ -782,7 +765,7 @@ describe('Hub', () => {
     it.effect.prop(
       'does not re-emit when an unrelated origin changes',
       {
-        arbitraryEmptyHubEffect,
+        arbitraryEmptyMutableHubEffect,
         origins: fc
           .record({
             target: originUrlArb.chain((baseUrl) =>
@@ -812,11 +795,11 @@ describe('Hub', () => {
               !unrelated.first.url.hasChild(target.first.url)
           ),
       },
-      ({ arbitraryEmptyHubEffect, origins: { target, unrelated } }) =>
+      ({ arbitraryEmptyMutableHubEffect, origins: { target, unrelated } }) =>
         Effect.gen(function* () {
-          const hub = yield* arbitraryEmptyHubEffect
-          yield* hub.setOriginState(target.first.origin)
-          yield* hub.setOriginState(unrelated.first.origin)
+          const { hub, setOriginState } = yield* arbitraryEmptyMutableHubEffect
+          yield* setOriginState(target.first.origin)
+          yield* setOriginState(unrelated.first.origin)
 
           const resourceUrl =
             target.first.url.appendToPathname('/TestResource/1')
@@ -830,9 +813,9 @@ describe('Hub', () => {
 
           yield* Deferred.await(latch)
           // Change unrelated origin (should NOT trigger emission)
-          yield* hub.setOriginState(unrelated.second.origin)
+          yield* setOriginState(unrelated.second.origin)
           // Change target origin (SHOULD trigger emission, completing take(2))
-          yield* hub.setOriginState(target.second.origin)
+          yield* setOriginState(target.second.origin)
 
           const results = Chunk.toReadonlyArray(yield* Fiber.join(fiber))
           expect(results).toHaveLength(2)
@@ -864,10 +847,10 @@ describe('Hub', () => {
 
     it.effect.prop(
       'emits Left when no origins exist, then Right when one is registered',
-      { ready: arbitraryReadyOrigin(), arbitraryEmptyHubEffect },
-      ({ ready, arbitraryEmptyHubEffect }) =>
+      { ready: arbitraryReadyOrigin(), arbitraryEmptyMutableHubEffect },
+      ({ ready, arbitraryEmptyMutableHubEffect }) =>
         Effect.gen(function* () {
-          const hub = yield* arbitraryEmptyHubEffect
+          const { hub, setOriginState } = yield* arbitraryEmptyMutableHubEffect
 
           const latch = yield* Deferred.make<void>()
           const fiber = yield* hub.subscribeSearchTestResource().pipe(
@@ -878,7 +861,7 @@ describe('Hub', () => {
           )
 
           yield* Deferred.await(latch)
-          yield* hub.setOriginState(ready.origin)
+          yield* setOriginState(ready.origin)
 
           const results = Chunk.toReadonlyArray(yield* Fiber.join(fiber))
           expect(results).toHaveLength(2)
@@ -890,7 +873,7 @@ describe('Hub', () => {
     it.effect.prop(
       're-emits when a relevant origin is replaced',
       {
-        arbitraryEmptyHubEffect,
+        arbitraryEmptyMutableHubEffect,
         origins: originUrlArb.chain((baseUrl) =>
           fc.record({
             first: arbitraryReadyOrigin({ originUrl: fc.constant(baseUrl) }),
@@ -898,10 +881,10 @@ describe('Hub', () => {
           })
         ),
       },
-      ({ arbitraryEmptyHubEffect, origins: { first, second } }) =>
+      ({ arbitraryEmptyMutableHubEffect, origins: { first, second } }) =>
         Effect.gen(function* () {
-          const hub = yield* arbitraryEmptyHubEffect
-          yield* hub.setOriginState(first.origin)
+          const { hub, setOriginState } = yield* arbitraryEmptyMutableHubEffect
+          yield* setOriginState(first.origin)
 
           const latch = yield* Deferred.make<void>()
           const fiber = yield* hub.subscribeSearchTestResource().pipe(
@@ -912,7 +895,7 @@ describe('Hub', () => {
           )
 
           yield* Deferred.await(latch)
-          yield* hub.setOriginState(second.origin)
+          yield* setOriginState(second.origin)
 
           const results = Chunk.toReadonlyArray(yield* Fiber.join(fiber))
           expect(results).toHaveLength(2)
@@ -923,7 +906,7 @@ describe('Hub', () => {
     it.effect.prop(
       'does not re-emit when an origin with unrelated resource types changes',
       {
-        arbitraryEmptyHubEffect,
+        arbitraryEmptyMutableHubEffect,
         origins: fc
           .record({
             testOnly: originUrlArb.chain((baseUrl) =>
@@ -968,11 +951,11 @@ describe('Hub', () => {
               testOnly.first.url.toString() !== otherOnly.first.url.toString()
           ),
       },
-      ({ arbitraryEmptyHubEffect, origins: { testOnly, otherOnly } }) =>
+      ({ arbitraryEmptyMutableHubEffect, origins: { testOnly, otherOnly } }) =>
         Effect.gen(function* () {
-          const hub = yield* arbitraryEmptyHubEffect
-          yield* hub.setOriginState(testOnly.first.origin)
-          yield* hub.setOriginState(otherOnly.first.origin)
+          const { hub, setOriginState } = yield* arbitraryEmptyMutableHubEffect
+          yield* setOriginState(testOnly.first.origin)
+          yield* setOriginState(otherOnly.first.origin)
 
           const latch = yield* Deferred.make<void>()
           const fiber = yield* hub.subscribeSearchTestResource().pipe(
@@ -984,9 +967,9 @@ describe('Hub', () => {
 
           yield* Deferred.await(latch)
           // Change OtherResource-only origin (should NOT trigger re-emit)
-          yield* hub.setOriginState(otherOnly.second.origin)
+          yield* setOriginState(otherOnly.second.origin)
           // Change TestResource origin (SHOULD trigger re-emit, completing take(2))
-          yield* hub.setOriginState(testOnly.second.origin)
+          yield* setOriginState(testOnly.second.origin)
 
           const results = Chunk.toReadonlyArray(yield* Fiber.join(fiber))
           expect(results).toHaveLength(2)
@@ -1000,11 +983,11 @@ describe('Hub', () => {
   describe('HubRepository', () => {
     it.effect.prop(
       'get infers origin from URL and returns the resource',
-      { ready: arbitraryReadyOrigin(), arbitraryEmptyHubEffect },
-      ({ ready, arbitraryEmptyHubEffect }) =>
+      { ready: arbitraryReadyOrigin(), arbitraryEmptyMutableHubEffect },
+      ({ ready, arbitraryEmptyMutableHubEffect }) =>
         Effect.gen(function* () {
-          const hub = yield* arbitraryEmptyHubEffect
-          yield* hub.setOriginState(ready.origin)
+          const { hub, setOriginState } = yield* arbitraryEmptyMutableHubEffect
+          yield* setOriginState(ready.origin)
 
           const url = ready.url.appendToPathname('/TestResource/1')
           const result = yield* hub.getTestResource(url)
@@ -1018,10 +1001,10 @@ describe('Hub', () => {
 
     it.effect.prop(
       'get fails with NotFoundError when no origin matches the URL',
-      { origin: originUrlArb, arbitraryEmptyHubEffect },
-      ({ origin, arbitraryEmptyHubEffect }) =>
+      { origin: originUrlArb, arbitraryEmptyMutableHubEffect },
+      ({ origin, arbitraryEmptyMutableHubEffect }) =>
         Effect.gen(function* () {
-          const hub = yield* arbitraryEmptyHubEffect
+          const { hub } = yield* arbitraryEmptyMutableHubEffect
           const unregisteredUrl = origin.appendToPathname('/TestResource/1')
 
           const exit = yield* hub
@@ -1036,17 +1019,17 @@ describe('Hub', () => {
       'get fails with UnhandledError when multiple origins match the URL',
       {
         origin: originUrlArb,
-        arbitraryEmptyHubEffect,
+        arbitraryEmptyMutableHubEffect,
       },
-      ({ origin, arbitraryEmptyHubEffect }) =>
+      ({ origin, arbitraryEmptyMutableHubEffect }) =>
         Effect.gen(function* () {
-          const hub = yield* arbitraryEmptyHubEffect
+          const { hub, setOriginState } = yield* arbitraryEmptyMutableHubEffect
           const { resolver: resolver1 } = makeTrackedResolver(origin)
           const { resolver: resolver2 } = makeTrackedResolver(origin)
 
           // Register two origins where one is a parent of the other
           const childOrigin = origin.appendToPathname('/sub')
-          yield* hub.setOriginState({
+          yield* setOriginState({
             originUrl: origin,
             activeResources: { TestResource: true, OtherResource: true },
             resolver: resolver1,
@@ -1054,7 +1037,7 @@ describe('Hub', () => {
             provokeReauthenticate: noopProvoke,
             provokeReauthorize: noopProvoke,
           })
-          yield* hub.setOriginState({
+          yield* setOriginState({
             originUrl: childOrigin,
             activeResources: { TestResource: true, OtherResource: true },
             resolver: resolver2,
@@ -1095,11 +1078,11 @@ describe('Hub', () => {
       { ready: arbitraryReadyOrigin() },
       ({ ready }) =>
         Effect.gen(function* () {
-          const hub = yield* makeHub<TestResources>([
+          const { hub, setOriginState } = yield* makeMutableHub<TestResources>([
             'TestResource',
             'OtherResource',
           ])
-          yield* hub.setOriginState(ready.origin)
+          yield* setOriginState(ready.origin)
 
           const result = yield* hub.createTestResource(
             { domainType: 'TestResource', name: 'new' },
@@ -1121,11 +1104,11 @@ describe('Hub', () => {
       { ready: arbitraryReadyOrigin() },
       ({ ready }) =>
         Effect.gen(function* () {
-          const hub = yield* makeHub<TestResources>([
+          const { hub, setOriginState } = yield* makeMutableHub<TestResources>([
             'TestResource',
             'OtherResource',
           ])
-          yield* hub.setOriginState(ready.origin)
+          yield* setOriginState(ready.origin)
 
           const result = yield* hub.createTestResource({
             domainType: 'TestResource',
@@ -1143,7 +1126,7 @@ describe('Hub', () => {
       'create without origin fails with UnhandledError when no origins exist',
       () =>
         Effect.gen(function* () {
-          const hub = yield* makeHub<TestResources>([
+          const { hub } = yield* makeMutableHub<TestResources>([
             'TestResource',
             'OtherResource',
           ])
@@ -1164,11 +1147,11 @@ describe('Hub', () => {
       { ready: arbitraryReadyOrigin() },
       ({ ready }) =>
         Effect.gen(function* () {
-          const hub = yield* makeHub<TestResources>([
+          const { hub, setOriginState } = yield* makeMutableHub<TestResources>([
             'TestResource',
             'OtherResource',
           ])
-          yield* hub.setOriginState(ready.origin)
+          yield* setOriginState(ready.origin)
 
           const results = yield* hub.createManyTestResource(
             [
@@ -1188,11 +1171,11 @@ describe('Hub', () => {
       { ready: arbitraryReadyOrigin() },
       ({ ready }) =>
         Effect.gen(function* () {
-          const hub = yield* makeHub<TestResources>([
+          const { hub, setOriginState } = yield* makeMutableHub<TestResources>([
             'TestResource',
             'OtherResource',
           ])
-          yield* hub.setOriginState(ready.origin)
+          yield* setOriginState(ready.origin)
 
           const url = ready.url.appendToPathname('/TestResource/1')
           const result = yield* hub.updateTestResource({
@@ -1213,11 +1196,11 @@ describe('Hub', () => {
       { ready: arbitraryReadyOrigin() },
       ({ ready }) =>
         Effect.gen(function* () {
-          const hub = yield* makeHub<TestResources>([
+          const { hub, setOriginState } = yield* makeMutableHub<TestResources>([
             'TestResource',
             'OtherResource',
           ])
-          yield* hub.setOriginState(ready.origin)
+          yield* setOriginState(ready.origin)
 
           const url = ready.url.appendToPathname('/TestResource/1')
           yield* hub.deleteTestResource(url)

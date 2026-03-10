@@ -322,11 +322,12 @@ export const syncVideoCallRecordingsEffect = Effect.gen(function* () {
       }),
   })
 
-  // Filter to eligible orgs
+  // Filter to eligible orgs — those with a daily_co origin
   const eligibleOrgs = orgsSnapshot.docs.filter((doc) => {
-    const data = doc.data()
-    const vcClient = data?.frontendConfig?.videoCallClient
-    return vcClient?._tag && vcClient._tag !== 'not_implemented'
+    const data = doc.data() as { origins?: Record<string, { _tag?: string }> }
+    const origins = data?.origins
+    if (!origins) return false
+    return Object.values(origins).some((def) => def._tag === 'daily_co')
   })
 
   info(

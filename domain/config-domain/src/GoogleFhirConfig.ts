@@ -1,7 +1,6 @@
 import { Context, Schema } from 'effect'
 
 export const GoogleFhirConfig = Schema.TaggedStruct('google_fhir_store', {
-  apiKey: Schema.NullOr(Schema.String),
   projectId: Schema.String,
   region: Schema.String,
   dataset: Schema.String,

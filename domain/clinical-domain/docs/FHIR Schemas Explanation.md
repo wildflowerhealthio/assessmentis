@@ -76,5 +76,5 @@ The refactor was started in commit `c12f77c` ("Split interfaces away from Schema
 ## See Also
 
 - [FHIR Schemas How-To](./FHIR%20Schemas%20How-To.md) — Steps to transform a schema to use this pattern
-- [FHIR Modeling Reference](../FHIR%20Modeling%20Reference.md) — Core modeling rules and conventions
+- [FHIR Modeling Reference](./FHIR%20Modeling%20Reference.md) — Core modeling rules and conventions
 - [Adding Resource Types How-To](./Adding%20Resource%20Types%20How-To.md) — End-to-end workflow for adding a Clinical Resource

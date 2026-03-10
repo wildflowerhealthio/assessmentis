@@ -2,10 +2,11 @@ import 'dotenv/config'
 
 import { afterAll, afterEach, beforeAll } from 'vitest'
 
-import type { DailyCoConfig } from '@assessmentis/config-domain'
 import { setupNodeIntercepting } from '@assessmentis/testing-utils/vcr-js/node'
 
 import { http } from 'msw'
+
+import type { DailyCoOriginDefinition } from '../../src/DailyCoOriginDefinition'
 
 export const DAILY_CO_API_BASE = 'https://api.daily.co'
 
@@ -13,10 +14,11 @@ export const DAILY_CO_API_BASE = 'https://api.daily.co'
  * Test configuration for Daily.co API
  * Uses environment variables for real API access in record mode
  */
-export const testConfig: DailyCoConfig = {
+export const testConfig: DailyCoOriginDefinition = {
   _tag: 'daily_co' as const,
   dailyCoProxyUrl: 'https://api.daily.co/v1',
   recordingsBucket: undefined,
+  activeResources: { Location: true, Media: true, Observation: true },
 }
 
 const isRecordMode = process.env.RECORD === 'true'

@@ -1,5 +1,3 @@
-import { isNotUndefined, isUndefined } from 'effect/Predicate'
-
 import * as ClinicalDomain from '@assessmentis/clinical-domain'
 
 import type { BreadcrumbLabelInstance } from '../BreadcrumbLabel'

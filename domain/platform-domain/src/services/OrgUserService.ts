@@ -56,7 +56,7 @@ export const OrgUserServiceLayer = Layer.effect(
           )
         }
         if (!data.roles.some((role: string) => allowedRoles.includes(role))) {
-          yield* Effect.fail(
+          return yield* Effect.fail(
             new AuthzError({ message: 'Not authorized org user' })
           )
         }

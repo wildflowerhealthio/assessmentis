@@ -105,3 +105,21 @@ Append-only log for agent-discovered knowledge. Agents add entries here during w
 **Discovered during**: ruthmarks/refactor/seperate-fhir-from-data-types (applySchemaMixinTo elimination)
 **Learning**: `applySchemaMixinTo` has been fully replaced by `MergeClasses` across the codebase. The following earlier entries are now outdated: "Arrow-function statics required for applySchemaMixinTo" (line 55), "Base type factory pattern" (line 73, reference to applySchemaMixinTo), "Extension delegates DatatypeChoice methods manually, not via applySchemaMixinTo" (line 79). The new pattern is `class Foo extends MergeClasses<Foo>('Foo')(mixin, fields) {}` — no intermediate class, no manual `.fields` spread, no aliased export. `MergeClasses` uses `for...in` (not `Object.assign`) to copy statics, which ensures inherited statics survive when a MergeClasses result is used as mixin input to another MergeClasses call.
 **Suggested destination**: domain/clinical-domain/docs/FHIR Modeling Reference.md
+
+### TODO.md accumulated stale descriptions across multi-session refactors
+
+**Discovered during**: ruthmarks/refactor/seperate-fhir-from-data-types (Phase 6 verification)
+**Learning**: When a multi-phase refactor spans many sessions, execution plan sections in TODO.md can become stale as implementation diverges from the plan (e.g., `GoogleFhirOriginFactory` was planned but `GoogleFhirOriginType` was built instead; `originCredentials` was planned but `originConfig` was implemented after cleanup pass). At each phase completion, update or replace the plan sections with "what was actually built" summaries. Also update file reference tables — stale entries (listing files as "DELETE in Phase X" that are already deleted) mislead the next agent.
+**Suggested destination**: Strategies
+
+### PlatformContextProvider test mocks must match actual module imports
+
+**Discovered during**: ruthmarks/refactor/seperate-fhir-from-data-types (Phase 6 verification)
+**Learning**: `vi.mock` replaces the entire module — any import not provided in the mock factory returns `undefined`. The PlatformContextProvider test had a stale mock for `makeGoogleFhirOriginFactory` (renamed to `makeGoogleFhirOriginType`) and was missing a mock for `@assessmentis/daily-co-infrastructure` entirely. The tests still passed because the platform effect runs async and failures were caught by the error boundary or `waitFor` timeouts. When module-level vi.mock is used, verify mock keys match actual imports to avoid false-passing tests.
+**Suggested destination**: docs/Testing/Testing Reference.md
+
+### Backend credential path alignment is Phase 8's core challenge
+
+**Discovered during**: ruthmarks/refactor/seperate-fhir-from-data-types (Phase 8 pre-verification)
+**Learning**: The frontend credential system (`GoogleUserOAuthLiveCredential`) reads from `users/{userId}/credentials/google_user_oauth_token:{email}` but the backend `AuthRepository` writes to `users/{userId}/tokens/googleOAuthAccessToken`. The schema shapes also differ: backend stores `{ token, expiresAt, scope, tokenType, lastUpdated }` while `GoogleUserOAuthToken` expects `{ _tag, email, scope, accessToken, expiresAt }`. Similarly, `orgSecretLayers.ts` reads from `orgs/{slug}/secrets/{identifier}` but `DailyCoApiKeyLiveCredential` expects `orgs/{orgSlug}/credentials/dailyco`. Phase 8 must align both paths AND schemas, plus update Firestore rules.
+**Suggested destination**: unsure

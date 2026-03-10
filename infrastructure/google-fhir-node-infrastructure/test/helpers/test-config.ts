@@ -13,7 +13,6 @@ import { NodeGoogleHealthcareFhirR4ClientLayer } from '../../src/NodeGoogleHealt
 
 export const testConfig = {
   _tag: 'google_fhir_store' as const,
-  apiKey: null,
   projectId: process.env.FHIR_PROJECT_ID || 'assessmentis',
   region: process.env.FHIR_REGION || 'northamerica-northeast2',
   dataset: process.env.FHIR_DATASET || 'integration-test',

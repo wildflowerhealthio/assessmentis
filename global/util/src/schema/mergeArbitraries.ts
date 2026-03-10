@@ -2,8 +2,6 @@
 
 import { Arbitrary, Schema, type FastCheck } from 'effect'
 
-import type { TupleToIntersection } from '../types/TupleToIntersection'
-
 /**
  * Something `mergeArbitraries` can extract an arbitrary from:
  * - A `LazyArbitrary` function (no `fields` property)
@@ -16,18 +14,6 @@ export type ArbitrarySource =
   | Arbitrary.LazyArbitrary<any>
   | { readonly fields: Schema.Struct.Fields; new (...args: any[]): any }
   | (Schema.Struct.Fields & { readonly fields?: never })
-
-type SourceType<T extends ArbitrarySource> =
-  T extends Arbitrary.LazyArbitrary<infer A>
-    ? A
-    : T extends {
-          readonly fields: Schema.Struct.Fields
-          new (...args: any[]): any
-        }
-      ? Schema.Schema.Type<T['fields']>
-      : T extends Schema.Struct.Fields
-        ? Schema.Schema.Type<T>
-        : never
 
 const isLazyArbitrary = (
   src: ArbitrarySource

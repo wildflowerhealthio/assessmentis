@@ -22,14 +22,8 @@ describe('OrgContextProvider', () => {
   const mockOrg: Org = {
     slug: OrgSlug.make('test-org'),
     emoji: '🏥',
-    frontendConfig: {
-      fhirServer: {
-        _tag: 'not_implemented' as const,
-      },
-      videoCallClient: {
-        _tag: 'not_implemented' as const,
-      },
-    },
+    origins: {},
+    originConfigs: {},
   }
 
   beforeEach(() => {
@@ -115,10 +109,8 @@ describe('OrgContextProvider', () => {
     const unauthorizedOrg: Org = {
       slug: OrgSlug.make('unauthorized-org'),
       emoji: '🏢',
-      frontendConfig: {
-        fhirServer: { _tag: 'not_implemented' as const },
-        videoCallClient: { _tag: 'not_implemented' as const },
-      },
+      origins: {},
+      originConfigs: {},
     }
 
     vi.mocked(usePlatformContext).mockReturnValue(

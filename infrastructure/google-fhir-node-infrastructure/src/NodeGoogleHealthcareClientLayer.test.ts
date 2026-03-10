@@ -209,7 +209,6 @@ describe('NodeGoogleHealthcareClientLayer', () => {
 
   const testConfig = {
     _tag: 'google_fhir_store' as const,
-    apiKey: null,
     projectId: 'test-project',
     region: 'us-central1',
     dataset: 'test-dataset',

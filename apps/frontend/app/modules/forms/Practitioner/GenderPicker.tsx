@@ -1,4 +1,4 @@
-import { AdministrativeGender } from '@assessmentis/clinical-domain/data-types'
+import type { AdministrativeGender } from '@assessmentis/clinical-domain/data-types'
 import { cn } from '@assessmentis/react-util'
 
 import classes from 'app/modules/common/components/ResourceForm/ResourceForm.module.css'

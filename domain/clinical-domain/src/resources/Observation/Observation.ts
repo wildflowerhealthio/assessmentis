@@ -1,6 +1,4 @@
-import { Schema, type Arbitrary, type FastCheck } from 'effect'
-import type { constant } from 'effect/Function'
-import { omit } from 'effect/Struct'
+import { Schema, type Arbitrary } from 'effect'
 
 import {
   AnnotateArrayWithArbitrary,

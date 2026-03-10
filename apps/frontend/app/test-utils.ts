@@ -70,7 +70,6 @@ export function createMockPlatformContext(
         org_roles: overrides.userOrgs ?? {},
       }),
     } as any,
-    fhirR4ClientService: neverUsedMock('fhirR4ClientService'),
     hub: overrides.hub ?? createMockHub(),
   }
 }

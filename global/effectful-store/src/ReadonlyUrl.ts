@@ -136,6 +136,11 @@ export class ReadonlyUrl extends Schema.Class<ReadonlyUrl>('ReadonlyUrl')({
       }),
   })
 
+  static fromEncoded(encoded: string): ReadonlyUrl {
+    const decoded = decodeURIComponent(encoded)
+    return Schema.decodeSync(this.FromString)(decoded)
+  }
+
   hasChild(otherUrl: ReadonlyUrl): boolean {
     return (
       this.protocol === otherUrl.protocol &&
@@ -151,8 +156,8 @@ export class ReadonlyUrl extends Schema.Class<ReadonlyUrl>('ReadonlyUrl')({
     return url.href
   }
 
-  asUriComponent(): string {
-    return encodeURIComponent(this.toString())
+  asUriComponent(): UriEncodedOriginUrl {
+    return UriEncodedOriginUrl.make(encodeURIComponent(this.toString()))
   }
 
   appendToPathname(path: string): ReadonlyUrl {
@@ -165,3 +170,24 @@ export class ReadonlyUrl extends Schema.Class<ReadonlyUrl>('ReadonlyUrl')({
     })
   }
 }
+
+export const UriEncodedOriginUrl = Schema.String.pipe(
+  Schema.brand('UriEncodedOriginUrl')
+).annotations({
+  arbitrary: () => (fc) =>
+    fc.webUrl().map((str) => {
+      const url = new URL(str)
+      const readonlyUrl = ReadonlyUrl.make({
+        protocol: url.protocol,
+        host: url.host,
+        pathname: url.pathname,
+        username: url.username,
+        password: url.password,
+      })
+      return UriEncodedOriginUrl.make(readonlyUrl.asUriComponent())
+    }),
+})
+export type UriEncodedOriginUrl = typeof UriEncodedOriginUrl.Type
+
+export const fromReadonlyUrl = (url: ReadonlyUrl): UriEncodedOriginUrl =>
+  UriEncodedOriginUrl.make(url.asUriComponent())

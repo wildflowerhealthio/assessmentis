@@ -28,7 +28,7 @@ const useDailyCall = (roomUrl: string | undefined) => {
     'stopped' | 'loading' | 'started'
   >('loading')
   const [appState, setAppState] = useState(VideoCallState.STATE_IDLE)
-  const [meetingToken, setMeetingToken] = useState<string | undefined>()
+  const [meetingToken, _setMeetingToken] = useState<string | undefined>()
   const callObject = useCallObject({})
 
   const [apiError] = useState(false)

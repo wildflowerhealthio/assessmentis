@@ -1,14 +1,12 @@
-import { Effect, Exit, Layer } from 'effect'
+import { Effect, Exit } from 'effect'
 import type { Response } from 'express'
 import { onRequest, type Request } from 'firebase-functions/https'
 import { info } from 'firebase-functions/logger'
 
-import { AuthRepository } from '@assessmentis/firebase-server-infrastructure'
 import type { AuthError, UnhandledError } from '@assessmentis/ontology'
 import { CurrentUserId } from '@assessmentis/platform-domain'
 
 import { CurrentUserIdLayerLive } from '../layers/CurrentUserIdLayerLive'
-import { LoadedUserLayerLive } from '../layers/LoadedUserLayerLive'
 import { makeRequestRuntime } from '../util/BaseLayer'
 import {
   defaultHttpOptions,
@@ -44,10 +42,7 @@ export const googleLogin = onRequest(
   async (request: Request, response: Response) => {
     info('Received request for Google OAuth login')
     const runtime = makeRequestRuntime(
-      AuthRepository.Default.pipe(
-        Layer.provide(LoadedUserLayerLive),
-        Layer.provideMerge(CurrentUserIdLayerLive)
-      ),
+      CurrentUserIdLayerLive,
       { request }
     )
     await runtime.runPromiseExit(googleLoginEffect(request)).then((exit) =>

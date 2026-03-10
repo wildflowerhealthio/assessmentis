@@ -39,9 +39,7 @@ describe('CompositionFormData', () => {
         title: 'Assessment',
       }
 
-      const result = Schema.decodeUnknownSync(CompositionFormData)(
-        minimalData
-      )
+      const result = Schema.decodeUnknownSync(CompositionFormData)(minimalData)
       expect(result.patientUrl).toBeUndefined()
     })
   })

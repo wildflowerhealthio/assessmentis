@@ -8,13 +8,10 @@ import type {
   UserService,
 } from '@assessmentis/platform-domain'
 
-import type { FhirR4ClientService } from './FhirR4ClientService'
-
 export interface PlatformContext {
   authDataService: typeof AuthDataService.Service
   orgService: typeof OrgService.Service
   userService: typeof UserService.Service
-  fhirR4ClientService: typeof FhirR4ClientService.Service
   hub: Hub.Hub<ResourceDataTypes>
 }
 

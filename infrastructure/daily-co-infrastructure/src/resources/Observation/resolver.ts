@@ -7,7 +7,7 @@ import { UnhandledError } from '@assessmentis/ontology'
 
 import {
   assertStatus,
-  getRequestFromHeaders,
+  getRequest,
   handleHttpClientError,
   parseAs,
 } from '../../httpHelpers'
@@ -15,7 +15,7 @@ import { ApiDailyCoTranscriptSchema } from '../../models/ApiDailyCoTranscriptSch
 import {
   fetchTranscriptAccessLink,
   type AnyRequest,
-  type HeadersEffect,
+  type AuthReadable,
 } from '../../resolverUtils'
 import { DailyCoObservation } from './DailyCoObservation'
 
@@ -24,8 +24,8 @@ const decodeObservation = Schema.decodeSync(DailyCoObservation)
 export const makeObservationResolver = (
   httpClient: HttpClient,
   baseUrl: string,
-  headersEffect: HeadersEffect
-): RequestResolver.RequestResolver<AnyRequest<Observation>, never> =>
+  auth: AuthReadable
+) =>
   RequestResolver.fromEffect((request: AnyRequest<Observation>) => {
     switch (request._tag) {
       case 'Get':
@@ -49,8 +49,7 @@ export const makeObservationResolver = (
             }
 
             const page = yield* pipe(
-              headersEffect,
-              getRequestFromHeaders(httpClient, url, {}),
+              getRequest(httpClient, url, {}, auth),
               handleHttpClientError('Error while listing transcripts'),
               assertStatus(200),
               parseAs(ApiDailyCoTranscriptSchema)
@@ -62,7 +61,7 @@ export const makeObservationResolver = (
               const accessLink = yield* fetchTranscriptAccessLink(
                 httpClient,
                 baseUrl,
-                headersEffect,
+                auth,
                 transcript.transcriptId
               )
               if (!accessLink) continue

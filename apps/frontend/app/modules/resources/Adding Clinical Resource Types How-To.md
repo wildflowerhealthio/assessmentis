@@ -7,22 +7,18 @@ For cross-layer and domain steps, see:
 - [docs/Architecture/Adding Clinical Resource Types How-To.md](../../../../../docs/Architecture/Adding%20Clinical%20Resource%20Types%20How-To.md)
 - [domain/clinical-domain/docs/Adding Resource Types How-To.md](../../../../../domain/clinical-domain/docs/Adding%20Resource%20Types%20How-To.md)
 
-## 1. Wire ClinicalDataRepositoryService
+## 1. Register in ResourceDataTypes
 
-Update [../../layers/ClinicalDataRepositoriesService.ts](../../layers/ClinicalDataRepositoriesService.ts):
+Add the new Clinical Resource to [../../../../../domain/clinical-domain/src/ResourceDataTypes.ts](../../../../../domain/clinical-domain/src/ResourceDataTypes.ts):
 
-- Import the new Clinical Resource schema from `@assessmentis/clinical-domain/{category}`
-- Add `clientEffect` entry under `effect`
-- Add `clientStream` entry under `stream`
+- Import the resource type
+- Add it to both the `ResourceDataTypes` type and const
 
-This enables the same runtime repository behavior as all other Clinical Resources.
+The Hub ([../../layers/useHub.ts](../../layers/useHub.ts)) will automatically support get/search/create/subscribe for the new resource type.
 
-## 2. Update service tests
+## 2. Add origin definition support
 
-Update [../../layers/ClinicalDataRepositoriesService.test.ts](../../layers/ClinicalDataRepositoriesService.test.ts):
-
-- Add the Clinical Resource type string to the resource registry test list
-- Keep assertions for full repository method surface
+Add the new resource type to the relevant origin definition(s) in the infrastructure packages (e.g., `GoogleFhirOriginDefinition`, `DailyCoOriginDefinition`) so the Hub can route requests.
 
 ## 3. Add or update resource module UI
 
@@ -40,6 +36,6 @@ Use `Clinical Resource` wording in docs, comments, and test naming for this work
 
 ## Most-used code locations
 
-- Repository service wiring: [../../layers/ClinicalDataRepositoriesService.ts](../../layers/ClinicalDataRepositoriesService.ts)
-- Repository service tests: [../../layers/ClinicalDataRepositoriesService.test.ts](../../layers/ClinicalDataRepositoriesService.test.ts)
+- Hub access hook: [../../layers/useHub.ts](../../layers/useHub.ts)
+- Resource data types: [../../../../../domain/clinical-domain/src/ResourceDataTypes.ts](../../../../../domain/clinical-domain/src/ResourceDataTypes.ts)
 - Resource CRUD patterns: [./Resource CRUD Reference.md](./Resource%20CRUD%20Reference.md)

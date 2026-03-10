@@ -35,13 +35,13 @@ export const FirebaseAdminDocumentStoreLayer = Layer.effect(
   Effect.gen(function* () {
     const { firestore: db } = yield* FirebaseAdmin
 
-    const get: typeof DocumentStore.Service.get = (...path) =>
+    const get: typeof DocumentStore.Service.get = (...args) =>
       Effect.gen(function* () {
         const docSnapshot = yield* Effect.tryPromise({
-          try: () => doc(db, path).get(),
+          try: () => doc(db, args.length == 1 ? args[0] : args).get(),
           catch: (cause) =>
             new UnhandledError({
-              message: `Error reading ${resourceType(path)} document`,
+              message: `Error reading ${resourceType(args.length == 1 ? args[0] : args)} document`,
               cause,
             }),
         })
@@ -51,14 +51,14 @@ export const FirebaseAdminDocumentStoreLayer = Layer.effect(
           return yield* Effect.fail(
             new NotFoundError({
               resourceType: 'Document',
-              params: { path },
+              params: { path: args.length == 1 ? args[0] : args },
             })
           )
         }
         return data
       })
 
-    const subscribeTo: typeof DocumentStore.Service.subscribeTo = (...path) =>
+    const subscribeTo: typeof DocumentStore.Service.subscribeTo = (...args) =>
       unsubscribableCallbackAsStream<
         Either.Either<
           DocumentData,
@@ -66,27 +66,30 @@ export const FirebaseAdminDocumentStoreLayer = Layer.effect(
         >,
         never
       >((onData) =>
-        doc(db, path).onSnapshot((documentSnapshot) => {
-          const data = documentSnapshot.data()
-          if (data == undefined) {
-            onData(
-              Effect.succeed(
-                Either.left(
-                  new NotFoundError({
-                    resourceType: 'Document',
-                    params: { path },
-                  })
+        doc(db, args.length == 1 ? args[0] : args).onSnapshot(
+          (documentSnapshot) => {
+            const data = documentSnapshot.data()
+            if (data == undefined) {
+              onData(
+                Effect.succeed(
+                  Either.left(
+                    new NotFoundError({
+                      resourceType: 'Document',
+                      params: { path: args.length == 1 ? args[0] : args },
+                    })
+                  )
                 )
               )
-            )
-          } else {
-            onData(Effect.succeed(Either.right(data)))
+            } else {
+              onData(Effect.succeed(Either.right(data)))
+            }
           }
-        })
+        )
       )
 
-    const set: typeof DocumentStore.Service.set = (data, ...path) =>
-      Effect.tryPromise({
+    const set: typeof DocumentStore.Service.set = (data, ...args) => {
+      const path = args.length == 1 ? args[0] : args
+      return Effect.tryPromise({
         try: () => doc(db, path).set(data),
         catch: (cause) =>
           new UnhandledError({
@@ -94,6 +97,7 @@ export const FirebaseAdminDocumentStoreLayer = Layer.effect(
             cause,
           }),
       }).pipe(Effect.asVoid)
+    }
 
     const update: typeof DocumentStore.Service.update = (data, ...path) =>
       Effect.tryPromise({

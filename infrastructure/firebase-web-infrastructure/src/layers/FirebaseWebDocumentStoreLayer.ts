@@ -28,8 +28,9 @@ export const FirebaseWebDocumentStoreLayer: Layer.Layer<
   Effect.gen(function* () {
     const { firestore, auth } = yield* FirebaseWeb
 
-    const get: typeof DocumentStore.Service.get = (...path) =>
+    const get: typeof DocumentStore.Service.get = (...args) =>
       Effect.gen(function* () {
+        const path = args.length == 1 ? args[0] : args
         const [collection, ...restPath] = path
         const docRef = doc(firestore, collection, ...restPath)
 
@@ -54,8 +55,9 @@ export const FirebaseWebDocumentStoreLayer: Layer.Layer<
         return data
       })
 
-    const subscribeTo: typeof DocumentStore.Service.subscribeTo = (...path) =>
+    const subscribeTo: typeof DocumentStore.Service.subscribeTo = (...args) =>
       Effect.sync(() => {
+        const path = args.length == 1 ? args[0] : args
         const [collection, ...restPath] = path
         const docRef = doc(firestore, collection, ...restPath)
 
@@ -117,8 +119,9 @@ export const FirebaseWebDocumentStoreLayer: Layer.Layer<
         })
       }).pipe(Stream.unwrap)
 
-    const set: typeof DocumentStore.Service.set = (data, ...path) =>
+    const set: typeof DocumentStore.Service.set = (data, ...args) =>
       Effect.gen(function* () {
+        const path = args.length == 1 ? args[0] : args
         const [collection, ...restPath] = path
         const docRef = doc(firestore, collection, ...restPath)
 

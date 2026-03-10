@@ -1,4 +1,4 @@
-import { Effect, pipe } from 'effect'
+import { Effect, pipe, type Readable } from 'effect'
 import type { HttpClient } from '@effect/platform/HttpClient'
 
 import type { Resource, ResourceRequest } from '@assessmentis/effectful-store'
@@ -8,10 +8,11 @@ import type {
   ExternalAssertionError,
   UnhandledError,
 } from '@assessmentis/ontology'
+import type { CredentialError } from '@assessmentis/platform-domain'
 
 import {
   assertStatus,
-  getRequestFromHeaders,
+  getRequest,
   handle404,
   handleHttpClientError,
   parseAs,
@@ -25,7 +26,12 @@ export type CommonErrors =
   | AuthzError
   | ExternalAssertionError
 
-export type HeadersEffect = Effect.Effect<Record<string, string>, CommonErrors>
+/** A Readable that produces auth headers via `asHeaders()`. */
+export type AuthReadable = Readable.Readable<
+  { asHeaders(): Record<string, string> },
+  CredentialError,
+  never
+>
 
 export type AnyRequest<T extends Resource.AnyResource> =
   | ResourceRequest.Get<T>
@@ -50,15 +56,15 @@ export const extractIdFromUrl = (url: {
 export const fetchRecordingFileUrl = (
   httpClient: HttpClient,
   baseUrl: string,
-  headersEffect: HeadersEffect,
+  auth: AuthReadable,
   recordingId: string
 ): Effect.Effect<string | undefined, CommonErrors> =>
   pipe(
-    headersEffect,
-    getRequestFromHeaders(
+    getRequest(
       httpClient,
       new URL(`${baseUrl}/recordings/${recordingId}/access-link`),
-      {}
+      {},
+      auth
     ),
     handleHttpClientError('HTTP Client Error while fetching recording link'),
     handle404('Recording', { url: `${baseUrl}/recordings/${recordingId}` }),
@@ -74,15 +80,15 @@ export const fetchRecordingFileUrl = (
 export const fetchTranscriptAccessLink = (
   httpClient: HttpClient,
   baseUrl: string,
-  headersEffect: HeadersEffect,
+  auth: AuthReadable,
   transcriptId: string
 ): Effect.Effect<string | undefined, CommonErrors> =>
   pipe(
-    headersEffect,
-    getRequestFromHeaders(
+    getRequest(
       httpClient,
       new URL(`${baseUrl}/transcript/${transcriptId}/access-link`),
-      {}
+      {},
+      auth
     ),
     handleHttpClientError('HTTP Client Error while fetching transcript link'),
     handle404('Transcript', {

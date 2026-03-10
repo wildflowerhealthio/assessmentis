@@ -1,14 +1,16 @@
 import {
   Context,
+  Effect,
+  Either,
+  Option,
+  pipe,
   PubSub,
-  type Effect,
-  type Either,
+  Stream,
   type Scope,
-  type Stream,
   type Take,
 } from 'effect'
 
-import type { AuthError } from '@assessmentis/ontology'
+import { UnhandledError, type AuthError } from '@assessmentis/ontology'
 import type { UserId } from '@assessmentis/platform-domain'
 
 export interface AuthData {
@@ -34,4 +36,31 @@ export class AuthDataService extends Context.Tag('AuthDataService')<
     authData: Effect.Effect<AuthData, AuthError, never>
     shutdown: Effect.Effect<void, never, never>
   }
->() {}
+>() {
+  static tryGetAuthData(): Effect.Effect<
+    AuthData,
+    AuthError | UnhandledError,
+    Scope.Scope | AuthDataService
+  > {
+    return pipe(
+      AuthDataService,
+      Effect.map(({ authDataStream }) => authDataStream),
+      Effect.flatMap(Stream.runHead),
+      Effect.flatMap(
+        Option.match({
+          onSome: Effect.succeed,
+          onNone: () =>
+            Effect.fail(
+              new UnhandledError({ message: 'Auth Data Stream is closed?' })
+            ),
+        })
+      ),
+      Effect.flatMap(
+        Either.match({
+          onRight: Effect.succeed,
+          onLeft: Effect.fail,
+        })
+      )
+    )
+  }
+}

@@ -1,7 +1,6 @@
 import { pipe, Schema } from 'effect'
 
 import type { ReadonlyUrl } from '@assessmentis/effectful-store'
-import { MergeClasses } from '@assessmentis/util'
 
 import { Extension, type ExtensionEncoded } from '../special-purpose/Extension'
 import { Element, type ElementEncoded, type ElementFields } from './Element'

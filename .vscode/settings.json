@@ -8,6 +8,7 @@
     "Klass",
     "MECE",
     "northamerica",
+    "Pipeable",
     "talkback"
   ],
   "typescript.preferences.importModuleSpecifier": "relative",

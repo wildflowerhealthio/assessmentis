@@ -7,7 +7,7 @@ import { UnhandledError } from '@assessmentis/ontology'
 
 import {
   assertStatus,
-  getRequestFromHeaders,
+  getRequest,
   handleHttpClientError,
   parseAs,
 } from '../../httpHelpers'
@@ -15,7 +15,7 @@ import { ApiDailyCoRecordingSchema } from '../../models/ApiDailyCoRecordingSchem
 import {
   fetchRecordingFileUrl,
   type AnyRequest,
-  type HeadersEffect,
+  type AuthReadable,
 } from '../../resolverUtils'
 import { DailyCoMedia } from './DailyCoMedia'
 
@@ -24,8 +24,8 @@ const decodeMedia = Schema.decodeSync(DailyCoMedia)
 export const makeMediaResolver = (
   httpClient: HttpClient,
   baseUrl: string,
-  headersEffect: HeadersEffect
-): RequestResolver.RequestResolver<AnyRequest<Media>, never> =>
+  auth: AuthReadable
+) =>
   RequestResolver.fromEffect((request: AnyRequest<Media>) => {
     switch (request._tag) {
       case 'Get':
@@ -48,11 +48,11 @@ export const makeMediaResolver = (
           }
 
           const apiRecordings = yield* pipe(
-            headersEffect,
-            getRequestFromHeaders(
+            getRequest(
               httpClient,
               new URL(`${baseUrl}/recordings`),
-              { urlParams: { room_name: roomName } }
+              { urlParams: { room_name: roomName } },
+              auth
             ),
             handleHttpClientError(
               'HTTP Client Error while fetching recordings'
@@ -66,7 +66,7 @@ export const makeMediaResolver = (
             const downloadLink = yield* fetchRecordingFileUrl(
               httpClient,
               baseUrl,
-              headersEffect,
+              auth,
               rec.id
             )
             if (downloadLink) {

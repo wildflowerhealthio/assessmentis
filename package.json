@@ -39,6 +39,7 @@
     "domain/assessmentis-store",
     "infrastructure/firebase-web-infrastructure",
     "infrastructure/firebase-server-infrastructure",
+    "infrastructure/google-account-infrastructure",
     "infrastructure/google-fhir-web-infrastructure",
     "infrastructure/google-fhir-node-infrastructure",
     "infrastructure/daily-co-infrastructure",

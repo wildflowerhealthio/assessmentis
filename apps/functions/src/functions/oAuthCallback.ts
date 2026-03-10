@@ -1,15 +1,18 @@
-import { Effect, Exit } from 'effect'
+import { DateTime, Effect, Exit, Layer, Option } from 'effect'
 import { type Response } from 'express'
 import { error, info } from 'firebase-functions/logger'
 import { onRequest, type Request } from 'firebase-functions/v2/https'
 
-import { AuthRepository } from '@assessmentis/firebase-server-infrastructure'
+import {
+  GoogleUserOAuthLiveCredential,
+  GoogleUserOAuthToken,
+} from '@assessmentis/google-account-infrastructure'
 import {
   AuthError,
   type AuthzError,
   type UnhandledError,
 } from '@assessmentis/ontology'
-import { UserId } from '@assessmentis/platform-domain'
+import { DocumentStore, UserId } from '@assessmentis/platform-domain'
 
 import { google } from 'googleapis'
 
@@ -27,11 +30,9 @@ export const oAuthCallbackEffect = (q: {
 }): Effect.Effect<
   string,
   AuthError | AuthzError | UnhandledError,
-  AuthRepository
+  DocumentStore
 > =>
   Effect.gen(function* () {
-    const authStore = yield* AuthRepository
-
     info('Received OAuth callback with query params:', q)
     if (q.error) {
       // An error response e.g. error=access_denied
@@ -77,16 +78,22 @@ export const oAuthCallbackEffect = (q: {
 
     const userId = UserId.make(uid)
 
-    // Store tokens in Firestore
-    yield* authStore.storeOAuthTokens(userId, {
+    const token = new GoogleUserOAuthToken({
+      email,
+      scope: tokens.scope ?? '',
       accessToken: access_token,
-      refreshToken: refresh_token,
-      expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : undefined,
-      scope: tokens.scope ?? undefined,
-      tokenType: tokens.token_type ?? undefined,
+      expiresAt: tokens.expiry_date
+        ? DateTime.unsafeMake(tokens.expiry_date)
+        : DateTime.unsafeMake(Date.now() + 3600000),
+      refreshToken: Option.some(refresh_token),
     })
 
-    info('Stored OAuth tokens in Firestore')
+    yield* GoogleUserOAuthLiveCredential.store(
+      { _tag: 'google_user_oauth_token', userId, email },
+      token
+    )
+
+    info('Stored OAuth credential in Firestore')
 
     const redirectUrl = `https://${hostname}/authorizeEmail?email=${email ?? ''}&success=true`
     return redirectUrl
@@ -95,8 +102,8 @@ export const oAuthCallbackEffect = (q: {
 export const oAuthCallback = onRequest(
   defaultHttpOptions,
   async (request: Request, response: Response) => {
-    info('Received request to refresh Google OAuth token')
-    const runtime = makeRequestRuntime(AuthRepository.Default, { request })
+    info('Received request for OAuth callback')
+    const runtime = makeRequestRuntime(Layer.empty, { request })
     await runtime
       .runPromiseExit(oAuthCallbackEffect(request.query))
       .then((exit) =>

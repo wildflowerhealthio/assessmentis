@@ -1,10 +1,25 @@
-import { Effect, Layer, Match } from 'effect'
+import { Effect, Layer, Schema } from 'effect'
 
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
 import type { FhirR4Client } from '@assessmentis/fhir-r4'
+import { GoogleFhirOriginDefinition } from '@assessmentis/google-account-infrastructure'
 import { NodeGoogleHealthcareFhirR4ClientLayer } from '@assessmentis/google-fhir-node-infrastructure'
 import { UnhandledError } from '@assessmentis/ontology'
 import { LoadedOrg } from '@assessmentis/platform-domain'
+
+const decodeGoogleFhirOrigin = Schema.decodeUnknownOption(
+  GoogleFhirOriginDefinition
+)
+
+const findGoogleFhirOrigin = (origins: {
+  readonly [k: string]: unknown
+}): typeof GoogleFhirOriginDefinition.Type | undefined => {
+  for (const def of Object.values(origins)) {
+    const decoded = decodeGoogleFhirOrigin(def)
+    if (decoded._tag === 'Some') return decoded.value
+  }
+  return undefined
+}
 
 /**
  * Backend service that resolves FhirR4Client based on org config.
@@ -17,22 +32,26 @@ export const FhirR4ClientLayerLive: Layer.Layer<
 > = Layer.unwrapEffect(
   Effect.gen(function* () {
     const org = yield* LoadedOrg
-    const fhirServerConfig = org.frontendConfig.fhirServer
+    const googleFhirDef = findGoogleFhirOrigin(org.origins)
 
-    return Match.value(fhirServerConfig).pipe(
-      Match.tag('google_fhir_store', (googleConf) =>
-        NodeGoogleHealthcareFhirR4ClientLayer.pipe(
-          Layer.provide(Layer.succeed(LoadedGoogleFhirConfig, googleConf))
-        )
-      ),
-      Match.tag('not_implemented', () =>
-        Layer.fail(
-          new UnhandledError({
-            message: 'FHIR server type not yet implemented',
+    if (googleFhirDef) {
+      return NodeGoogleHealthcareFhirR4ClientLayer.pipe(
+        Layer.provide(
+          Layer.succeed(LoadedGoogleFhirConfig, {
+            _tag: 'google_fhir_store',
+            projectId: googleFhirDef.projectId,
+            region: googleFhirDef.region,
+            dataset: googleFhirDef.dataset,
+            storeId: googleFhirDef.storeId,
           })
         )
-      ),
-      Match.exhaustive
+      )
+    }
+
+    return Layer.fail(
+      new UnhandledError({
+        message: 'No Google FHIR origin configured for this org',
+      })
     )
   })
 )

@@ -5,7 +5,6 @@ import {
 import {
   CodeableConcept,
   Reference,
-  referenceFromResource,
   type Coding,
 } from '@assessmentis/clinical-domain/data-types'
 

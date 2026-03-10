@@ -2,7 +2,7 @@
 
 This reference documents how FHIR R4 resources are modeled in clinical-domain.
 
-For step-by-step Clinical Resource implementation, see [docs/Adding Resource Types How-To.md](./docs/Adding%20Resource%20Types%20How-To.md). For understanding the schema transformation pattern, see [docs/FHIR Schemas Explanation.md](./docs/FHIR%20Schemas%20Explanation.md).
+For step-by-step Clinical Resource implementation, see [Adding Resource Types How-To.md](./Adding%20Resource%20Types%20How-To.md). For understanding the schema transformation pattern, see [FHIR Schemas Explanation.md](./FHIR%20Schemas%20Explanation.md).
 
 ## Core modeling rules
 
@@ -125,10 +125,10 @@ Don't naively drop type annotations during a refactor without checking for circu
 
 ## Most-used code locations
 
-- Resource base types: [src/data-types/base](src/data-types/base)
-- Datatype and ValueUnion: [src/data-types/Datatype.ts](src/data-types/Datatype.ts)
-- FHIR R4 choice elements: [src/data-types/fhir-r4-choice-elements.json](src/data-types/fhir-r4-choice-elements.json)
-- Example resource: [src/resources/Patient](src/resources/Patient)
-- Clinical Resource How-To: [docs/Adding Resource Types How-To.md](./docs/Adding%20Resource%20Types%20How-To.md)
-- Resource registry: [src/Schemas.ts](src/Schemas.ts)
+- Resource base types: [src/data-types/base](../src/data-types/base)
+- Datatype and ValueUnion: [src/data-types/Datatype.ts](../src/data-types/Datatype.ts)
+- FHIR R4 choice elements: [src/data-types/fhirR4ChoiceElements.ts](../src/data-types/fhirR4ChoiceElements.ts)
+- Example resource: [src/resources/Patient](../src/resources/Patient)
+- Clinical Resource How-To: [Adding Resource Types How-To.md](./Adding%20Resource%20Types%20How-To.md)
+- Resource registry: [src/Schemas.ts](../src/Schemas.ts)
 - Resource tests: alongside resource files in src/resources/

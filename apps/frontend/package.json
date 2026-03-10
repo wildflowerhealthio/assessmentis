@@ -29,6 +29,7 @@
     "@assessmentis/assessmentis-store": "*",
     "@assessmentis/daily-co-components": "*",
     "@assessmentis/daily-co-infrastructure": "*",
+    "@assessmentis/google-account-infrastructure": "*",
     "@assessmentis/google-fhir-web-infrastructure": "*",
     "@assessmentis/ontology": "*",
     "@assessmentis/prettier-config": "*",

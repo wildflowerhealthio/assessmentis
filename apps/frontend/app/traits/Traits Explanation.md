@@ -88,7 +88,7 @@ Traits are independent by default but can compose:
 
 ## Data Flow
 
-```
+```plaintext
 Domain class (pure, from clinical-domain)
     ↓  module augmentation + Object.defineProperty (side-effect import)
 Domain class + trait (frontend)

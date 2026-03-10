@@ -54,9 +54,7 @@ const LocationModeField: React.FC<
 interface LocationFormProps {
   onSubmit: (data: LocationFormData) => void | Promise<void>
   submitLabel: string
-  initialValues:
-    | Partial<LocationFormData>
-    | Promise<Partial<LocationFormData>>
+  initialValues: Partial<LocationFormData> | Promise<Partial<LocationFormData>>
 }
 
 export function LocationForm({

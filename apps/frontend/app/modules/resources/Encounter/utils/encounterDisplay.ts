@@ -1,7 +1,7 @@
 import { Effect } from 'effect'
 import type { CurrentTimeZone } from 'effect/DateTime'
 
-import { Encounter } from '@assessmentis/clinical-domain'
+import type { Encounter } from '@assessmentis/clinical-domain'
 
 import {
   humanizeDateTimeForLocalReader,

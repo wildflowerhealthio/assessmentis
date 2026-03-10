@@ -1,4 +1,4 @@
-import { Arbitrary, pipe, Schema, type FastCheck } from 'effect'
+import { pipe, Schema, type FastCheck } from 'effect'
 
 import { mergeArbitraries, MergeClasses } from '@assessmentis/util'
 

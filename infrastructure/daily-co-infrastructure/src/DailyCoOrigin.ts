@@ -6,7 +6,6 @@ import type {
   Media,
   Observation,
 } from '@assessmentis/clinical-domain'
-import type { DailyCoConfig } from '@assessmentis/config-domain'
 import {
   ReadonlyUrl,
   type ReadyOrigin,
@@ -15,11 +14,11 @@ import {
 import type {
   AuthError,
   AuthzError,
-  ExternalAssertionError,
   UnhandledError,
 } from '@assessmentis/ontology'
 
-import type { AnyRequest } from './resolverUtils'
+import type { DailyCoOriginDefinition } from './DailyCoOriginDefinition'
+import type { AnyRequest, AuthReadable } from './resolverUtils'
 import { makeLocationResolver } from './resources/Location/resolver'
 import { makeMediaResolver } from './resources/Media/resolver'
 import { makeObservationResolver } from './resources/Observation/resolver'
@@ -40,17 +39,14 @@ type Resources = {
 
 export const makeDailyCoReadyOrigin = ({
   httpClient,
-  headersEffect,
+  auth,
   config,
   provokeReauthenticate,
   provokeReauthorize,
 }: {
   httpClient: HttpClient
-  headersEffect: Effect.Effect<
-    Record<string, string>,
-    UnhandledError | ExternalAssertionError | AuthError
-  >
-  config: DailyCoConfig
+  auth: AuthReadable
+  config: DailyCoOriginDefinition
   provokeReauthenticate: () => Effect.Effect<
     void,
     AuthError | AuthzError | UnhandledError,
@@ -79,9 +75,9 @@ export const makeDailyCoReadyOrigin = ({
       never
     >
   } = {
-    Location: makeLocationResolver(httpClient, baseUrl, headersEffect, config),
-    Media: makeMediaResolver(httpClient, baseUrl, headersEffect),
-    Observation: makeObservationResolver(httpClient, baseUrl, headersEffect),
+    Location: makeLocationResolver(httpClient, baseUrl, auth, config),
+    Media: makeMediaResolver(httpClient, baseUrl, auth),
+    Observation: makeObservationResolver(httpClient, baseUrl, auth),
   }
 
   const resolverForResource = <K extends keyof Resources>(request: {
