@@ -1,6 +1,8 @@
-import { describe, it, expect } from 'vitest'
-import { render, screen, act } from '@testing-library/react'
 import * as fc from 'fast-check'
+import { describe, expect, it } from 'vitest'
+
+import { act, render, screen } from '@testing-library/react'
+
 import { withPromisedValue } from './withPromisedValue'
 
 // ── Minimal sync component for testing ──────────────────────────────────────

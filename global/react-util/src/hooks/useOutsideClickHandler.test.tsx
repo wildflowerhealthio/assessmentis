@@ -1,7 +1,9 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import { createRef } from 'react'
+
 import { renderHook } from '@testing-library/react'
 import { JSDOM } from 'jsdom'
-import { createRef } from 'react'
+
 import { useOutsideClickHandler } from './index'
 
 // Ensure DOM globals are available when tests run outside jsdom-configured env

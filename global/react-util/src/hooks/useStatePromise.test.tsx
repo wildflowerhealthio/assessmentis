@@ -1,7 +1,9 @@
-import { describe, it, expect } from 'vitest'
-import { renderHook, act } from '@testing-library/react'
-import { JSDOM } from 'jsdom'
 import * as fc from 'fast-check'
+import { describe, expect, it } from 'vitest'
+
+import { act, renderHook } from '@testing-library/react'
+import { JSDOM } from 'jsdom'
+
 import { useStatePromise } from './effectHooks'
 
 // Ensure DOM globals are available when tests run outside jsdom-configured env

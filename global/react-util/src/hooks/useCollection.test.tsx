@@ -1,6 +1,8 @@
-import { describe, it, expect, vi } from 'vitest'
-import { renderHook, act, waitFor } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+
+import { act, renderHook, waitFor } from '@testing-library/react'
 import { JSDOM } from 'jsdom'
+
 import { useCollection } from './index'
 
 // Ensure DOM globals are available when tests run outside jsdom-configured env
@@ -9,6 +11,8 @@ globalThis.window = dom.window as unknown as typeof globalThis.window
 globalThis.document = dom.window.document
 
 type TestItem = { id?: string; name: string }
+
+const keyOf = (item: TestItem) => item.id
 
 describe('useCollection', () => {
   it('should initialize with provided array and expose methods', () => {
@@ -20,7 +24,7 @@ describe('useCollection', () => {
     const apiCreate = vi.fn()
 
     const { result } = renderHook(() =>
-      useCollection({ apiDelete, apiCreate }, initial)
+      useCollection({ apiDelete, apiCreate }, initial, keyOf)
     )
 
     expect(result.current.collection).toHaveLength(2)
@@ -42,7 +46,11 @@ describe('useCollection', () => {
       const apiCreate = vi.fn()
 
       const { result: successResult } = renderHook(() =>
-        useCollection({ apiDelete: apiDeleteSuccess, apiCreate }, initial)
+        useCollection(
+          { apiDelete: apiDeleteSuccess, apiCreate },
+          initial,
+          keyOf
+        )
       )
 
       await act(async () => {
@@ -57,7 +65,7 @@ describe('useCollection', () => {
       // Test error case
       const apiDeleteError = vi.fn().mockRejectedValue(new Error('Failed'))
       const { result: errorResult } = renderHook(() =>
-        useCollection({ apiDelete: apiDeleteError, apiCreate }, initial)
+        useCollection({ apiDelete: apiDeleteError, apiCreate }, initial, keyOf)
       )
 
       await act(async () => {
@@ -70,12 +78,12 @@ describe('useCollection', () => {
       expect(errorResult.current.collection[0].loading).toBe(false)
     })
 
-    it('should ignore delete when id is undefined', async () => {
+    it('should ignore delete when key is undefined', async () => {
       const apiDelete = vi.fn()
       const apiCreate = vi.fn()
 
       const { result } = renderHook(() =>
-        useCollection({ apiDelete, apiCreate }, [{ name: 'No ID' }])
+        useCollection({ apiDelete, apiCreate }, [{ name: 'No ID' }], keyOf)
       )
 
       await act(async () => {
@@ -93,7 +101,7 @@ describe('useCollection', () => {
       const apiCreate = vi.fn().mockResolvedValue(createdItem)
 
       const { result } = renderHook(() =>
-        useCollection({ apiDelete, apiCreate }, [])
+        useCollection({ apiDelete, apiCreate }, [], keyOf)
       )
 
       await act(async () => {
@@ -116,7 +124,7 @@ describe('useCollection', () => {
       const apiCreate = vi.fn().mockRejectedValue(new Error('Failed'))
 
       const { result } = renderHook(() =>
-        useCollection({ apiDelete, apiCreate }, [])
+        useCollection({ apiDelete, apiCreate }, [], keyOf)
       )
 
       await act(async () => {
@@ -150,7 +158,7 @@ describe('useCollection', () => {
         .mockResolvedValue({ id: providedId, name: 'New' })
 
       const { result } = renderHook(() =>
-        useCollection({ apiDelete, apiCreate }, initial)
+        useCollection({ apiDelete, apiCreate }, initial, keyOf)
       )
 
       await act(async () => {
@@ -173,7 +181,7 @@ describe('useCollection', () => {
     const apiCreate = vi.fn()
 
     const { result } = renderHook(() =>
-      useCollection({ apiDelete, apiCreate }, initial)
+      useCollection({ apiDelete, apiCreate }, initial, keyOf)
     )
 
     await act(async () => {
@@ -196,7 +204,7 @@ describe('useCollection', () => {
 
     renderHook(() => {
       renderCount++
-      return useCollection({ apiDelete, apiCreate }, [])
+      return useCollection({ apiDelete, apiCreate }, [], keyOf)
     })
 
     expect(renderCount).toBe(1)
