@@ -1,10 +1,9 @@
-import { describe, expect } from 'vitest'
-import { it } from '@effect/vitest'
-import { Effect, Layer } from 'effect'
+import { setupClientOnWindow } from '../helpers/integration-setup'
 import { FhirR4Client } from '@assessmentis/fhir-client'
 import { describeAsFhirR4PatientClient } from '@assessmentis/fhir-client/interface-tests'
-import { createTracker } from '../helpers/cleanup'
-import { setupClientOnWindow } from '../helpers/integration-setup'
+import { it } from '@effect/vitest'
+import { Effect, Layer } from 'effect'
+import { describe, expect } from 'vitest'
 
 /**
  * Live E2E tests for Patient CRUD operations against Google Healthcare API

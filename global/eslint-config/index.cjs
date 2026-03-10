@@ -1,5 +1,6 @@
 const { defineConfig } = require('eslint/config')
 const eslint = require('@eslint/js')
+const importPlugin = require('eslint-plugin-import')
 const tseslint = require('typescript-eslint')
 const eslintConfigPrettier = require('eslint-config-prettier/flat')
 const eslintPluginPrettierRecommended = require('eslint-plugin-prettier/recommended')
@@ -14,6 +15,8 @@ module.exports = defineConfig([
   reactRefresh.configs.vite,
   eslintConfigPrettier,
   eslintPluginPrettierRecommended,
+  importPlugin.flatConfigs.recommended,
+  importPlugin.flatConfigs.typescript,
   {
     languageOptions: {
       parser: tsParser,

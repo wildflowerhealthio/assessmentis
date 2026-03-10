@@ -1,13 +1,13 @@
-import { Effect, Layer, pipe } from 'effect'
-import type { GoogleFhirConfig } from '@assessmentis/config-domain'
-import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
-
 import {
   LoadedGapiClient,
   LoadedGapiHealthcareClient,
   startGapiGoogleHealthcareClient,
 } from '../../src'
+import type { GoogleFhirConfig } from '@assessmentis/config-domain'
+import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
+import { Effect, Layer, pipe } from 'effect'
 import { isPromiseLike } from 'effect/Predicate'
+
 /**
  * Get access token from gcloud CLI
  */

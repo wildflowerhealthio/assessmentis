@@ -1,15 +1,15 @@
+import { useCallback, useState, type JSX } from 'react'
+
 import {
   useDailyEvent,
   useLocalSessionId,
   useParticipantIds,
   useScreenShare,
 } from '@daily-co/daily-react'
-import type { JSX } from 'react'
-import { useCallback, useState } from 'react'
 
-import styles from './Call.module.css'
 import Tile from '../Tile/Tile'
 import UserMediaError from '../UserMediaError/UserMediaError'
+import styles from './Call.module.css'
 
 export default function Call() {
   /* If a participant runs into a getUserMedia() error, we need to warn them. */

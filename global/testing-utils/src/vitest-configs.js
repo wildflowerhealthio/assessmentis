@@ -1,8 +1,10 @@
+/* eslint-disable import/no-unresolved */
+// I think this has to do with being a JS file? Not sure though
 import { defineConfig } from 'vitest/config'
+import react from '@vitejs/plugin-react'
 import { playwright } from '@vitest/browser-playwright'
 import { loadEnv, mergeConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
-import react from '@vitejs/plugin-react'
 
 const base = defineConfig(({ mode }) => ({
   test: {
