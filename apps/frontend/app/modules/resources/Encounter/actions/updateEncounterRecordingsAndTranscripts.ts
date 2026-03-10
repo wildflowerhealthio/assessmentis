@@ -5,6 +5,8 @@ import type {
   UnhandledError,
   ExternalAssertionError,
   NotFoundError,
+  AuthError,
+  AuthzError,
 } from '@assessmentis/ontology'
 import type { WithId } from '@assessmentis/clinical-domain/data-types'
 import type {
@@ -16,7 +18,6 @@ import type {
   MediaId,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { MediaRepository } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import type { AuthError, AuthzError } from '@assessmentis/ontology'
 
 /**
  * Fetches recordings for an encounter's video call room and creates Media resources

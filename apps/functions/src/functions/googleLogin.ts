@@ -3,14 +3,13 @@ import { onRequest, type Request } from 'firebase-functions/https'
 import { info } from 'firebase-functions/logger'
 import { Effect, Exit, Layer } from 'effect'
 import { CurrentUserId } from '@assessmentis/platform-domain'
-import type { AuthError } from '@assessmentis/ontology'
+import type { AuthError, UnhandledError } from '@assessmentis/ontology'
 import {
   defaultHttpOptions,
   oauth2Client,
   scopes,
 } from '../util/functionContext'
 import { handleError } from '../util/handleError'
-import type { UnhandledError } from '@assessmentis/ontology'
 import { AuthRepository } from '@assessmentis/firebase-server-infrastructure'
 import { LoadedUserLayerLive } from '../layers/LoadedUserLayerLive'
 import { makeRequestRuntime } from '../util/BaseLayer'

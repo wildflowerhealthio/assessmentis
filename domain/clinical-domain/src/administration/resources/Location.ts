@@ -94,7 +94,7 @@ export type Location = typeof LocationFromFhirR4.Type
 /**
  * Location namespace providing factory and utility functions
  */
-// eslint-disable-next-line @typescript-eslint/no-redeclare
+
 export const Location = {
   /**
    * Create a new Location instance

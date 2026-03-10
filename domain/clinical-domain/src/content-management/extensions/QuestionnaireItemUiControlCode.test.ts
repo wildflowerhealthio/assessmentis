@@ -4,10 +4,9 @@ import {
   getUiControlCode,
   withUiControlCode,
 } from './QuestionnaireItemUiControlCode'
-import { Arbitrary } from 'effect'
+import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
 import { BackboneElement } from '../../data-types/base/BackboneElement'
-import { Schema } from 'effect'
 
 const TestBackboneElement = BackboneElement(Schema.String)
 const backboneElementArb = Arbitrary.make(TestBackboneElement)

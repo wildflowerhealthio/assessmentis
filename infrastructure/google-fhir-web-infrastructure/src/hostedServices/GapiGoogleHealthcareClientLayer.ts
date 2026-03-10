@@ -1,17 +1,17 @@
-import type { Scope } from 'effect'
-import { Effect, Schedule } from 'effect'
-import type { FhirR4Client } from '@assessmentis/fhir-client'
-import {
-  buildFhirStoreParent,
-  buildFhirResourcePath,
-  createFhirResponseHandlers,
-} from '@assessmentis/fhir-client'
-import { buildSearchParams } from '@assessmentis/util'
 import { LoadedGapiClient } from '../services/LoadedGapiClient'
 import { LoadedGapiHealthcareClient } from '../services/LoadedGapiHealthcareClient'
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
+import type { FhirR4Client } from '@assessmentis/fhir-client'
+import {
+  buildFhirResourcePath,
+  buildFhirStoreParent,
+  createFhirResponseHandlers,
+} from '@assessmentis/fhir-client'
 import type { ExternalAssertionError } from '@assessmentis/ontology'
 import { AuthError, UnhandledError } from '@assessmentis/ontology'
+import { buildSearchParams } from '@assessmentis/util'
+import type { Scope } from 'effect'
+import { Effect, Schedule } from 'effect'
 import type { UnknownException } from 'effect/Cause'
 
 const _retryGoogle502s = <A extends { status: number }, E>(

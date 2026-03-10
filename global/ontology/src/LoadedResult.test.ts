@@ -1,6 +1,6 @@
-import { expect, test, describe } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import { LoadedResult, LoadedResultStream } from './LoadedResult'
-import { Effect, pipe, SubscriptionRef, Stream } from 'effect'
+import { Effect, Stream, SubscriptionRef, pipe } from 'effect'
 
 describe('LoadedResult', () => {
   test('loading creates a loading result', () => {
