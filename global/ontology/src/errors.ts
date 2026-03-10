@@ -89,13 +89,13 @@ export class BadDataError extends Data.TaggedError('BadDataError')<{
  */
 export class NotFoundError<
   out ResourceType extends PropertyKey,
-  out Parameters extends Record<string | symbol, unknown>,
+  out Parameters extends Record<string, unknown>,
 > extends Data.TaggedError('NotFoundError')<{
   resourceType: ResourceType
   params: Parameters
   cause?: unknown
 }> {
-  static readonly _tag = 'NotFoundError'
+  static readonly tag = 'NotFoundError'
 
   asUnhandledError() {
     return new UnhandledError({
