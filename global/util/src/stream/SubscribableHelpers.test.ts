@@ -1,21 +1,22 @@
-import { describe, it, expect } from 'vitest'
 import * as fc from 'fast-check'
+import { describe, expect, it } from 'vitest'
 import {
+  Cause,
+  Chunk,
   Effect,
   Either,
   Exit,
-  Cause,
   Option,
   pipe,
-  SubscriptionRef,
-  Subscribable,
   Readable,
   Stream,
-  Chunk,
+  Subscribable,
+  SubscriptionRef,
 } from 'effect'
+
 import {
-  subscriptionRefToSubscribable,
   effectToSubscribable,
+  subscriptionRefToSubscribable,
 } from './SubscribableHelpers'
 
 describe('SubscribableHelpers', () => {

@@ -10,7 +10,7 @@
  */
 export function neverUsedMock<T extends object>(name?: string): T {
   const label = name ?? 'mock'
-  return new Proxy({} as T, {
+  return new Proxy((() => {}) as unknown as T, {
     get(_target, prop) {
       throw new Error(
         `Unexpected access to ${label}.${String(prop)} - this mock should never be used`

@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest'
 import * as fc from 'fast-check'
-import { Effect, Either, PubSub, Take, Stream, Chunk, Fiber } from 'effect'
+import { describe, expect, it } from 'vitest'
+import { Chunk, Effect, Either, Fiber, PubSub, Stream, Take } from 'effect'
+
 import { pubsubAsPerpetualStream, takeOneFromPubSubOrDie } from './pubsubUtils'
 
 describe('pubsubUtils', () => {

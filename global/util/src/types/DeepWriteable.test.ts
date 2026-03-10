@@ -1,8 +1,9 @@
-import { describe, it } from 'vitest'
 import * as fc from 'fast-check'
+import { describe, it } from 'vitest'
 import { FastCheck } from 'effect'
 import { property } from 'effect/FastCheck'
-import type { Writeable, DeepWriteable } from './DeepWriteable'
+
+import type { DeepWriteable, Writeable } from './DeepWriteable'
 
 describe('DeepWriteable', () => {
   describe('Writeable', () => {

@@ -1,7 +1,14 @@
-import type { SubscriptionRef, Either } from 'effect'
-import { Subscribable, Readable, Effect, Stream } from 'effect'
+import {
+  Effect,
+  Readable,
+  Stream,
+  Subscribable,
+  type Either,
+  type SubscriptionRef,
+} from 'effect'
 import { pipeArguments } from 'effect/Pipeable'
-import { unwrap } from './StreamEither'
+
+import { StreamEither } from './StreamEither'
 
 export const subscriptionRefToSubscribable = <A, E>(
   ref: SubscriptionRef.SubscriptionRef<Either.Either<A, E>>
@@ -9,7 +16,7 @@ export const subscriptionRefToSubscribable = <A, E>(
   [Subscribable.TypeId]: Subscribable.TypeId,
   [Readable.TypeId]: Readable.TypeId,
   get: Effect.flatMap(ref.get, (either) => either),
-  changes: unwrap(ref.changes),
+  changes: StreamEither.unwrap(ref.changes),
   pipe() {
     // eslint-disable-next-line prefer-rest-params
     return pipeArguments(this, arguments)

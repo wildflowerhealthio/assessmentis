@@ -1,8 +1,9 @@
+import * as fc from 'fast-check'
 import { describe, it } from 'vitest'
 import { FastCheck } from 'effect'
-import type { DeepReadonly } from './DeepReadonly'
 import { property } from 'effect/FastCheck'
-import * as fc from 'fast-check'
+
+import type { DeepReadonly } from './DeepReadonly'
 
 describe('DeepReadonly', () => {
   it('should exist', () => {

@@ -1,13 +1,18 @@
+import path from 'path'
+import { fileURLToPath } from 'url'
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import { playwright } from '@vitest/browser-playwright'
 import { loadEnv, mergeConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
 const base = defineConfig(({ mode }) => ({
   test: {
     globals: true,
     plugins: [tsconfigPaths()],
+    setupFiles: [path.resolve(__dirname, 'vitest.setup.ts')],
     // eslint-disable-next-line no-undef
     env: loadEnv(mode, process.cwd(), ''),
   },
