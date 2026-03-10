@@ -1,8 +1,7 @@
 import type { ReactNode, JSX } from 'react'
-import { Fragment } from 'react'
+import React, { Fragment } from 'react'
 import { cn } from '@assessmentis/react-util'
 import classes from './DetailGrid.module.css'
-import React from 'react'
 
 interface DetailGridItem {
   label: string

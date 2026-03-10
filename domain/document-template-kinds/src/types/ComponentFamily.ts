@@ -1,7 +1,5 @@
 import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import type { Coding } from '@assessmentis/clinical-domain/data-types'
-
-import { type WithId } from '@assessmentis/clinical-domain/data-types'
+import type { Coding, WithId } from '@assessmentis/clinical-domain/data-types'
 
 export type HeaderComponent = React.FC<{ title: string }>
 

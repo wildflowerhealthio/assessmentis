@@ -1,11 +1,10 @@
-import type { Either, Scope } from 'effect'
-import { Effect, Stream } from 'effect'
+import { LoadedGapiClient } from '../services/LoadedGapiClient'
+import { AuthError, NotFoundError } from '@assessmentis/ontology'
 import type { AuthData } from '@assessmentis/platform-domain'
 import { DocumentStore } from '@assessmentis/platform-domain'
-import { LoadedGapiClient } from '../services/LoadedGapiClient'
-import { AuthError } from '@assessmentis/ontology'
-import { NotFoundError } from '@assessmentis/ontology'
 import { StreamEither } from '@assessmentis/util'
+import type { Either, Scope } from 'effect'
+import { Effect, Stream } from 'effect'
 
 export const startAccessTokenSyncer = (
   userStream: Stream.Stream<

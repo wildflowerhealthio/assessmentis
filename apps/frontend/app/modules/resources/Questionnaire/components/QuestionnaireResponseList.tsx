@@ -3,8 +3,8 @@
 import type {
   Questionnaire,
   QuestionnaireResponseId,
+  QuestionnaireResponse,
 } from '@assessmentis/clinical-domain/content-management'
-import type { QuestionnaireResponse } from '@assessmentis/clinical-domain/content-management'
 import { Link } from 'react-router'
 
 const QuestionnaireResponseList = ({

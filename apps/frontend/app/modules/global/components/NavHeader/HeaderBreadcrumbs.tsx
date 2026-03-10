@@ -1,11 +1,10 @@
 import { cn } from '@assessmentis/react-util'
-import { Suspense } from 'react'
+import React, { Suspense } from 'react'
 import Skeleton from 'react-loading-skeleton'
 import { Await, Link } from 'react-router'
 import { useBreadcrumbContext } from '../../contexts/BreadcrumbContext'
 
 import classes from './HeaderBreadcrumbs.module.css'
-import React from 'react'
 
 export const HeaderBreadcrumbs = () => {
   const { breadcrumbs } = useBreadcrumbContext()

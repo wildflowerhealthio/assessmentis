@@ -1,4 +1,4 @@
-import { Suspense, useMemo } from 'react'
+import { Suspense, useMemo, useState } from 'react'
 import { Schema, Option, Effect, DateTime } from 'effect'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { QuestionnaireItemLink } from '@assessmentis/clinical-domain/content-management'
@@ -27,7 +27,6 @@ import {
   ObservationRepository,
 } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { Await, useNavigate } from 'react-router'
-import { useState } from 'react'
 import SplitPane from '../modules/common/components/SplitPane/SplitPane'
 import { gad7 } from '@assessmentis/questionnaire-entities'
 import { useClinicalDataCollection } from '../modules/common/hooks/useClinicalDataCollection'

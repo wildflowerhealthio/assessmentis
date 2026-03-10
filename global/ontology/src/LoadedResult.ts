@@ -1,5 +1,5 @@
 import type { Subscribable } from 'effect'
-import { Effect, pipe, Stream, SubscriptionRef } from 'effect'
+import { Effect, Stream, SubscriptionRef, pipe } from 'effect'
 
 export type LoadedResult<A, E> =
   | { _tag: 'loading' }

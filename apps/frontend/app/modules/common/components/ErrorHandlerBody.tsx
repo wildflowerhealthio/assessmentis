@@ -3,10 +3,10 @@ import {
   ExternalAssertionError,
   NotFoundError,
   UnhandledError,
+  AuthError,
 } from '@assessmentis/ontology'
 import type { JSX } from 'react'
 import React, { useEffect, useState } from 'react'
-import { AuthError } from '@assessmentis/ontology'
 import { LoginButton } from '../../global/components/LoginButton'
 import { Generic404Content } from './Generic404Content'
 import type { Scope, Stream } from 'effect'

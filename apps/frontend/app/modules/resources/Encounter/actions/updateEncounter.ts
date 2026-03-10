@@ -11,10 +11,11 @@ import type {
   ExternalAssertionError,
   NotFoundError,
   UnhandledError,
+  AuthError,
+  AuthzError,
 } from '@assessmentis/ontology'
 import type { WithId } from '@assessmentis/clinical-domain/data-types'
 import type { EncounterFormData } from '../schemas/EncounterFormSchema'
-import type { AuthError, AuthzError } from '@assessmentis/ontology'
 
 export const updateEncounter = (
   id: EncounterId,
