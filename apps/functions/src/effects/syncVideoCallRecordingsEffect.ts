@@ -1,12 +1,21 @@
-import type { Either } from 'effect'
-import { Effect, Layer, pipe, Schema } from 'effect'
+import { Effect, Layer, pipe, Schema, type Either } from 'effect'
 import { info, error as logError } from 'firebase-functions/logger'
-import type {
-  VideoCallRoomName,
-  VideoCallClient,
-  type MediaWithRoom,
-} from '@assessmentis/video-call-domain'
+
+import { Encounter } from '@assessmentis/clinical-domain/administration'
+import { makeClinicalDataRepository } from '@assessmentis/clinical-domain/assessmentis'
+import {
+  Media,
+  type MediaId,
+} from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { FhirR4Client } from '@assessmentis/fhir-client'
+import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
+import {
+  BadDataError,
+  NotFoundError,
+  UnhandledError,
+  type AuthError,
+  type ExternalAssertionError,
+} from '@assessmentis/ontology'
 import {
   CurrentOrg,
   DocumentStore,
@@ -14,19 +23,14 @@ import {
   Org,
   OrgSlug,
 } from '@assessmentis/platform-domain'
-import type { ExternalAssertionError, AuthError } from '@assessmentis/ontology'
 import {
-  UnhandledError,
-  NotFoundError,
-  BadDataError,
-} from '@assessmentis/ontology'
-import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
-import type { MediaId } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { Media } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { makeClinicalDataRepository } from '@assessmentis/clinical-domain/assessmentis'
-import { VideoCallClientLayerFromOrg } from '../layers/VideoCallClientService'
+  VideoCallClient,
+  type MediaWithRoom,
+  type VideoCallRoomName,
+} from '@assessmentis/video-call-domain'
+
 import { FhirR4ClientLayerLive } from '../layers/FhirR4ClientService'
-import { Encounter } from '@assessmentis/clinical-domain/administration'
+import { VideoCallClientLayerFromOrg } from '../layers/VideoCallClientService'
 
 const _ROOM_IDENTIFIER_SYSTEM = 'http://assessment.is/fhir/video-call-room-name'
 
