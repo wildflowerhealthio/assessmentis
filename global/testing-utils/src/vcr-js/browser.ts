@@ -1,8 +1,10 @@
-import { http, bypass, getResponse } from 'msw'
-import { setupWorker } from 'msw/browser'
-import { XMLHttpRequestInterceptor } from '@mswjs/interceptors/XMLHttpRequest'
-import type { VcrOpts } from './types'
 import { IS_PATCHED_MODULE } from '@mswjs/interceptors'
+import { XMLHttpRequestInterceptor } from '@mswjs/interceptors/XMLHttpRequest'
+import { bypass, getResponse, http } from 'msw'
+import { setupWorker } from 'msw/browser'
+
+import type { VcrOpts } from './types'
+
 export type { VcrOpts } from './types'
 
 export const browserHandlers = (opts: VcrOpts) => [

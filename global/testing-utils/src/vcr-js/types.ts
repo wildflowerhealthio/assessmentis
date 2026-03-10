@@ -1,7 +1,8 @@
+import { expect } from 'vitest'
+
+import type { HttpHandler } from 'msw'
 import talkback from 'talkback/es6'
 import type { Options } from 'talkback/options'
-import type { HttpHandler } from 'msw'
-import { expect } from 'vitest'
 
 export interface VcrHost {
   readonly name: string

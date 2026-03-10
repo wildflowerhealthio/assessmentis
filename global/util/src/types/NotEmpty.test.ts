@@ -1,7 +1,8 @@
-import { describe, it, expect } from 'vitest'
 import * as fc from 'fast-check'
+import { describe, expect, it } from 'vitest'
 import { FastCheck } from 'effect'
 import { property } from 'effect/FastCheck'
+
 import type { NotEmpty } from './NotEmpty'
 
 describe('NotEmpty', () => {

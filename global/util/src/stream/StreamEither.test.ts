@@ -1,8 +1,15 @@
 import { assert, describe, expect, vi } from 'vitest'
 import { it } from '@effect/vitest'
-import type { Brand } from 'effect'
-import { Chunk, Effect, Either, FastCheck as fc, Stream } from 'effect'
-import * as StreamEither from './StreamEither'
+import {
+  Chunk,
+  Effect,
+  Either,
+  FastCheck as fc,
+  Stream,
+  type Brand,
+} from 'effect'
+
+import { StreamEither } from './StreamEither'
 
 const rightStream = <A>(a: A) => Stream.succeed(Either.right(a))
 const leftStream = <E>(e: E) => Stream.succeed(Either.left(e))
