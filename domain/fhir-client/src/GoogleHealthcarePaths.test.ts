@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import {
-  buildFhirStoreParent,
-  buildFhirResourcePath,
-  buildFhirTypePath,
   type GoogleHealthcareConfig,
+  buildFhirResourcePath,
+  buildFhirStoreParent,
+  buildFhirTypePath,
 } from './GoogleHealthcarePaths'
 
 describe('GoogleHealthcarePaths', () => {

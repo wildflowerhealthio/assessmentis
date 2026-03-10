@@ -26,11 +26,13 @@
     "msw": "^2.7.0"
   },
   "peerDependencies": {
-    "vitest": ">=4.0.0"
+    "vitest": ">=4.0.0",
+    "@vitejs/plugin-react": ">=4.0.0"
   },
   "devDependencies": {
     "@assessmentis/prettier-config": "*",
     "@assessmentis/typescript-config": "*",
+    "@vitejs/plugin-react": ">=4.0.0",
     "talkback": "^4.2.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.15"

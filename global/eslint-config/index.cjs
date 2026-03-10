@@ -1,5 +1,6 @@
 const { defineConfig } = require('eslint/config')
 const eslint = require('@eslint/js')
+const importPlugin = require('eslint-plugin-import')
 const tseslint = require('typescript-eslint')
 const eslintConfigPrettier = require('eslint-config-prettier/flat')
 const eslintPluginPrettierRecommended = require('eslint-plugin-prettier/recommended')
@@ -14,6 +15,8 @@ module.exports = defineConfig([
   reactRefresh.configs.vite,
   eslintConfigPrettier,
   eslintPluginPrettierRecommended,
+  importPlugin.flatConfigs.recommended,
+  importPlugin.flatConfigs.typescript,
   {
     languageOptions: {
       parser: tsParser,
@@ -23,6 +26,11 @@ module.exports = defineConfig([
       },
     },
     rules: {
+      '@typescript-eslint/no-namespace': ['off'],
+      '@typescript-eslint/no-empty-object-type': [
+        'error',
+        { allowInterfaces: 'always' },
+      ],
       '@typescript-eslint/consistent-type-imports': [
         'error',
         { fixStyle: 'separate-type-imports', prefer: 'type-imports' },
@@ -54,6 +62,7 @@ module.exports = defineConfig([
   {
     files: ['**/*.test.ts', '**/*.test.tsx'],
     rules: {
+      '@typescript-eslint/consistent-type-imports': ['off'],
       '@typescript-eslint/no-explicit-any': ['off'],
     },
   },

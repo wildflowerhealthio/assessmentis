@@ -1,5 +1,6 @@
 import { type RefObject, useEffect, useState } from 'react'
-import { v4 as uuidv4 } from 'uuid'
+// eslint-disable-next-line import/no-unresolved
+import { v4 as uuidv4 } from 'uuid' // Peer dependency
 import { useStatePromise } from './effectHooks'
 
 export * from './effectHooks'

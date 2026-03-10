@@ -1,8 +1,8 @@
-import { describe } from 'vitest'
-import { Layer } from 'effect'
+import { setupClientOnWindow } from '../helpers/integration-setup'
 import { FhirR4Client } from '@assessmentis/fhir-client'
 import { describeAsFhirR4LocationClient } from '@assessmentis/fhir-client/interface-tests'
-import { setupClientOnWindow } from '../helpers/integration-setup'
+import { Layer } from 'effect'
+import { describe } from 'vitest'
 
 /**
  * Live E2E tests for Location CRUD operations against Google Healthcare API
