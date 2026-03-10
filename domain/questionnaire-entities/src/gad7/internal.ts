@@ -1,7 +1,9 @@
+import {
+  Code,
+  type CodeableConcept,
+} from '@assessmentis/clinical-domain/data-types'
 import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import type { CodeableConcept } from '@assessmentis/clinical-domain/data-types'
-import { Code } from '@assessmentis/clinical-domain/data-types'
-import { literalOf } from '../../../../global/util/src/addLiteralSupportToBrandedSchema'
+import { literalOf } from '@assessmentis/util'
 
 const surveyCategory = {
   coding: [

@@ -5,6 +5,10 @@ import type { NonEmptyReadonlyArray } from 'effect/Array'
 
 import type { TupleToIntersection } from '../types/TupleToIntersection'
 
+/**
+ * Keys that belong to the `Schema.Class` infrastructure and must NOT be
+ * copied when merging statics or prototype members from input classes.
+ */
 const SchemaClassKeys = [
   'prototype',
   'Type',
@@ -22,6 +26,11 @@ const SchemaClassKeys = [
   'transformOrFailFrom',
 ] as const
 
+/**
+ * A class-like value that can be merged:
+ * - A `Schema.Class` (has `fields` + is constructable), or
+ * - A plain `Schema.Struct.Fields` record (no `fields` property).
+ */
 type MergeableClass =
   | {
       readonly fields: Schema.Struct.Fields
@@ -29,11 +38,21 @@ type MergeableClass =
     }
   | (Schema.Struct.Fields & { readonly fields?: never })
 
+/**
+ * Extracts the `Schema.Struct.Fields` from a `MergeableClass`.
+ * For a `Schema.Class` this is `Klass['fields']`; for a plain fields
+ * record it is the record itself.
+ */
 type MergeableClassFields<Klass extends MergeableClass> = Klass extends {
   readonly fields: infer F
 }
   ? F
   : Klass
+
+/**
+ * Extracts the non-field, non-Schema instance members from a `Schema.Class`.
+ * These are the custom methods / getters defined on the class prototype.
+ */
 type MergeableClassInstance<Klass extends MergeableClass> = Klass extends {
   readonly fields: Schema.Struct.Fields
   new (...args: any[]): infer Instance
@@ -44,6 +63,10 @@ type MergeableClassInstance<Klass extends MergeableClass> = Klass extends {
       | keyof Schema.Struct.Type<Klass['fields']>
     >
   : object
+
+/**
+ * Extracts the non-Schema static members from a `Schema.Class` constructor.
+ */
 type MergeableClassStatic<Klass extends MergeableClass> = Klass extends {
   readonly fields: Schema.Struct.Fields
   new (...args: any[]): any
@@ -56,6 +79,11 @@ type MissingSelfGeneric<
   Params extends string = '',
 > = `Missing \`Self\` generic - use \`class Self extends ${Usage}<Self>()(${Params}{ ... })\``
 
+/**
+ * Schema annotations tuple for a merged class.
+ * Follows the same convention as `Schema.Class`:
+ * `[toAnnotations?, transformAnnotations?, fromAnnotations?]`.
+ */
 export type ClassAnnotation<Self> =
   | readonly []
   | readonly [
@@ -71,6 +99,22 @@ export type ClassAnnotation<Self> =
       // Schema.Annotations.Schema<A>?,
     ]
 
+/**
+ * Merges multiple `Schema.Class` definitions (or plain `Schema.Struct.Fields`
+ * records) into a single `Schema.Class`.
+ *
+ * The merged class inherits:
+ * - **Fields** — the intersection of all input classes' fields.
+ * - **Prototype methods** — walked from each input class's prototype chain.
+ * - **Static members** — enumerable statics (own + inherited) from each input.
+ *
+ * Usage follows the same two-call pattern as `Schema.Class`:
+ * ```ts
+ * class AB extends MergeClasses<AB>('AB')([], ClassA, ClassB) { }
+ * ```
+ *
+ * @param identifier - The schema identifier string for the merged class.
+ */
 export const MergeClasses =
   <Self = never>(identifier: string) =>
   <Classes extends NonEmptyReadonlyArray<MergeableClass>>(
@@ -164,17 +208,6 @@ export const MergeClasses =
         current = Object.getPrototypeOf(current)
       }
     }
-
-    // If the caller provided a custom arbitrary annotation, patch the
-    // Declaration node on the cached AST.  We wrap the user's lazy
-    // arbitrary so generated values go through `new base(props, true)`,
-    // giving them the correct prototype (same as Schema.Class's default).
-    // if (annotations?.arbitrary) {
-    //   const userArb = annotations.arbitrary
-    //   const decl = base.ast.to as any
-    //   decl.annotations[AST.ArbitraryAnnotationId] = () => (fc: any) =>
-    //     userArb()(fc).map((props: any) => new base(props, true))
-    // }
 
     return base as any
   }
