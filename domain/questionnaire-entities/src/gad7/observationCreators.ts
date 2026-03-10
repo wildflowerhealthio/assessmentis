@@ -1,13 +1,13 @@
 import type { QuestionnaireResponse } from '@assessmentis/clinical-domain/content-management'
-import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import codings from './codings'
-import { totalScore } from './observations'
-import type { ObservationTemplate } from './internal'
-import { baseChoiceObservation } from './internal'
 import {
   CodeableConcept,
   referenceFromResource,
 } from '@assessmentis/clinical-domain/data-types'
+import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
+
+import { codings } from './codings'
+import { baseChoiceObservation, type ObservationTemplate } from './internal'
+import { totalScore } from './observations'
 
 const questionLinkIds = [
   '57541',

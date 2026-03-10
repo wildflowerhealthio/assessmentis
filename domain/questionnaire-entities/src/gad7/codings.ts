@@ -1,5 +1,4 @@
-import type { Coding } from '@assessmentis/clinical-domain/data-types'
-import { Code } from '@assessmentis/clinical-domain/data-types'
+import { Code, type Coding } from '@assessmentis/clinical-domain/data-types'
 import { literalOf } from '@assessmentis/util'
 
 const codeLiteral = literalOf(Code)
@@ -76,5 +75,3 @@ export const codings = {
     display: 'United States of America',
   },
 } as const satisfies Record<string, Coding>
-
-export default codings
