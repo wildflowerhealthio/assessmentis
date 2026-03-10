@@ -1,6 +1,6 @@
 import { Schema, Option } from 'effect'
-import type { Extension } from '@assessmentis/clinical-domain/data-types'
-import {
+import type {
+  Extension,
   type BackboneElement,
   Code,
 } from '@assessmentis/clinical-domain/data-types'

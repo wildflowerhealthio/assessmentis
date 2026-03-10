@@ -1,8 +1,8 @@
 import type { Either } from 'effect'
 import { Effect, Layer, pipe, Schema } from 'effect'
 import { info, error as logError } from 'firebase-functions/logger'
-import type { VideoCallRoomName } from '@assessmentis/video-call-domain'
-import {
+import type {
+  VideoCallRoomName,
   VideoCallClient,
   type MediaWithRoom,
 } from '@assessmentis/video-call-domain'

@@ -1,7 +1,7 @@
 import { Effect, Schema } from 'effect'
 import type {
   QuestionnaireResponseItem,
-  type QuestionnaireItem,
+  QuestionnaireItem,
 } from '@assessmentis/clinical-domain/content-management'
 import type { Coding } from '@assessmentis/clinical-domain/data-types'
 

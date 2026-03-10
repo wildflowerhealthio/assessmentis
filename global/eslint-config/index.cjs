@@ -26,6 +26,7 @@ module.exports = defineConfig([
       },
     },
     rules: {
+      'import/no-unresolved': ['off'],
       '@typescript-eslint/no-namespace': ['off'],
       '@typescript-eslint/no-empty-object-type': [
         'error',

@@ -14,8 +14,11 @@ import {
 import type { Scope, Take } from 'effect'
 import { Context, Effect, Either, Fiber, Match, PubSub, Stream } from 'effect'
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
-import type { NoSelectedOrgError, OrgSlug } from '@assessmentis/platform-domain'
-import type { Org } from '@assessmentis/platform-domain'
+import type {
+  NoSelectedOrgError,
+  OrgSlug,
+  Org,
+} from '@assessmentis/platform-domain'
 import {
   takeOneFromPubSubOrDie,
   pubsubAsPerpetualStream,

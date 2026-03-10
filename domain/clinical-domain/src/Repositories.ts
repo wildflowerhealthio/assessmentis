@@ -7,8 +7,8 @@ import {
 import {
   QuestionnaireRepository,
   QuestionnaireResponseRepository,
+  CompositionRepository,
 } from './content-management'
-import { CompositionRepository } from './content-management'
 import { MediaRepository, ObservationRepository } from './diagnostic-medicine'
 import type Schemas from './Schemas'
 import type { ClinicalDomainRepositoryTagClass } from './types'
