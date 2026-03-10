@@ -1,7 +1,12 @@
 import { Schema } from 'effect'
-import { Element } from '../base/Element'
 
-const NarrativeId = Schema.String.pipe(Schema.brand('NarrativeId'))
+import { MergeClasses } from '@assessmentis/util'
+
+import { Element, type ElementEncoded } from '../base/Element'
+
+const Key = 'Narrative' as const
+type Key = typeof Key
+
 const NarrativeStatus = Schema.Union(
   /**The contents of the narrative are entirely generated from the core elements in the content. */
   Schema.Literal('generated'),
@@ -9,9 +14,9 @@ const NarrativeStatus = Schema.Union(
   Schema.Literal('additional'),
   Schema.Literal('empty')
 )
+type NarrativeStatus = typeof NarrativeStatus.Type
 
-export const Narrative = Schema.Struct({
-  ...Element(NarrativeId).fields,
+const fields = {
   status: NarrativeStatus,
   /**
    * Limited xhtml content
@@ -22,4 +27,17 @@ export const Narrative = Schema.Struct({
    * some non-whitespace characters
    */
   div: Schema.String,
-})
+} as const satisfies Schema.Struct.Fields
+
+const ElementMixin = Element(Key)
+
+export interface NarrativeEncoded
+  extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<Key> {}
+
+export class Narrative extends MergeClasses<Narrative>(Key)(
+  [],
+  ElementMixin,
+  fields
+) {
+  static readonly Key = Key
+}

@@ -1,23 +1,135 @@
-import { expect, test, describe } from 'vitest'
-import { Extension } from './Extension'
-import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
-import type { DeepReadonly } from '@assessmentis/util'
-import type { Extension as FhirExtension } from 'fhir/r4'
+import { describe, expect, test } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
+import { capitalize } from 'effect/String'
 
-// Compile-time check that Encoded schema matches FHIR R4
-const _extensionEncoded: DeepReadonly<FhirExtension> = Extension.Encoded
+import { AllDatatypeKeys } from '../Datatype'
+import { Extension } from './Extension'
 
-const extensionArb = Arbitrary.make(Extension)
+const decode = Schema.decodeSync(Extension)
 
-describe('Extension model', () => {
-  test('property: encode-decode cycle', () => {
+// Expected value[x] option keys — derived from the same source as the
+// production code so the test stays in sync with AllDatatypeKeys.
+const expectedOptionKeys = [...AllDatatypeKeys].map(
+  (k) => `value${capitalize(k)}`
+)
+
+// Map of value[x] key → a sample value that satisfies the field's schema.
+// Typed primitives need their specific type; Schema.Unknown keys accept anything.
+const sampleValueForKey = (key: string): unknown => {
+  switch (key) {
+    case 'valueBoolean':
+      return true
+    case 'valueDecimal':
+    case 'valueInteger':
+      return 42
+    case 'valueDate':
+      return '2024-01-01'
+    case 'valueDateTime':
+      return '2024-01-01T00:00:00Z'
+    default:
+      return 'sentinel'
+  }
+}
+
+// Arbitrary: a single random option key
+const optionKeyArb = fc.constantFrom(...expectedOptionKeys)
+
+// Arbitrary: exactly two distinct option keys
+const twoOptionKeysArb = fc
+  .subarray(expectedOptionKeys, { minLength: 2, maxLength: 2 })
+  .filter((arr) => arr.length === 2)
+
+describe('Extension', () => {
+  test('Element mixin: Key static equals "Extension"', () => {
+    expect(Extension.DomainType).toBe('Extension')
+  })
+
+  test('DatatypeChoice mixin: allValueKeys matches all value-prefixed datatype keys', () => {
+    expect(new Set(Extension.allValueKeys())).toEqual(
+      new Set(expectedOptionKeys)
+    )
+  })
+
+  test('property: minimal decode defaults domainType, extension, and all value[x] to absent', () => {
     fc.assert(
-      fc.property(extensionArb, (extension) => {
-        const encoded = Schema.encodeSync(Extension)(extension)
-        const decoded = Schema.decodeSync(Extension)(encoded)
-        expect(decoded).toEqual(extension)
+      fc.property(fc.string({ minLength: 1 }), (url) => {
+        const ext = decode({ definitionUrl: url })
+        expect(ext.domainType).toBe('Extension')
+        expect(ext.extension).toEqual([])
+        expect(ext.definitionUrl).toBe(url)
       })
     )
+  })
+
+  test('property: isNonePresent is true when no value[x] key is set', () => {
+    fc.assert(
+      fc.property(fc.string({ minLength: 1 }), (url) => {
+        const ext = decode({ definitionUrl: url }) as Extension
+        expect(ext.isNoValuePresent()).toBe(true)
+      })
+    )
+  })
+
+  test('property: setting exactly one value[x] key makes isExactlyOnePresent true', () => {
+    fc.assert(
+      fc.property(optionKeyArb, (key) => {
+        const ext = decode({
+          definitionUrl: 'http://test',
+          [key]: sampleValueForKey(key),
+        }) as Extension
+        expect(ext.isExactlyOneValuePresent()).toBe(true)
+        expect(ext.isNoValuePresent()).toBe(false)
+      })
+    )
+  })
+
+  test('property: setting two value[x] keys → isExactlyOneValuePresent false, isNoValuePresent false', () => {
+    fc.assert(
+      fc.property(twoOptionKeysArb, ([keyA, keyB]) => {
+        const ext = decode({
+          definitionUrl: 'http://test',
+          [keyA]: sampleValueForKey(keyA),
+          [keyB]: sampleValueForKey(keyB),
+        }) as Extension
+        expect(ext.isExactlyOneValuePresent()).toBe(false)
+        expect(ext.isNoValuePresent()).toBe(false)
+      })
+    )
+  })
+
+  test('property: Arbitrary.make produces Extensions with one-or-none value and correct prototype', () => {
+    const arb = Arbitrary.make(Extension)
+    fc.assert(
+      fc.property(arb, (ext) => {
+        expect(ext).toBeInstanceOf(Extension)
+        expect(typeof ext.isExactlyOneValuePresent).toBe('function')
+        expect(typeof ext.isNoValuePresent).toBe('function')
+
+        const none = ext.isNoValuePresent()
+        const one = ext.isExactlyOneValuePresent()
+        // Must be exactly one of: none present or one present
+        expect(none || one).toBe(true)
+        expect(none && one).toBe(false)
+      })
+    )
+  })
+
+  test('self-recursive: decodes nested extensions preserving value[x]', () => {
+    const ext = decode({
+      definitionUrl: 'http://outer',
+      valueString: 'outer-value',
+      extension: [
+        {
+          definitionUrl: 'http://inner',
+          valueInteger: 42,
+        },
+      ],
+    })
+    expect(ext.extension).toHaveLength(1)
+    expect(ext.extension[0].definitionUrl).toBe('http://inner')
+    // Child is also an Extension with mixin methods
+    const child = ext.extension[0] as Extension
+    expect(child.isExactlyOneValuePresent()).toBe(true)
   })
 })

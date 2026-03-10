@@ -1,27 +1,13 @@
 import { Schema } from 'effect'
 
-export const Code = Schema.String.pipe(Schema.brand('code'))
+import { MergeClasses } from '@assessmentis/util'
 
-export type Code = typeof Code.Type
+import { Element, type ElementEncoded } from '../base/Element'
+import { Code } from './Code'
 
-interface CodingCommon {
-  display?: string
-  system?: string
-  userSelected?: boolean
-  version?: string
-}
+const Key = 'Coding' as const
 
-export interface Coding extends CodingCommon {
-  code?: Code
-}
-
-export interface CodingEncoded extends CodingCommon {
-  code?: typeof Code.Encoded
-}
-/**
- * A reference to a code defined by a terminology system.
- */
-export const Coding = Schema.Struct({
+const fields = {
   /**
    * A symbol in syntax defined by the system. The symbol may be a predefined code or an expression in a syntax defined by the coding system (e.g. post-coordination).
    */
@@ -47,4 +33,15 @@ export const Coding = Schema.Struct({
    */
   version: Schema.optional(Schema.String),
   // _version?: Element | undefined;
-})
+} as const satisfies Schema.Struct.Fields
+
+const ElementMixin = Element(Key)
+
+export interface CodingEncoded
+  extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<typeof Key> {}
+
+export class Coding extends MergeClasses<Coding>(Key)(
+  [],
+  ElementMixin,
+  fields
+) {}

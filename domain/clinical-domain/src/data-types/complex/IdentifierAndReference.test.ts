@@ -1,20 +1,20 @@
-import { expect, test, describe } from 'vitest'
-import { Identifier, Reference } from './IdentifierAndReference'
-import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
-import type { DeepReadonly } from '@assessmentis/util'
-import type {
-  Reference as FhirReference,
-  Identifier as FhirIdentifier,
-} from 'fhir/r4'
+import { describe, expect, expectTypeOf, test } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
 
-// Compile-time check that Encoded schema matches FHIR R4
-const _referenceEncoded: DeepReadonly<FhirReference> = Reference.Encoded
-const _identifierEncoded: DeepReadonly<FhirIdentifier> = Identifier.Encoded
+import {
+  Identifier,
+  Reference,
+  type IdentifierEncoded,
+  type ReferenceEncoded,
+} from './IdentifierAndReference'
 
 const referenceArb = Arbitrary.make(Reference)
 
 describe('Reference model', () => {
+  test('should encode to encoded type', () => {
+    expectTypeOf<typeof Reference.Encoded>().toExtend<ReferenceEncoded>()
+  })
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(referenceArb, (reference) => {
@@ -29,6 +29,9 @@ describe('Reference model', () => {
 const identifierArb = Arbitrary.make(Identifier)
 
 describe('Identifier model', () => {
+  test('should encode to encoded type', () => {
+    expectTypeOf<typeof Identifier.Encoded>().toExtend<IdentifierEncoded>()
+  })
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(identifierArb, (identifier) => {

@@ -1,16 +1,21 @@
 import { Schema } from 'effect'
-import { Element } from '../base/Element'
-import { Reference, type ReferenceEncoded } from './IdentifierAndReference'
 
-export const AnnotationId = Schema.String.pipe(Schema.brand('AnnotationId'))
+import { Element, type ElementEncoded } from '../base/Element'
+import { Reference } from './IdentifierAndReference'
 
-const annotationFields = {
-  ...Element(AnnotationId).fields,
+const Key = 'Annotation'
+type Key = typeof Key
+
+const fields = {
   /**
    * The individual responsible for making the annotation.
    * This is a choice element in FHIR (author[x]) - only one of authorString or authorReference should be present.
    */
   authorString: Schema.optional(Schema.String),
+  /**
+   * The individual responsible for making the annotation.
+   */
+  authorReference: Schema.optional(Schema.suspend(() => Reference)),
   /**
    * Indicates when this particular annotation was made.
    */
@@ -19,31 +24,17 @@ const annotationFields = {
    * The text of the annotation in markdown format.
    */
   text: Schema.String,
-}
+} as const
 
-export interface Annotation extends Schema.Struct.Type<
-  typeof annotationFields
-> {
-  readonly authorReference?: Reference | undefined
-}
-
-export interface AnnotationEncoded extends Schema.Struct.Encoded<
-  typeof annotationFields
-> {
-  readonly authorReference?: ReferenceEncoded | undefined
-}
+export interface AnnotationEncoded
+  extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<Key> {}
 
 /**
  * A text note which also contains information about who made the statement and when.
  */
-export const Annotation = Schema.Struct({
-  ...annotationFields,
-  /**
-   * The individual responsible for making the annotation.
-   */
-  authorReference: Schema.optional(
-    Schema.suspend(
-      (): Schema.Schema<Reference, ReferenceEncoded, never> => Reference
-    )
-  ),
-})
+export class Annotation extends Schema.Class<Annotation>(Key)({
+  ...Element(Key).fields,
+  ...fields,
+}) {
+  static readonly DomainType = Key
+}

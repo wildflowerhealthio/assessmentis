@@ -1,26 +1,40 @@
-import {
-  Encounter,
-  LocationFromFhirR4,
-  Patient,
-  Practitioner,
-} from './administration'
-import {
-  Composition,
-  Questionnaire,
-  QuestionnaireResponse,
-} from './content-management'
-import { Media, Observation } from './diagnostic-medicine'
+import type { Schema } from 'effect'
 
-const Schemas = {
+import {
   Composition,
+  DiagnosticReport,
   Encounter,
-  Location: LocationFromFhirR4,
+  Location,
   Media,
   Observation,
   Patient,
   Practitioner,
   Questionnaire,
   QuestionnaireResponse,
+} from '.'
+import type ResourceDataTypes from './ResourceDataTypes'
+
+const Schemas = {
+  [Composition.DomainType]: Composition,
+  [DiagnosticReport.DomainType]: DiagnosticReport,
+  [Encounter.DomainType]: Encounter,
+  [Location.DomainType]: Location,
+  [Media.DomainType]: Media,
+  [Observation.DomainType]: Observation,
+  [Patient.DomainType]: Patient,
+  [Practitioner.DomainType]: Practitioner,
+  [Questionnaire.DomainType]: Questionnaire,
+  [QuestionnaireResponse.DomainType]: QuestionnaireResponse,
 } as const
+
+// A small inline validation
+const _SchemaTest: {
+  [K in keyof typeof Schemas &
+    keyof ResourceDataTypes]: ResourceDataTypes[K] extends Schema.Schema.Type<
+    (typeof Schemas)[K]
+  >
+    ? (typeof Schemas)[K]
+    : never
+} = Schemas
 
 export default Schemas

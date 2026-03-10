@@ -1,13 +1,15 @@
 import { Schema } from 'effect'
-import { Coding } from './Coding'
-import { Element } from '../base/Element'
 
-export const CodeableConceptId = Schema.String.pipe(
-  Schema.brand('CodeableConceptId')
-)
+import { MergeClasses } from '@assessmentis/util'
 
-export const CodeableConcept = Schema.Struct({
-  ...Element(CodeableConceptId).fields,
+import { Element, type ElementEncoded } from '../base/Element'
+import { Datatype } from '../Datatype'
+import { Coding, type CodingEncoded } from './Coding'
+
+export const Key = 'CodeableConcept'
+export type Key = typeof Key
+
+const fields = {
   /**
    * Codes may be defined very casually in enumerations, or code lists, up to
    * very formal definitions such as SNOMED CT - see the HL7 v3 Core Principles
@@ -15,12 +17,28 @@ export const CodeableConcept = Schema.Struct({
    * used to infer meaning. Generally, at most only one of the coding values
    * will be labeled as UserSelected = true.
    */
-  coding: Schema.optional(Schema.Array(Schema.suspend(() => Coding))),
+  coding: Schema.Array(
+    Schema.suspend((): Schema.Schema<Coding, CodingEncoded, never> => Coding)
+  ).pipe(Schema.optionalWith({ default: () => [] })),
   /**
    * Very often the text is the same as a displayName of one of the codings.
    */
   text: Schema.optional(Schema.String),
   // _text?: Element | undefined;
-})
+} as const
 
-export type CodeableConcept = typeof CodeableConcept.Type
+export interface CodeableConceptEncoded
+  extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<Key> {}
+
+const ElementMixin = Element<Key>(Key)
+
+export class CodeableConcept extends MergeClasses<CodeableConcept>(Key)(
+  [],
+  ElementMixin,
+  fields
+) {}
+
+export const CodeableConceptDatatype = Datatype(
+  'CodeableConcept',
+  CodeableConcept
+)

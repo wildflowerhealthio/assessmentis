@@ -1,34 +1,19 @@
+import { Schema } from 'effect'
+
+import type {
+  Resource as EffectResource,
+  ReadonlyUrl,
+} from '@assessmentis/effectful-store'
+
 import { Reference } from './complex/IdentifierAndReference'
 
 export const referenceFromResource = (
-  resource: { id?: string | undefined; resourceType: string },
+  resource: { url?: string | undefined; domainType: string },
   display: string | undefined = undefined
 ) =>
-  resource && resource.id
-    ? Reference.make({
-        reference: `${resource.resourceType}/${resource.id}`,
-        display,
-      })
+  resource && resource.url
+    ? new Reference({ reference: resource.url, display })
     : undefined
-
-export const referenceAsString = (
-  reference:
-    | Reference
-    | { id?: string | undefined; resourceType: string }
-    | undefined
-): string | undefined => {
-  if (!reference) return undefined
-
-  if ('reference' in reference && typeof reference.reference === 'string') {
-    return reference.reference
-  }
-
-  if ('id' in reference && 'resourceType' in reference) {
-    return `${reference.resourceType}/${reference.id}`
-  }
-
-  return undefined
-}
 
 /**
  * Extract the ID from a FHIR reference string
@@ -54,4 +39,25 @@ export function extractReferenceIds(
       ?.map((r) => r.reference?.split('/')[1])
       .filter((id): id is string => !!id) ?? []
   )
+}
+
+export const SchemaWithMandatoryUrl = <
+  A extends { url?: AUrl | undefined },
+  I extends { url?: IUrl | undefined },
+  R,
+  AUrl extends ReadonlyUrl,
+  IUrl extends ReadonlyUrl,
+>(
+  schema: Schema.Schema<A, I, R>,
+  urlSchema: Schema.Schema<AUrl, IUrl, R>
+): Schema.Schema<
+  EffectResource.WithResourceUrl<A>,
+  EffectResource.WithResourceUrl<I>,
+  R
+> => {
+  const withMandatoryUrl: Schema.Schema<{ url: AUrl }, { url: IUrl }, R> =
+    Schema.Struct({
+      url: urlSchema,
+    })
+  return Schema.extend(schema, withMandatoryUrl)
 }

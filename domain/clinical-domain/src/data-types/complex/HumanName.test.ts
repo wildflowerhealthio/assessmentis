@@ -1,21 +1,17 @@
-import { expect, test, describe } from 'vitest'
-import { HumanName } from './HumanName'
-import type { DeepReadonly } from '@assessmentis/util'
-import type { HumanName as FhirHumanName } from 'fhir/r4'
-import { Schema, Arbitrary } from 'effect'
 import * as fc from 'fast-check'
+import { describe, expect, test } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
 
-// Compile-time check that Encoded schema matches FHIR R4
-const _humanNameEncoded: DeepReadonly<FhirHumanName> = HumanName.Encoded
+import * as HumanName from './HumanName'
 
-const humanNameArb = Arbitrary.make(HumanName)
+const humanNameArb = Arbitrary.make(HumanName.HumanName)
 
 describe('HumanName model', () => {
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(humanNameArb, (humanName) => {
-        const encoded = Schema.encodeSync(HumanName)(humanName)
-        const decoded = Schema.decodeSync(HumanName)(encoded)
+        const encoded = Schema.encodeSync(HumanName.HumanName)(humanName)
+        const decoded = Schema.decodeSync(HumanName.HumanName)(encoded)
         expect(decoded).toEqual(humanName)
       })
     )
