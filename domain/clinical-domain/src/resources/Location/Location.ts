@@ -43,6 +43,7 @@ const fields = {
 
 const LocationResource = Resource(Key)
 
+/** Encoded (wire-format) shape of a {@link Location}. */
 export interface LocationEncoded
   extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<Key> {}
 

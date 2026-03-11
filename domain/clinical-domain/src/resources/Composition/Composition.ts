@@ -42,6 +42,7 @@ const fields = {
 
 const resourceMixin = Resource(Key)
 
+/** Encoded (wire-format) shape of a {@link Composition}. */
 export interface CompositionEncoded
   extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<Key> {}
 

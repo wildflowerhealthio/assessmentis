@@ -10,6 +10,7 @@ import {
 import { QuestionnaireItemAnswerOption } from './QuestionnaireItemAnswerOption'
 import { QuestionnaireItemLink } from './QuestionnaireItemLink'
 
+/** Union of FHIR R4 questionnaire item type codes. */
 export type QuestionItemType =
   | 'group'
   | 'display'
@@ -29,6 +30,7 @@ export type QuestionItemType =
   | 'reference'
   | 'quantity'
 
+/** FHIR R4 questionnaire item type — controls the expected answer format (group, display, boolean, string, choice, etc.). */
 export const QuestionItemType = Schema.Union(
   Schema.Literal('group'),
   Schema.Literal('display'),
@@ -69,6 +71,7 @@ const questionnaireItemFields = {
   type: QuestionItemType,
 } as const satisfies Schema.Struct.Fields
 
+/** Encoded (wire-format) shape of a {@link QuestionnaireItem}, including recursive nested items. */
 export interface QuestionnaireItemEncoded
   extends
     Schema.Struct.Encoded<typeof questionnaireItemFields>,

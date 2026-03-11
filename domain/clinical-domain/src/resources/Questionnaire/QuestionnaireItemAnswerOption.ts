@@ -27,12 +27,14 @@ class QuestionnaireItemAnswerOptionValue extends DatatypeChoice(
 type AnswerOptionValueMixinEncoded =
   typeof QuestionnaireItemAnswerOptionValue.Encoded
 
+/** Encoded (wire-format) shape of a {@link QuestionnaireItemAnswerOption}. */
 export interface QuestionnaireItemAnswerOptionEncoded
   extends
     Schema.Struct.Encoded<typeof fields>,
     BackboneElementEncoded<DomainType>,
     AnswerOptionValueMixinEncoded {}
 
+/** A permitted answer value for a questionnaire item, with a polymorphic value[x] choice. */
 export class QuestionnaireItemAnswerOption extends MergeClasses<QuestionnaireItemAnswerOption>(
   DomainType
 )(

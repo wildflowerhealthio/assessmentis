@@ -26,11 +26,13 @@ const fields = {
   dischargeDisposition: Schema.optional(Schema.suspend(() => CodeableConcept)),
 } as const satisfies Schema.Struct.Fields
 
+/** Encoded (wire-format) shape of an {@link EncounterHospitalization}. */
 export interface EncounterHospitalizationEncoded
   extends
     Schema.Struct.Encoded<typeof fields>,
     BackboneElementEncoded<'EncounterHospitalization'> {}
 
+/** Admission and discharge details for an {@link Encounter}. */
 export class EncounterHospitalization extends BackboneElement(
   'EncounterHospitalization'
 ).extend<EncounterHospitalization>('EncounterHospitalization')(fields) {}

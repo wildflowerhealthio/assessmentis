@@ -33,6 +33,7 @@ export const DiagnosticReportStatus = Schema.Enums({
   unknown: 'unknown',
 } as const)
 
+/** Decoded status value for a {@link DiagnosticReport}. */
 export type DiagnosticReportStatus = typeof DiagnosticReportStatus.Type
 
 const fields = {
@@ -74,6 +75,7 @@ class DiagnosticReportEffective extends DatatypeChoice(
 type effectiveMixinEncoded = typeof DiagnosticReportEffective.Encoded
 const resourceMixin = Resource(Key)
 
+/** Encoded (wire-format) shape of a {@link DiagnosticReport}. */
 export interface DiagnosticReportEncoded
   extends
     Schema.Struct.Encoded<typeof fields>,

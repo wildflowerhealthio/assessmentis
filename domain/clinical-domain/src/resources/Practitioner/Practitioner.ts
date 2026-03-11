@@ -34,6 +34,7 @@ const fields = {
 
 const resourceMixin = Resource(Key)
 
+/** Encoded (wire-format) shape of a {@link Practitioner}. */
 export interface PractitionerEncoded
   extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<Key> {}
 

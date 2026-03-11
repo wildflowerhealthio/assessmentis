@@ -1,5 +1,6 @@
 import { Schema } from 'effect'
 
+/** Subset of FHIR questionnaire item types used for authoring (text, group, boolean, display, choice). */
 export const QuestionnaireItemType = Schema.Enums({
   /**
    * Question with a long (potentially multi-paragraph) free-text entry answer (valueString).
@@ -20,6 +21,7 @@ export const QuestionnaireItemType = Schema.Enums({
   choice: 'choice',
 } as const)
 
+/** Ordered tuple of supported {@link QuestionnaireItemType} values for iteration. */
 export const questionItemTypes: [
   typeof QuestionnaireItemType.enums.text,
   // QuestionnaireItemType.CODING,
@@ -34,6 +36,7 @@ export const questionItemTypes: [
   QuestionnaireItemType.enums.display,
 ] as const
 
+/** Visual style codes for questionnaire items — heading levels and question display modes. */
 export const QuestionnaireItemStyle = Schema.Enums({
   /// The biggest heading, there should only be one H1
   heading1: 'heading1',
@@ -47,6 +50,7 @@ export const QuestionnaireItemStyle = Schema.Enums({
   within_question: 'within_question',
 } as const)
 
+/** Ordered tuple of all {@link QuestionnaireItemStyle} values for iteration. */
 export const questionnaireItemStyles: [
   typeof QuestionnaireItemStyle.enums.heading1,
   typeof QuestionnaireItemStyle.enums.heading2,

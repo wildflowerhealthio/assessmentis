@@ -26,6 +26,7 @@ const fields = {
   emptyReason: Schema.optional(Schema.suspend(() => CodeableConcept)),
 } as const satisfies Schema.Struct.Fields
 
+/** Encoded (wire-format) shape of a {@link CompositionSection}, including recursive nested sections. */
 export interface CompositionSectionEncoded
   extends
     Schema.Struct.Encoded<typeof fields>,

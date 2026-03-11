@@ -25,7 +25,7 @@ const fields = {
   code: Schema.optional(Schema.String),
   /**
    * How the value should be understood and represented - whether the actual value is greater or less than
-   * the stated value due to measurement issues; e.g. if the comparator is "<", then the real value is < stated value.
+   * the stated value due to measurement issues; e.g. if the comparator is "\<", then the real value is \< stated value.
    */
   comparator: Schema.optional(
     Schema.Union(

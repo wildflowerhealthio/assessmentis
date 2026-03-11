@@ -30,6 +30,7 @@ export const MediaStatus = Schema.Enums({
   unknown: 'unknown',
 } as const)
 
+/** Decoded status value for a {@link Media} resource. */
 export type MediaStatus = typeof MediaStatus.Type
 
 const fields = {
@@ -66,6 +67,7 @@ const fields = {
 
 const resourceMixin = Resource(Key)
 
+/** Encoded (wire-format) shape of a {@link Media}. */
 export interface MediaEncoded
   extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<Key> {}
 

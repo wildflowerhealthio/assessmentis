@@ -13,4 +13,5 @@ export const LocationStatus = Schema.Enums({
   inactive: 'inactive',
 } as const)
 
+/** Decoded status value for a {@link Location}. */
 export type LocationStatus = typeof LocationStatus.Type

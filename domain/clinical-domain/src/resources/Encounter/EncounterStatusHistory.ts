@@ -6,6 +6,7 @@ import {
   type BackboneElementEncoded,
 } from '../../data-types'
 
+/** FHIR R4 encounter lifecycle status values. */
 export const EncounterStatus = Schema.Union(
   Schema.Literal('planned'),
   Schema.Literal('arrived'),
@@ -23,11 +24,13 @@ const fields = {
   period: Schema.suspend(() => Period),
 } as const satisfies Schema.Struct.Fields
 
+/** Encoded (wire-format) shape of an {@link EncounterStatusHistory}. */
 export interface EncounterStatusHistoryEncoded
   extends
     Schema.Struct.Encoded<typeof fields>,
     BackboneElementEncoded<'EncounterStatusHistory'> {}
 
+/** Records a previous status that an {@link Encounter} transitioned through, with the period it was in that status. */
 export class EncounterStatusHistory extends BackboneElement(
   'EncounterStatusHistory'
 ).extend<EncounterStatusHistory>('EncounterStatusHistory')(fields) {}

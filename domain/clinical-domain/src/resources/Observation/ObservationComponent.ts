@@ -29,12 +29,14 @@ class ObservationComponentValue extends DatatypeChoice(
 ) {}
 type ComponentValueMixinEncoded = typeof ObservationComponentValue.Encoded
 
+/** Encoded (wire-format) shape of an {@link ObservationComponent}. */
 export interface ObservationComponentEncoded
   extends
     Schema.Struct.Encoded<typeof fields>,
     BackboneElementEncoded<DomainType>,
     ComponentValueMixinEncoded {}
 
+/** A component result within an {@link Observation}, carrying its own code and value[x] choice. */
 export class ObservationComponent extends MergeClasses<ObservationComponent>(
   DomainType
 )([], BackboneElement(DomainType), ObservationComponentValue, fields) {}

@@ -17,6 +17,7 @@ import {
 const Key = 'QuestionnaireResponse' as const
 type Key = typeof Key
 
+/** FHIR R4 questionnaire response lifecycle status values. */
 export const QuestionnaireResponseStatus = Schema.Enums({
   'in-progress': 'in-progress',
   completed: 'completed',
@@ -40,6 +41,7 @@ const fields = {
 
 const resourceMixin = Resource(Key)
 
+/** Encoded (wire-format) shape of a {@link QuestionnaireResponse}, including recursive items. */
 export interface QuestionnaireResponseEncoded
   extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<Key> {
   readonly item?: ReadonlyArray<QuestionnaireResponseItemEncoded> | undefined
@@ -62,6 +64,7 @@ export class QuestionnaireResponse extends MergeClasses<QuestionnaireResponse>(
     )
   ),
 }) {
+  /** Yields all nested {@link QuestionnaireResponseItem}s depth-first. */
   *deepQuestionnaireResponseItems(): Generator<QuestionnaireResponseItem> {
     for (const child of this.item ?? []) {
       yield child
@@ -69,6 +72,12 @@ export class QuestionnaireResponse extends MergeClasses<QuestionnaireResponse>(
     }
   }
 
+  /**
+   * Finds the first item whose answer timestamp falls after `time`.
+   *
+   * @param time - The cutoff time; items answered at or before this are excluded
+   * @returns The earliest-answered item after `time`, or `undefined` if none qualify
+   */
   firstItemAnsweredAfter(
     time: DateTime.Utc
   ): QuestionnaireResponseItem | undefined {

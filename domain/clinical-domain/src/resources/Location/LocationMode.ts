@@ -12,4 +12,5 @@ export const LocationMode = Schema.Enums({
   kind: 'kind',
 } as const)
 
+/** Decoded mode value for a {@link Location}. */
 export type LocationMode = typeof LocationMode.Type

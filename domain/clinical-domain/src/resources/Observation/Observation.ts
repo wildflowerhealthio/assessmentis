@@ -36,6 +36,7 @@ export const ObservationStatus = Schema.Enums({
   unknown: 'unknown',
 } as const)
 
+/** Decoded status value for an {@link Observation}. */
 export type ObservationStatus = typeof ObservationStatus.Type
 
 // --- Observation ---
@@ -93,6 +94,7 @@ const fields = {
 const resourceMixin = Resource(Key)
 
 type ObservationValueMixinEncoded = typeof ObservationValue.Encoded
+/** Encoded (wire-format) shape of an {@link Observation}. */
 export interface ObservationEncoded
   extends
     Schema.Struct.Encoded<typeof fields>,

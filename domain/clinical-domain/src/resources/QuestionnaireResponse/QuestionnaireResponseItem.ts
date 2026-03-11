@@ -21,6 +21,7 @@ class QuestionnaireResponseItemAnswerValue extends DatatypeChoice(
 type valueMixinEncoded = Schema.Struct.Encoded<
   typeof QuestionnaireResponseItemAnswerValue.fields
 >
+/** Encoded (wire-format) shape of a {@link QuestionnaireResponseItemAnswer}, including recursive items. */
 export interface QuestionnaireResponseItemAnswerEncoded
   extends
     Schema.Struct.Encoded<typeof questionnaireResponseItemAnswerFields>,
@@ -74,6 +75,7 @@ const questionnaireResponseItemFields = {
   text: Schema.optional(Schema.String),
 } as const satisfies Schema.Struct.Fields
 
+/** Encoded (wire-format) shape of a {@link QuestionnaireResponseItem}, including recursive items and answers. */
 export interface QuestionnaireResponseItemEncoded
   extends
     Schema.Struct.Encoded<typeof questionnaireResponseItemFields>,
@@ -130,6 +132,7 @@ export class QuestionnaireResponseItem extends MergeClasses<QuestionnaireRespons
     ),
   }
 ) {
+  /** Yields all nested child {@link QuestionnaireResponseItem}s depth-first. */
   *deepQuestionnaireResponseItems(): Generator<QuestionnaireResponseItem> {
     for (const child of this.item ?? []) {
       yield child

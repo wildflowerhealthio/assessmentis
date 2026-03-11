@@ -14,6 +14,7 @@ const fields = {
   detail: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
 } as const satisfies Schema.Struct.Fields
 
+/** Encoded (wire-format) shape of a composition event entry. */
 export interface CompositionEventEncoded
   extends
     BackboneElementEncoded<'CompositionEvent'>,
