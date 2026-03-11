@@ -63,6 +63,7 @@ module.exports = defineConfig([
   },
   {
     plugins: { tsdoc: tsdocPlugin },
+    files: ['**/*.ts', '**/*.tsx'],
     rules: {
       'tsdoc/syntax': 'warn',
     },

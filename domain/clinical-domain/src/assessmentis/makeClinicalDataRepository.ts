@@ -175,7 +175,7 @@ export const makeClinicalDataRepository = <
             })),
           } as const
 
-          const result = yield* innerClient.executeBundle(resource)
+          const result = yield* innerClient.executeBundle(resource as any)
 
           const responseBundle = yield* Schema.decodeUnknown(
             TransactionResponseBundle

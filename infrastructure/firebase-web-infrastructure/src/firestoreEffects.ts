@@ -5,11 +5,11 @@ import { UnhandledError } from '@assessmentis/ontology'
 
 /**
  * Effect-based wrapper for Firestore setDoc operation
- * @param firestore Firestore instance
- * @param path Collection path (e.g., 'orgs')
- * @param docId Document ID
- * @param data Data to set
- * @param options Optional SetOptions for merge behavior
+ * @param firestore - Firestore instance
+ * @param path - Collection path (e.g., 'orgs')
+ * @param docId - Document ID
+ * @param data - Data to set
+ * @param options - Optional SetOptions for merge behavior
  * @returns Effect that completes when the document is set
  */
 export const setDocument = (

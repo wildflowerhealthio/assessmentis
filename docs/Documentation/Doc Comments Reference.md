@@ -25,7 +25,7 @@ This ordering front-loads what matters most in a hover tooltip: _what is it?_ th
 
 ### Full Comment
 
-```ts
+````ts
 /**
  * Narrows `value` with a type-guard, failing the Effect when the guard
  * returns false.
@@ -56,7 +56,7 @@ This ordering front-loads what matters most in a hover tooltip: _what is it?_ th
  * )
  * ```
  */
-```
+````
 
 ### When the Comment Is Bigger Than the Code
 
@@ -66,11 +66,11 @@ That's fine. A small type alias or utility with many subtle edge cases (e.g. `De
 
 ### Parameters, Types, and Return Values
 
-| Tag | Use for | Example |
-|---|---|---|
-| `@typeParam Name - desc` | Generic type parameters | `@typeParam E - The error type on failure` |
-| `@param name - desc` | Function/method parameters | `@param cond - Type-guard predicate` |
-| `@returns desc` | Return value semantics | `@returns A Promise suitable for use()` |
+| Tag                      | Use for                    | Example                                    |
+| ------------------------ | -------------------------- | ------------------------------------------ |
+| `@typeParam Name - desc` | Generic type parameters    | `@typeParam E - The error type on failure` |
+| `@param name - desc`     | Function/method parameters | `@param cond - Type-guard predicate`       |
+| `@returns desc`          | Return value semantics     | `@returns A Promise suitable for use()`    |
 
 Write `@param` and `@returns` whenever the meaning is non-obvious from the name and summary. Prefer trusting the reader's understanding of the summary over being overly verbose — describe _meaning_, not type signatures the reader can already see.
 
@@ -103,10 +103,10 @@ When a function returns a tuple or object with multiple fields, describe each fi
 
 Use `{@link Symbol}` to reference in-project symbols inline. Use `@see` on its own line for related-reading pointers:
 
-| Tag | Use for | Example |
-|---|---|---|
-| `{@link Symbol}` | In-project symbol | `{@link LoadedResult}` |
-| `@see` | Related reading | `@see {@link LoadedResultStream} for the reactive variant` |
+| Tag              | Use for           | Example                                                    |
+| ---------------- | ----------------- | ---------------------------------------------------------- |
+| `{@link Symbol}` | In-project symbol | `{@link LoadedResult}`                                     |
+| `@see`           | Related reading   | `@see {@link LoadedResultStream} for the reactive variant` |
 
 Reference external packages with backtick-quoted names (e.g. `` `@daily-co/daily-react` ``) or a `@see` with a URL.
 
@@ -114,7 +114,7 @@ Reference external packages with backtick-quoted names (e.g. `` `@daily-co/daily
 
 Mark deprecated symbols with `@deprecated` and a concrete before/after migration:
 
-```ts
+````ts
 /**
  * @deprecated Use {@link Effect.liftPredicate} instead:
  * ```ts
@@ -124,7 +124,7 @@ Mark deprecated symbols with `@deprecated` and a concrete before/after migration
  * Effect.liftPredicate(val, isString, (a) => new MyError(a))
  * ```
  */
-```
+````
 
 ### Events and Implicit State
 
@@ -211,13 +211,14 @@ Use markdown freely — these docs are viewed in hover windows that render it, a
 
 This project uses [TSDoc](https://tsdoc.org/) rather than JSDoc. Key differences:
 
-| JSDoc | TSDoc equivalent |
-| --- | --- |
-| `@template` | `@typeParam` |
-| `@module` | `@packageDocumentation` |
-| `@description` | First paragraph (summary) + `@remarks` |
-| `@summary` | First paragraph (automatic) |
+| JSDoc                  | TSDoc equivalent                                |
+| ---------------------- | ----------------------------------------------- |
+| `@template`            | `@typeParam`                                    |
+| `@module`              | `@packageDocumentation`                         |
+| `@description`         | First paragraph (summary) + `@remarks`          |
+| `@summary`             | First paragraph (automatic)                     |
 | `{@link external:pkg}` | Backtick-quoted package name or `@see` with URL |
-| `@listens` / `@fires` | Describe in summary and `@remarks` |
+| `@listens` / `@fires`  | Describe in summary and `@remarks`              |
+| `@default`.            | Use `@defaultValue`                             |
 
 The `eslint-plugin-tsdoc` rule (`tsdoc/syntax: warn`) flags non-standard tags automatically.
