@@ -1,7 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { renderHook, act } from '@testing-library/react'
 import * as fc from 'fast-check'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Cause, Effect } from 'effect'
+
+import { act, renderHook } from '@testing-library/react'
+
 import { useEffectTs } from './effectHooks'
 
 describe('useEffectTs', () => {

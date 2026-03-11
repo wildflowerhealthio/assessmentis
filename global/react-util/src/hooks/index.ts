@@ -1,5 +1,5 @@
-import { type RefObject, useEffect, useState } from 'react'
-import { v4 as uuidv4 } from 'uuid'
+import { useEffect, useState, type RefObject } from 'react'
+
 import { useStatePromise } from './effectHooks'
 
 export * from './effectHooks'
@@ -22,17 +22,19 @@ export const useCollection = <T extends { id?: string | undefined }>(
     apiDelete,
     apiCreate,
   }: {
-    apiDelete: (id: NonNullable<T['id']>) => Promise<unknown>
+    apiDelete: (key: string) => Promise<unknown>
     apiCreate: (value: T) => Promise<T>
   },
-  initial: ReadonlyArray<T>
+  initial: ReadonlyArray<T>,
+  keyOf: (item: T) => string | undefined = () => undefined
 ) => {
   const [collection, setCollection] = useState<
     ReadonlyArray<{ data: T; loading: boolean }>
   >(initial.map((item) => ({ data: item, loading: false })))
   const { deleteItem, createItem } = collectionMethods<T>(
     { apiDelete, apiCreate },
-    (f) => setCollection((c) => f(c))
+    (f) => setCollection((c) => f(c)),
+    keyOf
   )
 
   return { collection, deleteItem, createItem }
@@ -46,15 +48,16 @@ export const useCollection = <T extends { id?: string | undefined }>(
  *   - `collectionPromise` — a `Promise<ReadonlyArray<{ data: T; loading: boolean }>>` suitable for `use()`; pending until `initial` resolves
  *   - `deleteItem` / `createItem` — same optimistic semantics as {@link useCollection}; mutations propagate into the promise via {@link useStatePromise.map}
  */
-export const useCollectionPromise = <T extends { id?: string | undefined }>(
+export const useCollectionPromise = <T>(
   {
     apiDelete,
     apiCreate,
   }: {
-    apiDelete: (id: NonNullable<T['id']>) => Promise<unknown>
+    apiDelete: (key: string) => Promise<unknown>
     apiCreate: (value: T) => Promise<T>
   },
-  initial: Promise<ReadonlyArray<T>>
+  initial: Promise<ReadonlyArray<T>>,
+  keyOf: (item: T) => string | undefined = () => undefined
 ) => {
   const [collectionPromise, methods] = useStatePromise<
     ReadonlyArray<{
@@ -73,19 +76,20 @@ export const useCollectionPromise = <T extends { id?: string | undefined }>(
 
   const { deleteItem, createItem } = collectionMethods<T>(
     { apiDelete, apiCreate },
-    methods.map
+    methods.map,
+    keyOf
   )
 
   return { collectionPromise, deleteItem, createItem }
 }
 
 /** Shared optimistic create/delete logic used by both `useCollection` and `useCollectionPromise`. */
-function collectionMethods<T extends { id?: string | undefined }>(
+function collectionMethods<T>(
   {
     apiDelete,
     apiCreate,
   }: {
-    apiDelete: (id: NonNullable<T['id']>) => Promise<unknown>
+    apiDelete: (key: string) => Promise<unknown>
     apiCreate: (value: T) => Promise<T>
   },
   updateCache: (
@@ -98,46 +102,59 @@ function collectionMethods<T extends { id?: string | undefined }>(
       data: T
       loading: boolean
     }>
-  ) => void
+  ) => void,
+  keyOf: (item: T) => string | undefined
 ) {
-  const deleteItem = async (id: T['id']) => {
-    if (!id) return
+  const deleteItem = async (key: string | undefined) => {
+    if (!key) return
     updateCache((current) =>
       current.map((item) =>
-        item.data.id === id ? { ...item, loading: true } : item
+        keyOf(item.data) === key ? { ...item, loading: true } : item
       )
     )
-    await apiDelete(id)
+    await apiDelete(key)
       .then(() =>
-        updateCache((current) => current.filter((item) => item.data.id !== id))
+        updateCache((current) =>
+          current.filter((item) => keyOf(item.data) !== key)
+        )
       )
       .catch(() =>
         updateCache((current) =>
           current.map((item) =>
-            item.data.id === id ? { ...item, loading: false } : item
+            keyOf(item.data) === key ? { ...item, loading: false } : item
           )
         )
       )
   }
 
   const createItem = async (t: T) => {
-    const id = t.id ?? uuidv4()
-    updateCache((current) => [
-      { data: { ...t, id }, loading: true },
-      ...current,
-    ])
+    updateCache((current) => [{ data: t, loading: true }, ...current])
     apiCreate(t)
       .then((created) =>
-        updateCache((current) =>
-          current.map((item) =>
-            item.data.id === id
-              ? { ...item, data: created, loading: false }
-              : item
-          )
-        )
+        updateCache((current) => {
+          // Find the first loading item that matches the temp key or doesn't have a key
+          // (the optimistic entry we just inserted)
+          let found = false
+          return current.map((item) => {
+            if (!found && item.loading && keyOf(item.data) === keyOf(t)) {
+              found = true
+              return { data: created, loading: false }
+            }
+            return item
+          })
+        })
       )
       .catch(() =>
-        updateCache((current) => current.filter((item) => item.data.id !== id))
+        updateCache((current) => {
+          let found = false
+          return current.filter((item) => {
+            if (!found && item.loading && keyOf(item.data) === keyOf(t)) {
+              found = true
+              return false
+            }
+            return true
+          })
+        })
       )
   }
   return { deleteItem, createItem }

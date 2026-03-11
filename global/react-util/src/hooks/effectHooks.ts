@@ -1,6 +1,16 @@
-import type { Scope, Stream } from 'effect'
-import { Cause, Chunk, Effect, Either, Exit, Fiber, pipe } from 'effect'
-import { useState, useEffect, useRef, useMemo } from 'react'
+import {
+  Cause,
+  Chunk,
+  Effect,
+  Either,
+  Exit,
+  Fiber,
+  pipe,
+  type Scope,
+  type Stream,
+} from 'effect'
+import { useEffect, useMemo, useRef, useState } from 'react'
+
 import { useStream } from './useStream'
 
 /**
@@ -14,9 +24,9 @@ import { useStream } from './useStream'
  * Delegates to {@link useStream} for fiber lifecycle — re-subscribes
  * when the stream reference changes.
  */
-export const useEitherStream = <A, E>(
+export function useEitherStream<A, E>(
   stream: Stream.Stream<Either.Either<A, E>, never, Scope.Scope>
-): Promise<A> => {
+): Promise<A> {
   const eitherPromise = useStream(stream)
 
   return useMemo(
@@ -72,7 +82,8 @@ export const useStatePromise = <A>() => {
         if (resolvedRef.current) {
           setPromise((p) => p.then((a) => f(a)))
         } else {
-          mappingRef.current = (a) => f(mappingRef.current(a))
+          const prev = mappingRef.current
+          mappingRef.current = (a) => f(prev(a))
         }
       },
       resolve: (a: A) => {
@@ -112,6 +123,7 @@ export const useStatePromise = <A>() => {
 
   return [promise, callbacks] as const
 }
+
 /**
  * Runs a scoped `Effect<A, E>` and returns a `Promise<A>` that tracks its result.
  *
@@ -133,9 +145,9 @@ export const useStatePromise = <A>() => {
  * On cleanup the fiber is interrupted and the promise is reset to pending,
  * ready for the next effect.
  */
-export const useEffectTs = <A, E>(
+export function useEffectTs<A, E>(
   effect: Effect.Effect<A, E, Scope.Scope>
-): Promise<A> => {
+): Promise<A> {
   const [promise, { resolve, reject, reset }] = useStatePromise<A>()
 
   useEffect(() => {

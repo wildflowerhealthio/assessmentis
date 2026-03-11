@@ -1,3 +1,5 @@
+import React, { useCallback, useEffect, useState } from 'react'
+
 import {
   DailyVideo,
   useDaily,
@@ -6,7 +8,7 @@ import {
   useLocalSessionId,
   useParticipantProperty,
 } from '@daily-co/daily-react'
-import React, { useCallback, useEffect, useState } from 'react'
+
 import UserMediaError from '../UserMediaError/UserMediaError'
 
 import './HairCheck.css'

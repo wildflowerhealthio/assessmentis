@@ -1,20 +1,21 @@
-import { describe, it, expect, assert } from 'vitest'
 import fc from 'fast-check'
+import { assert, describe, expect, it } from 'vitest'
+import { Arbitrary } from 'effect'
 
-import { totalScore } from './observations'
-import codings from './codings'
 import {
   QuestionnaireItemLink,
   QuestionnaireResponse,
   QuestionnaireResponseItem,
 } from '@assessmentis/clinical-domain/content-management'
-import { Arbitrary } from 'effect'
+import type { CodeableConcept } from '@assessmentis/clinical-domain/data-types'
+import { literalOf } from '@assessmentis/util'
+
+import { codings } from './codings'
 import {
   computeGad7HelperTotalScoreObservation,
   extractObservationsFromGad7Response,
 } from './observationCreators'
-import { literalOf } from '@assessmentis/util'
-import type { CodeableConcept } from '@assessmentis/clinical-domain/data-types'
+import { totalScore } from './observations'
 
 const scoreToCoding = [
   codings.notAtAll,

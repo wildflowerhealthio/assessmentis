@@ -1,6 +1,6 @@
-import type { Scope } from 'effect'
-import { Cause, Chunk, Effect, Exit, Fiber, Stream } from 'effect'
+import { Cause, Chunk, Effect, Exit, Fiber, Stream, type Scope } from 'effect'
 import { useEffect } from 'react'
+
 import { useStatePromise } from './effectHooks'
 
 /**
@@ -8,9 +8,9 @@ import { useStatePromise } from './effectHooks'
  * that resolves with the latest emitted value. The stream fiber is
  * interrupted on unmount or when the stream reference changes.
  */
-export const useStream = <A, E>(
+export function useStream<A, E>(
   stream: Stream.Stream<A, E, Scope.Scope>
-): Promise<A> => {
+): Promise<A> {
   const [promise, { resolve, reject, reset }] = useStatePromise<A>()
 
   useEffect(() => {

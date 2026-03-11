@@ -1,12 +1,15 @@
+import { useCallback, useState, type SyntheticEvent } from 'react'
+
 import {
   useAppMessage,
   useLocalSessionId,
   useParticipantProperty,
 } from '@daily-co/daily-react'
-import { useCallback, useState, type SyntheticEvent } from 'react'
 
 import { Arrow } from '../Tray/Icons/index'
+
 import './Chat.css'
+
 import type { DailyEventObjectAppMessage } from '@daily-co/daily-js'
 
 /** A single chat message with the sender's display name. */
