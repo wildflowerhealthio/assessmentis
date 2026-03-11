@@ -11,74 +11,102 @@ Two distinct URL concepts appear throughout the system:
 - **Origin** (`ReadonlyUrl`) — the base URL identifying a data source. Example: `fhir-r4+https://healthcare.googleapis.com/.../fhir`. A source's origin anchors its URL space.
 - **URL** (`ReadonlyUrl`) — the full URL identifying a specific resource. Example: `fhir-r4+https://healthcare.googleapis.com/.../fhir/Patient/abc123`. A resource's URL always falls within exactly one origin's URL space.
 
-`ReadonlyUrl.contains()` determines ownership: an origin contains a resource URL when protocol + host match and the origin's pathname is a prefix of the resource's pathname.
+`ReadonlyUrl.hasChild()` determines ownership: an origin has a child resource URL when protocol + host match and the origin's pathname is a prefix of the resource's pathname.
 
-### SourceBehaviour
+### OriginState
 
-A `SourceBehaviour` is a live source definition. It tells the Hub:
+An `OriginState` is a discriminated union (`ReadyOrigin | NotReadyOrigin`) representing the current state of a registered data source. Both variants share a `BaseOrigin` that captures:
 
-- **What it is** — its `origin`
-- **What resource types it handles** — via `activeResources` (a map of resource type to boolean)
-- **How to resolve requests against it** — via `resolverStream`, a `StreamEither` that emits `MultiResolver` instances (Right) or errors like `AuthError` (Left)
-- **How to trigger re-authentication** — via `provokeReauth`
+- **`originUrl`** (`ReadonlyUrl`) — the base URL identifying the source
+- **`activeResources`** — a map of resource type to boolean indicating which types this source handles
+- **`provokeReauthenticate`** / **`provokeReauthorize`** — callbacks to trigger re-authentication or re-authorization
 
-A source can be registered with the Hub even when its resolver is in an error state. The `resolverStream` being a `StreamEither` means Left emissions (auth failures, expired tokens) are a normal part of the source lifecycle, not a termination event.
+The two variants are discriminated by `errorStatus`:
+
+- **`ReadyOrigin`** — `errorStatus` is `undefined`, `resolver` is a `RequestResolver` that can handle Get, Search, Create, Update, and Delete requests for the source's active resource types.
+- **`NotReadyOrigin`** — `errorStatus` is one of `Loading`, `AuthError`, `AuthzError`, or `UnhandledError`. `resolver` is `undefined`.
+
+A source can be registered with the Hub even when it is not ready. Error states (auth failures, expired tokens) are a normal part of the source lifecycle, not a termination event. The `originCanResolve` type guard narrows a `ReadyOrigin` to prove it supports a specific resource type.
 
 ### Hub
 
-The Hub is a plain class instance backed by a `SubscriptionRef`. Its internal state is a map of origin string to the current state of each registered source:
+The Hub is a plain object (not a class) backed by a `SubscriptionRef`. Its internal state wraps the origin map in an `Either` so the Hub itself can be in a loading or error state:
 
 ```typescript
-SubscriptionRef<ReadonlyMap<string, SourceEntry>>
+SubscriptionRef<Either<HubState<Resources>, HubError>>
 ```
 
-Each `SourceEntry` captures:
+where `HubState<Resources> = ReadonlyMap<string, OriginState<Resources, never>>`.
 
-- The source's `origin`
-- Which resource types it supports (`activeResources`)
-- Its current `status`: either a working `MultiResolver` (Right) or an error (Left)
-- Its `provokeReauth` callback
+The `Either` wrapper means the Hub distinguishes between "no origins registered yet" (Right with empty map) and "Hub is still initializing" (Left with `Loading`). Operations use `awaitReady` to wait for the Hub to leave the Loading state before routing.
 
-The SubscriptionRef serves two purposes:
+The Hub exposes:
 
-1. **Operations** (`get`, `search`, etc.) read the current state to find the right source and resolver.
-2. **Subscribers** can observe `hub.changes` to react when sources connect, disconnect, or change state (e.g., a UI showing connection status, or a hook that re-fetches when the underlying source recovers from an auth error).
+- **`changes`** — a `Stream` of Hub state, so subscribers can react when origins connect, disconnect, or change state (e.g., a UI showing connection status, or a hook that re-fetches when a source recovers from an auth error).
+- **`resolver`** — a `RequestResolver` that routes any resource request through the resolver pipeline.
+- **CRUD + subscription methods** (`get`, `search`, `create`, `createMany`, `update`, `delete`, `subscribe`, `subscribeSearch`) — each takes a `domainType` string as the first argument, routing to the appropriate origin(s).
 
 ## Operation Routing
 
 Different operations use different routing strategies:
 
-| Operation | Routing strategy            | Rationale                                                  |
-| --------- | --------------------------- | ---------------------------------------------------------- |
-| `get`     | URL prefix match            | The resource URL tells you which source owns it            |
-| `update`  | URL prefix match            | The resource already has a source-scoped URL               |
-| `delete`  | URL prefix match            | Same                                                       |
-| `search`  | Fan-out by resource type    | No URL to route by; merge results from all capable sources |
-| `create`  | Explicit `origin` parameter | Caller must decide where to write                          |
+| Operation | Routing strategy         | Rationale                                                  |
+| --------- | ------------------------ | ---------------------------------------------------------- |
+| `get`     | URL prefix match         | The resource URL tells you which source owns it            |
+| `update`  | URL prefix match         | The resource already has a source-scoped URL               |
+| `delete`  | URL prefix match         | Same                                                       |
+| `search`  | Fan-out by resource type | No URL to route by; merge results from all capable sources |
+| `create`  | Infer or explicit origin | Caller may specify; if omitted, inferred when unambiguous  |
 
 For `search`, the Hub finds all registered sources where `activeResources[domainType]` is true and fans out the request, merging results. An optional `origin` parameter scopes the search to a single source.
 
-For `create`, the caller provides the target `origin` explicitly. This is essential for multi-source workflows like reading from one source and writing to another.
+For `create`, the caller may provide the target `origin` explicitly. If omitted, `resolveOriginForCreate` infers the single matching origin for the resource type and fails with `UnhandledError` when zero or multiple origins match. Explicit origin is essential for multi-source workflows like reading from one source and writing to another.
 
-When an operation routes to a source whose status is Left (e.g., `AuthError`), the operation fails with that error rather than "no source found." The caller gets a meaningful, actionable error.
+For `get`, `update`, and `delete`, `resolveOriginFromUrl` scans registered origins for one whose `originUrl.hasChild(url)` is true. It fails with `NotFoundError` when no origin matches and `UnhandledError` when multiple origins match (ambiguous ownership).
 
-## Source Lifecycle
+When an operation routes to a source whose `errorStatus` is a permanent error (e.g., `AuthError`, `AuthzError`), the operation fails with that error rather than "no source found." The caller gets a meaningful, actionable error. When a source is `Loading`, the operation waits for the source to become ready or settle to a permanent error, up to a 15-second timeout.
 
-Sources register and unregister individually via `hub.addSource()` and `hub.removeSource()`.
+### Loading Awareness
 
-When `addSource` is called:
+Loading is treated as a transient state. Rather than failing immediately, operations encountering a Loading origin defer execution by watching the Hub's `changes` stream via `awaitOriginReady`. This utility:
 
-1. The source is added to the SubscriptionRef state (initially with Left status until the first resolver arrives).
-2. A fiber is forked that subscribes to the source's `resolverStream`.
-3. Each emission (Right or Left) updates that source's entry in the SubscriptionRef.
-4. The fiber is tied to a `Scope` and cancels automatically when the scope closes.
+1. Watches for the specific origin to leave the Loading state
+2. Resolves with the `ReadyOrigin` when available, allowing the operation to proceed
+3. Fails with the origin's permanent error if it settles to one
+4. Times out with `UnhandledError` after `LOADING_TIMEOUT` (15 seconds)
 
-When `removeSource` is called:
+This behavior applies both in the resolver pipeline (`filterReadyOrigins`) and in fan-out search (`fanOutSearch`). The pattern is designed as a reusable primitive so any pipeline stage can defer work for Loading origins.
 
-1. The source's subscription fiber is cancelled.
-2. The source is removed from the SubscriptionRef state.
+### Resolver Pipeline
 
-This design means source lifecycles are independent. Adding a new source doesn't affect existing ones. An org switch might replace the FHIR source while a Daily.co source stays connected.
+The Hub's resolver processes batched request entries through a pure pipeline that separates routing decisions from effectful dispatch. Each step uses `SideEffect` — a lightweight container pairing a value with deferred `Effect<void>` actions — so that routing remains synchronous while accumulating side effects for later execution.
+
+The pipeline stages are:
+
+1. **`fanOutSearches`** — Separates global searches (`origin: null`) from origin-bound requests. Global searches are resolved via `fanOutSearch`, which clones the search to every origin supporting the resource type, waits for any Loading origins, runs them concurrently, and merges results. Fan-out search fails eagerly on permanent errors (all-or-nothing consistency). All other requests pass through.
+2. **`groupByOrigin`** — Groups remaining requests by their `origin` field, looking up the corresponding `OriginState` in the hub state map. Requests targeting an unregistered origin fail with `UnhandledError`.
+3. **`filterReadyOrigins`** — Separates groups by origin readiness. Ready groups pass through. Loading origins produce deferred actions that watch the changes stream and dispatch when ready (via `awaitOriginReady` + `dispatchGroupToResolver`). Permanent errors fail immediately.
+4. **`dispatchToResolvers`** — For each ready group, delegates to `dispatchGroupToResolver`, which validates that the origin supports each request's `domainType` (via `originCanResolve`), then dispatches valid entries to the origin's resolver.
+
+After the pipeline, all accumulated actions — including deferred Loading-await actions — are executed concurrently.
+
+## Subscriptions
+
+The Hub provides reactive subscriptions that re-emit when relevant origins change:
+
+- **`subscribe(domainType, url)`** — emits `Either<Resource, Error>` whenever the origin owning `url` changes (connects, disconnects, or is replaced).
+- **`subscribeSearch(domainType, params?)`** — emits `Either<Resource[], Error>` whenever any origin supporting `domainType` changes.
+
+Both use `whenOriginChanges`, which filters the Hub's `changes` stream to only emit when the set of relevant origins differs (by reference equality on `OriginState` objects). Loading and error Hub states are silently skipped — subscriptions wait for a usable state.
+
+## State Management
+
+The Hub does not manage origin lifecycles directly — it has no `addSource` or `removeSource` methods. Instead, state is managed externally by whoever controls the `SubscriptionRef`:
+
+- **`makeHubFromRef`** — builds a Hub from a pre-existing `SubscriptionRef`. The caller is responsible for updating the ref (adding, removing, or replacing origins). This is useful for testing and for contexts where origin management is handled by a separate layer.
+- **`makeHub`** — builds a Hub driven by a `Stream` of state. It forks a scoped fiber that consumes the stream and updates an internal `SubscriptionRef`. The stream's lifecycle is tied to the enclosing `Scope`.
+
+This separation means the Hub is purely a routing and resolution layer. Origin lifecycle management (connecting to servers, handling auth flows, retrying) lives in the platform layer that produces the state stream.
 
 ## Multi-Source Support
 

@@ -88,3 +88,17 @@ export const originCanResolve = <
 ): origin is ReadyOrigin<Resources, ActiveResources | TestResource> => {
   return Boolean(origin.activeResources[domainType])
 }
+
+export const originIsNotLoading = <
+  Resources extends ResourcesConstraint,
+  Active extends keyof Resources,
+>(
+  originState: OriginState<Resources, Active>
+): originState is
+  | ReadyOrigin<Resources, Active>
+  | (Omit<NotReadyOrigin<Resources, Active>, 'errorStatus'> & {
+      readonly errorStatus: Exclude<
+        NotReadyOrigin<Resources, Active>['errorStatus'],
+        Loading<{ originUrl: ReadonlyUrl }>
+      >
+    }) => originState.errorStatus?._tag !== 'Loading'
