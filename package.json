@@ -15,7 +15,8 @@
     "typecheck": "npm exec turbo run typecheck",
     "test": "vitest --project=\"*:unit\"",
     "test:all": "vitest",
-    "format": "npm exec prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "npm exec prettier --write \"**/*.{ts,tsx,md}\"",
+    "docs": "typedoc"
   },
   "author": "Ruth Marks",
   "license": "UNLICENSED",
@@ -62,6 +63,7 @@
     "markdownlint-cli2": "^0.20.0",
     "markdownlint-cli2-formatter-pretty": "^0.0.9",
     "markdownlint-rule-relative-links": "^5.0.1",
-    "turbo": "^2.6.1"
+    "turbo": "^2.6.1",
+    "typedoc": "^0.28.17"
   }
 }

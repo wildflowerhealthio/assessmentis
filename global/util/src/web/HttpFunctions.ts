@@ -30,10 +30,8 @@ export const flattenSearchParams = (
 }
 
 /**
- * Builds URLSearchParams from a record, filtering out undefined values.
- * Array values are joined with commas for FHIR OR semantics.
- * @param params - Record of search parameters
- * @returns URLSearchParams instance with only defined values
+ * Builds `URLSearchParams` from a record of search parameters.
+ * Delegates filtering and array-joining to {@link flattenSearchParams}.
  */
 export const buildSearchParams = (
   params: Record<string, SearchParamValue>

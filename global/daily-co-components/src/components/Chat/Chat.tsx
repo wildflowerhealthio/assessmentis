@@ -13,9 +13,15 @@ import type { DailyEventObjectAppMessage } from '@daily-co/daily-js'
 type Message = { msg: string; name: string }
 
 /**
- * In-call text chat panel. Sends and receives messages via Daily's
- * `sendAppMessage` API. Rendered persistently (even when hidden) to
- * preserve message history in local state.
+ * In-call text chat panel. Message history is held in local state.
+ * Always rendered (never unmounted) so history survives toggling the
+ * panel open and closed.
+ *
+ * @remarks
+ * Uses `useAppMessage` from `@daily-co/daily-react` both to send
+ * (`sendAppMessage`) and receive (`onAppMessage`) messages. Outgoing
+ * messages are appended locally because Daily does not echo them back
+ * to the sender.
  */
 export default function Chat({
   showChat,

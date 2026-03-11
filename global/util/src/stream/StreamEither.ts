@@ -1,15 +1,24 @@
-/**
- * StreamEither — combinators for `Stream<Either<A, E>>` (perpetual streams with recoverable errors).
- *
- * These streams never terminate — errors are represented as `Either.Left` values
- * rather than in the stream's error channel. This module provides ergonomic
- * operations that work on the Either inside the stream.
- */
 import { Effect, Either, Stream } from 'effect'
 import type { NoSuchElementException } from 'effect/Cause'
 import { dual } from 'effect/Function'
 
+/**
+ * Namespace of operators for `Stream<Either<A, E>>` — perpetual streams
+ * where recoverable errors are represented as `Either.Left` values rather
+ * than in the stream's error channel. These streams are designed to never
+ * terminate; errors signal a bad state but do not end the stream.
+ */
 export namespace StreamEither {
+  /**
+   * A `Stream` whose elements are `Either<A, E>`. `Right` values are
+   * successful emissions; `Left` values represent recoverable errors that
+   * can be mapped or observed without terminating the stream.
+   *
+   * @typeParam A - The success value type
+   * @typeParam E - The recoverable error type (carried in `Either.Left`)
+   * @typeParam StreamErr - Defect-level stream errors (rarely used; default `never`)
+   * @typeParam R - Effect context requirements
+   */
   export interface StreamEither<
     out A,
     out E,
@@ -205,7 +214,9 @@ export namespace StreamEither {
   // -------------------------------------------------------------------------------------
 
   /**
-   * Zips two `Stream<Either>` using `zipLatest`, combining errors.
+   * Zips two `Stream<Either>` using `zipLatest`. If either side emits a
+   * `Left` the result is a `Left` (via `Either.all`); both sides must be
+   * `Right` to produce a `Right` pair.
    */
   export const zipLatest: {
     <B, E2, R2>(
@@ -227,7 +238,8 @@ export namespace StreamEither {
   )
 
   /**
-   * Zips two `Stream<Either>` using `zipLatest` and maps the result.
+   * Zips two `Stream<Either>` using `zipLatest` and maps the combined
+   * right values with `f`. Either side being `Left` short-circuits to `Left`.
    */
   export const zipLatestWith: {
     <A, B, C, E2, R2>(

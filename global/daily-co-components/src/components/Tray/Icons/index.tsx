@@ -1,7 +1,8 @@
 /**
- * @module Icons
  * SVG icon components for the call tray UI. Each renders a 24x24 SVG.
  * "Off" variants use a red fill to indicate disabled state.
+ *
+ * @packageDocumentation
  */
 
 /** Camera-enabled icon. */

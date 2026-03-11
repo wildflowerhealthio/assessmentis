@@ -41,6 +41,8 @@ If a doc does two of these, split it and link the halves.
 
 **Skip** when the code is self-explanatory, an existing doc covers it, or the info is only relevant now (use a comment or commit message).
 
+**Doc comments** are separate from `.md` docs — every exported symbol should have a TSDoc comment regardless of whether a `.md` doc exists. See the [Doc Comments Reference](./Doc%20Comments%20Reference.md) for conventions.
+
 ## For AI Agents
 
 Check for docs in and near folders you're working in. The kind suffix tells you what to expect: Explanations give context before changes; How-Tos give steps; References give specs.
@@ -53,3 +55,4 @@ AGENTS.md files are agent configuration, not documentation. They should be short
 
 - [Documentation Explanation](./Explanation.md) — Why docs are organized into four kinds
 - [Documentation Reference](./Reference.md) — Quick-lookup rules
+- [Doc Comments Reference](./Doc%20Comments%20Reference.md) — TSDoc conventions for in-code documentation

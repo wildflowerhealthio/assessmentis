@@ -13,8 +13,12 @@ import './HairCheck.css'
 
 /**
  * Pre-call setup screen for camera, microphone, and speaker selection.
- * Shows a live video preview and lets the user set their display name
- * before joining. Falls back to {@link UserMediaError} on device failure.
+ * Device lists and the local video preview are provided by
+ * `@daily-co/daily-react` via `useDevices` and `DailyVideo`.
+ *
+ * @remarks
+ * Listens for `camera-error` via `useDailyEvent` — sets an error flag
+ * that replaces the form with {@link UserMediaError}.
  */
 export default function HairCheck({
   joinCall,

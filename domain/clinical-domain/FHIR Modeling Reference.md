@@ -1,4 +1,7 @@
-# FHIR Modeling Reference
+---
+title: FHIR Modeling Reference
+category: References
+---
 
 This reference documents how FHIR R4 resources are modeled in clinical-domain.
 

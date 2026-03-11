@@ -5,8 +5,9 @@ import { Brand, type Schema } from 'effect'
  * writing type-safe literal values of a branded type without going
  * through full schema validation at runtime.
  *
- * @param _schema - The branded schema (used only for type inference)
- * @returns A function that brands a literal value
+ * @typeParam A - The unbranded base type
+ * @typeParam B - The brand name (string or symbol)
+ * @returns A function `(l: L) => L & Brand<B>` that applies the brand nominally
  */
 export const literalOf =
   <A, I, R, B extends string | symbol>(

@@ -12,7 +12,10 @@ export * from './usePromiseOrDefault'
  * shown immediately with `loading: true` during create/delete, then
  * updated or removed when the API responds. Rolls back on failure.
  *
- * @returns `{ collection, deleteItem, createItem }`
+ * @returns An object with:
+ *   - `collection` — `ReadonlyArray<{ data: T; loading: boolean }>`, updated synchronously on each mutation
+ *   - `deleteItem(id)` — marks the item loading, calls `apiDelete`, then removes it; rolls back on error
+ *   - `createItem(t)` — prepends a loading item, calls `apiCreate`, then replaces it with the server response; removes on error
  */
 export const useCollection = <T extends { id?: string | undefined }>(
   {
@@ -37,8 +40,11 @@ export const useCollection = <T extends { id?: string | undefined }>(
 
 /**
  * Like {@link useCollection} but accepts a `Promise<ReadonlyArray<T>>`
- * for the initial data. Returns a promise-based collection that resolves
- * once the initial data loads.
+ * for the initial data.
+ *
+ * @returns An object with:
+ *   - `collectionPromise` — a `Promise<ReadonlyArray<{ data: T; loading: boolean }>>` suitable for `use()`; pending until `initial` resolves
+ *   - `deleteItem` / `createItem` — same optimistic semantics as {@link useCollection}; mutations propagate into the promise via {@link useStatePromise.map}
  */
 export const useCollectionPromise = <T extends { id?: string | undefined }>(
   {

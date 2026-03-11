@@ -24,8 +24,10 @@ export const startProxyServer = async (opts: VcrServerOpts) => {
 
 /**
  * Sets up MSW server-side request interception, routing matched requests
- * through Talkback for tape recording/playback. Returns the MSW
- * `SetupServerApi` for lifecycle management in tests.
+ * through Talkback for tape recording/playback.
+ *
+ * @returns A `SetupServerApi` with handlers already registered. Call
+ *   `.listen()` before your test suite and `.close()` after to activate it.
  */
 export const setupNodeIntercepting = async (
   opts: VcrOpts

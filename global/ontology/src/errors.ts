@@ -23,6 +23,7 @@ export class UnhandledError extends Data.TaggedError('UnhandledError')<{
     }
   }
 
+  /** Converts any domain error to `UnhandledError`. For `UnhandledError` itself, returns `this`. */
   asUnhandledError() {
     return this
   }
@@ -46,6 +47,7 @@ export class UnhandledError extends Data.TaggedError('UnhandledError')<{
 export class ExternalAssertionError extends Data.TaggedError(
   'ExternalAssertionError'
 )<{
+  /** Description of what the system expected from the external source. */
   expected: string
   cause?: unknown
 }> {
@@ -58,6 +60,7 @@ export class ExternalAssertionError extends Data.TaggedError(
     }
   }
 
+  /** Converts to {@link UnhandledError} with a message describing the failed expectation. */
   asUnhandledError() {
     return new UnhandledError({
       message: `External assertion failed: expected ${this.expected}`,
@@ -86,6 +89,7 @@ export class BadDataError extends Data.TaggedError('BadDataError')<{
     }
   }
 
+  /** Converts to {@link UnhandledError} with a message describing the bad data. */
   asUnhandledError() {
     return new UnhandledError({
       message: `Bad data was found: ${this.message}`,
@@ -104,12 +108,15 @@ export class NotFoundError<
   out ResourceType extends string,
   out Parameters extends Record<string, unknown>,
 > extends Data.TaggedError('NotFoundError')<{
+  /** The kind of resource that was not found (e.g. `"Patient"`, `"Questionnaire"`). */
   resourceType: ResourceType
+  /** The lookup parameters that failed to match (e.g. `{ id: "abc123" }`). */
   params: Parameters
   cause?: unknown
 }> {
   static readonly tag = 'NotFoundError'
 
+  /** Converts to {@link UnhandledError} with a message including `resourceType` and `params`. */
   asUnhandledError() {
     return new UnhandledError({
       message: `Resource of type ${String(this.resourceType)} not found with parameters: ${JSON.stringify(
@@ -130,10 +137,12 @@ export class AuthError extends Data.TaggedError('AuthError')<{
 }> {
   static readonly tag = 'AuthError' as const
 
+  /** Convenience singleton for the common "not logged in" case. */
   static Unauthenticated = new AuthError({
     message: 'User is not authenticated',
   })
 
+  /** Converts to {@link UnhandledError} with a message describing the auth failure. */
   asUnhandledError() {
     return new UnhandledError({
       message: `Authentication error: ${this.message}`,
@@ -158,6 +167,7 @@ export class AuthzError extends Data.TaggedError('AuthzError')<{
 }> {
   static readonly tag = 'AuthzError' as const
 
+  /** Converts to {@link UnhandledError} with a message describing the authorization failure. */
   asUnhandledError() {
     return new UnhandledError({
       message: `Authorization error: ${this.message}`,
@@ -177,10 +187,16 @@ export class AuthzError extends Data.TaggedError('AuthzError')<{
 
 /**
  * A sentinel error representing an in-progress loading state for a given
- * entity. Used in Effect channels where "still loading" needs to be
- * communicated as an error branch rather than an absent value.
+ * entity.
  *
- * @typeParam Entity - The type of resource being loaded; must be stringifiable for the error message
+ * @typeParam Entity - The type of resource being loaded; must implement `toString()` for the error message
+ *
+ * @remarks
+ * Use this when "still loading" must travel through an Effect error
+ * channel — for example, when a `SubscriptionRef` or `Subscribable` starts
+ * in an unresolved state and downstream consumers need to distinguish
+ * "not yet available" from "successfully loaded". For UI-layer loading
+ * state that doesn't need to propagate through Effect
  */
 export class Loading<
   Entity extends { toString(): string },

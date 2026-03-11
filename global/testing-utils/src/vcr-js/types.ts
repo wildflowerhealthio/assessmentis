@@ -6,10 +6,19 @@ import type { Options } from 'talkback/options'
 
 /** Configuration for a single external host whose HTTP traffic will be recorded/replayed. */
 export interface VcrHost {
+  /** Human-readable label used in tape file paths and Talkback server logs. */
   readonly name: string
+  /** The real origin being proxied (e.g. `https://api.example.com`). */
   readonly destinationHost: string
+  /**
+   * URL rewrite rules applied when generating tape file names.
+   * Each entry is a `[pattern, replacement]` pair passed to `String.replace`.
+   * Useful for stripping volatile path segments (e.g. IDs) so tapes are stable.
+   */
   readonly urlSubstitutions?: [RegExp, string][]
+  /** Port the local Talkback proxy listens on. Required for server-side recording. */
   readonly proxyPort?: number
+  /** Hostname of the local Talkback proxy. Defaults to `localhost`. */
   readonly proxyHost?: string
 }
 

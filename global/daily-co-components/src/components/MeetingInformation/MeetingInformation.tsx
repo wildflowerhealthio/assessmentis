@@ -6,7 +6,12 @@ import {
 } from '@daily-co/daily-react'
 import './MeetingInformation.css'
 
-/** Debug overlay showing meeting state, room name, network topology, and participant IDs. */
+/**
+ * Overlay panel showing live meeting diagnostics: state, room name,
+ * network topology, and participant IDs. All data is sourced from
+ * `@daily-co/daily-react` via `useMeetingState`, `useRoom`,
+ * `useNetwork`, and `useParticipantIds`.
+ */
 export default function MeetingInformation() {
   const room = useRoom()
   const network = useNetwork()

@@ -12,9 +12,15 @@ import UserMediaError from '../UserMediaError/UserMediaError'
 import styles from './Call.module.css'
 
 /**
- * Main video call view. Displays remote participants (or a screen share)
- * as the primary tile, with the local participant in a mini row. Shows a
- * {@link UserMediaError} if `getUserMedia()` fails.
+ * Main video call view. Global call state is provided by
+ * `@daily-co/daily-react`.
+ *
+ * Displays remote participants (or a screen share) as the primary tile,
+ * with the local participant in a mini row.
+ *
+ * @remarks
+ * Listens for `camera-error` via `useDailyEvent` — sets an error flag
+ * that replaces the call UI with {@link UserMediaError}.
  */
 export default function Call() {
   /* If a participant runs into a getUserMedia() error, we need to warn them. */

@@ -1,12 +1,21 @@
 /**
- * Recursively makes every property of `T` readonly. Arrays become
- * `ReadonlyArray<DeepReadonly<Element>>`, and nested objects are
- * processed recursively. Primitives are left as-is.
+ * Recursively makes every property of `T` readonly.
+ *
+ * @remarks
+ * - Primitives (`string`, `number`, `boolean`, `symbol`, `bigint`,
+ *   `null`, `undefined`) and opaque built-ins (`Date`, `RegExp`, `Map`,
+ *   `Set`, `Function`) are returned as-is — they have no enumerable
+ *   properties worth freezing.
+ * - Arrays become `ReadonlyArray<DeepReadonly<Element>>`.
+ * - All other object types are mapped with `readonly` on every key,
+ *   applied recursively.
  */
-export type DeepReadonly<T> = {
-  readonly [K in keyof T]: T[K] extends number | string | symbol // Is it a primitive? Then make it readonly
-    ? Readonly<T[K]>
-    : T[K] extends Array<infer A>
-      ? Readonly<Array<DeepReadonly<A>>>
-      : DeepReadonly<T[K]>
-}
+type Primitive = string | number | boolean | symbol | bigint | null | undefined
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+type BuiltIn = Date | RegExp | Map<unknown, unknown> | Set<unknown> | Function
+
+export type DeepReadonly<T> = T extends Primitive | BuiltIn
+  ? T
+  : T extends Array<infer A>
+    ? ReadonlyArray<DeepReadonly<A>>
+    : { readonly [K in keyof T]: DeepReadonly<T[K]> }
