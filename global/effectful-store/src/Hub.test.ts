@@ -17,20 +17,10 @@ import {
   SubscriptionRef,
 } from 'effect'
 
-import {
-  AuthError,
-  AuthzError,
-  Loading,
-  NotFoundError,
-} from '@assessmentis/ontology'
+import { AuthError, AuthzError, NotFoundError } from '@assessmentis/ontology'
 
 import { makeHubFromRef, type HubError, type HubState } from './Hub'
-import type {
-  AnyResourceRequest,
-  NotReadyOrigin,
-  OriginState,
-  ReadyOrigin,
-} from './OriginState'
+import type * as Origin from './Origin'
 import { ReadonlyUrl } from './ReadonlyUrl'
 import type * as Resource from './Resource'
 import type * as ResourceRequest from './ResourceRequest'
@@ -67,13 +57,13 @@ const makeMutableHub = <
     >(Either.right(HashMap.empty()))
     const hub = makeHubFromRef(stateRef)
 
-    const setOriginState = <ActiveResources extends keyof Resources>(
-      origin: OriginState<Resources, ActiveResources>
+    const setOriginState = <SupportedResources extends keyof Resources>(
+      origin: Origin.AnyState<Resources, SupportedResources>
     ): Effect.Effect<void> =>
       SubscriptionRef.update(stateRef, (current) => {
         const state = Either.isRight(current)
           ? current.right
-          : HashMap.empty<string, OriginState<Resources, never>>()
+          : HashMap.empty<string, Origin.AnyState<Resources, never>>()
         return Either.right(
           HashMap.set(state, origin.originUrl.toString(), origin)
         )
@@ -83,7 +73,7 @@ const makeMutableHub = <
       SubscriptionRef.update(stateRef, (current) => {
         const state = Either.isRight(current)
           ? current.right
-          : HashMap.empty<string, OriginState<Resources, never>>()
+          : HashMap.empty<string, Origin.AnyState<Resources, never>>()
         return Either.right(HashMap.remove(state, originUrl.toString()))
       })
 
@@ -97,7 +87,9 @@ const makeMutableHub = <
 
 const noopProvoke = () => Effect.void
 
-type AnyTestRequest = AnyResourceRequest<TestResources[keyof TestResources]>
+type AnyTestRequest = Origin.AnyResourceRequest<
+  TestResources[keyof TestResources]
+>
 
 /** Verified mock: embeds provenance (origin tag) in responses so tests can
  *  assert which resolver produced a result. */
@@ -232,19 +224,19 @@ const arbitraryEmptyMutableHubEffect =
   fc.constant(makeMutableHub<TestResources>())
 
 const arbitraryReadyOrigin = <
-  ActiveResources extends keyof TestResources = keyof TestResources,
+  SupportedResources extends keyof TestResources = keyof TestResources,
 >({
   originUrl,
-  activeResources,
+  supportedResources,
 }: {
   originUrl?: fc.Arbitrary<ReadonlyUrl>
-  activeResources?: { [K in ActiveResources]: true } & {
+  supportedResources?: { [K in SupportedResources]: true } & {
     [K in keyof TestResources]?: boolean
   }
 } = {}): fc.Arbitrary<{
   url: ReadonlyUrl
   handler: ReturnType<typeof vi.fn>
-  origin: ReadyOrigin<TestResources, ActiveResources>
+  origin: Origin.Ready<TestResources, SupportedResources>
   requestGenerators: {
     Get: () => ResourceRequest.Get<TestResource>
     Search: () => ResourceRequest.Search<TestResource>
@@ -261,7 +253,7 @@ const arbitraryReadyOrigin = <
       handler,
       origin: {
         originUrl: url,
-        activeResources: activeResources ?? {
+        supportedResources: supportedResources ?? {
           TestResource: true,
           OtherResource: true,
         },
@@ -274,49 +266,12 @@ const arbitraryReadyOrigin = <
     }
   })
 
-/** Not-ready origin with any error type (Auth, Authz, or Loading). */
-const arbitraryNotReadyOrigin = ({
-  originUrl,
-}: { originUrl?: fc.Arbitrary<ReadonlyUrl> } = {}): fc.Arbitrary<{
-  url: ReadonlyUrl
-  origin: NotReadyOrigin<TestResources, keyof TestResources>
-  error: AuthError | AuthzError | Loading<{ originUrl: ReadonlyUrl }>
-  requestGenerators: ReturnType<typeof makeTrackedResolver>['requestGenerators']
-}> =>
-  (originUrl ?? originUrlArb)
-    .chain((originUrl) =>
-      fc.tuple(
-        fc.constant(originUrl),
-        fc.oneof(
-          AuthError.arbitrary(fc),
-          AuthzError.arbitrary(fc),
-          fc.constant(new Loading({ entity: { originUrl } }))
-        )
-      )
-    )
-    .map(([url, error]) => {
-      const { requestGenerators } = makeTrackedResolver(url)
-      return {
-        url,
-        origin: {
-          originUrl: url,
-          activeResources: { TestResource: true, OtherResource: true },
-          resolver: undefined,
-          errorStatus: error,
-          provokeReauthenticate: noopProvoke,
-          provokeReauthorize: noopProvoke,
-        },
-        error,
-        requestGenerators,
-      }
-    })
-
-/** Not-ready origin with only permanent errors (AuthError, AuthzError). */
+/** Origin with a permanent error (AuthError or AuthzError). */
 const arbitraryPermanentErrorOrigin = ({
   originUrl,
 }: { originUrl?: fc.Arbitrary<ReadonlyUrl> } = {}): fc.Arbitrary<{
   url: ReadonlyUrl
-  origin: NotReadyOrigin<TestResources, keyof TestResources>
+  origin: Origin.Errored<TestResources, keyof TestResources>
   error: AuthError | AuthzError
   requestGenerators: ReturnType<typeof makeTrackedResolver>['requestGenerators']
 }> =>
@@ -333,7 +288,7 @@ const arbitraryPermanentErrorOrigin = ({
         url,
         origin: {
           originUrl: url,
-          activeResources: { TestResource: true, OtherResource: true },
+          supportedResources: { TestResource: true, OtherResource: true },
           resolver: undefined,
           errorStatus: error,
           provokeReauthenticate: noopProvoke,
@@ -344,12 +299,12 @@ const arbitraryPermanentErrorOrigin = ({
       }
     })
 
-/** An origin in Loading state. */
+/** An origin in Loading state (both resolver and errorStatus are undefined). */
 const arbitraryLoadingOrigin = ({
   originUrl,
 }: { originUrl?: fc.Arbitrary<ReadonlyUrl> } = {}): fc.Arbitrary<{
   url: ReadonlyUrl
-  origin: NotReadyOrigin<TestResources, keyof TestResources>
+  origin: Origin.Loading<TestResources, keyof TestResources>
   requestGenerators: ReturnType<typeof makeTrackedResolver>['requestGenerators']
 }> =>
   (originUrl ?? originUrlArb).map((url) => {
@@ -358,9 +313,9 @@ const arbitraryLoadingOrigin = ({
       url,
       origin: {
         originUrl: url,
-        activeResources: { TestResource: true, OtherResource: true },
+        supportedResources: { TestResource: true, OtherResource: true },
         resolver: undefined,
-        errorStatus: new Loading({ entity: { originUrl: url } }),
+        errorStatus: undefined,
         provokeReauthenticate: noopProvoke,
         provokeReauthorize: noopProvoke,
       },
@@ -659,7 +614,7 @@ describe('Hub', () => {
       {
         arbitraryEmptyMutableHubEffect,
         readyOrigin: arbitraryReadyOrigin<'OtherResource'>({
-          activeResources: { OtherResource: true, TestResource: false },
+          supportedResources: { OtherResource: true, TestResource: false },
         }),
         requestTag: requestTagArb,
       },
@@ -690,7 +645,7 @@ describe('Hub', () => {
 
           yield* setOriginState({
             originUrl: origin,
-            activeResources: { OtherResource: true },
+            supportedResources: { OtherResource: true },
             resolver,
             errorStatus: undefined,
             provokeReauthenticate: noopProvoke,
@@ -1052,14 +1007,14 @@ describe('Hub', () => {
               fc.record({
                 first: arbitraryReadyOrigin<'TestResource'>({
                   originUrl: fc.constant(baseUrl),
-                  activeResources: {
+                  supportedResources: {
                     TestResource: true,
                     OtherResource: false,
                   },
                 }),
                 second: arbitraryReadyOrigin<'TestResource'>({
                   originUrl: fc.constant(baseUrl),
-                  activeResources: {
+                  supportedResources: {
                     TestResource: true,
                     OtherResource: false,
                   },
@@ -1070,14 +1025,14 @@ describe('Hub', () => {
               fc.record({
                 first: arbitraryReadyOrigin<'OtherResource'>({
                   originUrl: fc.constant(baseUrl),
-                  activeResources: {
+                  supportedResources: {
                     OtherResource: true,
                     TestResource: false,
                   },
                 }),
                 second: arbitraryReadyOrigin<'OtherResource'>({
                   originUrl: fc.constant(baseUrl),
-                  activeResources: {
+                  supportedResources: {
                     OtherResource: true,
                     TestResource: false,
                   },
@@ -1170,7 +1125,7 @@ describe('Hub', () => {
           const childOrigin = origin.appendToPathname('/sub')
           yield* setOriginState({
             originUrl: origin,
-            activeResources: { TestResource: true, OtherResource: true },
+            supportedResources: { TestResource: true, OtherResource: true },
             resolver: resolver1,
             errorStatus: undefined,
             provokeReauthenticate: noopProvoke,
@@ -1178,7 +1133,7 @@ describe('Hub', () => {
           })
           yield* setOriginState({
             originUrl: childOrigin,
-            activeResources: { TestResource: true, OtherResource: true },
+            supportedResources: { TestResource: true, OtherResource: true },
             resolver: resolver2,
             errorStatus: undefined,
             provokeReauthenticate: noopProvoke,

@@ -13,20 +13,35 @@ Two distinct URL concepts appear throughout the system:
 
 `ReadonlyUrl.hasChild()` determines ownership: an origin has a child resource URL when protocol + host match and the origin's pathname is a prefix of the resource's pathname.
 
-### OriginState
+### Origin State (`Origin.AnyState`)
 
-An `OriginState` is a discriminated union (`ReadyOrigin | NotReadyOrigin`) representing the current state of a registered data source. Both variants share a `BaseOrigin` that captures:
+An `Origin.AnyState` is a discriminated union (`Origin.Ready | Origin.Loading | Origin.Errored`) representing the current state of a registered data source. All three variants share an internal `Base` interface that captures:
 
 - **`originUrl`** (`ReadonlyUrl`) — the base URL identifying the source
-- **`activeResources`** — a map of resource type to boolean indicating which types this source handles
+- **`supportedResources`** — a map of resource type to boolean indicating which types this source handles
 - **`provokeReauthenticate`** / **`provokeReauthorize`** — callbacks to trigger re-authentication or re-authorization
 
-The two variants are discriminated by `errorStatus`:
+The three variants are discriminated structurally (no `_tag` field):
 
-- **`ReadyOrigin`** — `errorStatus` is `undefined`, `resolver` is a `RequestResolver` that can handle Get, Search, Create, Update, and Delete requests for the source's active resource types.
-- **`NotReadyOrigin`** — `errorStatus` is one of `Loading`, `AuthError`, `AuthzError`, or `UnhandledError`. `resolver` is `undefined`.
+- **`Origin.Ready`** — `resolver` is a `RequestResolver` that can handle Get, Search, Create, Update, and Delete requests for the source's supported resource types. `errorStatus` is `undefined`.
+- **`Origin.Loading`** — Both `resolver` and `errorStatus` are `undefined`. The origin has registered but hasn't connected yet.
+- **`Origin.Errored`** — `resolver` is `undefined`, `errorStatus` is one of `AuthError`, `AuthzError`, or `UnhandledError`. The origin is in a permanent error state.
 
-A source can be registered with the Hub even when it is not ready. Error states (auth failures, expired tokens) are a normal part of the source lifecycle, not a termination event. The `originCanResolve` type guard narrows a `ReadyOrigin` to prove it supports a specific resource type.
+A source can be registered with the Hub even when it is not ready. Error states (auth failures, expired tokens) are a normal part of the source lifecycle, not a termination event.
+
+#### Predicates and matching
+
+The `Origin` module exports type-narrowing predicates (`Origin.isReady`, `Origin.isLoading`, `Origin.isErrored`, `Origin.isNotLoading`) and a 3-way `Origin.match` function that exhaustively handles all variants:
+
+```typescript
+Origin.match(origin, {
+  onReady: (o) => /* Origin.Ready */,
+  onLoading: (o) => /* Origin.Loading */,
+  onErrored: (o) => /* Origin.Errored */,
+})
+```
+
+`Origin.supports` narrows a `Origin.Ready` to prove it supports a specific resource type.
 
 ### Hub
 
@@ -36,7 +51,7 @@ The Hub is a plain object (not a class) backed by a `SubscriptionRef`. Its inter
 SubscriptionRef<Either<HubState<Resources>, HubError>>
 ```
 
-where `HubState<Resources> = ReadonlyMap<string, OriginState<Resources, never>>`.
+where `HubState<Resources> = HashMap<string, Origin.AnyState<Resources, never>>`.
 
 The `Either` wrapper means the Hub distinguishes between "no origins registered yet" (Right with empty map) and "Hub is still initializing" (Left with `Loading`). Operations use `awaitReady` to wait for the Hub to leave the Loading state before routing.
 
@@ -58,7 +73,7 @@ Different operations use different routing strategies:
 | `search`  | Fan-out by resource type | No URL to route by; merge results from all capable sources |
 | `create`  | Infer or explicit origin | Caller may specify; if omitted, inferred when unambiguous  |
 
-For `search`, the Hub finds all registered sources where `activeResources[domainType]` is true and fans out the request, merging results. An optional `origin` parameter scopes the search to a single source.
+For `search`, the Hub finds all registered sources where `supportedResources[domainType]` is true and fans out the request, merging results. An optional `origin` parameter scopes the search to a single source.
 
 For `create`, the caller may provide the target `origin` explicitly. If omitted, `resolveOriginForCreate` infers the single matching origin for the resource type and fails with `UnhandledError` when zero or multiple origins match. Explicit origin is essential for multi-source workflows like reading from one source and writing to another.
 
@@ -71,7 +86,7 @@ When an operation routes to a source whose `errorStatus` is a permanent error (e
 Loading is treated as a transient state. Rather than failing immediately, operations encountering a Loading origin defer execution by watching the Hub's `changes` stream via `awaitOriginReady`. This utility:
 
 1. Watches for the specific origin to leave the Loading state
-2. Resolves with the `ReadyOrigin` when available, allowing the operation to proceed
+2. Resolves with the `Origin.Ready` when available, allowing the operation to proceed
 3. Fails with the origin's permanent error if it settles to one
 4. Times out with `UnhandledError` after `LOADING_TIMEOUT` (15 seconds)
 
@@ -84,9 +99,9 @@ The Hub's resolver processes batched request entries through a pure pipeline tha
 The pipeline stages are:
 
 1. **`fanOutSearches`** — Separates global searches (`origin: null`) from origin-bound requests. Global searches are resolved via `fanOutSearch`, which clones the search to every origin supporting the resource type, waits for any Loading origins, runs them concurrently, and merges results. Fan-out search fails eagerly on permanent errors (all-or-nothing consistency). All other requests pass through.
-2. **`groupByOrigin`** — Groups remaining requests by their `origin` field, looking up the corresponding `OriginState` in the hub state map. Requests targeting an unregistered origin fail with `UnhandledError`.
+2. **`groupByOrigin`** — Groups remaining requests by their `origin` field, looking up the corresponding `Origin.AnyState` in the hub state map. Requests targeting an unregistered origin fail with `UnhandledError`.
 3. **`filterReadyOrigins`** — Separates groups by origin readiness. Ready groups pass through. Loading origins produce deferred actions that watch the changes stream and dispatch when ready (via `awaitOriginReady` + `dispatchGroupToResolver`). Permanent errors fail immediately.
-4. **`dispatchToResolvers`** — For each ready group, delegates to `dispatchGroupToResolver`, which validates that the origin supports each request's `domainType` (via `originCanResolve`), then dispatches valid entries to the origin's resolver.
+4. **`dispatchToResolvers`** — For each ready group, delegates to `dispatchGroupToResolver`, which validates that the origin supports each request's `domainType` (via `Origin.supports`), then dispatches valid entries to the origin's resolver.
 
 After the pipeline, all accumulated actions — including deferred Loading-await actions — are executed concurrently.
 
@@ -97,7 +112,7 @@ The Hub provides reactive subscriptions that re-emit when relevant origins chang
 - **`subscribe(domainType, url)`** — emits `Either<Resource, Error>` whenever the origin owning `url` changes (connects, disconnects, or is replaced).
 - **`subscribeSearch(domainType, params?)`** — emits `Either<Resource[], Error>` whenever any origin supporting `domainType` changes.
 
-Both use `whenOriginChanges`, which filters the Hub's `changes` stream to only emit when the set of relevant origins differs (by reference equality on `OriginState` objects). Loading and error Hub states are silently skipped — subscriptions wait for a usable state.
+Both use `whenOriginChanges`, which filters the Hub's `changes` stream to only emit when the set of relevant origins differs (by reference equality on `Origin.AnyState` objects). Loading and error Hub states are silently skipped — subscriptions wait for a usable state.
 
 ## State Management
 

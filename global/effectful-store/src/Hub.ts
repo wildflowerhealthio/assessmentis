@@ -11,7 +11,7 @@ import {
 import { Loading } from '@assessmentis/ontology'
 import { SideEffect } from '@assessmentis/util'
 
-import type { ResourcesConstraint } from './OriginState'
+import type * as Resource from './Resource'
 
 import {
   failEntry,
@@ -42,7 +42,14 @@ export type {
 
 // --- Hub type ---
 
-export type Hub<Resources extends ResourcesConstraint> = {
+/**
+ * A multi-origin resource store. Combines a reactive `changes` stream, a
+ * batched `RequestResolver`, and typed {@link Repository} CRUD methods for
+ * each resource type.
+ *
+ * @typeParam Resources - Map of domain type keys to resource types
+ */
+export type Hub<Resources extends Resource.ResourceSet> = {
   readonly changes: Stream.Stream<
     Either.Either<_HubState<Resources>, _HubError>
   >
@@ -54,8 +61,17 @@ export type Hub<Resources extends ResourcesConstraint> = {
 
 // --- makeHub ---
 
-/** Build a Hub from a pre-existing SubscriptionRef. No fiber management. */
-export const makeHubFromRef = <Resources extends ResourcesConstraint>(
+/**
+ * Builds a {@link Hub} from a pre-existing `SubscriptionRef`. The caller
+ * owns the ref's lifecycle — no fibers are forked internally.
+ *
+ * @remarks
+ * The resolver processes request batches through a pipeline:
+ * fan-out searches, group by origin, filter ready origins, dispatch to
+ * per-origin resolvers. Loading origins are deferred; permanent errors
+ * fail immediately.
+ */
+export const makeHubFromRef = <Resources extends Resource.ResourceSet>(
   stateRef: HubRef<Resources>
 ): Hub<Resources> => {
   const resolver: RequestResolver.RequestResolver<
@@ -105,8 +121,12 @@ export const makeHubFromRef = <Resources extends ResourcesConstraint>(
   }
 }
 
-/** Build a Hub driven by a state stream. Forks a scoped fiber to consume the stream. */
-export const makeHub = <Resources extends ResourcesConstraint>(
+/**
+ * Builds a {@link Hub} driven by a state stream. Forks a scoped fiber to
+ * consume the stream into an internal `SubscriptionRef`, so the Hub stays
+ * up-to-date as long as the enclosing `Scope` is open.
+ */
+export const makeHub = <Resources extends Resource.ResourceSet>(
   stateStream: Stream.Stream<
     Either.Either<_HubState<Resources>, _HubError>,
     never,

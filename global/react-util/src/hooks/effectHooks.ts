@@ -82,7 +82,8 @@ export const useStatePromise = <A>() => {
         if (resolvedRef.current) {
           setPromise((p) => p.then((a) => f(a)))
         } else {
-          mappingRef.current = (a) => f(mappingRef.current(a))
+          const prev = mappingRef.current
+          mappingRef.current = (a) => f(prev(a))
         }
       },
       resolve: (a: A) => {

@@ -6,7 +6,6 @@ import {
   Stream,
 } from 'effect'
 
-import type { ResourcesConstraint } from '../OriginState'
 import type { ReadonlyUrl } from '../ReadonlyUrl'
 import type * as Resource from '../Resource'
 import type * as ResourceRequest from '../ResourceRequest'
@@ -20,7 +19,12 @@ import { whenOriginChanges } from './change-detection'
 
 // --- Repository method builder ---
 
-export const makeRepository = <Resources extends ResourcesConstraint>(
+/**
+ * Builds a {@link Repository} implementation that dispatches CRUD operations
+ * and subscriptions through a shared `RequestResolver`. Origin resolution
+ * (which origin owns a given URL or resource type) is handled automatically.
+ */
+export const makeRepository = <Resources extends Resource.ResourceSet>(
   stateRef: HubRef<Resources>,
   resolver: RequestResolver.RequestResolver<AnyRequest<Resources>, never>
 ): Repository<Resources> => {

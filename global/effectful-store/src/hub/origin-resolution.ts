@@ -4,23 +4,16 @@ import {
   Either,
   HashMap,
   Iterable,
-  Option,
   pipe,
   Predicate,
   Stream,
   SubscriptionRef,
 } from 'effect'
 
-import type { Loading } from '@assessmentis/ontology'
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
 
-import {
-  originIsNotLoading,
-  type NotReadyOrigin,
-  type OriginState,
-  type ReadyOrigin,
-  type ResourcesConstraint,
-} from '../OriginState'
+import type * as Resource from '../Resource'
+import * as Origin from '../Origin'
 import type { ReadonlyUrl } from '../ReadonlyUrl'
 import type * as ResourceRequest from '../ResourceRequest'
 
@@ -35,23 +28,27 @@ import {
 
 /**
  * Watch the Hub's changes stream for a specific origin to leave the Loading
- * state. Resolves with the ReadyOrigin when it becomes available, or fails
+ * state. Resolves with the Ready origin when it becomes available, or fails
  * with the origin's permanent error. Times out with UnhandledError after
- * LOADING_TIMEOUT.
+ * {@link LOADING_TIMEOUT}.
  *
+ * @remarks
  * Designed as a reusable primitive: any pipeline stage that encounters a
  * Loading origin can defer work through this utility rather than failing
  * eagerly.
  */
-export const awaitOriginReady = <Resources extends ResourcesConstraint>(
+export const awaitOriginReady = <Resources extends Resource.ResourceSet>(
   stateChanges: Stream.Stream<Either.Either<HubState<Resources>, HubError>>,
   originUrl: string
-): Effect.Effect<ReadyOrigin<Resources, never>, ResourceRequest.CommonErrors> =>
+): Effect.Effect<
+  Origin.Ready<Resources, never>,
+  ResourceRequest.CommonErrors
+> =>
   pipe(
     stateChanges,
     Stream.filterMap(Either.getRight),
     Stream.filterMap(HashMap.get(originUrl)),
-    Stream.filter(originIsNotLoading),
+    Stream.filter(Origin.isNotLoading),
     Stream.runHead,
     Effect.timeoutFail({
       duration: LOADING_TIMEOUT,
@@ -68,19 +65,17 @@ export const awaitOriginReady = <Resources extends ResourcesConstraint>(
           })
       )
     ),
-    Effect.filterOrFail(
-      (origin) => origin.errorStatus === undefined,
-      (origin) => origin.errorStatus!
-    )
+    Effect.filterOrFail(Origin.isReady, (origin) => origin.errorStatus)
   )
 
 // --- State access ---
 
 /**
- * Wait for the Hub to have a ready state. Loading defers until a value or
- * error arrives. Non-Loading errors are returned immediately.
+ * Waits for the Hub ref to hold a non-Loading state. If the current state
+ * is Loading, subscribes to the changes stream until a settled state
+ * arrives. Non-Loading errors fail immediately.
  */
-export const awaitReady = <Resources extends ResourcesConstraint>(
+export const awaitReady = <Resources extends Resource.ResourceSet>(
   stateRef: HubRef<Resources>
 ): Effect.Effect<HubState<Resources>, ResourceRequest.CommonErrors> =>
   Effect.flatMap(SubscriptionRef.get(stateRef), (current) => {
@@ -111,8 +106,14 @@ export const awaitReady = <Resources extends ResourcesConstraint>(
 
 // --- Origin inference ---
 
+/**
+ * Resolves which origin owns a resource URL by finding the single origin
+ * whose URL is a parent of `url`. Fails with `NotFoundError` if no origin
+ * matches, or `UnhandledError` if multiple origins match. Also propagates
+ * any `CommonErrors` from awaiting Hub readiness.
+ */
 export const resolveOriginFromUrl = <
-  Resources extends ResourcesConstraint,
+  Resources extends Resource.ResourceSet,
   K extends string,
 >(
   stateRef: HubRef<Resources>,
@@ -146,7 +147,13 @@ export const resolveOriginFromUrl = <
     Effect.map(([match]) => match)
   )
 
-export const resolveOriginForCreate = <Resources extends ResourcesConstraint>(
+/**
+ * Resolves the origin URL for a create request. Returns the explicit origin
+ * if provided; otherwise finds the single origin that supports
+ * `domainType`. Fails with `UnhandledError` if zero or multiple origins
+ * match, or with `CommonErrors` from awaiting Hub readiness.
+ */
+export const resolveOriginForCreate = <Resources extends Resource.ResourceSet>(
   stateRef: HubRef<Resources>,
   domainType: keyof Resources & string,
   explicitOrigin: ReadonlyUrl | undefined
@@ -158,7 +165,7 @@ export const resolveOriginForCreate = <Resources extends ResourcesConstraint>(
         Effect.map((states) =>
           pipe(
             HashMap.values(states),
-            Iterable.filter((o) => o.activeResources[domainType]),
+            Iterable.filter((o) => o.supportedResources[domainType]),
             Iterable.map((o) => o.originUrl),
             Array.fromIterable
           )

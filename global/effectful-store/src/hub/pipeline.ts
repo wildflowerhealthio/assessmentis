@@ -13,12 +13,7 @@ import {
 import { UnhandledError } from '@assessmentis/ontology'
 import { SideEffect } from '@assessmentis/util'
 
-import {
-  originCanResolve,
-  type OriginState,
-  type ReadyOrigin,
-  type ResourcesConstraint,
-} from '../OriginState'
+import * as Origin from '../Origin'
 import type * as Resource from '../Resource'
 import type * as ResourceRequest from '../ResourceRequest'
 
@@ -34,7 +29,12 @@ import { awaitOriginReady } from './origin-resolution'
 
 // --- Resolver pipeline ---
 
-export const fanOutSearches = <Resources extends ResourcesConstraint>(
+/**
+ * Separates global searches (origin `null`) from origin-bound entries.
+ * Global searches are resolved via {@link fanOutSearch} to all matching
+ * origins; the remaining entries pass through unchanged.
+ */
+export const fanOutSearches = <Resources extends Resource.ResourceSet>(
   entries: ReadonlyArray<AnyEntry<Resources>>,
   originStates: HubState<Resources>,
   stateChanges: Stream.Stream<Either.Either<HubState<Resources>, HubError>>
@@ -62,12 +62,17 @@ export const fanOutSearches = <Resources extends ResourcesConstraint>(
   return SideEffect.of(otherEntries, searchActions)
 }
 
-export const groupByOrigin = <Resources extends ResourcesConstraint>(
+/**
+ * Groups origin-bound entries by their `origin` URL, pairing each group with
+ * its origin state. Entries whose origin URL has no matching state
+ * are failed with `UnhandledError`.
+ */
+export const groupByOrigin = <Resources extends Resource.ResourceSet>(
   entries: ReadonlyArray<OriginBoundEntry<Resources>>,
   originStates: HubState<Resources>
 ): SideEffect.SideEffect<
   ReadonlyArray<{
-    origin: OriginState<Resources, never>
+    origin: Origin.AnyState<Resources, never>
     entries: AnyEntry<Resources>[]
   }>
 > => {
@@ -106,56 +111,71 @@ export const groupByOrigin = <Resources extends ResourcesConstraint>(
   )
 }
 
-export const filterReadyOrigins = <Resources extends ResourcesConstraint>(
+/**
+ * Groups origins by state using {@link Origin.match}, producing named
+ * `{ ready, loading, errored }` buckets. Ready groups pass through as the
+ * value. Loading origins are awaited via {@link awaitOriginReady} and
+ * dispatched to their resolver once settled. Errored origins fail their
+ * entries immediately.
+ */
+export const filterReadyOrigins = <Resources extends Resource.ResourceSet>(
   resolverGroups: ReadonlyArray<{
-    origin: OriginState<Resources, never>
+    origin: Origin.AnyState<Resources, never>
     entries: AnyEntry<Resources>[]
   }>,
   stateChanges: Stream.Stream<Either.Either<HubState<Resources>, HubError>>
 ): SideEffect.SideEffect<
   ReadonlyArray<{
-    origin: ReadyOrigin<Resources, never>
+    origin: Origin.Ready<Resources, never>
     entries: AnyEntry<Resources>[]
   }>
 > => {
-  const [notReady, ready] = pipe(
-    resolverGroups,
-    Array.partitionMap(({ origin, entries }) =>
-      origin.errorStatus === undefined
-        ? Either.right({
-            origin: origin,
-            entries,
-          })
-        : Either.left({ errorStatus: origin.errorStatus, origin, entries })
+  const { ready, loading, errored } = resolverGroups.reduce(
+    (acc, { origin, entries }) => {
+      Origin.match(origin, {
+        onReady: (o) => acc.ready.push({ origin: o, entries }),
+        onLoading: (o) => acc.loading.push({ origin: o, entries }),
+        onErrored: (o) => acc.errored.push({ origin: o, entries }),
+      })
+      return acc
+    },
+    {
+      ready: [] as {
+        origin: Origin.Ready<Resources, never>
+        entries: AnyEntry<Resources>[]
+      }[],
+      loading: [] as {
+        origin: Origin.Loading<Resources, never>
+        entries: AnyEntry<Resources>[]
+      }[],
+      errored: [] as {
+        origin: Origin.Errored<Resources, never>
+        entries: AnyEntry<Resources>[]
+      }[],
+    }
+  )
+
+  const loadingActions = loading.map(({ origin, entries }) =>
+    pipe(
+      awaitOriginReady(stateChanges, origin.originUrl.toString()),
+      Effect.matchEffect({
+        onFailure: (error) =>
+          Effect.all(entries.map(failEntry(error)), {
+            concurrency: 'unbounded',
+          }).pipe(Effect.asVoid),
+        onSuccess: (readyOrigin) =>
+          Effect.all(dispatchGroupToResolver(readyOrigin, entries), {
+            concurrency: 'unbounded',
+          }).pipe(Effect.asVoid),
+      })
     )
   )
 
-  const actions = notReady.flatMap(({ errorStatus, origin, entries }) => {
-    if (errorStatus._tag === 'Loading') {
-      // Loading is transient — defer the request until the origin settles.
-      // awaitOriginReady watches the changes stream and either dispatches
-      // to the resolver once ready, or fails with the permanent error.
-      return [
-        pipe(
-          awaitOriginReady(stateChanges, origin.originUrl.toString()),
-          Effect.matchEffect({
-            onFailure: (error) =>
-              Effect.all(entries.map(failEntry(error)), {
-                concurrency: 'unbounded',
-              }).pipe(Effect.asVoid),
-            onSuccess: (readyOrigin) =>
-              Effect.all(dispatchGroupToResolver(readyOrigin, entries), {
-                concurrency: 'unbounded',
-              }).pipe(Effect.asVoid),
-          })
-        ),
-      ]
-    }
-    // Permanent error — fail immediately
-    return entries.map(failEntry(errorStatus))
-  })
+  const errorActions = errored.flatMap(({ origin, entries }) =>
+    entries.map(failEntry(origin.errorStatus))
+  )
 
-  return SideEffect.of(ready, actions)
+  return SideEffect.of(ready, [...loadingActions, ...errorActions])
 }
 
 /**
@@ -163,14 +183,14 @@ export const filterReadyOrigins = <Resources extends ResourcesConstraint>(
  * ready origin's resolver. Entries whose domainType the origin does not
  * support are failed with UnhandledError.
  */
-export const dispatchGroupToResolver = <Resources extends ResourcesConstraint>(
-  origin: ReadyOrigin<Resources, never>,
+export const dispatchGroupToResolver = <Resources extends Resource.ResourceSet>(
+  origin: Origin.Ready<Resources, never>,
   entries: AnyEntry<Resources>[]
 ): ReadonlyArray<SideEffect.EffectAction> => {
   const [unsupported, valid] = pipe(
     entries,
     Array.partition((entry) =>
-      originCanResolve(origin, entry.request.domainType)
+      Origin.supports(origin, entry.request.domainType)
     )
   )
 
@@ -185,7 +205,7 @@ export const dispatchGroupToResolver = <Resources extends ResourcesConstraint>(
 
   if (valid.length === 0) return failActions
 
-  // Safe: guarded by originCanResolve above
+  // Safe: guarded by Origin.supports above
   const resolver = origin.resolver as RequestResolver.RequestResolver<
     AnyRequest<Resources>,
     never
@@ -193,9 +213,13 @@ export const dispatchGroupToResolver = <Resources extends ResourcesConstraint>(
   return [...failActions, resolver.runAll([valid] as const)]
 }
 
-export const dispatchToResolvers = <Resources extends ResourcesConstraint>(
+/**
+ * Dispatches all ready origin groups to their resolvers via
+ * {@link dispatchGroupToResolver}, collecting the resulting actions.
+ */
+export const dispatchToResolvers = <Resources extends Resource.ResourceSet>(
   resolverGroups: ReadonlyArray<{
-    origin: ReadyOrigin<Resources, never>
+    origin: Origin.Ready<Resources, never>
     entries: AnyEntry<Resources>[]
   }>
 ): SideEffect.SideEffect<void> =>
@@ -206,7 +230,18 @@ export const dispatchToResolvers = <Resources extends ResourcesConstraint>(
     )
   )
 
-export const fanOutSearch = <Resources extends ResourcesConstraint>(
+/**
+ * Executes a single search across all origins that support the requested
+ * resource type, merging results into a flat array.
+ *
+ * @remarks
+ * Uses all-or-nothing semantics: if any origin is in a permanent error
+ * state, the entire search fails. This prevents partial results from
+ * causing incorrect downstream decisions (e.g. "no patients found" when a
+ * FHIR store is unreachable). Callers wanting partial results should
+ * pre-filter origins.
+ */
+export const fanOutSearch = <Resources extends Resource.ResourceSet>(
   searchRequest: ResourceRequest.Search<Resources[keyof Resources]>,
   originStates: HubState<Resources>,
   stateChanges: Stream.Stream<Either.Either<HubState<Resources>, HubError>>
@@ -215,7 +250,7 @@ export const fanOutSearch = <Resources extends ResourcesConstraint>(
   ResourceRequest.CommonErrors
 > => {
   const relevantOrigins = [...HashMap.values(originStates)].filter(
-    (o) => o.activeResources[searchRequest.domainType]
+    (o) => o.supportedResources[searchRequest.domainType]
   )
 
   if (relevantOrigins.length === 0) {
@@ -227,7 +262,7 @@ export const fanOutSearch = <Resources extends ResourcesConstraint>(
   }
 
   const makeSearchEffect = (
-    readyOrigin: ReadyOrigin<Resources, never>
+    readyOrigin: Origin.Ready<Resources, never>
   ): Effect.Effect<
     ReadonlyArray<Resource.WithResourceUrl<Resources[keyof Resources]>>,
     ResourceRequest.CommonErrors
@@ -248,27 +283,18 @@ export const fanOutSearch = <Resources extends ResourcesConstraint>(
     )
   }
 
-  const subSearches = relevantOrigins.map((origin) => {
-    if (!origin.errorStatus) {
-      return makeSearchEffect(origin)
-    }
-    if (origin.errorStatus._tag === 'Loading') {
-      // Loading is transient — wait for the origin to become ready,
-      // then dispatch the search.
-      return pipe(
-        awaitOriginReady(stateChanges, origin.originUrl.toString()),
-        Effect.flatMap(makeSearchEffect)
-      )
-    }
-    // Permanent error (AuthError, AuthzError, UnhandledError) — fail the
-    // entire fan-out search. This is intentional: we choose strict
-    // consistency ("all-or-nothing") over partial results. A source in an
-    // error state may have data the caller expects; silently omitting it
-    // could cause incorrect downstream decisions (e.g. a UI showing
-    // "no patients found" when a FHIR store is simply unreachable).
-    // Callers who want partial results should filter origins before searching.
-    return Effect.fail<ResourceRequest.CommonErrors>(origin.errorStatus)
-  })
+  const subSearches = relevantOrigins.map((origin) =>
+    Origin.match(origin, {
+      onReady: makeSearchEffect,
+      onLoading: (o) =>
+        pipe(
+          awaitOriginReady(stateChanges, o.originUrl.toString()),
+          Effect.flatMap(makeSearchEffect)
+        ),
+      onErrored: (o) =>
+        Effect.fail<ResourceRequest.CommonErrors>(o.errorStatus),
+    })
+  )
 
   return Effect.all(subSearches, { concurrency: 'unbounded' }).pipe(
     Effect.map((results) => results.flat())

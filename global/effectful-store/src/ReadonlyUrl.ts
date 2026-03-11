@@ -1,5 +1,16 @@
 import { Effect, ParseResult, Schema } from 'effect'
 
+/**
+ * Immutable, Schema-aware URL representation. Decomposes a URL into its
+ * constituent parts (protocol, host, pathname, username, password) and
+ * provides structural comparison and path-based child detection.
+ *
+ * @remarks
+ * Unlike the built-in `URL`, `ReadonlyUrl` is a pure value object with no
+ * mutable setters. It integrates with Effect's Schema system via
+ * {@link ReadonlyUrl.FromString} for parsing/encoding, and carries an
+ * `arbitrary` annotation for property-based testing.
+ */
 export class ReadonlyUrl extends Schema.Class<ReadonlyUrl>('ReadonlyUrl')({
   /**
    * The protocol portion of the URL.
@@ -73,8 +84,11 @@ export class ReadonlyUrl extends Schema.Class<ReadonlyUrl>('ReadonlyUrl')({
    */
   password: Schema.String.pipe(Schema.optionalWith({ default: () => '' })),
 }) {
-  static readonly FromString2 = Schema.compose(Schema.URLFromSelf, this)
-
+  /**
+   * Schema that decodes a raw URL string into a `ReadonlyUrl` and encodes
+   * back to a normalized `href` string. Fails with `ParseResult.Forbidden`
+   * on invalid input.
+   */
   static readonly FromString = Schema.transformOrFail(Schema.String, this, {
     strict: true,
     decode(
@@ -136,11 +150,16 @@ export class ReadonlyUrl extends Schema.Class<ReadonlyUrl>('ReadonlyUrl')({
       }),
   })
 
+  /** Decodes a URI-encoded URL string and parses it into a `ReadonlyUrl`. */
   static fromEncoded(encoded: string): ReadonlyUrl {
     const decoded = decodeURIComponent(encoded)
     return Schema.decodeSync(this.FromString)(decoded)
   }
 
+  /**
+   * Returns `true` if `otherUrl` is a child of this URL — same protocol and
+   * host, with a pathname that starts with this URL's pathname.
+   */
   hasChild(otherUrl: ReadonlyUrl): boolean {
     return (
       this.protocol === otherUrl.protocol &&
@@ -149,6 +168,7 @@ export class ReadonlyUrl extends Schema.Class<ReadonlyUrl>('ReadonlyUrl')({
     )
   }
 
+  /** Reconstructs the full URL `href` string from component parts. */
   toString(): string {
     const url = new URL(`${this.protocol}//${this.host}${this.pathname}`)
     url.username = this.username
@@ -156,10 +176,12 @@ export class ReadonlyUrl extends Schema.Class<ReadonlyUrl>('ReadonlyUrl')({
     return url.href
   }
 
+  /** Returns this URL as a {@link UriEncodedOriginUrl} (percent-encoded string). */
   asUriComponent(): UriEncodedOriginUrl {
     return UriEncodedOriginUrl.make(encodeURIComponent(this.toString()))
   }
 
+  /** Returns a new `ReadonlyUrl` with `path` appended to the pathname. */
   appendToPathname(path: string): ReadonlyUrl {
     return ReadonlyUrl.make({
       host: this.host,
@@ -171,6 +193,10 @@ export class ReadonlyUrl extends Schema.Class<ReadonlyUrl>('ReadonlyUrl')({
   }
 }
 
+/**
+ * Branded string representing a percent-encoded URL, suitable for use as a
+ * HashMap key or URL path segment.
+ */
 export const UriEncodedOriginUrl = Schema.String.pipe(
   Schema.brand('UriEncodedOriginUrl')
 ).annotations({
@@ -188,6 +214,3 @@ export const UriEncodedOriginUrl = Schema.String.pipe(
     }),
 })
 export type UriEncodedOriginUrl = typeof UriEncodedOriginUrl.Type
-
-export const fromReadonlyUrl = (url: ReadonlyUrl): UriEncodedOriginUrl =>
-  UriEncodedOriginUrl.make(url.asUriComponent())

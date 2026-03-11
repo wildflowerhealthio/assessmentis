@@ -17,24 +17,27 @@ import type {
 import type { SideEffect } from '@assessmentis/util'
 import { dual } from 'effect/Function'
 
-import type {
-  AnyResourceRequest,
-  OriginState,
-  ResourcesConstraint,
-} from '../OriginState'
+import type * as Origin from '../Origin'
 import type { ReadonlyUrl } from '../ReadonlyUrl'
 import type * as Resource from '../Resource'
 import type * as ResourceRequest from '../ResourceRequest'
 
 // --- Pipeline types ---
 
-export type AnyRequest<Resources extends ResourcesConstraint> =
-  AnyResourceRequest<Resources[keyof Resources]>
+/** Union of all CRUD request types across every resource in the map. */
+export type AnyRequest<Resources extends Resource.ResourceSet> =
+  Origin.AnyResourceRequest<Resources[keyof Resources]>
 
-export type AnyEntry<Resources extends ResourcesConstraint> =
+/** A request entry (request + deferred result) for any resource in the map. */
+export type AnyEntry<Resources extends Resource.ResourceSet> =
   EffectRequest.Entry<AnyRequest<Resources>>
 
-export type OriginBoundEntry<Resources extends ResourcesConstraint> =
+/**
+ * A request entry guaranteed to have a concrete `origin` URL. Global
+ * searches (with `origin: null`) have been resolved to per-origin entries
+ * before reaching this type.
+ */
+export type OriginBoundEntry<Resources extends Resource.ResourceSet> =
   EffectRequest.Entry<
     | Exclude<AnyRequest<Resources>, { readonly _tag: 'Search' }>
     | (ResourceRequest.Search<Resources[keyof Resources]> & {
@@ -42,19 +45,23 @@ export type OriginBoundEntry<Resources extends ResourcesConstraint> =
       })
   >
 
+/**
+ * Completes a request entry's deferred with a failure. Dual-form: can be
+ * called as `failEntry(entry, error)` or `failEntry(error)(entry)`.
+ */
 export const failEntry: {
-  <Resources extends ResourcesConstraint>(
+  <Resources extends Resource.ResourceSet>(
     entry: AnyEntry<Resources>,
     error: UnhandledError | ResourceRequest.CommonErrors
   ): SideEffect.EffectAction
   (
     error: UnhandledError | ResourceRequest.CommonErrors
-  ): <Resources extends ResourcesConstraint>(
+  ): <Resources extends Resource.ResourceSet>(
     entry: AnyEntry<Resources>
   ) => SideEffect.EffectAction
 } = dual(
   2,
-  <Resources extends ResourcesConstraint>(
+  <Resources extends Resource.ResourceSet>(
     entry: AnyEntry<Resources>,
     error: UnhandledError | ResourceRequest.CommonErrors
   ): SideEffect.EffectAction => Deferred.fail(entry.result, error)
@@ -71,16 +78,28 @@ export const LOADING_TIMEOUT = Duration.seconds(15)
 
 // --- Hub types ---
 
+/** The error channel of a Hub's state stream — either still loading or a common error. */
 export type HubError = Loading<string> | ResourceRequest.CommonErrors
 
-export type HubState<Resources extends ResourcesConstraint> = HashMap.HashMap<
+/**
+ * Snapshot of all known origins, keyed by origin URL string. Each value is
+ * an {@link Origin.AnyState} that may or may not be ready to resolve requests.
+ */
+export type HubState<Resources extends Resource.ResourceSet> = HashMap.HashMap<
   string,
-  OriginState<Resources, never>
+  Origin.AnyState<Resources, never>
 >
 
-export type HubRef<Resources extends ResourcesConstraint> =
+/** Reactive ref holding the current Hub state or error, with a subscribable changes stream. */
+export type HubRef<Resources extends Resource.ResourceSet> =
   SubscriptionRef.SubscriptionRef<Either.Either<HubState<Resources>, HubError>>
 
+/**
+ * Typed CRUD and subscription methods for a single resource type. These are
+ * the per-resource operations exposed by {@link Repository}.
+ *
+ * @typeParam TResource - The resource type these methods operate on
+ */
 export interface ResourceMethods<TResource extends Resource.Resource<string>> {
   readonly get: (
     url: ReadonlyUrl
@@ -164,7 +183,14 @@ export interface ResourceMethods<TResource extends Resource.Resource<string>> {
   >
 }
 
-export type Repository<Resources extends ResourcesConstraint> = {
+/**
+ * Maps each {@link ResourceMethods} operation into a domain-type-dispatched
+ * method. The first argument is always the `domainType` string, followed by
+ * the original method parameters.
+ *
+ * @typeParam Resources - The full resources map
+ */
+export type Repository<Resources extends Resource.ResourceSet> = {
   [K in keyof ResourceMethods<Resource.Resource<string>>]: <
     R extends keyof Resources & string,
   >(
