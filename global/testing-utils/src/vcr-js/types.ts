@@ -4,19 +4,31 @@ import type { HttpHandler } from 'msw'
 import talkback from 'talkback/es6'
 import type { Options } from 'talkback/options'
 
+/** Configuration for a single external host whose HTTP traffic will be recorded/replayed. */
 export interface VcrHost {
+  /** Human-readable label used in tape file paths and Talkback server logs. */
   readonly name: string
+  /** The real origin being proxied (e.g. `https://api.example.com`). */
   readonly destinationHost: string
+  /**
+   * URL rewrite rules applied when generating tape file names.
+   * Each entry is a `[pattern, replacement]` pair passed to `String.replace`.
+   * Useful for stripping volatile path segments (e.g. IDs) so tapes are stable.
+   */
   readonly urlSubstitutions?: [RegExp, string][]
+  /** Port the local Talkback proxy listens on. Required for server-side recording. */
   readonly proxyPort?: number
+  /** Hostname of the local Talkback proxy. Defaults to `localhost`. */
   readonly proxyHost?: string
 }
 
+/** A {@link VcrHost} with required proxy port/host for server-side recording. */
 export interface VcrServerHost extends VcrHost {
   readonly proxyPort: number
   readonly proxyHost: string
 }
 
+/** Options for configuring VCR (HTTP record/replay) in browser or node tests. */
 export interface VcrOpts {
   silent?: boolean
   summary?: boolean
@@ -26,13 +38,20 @@ export interface VcrOpts {
   hosts: VcrHost[]
 }
 
+/** {@link VcrOpts} specialized for Node.js server-side recording with required proxy hosts. */
 export interface VcrServerOpts extends VcrOpts {
   hosts: VcrServerHost[]
 }
 
+/** Returns true when the `RECORD` or `VITE_RECORD` env var is `"true"`, indicating tapes should be written. */
 export const shouldRecord = () =>
   import.meta.env.RECORD === 'true' || import.meta.env.VITE_RECORD === 'true'
 
+/**
+ * Converts {@link VcrOpts} into an array of Talkback `Options` — one per
+ * host. Handles tape naming (based on the current Vitest test name),
+ * record mode, and URL substitutions.
+ */
 export const vcrOptsTalkbackOptions = (
   opts: VcrOpts | VcrServerOpts
 ): Partial<Options>[] =>

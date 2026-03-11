@@ -3,6 +3,17 @@ import { Cause, Chunk, Effect, Either, Exit, Fiber, pipe } from 'effect'
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useStream } from './useStream'
 
+/**
+ * Subscribes to a `Stream<Either<A, E>>` and returns a `Promise<A>`.
+ * Right values resolve the promise; Left values reject it.
+ *
+ * @param stream - A scoped stream of `Either` values
+ * @returns A promise that resolves with the latest `Right` or rejects with the first `Left`
+ *
+ * @remarks
+ * Delegates to {@link useStream} for fiber lifecycle — re-subscribes
+ * when the stream reference changes.
+ */
 export const useEitherStream = <A, E>(
   stream: Stream.Stream<Either.Either<A, E>, never, Scope.Scope>
 ): Promise<A> => {
@@ -24,6 +35,30 @@ export const useEitherStream = <A, E>(
   )
 }
 
+/**
+ * A controllable promise whose resolution can be driven imperatively.
+ *
+ * @typeParam A - The type the promise resolves to
+ * @returns A tuple `[promise, callbacks]` where:
+ *   - `promise` — the current `Promise<A>`, stable until `reset`
+ *   - `callbacks.resolve(a)` — resolves the promise (applies any queued maps),
+ *     or replaces an already-settled promise with a new resolved one
+ *   - `callbacks.reject(reason)` — rejects similarly
+ *   - `callbacks.reset()` — replaces a settled promise with a fresh pending one
+ *   - `callbacks.map(f)` — transforms the resolved value, or queues `f` if pending
+ *
+ * @remarks
+ * This is the low-level primitive behind {@link useEffectTs} and
+ * {@link useStream}. It bridges imperative Effect fiber callbacks into
+ * React's Suspense model by exposing a stable `Promise` whose settlement
+ * can be driven from outside.
+ *
+ * The `map` callback composes transformations: if the promise is already
+ * resolved, `map` chains `.then(f)` onto it; if still pending, `f` is
+ * queued and applied atomically at resolve time. This enables
+ * optimistic-update patterns (e.g. {@link useCollectionPromise}) without
+ * re-creating the promise identity.
+ */
 export const useStatePromise = <A>() => {
   const resolvedRef = useRef(false)
   const initial = Promise.withResolvers<A>()
@@ -47,7 +82,9 @@ export const useStatePromise = <A>() => {
           setPromise(promiseWithResolversRef.current.promise)
         } else {
           resolvedRef.current = true
-          promiseWithResolversRef.current.resolve(a)
+          const mapped = mappingRef.current(a)
+          mappingRef.current = (x: A): A => x
+          promiseWithResolversRef.current.resolve(mapped)
         }
       },
       reject: (reason: unknown) => {
@@ -75,6 +112,27 @@ export const useStatePromise = <A>() => {
 
   return [promise, callbacks] as const
 }
+/**
+ * Runs a scoped `Effect<A, E>` and returns a `Promise<A>` that tracks its result.
+ *
+ * @typeParam A - The success type of the effect
+ * @typeParam E - The error type of the effect
+ * @param effect - A scoped effect to run; re-evaluated when the reference changes
+ * @returns A `Promise<A>` suitable for React Suspense (`use()`)
+ *
+ * @remarks
+ * The effect is forked into an unmanaged fiber on mount. The fiber's exit is
+ * observed and mapped to promise settlement:
+ *
+ * - **Success** resolves the promise.
+ * - **Pure interruption** (`Cause.isInterruptedOnly`) is silently ignored —
+ *   this is the normal cleanup path when `effect` changes or the component unmounts.
+ * - **Failure** (single) rejects with the error value directly.
+ * - **Multiple failures/defects** reject with an `AggregateError`.
+ *
+ * On cleanup the fiber is interrupted and the promise is reset to pending,
+ * ready for the next effect.
+ */
 export const useEffectTs = <A, E>(
   effect: Effect.Effect<A, E, Scope.Scope>
 ): Promise<A> => {
@@ -89,7 +147,7 @@ export const useEffectTs = <A, E>(
           resolve(a)
         },
         onFailure(cause) {
-          if (Cause.isInterrupted(cause)) {
+          if (Cause.isInterruptedOnly(cause)) {
             return
           }
 

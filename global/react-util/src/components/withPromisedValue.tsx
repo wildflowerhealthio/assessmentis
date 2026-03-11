@@ -32,12 +32,21 @@ const mergeComplimentary = <T, K extends keyof T>(
 /**
  * HOC that converts a sync component into a promise-aware component.
  *
- * - Plain values: rendered directly with `loading=false`, no Suspense overhead
- * - Promises: wrapped in `<ErrorBoundary>` + `<Suspense>` with the sync
- *   component as the fallback (rendered with `loading=true`)
+ * @typeParam InnerProps - Props of the wrapped sync component; must extend
+ *   {@link PromiseReadyProps} (`value`, `loading`, `valueError`)
+ * @param SyncComponent - The component to wrap. Rendered in all three states:
+ *   loading (`loading=true`), resolved (`value` set), and rejected (`valueError` set).
+ * @returns A new component accepting the same props minus `loading`/`valueError`,
+ *   with `value` widened to `V | Promise<V>`.
  *
- * Use `startTransition` when updating the promise prop to prevent
- * the fallback from flashing during transitions.
+ * @remarks
+ * - **Plain values** short-circuit `<Suspense>` entirely and render directly.
+ * - **Promises** are wrapped in `<ErrorBoundary>` + `<Suspense>`. The sync
+ *   component itself is used as the Suspense fallback (with `loading=true`) and
+ *   as the error boundary fallback (with `valueError` set) — no separate
+ *   skeleton or error UI is needed.
+ * - Use `startTransition` when updating the promise prop to prevent the
+ *   fallback from flashing during transitions.
  */
 export function withPromisedValue<InnerProps extends PromiseReadyProps>(
   SyncComponent: ComponentType<InnerProps>

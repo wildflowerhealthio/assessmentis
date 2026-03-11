@@ -49,6 +49,10 @@ These files don't follow the four-kinds naming convention:
 
 **Principle:** Put the doc where `git diff` would show it alongside the code it describes.
 
+## In-Code Documentation
+
+Exported symbols use TSDoc comments — a separate surface from `.md` docs. See the [Doc Comments Reference](./Doc%20Comments%20Reference.md) for tag usage, section ordering, and style rules. Enforced via `eslint-plugin-tsdoc`.
+
 ## Cross-referencing
 
 - Link using relative markdown paths: `[Design How-To](./Design%20How-To.md)`

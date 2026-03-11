@@ -1,4 +1,7 @@
-# Error Mapping Reference
+---
+title: Error Mapping Reference
+category: Reference
+---
 
 This reference describes the canonical error taxonomy and how to map errors across layers.
 

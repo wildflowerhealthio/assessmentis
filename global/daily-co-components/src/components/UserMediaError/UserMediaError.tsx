@@ -7,6 +7,7 @@ const refreshPage = () => {
   window.location.reload()
 }
 
+/** Displayed when camera or microphone access is blocked. Offers a refresh button and a help link. */
 export default function UserMediaError() {
   return (
     <div className="call">

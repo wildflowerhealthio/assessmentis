@@ -9,8 +9,20 @@ import { Arrow } from '../Tray/Icons/index'
 import './Chat.css'
 import type { DailyEventObjectAppMessage } from '@daily-co/daily-js'
 
+/** A single chat message with the sender's display name. */
 type Message = { msg: string; name: string }
 
+/**
+ * In-call text chat panel. Message history is held in local state.
+ * Always rendered (never unmounted) so history survives toggling the
+ * panel open and closed.
+ *
+ * @remarks
+ * Uses `useAppMessage` from `@daily-co/daily-react` both to send
+ * (`sendAppMessage`) and receive (`onAppMessage`) messages. Outgoing
+ * messages are appended locally because Daily does not echo them back
+ * to the sender.
+ */
 export default function Chat({
   showChat,
   toggleChat,

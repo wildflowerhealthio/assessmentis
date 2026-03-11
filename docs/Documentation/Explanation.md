@@ -22,6 +22,8 @@ We use a model from [Divio](https://docs.divio.com/documentation-system/) that s
 
 **Exempt files:** README.md, CONTRIBUTING.md, and AGENTS.md live outside the four-kinds system. They have conventional names that tools recognize and should be kept minimal.
 
+**Doc comments:** In-code TSDoc comments are a fifth documentation surface — they live on exported symbols and are consumed through IDE hover windows and by AI agents. They follow their own conventions described in the [Doc Comments Reference](./Doc%20Comments%20Reference.md). The four-kinds system applies to `.md` files; doc comments complement them by documenting the API contract right where it's used.
+
 ## Writing Style
 
 Assume the reader is competent. State what they need to know without over-explaining obvious implications. If a point is already clear from context, omit it. Brevity is a feature — shorter docs get read and maintained.
@@ -30,4 +32,5 @@ Assume the reader is competent. State what they need to know without over-explai
 
 - [Documentation How-To](./How-To.md) — How to write and maintain docs in this project
 - [Documentation Reference](./Reference.md) — Quick-lookup rules
+- [Doc Comments Reference](./Doc%20Comments%20Reference.md) — TSDoc conventions for in-code documentation
 - [The Divio documentation system](https://docs.divio.com/documentation-system/) — The original framework

@@ -9,6 +9,11 @@ import {
   type Scope,
 } from 'effect'
 
+/**
+ * Subscribes to a `PubSub<Take<Either<A, E>>>` and returns a perpetual stream.
+ * Dies if the underlying stream closes or emits an empty take — this is
+ * intended for long-lived subscriptions that should never terminate.
+ */
 export const pubsubAsPerpetualStream = <A, E>(
   pubSub: PubSub.PubSub<Take.Take<Either.Either<A, E>>>
 ): Stream.Stream<Either.Either<A, E>, never, Scope.Scope> =>
@@ -37,6 +42,11 @@ export const pubsubAsPerpetualStream = <A, E>(
     )
   )
 
+/**
+ * Takes exactly one value from a PubSub, scoped. Dies if the PubSub
+ * closes before emitting. Useful for one-shot request/response patterns
+ * over a shared PubSub channel.
+ */
 export const takeOneFromPubSubOrDie = <A, E>(
   pubSub: PubSub.PubSub<Take.Take<Either.Either<A, E>>>
 ): Effect.Effect<A, E, never> =>

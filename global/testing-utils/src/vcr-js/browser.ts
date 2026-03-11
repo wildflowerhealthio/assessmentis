@@ -7,6 +7,10 @@ import type { VcrOpts } from './types'
 
 export type { VcrOpts } from './types'
 
+/**
+ * Builds MSW request handlers that proxy matching requests through a
+ * Talkback server for browser-side tape recording/playback.
+ */
 export const browserHandlers = (opts: VcrOpts) => [
   ...opts.handlers,
   ...opts.hosts.map(({ destinationHost, proxyHost, proxyPort }) =>
@@ -43,10 +47,16 @@ export const browserHandlers = (opts: VcrOpts) => [
   ),
 ]
 
+/** Creates an MSW service worker configured with {@link browserHandlers}. */
 export const setupInterceptWorker = (opts: VcrOpts) => {
   return setupWorker(...browserHandlers(opts))
 }
 
+/**
+ * Patches `XMLHttpRequest` to intercept requests and route them through
+ * the VCR handlers. No-ops if already patched. Used for environments
+ * where the service worker approach isn't available.
+ */
 export const setXMLHttpRequestInterceptor = (opts: VcrOpts) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if ((XMLHttpRequest as any)[IS_PATCHED_MODULE]) {

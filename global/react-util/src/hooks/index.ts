@@ -7,6 +7,16 @@ export * from './useStream'
 export * from './useLoadingPromise'
 export * from './usePromiseOrDefault'
 
+/**
+ * Manages an optimistic CRUD collection backed by API calls. Items are
+ * shown immediately with `loading: true` during create/delete, then
+ * updated or removed when the API responds. Rolls back on failure.
+ *
+ * @returns An object with:
+ *   - `collection` — `ReadonlyArray<{ data: T; loading: boolean }>`, updated synchronously on each mutation
+ *   - `deleteItem(id)` — marks the item loading, calls `apiDelete`, then removes it; rolls back on error
+ *   - `createItem(t)` — prepends a loading item, calls `apiCreate`, then replaces it with the server response; removes on error
+ */
 export const useCollection = <T extends { id?: string | undefined }>(
   {
     apiDelete,
@@ -28,6 +38,14 @@ export const useCollection = <T extends { id?: string | undefined }>(
   return { collection, deleteItem, createItem }
 }
 
+/**
+ * Like {@link useCollection} but accepts a `Promise<ReadonlyArray<T>>`
+ * for the initial data.
+ *
+ * @returns An object with:
+ *   - `collectionPromise` — a `Promise<ReadonlyArray<{ data: T; loading: boolean }>>` suitable for `use()`; pending until `initial` resolves
+ *   - `deleteItem` / `createItem` — same optimistic semantics as {@link useCollection}; mutations propagate into the promise via {@link useStatePromise.map}
+ */
 export const useCollectionPromise = <T extends { id?: string | undefined }>(
   {
     apiDelete,
@@ -61,6 +79,7 @@ export const useCollectionPromise = <T extends { id?: string | undefined }>(
   return { collectionPromise, deleteItem, createItem }
 }
 
+/** Shared optimistic create/delete logic used by both `useCollection` and `useCollectionPromise`. */
 function collectionMethods<T extends { id?: string | undefined }>(
   {
     apiDelete,
@@ -124,6 +143,11 @@ function collectionMethods<T extends { id?: string | undefined }>(
   return { deleteItem, createItem }
 }
 
+/**
+ * Calls `handler` when a mousedown event occurs outside the element
+ * referenced by `ref`. Commonly used to close dropdowns/modals on
+ * outside click.
+ */
 export const useOutsideClickHandler = (
   ref: RefObject<Node | null>,
   handler: () => void

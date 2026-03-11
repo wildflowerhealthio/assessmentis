@@ -32,7 +32,7 @@ export const referenceAsString = (
 
 /**
  * Extract the ID from a FHIR reference string
- * @param reference - Object with reference property (e.g., { reference: "Patient/123" })
+ * @param reference - Object with reference property (e.g., \{ reference: "Patient/123" \})
  * @returns The ID portion of the reference (e.g., "123"), or undefined
  */
 export function extractReferenceId(
