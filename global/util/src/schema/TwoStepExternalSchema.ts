@@ -3,13 +3,18 @@ import type * as AST from 'effect/SchemaAST'
 
 /**
  * A schema that transforms from an External type to a Domain type via an
- * intermediate Encoded type. Implements Schema.Schema<Domain, External, R>
+ * intermediate Encoded type. Implements `Schema.Schema<Domain, External, R>`
  * so consumers can use it directly as a schema.
  *
  * The two-step construction is:
- *   External --[EncodedFromExternal]--> DomainEncoded --[DomainFromEncoded]--> Domain
+ *   `External --[EncodedFromExternal]--> DomainEncoded --[DomainFromEncoded]--> Domain`
  *
- * The composed schema (External --> Domain) is what the Schema interface exposes.
+ * The composed schema (`External → Domain`) is what the `Schema` interface exposes.
+ *
+ * @typeParam Domain - The decoded domain type (the `Type` side)
+ * @typeParam DomainEncoded - The intermediate encoded representation understood by `DomainFromEncoded`
+ * @typeParam External - The raw external representation (e.g. a Firebase or FHIR payload)
+ * @typeParam R - The Effect context/environment required for decoding
  */
 export class TwoStepExternalSchema<Domain, DomainEncoded, External, R = never>
   extends Pipeable.Class()
@@ -59,6 +64,21 @@ export class TwoStepExternalSchema<Domain, DomainEncoded, External, R = never>
   }
 }
 
+/**
+ * A schema that transforms from an Integration-encoded representation to a
+ * Domain type through two intermediate steps.
+ *
+ * The three-step pipeline is:
+ *   `IntegrationEncoded --[IntegrationFromEncoded]--> IntegrationType`
+ *   `--[DomainEncodedFromExternalType]--> DomainEncoded`
+ *   `--[DomainFromEncoded]--> DomainType`
+ *
+ * @typeParam DomainType - The fully decoded domain type (the `Type` side)
+ * @typeParam DomainEncoded - The intermediate representation expected by `DomainFromEncoded`
+ * @typeParam IntegrationType - The integration layer's decoded type
+ * @typeParam IntegrationEncoded - The raw external payload (the `Encoded` side)
+ * @typeParam R - The Effect context/environment required for decoding
+ */
 export class ThreeStepExternalSchema<
   DomainType,
   DomainEncoded,

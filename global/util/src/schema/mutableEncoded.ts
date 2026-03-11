@@ -18,6 +18,10 @@ export interface mutableEncoded<
   Schema.Schema.Context<S>
 > {}
 
+/**
+ * Wraps a schema so its encoded representation is fully mutable while its
+ * type representation remains unchanged. See the {@link mutableEncoded} interface.
+ */
 export const mutableEncoded = <S extends Schema.Schema.Any>(
   schema: S
 ): mutableEncoded<S> => Schema.mutable(schema) as any

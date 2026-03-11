@@ -10,6 +10,7 @@ import {
 
 export type { VcrServerOpts } from './types'
 
+/** Starts Talkback proxy servers for each configured host (server-side recording mode). */
 export const startProxyServer = async (opts: VcrServerOpts) => {
   const servers = vcrOptsTalkbackOptions(opts).map((talkbackOpts) =>
     talkback({ ...talkbackOpts, debug: true, silent: false })
@@ -21,6 +22,13 @@ export const startProxyServer = async (opts: VcrServerOpts) => {
   )
 }
 
+/**
+ * Sets up MSW server-side request interception, routing matched requests
+ * through Talkback for tape recording/playback.
+ *
+ * @returns A `SetupServerApi` with handlers already registered. Call
+ *   `.listen()` before your test suite and `.close()` after to activate it.
+ */
 export const setupNodeIntercepting = async (
   opts: VcrOpts
 ): Promise<SetupServerApi> => {

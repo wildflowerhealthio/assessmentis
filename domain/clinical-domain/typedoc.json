@@ -1,0 +1,8 @@
+{
+  "extends": ["../../typedoc.base.json"],
+  "entryPoints": ["src/index.ts"],
+  "projectDocuments": [
+    "FHIR Modeling Reference.md",
+    "docs/Adding Resource Types How-To.md"
+  ]
+}

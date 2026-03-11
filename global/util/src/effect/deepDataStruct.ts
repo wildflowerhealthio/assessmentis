@@ -42,6 +42,7 @@ export const deepDataStruct = <T extends Record<string, unknown>>(
   return Data.struct(wrapped as T) as DeepData<T>
 }
 
+/** Recursively wrap a single value — dispatches to `deepDataStruct` for objects and `Data.array` for arrays. */
 const deepWrapValue = (value: unknown): unknown => {
   if (isPlainObject(value)) {
     return deepDataStruct(value as Record<string, unknown>)
@@ -52,6 +53,7 @@ const deepWrapValue = (value: unknown): unknown => {
   return value
 }
 
+/** Returns true for plain `{}` objects (not arrays, null, or class instances). */
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' &&
   value !== null &&

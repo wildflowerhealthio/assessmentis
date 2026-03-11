@@ -1,0 +1,24 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPointStrategy": "packages",
+  "entryPoints": [
+    "global/util",
+    "global/react-util",
+    "global/ontology",
+    "global/daily-co-components",
+    "global/testing-utils",
+    "domain/platform-domain",
+    "domain/clinical-domain",
+    "domain/config-domain",
+    "domain/fhir-client",
+    "domain/questionnaire-entities",
+    "domain/document-template-kinds",
+    "domain/video-call-domain"
+  ],
+  "name": "Assessment.is",
+  "out": "docs-html",
+  "navigation": {
+    "includeFolders": true,
+    "compactFolders": true
+  }
+}

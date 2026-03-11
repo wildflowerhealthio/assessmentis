@@ -1,4 +1,7 @@
-# Adding Resource Types How-To
+---
+title: Adding Resource Types How-To
+category: Guides
+---
 
 How to add a new FHIR R4 Clinical Resource in `@assessmentis/clinical-domain` with full parity to existing Clinical Resources.
 

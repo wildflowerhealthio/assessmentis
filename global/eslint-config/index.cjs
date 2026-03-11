@@ -7,6 +7,7 @@ const eslintPluginPrettierRecommended = require('eslint-plugin-prettier/recommen
 const tsParser = require('@typescript-eslint/parser')
 const reactHooks = require('eslint-plugin-react-hooks')
 const reactRefresh = require('eslint-plugin-react-refresh')
+const tsdocPlugin = require('eslint-plugin-tsdoc')
 
 module.exports = defineConfig([
   eslint.configs.recommended,
@@ -58,6 +59,13 @@ module.exports = defineConfig([
           ],
         },
       ],
+    },
+  },
+  {
+    plugins: { tsdoc: tsdocPlugin },
+    files: ['**/*.ts', '**/*.tsx'],
+    rules: {
+      'tsdoc/syntax': 'warn',
     },
   },
   {

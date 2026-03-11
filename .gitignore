@@ -2,6 +2,9 @@
 .turbo
 dist/
 
+# TypeDoc output
+docs-html/
+
 # Logs
 logs
 *.log

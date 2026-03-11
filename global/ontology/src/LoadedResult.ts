@@ -6,16 +6,32 @@ import {
   type Subscribable,
 } from 'effect'
 
+/**
+ * A three-state discriminated union representing an async value that is
+ * either loading, failed, or successfully loaded. Used throughout the UI
+ * layer to model data-fetching lifecycles without `null`/`undefined` ambiguity.
+ *
+ * @typeParam A - The type of the successfully loaded value
+ * @typeParam E - The error type on failure
+ */
 export type LoadedResult<A, E> =
   | { _tag: 'loading' }
   | { _tag: 'error'; error: E }
   | { _tag: 'loaded'; value: A }
 
+/** Constructors and operators for {@link LoadedResult}. */
 export const LoadedResult = {
+  /** Create a `loading` state. */
   loading: <A, E>(): LoadedResult<A, E> => ({ _tag: 'loading' }),
+  /** Create an `error` state wrapping the given error. */
   error: <A, E>(error: E): LoadedResult<A, E> => ({ _tag: 'error', error }),
+  /** Create a `loaded` state wrapping the given value. */
   loaded: <A, E>(value: A): LoadedResult<A, E> => ({ _tag: 'loaded', value }),
 
+  /**
+   * Transform the loaded value while preserving loading/error states.
+   * Pipeable — designed for use with `pipe(result, LoadedResult.map(f))`.
+   */
   map:
     <A, B, E>(f: (a: A) => B) =>
     (lr: LoadedResult<A, E>): LoadedResult<B, E> => {
@@ -29,6 +45,14 @@ export const LoadedResult = {
       }
     },
 
+  /**
+   * Exhaustively pattern-match on all three states with a handler object.
+   *
+   * @param handlers - One branch per state: `onLoading`, `onError`, `onSuccess`.
+   *   Note: the success branch is `onSuccess` (not `onLoaded`) for consistency
+   *   with Effect's naming conventions.
+   * @returns The value produced by whichever branch matches `lr`.
+   */
   handle: <A, E, O>(
     lr: LoadedResult<A, E>,
     handlers: {
@@ -47,14 +71,40 @@ export const LoadedResult = {
   },
 }
 
+/**
+ * A reactive variant of {@link LoadedResult}: an Effect `Subscribable` that
+ * emits `LoadedResult<A, E>` values over time, allowing consumers to observe
+ * loading → loaded/error transitions.
+ *
+ * @typeParam A - The type of the successfully loaded value
+ * @typeParam E - The error type on failure
+ */
 export type LoadedResultStream<A, E> = Subscribable.Subscribable<
   LoadedResult<A, E>
 >
 
+/** Constructors and operators for {@link LoadedResultStream}. */
 export const LoadedResultStream = {
+  /**
+   * Returns an `Effect` that creates a stream already in the `loaded` state.
+   * The resulting `Effect` must be run to obtain the `LoadedResultStream`.
+   */
   succeed: <A, E>(value: A): Effect.Effect<LoadedResultStream<A, E>> =>
     SubscriptionRef.make<LoadedResult<A, E>>(LoadedResult.loaded<A, E>(value)),
 
+  /**
+   * Derives a new stream by mapping loaded values. Loading/error states
+   * pass through unchanged.
+   *
+   * @typeParam A - The source loaded value type
+   * @typeParam B - The mapped loaded value type
+   * @typeParam E - The shared error type
+   *
+   * @remarks
+   * Forks a daemon fiber that forwards updates from `source` into a new
+   * `SubscriptionRef`. The initial value is mapped synchronously; subsequent
+   * changes are propagated asynchronously via the fiber.
+   */
   map:
     <A, B, E>(f: (a: A) => B) =>
     (
@@ -75,6 +125,21 @@ export const LoadedResultStream = {
         )
         return mappedRef
       }),
+  /**
+   * Flat-map over the loaded value to produce a dependent stream. When the
+   * source transitions to a new loaded value, the previous inner stream is
+   * cancelled and replaced by `f(newValue)`.
+   *
+   * @typeParam A1 - The loaded value type of the resulting stream
+   * @param f - Produces a `Stream<LoadedResult<A1, E>>` from a loaded `A`
+   *
+   * @remarks
+   * Uses `Stream.flatMap` with `{ switch: true }`, so only the latest inner
+   * stream is active at any time. Loading/error states from the source
+   * propagate directly — `f` is only invoked on `loaded` values.
+   * The result stream starts in the `loading` state and is backed by a
+   * daemon fiber, matching the lifecycle of {@link LoadedResultStream.map}.
+   */
   andThen:
     <A, E, A1>(f: (a: A) => Stream.Stream<LoadedResult<A1, E>>) =>
     (

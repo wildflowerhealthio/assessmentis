@@ -10,6 +10,11 @@ import { pipeArguments } from 'effect/Pipeable'
 
 import { StreamEither } from './StreamEither'
 
+/**
+ * Adapts a `SubscriptionRef<Either<A, E>>` into an Effect `Subscribable<A, E>`.
+ * The `get` accessor unwraps the Either, and `changes` uses {@link StreamEither.unwrap}
+ * to promote Left values into stream errors.
+ */
 export const subscriptionRefToSubscribable = <A, E>(
   ref: SubscriptionRef.SubscriptionRef<Either.Either<A, E>>
 ): Subscribable.Subscribable<A, E> => ({
@@ -23,6 +28,10 @@ export const subscriptionRefToSubscribable = <A, E>(
   },
 })
 
+/**
+ * Wraps a single `Effect<A, E>` as a `Subscribable<A, E>`. The `get` accessor
+ * re-runs the effect each time; `changes` emits exactly one value from the effect.
+ */
 export const effectToSubscribable = <A, E>(
   effect: Effect.Effect<A, E>
 ): Subscribable.Subscribable<A, E> => ({

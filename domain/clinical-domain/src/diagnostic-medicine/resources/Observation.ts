@@ -126,11 +126,11 @@ const observationFields = {
     Schema.Array(
       Schema.Struct({
         /**
-         * The value of the low bound of the reference range. The low bound of the reference range endpoint is inclusive of the value (e.g. reference range is >=5 - <=9). If the low bound is omitted, it is assumed to be meaningless (e.g. reference range is <=2.3).
+         * The value of the low bound of the reference range. The low bound of the reference range endpoint is inclusive of the value (e.g. reference range is \>=5 - \<=9). If the low bound is omitted, it is assumed to be meaningless (e.g. reference range is \<=2.3).
          */
         low: Schema.optional(SimpleQuantity),
         /**
-         * The value of the high bound of the reference range. The high bound of the reference range endpoint is inclusive of the value (e.g. reference range is >=5 - <=9). If the high bound is omitted, it is assumed to be meaningless (e.g. reference range is >= 2.3).
+         * The value of the high bound of the reference range. The high bound of the reference range endpoint is inclusive of the value (e.g. reference range is \>=5 - \<=9). If the high bound is omitted, it is assumed to be meaningless (e.g. reference range is \>= 2.3).
          */
         high: Schema.optional(SimpleQuantity),
         /**

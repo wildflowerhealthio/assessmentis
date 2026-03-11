@@ -3,6 +3,11 @@ import { Cause, Chunk, Effect, Exit, Fiber, Stream } from 'effect'
 import { useEffect } from 'react'
 import { useStatePromise } from './effectHooks'
 
+/**
+ * Subscribes to a scoped Effect `Stream<A, E>` and returns a `Promise<A>`
+ * that resolves with the latest emitted value. The stream fiber is
+ * interrupted on unmount or when the stream reference changes.
+ */
 export const useStream = <A, E>(
   stream: Stream.Stream<A, E, Scope.Scope>
 ): Promise<A> => {

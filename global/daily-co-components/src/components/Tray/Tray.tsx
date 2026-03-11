@@ -24,6 +24,18 @@ import {
   Screenshare,
 } from './Icons'
 
+/**
+ * Bottom control bar for an active call. Global call state is provided by
+ * `@daily-co/daily-react`.
+ *
+ * Provides toggles for camera, mic, screen share, meeting info, chat,
+ * recording, and a leave button.
+ *
+ * @remarks
+ * Listens for `app-message` events via `useAppMessage` — highlights the
+ * chat icon when a remote participant sends a message while the chat panel
+ * is closed.
+ */
 export default function Tray({
   leaveCall,
   recording,

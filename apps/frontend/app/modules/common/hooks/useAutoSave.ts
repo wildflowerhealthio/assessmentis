@@ -12,18 +12,18 @@ export interface UseAutoSaveOptions<T> {
   onSave: (data: T) => Promise<void>
   /**
    * Delay in milliseconds before triggering auto-save after data changes
-   * @default 5000 (5 seconds)
+   * @defaultValue 5000 (5 seconds)
    */
   delay?: number
   /**
    * Whether auto-save is enabled
-   * @default true
+   * @defaultValue true
    */
   enabled?: boolean
   /**
    * Whether to skip auto-save on initial mount
    * When true, auto-save will only trigger after the data changes, not on first render
-   * @default false
+   * @defaultValue false
    */
   skipInitialSave?: boolean
 }
