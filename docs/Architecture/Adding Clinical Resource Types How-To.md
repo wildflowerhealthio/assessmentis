@@ -4,7 +4,7 @@ How to add a new FHIR R4 Clinical Resource end-to-end across domain and frontend
 
 For modeling rules and architecture context, see:
 
-- [FHIR Modeling Reference](../../domain/clinical-domain/FHIR%20Modeling%20Reference.md)
+- [FHIR Modeling Reference](../../domain/clinical-domain/docs/FHIR%20Modeling%20Reference.md)
 - [Architecture Explanation](./Explanation.md)
 - [Architecture Reference](./Reference.md)
 
@@ -61,6 +61,8 @@ This ensures route/actions/hooks can obtain the repository using the same generi
 ## Most-used code locations
 
 - Domain schema registry: [../../domain/clinical-domain/src/Schemas.ts](../../domain/clinical-domain/src/Schemas.ts)
-- Domain repository registry: [../../domain/clinical-domain/src/Repositories.ts](../../domain/clinical-domain/src/Repositories.ts)
-- Repository factory: [../../domain/clinical-domain/src/assessmentis/makeClinicalDataRepository.ts](../../domain/clinical-domain/src/assessmentis/makeClinicalDataRepository.ts)
-- Frontend repository service: [../../apps/frontend/app/layers/ClinicalDataRepositoriesService.ts](../../apps/frontend/app/layers/ClinicalDataRepositoriesService.ts)
+- Domain resource data types: [../../domain/clinical-domain/src/ResourceDataTypes.ts](../../domain/clinical-domain/src/ResourceDataTypes.ts)
+- Hub Tag: [../../domain/clinical-domain/src/ClinicalDomainHub.ts](../../domain/clinical-domain/src/ClinicalDomainHub.ts)
+- Frontend Hub hook: [../../apps/frontend/app/layers/useHub.ts](../../apps/frontend/app/layers/useHub.ts)
+- Google FHIR origin definition: [../../infrastructure/google-account-infrastructure/src/GoogleFhirOriginDefinition.ts](../../infrastructure/google-account-infrastructure/src/GoogleFhirOriginDefinition.ts)
+- Daily.co origin definition: [../../infrastructure/daily-co-infrastructure/src/DailyCoOriginDefinition.ts](../../infrastructure/daily-co-infrastructure/src/DailyCoOriginDefinition.ts)
