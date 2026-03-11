@@ -36,7 +36,7 @@ export const useEitherStream = <A, E>(
  * - `resolve(a)` resolves the current promise (or creates a new resolved one if already settled)
  * - `reject(reason)` rejects similarly
  * - `reset()` replaces the settled promise with a fresh pending one
- * - `map(f)` applies `f` to the resolved value (or queues it if still pending)
+ * - `map(f)` applies `f` to the resolved value (or queues it to be applied when resolved)
  */
 export const useStatePromise = <A>() => {
   const resolvedRef = useRef(false)
@@ -61,7 +61,9 @@ export const useStatePromise = <A>() => {
           setPromise(promiseWithResolversRef.current.promise)
         } else {
           resolvedRef.current = true
-          promiseWithResolversRef.current.resolve(a)
+          const mapped = mappingRef.current(a)
+          mappingRef.current = (x: A): A => x
+          promiseWithResolversRef.current.resolve(mapped)
         }
       },
       reject: (reason: unknown) => {
@@ -92,7 +94,7 @@ export const useStatePromise = <A>() => {
 /**
  * Runs a scoped `Effect<A, E>` and returns a `Promise<A>` that tracks its
  * result. The fiber is interrupted on unmount or when `effect` changes.
- * Failures surface as promise rejections; interruptions are silently ignored.
+ * Failures surface as promise rejections; pure interruptions are silently ignored.
  */
 export const useEffectTs = <A, E>(
   effect: Effect.Effect<A, E, Scope.Scope>
@@ -108,7 +110,7 @@ export const useEffectTs = <A, E>(
           resolve(a)
         },
         onFailure(cause) {
-          if (Cause.isInterrupted(cause)) {
+          if (Cause.isInterruptedOnly(cause)) {
             return
           }
 
