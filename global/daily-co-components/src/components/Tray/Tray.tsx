@@ -24,6 +24,11 @@ import {
   Screenshare,
 } from './Icons'
 
+/**
+ * Bottom control bar for an active call. Provides toggles for camera, mic,
+ * screen share, meeting info, chat, recording, and a leave button. Manages
+ * chat notification state (highlighted icon on new message).
+ */
 export default function Tray({
   leaveCall,
   recording,

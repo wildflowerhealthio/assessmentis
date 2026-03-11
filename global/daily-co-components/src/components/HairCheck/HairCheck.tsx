@@ -11,6 +11,11 @@ import UserMediaError from '../UserMediaError/UserMediaError'
 
 import './HairCheck.css'
 
+/**
+ * Pre-call setup screen for camera, microphone, and speaker selection.
+ * Shows a live video preview and lets the user set their display name
+ * before joining. Falls back to {@link UserMediaError} on device failure.
+ */
 export default function HairCheck({
   joinCall,
   cancelCall,

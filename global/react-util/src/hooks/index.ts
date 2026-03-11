@@ -7,6 +7,13 @@ export * from './useStream'
 export * from './useLoadingPromise'
 export * from './usePromiseOrDefault'
 
+/**
+ * Manages an optimistic CRUD collection backed by API calls. Items are
+ * shown immediately with `loading: true` during create/delete, then
+ * updated or removed when the API responds. Rolls back on failure.
+ *
+ * @returns `{ collection, deleteItem, createItem }`
+ */
 export const useCollection = <T extends { id?: string | undefined }>(
   {
     apiDelete,
@@ -28,6 +35,11 @@ export const useCollection = <T extends { id?: string | undefined }>(
   return { collection, deleteItem, createItem }
 }
 
+/**
+ * Like {@link useCollection} but accepts a `Promise<ReadonlyArray<T>>`
+ * for the initial data. Returns a promise-based collection that resolves
+ * once the initial data loads.
+ */
 export const useCollectionPromise = <T extends { id?: string | undefined }>(
   {
     apiDelete,
@@ -61,6 +73,7 @@ export const useCollectionPromise = <T extends { id?: string | undefined }>(
   return { collectionPromise, deleteItem, createItem }
 }
 
+/** Shared optimistic create/delete logic used by both `useCollection` and `useCollectionPromise`. */
 function collectionMethods<T extends { id?: string | undefined }>(
   {
     apiDelete,
@@ -124,6 +137,11 @@ function collectionMethods<T extends { id?: string | undefined }>(
   return { deleteItem, createItem }
 }
 
+/**
+ * Calls `handler` when a mousedown event occurs outside the element
+ * referenced by `ref`. Commonly used to close dropdowns/modals on
+ * outside click.
+ */
 export const useOutsideClickHandler = (
   ref: RefObject<Node | null>,
   handler: () => void

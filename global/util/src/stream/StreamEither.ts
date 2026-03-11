@@ -273,6 +273,10 @@ export namespace StreamEither {
       })
     )
 
+  /**
+   * Takes the first element from the stream, unwrapping the `Either`.
+   * Fails with `NoSuchElementException` if the stream is empty.
+   */
   export const head = <A, E, StreamErr, R>(
     self: StreamEither<A, E, StreamErr, R>
   ): Effect.Effect<A, E | StreamErr | NoSuchElementException, R> =>

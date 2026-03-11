@@ -9,8 +9,14 @@ import { Arrow } from '../Tray/Icons/index'
 import './Chat.css'
 import type { DailyEventObjectAppMessage } from '@daily-co/daily-js'
 
+/** A single chat message with the sender's display name. */
 type Message = { msg: string; name: string }
 
+/**
+ * In-call text chat panel. Sends and receives messages via Daily's
+ * `sendAppMessage` API. Rendered persistently (even when hidden) to
+ * preserve message history in local state.
+ */
 export default function Chat({
   showChat,
   toggleChat,

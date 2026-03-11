@@ -11,6 +11,11 @@ import Tile from '../Tile/Tile'
 import UserMediaError from '../UserMediaError/UserMediaError'
 import styles from './Call.module.css'
 
+/**
+ * Main video call view. Displays remote participants (or a screen share)
+ * as the primary tile, with the local participant in a mini row. Shows a
+ * {@link UserMediaError} if `getUserMedia()` fails.
+ */
 export default function Call() {
   /* If a participant runs into a getUserMedia() error, we need to warn them. */
   const [getUserMediaError, setGetUserMediaError] = useState(false)

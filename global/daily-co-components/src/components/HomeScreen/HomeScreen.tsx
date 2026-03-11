@@ -1,5 +1,9 @@
 import './HomeScreen.css'
 
+/**
+ * Landing screen shown before a call starts. Provides a button that
+ * creates a new room via `createCall` and navigates to the hair check.
+ */
 export default function HomeScreen({
   createCall,
   startHairCheck,

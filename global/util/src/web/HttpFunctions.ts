@@ -1,5 +1,6 @@
 import type { ReadonlyRecord } from 'effect/Record'
 
+/** Accepted value types for FHIR-style search parameters. Arrays use comma-join (OR semantics). */
 export type SearchParamValue =
   | number
   | ReadonlyArray<number>

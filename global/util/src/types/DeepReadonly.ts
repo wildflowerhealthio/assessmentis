@@ -1,3 +1,8 @@
+/**
+ * Recursively makes every property of `T` readonly. Arrays become
+ * `ReadonlyArray<DeepReadonly<Element>>`, and nested objects are
+ * processed recursively. Primitives are left as-is.
+ */
 export type DeepReadonly<T> = {
   readonly [K in keyof T]: T[K] extends number | string | symbol // Is it a primitive? Then make it readonly
     ? Readonly<T[K]>

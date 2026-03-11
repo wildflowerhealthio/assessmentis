@@ -2,6 +2,10 @@ import { DailyVideo } from '@daily-co/daily-react'
 import Username from '../Username/Username'
 import type { CSSProperties } from 'react'
 
+/**
+ * Renders a single participant's video feed via `DailyVideo`. Displays a
+ * {@link Username} overlay unless the tile is a screen share.
+ */
 export default function Tile({
   id,
   isScreenShare,

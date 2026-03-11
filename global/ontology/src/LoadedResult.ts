@@ -6,16 +6,32 @@ import {
   type Subscribable,
 } from 'effect'
 
+/**
+ * A three-state discriminated union representing an async value that is
+ * either loading, failed, or successfully loaded. Used throughout the UI
+ * layer to model data-fetching lifecycles without `null`/`undefined` ambiguity.
+ *
+ * @typeParam A - The type of the successfully loaded value
+ * @typeParam E - The error type on failure
+ */
 export type LoadedResult<A, E> =
   | { _tag: 'loading' }
   | { _tag: 'error'; error: E }
   | { _tag: 'loaded'; value: A }
 
+/** Constructors and combinators for {@link LoadedResult}. */
 export const LoadedResult = {
+  /** Create a `loading` state. */
   loading: <A, E>(): LoadedResult<A, E> => ({ _tag: 'loading' }),
+  /** Create an `error` state wrapping the given error. */
   error: <A, E>(error: E): LoadedResult<A, E> => ({ _tag: 'error', error }),
+  /** Create a `loaded` state wrapping the given value. */
   loaded: <A, E>(value: A): LoadedResult<A, E> => ({ _tag: 'loaded', value }),
 
+  /**
+   * Transform the loaded value while preserving loading/error states.
+   * Pipeable — designed for use with `pipe(result, LoadedResult.map(f))`.
+   */
   map:
     <A, B, E>(f: (a: A) => B) =>
     (lr: LoadedResult<A, E>): LoadedResult<B, E> => {
@@ -29,6 +45,7 @@ export const LoadedResult = {
       }
     },
 
+  /** Exhaustively pattern-match on all three states with a handler object. */
   handle: <A, E, O>(
     lr: LoadedResult<A, E>,
     handlers: {
@@ -47,14 +64,26 @@ export const LoadedResult = {
   },
 }
 
+/**
+ * A subscribable (reactive) variant of {@link LoadedResult}. Wraps an
+ * Effect `Subscribable` so consumers can observe loading → loaded/error
+ * transitions over time.
+ */
 export type LoadedResultStream<A, E> = Subscribable.Subscribable<
   LoadedResult<A, E>
 >
 
+/** Constructors and combinators for {@link LoadedResultStream}. */
 export const LoadedResultStream = {
+  /** Create a stream that is immediately in the `loaded` state with the given value. */
   succeed: <A, E>(value: A): Effect.Effect<LoadedResultStream<A, E>> =>
     SubscriptionRef.make<LoadedResult<A, E>>(LoadedResult.loaded<A, E>(value)),
 
+  /**
+   * Derive a new stream by mapping loaded values. Loading/error states
+   * pass through unchanged. Internally forks a daemon fiber to propagate
+   * updates from the source.
+   */
   map:
     <A, B, E>(f: (a: A) => B) =>
     (
@@ -75,6 +104,11 @@ export const LoadedResultStream = {
         )
         return mappedRef
       }),
+  /**
+   * Flat-map over the loaded value to produce a dependent stream. When the
+   * source transitions to a new loaded value, the previous inner stream is
+   * cancelled (`switch` semantics) and replaced by `f(newValue)`.
+   */
   andThen:
     <A, E, A1>(f: (a: A) => Stream.Stream<LoadedResult<A1, E>>) =>
     (

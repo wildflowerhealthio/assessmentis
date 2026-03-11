@@ -1,5 +1,14 @@
 import { ParseResult, Schema } from 'effect'
 
+/**
+ * An Effect Schema that transforms a `YYYY-MM-DD` string into a `Date`
+ * set to midnight. Designed for timezone-independent dates (e.g. birthdays)
+ * where the time component is meaningless.
+ *
+ * Rejects strings that don't match the `YYYY-MM-DD` pattern and dates
+ * whose time component is not midnight (local or UTC). Includes custom
+ * arbitraries constrained to years 1900–2100.
+ */
 export const TimelessDateFromString = Schema.transformOrFail(
   // Source schema
   Schema.String.pipe(Schema.pattern(/^\d{4}-\d{2}-\d{2}$/)).annotations({

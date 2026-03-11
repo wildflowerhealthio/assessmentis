@@ -1,6 +1,7 @@
 import './Username.css'
 import { useParticipantProperty } from '@daily-co/daily-react'
 
+/** Displays a participant's username (or session ID fallback) with a "(you)" suffix for the local user. */
 export default function Username({
   id,
   isLocal,

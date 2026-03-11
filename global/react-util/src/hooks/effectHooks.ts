@@ -3,6 +3,11 @@ import { Cause, Chunk, Effect, Either, Exit, Fiber, pipe } from 'effect'
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useStream } from './useStream'
 
+/**
+ * Subscribes to a `Stream<Either<A, E>>` and returns a `Promise<A>`.
+ * Right values resolve the promise; Left values reject it.
+ * Re-subscribes when the stream reference changes.
+ */
 export const useEitherStream = <A, E>(
   stream: Stream.Stream<Either.Either<A, E>, never, Scope.Scope>
 ): Promise<A> => {
@@ -24,6 +29,15 @@ export const useEitherStream = <A, E>(
   )
 }
 
+/**
+ * A controllable promise whose resolution can be driven imperatively.
+ * Returns `[promise, { resolve, reject, reset, map }]`.
+ *
+ * - `resolve(a)` resolves the current promise (or creates a new resolved one if already settled)
+ * - `reject(reason)` rejects similarly
+ * - `reset()` replaces the settled promise with a fresh pending one
+ * - `map(f)` applies `f` to the resolved value (or queues it if still pending)
+ */
 export const useStatePromise = <A>() => {
   const resolvedRef = useRef(false)
   const initial = Promise.withResolvers<A>()
@@ -75,6 +89,11 @@ export const useStatePromise = <A>() => {
 
   return [promise, callbacks] as const
 }
+/**
+ * Runs a scoped `Effect<A, E>` and returns a `Promise<A>` that tracks its
+ * result. The fiber is interrupted on unmount or when `effect` changes.
+ * Failures surface as promise rejections; interruptions are silently ignored.
+ */
 export const useEffectTs = <A, E>(
   effect: Effect.Effect<A, E, Scope.Scope>
 ): Promise<A> => {

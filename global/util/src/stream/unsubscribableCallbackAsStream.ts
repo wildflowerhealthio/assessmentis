@@ -1,5 +1,12 @@
 import { Chunk, Effect, Option, Stream, type StreamEmit } from 'effect'
 
+/**
+ * Bridges a callback-based subscription API into an Effect `Stream`. The
+ * `subscribe` function receives a callback and returns an unsubscribe
+ * function. The stream automatically unsubscribes when its scope closes.
+ *
+ * @param subscribe - A function that accepts an element callback and returns an unsubscribe function
+ */
 export const unsubscribableCallbackAsStream = <A, E>(
   subscribe: (onElement: (e: Effect.Effect<A, E>) => void) => () => void
 ) =>

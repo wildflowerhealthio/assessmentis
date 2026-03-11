@@ -1,7 +1,12 @@
 import { Data, type Arbitrary, type FastCheck } from 'effect'
 
 /**
- * An error that was not anticipated has occurred, no specific handling exists
+ * A catch-all error for unanticipated failures where no specific handling exists.
+ *
+ * All other domain error classes implement `.asUnhandledError()` to convert
+ * into this type, making it the terminal error in the error taxonomy.
+ * When constructed with a `cause` that is an `Error`, the stack trace and
+ * name are inherited from the cause for better debuggability.
  */
 export class UnhandledError extends Data.TaggedError('UnhandledError')<{
   cause?: unknown
@@ -33,7 +38,10 @@ export class UnhandledError extends Data.TaggedError('UnhandledError')<{
 }
 
 /**
- * An external system is not behaving as expected
+ * Raised when an external system (API, third-party service) violates an
+ * expected contract. The `expected` field describes what was anticipated,
+ * making it clear this is an integration-boundary failure rather than a
+ * bug in application logic.
  */
 export class ExternalAssertionError extends Data.TaggedError(
   'ExternalAssertionError'
@@ -59,7 +67,9 @@ export class ExternalAssertionError extends Data.TaggedError(
 }
 
 /**
- * Data controlled within the system does not conform to expected schema
+ * Raised when data controlled within the system does not conform to an
+ * expected schema. This signals a data-integrity issue (e.g. corrupt
+ * records, migration gaps) rather than invalid user input.
  */
 export class BadDataError extends Data.TaggedError('BadDataError')<{
   message: string
@@ -85,7 +95,10 @@ export class BadDataError extends Data.TaggedError('BadDataError')<{
 }
 
 /**
- * Resource not found
+ * Raised when a requested resource cannot be located.
+ *
+ * @typeParam ResourceType - A string literal identifying the kind of resource (e.g. `"Patient"`, `"Questionnaire"`)
+ * @typeParam Parameters - The lookup parameters that failed to match (e.g. `{ id: string }`)
  */
 export class NotFoundError<
   out ResourceType extends string,
@@ -108,7 +121,8 @@ export class NotFoundError<
 }
 
 /**
- * Authentication error
+ * Raised when a user's identity cannot be verified. Includes a static
+ * `Unauthenticated` singleton for the common "not logged in" case.
  */
 export class AuthError extends Data.TaggedError('AuthError')<{
   message: string
@@ -134,7 +148,9 @@ export class AuthError extends Data.TaggedError('AuthError')<{
 }
 
 /**
- * Authorization error (authenticated but lacking permissions)
+ * Raised when an authenticated user lacks the permissions required for
+ * the requested operation. Distinct from {@link AuthError} which covers
+ * identity verification failures.
  */
 export class AuthzError extends Data.TaggedError('AuthzError')<{
   message: string
@@ -159,6 +175,13 @@ export class AuthzError extends Data.TaggedError('AuthzError')<{
   }
 }
 
+/**
+ * A sentinel error representing an in-progress loading state for a given
+ * entity. Used in Effect channels where "still loading" needs to be
+ * communicated as an error branch rather than an absent value.
+ *
+ * @typeParam Entity - The type of resource being loaded; must be stringifiable for the error message
+ */
 export class Loading<
   Entity extends { toString(): string },
 > extends Data.TaggedError('Loading')<{

@@ -15,11 +15,13 @@ export type ArbitrarySource =
   | { readonly fields: Schema.Struct.Fields; new (...args: any[]): any }
   | (Schema.Struct.Fields & { readonly fields?: never })
 
+/** Type guard: source is a bare `LazyArbitrary` function (not a class with `fields`). */
 const isLazyArbitrary = (
   src: ArbitrarySource
 ): src is Arbitrary.LazyArbitrary<any> =>
   typeof src === 'function' && !('fields' in src)
 
+/** Type guard: source is a Schema.Class constructor (has `fields` and is callable). */
 const isSchemaClass = (
   src: ArbitrarySource
 ): src is {
