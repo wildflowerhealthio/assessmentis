@@ -31,13 +31,6 @@ import type ResourceDataTypes from './ResourceDataTypes'
  * })
  * ```
  *
- * @example Typed resource methods
- * ```typescript
- * // Hub also provides typed methods per resource:
- * const patient = yield* hub.getPatient(patientUrl)
- * const encounters = yield* hub.searchEncounter({ patient: patientUrl })
- * const obs = yield* hub.createObservation(newObservation)
- * ```
  *
  * @example Reactive subscriptions
  * ```typescript

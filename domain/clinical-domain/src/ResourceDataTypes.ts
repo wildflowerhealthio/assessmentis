@@ -9,7 +9,6 @@ import { Practitioner } from './resources/Practitioner'
 import { Questionnaire } from './resources/Questionnaire'
 import { QuestionnaireResponse } from './resources/QuestionnaireResponse'
 
-/** Union of all registered clinical resource `domainType` string literals. */
 export type ResourceType =
   | typeof Composition.DomainType
   | typeof DiagnosticReport.DomainType
@@ -22,14 +21,6 @@ export type ResourceType =
   | typeof Questionnaire.DomainType
   | typeof QuestionnaireResponse.DomainType
 
-/**
- * Maps each FHIR resource type string to its decoded Effect Schema class.
- *
- * @remarks
- * The `type` and `const` share a name via declaration merging. The type is
- * the lookup table shape; the const holds the actual Schema class references
- * keyed by their `DomainType` literal, used at runtime for schema dispatch.
- */
 type ResourceDataTypes = {
   Composition: Composition
   DiagnosticReport: DiagnosticReport
