@@ -37,9 +37,14 @@ const fields = {
 
 const ElementMixin = Element(Key)
 
+/** Encoded (wire-format) shape of a {@link Coding}. */
 export interface CodingEncoded
   extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<typeof Key> {}
 
+/**
+ * A reference to a code defined by a terminology system. Binds a `code` to
+ * a `system` URI and optional `display` text.
+ */
 export class Coding extends MergeClasses<Coding>(Key)(
   [],
   ElementMixin,

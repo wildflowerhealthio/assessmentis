@@ -23,6 +23,7 @@
   "workspaces": [
     "global/eslint-config",
     "global/typescript-config",
+    "global/effectful-store",
     "global/prettier-config",
     "global/react-util",
     "global/util",

@@ -29,6 +29,10 @@ const fields = {
   valueCanonical: Schema.optional(Schema.String),
 } as const satisfies Schema.Struct.Fields
 
+/**
+ * Encoded (wire-format) shape of a {@link ValueElement}.
+ *  @deprecated
+ */
 export interface ValueElementEncoded extends Schema.Struct.Encoded<
   typeof fields
 > {
@@ -39,6 +43,12 @@ export interface ValueElementEncoded extends Schema.Struct.Encoded<
   valueCodeableConcept?: CodeableConceptEncoded
   _valueCode?: typeof valueCode.Encoded
 }
+/**
+ * A FHIR element that carries a polymorphic value via `value[x]` fields.
+ * Includes both primitive (`valueString`, `valueBoolean`, etc.) and complex
+ * (`valueCoding`, `valueQuantity`, etc.) value types.
+ * @deprecated
+ */
 export type ValueElement = Schema.Struct.Type<typeof fields> & {
   valueAttachment?: Attachment
   valueCoding?: Coding
@@ -47,6 +57,9 @@ export type ValueElement = Schema.Struct.Type<typeof fields> & {
   valueCodeableConcept?: CodeableConcept
   _valueCode?: typeof valueCode.Type
 }
+/**
+ * @deprecated
+ */
 export const ValueElement = Schema.Struct({
   ...fields,
   valueAttachment: Schema.optional(Attachment),

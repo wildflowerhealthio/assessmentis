@@ -22,6 +22,7 @@ const fields = {
 
 const ElementMixin = Element(Key)
 
+/** Encoded (wire-format) shape of a {@link Period}. */
 export interface PeriodEncoded
   extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<typeof Key> {}
 

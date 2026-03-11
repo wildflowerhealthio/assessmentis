@@ -14,6 +14,11 @@ import {
 } from '.'
 import type ResourceDataTypes from './ResourceDataTypes'
 
+/**
+ * Registry of all clinical resource Effect Schema classes, keyed by FHIR
+ * `resourceType` literal. Used by infrastructure layers for schema-driven
+ * decode/encode dispatch.
+ */
 const Schemas = {
   [Composition.DomainType]: Composition,
   [DiagnosticReport.DomainType]: DiagnosticReport,

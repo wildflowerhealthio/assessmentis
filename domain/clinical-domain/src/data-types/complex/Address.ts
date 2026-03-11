@@ -63,10 +63,12 @@ const fields = {
   period: Schema.optional(Schema.suspend(() => Period)),
 } as const
 
+/** Encoded (wire-format) shape of an {@link Address}. */
 export interface AddressEncoded extends Schema.Struct.Encoded<typeof fields> {}
 
 /**
- * An address expressed using postal conventions (as opposed to GPS or other location definition formats).
+ * An address expressed using postal conventions
+ * (as opposed to GPS or other location definition formats).
  */
 export class Address extends Schema.Class<Address>(Key)(fields) {
   static readonly DomainType = Key

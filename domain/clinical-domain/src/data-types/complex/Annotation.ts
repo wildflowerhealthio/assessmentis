@@ -26,6 +26,7 @@ const fields = {
   text: Schema.String,
 } as const
 
+/** Encoded (wire-format) shape of an {@link Annotation}. */
 export interface AnnotationEncoded
   extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<Key> {}
 

@@ -11,6 +11,12 @@ import { Meta } from './Meta'
 // Types
 // ---------------------------------------------------------------------------
 
+/**
+ * Decoded shape of a FHIR DomainResource — the base type for all clinical
+ * resources. Includes meta, text, contained resources, and extensions.
+ *
+ * @typeParam TDomainType - The literal domain type string (e.g. `'Patient'`)
+ */
 export type Resource<TDomainType extends string> = {
   readonly domainType: TDomainType
   readonly url?: ReadonlyUrl & Brand.Brand<`${TDomainType}/url`>
@@ -23,6 +29,7 @@ export type Resource<TDomainType extends string> = {
   readonly modifierExtension: ReadonlyArray<Extension>
 }
 
+/** Encoded (wire-format) shape of a DomainResource. */
 export interface ResourceEncoded<TDomainType extends string> {
   readonly domainType?: TDomainType | undefined
   readonly url?: string | undefined
@@ -125,6 +132,17 @@ type ResourceClass<Self, TDomainType extends string> = {
   object
 >
 
+/**
+ * Factory that returns a DomainResource mixin class for a given domain type.
+ *
+ * The returned class includes all FHIR DomainResource fields: `meta`,
+ * `text`, `contained`, `extension`, `modifierExtension`, plus `domainType`
+ * (a defaulted literal) and an optional branded `url`.
+ *
+ * @typeParam TDomainType - The literal domain type string (e.g. `'Patient'`)
+ * @param domainType - The domain type string literal
+ * @returns A Schema.Class mixin to compose via `MergeClasses`
+ */
 export const Resource = <TDomainType extends string>(
   domainType: TDomainType
 ) => {

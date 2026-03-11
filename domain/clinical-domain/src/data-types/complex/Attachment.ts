@@ -43,6 +43,7 @@ const fields = {
   creation: Schema.optional(Schema.DateTimeUtc),
 } as const satisfies Schema.Struct.Fields
 
+/** Encoded (wire-format) shape of an {@link Attachment}. */
 export interface AttachmentEncoded
   extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<typeof Key> {}
 

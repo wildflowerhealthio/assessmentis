@@ -31,6 +31,11 @@ interface BundleEntry<
   search?: any
 }
 
+/**
+ * Decoded shape of a FHIR R4 Bundle — a container for a collection of resources.
+ *
+ * @typeParam T - The resource type contained in the bundle entries
+ */
 export interface Bundle<T> extends Resource<'Bundle'> {
   entry?: BundleEntry<T>[]
   identifier?: Identifier
@@ -63,9 +68,21 @@ const BundleEntrySchema = <BundleContentType, BundleContentEncoded>(
   })
 
 /**
- * A container for a collection of resources.
+ * A container for a collection of resources. Call `Bundle.Schema(contentSchema)`
+ * to produce a typed Effect Schema for a specific entry content type.
+ *
+ * @remarks
+ * Unlike other resources, Bundle is not a Schema.Class — it exposes a
+ * `Schema` factory method that parameterizes the entry content type.
  */
 export const Bundle = {
+  /**
+   * Creates an Effect Schema for a Bundle whose entries contain `BundleContentType`.
+   *
+   * @typeParam BundleContentType - Decoded type of bundle entry resources
+   * @typeParam BundleContentEncoded - Encoded type of bundle entry resources
+   * @param contentTypeSchema - Schema for the entry resource type
+   */
   Schema: <BundleContentType, BundleContentEncoded>(
     contentTypeSchema: Schema.Schema<
       BundleContentType,

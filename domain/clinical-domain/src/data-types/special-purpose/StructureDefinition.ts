@@ -31,6 +31,14 @@ const StructureDefinitionKind = Schema.Enums({
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const StructureDefinitionType = Schema.Enums({ Extension: 'Extension' })
 
+/**
+ * Describes a FHIR StructureDefinition for an Extension profile. Provides
+ * `getValues` and `withValues` to read/write typed extension values on
+ * resources without manually traversing the `extension` array.
+ *
+ * @typeParam FieldName - The value\[x\] field name this definition targets,
+ *   or `null` if it carries no value (container-only extension)
+ */
 export class StructureDefinition<
   FieldName extends keyof ValueFields | null = null,
 > {
@@ -59,6 +67,12 @@ export class StructureDefinition<
     this.relevantField = args.relevantField
   }
 
+  /**
+   * Extracts all values for this extension from a resource's `extension` array.
+   *
+   * @param resource - Any object with an `extension` array
+   * @returns Array of typed values from matching extensions
+   */
   getValues(resource: {
     extension?: ReadonlyArray<Extension>
   }): ReadonlyArray<ValueFields[NonNullable<FieldName>]> {
@@ -71,6 +85,11 @@ export class StructureDefinition<
       .map((ext): ValueFields[typeof relevantField] => ext[relevantField])
   }
 
+  /**
+   * Returns a copy of `resource` with its extension array updated to contain
+   * the given values for this definition. Existing extensions with other URLs
+   * are preserved; existing extensions with this URL are replaced.
+   */
   withValues<
     T extends {
       extension?: ReadonlyArray<Extension>

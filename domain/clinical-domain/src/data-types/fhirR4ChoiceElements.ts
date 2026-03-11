@@ -1,3 +1,12 @@
+/**
+ * Static mapping from FHIR R4 choice element paths (e.g. `'Observation.value[x]'`)
+ * to their allowed data type names. Sourced from `https://hl7.org/fhir/R4/choice-elements.json`.
+ *
+ * @remarks
+ * The wildcard `'*'` key lists every data type that can appear in an
+ * unconstrained choice element (e.g. `Task.input.value[x]`). Used at
+ * build time to derive typed union schemas via {@link DatatypeChoice}.
+ */
 const FhirR4ChoiceElements = {
   'Annotation.author[x]': ['Reference', 'string'],
   'DataRequirement.subject[x]': ['CodeableConcept', 'Reference'],

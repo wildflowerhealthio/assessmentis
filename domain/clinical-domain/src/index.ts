@@ -1,3 +1,10 @@
+/**
+ * Core clinical domain package — FHIR R4 resource schemas, data types,
+ * repository interfaces, and the {@link ClinicalDomainHub} service tag.
+ *
+ * @packageDocumentation
+ */
+
 // Resources
 export * from './resources/Bundle'
 export * from './resources/Composition'

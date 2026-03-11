@@ -39,6 +39,7 @@ const fields = {
 
 const elementMixin = Element('Quantity')
 
+/** Encoded (wire-format) shape of a {@link Quantity}. */
 export interface QuantityEncoded
   extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<'Quantity'> {}
 

@@ -7,6 +7,14 @@ interface BaseResource {
   id?: string | undefined
 }
 
+/**
+ * Creates a {@link ClinicalResourceBehaviour} bundle for a FHIR resource type.
+ *
+ * @typeParam T - The decoded domain resource type
+ * @typeParam TEncoded - The encoded (wire-format) representation
+ * @param args - Resource symbol, resourceType literal, and Effect Schema
+ * @returns A behaviour object with constructors, schema, and resource metadata
+ */
 export const ClinicalResourceBehaviourImpl = <
   T extends BaseResource & Resource.Resource<string>,
   TEncoded,
@@ -28,6 +36,18 @@ export const ClinicalResourceBehaviourImpl = <
   }
 }
 
+/**
+ * Standard toolkit for working with a clinical resource: its symbol, literal
+ * `resourceType`, `Data.case` constructors, and Effect Schema.
+ *
+ * @typeParam T - The decoded domain resource type
+ * @typeParam TEncoded - The encoded (wire-format) representation
+ *
+ * @remarks
+ * Every resource registered in {@link ResourceDataTypes} is backed by one of
+ * these. The `make` constructor produces instances without an `id`; use
+ * `makeWithId` for instances that already have a server-assigned identity.
+ */
 export interface ClinicalResourceBehaviour<
   T extends BaseResource & Resource.Resource<string>,
   TEncoded,

@@ -18,6 +18,7 @@ class ExtensionValue extends DatatypeChoice<
   typeof AllDatatypeKeys
 >('ExtensionValue', 'value', AllDatatypeKeys) {}
 
+/** Encoded (wire-format) shape of an {@link Extension}. */
 export interface ExtensionEncoded extends Schema.Struct.Encoded<
   typeof ExtensionValue.fields
 > {
@@ -55,6 +56,16 @@ const extensionFields = {
   definitionUrl: Schema.String,
 } as const satisfies Schema.Struct.Fields
 
+/**
+ * FHIR R4 Extension — carries additional data on any element via a
+ * `definitionUrl` and a polymorphic value\[x\] choice. Extensions can
+ * nest recursively via the `extension` array.
+ *
+ * @remarks
+ * Composes the `DatatypeChoice` mixin (all FHIR R4 data type value\[x\] fields)
+ * with Element-like fields (`domainType`, `url`, `extension`). The arbitrary
+ * generates instances with zero or one value\[x\] key set.
+ */
 export class Extension extends MergeClasses<Extension>('Extension')(
   [
     {

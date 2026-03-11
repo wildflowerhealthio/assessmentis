@@ -3,6 +3,14 @@ import { capitalize } from 'effect/String'
 
 import type FhirR4ChoiceElements from './fhirR4ChoiceElements'
 
+/**
+ * A named FHIR data type paired with its Effect Schema. Used to build
+ * choice-element (value\[x\]) unions via {@link DatatypeChoice}.
+ *
+ * @typeParam Name - The FHIR data type name (e.g. `'string'`, `'CodeableConcept'`)
+ * @typeParam A - Decoded type
+ * @typeParam I - Encoded type
+ */
 export interface Datatype<out Name extends string, A, I> {
   readonly name: Name
   readonly schema: Schema.Schema<A, I, never>
@@ -51,6 +59,11 @@ const UnknownFromAny = Schema.declare<any>(
   })
 )
 
+/**
+ * Lookup table of all FHIR R4 data type names to their {@link Datatype}
+ * definitions. Primitive types use typed schemas; complex types that are not
+ * yet fully modeled use a permissive `UnknownFromAny` placeholder.
+ */
 export const baseDatatypes = {
   string: StringDatatype,
   boolean: BooleanDatatype,
@@ -249,10 +262,12 @@ const datatypeFields = {
   >
 }
 
+/** All FHIR R4 data type names available for choice-element fields. */
 export const AllDatatypeKeys = Object.keys(datatypeFields) as ReadonlyArray<
   keyof typeof datatypeFields
 >
 
+/** String-literal union of all FHIR R4 data type names in {@link baseDatatypes}. */
 export type DatatypeFieldKey = keyof typeof datatypeFields
 
 type DatatypeMixinClass<
@@ -285,6 +300,28 @@ type DatatypeMixinClass<
   >
 }
 
+/**
+ * Builds a Schema.Class mixin representing a FHIR choice element (value\[x\]).
+ *
+ * Each picked data type becomes an optional `{prefix}{CapitalizedName}` field
+ * (e.g. `valueString`, `valueBoolean`). The mixin adds instance methods
+ * `isExactlyOne{Prefix}Present()` and `isNo{Prefix}Present()`, plus static
+ * helpers `all{Prefix}Keys()` and `arbitrary{Prefix}OneOrNone`.
+ *
+ * @typeParam Self - The concrete class extending this mixin
+ * @typeParam Prefix - Field name prefix (typically `'value'` or `'answer'`)
+ * @typeParam PickedKeys - Subset of FHIR data type names to include
+ * @typeParam OverrideFields - Optional type-specific schema overrides for individual keys
+ * @param identifier - Schema identifier string
+ * @param prefix - The prefix prepended to each data type name
+ * @param pickedKeys - Array of data type names to include in the choice
+ * @param overrideFields - Optional array of {@link Datatype} overrides for specific keys
+ *
+ * @remarks
+ * Compose with `MergeClasses` to add choice-element fields to a resource schema
+ * alongside its own fields. The resulting arbitrary generates instances with
+ * exactly one value\[x\] key set.
+ */
 export function DatatypeChoice<
   Self,
   const Prefix extends string,
@@ -396,6 +433,16 @@ export function DatatypeChoice<
   return DatatypeMixin as any
 }
 
+/**
+ * Generates prefixed optional passthrough fields for a choice element's
+ * encoded representation. Each field accepts its encoded type unchanged.
+ *
+ * @typeParam Prefix - Field name prefix (e.g. `'value'`)
+ * @typeParam PickedKeys - Data type names to include
+ * @param prefix - The prefix prepended to each data type name
+ * @param pickedKeys - Array of data type names
+ * @returns An object of `Schema.optional` fields suitable for `Schema.Struct`
+ */
 export const DatatypeChoiceEncodedPassthroughFields = <
   const Prefix extends string,
   const PickedKeys extends ReadonlyArray<DatatypeFieldKey>,

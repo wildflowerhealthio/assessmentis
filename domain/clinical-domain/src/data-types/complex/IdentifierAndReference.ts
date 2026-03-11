@@ -46,6 +46,7 @@ interface ReferenceType
   identifier?: IdentifierType
 }
 
+/** Encoded (wire-format) shape of a {@link Reference}. */
 export interface ReferenceEncoded
   extends
     Schema.Struct.Encoded<typeof referenceFields>,
@@ -55,6 +56,16 @@ export interface ReferenceEncoded
 
 const referenceElement = Element(ReferenceKey)
 
+/**
+ * A reference from one FHIR resource to another, by URL, type, display text,
+ * and/or {@link Identifier}.
+ *
+ * @remarks
+ * Reference and Identifier are mutually recursive — `Reference.identifier`
+ * points to an Identifier, while `Identifier.assigner` points back to a
+ * Reference. `Schema.suspend` breaks this cycle at schema evaluation time.
+ * Both types are co-located in this file to avoid cross-file circular imports.
+ */
 export class Reference extends MergeClasses<Reference>(ReferenceKey)(
   [
     {
@@ -85,6 +96,13 @@ export class Reference extends MergeClasses<Reference>(ReferenceKey)(
     ),
   }
 ) {
+  /**
+   * Decodes this reference's URL string into a branded resource URL, failing
+   * if the `type` doesn't match or `reference` is absent.
+   *
+   * @typeParam TUrl - The branded URL type to decode into
+   * @param t - Object with `DomainType` and `UrlSchema` (typically a resource class)
+   */
   asResourceUrl<TUrl extends ReadonlyUrl>(t: {
     readonly DomainType: string
     readonly UrlSchema: Schema.Schema<TUrl, string, never>
@@ -112,6 +130,10 @@ export class Reference extends MergeClasses<Reference>(ReferenceKey)(
     return decode(this.reference)
   }
 
+  /**
+   * Creates a Reference pointing to a resource, or `undefined` if the
+   * resource has no URL. Sets `type` from `domainType`.
+   */
   static fromResource(
     resource: { url?: ReadonlyUrl | string | undefined; domainType: string },
     display: string | undefined = undefined
@@ -132,6 +154,7 @@ export class Reference extends MergeClasses<Reference>(ReferenceKey)(
 const IdentifierKey = 'Identifier'
 type IdentifierKey = typeof IdentifierKey
 
+/** FHIR R4 value set for `Identifier.use`: usual | official | temp | secondary | old. */
 export const IdentifierUse = Schema.Enums({
   usual: 'usual',
   official: 'official',
@@ -179,6 +202,7 @@ interface IdentifierType
   assigner?: ReferenceType
 }
 
+/** Encoded (wire-format) shape of an {@link Identifier}. */
 export interface IdentifierEncoded
   extends
     Schema.Struct.Encoded<typeof identifierFields>,
@@ -188,6 +212,13 @@ export interface IdentifierEncoded
 
 const IdentifierElementMixin = Element(IdentifierKey)
 
+/**
+ * An identifier intended for computation — carries a `system` URI, a `value`,
+ * an optional `type`, `use`, `period`, and an optional `assigner`
+ * {@link Reference}.
+ *
+ * @see {@link Reference} for the mutual-recursion notes
+ */
 export class Identifier extends MergeClasses<Identifier>(IdentifierKey)(
   [
     {

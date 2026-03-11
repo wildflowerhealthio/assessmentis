@@ -22,8 +22,13 @@ const fields = {
   ),
 } as const satisfies Schema.Struct.Fields
 
+/** Encoded (wire-format) shape of a {@link Meta}. */
 export interface MetaEncoded extends Schema.Struct.Encoded<typeof fields> {}
 
+/**
+ * FHIR R4 Meta data type — resource-level metadata including version, last
+ * updated timestamp, source, security labels, and tags.
+ */
 export class Meta extends Schema.Class<Meta>(Key)(fields) {
   static readonly Key = Key
 }

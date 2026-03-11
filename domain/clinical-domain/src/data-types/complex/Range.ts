@@ -20,6 +20,7 @@ const fields = {
 
 const ElementMixin = Element(Key)
 
+/** Encoded (wire-format) shape of a {@link Range}. */
 export interface RangeEncoded
   extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<typeof Key> {}
 

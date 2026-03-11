@@ -72,6 +72,7 @@ const fields = {
   period: Schema.optional(Schema.suspend(() => Period)),
 } as const
 
+/** Encoded (wire-format) shape of a {@link ContactPoint}. */
 export interface ContactPointEncoded extends Schema.Struct.Encoded<
   typeof fields
 > {}

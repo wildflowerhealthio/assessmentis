@@ -25,6 +25,12 @@ const fields = {
   ),
 } as const satisfies Schema.Struct.Fields
 
+/**
+ * The Schema field definitions produced by {@link Element} for a given domain
+ * type: `domainType` (defaulted literal), `url` (branded), and `extension`.
+ *
+ * @typeParam TDomainType - The literal domain type string
+ */
 export type ElementFields<TDomainType extends string> = typeof fields & {
   domainType: Schema.optionalWith<
     Schema.Literal<[TDomainType]>,
@@ -54,6 +60,22 @@ type ElementClass<Self, TDomainType extends string> = {
   object
 >
 
+/**
+ * Factory that returns an Element mixin class for a given domain type.
+ *
+ * The returned class provides `domainType` (a defaulted literal), an optional
+ * branded `url`, and an `extension` array. It also exposes `DomainType` and
+ * `UrlSchema` statics for downstream use.
+ *
+ * @typeParam TDomainType - The literal domain type string (e.g. `'Patient'`)
+ * @param domainType - The domain type string literal
+ * @returns A Schema.Class mixin to compose via `MergeClasses` or `.extend`
+ *
+ * @remarks
+ * Both a factory function and a same-name type alias coexist via declaration
+ * merging: `Element<'Patient'>` gives the decoded type while
+ * `Element('Patient')` gives the mixin class.
+ */
 export const Element = <TDomainType extends string>(
   domainType: TDomainType
 ) => {
@@ -81,12 +103,14 @@ export const Element = <TDomainType extends string>(
   > as ElementClass<ElementMixin, TDomainType>
 }
 
+/** Decoded shape of an Element — the base building block for all FHIR types. */
 export type Element<TDomainType extends string> = {
   readonly domainType: TDomainType
   readonly url?: ReadonlyUrl & Brand.Brand<`${TDomainType}/url`>
   readonly extension: ReadonlyArray<Extension>
 }
 
+/** Encoded (wire-format) shape of an Element. */
 export interface ElementEncoded<TDomainType extends string> {
   readonly domainType?: TDomainType | undefined
   readonly url?: string | undefined

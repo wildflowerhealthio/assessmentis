@@ -31,9 +31,14 @@ const fields = {
 
 const ElementMixin = Element(Key)
 
+/** Encoded (wire-format) shape of a {@link Narrative}. */
 export interface NarrativeEncoded
   extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<Key> {}
 
+/**
+ * Human-readable XHTML summary of a resource, with a `status` indicating
+ * whether the narrative is generated, additional, or empty.
+ */
 export class Narrative extends MergeClasses<Narrative>(Key)(
   [],
   ElementMixin,

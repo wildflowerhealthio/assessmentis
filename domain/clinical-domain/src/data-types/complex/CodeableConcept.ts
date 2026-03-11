@@ -27,17 +27,23 @@ const fields = {
   // _text?: Element | undefined;
 } as const
 
+/** Encoded (wire-format) shape of a {@link CodeableConcept}. */
 export interface CodeableConceptEncoded
   extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<Key> {}
 
 const ElementMixin = Element<Key>(Key)
 
+/**
+ * A concept that may be defined by one or more coding systems. Wraps an
+ * array of {@link Coding} values plus optional free-text.
+ */
 export class CodeableConcept extends MergeClasses<CodeableConcept>(Key)(
   [],
   ElementMixin,
   fields
 ) {}
 
+/** {@link Datatype} wrapper for use in {@link DatatypeChoice} value\[x\] unions. */
 export const CodeableConceptDatatype = Datatype(
   'CodeableConcept',
   CodeableConcept

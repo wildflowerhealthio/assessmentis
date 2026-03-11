@@ -7,6 +7,15 @@ import type {
 
 import { Reference } from './complex/IdentifierAndReference'
 
+/**
+ * Creates a {@link Reference} pointing to a resource, or `undefined` if the
+ * resource has no URL.
+ *
+ * @param resource - Any object with an optional `url` and a `domainType`
+ * @param display - Optional display text for the reference
+ *
+ * @deprecated Prefer {@link Reference.fromResource} which also sets `type`.
+ */
 export const referenceFromResource = (
   resource: { url?: string | undefined; domainType: string },
   display: string | undefined = undefined
@@ -41,6 +50,18 @@ export function extractReferenceIds(
   )
 }
 
+/**
+ * Extends a resource schema so that `url` is required instead of optional.
+ *
+ * @typeParam A - Decoded type (must have an optional `url`)
+ * @typeParam I - Encoded type
+ * @typeParam R - Schema context
+ * @typeParam AUrl - Decoded URL brand
+ * @typeParam IUrl - Encoded URL brand
+ * @param schema - The base resource schema
+ * @param urlSchema - Schema for the branded URL type
+ * @returns A new schema where `url` is mandatory
+ */
 export const SchemaWithMandatoryUrl = <
   A extends { url?: AUrl | undefined },
   I extends { url?: IUrl | undefined },
