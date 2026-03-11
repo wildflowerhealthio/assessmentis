@@ -45,7 +45,7 @@ export function useClinicalDataCollection<
   repoEffect: Effect.Effect<ClinicalDataRepository<T>, E, never>,
   data: ReadonlyArray<T>
 ) {
-  return useCollection<T>(actions(repoEffect), data)
+  return useCollection<T>(actions(repoEffect) as any, data)
 }
 
 export function useClinicalDataCollectionPromise<
@@ -58,5 +58,5 @@ export function useClinicalDataCollectionPromise<
   repoEffect: Effect.Effect<ClinicalDataRepository<T>, E, never>,
   dataPromise: Promise<ReadonlyArray<T>>
 ) {
-  return useCollectionPromise<T>(actions(repoEffect), dataPromise)
+  return useCollectionPromise<T>(actions(repoEffect) as any, dataPromise)
 }

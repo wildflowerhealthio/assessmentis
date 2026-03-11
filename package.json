@@ -9,7 +9,7 @@
     "build": "npm exec turbo run build",
     "dev": "npm exec turbo run dev",
     "lint": "npm run lint:projects && npm run lint:docs",
-    "lint:projects": "turbo run lint",
+    "lint:projects": "turbo run lint --continue=always",
     "lint:docs": "markdownlint-cli2 -- --config .local.markdownlint-cli2.mjs",
     "lint:fix": "turbo run lint:fix",
     "typecheck": "turbo run typecheck",

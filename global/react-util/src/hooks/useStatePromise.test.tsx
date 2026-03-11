@@ -1,7 +1,9 @@
-import { describe, it, expect } from 'vitest'
-import { renderHook, act } from '@testing-library/react'
-import { JSDOM } from 'jsdom'
 import * as fc from 'fast-check'
+import { describe, expect, it } from 'vitest'
+
+import { act, renderHook } from '@testing-library/react'
+import { JSDOM } from 'jsdom'
+
 import { useStatePromise } from './effectHooks'
 
 // Ensure DOM globals are available when tests run outside jsdom-configured env
@@ -279,7 +281,7 @@ describe('useStatePromise', () => {
         const { result } = renderHook(() => useStatePromise<number>())
 
         // Accumulate maps while pending - these are stored in mappingRef
-        // but note: the current implementation does NOT apply mappingRef on resolve
+        // and applied atomically when resolve is called
         act(() => {
           result.current[1].map((x) => x + 1)
           result.current[1].map((x) => x * 2)
@@ -289,9 +291,8 @@ describe('useStatePromise', () => {
           result.current[1].resolve(5)
         })
 
-        // Current implementation resolves with the raw value
-        // (mappingRef is accumulated but not applied on resolve)
-        await expect(result.current[0]).resolves.toBe(5)
+        // Queued maps are applied at resolve time: (5 + 1) * 2 = 12
+        await expect(result.current[0]).resolves.toBe(12)
       })
 
       it('should allow map after resolve to transform value', async () => {

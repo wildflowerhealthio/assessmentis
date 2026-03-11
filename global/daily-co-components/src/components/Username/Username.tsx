@@ -1,4 +1,5 @@
 import './Username.css'
+
 import { useParticipantProperty } from '@daily-co/daily-react'
 
 /**

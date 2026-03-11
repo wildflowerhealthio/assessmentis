@@ -56,4 +56,12 @@ export namespace SideEffect {
     value,
     actions,
   })
+
+  /**
+   * Extracts the accumulated actions from a `SideEffect`, discarding the
+   * value.
+   */
+  export const justActions = <A>(
+    effect: SideEffect<A>
+  ): ReadonlyArray<EffectAction> => effect.actions
 }

@@ -1,6 +1,8 @@
-import { DailyVideo } from '@daily-co/daily-react'
-import Username from '../Username/Username'
 import type { CSSProperties } from 'react'
+
+import { DailyVideo } from '@daily-co/daily-react'
+
+import Username from '../Username/Username'
 
 /**
  * Renders a single participant's video feed. Video is provided by
