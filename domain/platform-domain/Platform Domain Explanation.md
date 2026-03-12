@@ -1,7 +1,4 @@
----
-title: Platform Services Explanation
-category: Explanations
----
+# Platform Services Explanation
 
 How authentication, authorization, and organization context work in `platform-domain`. For the broader architecture, see [Architecture Explanation](../../docs/Architecture/Explanation.md).
 

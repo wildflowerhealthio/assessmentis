@@ -1,27 +1,34 @@
-import type { Scope } from 'effect'
 import {
+  Context,
+  Data,
   Effect,
+  Either,
+  Fiber,
   Option,
+  PubSub,
+  Queue,
+  Schema,
   Stream,
   Take,
-  PubSub,
-  Schema,
-  Fiber,
-  Data,
-  Context,
-  Queue,
-  Either,
+  type Scope,
 } from 'effect'
-import type { OrgSlug } from '@assessmentis/platform-domain'
-import { DocumentStore, Org } from '@assessmentis/platform-domain'
-import type { UnhandledError } from '@assessmentis/ontology'
-import { BadDataError, NotFoundError } from '@assessmentis/ontology'
+
+import {
+  BadDataError,
+  NotFoundError,
+  type UnhandledError,
+} from '@assessmentis/ontology'
+import { DocumentStore, Org, type OrgSlug } from '@assessmentis/platform-domain'
 import {
   pubsubAsPerpetualStream,
   StreamEither,
   takeOneFromPubSubOrDie,
 } from '@assessmentis/util'
 
+/**
+ * Creates a sliding `PubSub` (capacity 1, replay 1) for broadcasting the
+ * currently selected {@link OrgSlug}.
+ */
 export const createOrgSlugPubSub = PubSub.sliding<
   Take.Take<Either.Either<OrgSlug, NoSelectedOrgError>>
 >({
@@ -29,6 +36,10 @@ export const createOrgSlugPubSub = PubSub.sliding<
   replay: 1,
 })
 
+/**
+ * Creates a sliding `PubSub` (capacity 1, replay 1) for broadcasting the
+ * resolved {@link Org} corresponding to the selected slug.
+ */
 export const createOrgPubSub = PubSub.sliding<
   Take.Take<
     Either.Either<
@@ -44,6 +55,7 @@ export const createOrgPubSub = PubSub.sliding<
   replay: 1,
 })
 
+/** Raised when no organization has been selected yet. */
 export class NoSelectedOrgError extends Data.TaggedError(
   'NoSelectedOrgError'
 )<object> {
@@ -55,18 +67,31 @@ export class NoSelectedOrgError extends Data.TaggedError(
   }
 }
 
+/**
+ * Client-side reactive service for organization selection and resolution.
+ *
+ * @remarks
+ * Manages the currently selected {@link OrgSlug} and resolves it into a
+ * full {@link Org} via {@link DocumentStore}. Both the slug and the resolved
+ * org are available as one-shot effects or continuous streams. Initialized
+ * by `PlatformContextProvider`.
+ */
 export class OrgService extends Context.Tag('OrgService')<
   OrgService,
   {
+    /** Set (or clear) the active organization. `None` deselects. */
     setActiveOrgSlug: (
       maybeOrgSlug: Option.Option<OrgSlug>
     ) => Effect.Effect<void, never, never>
+    /** One-shot read of the current org slug. */
     orgSlug: Effect.Effect<OrgSlug, NoSelectedOrgError, Scope.Scope>
+    /** Stream of org slug changes (or {@link NoSelectedOrgError} when none is selected). */
     orgSlugStream: Stream.Stream<
       Either.Either<OrgSlug, NoSelectedOrgError>,
       never,
       Scope.Scope
     >
+    /** Stream of resolved {@link Org} updates, switching on slug changes. */
     activeOrgStream: Stream.Stream<
       Either.Either<
         Org,
@@ -78,6 +103,7 @@ export class OrgService extends Context.Tag('OrgService')<
       never,
       Scope.Scope
     >
+    /** One-shot read of the currently resolved org. */
     activeOrg: Effect.Effect<
       Org,
       | NoSelectedOrgError
@@ -85,6 +111,7 @@ export class OrgService extends Context.Tag('OrgService')<
       | BadDataError
       | UnhandledError
     >
+    /** Shuts down both PubSubs and joins the daemon fiber. */
     shutdown: Effect.Effect<void, never, never>
   }
 >() {}
@@ -100,6 +127,13 @@ const decodeOrg = (data: unknown) =>
     )
   )
 
+/**
+ * Boots the {@link OrgService} by wiring the slug and org PubSubs to
+ * a {@link DocumentStore} watch. Returns the fully wired service value.
+ *
+ * @param orgSlugPubSub - PubSub carrying the selected slug (or no-selection error)
+ * @param orgPubSub - PubSub carrying the resolved org (or lookup errors)
+ */
 export const startOrgService = (
   orgSlugPubSub: PubSub.PubSub<
     Take.Take<Either.Either<OrgSlug, NoSelectedOrgError>>
@@ -127,11 +161,6 @@ export const startOrgService = (
     const orgPubSubFiber = yield* Effect.forkDaemon(
       Stream.runIntoPubSub(
         pubsubAsPerpetualStream(orgSlugPubSub).pipe(
-          Stream.tap((slug) =>
-            Effect.sync(() => {
-              console.log('Org slug:', slug)
-            })
-          ),
           StreamEither.flatMap(
             (orgSlug) =>
               documentStore.subscribeTo('orgs', orgSlug).pipe(
@@ -171,10 +200,6 @@ export const startOrgService = (
           .pipe(
             Effect.flatMap((_) => {
               return orgSlugPubSub.subscribe.pipe(Effect.flatMap(Queue.takeAll))
-            }),
-            Effect.flatMap((chunk) => {
-              console.log('Set active org slug to chunk:', chunk)
-              return Effect.void
             }),
             Effect.scoped
           )

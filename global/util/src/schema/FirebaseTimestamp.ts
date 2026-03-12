@@ -29,7 +29,7 @@ export const DateTimeUtcFromFirebaseTimestamp = Schema.transform(
     encode: (dt) => {
       const epochMillis = DateTime.toEpochMillis(dt)
       const seconds = Math.floor(epochMillis / 1000)
-      const nanoseconds = Number((epochMillis % 1000) * 1_000_000)
+      const nanoseconds = Number((epochMillis - 1000 * seconds) * 1_000_000)
       return { seconds, nanoseconds }
     },
   }

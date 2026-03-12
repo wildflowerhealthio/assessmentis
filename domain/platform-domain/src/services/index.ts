@@ -1,4 +1,4 @@
-export * from './OrgSecrets'
+export * from './HubStateUpdater'
 export * from './LoadedOrg'
 export * from './LoadedUser'
 export * from './OrgAdminService'

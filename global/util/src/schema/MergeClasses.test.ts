@@ -1,6 +1,6 @@
 import * as fc from 'fast-check'
 import { describe, expect, expectTypeOf, it } from 'vitest'
-import { Arbitrary, Schema } from 'effect'
+import { Arbitrary, FastCheck, Schema } from 'effect'
 
 import { mergeArbitraries } from './mergeArbitraries'
 import { MergeClasses } from './MergeClasses'
@@ -212,7 +212,7 @@ describe('MergeClasses', () => {
   })
 
   describe('annotations', () => {
-    const choiceArbitrary = () => (fc: typeof import('fast-check')) =>
+    const choiceArbitrary = (fc: typeof FastCheck) =>
       fc.oneof(
         fc.string().map((s: string) => ({ valueA: s })),
         fc.double().map((n: number) => ({ valueB: n }))
@@ -230,7 +230,12 @@ describe('MergeClasses', () => {
     )(
       [
         {
-          arbitrary: () => mergeArbitraries(choiceArbitrary, extraFields),
+          arbitrary: () =>
+            mergeArbitraries(
+              (props) => MergedWithArbitrary.make(props as any),
+              choiceArbitrary,
+              extraFields
+            ),
         },
       ],
       choiceFields,

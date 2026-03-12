@@ -1,4 +1,5 @@
 import { Effect, ParseResult, Schema } from 'effect'
+import { SafeRecordKey } from '@assessmentis/util'
 
 /**
  * Immutable, Schema-aware URL representation. Decomposes a URL into its
@@ -197,7 +198,7 @@ export class ReadonlyUrl extends Schema.Class<ReadonlyUrl>('ReadonlyUrl')({
  * Branded string representing a percent-encoded URL, suitable for use as a
  * HashMap key or URL path segment.
  */
-export const UriEncodedOriginUrl = Schema.String.pipe(
+export const UriEncodedOriginUrl = SafeRecordKey.pipe(
   Schema.brand('UriEncodedOriginUrl')
 ).annotations({
   arbitrary: () => (fc) =>
