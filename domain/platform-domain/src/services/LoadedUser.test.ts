@@ -1,17 +1,19 @@
-import { describe, it, expect, vi } from 'vitest'
-import { Effect, Layer, Exit, Cause } from 'effect'
-import {
-  LoadedUser,
-  LiteralLoadedUserLayer,
-  LoadedUserLayer,
-} from './LoadedUser'
-import { CurrentUserId, DocumentStore } from '../tagClasses'
+import { describe, expect, it, vi } from 'vitest'
+import { Cause, Effect, Exit, Layer } from 'effect'
+
+import { UnhandledError } from '@assessmentis/ontology'
+
 import { UserId } from '../models/UserId'
-import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
+import { CurrentUserId, DocumentStore } from '../tagClasses'
 import {
   mockDocumentStore,
   mockDocumentStoreImplementations,
 } from './__tests__/mocks'
+import {
+  LiteralLoadedUserLayer,
+  LoadedUser,
+  LoadedUserLayer,
+} from './LoadedUser'
 
 describe('LoadedUser', () => {
   const testUserId = UserId.make('user-123')
@@ -37,7 +39,7 @@ describe('LoadedUser', () => {
       }
     })
 
-    it('fails with NotFoundError for undefined data', async () => {
+    it('fails with UnhandledError for undefined data', async () => {
       const program = Effect.gen(function* () {
         const user = yield* LoadedUser
         return user
@@ -47,8 +49,8 @@ describe('LoadedUser', () => {
       expect(Exit.isFailure(result)).toBe(true)
       if (Exit.isFailure(result)) {
         const error = Cause.squash(result.cause) as any
-        expect(error._tag).toBe('NotFoundError')
-        expect(error).toBeInstanceOf(NotFoundError)
+        expect(error._tag).toBe('UnhandledError')
+        expect(error).toBeInstanceOf(UnhandledError)
       }
     })
 

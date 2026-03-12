@@ -1,14 +1,16 @@
-import { describe, it, expect, vi } from 'vitest'
-import { Effect, Layer, Exit, Cause } from 'effect'
-import { OrgUserService, OrgUserServiceLayer } from './OrgUserService'
-import { CurrentOrg, CurrentUserId, DocumentStore } from '../tagClasses'
+import { describe, expect, it, vi } from 'vitest'
+import { Cause, Effect, Exit, Layer } from 'effect'
+
+import { AuthzError, UnhandledError } from '@assessmentis/ontology'
+
 import { OrgSlug } from '../models/IdTypes'
 import { UserId } from '../models/UserId'
-import { UnhandledError, AuthzError } from '@assessmentis/ontology'
+import { CurrentOrg, CurrentUserId, DocumentStore } from '../tagClasses'
 import {
   mockDocumentStore,
   mockDocumentStoreImplementations,
 } from './__tests__/mocks'
+import { OrgUserService, OrgUserServiceLayer } from './OrgUserService'
 
 describe('OrgUserService', () => {
   const testOrgSlug = OrgSlug.make('test-org')

@@ -1,11 +1,12 @@
-import type { UserId } from '@assessmentis/platform-domain'
+import { Context, Effect, Either, Layer, Schema } from 'effect'
+
+import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
 import {
   CurrentUserId,
   DocumentStore,
   User,
+  type UserId,
 } from '@assessmentis/platform-domain'
-import { Context, Effect, Either, Layer, Schema } from 'effect'
-import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
 
 export class LoadedUser extends Context.Tag('LoadedUser')<LoadedUser, User>() {}
 

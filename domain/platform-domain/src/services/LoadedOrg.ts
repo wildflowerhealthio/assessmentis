@@ -1,7 +1,12 @@
 import { Context, Effect, Either, Layer, Schema } from 'effect'
-import type { OrgSlug } from '@assessmentis/platform-domain'
-import { CurrentOrg, DocumentStore, Org } from '@assessmentis/platform-domain'
+
 import { BadDataError, NotFoundError } from '@assessmentis/ontology'
+import {
+  CurrentOrg,
+  DocumentStore,
+  Org,
+  type OrgSlug,
+} from '@assessmentis/platform-domain'
 
 export class LoadedOrg extends Context.Tag('LoadedOrg')<LoadedOrg, Org>() {}
 

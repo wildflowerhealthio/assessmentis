@@ -1,12 +1,14 @@
 import { Context, Effect, Layer } from 'effect'
-import type { AuthError } from '@assessmentis/ontology'
+
 import {
   AuthzError,
   NotFoundError,
   UnhandledError,
+  type AuthError,
 } from '@assessmentis/ontology'
-import { CurrentUserId } from '../tagClasses/CurrentUserId'
+
 import { CurrentOrg } from '../tagClasses'
+import { CurrentUserId } from '../tagClasses/CurrentUserId'
 import { DocumentStore } from '../tagClasses/DocumentStore'
 
 export class OrgUserService extends Context.Tag('OrgUserService')<
@@ -54,7 +56,7 @@ export const OrgUserServiceLayer = Layer.effect(
           )
         }
         if (!data.roles.some((role: string) => allowedRoles.includes(role))) {
-          yield* Effect.fail(
+          return yield* Effect.fail(
             new AuthzError({ message: 'Not authorized org user' })
           )
         }

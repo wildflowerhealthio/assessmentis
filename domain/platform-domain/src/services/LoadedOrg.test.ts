@@ -1,14 +1,16 @@
-import { describe, it, expect, vi } from 'vitest'
-import { Effect, Layer, Exit, Cause } from 'effect'
-import { LoadedOrg, LiteralLoadedOrgLayer, LoadedOrgLayer } from './LoadedOrg'
-import { CurrentOrg, DocumentStore } from '../tagClasses'
+import { describe, expect, it, vi } from 'vitest'
+import { Cause, Effect, Exit, Layer } from 'effect'
+
+import { BadDataError, NotFoundError } from '@assessmentis/ontology'
+
 import { OrgSlug } from '../models/IdTypes'
-import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
+import { CurrentOrg, DocumentStore } from '../tagClasses'
 import {
+  defaultOrg,
   mockDocumentStore,
   mockDocumentStoreImplementations,
-  defaultOrg,
 } from './__tests__/mocks'
+import { LiteralLoadedOrgLayer, LoadedOrg, LoadedOrgLayer } from './LoadedOrg'
 
 describe('LoadedOrg', () => {
   const testOrgSlug = OrgSlug.make('test-org')
@@ -17,14 +19,7 @@ describe('LoadedOrg', () => {
     it('successfully decodes valid org data', async () => {
       const validOrgData = {
         slug: 'test-org',
-        frontendConfig: {
-          fhirServer: {
-            _tag: 'not_implemented' as const,
-          },
-          videoCallClient: {
-            _tag: 'not_implemented' as const,
-          },
-        },
+        emoji: '🏥',
       }
 
       const program = Effect.gen(function* () {
@@ -57,9 +52,6 @@ describe('LoadedOrg', () => {
     it('fails with UnhandledError for invalid schema', async () => {
       const invalidOrgData = {
         slug: 123, // Invalid: should be string
-        frontendConfig: {
-          logoUrl: 'https://example.com/logo.png',
-        },
       }
 
       const program = Effect.gen(function* () {
@@ -73,8 +65,8 @@ describe('LoadedOrg', () => {
       expect(Exit.isFailure(result)).toBe(true)
       if (Exit.isFailure(result)) {
         const error = Cause.squash(result.cause) as any
-        expect(error._tag).toBe('UnhandledError')
-        expect(error).toBeInstanceOf(UnhandledError)
+        expect(error._tag).toBe('BadDataError')
+        expect(error).toBeInstanceOf(BadDataError)
       }
     })
   })

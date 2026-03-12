@@ -1,5 +1,5 @@
-import type { Effect, Either, Stream } from 'effect'
-import { Context } from 'effect'
+import { Context, type Effect, type Either, type Stream } from 'effect'
+
 import type { NotFoundError, UnhandledError } from '@assessmentis/ontology'
 
 export interface DocumentData {
@@ -16,7 +16,7 @@ export class DocumentStore extends Context.Tag('DocumentStore')<
   DocumentStore,
   {
     get(
-      ...path: DocumentPath
+      ...path: DocumentPath | readonly [DocumentPath]
     ): Effect.Effect<
       DocumentData,
       | NotFoundError<'Document', { path: ReadonlyArray<string> }>
@@ -25,7 +25,7 @@ export class DocumentStore extends Context.Tag('DocumentStore')<
     >
 
     subscribeTo(
-      ...path: DocumentPath
+      ...path: DocumentPath | readonly [DocumentPath]
     ): Stream.Stream<
       Either.Either<
         DocumentData,
@@ -42,7 +42,7 @@ export class DocumentStore extends Context.Tag('DocumentStore')<
      */
     set(
       data: DocumentData,
-      ...path: DocumentPath
+      ...path: DocumentPath | readonly [DocumentPath]
     ): Effect.Effect<void, UnhandledError, never>
 
     /**
