@@ -1,15 +1,28 @@
-import type { Either, PubSub, Take } from 'effect'
-import { Effect, Fiber, Option, Stream } from 'effect'
-import { UserId } from '@assessmentis/platform-domain'
-import { AuthError } from '@assessmentis/ontology'
-import { onIdTokenChanged } from 'firebase/auth'
-import { FirebaseWeb } from '../tagClasses'
 import {
-  unsubscribableCallbackAsStream,
-  takeOneFromPubSubOrDie,
+  Effect,
+  Fiber,
+  Option,
+  Stream,
+  type Either,
+  type PubSub,
+  type Take,
+} from 'effect'
+
+import { AuthError } from '@assessmentis/ontology'
+import {
+  UserId,
+  type AuthData,
+  type AuthDataService,
+} from '@assessmentis/platform-domain'
+import {
   pubsubAsPerpetualStream,
+  takeOneFromPubSubOrDie,
+  unsubscribableCallbackAsStream,
 } from '@assessmentis/util'
-import type { AuthData, AuthDataService } from '@assessmentis/platform-domain'
+
+import { onIdTokenChanged } from 'firebase/auth'
+
+import { FirebaseWeb } from '../tagClasses'
 
 const AuthDataStream = Effect.gen(function* () {
   const { auth } = yield* FirebaseWeb

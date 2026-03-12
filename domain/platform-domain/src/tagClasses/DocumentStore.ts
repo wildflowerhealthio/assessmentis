@@ -20,20 +20,33 @@ export type DocumentPath = ReadonlyArray<string> & {
 }
 
 /**
+ * Whether to throw on invalid document data. Defaults to false.
+ * Set to true in development to surface data integrity issues early.
+ */
+let _strictValidation = false
+
+/**
+ * Enable strict validation mode for {@link ensureIsDocumentData}.
+ * Call this once at app startup in development environments.
+ */
+export function setStrictDocumentValidation(enabled: boolean): void {
+  _strictValidation = enabled
+}
+
+/**
  * Validates and coerces an unknown value into {@link DocumentData}.
  *
- * In development (`NODE_ENV !== 'production'`), throws descriptive errors
- * if the value is not a valid document data object (i.e. a non-null,
- * non-array plain object).
+ * In strict mode (see {@link setStrictDocumentValidation}), throws
+ * descriptive errors if the value is not a valid document data object
+ * (i.e. a non-null, non-array plain object).
  *
- * In production, silently strips non-record values by returning an empty
- * object.
+ * Otherwise, silently strips non-record values by returning an empty object.
  *
- * @throws {@link TypeError} In development, if `x` is not a plain object.
+ * @throws {@link TypeError} In strict mode, if `x` is not a plain object.
  */
 export function ensureIsDocumentData(x: unknown): DocumentData {
   if (typeof x !== 'object' || x === null || Array.isArray(x)) {
-    if (process.env['NODE_ENV'] == 'development') {
+    if (_strictValidation) {
       throw new TypeError(
         `Expected DocumentData (a plain object), but received ${
           x === null ? 'null' : Array.isArray(x) ? 'an array' : typeof x

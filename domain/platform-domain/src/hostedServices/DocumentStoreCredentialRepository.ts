@@ -4,7 +4,7 @@ import {
   Effect,
   Either,
   Fiber,
-  MutableHashMap,
+  HashMap,
   Option,
   pipe,
   Readable,
@@ -130,7 +130,7 @@ export abstract class DocumentStoreLiveCredential<
    * Build a write effect for a credential at the given path.
    * Subclasses delegate their static `store` to this.
    */
-  protected static _store<T, TEncoded>(
+  protected static _store<T, TEncoded extends Record<string, unknown>>(
     schema: Schema.Schema<T, TEncoded>,
     path: DocumentPath,
     token: T
@@ -144,9 +144,7 @@ export abstract class DocumentStoreLiveCredential<
           })
       ),
       Effect.flatMap((encoded) =>
-        Effect.flatMap(DocumentStore, (ds) =>
-          ds.set(encoded as Record<string, unknown>, path)
-        )
+        Effect.flatMap(DocumentStore, (ds) => ds.set(encoded, path))
       )
     )
   }
@@ -216,12 +214,120 @@ export const makeDocumentStoreCredentialRepository = <
 ) =>
   Effect.gen(function* () {
     const documentStore = yield* DocumentStore
-    // Per-tag caches keep credential types precise — no union needed at lookup.
-    // Uses MutableHashMap for hash-stable identity comparison via Equal/Hash.
-    const cache = MutableHashMap.empty<
-      TIdentifier,
-      DocumentStoreLiveCredential<Tag, TCredentialToken, TTokenContext>
-    >()
+    // SynchronizedRef prevents concurrent get() calls from creating duplicate
+    // credentials for the same identity. The update is atomic — only the first
+    // caller creates the credential; subsequent callers see the cached entry.
+    const cache = yield* SynchronizedRef.make(
+      HashMap.empty<
+        TIdentifier,
+        DocumentStoreLiveCredential<Tag, TCredentialToken, TTokenContext>
+      >()
+    )
+
+    const createCredential = (
+      identity: TIdentifier
+    ): Effect.Effect<
+      DocumentStoreLiveCredential<Tag, TCredentialToken, TTokenContext>,
+      never,
+      Scope.Scope | TTokenContext
+    > =>
+      Effect.gen(function* () {
+        const stateRef = yield* SubscriptionRef.make<
+          Either.Either<TCredentialToken, CredentialError>
+        >(
+          Either.left(
+            new Loading({
+              entity: { toString: () => String(identity) },
+            })
+          )
+        )
+
+        const credential: DocumentStoreLiveCredential<
+          Tag,
+          TCredentialToken,
+          TTokenContext
+        > = new CredentialClass(identity, stateRef)
+
+        // Start Firestore watch, feeding decoded values into the SubscriptionRef
+        const watchStream = documentStore.subscribeTo(credential.path).pipe(
+          StreamEither.mapEffect((data) =>
+            Schema.decodeUnknown(CredentialClass.schema)(data).pipe(
+              Effect.mapError(
+                (cause) =>
+                  new BadDataError({
+                    message: `Error decoding credential at ${credential.path.join('/')}`,
+                    cause,
+                  })
+              )
+            )
+          )
+        )
+
+        // Schedule proactive token refresh before expiry
+        const nextRefreshFiber = yield* SynchronizedRef.make<
+          Option.Option<Fiber.Fiber<void, TokenStreamError>>
+        >(Option.none())
+
+        const scheduleRefresh = (
+          token: TCredentialToken
+        ): Effect.Effect<
+          Fiber.Fiber<void, TokenStreamError>,
+          never,
+          Scope.Scope | TTokenContext
+        > => {
+          const { expiresAt } = token
+          if (!expiresAt) return Effect.succeed(Fiber.void)
+
+          const refreshInDuration = Effect.map(DateTime.now, (now) =>
+            Duration.subtract(
+              DateTime.distanceDuration(expiresAt, now),
+              CredentialClass.refreshBuffer
+            )
+          )
+
+          const safeRefresh = credential.refresh.pipe(
+            Effect.tapError((e) =>
+              Effect.logError('Credential refresh failed:', e)
+            )
+          )
+
+          return Effect.fork(
+            pipe(
+              refreshInDuration,
+              Effect.map(Duration.max(Duration.zero)),
+              Effect.flatMap((d) => Effect.delay(d)(safeRefresh)),
+              Effect.asVoid
+            )
+          )
+        }
+
+        const watchWithRefresh = watchStream.pipe(
+          StreamEither.tapRight((token) =>
+            SynchronizedRef.updateEffect(
+              nextRefreshFiber,
+              Option.match({
+                onNone() {
+                  return scheduleRefresh(token).pipe(Effect.map(Option.some))
+                },
+                onSome(a) {
+                  return pipe(
+                    Fiber.interrupt(a),
+                    Effect.flatMap(() => scheduleRefresh(token)),
+                    Effect.map(Option.some)
+                  )
+                },
+              })
+            )
+          )
+        )
+
+        // Fork fiber that drains the watch stream into the SubscriptionRef
+        yield* Stream.runForEach(watchWithRefresh, (value) =>
+          SubscriptionRef.set(stateRef, value)
+        ).pipe(Effect.forkScoped)
+
+        return credential
+      })
 
     const repository: CredentialRepository<
       Tag,
@@ -236,109 +342,21 @@ export const makeDocumentStoreCredentialRepository = <
         never,
         Scope.Scope | TTokenContext
       > {
-        const cached = MutableHashMap.get(cache, identity)
-        if (Option.isSome(cached)) {
-          return Effect.succeed(cached.value)
-        }
-
-        return Effect.gen(function* () {
-          const stateRef = yield* SubscriptionRef.make<
-            Either.Either<TCredentialToken, CredentialError>
-          >(
-            Either.left(
-              new Loading({
-                entity: { toString: () => String(identity) },
-              })
-            )
-          )
-
-          const credential: DocumentStoreLiveCredential<
-            Tag,
-            TCredentialToken,
-            TTokenContext
-          > = new CredentialClass(identity, stateRef)
-
-          // Start Firestore watch, feeding decoded values into the SubscriptionRef
-          const watchStream = documentStore.subscribeTo(credential.path).pipe(
-            StreamEither.mapEffect((data) =>
-              Schema.decodeUnknown(CredentialClass.schema)(data).pipe(
-                Effect.mapError(
-                  (cause) =>
-                    new BadDataError({
-                      message: `Error decoding credential at ${credential.path.join('/')}`,
-                      cause,
-                    })
-                )
-              )
-            )
-          )
-
-          // Schedule proactive token refresh before expiry
-          const nextRefreshFiber = yield* SynchronizedRef.make<
-            Option.Option<Fiber.Fiber<void, TokenStreamError>>
-          >(Option.none())
-
-          const scheduleRefresh = (
-            token: TCredentialToken
-          ): Effect.Effect<
-            Fiber.Fiber<void, TokenStreamError>,
-            never,
-            Scope.Scope | TTokenContext
-          > => {
-            const { expiresAt } = token
-            if (!expiresAt) return Effect.succeed(Fiber.void)
-
-            const refreshInDuration = Effect.map(DateTime.now, (now) =>
-              Duration.subtract(
-                DateTime.distanceDuration(expiresAt, now),
-                CredentialClass.refreshBuffer
-              )
-            )
-
-            const safeRefresh = credential.refresh.pipe(
-              Effect.tapError((e) =>
-                Effect.logError('Credential refresh failed:', e)
-              )
-            )
-
-            return Effect.fork(
-              pipe(
-                refreshInDuration,
-                Effect.map(Duration.max(Duration.zero)),
-                Effect.flatMap((d) => Effect.delay(d)(safeRefresh)),
-                Effect.asVoid
-              )
-            )
+        return SynchronizedRef.modifyEffect(cache, (currentCache) => {
+          const existing = HashMap.get(currentCache, identity)
+          if (Option.isSome(existing)) {
+            return Effect.succeed([existing.value, currentCache] as const)
           }
 
-          const watchWithRefresh = watchStream.pipe(
-            StreamEither.tapRight((token) =>
-              SynchronizedRef.updateEffect(
-                nextRefreshFiber,
-                Option.match({
-                  onNone() {
-                    return scheduleRefresh(token).pipe(Effect.map(Option.some))
-                  },
-                  onSome(a) {
-                    return pipe(
-                      Fiber.interrupt(a),
-                      Effect.flatMap(() => scheduleRefresh(token)),
-                      Effect.map(Option.some)
-                    )
-                  },
-                })
-              )
+          return createCredential(identity).pipe(
+            Effect.map(
+              (credential) =>
+                [
+                  credential,
+                  HashMap.set(currentCache, identity, credential),
+                ] as const
             )
           )
-
-          // Fork fiber that drains the watch stream into the SubscriptionRef
-          yield* Stream.runForEach(watchWithRefresh, (value) =>
-            SubscriptionRef.set(stateRef, value)
-          ).pipe(Effect.forkScoped)
-
-          MutableHashMap.set(cache, identity, credential)
-
-          return credential
         })
       },
     }

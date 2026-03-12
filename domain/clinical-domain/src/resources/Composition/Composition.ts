@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import { MergeClasses } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary, MergeClasses } from '@assessmentis/util'
 
 import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
 import { Code } from '../../data-types/complex/Code'
@@ -33,11 +33,27 @@ const fields = {
   author: Schema.Array(Schema.suspend(() => Reference)),
   title: Schema.String,
   confidentiality: Schema.optional(Code),
-  attester: Schema.optional(Schema.Array(CompositionAttesterSchema)),
+  attester: Schema.optional(
+    Schema.Array(CompositionAttesterSchema).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   custodian: Schema.optional(Schema.suspend(() => Reference)),
-  relatesTo: Schema.optional(Schema.Array(CompositionRelatesToSchema)),
-  event: Schema.optional(Schema.Array(CompositionEventSchema)),
-  section: Schema.optional(Schema.Array(CompositionSection)),
+  relatesTo: Schema.optional(
+    Schema.Array(CompositionRelatesToSchema).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
+  event: Schema.optional(
+    Schema.Array(CompositionEventSchema).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
+  section: Schema.optional(
+    Schema.Array(CompositionSection).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
 } as const satisfies Schema.Struct.Fields
 
 const resourceMixin = Resource(DomainType)

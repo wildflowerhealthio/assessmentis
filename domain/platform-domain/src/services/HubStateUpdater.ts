@@ -3,6 +3,7 @@ import { Either, Stream, type Scope } from 'effect'
 import {
   hubStateStream as genericHubStateStream,
   type Hub,
+  type OriginFactory,
   type OriginSourceSnapshot,
   type Resource,
 } from '@assessmentis/effectful-store'
@@ -15,7 +16,6 @@ import {
 
 import type { OrgSlug } from '../models/IdTypes'
 import type { Org } from '../models/Org'
-import type { OriginFactory } from '../models/OriginFactory'
 import type { UserOrg } from '../models/UserOrg'
 
 /**

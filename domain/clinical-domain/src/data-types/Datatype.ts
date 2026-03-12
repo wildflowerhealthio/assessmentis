@@ -3,6 +3,8 @@ import { Arbitrary, Effect, Schema } from 'effect'
 
 import FhirR4ChoiceElements from './fhirR4ChoiceElements'
 
+export { default as FhirR4ChoiceElements } from './fhirR4ChoiceElements'
+
 /**
  * A named FHIR data type paired with its Effect Schema. Used to build
  * choice-element (value\[x\]) unions via {@link DatatypeChoice}.

@@ -49,6 +49,14 @@ export type WithResourceUrl<
   readonly url: NonNullable<T['url']>
 }
 
+/**
+ * Type guard that narrows a resource to {@link WithResourceUrl}.
+ * Returns true when the resource has a non-undefined `url`.
+ */
+export const hasResourceUrl = <T extends AnyResource>(
+  value: T
+): value is WithResourceUrl<T> => value.url !== undefined
+
 /** Extracts the non-nullable URL type from a {@link Resource}. */
 export type InferResourceUrl<T extends Resource<string>> = NonNullable<T['url']>
 
