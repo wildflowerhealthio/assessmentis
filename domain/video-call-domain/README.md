@@ -83,5 +83,4 @@ Effect.gen(function* () {
 - `@assessmentis/clinical-domain`: Clinical domain models (Encounter, Media)
 - `@assessmentis/ontology`: Domain errors
 - `@assessmentis/daily-co-infrastructure`: Daily.co implementation
-- `@assessmentis/google-meet-infrastructure`: Google Meet implementation
 - `@assessmentis/platform-domain`: Platform services that use video calls

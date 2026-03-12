@@ -1,7 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { Effect, Exit, Cause, Stream } from 'effect'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { Cause, Effect, Exit, Stream } from 'effect'
+
 import { DocumentStore } from '@assessmentis/platform-domain'
+
 import { createMockFirestore } from '../services/__tests__/mocks'
+import { FirebaseAdmin } from '../services/FirebaseAdmin'
+import { FirebaseAdminDocumentStoreLayer } from './FirebaseAdminDocumentStoreLayer'
 
 // Mock firebase-admin modules before imports
 const mockFirestore = createMockFirestore()
@@ -18,9 +22,6 @@ vi.mock('firebase-admin/auth', () => ({
 vi.mock('firebase-admin/firestore', () => ({
   getFirestore: vi.fn(() => mockFirestore),
 }))
-
-import { FirebaseAdminDocumentStoreLayer } from './FirebaseAdminDocumentStoreLayer'
-import { FirebaseAdmin } from '../services/FirebaseAdmin'
 
 describe('FirebaseAdminDocumentStoreLayer', () => {
   beforeEach(() => {

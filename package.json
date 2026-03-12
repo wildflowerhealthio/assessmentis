@@ -44,7 +44,6 @@
     "infrastructure/google-fhir-web-infrastructure",
     "infrastructure/google-fhir-node-infrastructure",
     "infrastructure/daily-co-infrastructure",
-    "infrastructure/google-meet-infrastructure",
     "infrastructure/document-template-instances",
     "apps/functions",
     "apps/frontend",
