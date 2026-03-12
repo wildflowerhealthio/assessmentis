@@ -11,31 +11,20 @@ import { User } from '../models/User'
 import type { UserId } from '../models/UserId'
 import { CurrentOrg, DocumentStore } from '../tagClasses'
 
-// OAuth token schema
-export const OAuthTokens = Schema.Struct({
-  accessToken: Schema.String,
-  refreshToken: Schema.String,
-  expiresAt: Schema.optional(Schema.Date),
-  scope: Schema.optional(Schema.String),
-  tokenType: Schema.optional(Schema.String),
-})
-export type OAuthTokens = typeof OAuthTokens.Type
-
 /**
- * Server-side platform service - per-org instances
+ * Server-side admin service scoped to a single organization.
  *
- * Unlike UserPlatformService (client-side with reactive streams),
- * ServerPlatformService uses Effect operations for request/response patterns.
+ * @remarks
+ * Unlike the client-side reactive services, this uses one-shot Effect
+ * operations for request/response patterns. Each instance is bound to the
+ * org provided by {@link CurrentOrg}.
  *
- * Each instance is bound to a specific org (orgSlug baked in).
- * Create via ServerPlatformServiceLayer(orgSlug) factory.
+ * @see {@link OrgAdminServiceLayer} for the standard DocumentStore-backed provider
  */
 export class OrgAdminService extends Context.Tag('OrgAdminService')<
   OrgAdminService,
   {
-    /**
-     * Get a user's roles within this service instance's org
-     */
+    /** Look up a user's roles within this service instance's org. */
     getUserOrgRoles: (
       userId: UserId
     ) => Effect.Effect<
@@ -46,10 +35,7 @@ export class OrgAdminService extends Context.Tag('OrgAdminService')<
       | UnhandledError
     >
 
-    /**
-     * Get a user's profile by ID
-     * Global operation (not org-specific)
-     */
+    /** Fetch a user profile by ID. Global operation (not org-specific). */
     getUser: (
       userId: UserId
     ) => Effect.Effect<
@@ -62,6 +48,10 @@ export class OrgAdminService extends Context.Tag('OrgAdminService')<
   }
 >() {}
 
+/**
+ * Standard {@link OrgAdminService} layer backed by {@link DocumentStore}.
+ * Requires {@link CurrentOrg} and {@link DocumentStore}.
+ */
 export const OrgAdminServiceLayer = Layer.effect(
   OrgAdminService,
   Effect.gen(function* () {

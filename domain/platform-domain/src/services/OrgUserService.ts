@@ -11,15 +11,26 @@ import { CurrentOrg } from '../tagClasses'
 import { CurrentUserId } from '../tagClasses/CurrentUserId'
 import { DocumentStore } from '../tagClasses/DocumentStore'
 
+/**
+ * Utilities for the current user within the current org.
+ */
 export class OrgUserService extends Context.Tag('OrgUserService')<
   OrgUserService,
   {
+    /**
+     * Asserts that the current user holds at least one of the given roles
+     * in the current org. Fails with {@link AuthzError} otherwise.
+     */
     ensureRole: (
       allowedRoles: readonly string[]
     ) => Effect.Effect<void, AuthError | AuthzError | UnhandledError, never>
   }
 >() {}
 
+/**
+ * Standard {@link OrgUserService} layer backed by {@link DocumentStore}.
+ * Requires {@link CurrentOrg}, {@link CurrentUserId}, and {@link DocumentStore}.
+ */
 export const OrgUserServiceLayer = Layer.effect(
   OrgUserService,
   Effect.gen(function* () {
