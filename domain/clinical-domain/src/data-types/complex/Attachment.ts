@@ -1,16 +1,13 @@
 import { Schema } from 'effect'
-import { Code } from '../complex/Coding'
-import { Element } from '../base/Element'
 
-export const AttachmentId = Schema.String.pipe(Schema.brand('AttachmentId'))
+import { MergeClasses } from '@assessmentis/util'
 
-/**
- * For identifying specific representations or attachments.
- * This data type is used for all attachments including images, documents, etc.
- * Note: Per FHIR spec, if data is present, contentType SHALL be populated.
- */
-export const Attachment = Schema.Struct({
-  ...Element(AttachmentId).fields,
+import { Element, type ElementEncoded } from '../base/Element'
+import { Code } from './Code'
+
+const DomainType = 'Attachment'
+
+const fields = {
   /**
    * Identifies the type of the data in the attachment and allows a method to be chosen to interpret or render the data. Includes mime type parameters such as charset where appropriate.
    * Per FHIR R4 spec: if data is present, contentType SHALL be populated.
@@ -24,10 +21,11 @@ export const Attachment = Schema.Struct({
    * The actual data of the attachment - a sequence of bytes, base64 encoded.
    */
   data: Schema.optional(Schema.String),
-  /**
-   * A location where the data can be accessed.
-   */
-  url: Schema.optional(Schema.String),
+  /** A location where the data can be accessed.
+   *
+   * @remarks Renamed from FHIR R4's `url` to avoid collision with the
+   * branded persistence URL on Element. */
+  dataUrl: Schema.optional(Schema.String),
   /**
    * The number of bytes of data that make up this attachment (before base64 encoding, if that is done).
    */
@@ -44,6 +42,22 @@ export const Attachment = Schema.Struct({
    * The date that the attachment was first created.
    */
   creation: Schema.optional(Schema.DateTimeUtc),
-})
+} as const satisfies Schema.Struct.Fields
 
-export type Attachment = typeof Attachment.Type
+/** Encoded (wire-format) shape of an {@link Attachment}. */
+export interface AttachmentEncoded
+  extends
+    Schema.Struct.Encoded<typeof fields>,
+    ElementEncoded<typeof DomainType> {}
+
+const ElementMixin = Element(DomainType)
+/**
+ * For identifying specific representations or attachments.
+ * This data type is used for all attachments including images, documents, etc.
+ * Note: Per FHIR spec, if data is present, contentType SHALL be populated.
+ */
+export class Attachment extends MergeClasses<Attachment>(DomainType)(
+  [],
+  ElementMixin,
+  fields
+) {}

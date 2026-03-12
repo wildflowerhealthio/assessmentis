@@ -23,15 +23,14 @@ PlatformContextProvider (root)
 ├── AuthDataService         # Authentication state
 ├── OrgService              # Organization selection
 ├── UserService             # User data and roles
-├── FhirR4ClientService     # FHIR client
-├── ClinicalDataRepositoryService
-└── VideoCallClientService
+├── CredentialService        # Live watched credentials (OAuth, API keys)
+└── Hub                     # Single routing layer for all clinical data
     │
     └── OrgContextProvider (child)
         └── Selected org context for route components
 ```
 
-`PlatformContextProvider` initializes all core services using Effect Layers. Services use `PubSub` + `Stream` for reactive state. Route components access services via `usePlatformContext()`.
+`PlatformContextProvider` initializes all core services using Effect Layers. Services use `PubSub` + `Stream` for reactive state. The Hub manages clinical data access across all sources (FHIR, Daily.co). `CredentialService` manages live credentials via Firestore watchers and supports server-side refresh via `POST /api/credentials/:credential_id`. Route components access services via `usePlatformContext()`.
 
 ## DocumentStore Abstraction
 

@@ -1,10 +1,13 @@
-import { Schema } from 'effect'
-import { Element } from '../base/Element'
-import { CodeableConcept } from './CodeableConcept'
+import { Effect, Schema } from 'effect'
+import type { ParseError } from 'effect/ParseResult'
 
-export const ReferenceId = Schema.String.pipe(Schema.brand('ReferenceId'))
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
+import { ExternalAssertionError } from '@assessmentis/ontology'
+import { mergeArbitraries, MergeClasses } from '@assessmentis/util'
 
-export const IdentifierId = Schema.String.pipe(Schema.brand('IdentifierId'))
+import { Element, type ElementEncoded } from '../base/'
+import { CodeableConcept, type CodeableConceptEncoded } from './CodeableConcept'
+import { Period } from './Period'
 
 /**
  * Circular dependency note:
@@ -17,30 +20,10 @@ export const IdentifierId = Schema.String.pipe(Schema.brand('IdentifierId'))
  * reference at runtime by lazily evaluating the schema when needed.
  */
 
-export interface Reference extends Schema.Struct.Type<typeof referenceFields> {
-  readonly identifier?: Identifier | undefined
-}
-
-export interface ReferenceEncoded extends Schema.Struct.Encoded<
-  typeof referenceFields
-> {
-  readonly identifier?: IdentifierEncoded | undefined
-}
-
-export interface Identifier extends Schema.Struct.Type<
-  typeof identifierFields
-> {
-  assigner?: Reference | undefined
-}
-
-export interface IdentifierEncoded extends Schema.Struct.Encoded<
-  typeof identifierFields
-> {
-  assigner?: ReferenceEncoded | undefined
-}
+const ReferenceKey = 'Reference'
+type ReferenceKey = typeof ReferenceKey
 
 const referenceFields = {
-  ...Element(ReferenceId).fields,
   /**
    * This is generally not the same as the Resource.text of the referenced resource.  The purpose is to identify what's being referenced, not to fully describe it.
    */
@@ -56,27 +39,123 @@ const referenceFields = {
    */
   type: Schema.optional(Schema.String),
   // _type?: Element | undefined;
+} as const satisfies Schema.Struct.Fields
+
+interface ReferenceType
+  extends Schema.Struct.Type<typeof referenceFields>, Element<ReferenceKey> {
+  identifier?: IdentifierType
 }
 
-export const Reference = Schema.Struct({
-  ...referenceFields,
-  /**
-   * When an identifier is provided in place of a reference, any system processing the reference will only be able to resolve the identifier to a reference if it understands the business context in which the identifier is used. Sometimes this is global (e.g. a national identifier) but often it is not. For this reason, none of the useful mechanisms described for working with references (e.g. chaining, includes) are possible, nor should servers be expected to be able resolve the reference. Servers may accept an identifier based reference untouched, resolve it, and/or reject it - see CapabilityStatement.rest.resource.referencePolicy.
-   * When both an identifier and a literal reference are provided, the literal reference is preferred. Applications processing the resource are allowed - but not required - to check that the identifier matches the literal reference
-   * Applications converting a logical reference to a literal reference may choose to leave the logical reference present, or remove it.
-   * Reference is intended to point to a structure that can potentially be expressed as a FHIR resource, though there is no need for it to exist as an actual FHIR resource instance - except in as much as an application wishes to actual find the target of the reference. The content referred to be the identifier must meet the logical constraints implied by any limitations on what resource types are permitted for the reference.  For example, it would not be legitimate to send the identifier for a drug prescription if the type were Reference(Observation|DiagnosticReport).  One of the use-cases for Reference.identifier is the situation where no FHIR representation exists (where the type is Reference (Any).
-   *
-   * Note: Schema.suspend is used here to break the circular dependency between
-   * Reference and Identifier at runtime.
-   */
-  identifier: Schema.optional(
-    Schema.suspend(
-      (): Schema.Schema<Identifier, IdentifierEncoded, never> => Identifier
-    )
-  ),
-})
+/** Encoded (wire-format) shape of a {@link Reference}. */
+export interface ReferenceEncoded
+  extends
+    Schema.Struct.Encoded<typeof referenceFields>,
+    ElementEncoded<ReferenceKey> {
+  identifier?: IdentifierEncoded
+}
 
-const IdentifierUse = Schema.Enums({
+const referenceElement = Element(ReferenceKey)
+
+/**
+ * A reference from one FHIR resource to another, by URL, type, display text,
+ * and/or {@link Identifier}.
+ *
+ * @remarks
+ * Reference and Identifier are mutually recursive — `Reference.identifier`
+ * points to an Identifier, while `Identifier.assigner` points back to a
+ * Reference. `Schema.suspend` breaks this cycle at schema evaluation time.
+ * Both types are co-located in this file to avoid cross-file circular imports.
+ */
+export class Reference extends MergeClasses<Reference>(ReferenceKey)(
+  [
+    {
+      arbitrary: () =>
+        mergeArbitraries(
+          (props) => new Reference(props),
+          referenceElement,
+          referenceFields
+        ),
+    },
+  ],
+  referenceElement,
+  referenceFields,
+  {
+    /**
+     * When an identifier is provided in place of a reference, any system processing the reference will only be able to resolve the identifier to a reference if it understands the business context in which the identifier is used. Sometimes this is global (e.g. a national identifier) but often it is not. For this reason, none of the useful mechanisms described for working with references (e.g. chaining, includes) are possible, nor should servers be expected to be able resolve the reference. Servers may accept an identifier based reference untouched, resolve it, and/or reject it - see CapabilityStatement.rest.resource.referencePolicy.
+     * When both an identifier and a literal reference are provided, the literal reference is preferred. Applications processing the resource are allowed - but not required - to check that the identifier matches the literal reference
+     * Applications converting a logical reference to a literal reference may choose to leave the logical reference present, or remove it.
+     * Reference is intended to point to a structure that can potentially be expressed as a FHIR resource, though there is no need for it to exist as an actual FHIR resource instance - except in as much as an application wishes to actual find the target of the reference. The content referred to be the identifier must meet the logical constraints implied by any limitations on what resource types are permitted for the reference.  For example, it would not be legitimate to send the identifier for a drug prescription if the type were Reference(Observation|DiagnosticReport).  One of the use-cases for Reference.identifier is the situation where no FHIR representation exists (where the type is Reference (Any).
+     *
+     * Note: Schema.suspend is used here to break the circular dependency between
+     * Reference and Identifier at runtime.
+     */
+    identifier: Schema.optional(
+      Schema.suspend(
+        (): Schema.Schema<Identifier, IdentifierEncoded> => Identifier
+      )
+    ),
+  }
+) {
+  /**
+   * Decodes this reference's URL string into a branded resource URL, failing
+   * if the `type` doesn't match or `reference` is absent.
+   *
+   * @typeParam TUrl - The branded URL type to decode into
+   * @param t - Object with `DomainType` and `UrlSchema` (typically a resource class)
+   */
+  asResourceUrl<TUrl extends ReadonlyUrl>(t: {
+    readonly DomainType: string
+    readonly UrlSchema: Schema.Schema<TUrl, string, never>
+  }): Effect.Effect<TUrl, ExternalAssertionError | ParseError, never> {
+    if (this.type != t.DomainType) {
+      return Effect.fail(
+        new ExternalAssertionError({
+          expected: `a resource of type '${t.DomainType}' got '${this.type}'`,
+          cause: this,
+        })
+      )
+    }
+
+    if (this.reference == undefined) {
+      return Effect.fail(
+        new ExternalAssertionError({
+          expected: '`reference` to be set on Reference',
+          cause: this,
+        })
+      )
+    }
+
+    const decode = Schema.decode(t.UrlSchema)
+
+    return decode(this.reference)
+  }
+
+  /**
+   * Creates a Reference pointing to a resource, or `undefined` if the
+   * resource has no URL. Sets `type` from `domainType`.
+   */
+  static fromResource(
+    resource: { url?: ReadonlyUrl | string | undefined; domainType: string },
+    display: string | undefined = undefined
+  ): Reference | undefined {
+    return resource && resource.url
+      ? new Reference({
+          reference:
+            resource.url instanceof ReadonlyUrl
+              ? resource.url.toString()
+              : resource.url,
+          type: resource.domainType,
+          display,
+        })
+      : undefined
+  }
+}
+
+const IdentifierKey = 'Identifier'
+type IdentifierKey = typeof IdentifierKey
+
+/** FHIR R4 value set for `Identifier.use`: usual | official | temp | secondary | old. */
+export const IdentifierUse = Schema.Enums({
   usual: 'usual',
   official: 'official',
   temp: 'temp',
@@ -85,11 +164,10 @@ const IdentifierUse = Schema.Enums({
 } as const)
 
 const identifierFields = {
-  ...Element(IdentifierId).fields,
   /**
    * Time period during which identifier is/was valid for use.
    */
-  period: Schema.optional(Schema.Any), //Period | undefined;
+  period: Schema.optional(Schema.suspend(() => Period)), //Period | undefined;
   /**
    * Identifier.system is always case sensitive.
    */
@@ -98,7 +176,15 @@ const identifierFields = {
   /**
    * This element deals only with general categories of identifiers.  It SHOULD not be used for codes that correspond 1..1 with the Identifier.system. Some identifiers may fall into multiple categories due to common usage.   Where the system is known, a type is unnecessary because the type is always part of the system definition. However systems often need to handle identifiers where the system is not known. There is not a 1:1 relationship between type and system, since many different systems have the same type.
    */
-  type: Schema.optional(Schema.suspend(() => CodeableConcept)),
+  type: Schema.optional(
+    Schema.suspend(
+      (): Schema.Schema<
+        typeof CodeableConcept.Type,
+        CodeableConceptEncoded,
+        never
+      > => CodeableConcept
+    )
+  ),
   /**
    * Applications can assume that an identifier is permanent unless it explicitly says that it is temporary.
    */
@@ -109,22 +195,54 @@ const identifierFields = {
    */
   value: Schema.optional(Schema.String),
   // _value?: Element | undefined;
+} as const satisfies Schema.Struct.Fields
+
+interface IdentifierType
+  extends Schema.Struct.Type<typeof identifierFields>, Element<IdentifierKey> {
+  assigner?: ReferenceType
 }
 
+/** Encoded (wire-format) shape of an {@link Identifier}. */
+export interface IdentifierEncoded
+  extends
+    Schema.Struct.Encoded<typeof identifierFields>,
+    ElementEncoded<IdentifierKey> {
+  assigner?: ReferenceEncoded
+}
+
+const IdentifierElementMixin = Element(IdentifierKey)
+
 /**
- * An identifier - identifies some entity uniquely and unambiguously. Typically this is used for business identifiers.
+ * An identifier intended for computation — carries a `system` URI, a `value`,
+ * an optional `type`, `use`, `period`, and an optional `assigner`
+ * {@link Reference}.
+ *
+ * @see {@link Reference} for the mutual-recursion notes
  */
-export const Identifier = Schema.Struct({
-  ...identifierFields,
-  /**
-   * The Identifier.assigner may omit the .reference element and only contain a .display element reflecting the name or other textual information about the assigning organization.
-   *
-   * Note: Schema.suspend is used here to break the circular dependency between
-   * Identifier and Reference at runtime.
-   */
-  assigner: Schema.optional(
-    Schema.suspend(
-      (): Schema.Schema<Reference, ReferenceEncoded, never> => Reference
-    )
-  ),
-})
+export class Identifier extends MergeClasses<Identifier>(IdentifierKey)(
+  [
+    {
+      arbitrary: () =>
+        mergeArbitraries(
+          (props) => new Identifier(props),
+          IdentifierElementMixin,
+          identifierFields
+        ),
+    },
+  ],
+  IdentifierElementMixin,
+  identifierFields,
+  {
+    /**
+     * The Identifier.assigner may omit the .reference element and only contain a .display element reflecting the name or other textual information about the assigning organization.
+     *
+     * Note: Schema.suspend is used here to break the circular dependency between
+     * Identifier and Reference at runtime.
+     */
+    assigner: Schema.optional(
+      Schema.suspend(
+        (): Schema.Schema<Reference, ReferenceEncoded> => Reference
+      )
+    ),
+  }
+) {}

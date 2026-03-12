@@ -1,16 +1,15 @@
-import { expect, test, describe } from 'vitest'
-import { Annotation } from './Annotation'
-import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
-import type { DeepReadonly } from '@assessmentis/util'
-import type { Annotation as FhirAnnotation } from 'fhir/r4'
+import { describe, expect, expectTypeOf, test } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
 
-// Compile-time check that Encoded schema matches FHIR R4
-const _annotationEncoded: DeepReadonly<FhirAnnotation> = Annotation.Encoded
+import { Annotation, type AnnotationEncoded } from './Annotation'
 
 const annotationArb = Arbitrary.make(Annotation)
 
 describe('Annotation model', () => {
+  test('types', () => {
+    expectTypeOf<typeof Annotation.Encoded>().toExtend<AnnotationEncoded>()
+  })
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(annotationArb, (annotation) => {

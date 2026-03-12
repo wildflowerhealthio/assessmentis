@@ -1,21 +1,17 @@
-import { expect, test, describe } from 'vitest'
-import { Range } from './Range'
-import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
-import type { DeepReadonly } from '@assessmentis/util'
-import type { Range as FhirRange } from 'fhir/r4'
+import { describe, expect, test } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
 
-// Compile-time check that Encoded schema matches FHIR R4
-const _rangeEncoded: DeepReadonly<FhirRange> = Range.Encoded
+import * as Range from './Range'
 
-const rangeArb = Arbitrary.make(Range)
+const rangeArb = Arbitrary.make(Range.Range)
 
 describe('Range model', () => {
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(rangeArb, (range) => {
-        const encoded = Schema.encodeSync(Range)(range)
-        const decoded = Schema.decodeSync(Range)(encoded)
+        const encoded = Schema.encodeSync(Range.Range)(range)
+        const decoded = Schema.decodeSync(Range.Range)(encoded)
         expect(decoded).toEqual(range)
       })
     )

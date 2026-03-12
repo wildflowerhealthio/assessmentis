@@ -1,10 +1,10 @@
 import { Schema } from 'effect'
+
 import { Period } from './Period'
 
-/**
- * An address expressed using postal conventions (as opposed to GPS or other location definition formats).
- */
-export const Address = Schema.Struct({
+const DomainType = 'Address'
+
+const fields = {
   /**
    * The purpose of this address.
    * home | work | temp | old | billing - purpose of this address
@@ -36,7 +36,9 @@ export const Address = Schema.Struct({
   /**
    * This component contains the house number, apartment number, street name, street direction, P.O. Box number, delivery hints, and similar address information.
    */
-  line: Schema.optional(Schema.Array(Schema.String)),
+  line: Schema.Array(Schema.String).pipe(
+    Schema.optionalWith({ default: () => [] as ReadonlyArray<string> })
+  ),
   /**
    * The name of the city, town, suburb, village or other community or delivery center.
    */
@@ -60,7 +62,16 @@ export const Address = Schema.Struct({
   /**
    * Time period when address was/is in use.
    */
-  period: Schema.optional(Period),
-})
+  period: Schema.optional(Schema.suspend(() => Period)),
+} as const
 
-export type Address = typeof Address.Type
+/** Encoded (wire-format) shape of an {@link Address}. */
+export interface AddressEncoded extends Schema.Struct.Encoded<typeof fields> {}
+
+/**
+ * An address expressed using postal conventions
+ * (as opposed to GPS or other location definition formats).
+ */
+export class Address extends Schema.Class<Address>(DomainType)(fields) {
+  static readonly DomainType = DomainType
+}

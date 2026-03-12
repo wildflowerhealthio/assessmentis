@@ -1,126 +1,65 @@
-import { Schema } from 'effect'
-import {
-  ValueElement,
-  type ValueElementEncoded,
-} from '../primitive/ValueElement'
+import { pipe, Schema } from 'effect'
 
-export type Extension = {
-  url: string
-} & ValueElement
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
 
-export type ExtensionEncoded = {
-  url: string
-} & ValueElementEncoded
+import { AllDatatypeNames, DatatypeChoice } from '../Datatype'
 
-export const Extension: Schema.Schema<Extension, ExtensionEncoded> =
-  Schema.extend(
-    Schema.Struct({
-      url: Schema.String,
+// ---------------------------------------------------------------------------
+// Extension
+// ---------------------------------------------------------------------------
+
+const ExtensionKey = 'Extension' as const
+type ExtensionKey = typeof ExtensionKey
+
+const extensionUrlSchema = pipe(
+  ReadonlyUrl.FromString,
+  Schema.brand(`${ExtensionKey}/url`)
+)
+
+const ValueChoice = DatatypeChoice(AllDatatypeNames)
+
+/** Encoded (wire-format) shape of an {@link Extension}. */
+export interface ExtensionEncoded {
+  readonly domainType?: ExtensionKey | undefined
+  readonly url?: string | undefined
+  readonly extension?: ReadonlyArray<ExtensionEncoded> | undefined
+  readonly definitionUrl: string
+  readonly value?: typeof ValueChoice.Encoded | undefined
+}
+
+const extensionFields = {
+  domainType: Schema.Literal(ExtensionKey).pipe(
+    Schema.optionalWith({
+      default: (): ExtensionKey => ExtensionKey,
+    })
+  ),
+  url: Schema.optional(extensionUrlSchema),
+  extension: pipe(
+    Schema.Array(
+      Schema.suspend(
+        (): Schema.Schema<Extension, ExtensionEncoded, never> => Extension
+      )
+    ),
+    Schema.annotations({
+      arbitrary: () => (fc) => fc.constant([]),
     }),
-    Schema.suspend(() => ValueElement)
-  )
+    Schema.optionalWith({
+      default: (): ReadonlyArray<Extension> => [],
+    })
+  ),
+  definitionUrl: Schema.String,
+  value: Schema.optional(ValueChoice),
+} as const satisfies Schema.Struct.Fields
 
 /**
- * Creates a typed FHIR extension helper
- * @param url - The FHIR extension URL
- * @param valueKey - The key name for the value (e.g., 'valueUrl', 'valueString')
- * @param ValueSchema - The schema for the value
+ * FHIR R4 Extension — carries additional data on any element via a
+ * `definitionUrl` and a polymorphic value choice. Extensions can
+ * nest recursively via the `extension` array.
  */
-export const createExtension = <
-  const TUrl extends string,
-  ValueKey extends string,
-  A,
-  I = A,
->(
-  url: TUrl,
-  valueKey: Exclude<ValueKey, 'url'>,
-  ValueSchema: Schema.Schema<A, I, never>
-): {
-  ExtensionSchema: Schema.extend<
-    Schema.Struct<{
-      url: Schema.Schema<TUrl, TUrl>
-    }>,
-    Schema.Record$<
-      Schema.Schema<ValueKey, ValueKey>,
-      Schema.Schema<A, I, never>
-    >
-  >
-  url: TUrl
-  valueKey: ValueKey
-  getValues: (resource: {
-    extension?: ReadonlyArray<
-      { url: string } | ({ url: TUrl } & { [K in ValueKey]: A })
-    >
-  }) => A[]
-  withValues: <
-    T extends {
-      extension?: ReadonlyArray<{ url: string } | { url: TUrl; [valueKey]: A }>
-    },
-  >(
-    resource: T,
-    values: A[]
-  ) => T
-} => {
-  // Note: ExtensionSchema typing is complex due to dynamic keys,
-  // so we use any and rely on runtime schema validation
-  const WronglyTypedExtensionSchema = Schema.Struct({
-    [valueKey]: ValueSchema,
-    url: Schema.Literal(url),
-  })
-
-  const ExtensionSchema =
-    WronglyTypedExtensionSchema as unknown as Schema.extend<
-      Schema.Struct<{
-        url: Schema.Schema<TUrl, TUrl>
-      }>,
-      Schema.Record$<
-        Schema.Schema<ValueKey, ValueKey>,
-        Schema.Schema<A, I, never>
-      >
-    >
-
-  type ExtensionType = { url: TUrl } & { [K in ValueKey]: A }
-
-  const getValues = (resource: {
-    extension?: ReadonlyArray<{ url: string } | ExtensionType>
-  }): A[] => {
-    if (!resource.extension) return []
-
-    return resource.extension
-      .filter((ext): ext is ExtensionType => ext.url === url && valueKey in ext)
-      .map((ext) => ext[valueKey])
-  }
-
-  const withValues = <
-    T extends {
-      extension?: ReadonlyArray<{ url: string } | { url: TUrl; [valueKey]: A }>
-    },
-  >(
-    resource: T,
-    values: A[]
-  ): T => {
-    const existingExtensions =
-      resource.extension?.filter((ext) => ext.url !== url) ?? []
-
-    const newExtensions = [
-      ...existingExtensions,
-      ...values.map((value) => ({
-        url,
-        [valueKey]: value,
-      })),
-    ]
-
-    return {
-      ...resource,
-      extension: newExtensions,
-    }
-  }
-
-  return {
-    ExtensionSchema,
-    url,
-    valueKey,
-    getValues,
-    withValues,
-  }
+export class Extension extends Schema.Class<Extension>('Extension')(
+  extensionFields
+) {
+  static readonly DomainType = ExtensionKey
+  static readonly UrlSchema = extensionUrlSchema
+  static readonly ValueChoice = ValueChoice
 }

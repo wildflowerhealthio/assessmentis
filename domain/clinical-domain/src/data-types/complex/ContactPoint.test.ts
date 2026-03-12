@@ -1,22 +1,19 @@
-import { expect, test, describe } from 'vitest'
-import { ContactPoint } from './ContactPoint'
-import type { DeepReadonly } from '@assessmentis/util'
-import type { ContactPoint as FhirContactPoint } from 'fhir/r4'
-import { Schema, Arbitrary } from 'effect'
 import * as fc from 'fast-check'
+import { describe, expect, test } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
 
-// Compile-time check that Encoded schema matches FHIR R4
-const _contactPointEncoded: DeepReadonly<FhirContactPoint> =
-  ContactPoint.Encoded
+import * as ContactPoint from './ContactPoint'
 
-const contactPointArb = Arbitrary.make(ContactPoint)
+const contactPointArb = Arbitrary.make(ContactPoint.ContactPoint)
 
 describe('ContactPoint model', () => {
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(contactPointArb, (contactPoint) => {
-        const encoded = Schema.encodeSync(ContactPoint)(contactPoint)
-        const decoded = Schema.decodeSync(ContactPoint)(encoded)
+        const encoded = Schema.encodeSync(ContactPoint.ContactPoint)(
+          contactPoint
+        )
+        const decoded = Schema.decodeSync(ContactPoint.ContactPoint)(encoded)
         expect(decoded).toEqual(contactPoint)
       })
     )

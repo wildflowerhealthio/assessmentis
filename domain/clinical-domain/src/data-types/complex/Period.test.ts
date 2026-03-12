@@ -1,16 +1,16 @@
-import { expect, test, describe } from 'vitest'
-import { Period } from './Period'
-import { Arbitrary, DateTime, Schema } from 'effect'
 import * as fc from 'fast-check'
-import type { DeepReadonly } from '@assessmentis/util'
-import type { Period as FhirPeriod } from 'fhir/r4'
+import { describe, expect, expectTypeOf, test } from 'vitest'
+import { Arbitrary, DateTime, Schema } from 'effect'
 
-// Compile-time check that Encoded schema matches FHIR R4
-const _periodEncoded: DeepReadonly<FhirPeriod> = Period.Encoded
+import { Period, type PeriodEncoded } from './Period'
 
 const periodArb = Arbitrary.make(Period)
 
 describe('Period model', () => {
+  test('types', () => {
+    expectTypeOf(Period.Encoded).toExtend<PeriodEncoded>()
+  })
+
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(periodArb, (period) => {
@@ -25,6 +25,7 @@ describe('Period model', () => {
     const decode = Schema.decodeSync(Period)
 
     const decoded = decode({
+      url: 'http://example.com/Period/id',
       start: '2026-01-04T00:00:00.000Z',
       end: '2026-01-07T00:00:00.000Z',
     })

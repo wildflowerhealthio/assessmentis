@@ -1,11 +1,16 @@
-import { expect, test, describe } from 'vitest'
-import { ValueElement } from './ValueElement'
-import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
+import { describe, expect, expectTypeOf, test } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
+
+import { ValueElement, type ValueElementEncoded } from './ValueElement'
 
 const valueElementArb = Arbitrary.make(ValueElement)
 
 describe('ValueElement model', () => {
+  test('should encode to encoded type', () => {
+    expectTypeOf<typeof ValueElement.Encoded>().toExtend<ValueElementEncoded>()
+  })
+
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(valueElementArb, (valueElement) => {

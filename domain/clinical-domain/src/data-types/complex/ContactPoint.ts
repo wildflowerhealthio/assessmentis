@@ -1,10 +1,10 @@
 import { Schema } from 'effect'
+
 import { Period } from './Period'
 
-/**
- * Details for all kinds of technology mediated contact points for a person or organization, including telephone, email, etc.
- */
-export const ContactPoint = Schema.Struct({
+const DomainType = 'ContactPoint'
+
+const fields = {
   /**
    * Telecommunications form for contact point - what communications system is required to make use of the contact.
    * phone | fax | email | pager | url | sms | other
@@ -44,7 +44,19 @@ export const ContactPoint = Schema.Struct({
   /**
    * Time period when the contact point was/is in use.
    */
-  period: Schema.optional(Period),
-})
+  period: Schema.optional(Schema.suspend(() => Period)),
+} as const
 
-export type ContactPoint = typeof ContactPoint.Type
+/** Encoded (wire-format) shape of a {@link ContactPoint}. */
+export interface ContactPointEncoded extends Schema.Struct.Encoded<
+  typeof fields
+> {}
+
+/**
+ * Details for all kinds of technology mediated contact points for a person or organization, including telephone, email, etc.
+ */
+export class ContactPoint extends Schema.Class<ContactPoint>(DomainType)(
+  fields
+) {
+  static readonly DomainType = DomainType
+}
