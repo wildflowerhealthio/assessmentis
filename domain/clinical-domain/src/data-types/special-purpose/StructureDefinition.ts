@@ -1,15 +1,14 @@
 import { Schema } from 'effect'
 
-import { AllDatatypeKeys, DatatypeChoice } from '../Datatype'
+import type { baseDatatypes, DatatypeName } from '../Datatype'
 import { Extension } from './Extension'
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-class StructureDefinitionValue extends DatatypeChoice(
-  'StructureDefinitionValue',
-  'value',
-  AllDatatypeKeys
-) {}
-type ValueFields = Schema.Struct.Type<typeof StructureDefinitionValue.fields>
+/** Extracts the decoded value type for a specific datatype tag from the choice union. */
+type DatatypeValueFor<Tag extends DatatypeName> = {
+  _tag: Tag
+} & {
+  [name in Tag]: Extract<typeof baseDatatypes, { _tag: Tag }>[Tag]
+}
 
 /*
 {
@@ -36,12 +35,10 @@ const StructureDefinitionType = Schema.Enums({ Extension: 'Extension' })
  * `getValues` and `withValues` to read/write typed extension values on
  * resources without manually traversing the `extension` array.
  *
- * @typeParam FieldName - The value\[x\] field name this definition targets,
+ * @typeParam Tag - The data type name this definition targets (e.g. `'dateTime'`),
  *   or `null` if it carries no value (container-only extension)
  */
-export class StructureDefinition<
-  FieldName extends keyof ValueFields | null = null,
-> {
+export class StructureDefinition<Tag extends DatatypeName | null = null> {
   static readonly extensionBaseDefinitionUrl =
     'http://hl7.org/fhir/StructureDefinition/Extension'
   url: string
@@ -49,14 +46,14 @@ export class StructureDefinition<
   kind: typeof StructureDefinitionKind.Type
   type: typeof StructureDefinitionType.Type
   baseDefinition: string
-  relevantField: FieldName
+  relevantField: Tag
 
   constructor(args: {
     url: string
     name: string
     kind: typeof StructureDefinitionKind.Type
     type: typeof StructureDefinitionType.Type
-    relevantField: FieldName
+    relevantField: Tag
     baseDefinition: string
   }) {
     this.url = args.url
@@ -75,14 +72,19 @@ export class StructureDefinition<
    */
   getValues(resource: {
     extension?: ReadonlyArray<Extension>
-  }): ReadonlyArray<ValueFields[NonNullable<FieldName>]> {
+  }): ReadonlyArray<DatatypeValueFor<NonNullable<Tag>>> {
     const { relevantField } = this
     if (relevantField == null) return []
     if (!resource.extension) return []
 
     return resource.extension
-      .filter((ext) => ext.definitionUrl === this.url && relevantField in ext)
-      .map((ext): ValueFields[typeof relevantField] => ext[relevantField])
+      .filter(
+        (
+          ext
+        ): ext is Extension & { value: DatatypeValueFor<NonNullable<Tag>> } =>
+          ext.definitionUrl === this.url && ext.value?._tag === relevantField
+      )
+      .map((ext) => ext.value[relevantField])
   }
 
   /**
@@ -94,10 +96,7 @@ export class StructureDefinition<
     T extends {
       extension?: ReadonlyArray<Extension>
     },
-  >(
-    resource: T,
-    values: ReadonlyArray<ValueFields[NonNullable<FieldName>]>
-  ): T {
+  >(resource: T, values: ReadonlyArray<DatatypeValueFor<NonNullable<Tag>>>): T {
     const { relevantField } = this
     if (relevantField == null) return resource
     const existingExtensions =
@@ -108,7 +107,11 @@ export class StructureDefinition<
       ...values.map((value) =>
         Extension.make({
           definitionUrl: this.url,
-          [relevantField]: value,
+          value: Extension.ValueChoice.make({
+            _tag: relevantField,
+            [relevantField]: value,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } as any),
         })
       ),
     ]

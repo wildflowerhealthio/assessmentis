@@ -14,8 +14,8 @@ import { DatatypeChoice } from '../../data-types/Datatype'
 import FhirR4ChoiceElements from '../../data-types/fhirR4ChoiceElements'
 import { DiagnosticReportMedia } from './DiagnosticReportMedia'
 
-const Key = 'DiagnosticReport' as const
-type Key = typeof Key
+const DomainType = 'DiagnosticReport' as const
+type DomainType = typeof DomainType
 
 /**
  * The status of the diagnostic report.
@@ -63,32 +63,23 @@ const fields = {
   presentedForm: Schema.optional(
     Schema.Array(Schema.suspend(() => Attachment))
   ),
+  effective: Schema.optional(
+    DatatypeChoice(FhirR4ChoiceElements['DiagnosticReport.effective[x]'], [
+      Period.Datatype,
+    ])
+  ),
 } as const satisfies Schema.Struct.Fields
 
-class DiagnosticReportEffective extends DatatypeChoice(
-  'DiagnosticReportEffective',
-  'effective',
-  FhirR4ChoiceElements['DiagnosticReport.effective[x]'],
-  [Period.Datatype]
-) {}
-
-type effectiveMixinEncoded = typeof DiagnosticReportEffective.Encoded
-const resourceMixin = Resource(Key)
+const resourceMixin = Resource(DomainType)
 
 /** Encoded (wire-format) shape of a {@link DiagnosticReport}. */
 export interface DiagnosticReportEncoded
-  extends
-    Schema.Struct.Encoded<typeof fields>,
-    ResourceEncoded<Key>,
-    effectiveMixinEncoded {}
+  extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<DomainType> {}
 
 /**
  * The findings and interpretation of diagnostic tests performed on patients,
  * groups of patients, devices, and locations, and/or specimens derived from these.
  */
-export class DiagnosticReport extends MergeClasses<DiagnosticReport>(Key)(
-  [],
-  resourceMixin,
-  DiagnosticReportEffective,
-  fields
-) {}
+export class DiagnosticReport extends MergeClasses<DiagnosticReport>(
+  DomainType
+)([], resourceMixin, fields) {}

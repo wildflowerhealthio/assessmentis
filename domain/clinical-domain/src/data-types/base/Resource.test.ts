@@ -28,7 +28,7 @@ describe('Resource', () => {
       >()
     })
 
-    test('Type has all DomainResource fields', () => {
+    test('Type has all Resource fields', () => {
       type T = (typeof TestResource)['Type']
       expectTypeOf<T['extension']>().toExtend<ReadonlyArray<Extension>>()
       expectTypeOf<T['modifierExtension']>().toExtend<
@@ -51,7 +51,7 @@ describe('Resource', () => {
     expect(decoded.implicitRules).toBeUndefined()
   })
 
-  test('Key static equals the domain type', () => {
+  test('DomainType static equals the domain type', () => {
     expect(TestResource.DomainType).toBe('TestResource')
   })
 

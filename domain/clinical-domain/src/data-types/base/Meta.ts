@@ -2,13 +2,13 @@ import { Schema } from 'effect'
 
 import { Coding, type CodingEncoded } from '../complex/Coding'
 
-const Key = 'Meta' as const
-type Key = typeof Key
+const DomainType = 'Meta' as const
+type DomainType = typeof DomainType
 
 const fields = {
   versionId: Schema.optional(Schema.String),
   lastUpdated: Schema.optional(Schema.DateTimeUtc),
-  source: Schema.optional(Schema.URL),
+  source: Schema.optional(Schema.String),
   // profile: canonical(StructureDefinition),
   security: Schema.optional(
     Schema.Array(
@@ -29,6 +29,6 @@ export interface MetaEncoded extends Schema.Struct.Encoded<typeof fields> {}
  * FHIR R4 Meta data type — resource-level metadata including version, last
  * updated timestamp, source, security labels, and tags.
  */
-export class Meta extends Schema.Class<Meta>(Key)(fields) {
-  static readonly Key = Key
+export class Meta extends Schema.Class<Meta>(DomainType)(fields) {
+  static readonly DomainType = DomainType
 }

@@ -5,7 +5,7 @@ import { MergeClasses } from '@assessmentis/util'
 import { Element, type ElementEncoded } from '../base/Element'
 import { Datatype } from '../Datatype'
 
-const Key = 'Period'
+const DomainType = 'Period'
 
 const fields = {
   /**
@@ -20,17 +20,19 @@ const fields = {
   end: Schema.optional(Schema.DateTimeUtc),
 } as const satisfies Schema.Struct.Fields
 
-const ElementMixin = Element(Key)
+const ElementMixin = Element(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Period}. */
 export interface PeriodEncoded
-  extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<typeof Key> {}
+  extends
+    Schema.Struct.Encoded<typeof fields>,
+    ElementEncoded<typeof DomainType> {}
 
 /**
  * A time period defined by a start and end date/time.
  * A period specifies a range of times. The context of use will specify whether the entire period applies (e.g. "the patient was an inpatient of the hospital for this time range") or one value from the period applies (e.g. "give to the patient between 2 and 4 pm on 24-Jun 2013").
  */
-export class Period extends MergeClasses<Period>(Key)(
+export class Period extends MergeClasses<Period>(DomainType)(
   [],
   ElementMixin,
   fields

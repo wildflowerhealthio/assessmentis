@@ -10,7 +10,7 @@ In `src/{category}/resources/{ResourceName}.ts`:
 
 - Add `{ResourceName}Id` as a branded string schema
 - Define `{ResourceName}` with `resourceType: Schema.Literal('{ResourceName}')`
-- Extend `DomainResource({ResourceName}Id)` fields
+- Extend `Resource({ResourceName}Id)` fields
 - Add FHIR-compatible optional fields as needed
 - Use the Omit + intersection pattern for fields with `FromFhirR4` schemas (see [FHIR Schemas Explanation](./FHIR%20Schemas%20Explanation.md))
 

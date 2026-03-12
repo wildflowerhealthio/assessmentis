@@ -43,6 +43,15 @@ type ResourceDataTypes = {
   QuestionnaireResponse: QuestionnaireResponse
 }
 
+/**
+ * Runtime registry mapping each `DomainType` string to its Effect Schema class.
+ *
+ * @remarks
+ * This `const` intentionally shares its name with the `ResourceDataTypes` type
+ * above via TypeScript declaration merging. The type provides a type-level
+ * lookup table; the const provides the runtime registry. This is intentional,
+ * not an accidental name collision.
+ */
 const ResourceDataTypes = {
   [Composition.DomainType]: Composition,
   [DiagnosticReport.DomainType]: DiagnosticReport,

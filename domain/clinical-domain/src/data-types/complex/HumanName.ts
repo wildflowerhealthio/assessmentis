@@ -2,7 +2,7 @@ import { Schema } from 'effect'
 
 import { Period } from './Period'
 
-const Key = 'HumanName'
+const DomainType = 'HumanName'
 
 const fields = {
   /**
@@ -54,6 +54,6 @@ export interface HumanNameEncoded extends Schema.Struct.Encoded<
 /**
  * A human's name with the ability to identify parts and usage.
  */
-export class HumanName extends Schema.Class<HumanName>(Key)(fields) {
-  static readonly DomainType = Key
+export class HumanName extends Schema.Class<HumanName>(DomainType)(fields) {
+  static readonly DomainType = DomainType
 }

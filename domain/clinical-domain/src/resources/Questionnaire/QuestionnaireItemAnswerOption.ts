@@ -14,32 +14,21 @@ type DomainType = typeof DomainType
 
 const fields = {
   initialSelected: Schema.optional(Schema.Boolean),
+  value: Schema.optional(
+    DatatypeChoice([
+      'boolean',
+      ...FhirR4ChoiceElements['Questionnaire.item.answerOption.value[x]'],
+    ])
+  ),
 } as const satisfies Schema.Struct.Fields
-
-class QuestionnaireItemAnswerOptionValue extends DatatypeChoice(
-  'QuestionnaireItemAnswerOptionValue',
-  'value',
-  [
-    'boolean',
-    ...FhirR4ChoiceElements['Questionnaire.item.answerOption.value[x]'],
-  ]
-) {}
-type AnswerOptionValueMixinEncoded =
-  typeof QuestionnaireItemAnswerOptionValue.Encoded
 
 /** Encoded (wire-format) shape of a {@link QuestionnaireItemAnswerOption}. */
 export interface QuestionnaireItemAnswerOptionEncoded
   extends
     Schema.Struct.Encoded<typeof fields>,
-    BackboneElementEncoded<DomainType>,
-    AnswerOptionValueMixinEncoded {}
+    BackboneElementEncoded<DomainType> {}
 
 /** A permitted answer value for a questionnaire item, with a polymorphic value[x] choice. */
 export class QuestionnaireItemAnswerOption extends MergeClasses<QuestionnaireItemAnswerOption>(
   DomainType
-)(
-  [],
-  BackboneElement(DomainType),
-  QuestionnaireItemAnswerOptionValue,
-  fields
-) {}
+)([], BackboneElement(DomainType), fields) {}

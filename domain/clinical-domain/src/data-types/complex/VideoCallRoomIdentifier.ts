@@ -18,8 +18,8 @@ import { Period } from './Period'
 export const VIDEO_CALL_ROOM_NAME_SYSTEM =
   'http://assessment.is/fhir/video-call-room-name' as const
 
-const Key = 'VideoCallRoomIdentifier' as const
-type Key = typeof Key
+const DomainType = 'VideoCallRoomIdentifier' as const
+type DomainType = typeof DomainType
 
 const fields = {
   system: Schema.optionalWith({
@@ -52,8 +52,8 @@ const fields = {
  * resource `identifier[]` arrays.
  */
 export class VideoCallRoomIdentifier extends MergeClasses<VideoCallRoomIdentifier>(
-  Key
-)([], Element(Key), fields) {
+  DomainType
+)([], Element(DomainType), fields) {
   static readonly SYSTEM = VIDEO_CALL_ROOM_NAME_SYSTEM
 
   /**
@@ -76,7 +76,13 @@ export class VideoCallRoomIdentifier extends MergeClasses<VideoCallRoomIdentifie
    */
   static fromIdentifier(id: Identifier): VideoCallRoomIdentifier | undefined {
     if (id.system === VIDEO_CALL_ROOM_NAME_SYSTEM && id.value !== undefined) {
-      return VideoCallRoomIdentifier.make({ value: id.value })
+      return VideoCallRoomIdentifier.make({
+        value: id.value,
+        ...(id.period !== undefined ? { period: id.period } : {}),
+        ...(id.type !== undefined ? { type: id.type } : {}),
+        ...(id.use !== undefined ? { use: id.use } : {}),
+        ...(id.assigner !== undefined ? { assigner: id.assigner } : {}),
+      })
     }
     return undefined
   }

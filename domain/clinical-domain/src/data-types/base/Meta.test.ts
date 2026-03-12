@@ -6,7 +6,7 @@ import { Meta, type MetaEncoded } from './Meta'
 
 const metaArb = Arbitrary.make(Meta)
 
-describe('DomainResource base model', () => {
+describe('Meta base model', () => {
   test('should encode to encoded type', () => {
     expectTypeOf<MetaEncoded>().toExtend<typeof Meta.Encoded>()
   })

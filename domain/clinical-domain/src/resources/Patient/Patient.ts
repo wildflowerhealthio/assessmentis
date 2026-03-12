@@ -17,8 +17,8 @@ import { PatientCommunication } from './PatientCommunication'
 import { PatientContact } from './PatientContact'
 import { PatientLink } from './PatientLink'
 
-const Key = 'Patient' as const
-type Key = typeof Key
+const DomainType = 'Patient' as const
+type DomainType = typeof DomainType
 
 // --- Patient ---
 
@@ -45,17 +45,17 @@ const fields = {
   link: Schema.optional(Schema.Array(PatientLink)),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(Key)
+const resourceMixin = Resource(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Patient}. */
 export interface PatientEncoded
-  extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<Key> {}
+  extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<DomainType> {}
 
 /**
  * Demographics and other administrative information about an individual or animal
  * receiving care or other health-related services.
  */
-export class Patient extends MergeClasses<Patient>(Key)(
+export class Patient extends MergeClasses<Patient>(DomainType)(
   [],
   resourceMixin,
   fields

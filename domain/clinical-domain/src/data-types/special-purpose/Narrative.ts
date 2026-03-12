@@ -4,8 +4,8 @@ import { MergeClasses } from '@assessmentis/util'
 
 import { Element, type ElementEncoded } from '../base/Element'
 
-const Key = 'Narrative' as const
-type Key = typeof Key
+const DomainType = 'Narrative' as const
+type DomainType = typeof DomainType
 
 const NarrativeStatus = Schema.Union(
   /**The contents of the narrative are entirely generated from the core elements in the content. */
@@ -29,20 +29,20 @@ const fields = {
   div: Schema.String,
 } as const satisfies Schema.Struct.Fields
 
-const ElementMixin = Element(Key)
+const ElementMixin = Element(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Narrative}. */
 export interface NarrativeEncoded
-  extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<Key> {}
+  extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<DomainType> {}
 
 /**
  * Human-readable XHTML summary of a resource, with a `status` indicating
  * whether the narrative is generated, additional, or empty.
  */
-export class Narrative extends MergeClasses<Narrative>(Key)(
+export class Narrative extends MergeClasses<Narrative>(DomainType)(
   [],
   ElementMixin,
   fields
 ) {
-  static readonly Key = Key
+  static readonly DomainType = DomainType
 }

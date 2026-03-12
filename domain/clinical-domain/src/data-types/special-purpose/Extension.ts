@@ -1,9 +1,8 @@
 import { pipe, Schema } from 'effect'
 
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
-import { mergeArbitraries, MergeClasses } from '@assessmentis/util'
 
-import { AllDatatypeKeys, DatatypeChoice } from '../Datatype'
+import { AllDatatypeNames, DatatypeChoice } from '../Datatype'
 
 // ---------------------------------------------------------------------------
 // Extension
@@ -12,26 +11,21 @@ import { AllDatatypeKeys, DatatypeChoice } from '../Datatype'
 const ExtensionKey = 'Extension' as const
 type ExtensionKey = typeof ExtensionKey
 
-class ExtensionValue extends DatatypeChoice<
-  ExtensionValue,
-  'value',
-  typeof AllDatatypeKeys
->('ExtensionValue', 'value', AllDatatypeKeys) {}
-
-/** Encoded (wire-format) shape of an {@link Extension}. */
-export interface ExtensionEncoded extends Schema.Struct.Encoded<
-  typeof ExtensionValue.fields
-> {
-  readonly url?: string | undefined
-  readonly domainType?: ExtensionKey | undefined
-  readonly extension?: ReadonlyArray<ExtensionEncoded>
-  readonly definitionUrl: string
-}
-
 const extensionUrlSchema = pipe(
   ReadonlyUrl.FromString,
   Schema.brand(`${ExtensionKey}/url`)
 )
+
+const ValueChoice = DatatypeChoice(AllDatatypeNames)
+
+/** Encoded (wire-format) shape of an {@link Extension}. */
+export interface ExtensionEncoded {
+  readonly domainType?: ExtensionKey | undefined
+  readonly url?: string | undefined
+  readonly extension?: ReadonlyArray<ExtensionEncoded> | undefined
+  readonly definitionUrl: string
+  readonly value?: typeof ValueChoice.Encoded | undefined
+}
 
 const extensionFields = {
   domainType: Schema.Literal(ExtensionKey).pipe(
@@ -54,37 +48,18 @@ const extensionFields = {
     })
   ),
   definitionUrl: Schema.String,
+  value: Schema.optional(ValueChoice),
 } as const satisfies Schema.Struct.Fields
 
 /**
  * FHIR R4 Extension — carries additional data on any element via a
- * `definitionUrl` and a polymorphic value\[x\] choice. Extensions can
+ * `definitionUrl` and a polymorphic value choice. Extensions can
  * nest recursively via the `extension` array.
- *
- * @remarks
- * Composes the `DatatypeChoice` mixin (all FHIR R4 data type value\[x\] fields)
- * with Element-like fields (`domainType`, `url`, `extension`). The arbitrary
- * generates instances with zero or one value\[x\] key set.
  */
-export class Extension extends MergeClasses<Extension>('Extension')(
-  [
-    {
-      arbitrary: () =>
-        mergeArbitraries(
-          (props) => new Extension(props),
-          ExtensionValue.arbitraryValueOneOrNone,
-          extensionFields
-        ),
-    },
-  ],
-  ExtensionValue,
+export class Extension extends Schema.Class<Extension>('Extension')(
   extensionFields
 ) {
-  static DomainType = ExtensionKey
-  static UrlSchema = extensionUrlSchema
+  static readonly DomainType = ExtensionKey
+  static readonly UrlSchema = extensionUrlSchema
+  static readonly ValueChoice = ValueChoice
 }
-
-/**
- * Alias used by StructureDefinition for extensions carrying any value[x] type.
- */
-export { Extension as AllValuesExtension }

@@ -15,8 +15,8 @@ import {
 import { LocationMode } from './LocationMode'
 import { LocationStatus } from './LocationStatus'
 
-const Key = 'Location' as const
-type Key = typeof Key
+const DomainType = 'Location' as const
+type DomainType = typeof DomainType
 
 const fields = {
   operationalStatus: Schema.optional(Schema.suspend(() => Coding)),
@@ -41,18 +41,18 @@ const fields = {
   partOf: Schema.optional(Schema.suspend(() => Reference)),
 } as const satisfies Schema.Struct.Fields
 
-const LocationResource = Resource(Key)
+const LocationResource = Resource(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Location}. */
 export interface LocationEncoded
-  extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<Key> {}
+  extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<DomainType> {}
 
 /**
  * Details and position information for a physical place where services are
  * provided and resources and participants may be stored, found, contained,
  * or accommodated.
  */
-export class Location extends MergeClasses<Location>(Key)(
+export class Location extends MergeClasses<Location>(DomainType)(
   [],
   LocationResource,
   fields

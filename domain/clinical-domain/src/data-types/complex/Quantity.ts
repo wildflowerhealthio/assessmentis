@@ -3,6 +3,7 @@ import { Schema } from 'effect'
 import { MergeClasses } from '@assessmentis/util'
 
 import { Element, type ElementEncoded } from '../base/Element'
+import { Code } from './Code'
 
 const fields = {
   /**
@@ -22,7 +23,7 @@ const fields = {
   /**
    * A computer processable form of the unit in some unit representation system.
    */
-  code: Schema.optional(Schema.String),
+  code: Schema.optional(Code),
   /**
    * How the value should be understood and represented - whether the actual value is greater or less than
    * the stated value due to measurement issues; e.g. if the comparator is "\<", then the real value is \< stated value.

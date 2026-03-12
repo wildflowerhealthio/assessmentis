@@ -9,7 +9,7 @@ For step-by-step Clinical Resource implementation, see [Adding Resource Types Ho
 - Use Effect Schema for all resource modeling.
 - Every resource must include resourceType as a literal.
 - Model identifiers as branded Schema types (for example PatientId).
-- Extend Resource or DomainResource for base fields.
+- Extend Resource or Resource for base fields.
 - Use Schema.suspend for recursive types and references.
 - Prefer value sets under value-sets/ for constrained coded values.
 - Use TimelessDateFromString for date-only fields when applicable.
@@ -30,9 +30,15 @@ Each resource defines its own allowed types. The definitive list is in `src/data
 ```typescript
 // Per FHIR R4: Observation.value[x]
 const ObservationValue = ValueUnion(
-  QuantityDatatype, CodeableConceptDatatype, StringDatatype,
-  BooleanDatatype, IntegerDatatype, RangeDatatype,
-  TimeDatatype, DateTimeDatatype, PeriodDatatype,
+  QuantityDatatype,
+  CodeableConceptDatatype,
+  StringDatatype,
+  BooleanDatatype,
+  IntegerDatatype,
+  RangeDatatype,
+  TimeDatatype,
+  DateTimeDatatype,
+  PeriodDatatype
 )
 ```
 
@@ -43,11 +49,11 @@ Complex types export their own `Datatype` alongside themselves (e.g., `CodingDat
 Each base type is a generic factory function that returns a `Schema.Class` subclass with statics:
 
 ```typescript
-// Element(domainType) → Schema.Class with static Key, UrlSchema
+// Element(domainType) → Schema.Class with static DomainType, UrlSchema
 const ElementMixin = Element('Patient')
 // BackboneElement(domainType) → Schema.Class composed with Element via MergeClasses
 const BackboneMixin = BackboneElement('PatientContact')
-// Resource(domainType) → Schema.Class with all DomainResource fields
+// Resource(domainType) → Schema.Class with all Resource fields
 const ResourceMixin = Resource('Patient')
 ```
 
@@ -91,7 +97,7 @@ import { Element } from '../base/Element'
 
 When schemas reference each other circularly (e.g., Reference <-> Identifier), wrap the reference in `Schema.suspend(() => ...)`. This delays evaluation and breaks the cycle.
 
-**Important**: `Schema.suspend` only breaks cycles at *schema evaluation time*, NOT at *module load time*. If module A imports module B (value import), and B imports A, the circular import still causes Vite SSR to see `undefined` exports. `Schema.suspend` helps when both schemas are in the same file or when the import chain is acyclic. For cross-file cycles, restructure imports (co-locate in one file like `IdentifierAndReference.ts`, or eliminate the cycle).
+**Important**: `Schema.suspend` only breaks cycles at _schema evaluation time_, NOT at _module load time_. If module A imports module B (value import), and B imports A, the circular import still causes Vite SSR to see `undefined` exports. `Schema.suspend` helps when both schemas are in the same file or when the import chain is acyclic. For cross-file cycles, restructure imports (co-locate in one file like `IdentifierAndReference.ts`, or eliminate the cycle).
 
 ### Circular const initializers need explicit type annotations
 

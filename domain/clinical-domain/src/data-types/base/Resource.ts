@@ -29,7 +29,7 @@ export type Resource<TDomainType extends string> = {
   readonly modifierExtension: ReadonlyArray<Extension>
 }
 
-/** Encoded (wire-format) shape of a DomainResource. */
+/** Encoded (wire-format) shape of a Resource. */
 export interface ResourceEncoded<TDomainType extends string> {
   readonly domainType?: TDomainType | undefined
   readonly url?: string | undefined
@@ -66,6 +66,7 @@ const resourceFields = {
   /**
    * Contained, inline Resources
    */
+  // TODO: type contained resources when needed — Schema.Any passes anything through unvalidated
   contained: Schema.Array(Schema.Any).pipe(
     Schema.optionalWith({
       default: (): ReadonlyArray<unknown> => [],
@@ -78,7 +79,6 @@ const resourceFields = {
     Schema.Array(Extension),
     Schema.annotations({
       arbitrary: () => (fc) => fc.constant([]),
-      default: [],
     }),
     Schema.optionalWith({
       default: (): ReadonlyArray<Extension> => [],
@@ -95,7 +95,6 @@ const resourceFields = {
     ),
     Schema.annotations({
       arbitrary: () => (fc) => fc.constant([]),
-      default: [],
     }),
     Schema.optionalWith({
       default: (): ReadonlyArray<Extension> => [],
@@ -133,9 +132,9 @@ type ResourceClass<Self, TDomainType extends string> = {
 >
 
 /**
- * Factory that returns a DomainResource mixin class for a given domain type.
+ * Factory that returns a Resource mixin class for a given domain type.
  *
- * The returned class includes all FHIR DomainResource fields: `meta`,
+ * The returned class includes all FHIR Resource fields: `meta`,
  * `text`, `contained`, `extension`, `modifierExtension`, plus `domainType`
  * (a defaulted literal) and an optional branded `url`.
  *

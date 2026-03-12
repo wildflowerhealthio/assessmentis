@@ -5,6 +5,7 @@ import { Arbitrary, Schema } from 'effect'
 import { MergeClasses } from '@assessmentis/util'
 
 import { BackboneElement, type BackboneElementEncoded } from './BackboneElement'
+import type { Extension } from '../special-purpose/Extension'
 
 const BackboneMixin = BackboneElement('TestBackbone')
 
@@ -30,7 +31,7 @@ describe('BackboneElement', () => {
     test('Type.modifierExtension is present', () => {
       expectTypeOf<
         (typeof TestBackbone)['Type']['modifierExtension']
-      >().toExtend<ReadonlyArray<any>>()
+      >().toExtend<ReadonlyArray<Extension>>()
     })
   })
 
@@ -42,7 +43,7 @@ describe('BackboneElement', () => {
     expect(decoded.url).toBeUndefined()
   })
 
-  test('Key static equals the domain type', () => {
+  test('DomainType static equals the domain type', () => {
     expect(TestBackbone.DomainType).toBe('TestBackbone')
   })
 

@@ -1,4 +1,4 @@
-import { Option, Schema } from 'effect'
+import { Schema } from 'effect'
 
 import type { BackboneElement } from '../../data-types/base/BackboneElement'
 import { Code } from '../../data-types/complex/Code'
@@ -24,7 +24,10 @@ export const questionnaireItemUiControlCodeExtension = (
 ): Extension =>
   Extension.make({
     definitionUrl: questionnaireItemControlUrl,
-    valueCode: value,
+    value: {
+      _tag: 'code',
+      code: value,
+    },
   })
 
 /**
@@ -39,14 +42,13 @@ export const getUiControlCode = (
   const ext = be.modifierExtension.find(
     (ext) => ext.definitionUrl == questionnaireItemControlUrl
   )
+  const { value } = ext ?? {}
   const code =
-    ext && 'valueCode' in ext
-      ? Schema.decodeUnknownOption(QuestionnaireItemUIControlCode)(
-          ext.valueCode
-        ).pipe(Option.getOrUndefined)
+    value && value._tag === 'code' && typeof value.code === 'string'
+      ? value.code
       : undefined
 
-  return code
+  return code ? Code.make(code) : undefined
 }
 
 /**

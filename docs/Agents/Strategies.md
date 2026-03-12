@@ -45,6 +45,10 @@ If you discover a gotcha mid-execution, **update the TODO.md immediately** — d
 
 Don't enumerate files to refactor by hand — you'll miss some. Use `grep` or `glob` to find all matches of the pattern you're changing (e.g., `grep -r 'FromFhirR4' src/`), then turn the results into your file list. The Range.ts miss in this refactor is a textbook example.
 
+### Keep the plan current as execution diverges
+
+In multi-session refactors, execution plan sections in TODO.md become stale as implementation diverges from the plan (renamed functions, changed approaches, deleted files). At each phase completion, update or replace plan sections with "what was actually built" summaries. Also update file reference tables — stale entries (e.g., listing files as "DELETE in Phase X" that are already deleted) mislead the next agent.
+
 ### Reference files that actually exist
 
 If you reference another doc (e.g., a plan file), make sure it still exists. Dead links waste the next agent's time. If a plan has been superseded by the TODO.md, say so explicitly rather than linking to a ghost.
@@ -63,6 +67,34 @@ Bad candidates (keep in main context):
 
 - Files with unique structure or special cases
 - Anything requiring judgment calls about the design
+
+## Circular imports in Vite SSR
+
+### `Schema.suspend` does not prevent circular module loading
+
+`Schema.suspend(() => X)` defers schema _evaluation_ but does NOT prevent module _loading_. In Vite SSR, `import { X } from './X'` eagerly triggers the module to load. If module A imports B and B imports A, Vite snapshots A's exports (which are `undefined`) before A finishes executing. Even though the `Schema.suspend` callback runs later, any code that calls `A.Foo()` at class-definition time (outside `Schema.suspend`) will crash with `TypeError: Foo is not a function`. The fix is to restructure so no import chain leads back to the originating module — co-locate circular types in one file or eliminate the cycle entirely.
+
+### Circular dependency chains are often transitive
+
+When debugging circular import errors, the cycle is often not between the two files you expect. A 4-hop chain (A -> B -> C -> D -> A) produces errors in D that look like A is undefined. Read Vite's stack trace bottom-to-top to trace the actual module loading chain. Break the cycle at the root cause, not at intermediate links.
+
+## Effect Schema gotchas
+
+### `.Type` and `.Encoded` on Schema.Class are phantom types
+
+`.Type` and `.Encoded` on Effect `Schema.Class` exist only in TypeScript's type system — they are `undefined` at runtime. Tests must use type-level assertions: `expectTypeOf<(typeof MyClass)['Type']['field']>()` — NOT `expectTypeOf(MyClass.Type.field)`, which crashes with `Cannot read properties of undefined`.
+
+### Arbitrary generation on recursive schemas can explode
+
+`Arbitrary.make()` on schemas with recursive fields (e.g., `extension` arrays via `Schema.suspend`) generates deeply nested structures with many optional fields, causing test timeouts. Fix: annotate the recursive array field with `{ arbitrary: () => (fc) => fc.constant([]) }` so property tests generate empty arrays by default. Place the annotation on the base field definition so all subclasses inherit it automatically.
+
+### Schema.Class instances cannot be reconstructed via Object.create + Object.assign
+
+Effect's `Schema.Class` instances carry internal state from `Data.Class` (hash codes, `_tag`, structural equality metadata). Reconstructing via `Object.create(proto) + Object.assign(result, fields)` produces objects that pass `instanceof` but fail during `Schema.encode`. When you need a modified copy, either mutate in-place (if not frozen) or do a Schema encode -> modify -> decode round-trip through the plain encoded representation.
+
+## Recursive object walkers
+
+When recursively walking Effect Schema-generated values, native built-in objects (`URL`, `Date`, `ReadonlyUrl`, etc.) look like plain objects to `typeof v === 'object'` checks. If walked and reconstructed, they lose their prototypes and fail during encoding. Always add explicit guards (`if (v instanceof URL) return v`) for non-POJO built-in types that might appear in the schema tree.
 
 ## Transient advice
 

@@ -10,23 +10,19 @@ import { DatatypeChoice } from '../../data-types/Datatype'
 import FhirR4ChoiceElements from '../../data-types/fhirR4ChoiceElements'
 import { QuestionnaireItemLink } from '../Questionnaire/QuestionnaireItemLink'
 
-const questionnaireResponseItemAnswerFields =
-  {} as const satisfies Schema.Struct.Fields
+const questionnaireResponseItemAnswerFields = {
+  value: Schema.optional(
+    DatatypeChoice(
+      FhirR4ChoiceElements['QuestionnaireResponse.item.answer.value[x]']
+    )
+  ),
+} as const satisfies Schema.Struct.Fields
 
-class QuestionnaireResponseItemAnswerValue extends DatatypeChoice(
-  'QuestionnaireResponseItemAnswerValue',
-  'value',
-  FhirR4ChoiceElements['QuestionnaireResponse.item.answer.value[x]']
-) {}
-type valueMixinEncoded = Schema.Struct.Encoded<
-  typeof QuestionnaireResponseItemAnswerValue.fields
->
 /** Encoded (wire-format) shape of a {@link QuestionnaireResponseItemAnswer}, including recursive items. */
 export interface QuestionnaireResponseItemAnswerEncoded
   extends
     Schema.Struct.Encoded<typeof questionnaireResponseItemAnswerFields>,
-    BackboneElementEncoded<'QuestionnaireResponseItemAnswer'>,
-    valueMixinEncoded {
+    BackboneElementEncoded<'QuestionnaireResponseItemAnswer'> {
   item?: ReadonlyArray<QuestionnaireResponseItemEncoded> | undefined
 }
 
@@ -50,7 +46,6 @@ export class QuestionnaireResponseItemAnswer extends MergeClasses<QuestionnaireR
     },
   ],
   AnswerBackboneElementMixin,
-  QuestionnaireResponseItemAnswerValue,
   {
     ...questionnaireResponseItemAnswerFields,
 
@@ -188,7 +183,6 @@ const qrLetrec = (fc: typeof FastCheck) =>
       (props) => new QuestionnaireResponseItemAnswer(props),
       questionnaireResponseItemAnswerFields,
       AnswerBackboneElementMixin,
-      QuestionnaireResponseItemAnswerValue,
       (
         fc
       ): FastCheck.Arbitrary<{

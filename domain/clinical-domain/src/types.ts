@@ -4,6 +4,8 @@ import type { Reference } from './data-types/complex/IdentifierAndReference'
  * Filter type for search operations on clinical data resources.
  * Allows filtering by resource properties, converting Reference types to strings.
  * Reference fields also accept `readonly string[]` for FHIR OR-style searching.
+ *
+ * @deprecated no longer used
  */
 export type RepositoryFilters<TResource> = {
   [key in Exclude<

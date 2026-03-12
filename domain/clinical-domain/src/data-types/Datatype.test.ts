@@ -1,353 +1,166 @@
 import * as fc from 'fast-check'
-import { assert, describe, expect, test } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import { Arbitrary, Schema } from 'effect'
-import { capitalize } from 'effect/String'
 
-import { MergeClasses } from '@assessmentis/util'
-
-import { DatatypeChoice } from './Datatype'
+import { Datatype, DatatypeChoice } from './Datatype'
 
 // ---------------------------------------------------------------------------
-// Arbitraries
+// DatatypeChoice — tagged union factory
 // ---------------------------------------------------------------------------
 
-/**
- * Given a set of prefixed keys, generate an object where each key is
- * independently present (opaque non-undefined value) or absent (undefined).
- * Returns both the object and the count of defined keys.
- */
-const presencePatternArb = (keys: ReadonlyArray<string>) =>
-  fc.tuple(...keys.map(() => fc.boolean())).map((flags) => {
-    const obj: Record<string, unknown> = {}
-    let definedCount = 0
-    keys.forEach((key, i) => {
-      obj[key] = flags[i] ? Symbol(key) : undefined
-      if (flags[i]) definedCount++
-    })
-    return { obj, definedCount }
-  })
+describe('DatatypeChoice', () => {
+  const ValueChoice = DatatypeChoice(['string', 'boolean', 'integer'])
+  const decode = Schema.decodeSync(ValueChoice)
+  const decodeUnknown = Schema.decodeUnknownSync(ValueChoice)
+  const encode = Schema.encodeSync(ValueChoice)
 
-// ---------------------------------------------------------------------------
-// DatatypeChoice
-// ---------------------------------------------------------------------------
-
-describe.each([
-  {
-    prefix: 'value' as const,
-    picked: ['string', 'boolean'] as const,
-    Mixin: class Mixin extends DatatypeChoice<
-      Mixin,
-      'value',
-      ['string', 'boolean']
-    >('Mixin', 'value', ['string', 'boolean']) {},
-  },
-  {
-    prefix: 'answered' as const,
-    picked: ['string', 'boolean', 'code'] as const,
-    Mixin: class Mixin extends DatatypeChoice<
-      Mixin,
-      'answered',
-      ['string', 'boolean', 'code']
-    >('Mixin', 'answered', ['string', 'boolean', 'code']) {},
-  },
-])(
-  "A DatatypeChoice with prefix '$prefix' and picked keys $picked",
-  ({ prefix, picked, Mixin }) => {
-    describe('fields', () => {
-      test('property: output has exactly one key per picked key', () => {
-        expect(Object.keys(Mixin.fields)).toHaveLength(picked.length)
-      })
-
-      test('property: every output key equals prefix + capitalize(pickedKey)', () => {
-        const resultKeys = Object.keys(Mixin.fields)
-        const expectedKeys = picked.map((k) => `${prefix}${capitalize(k)}`)
-        expect(new Set(resultKeys)).toEqual(new Set(expectedKeys))
-      })
-
-      test('property: output fields are usable in Schema.Struct decode round-trip', () => {
-        // Should not throw — validates the cast produced valid Schema fields
-        const TestSchema = Schema.Struct(Mixin.fields)
-        // All fields are optional, so an empty object should decode
-        const decoded = Schema.decodeSync(TestSchema)({})
-        expect(decoded).toBeDefined()
-      })
+  describe('schema structure', () => {
+    test('decodes a tagged string variant', () => {
+      const result = decode({ _tag: 'string', string: 'hello' })
+      expect(result).toEqual({ _tag: 'string', string: 'hello' })
     })
 
-    describe('Mixin', () => {
-      describe('all${capitalize(prefix)}Keys', () => {
-        test('property: matches Object.keys(fields)', () => {
-          expect(
-            new Set([...(Mixin as any)[`all${capitalize(prefix)}Keys`]()])
-          ).toEqual(new Set(Object.keys(Mixin.fields)))
-        })
-
-        test('property: idempotent — multiple calls return equal results', () => {
-          expect((Mixin as any)[`all${capitalize(prefix)}Keys`]()).toEqual(
-            (Mixin as any)[`all${capitalize(prefix)}Keys`]()
-          )
-        })
-      })
-
-      describe('choice invariants', () => {
-        test('property: isExactlyOnePresent iff exactly one key is defined', () => {
-          const keys: string[] = (Mixin as any)[
-            `all${capitalize(prefix)}Keys`
-          ]()
-
-          return fc.assert(
-            fc.property(presencePatternArb(keys), ({ obj, definedCount }) => {
-              const instance = Object.assign(
-                Object.create(Mixin.prototype),
-                obj
-              )
-              expect(
-                instance[`isExactlyOne${capitalize(prefix)}Present`]()
-              ).toBe(definedCount === 1)
-            })
-          )
-        })
-
-        test('property: isNonePresent iff zero keys are defined', () => {
-          const keys: string[] = (Mixin as any)[
-            `all${capitalize(prefix)}Keys`
-          ]()
-
-          return fc.assert(
-            fc.property(presencePatternArb(keys), ({ obj, definedCount }) => {
-              const instance = Object.assign(
-                Object.create(Mixin.prototype),
-                obj
-              )
-              expect(instance[`isNo${capitalize(prefix)}Present`]()).toBe(
-                definedCount === 0
-              )
-            })
-          )
-        })
-
-        test('property: isExactlyOnePresent and isNonePresent are never both true', () => {
-          const keys: string[] = (Mixin as any)[
-            `all${capitalize(prefix)}Keys`
-          ]()
-
-          return fc.assert(
-            fc.property(presencePatternArb(keys), ({ obj }) => {
-              const instance = Object.assign(
-                Object.create(Mixin.prototype),
-                obj
-              )
-              if (
-                instance[`isExactlyOne${capitalize(prefix)}Present`]() &&
-                instance[`isNo${capitalize(prefix)}Present`]()
-              ) {
-                assert.fail(
-                  'isExactlyOnePresent and isNonePresent must be mutually exclusive'
-                )
-              }
-            })
-          )
-        })
-
-        test('property: MECE — every presence pattern is classified by exactly one of three cases', () => {
-          const keys: string[] = (Mixin as any)[
-            `all${capitalize(prefix)}Keys`
-          ]()
-
-          return fc.assert(
-            fc.property(presencePatternArb(keys), ({ obj, definedCount }) => {
-              const instance = Object.assign(
-                Object.create(Mixin.prototype),
-                obj
-              )
-              const none = instance[`isNo${capitalize(prefix)}Present`]()
-              const exactlyOne =
-                instance[`isExactlyOne${capitalize(prefix)}Present`]()
-
-              if (definedCount === 0) {
-                expect(none).toBe(true)
-                expect(exactlyOne).toBe(false)
-              } else if (definedCount === 1) {
-                expect(none).toBe(false)
-                expect(exactlyOne).toBe(true)
-              } else {
-                // more than one defined
-                expect(none).toBe(false)
-                expect(exactlyOne).toBe(false)
-              }
-            })
-          )
-        })
-
-        test('property: Every value generated by arbitrary has exactly one key set', () => {
-          // Standalone DatatypeChoice arbitrary produces plain objects
-          // (no prototype methods). Verify the structural constraint
-          // that exactly one value[x] key is set.
-          const keys: string[] = (Mixin as any)[
-            `all${capitalize(prefix)}Keys`
-          ]()
-
-          fc.assert(
-            fc.property(Arbitrary.make(Mixin as any), (instance: any) => {
-              const definedCount = keys.filter(
-                (key) => instance[key] !== undefined
-              ).length
-              expect(definedCount).toBe(1)
-            })
-          )
-        })
-      })
-    })
-  }
-)
-
-// ---------------------------------------------------------------------------
-// DatatypeChoice with MergeClasses
-// ---------------------------------------------------------------------------
-
-class DatatypeChoiceTestValue extends DatatypeChoice(
-  'DatatypeChoiceTestValue',
-  'value',
-  ['string', 'boolean', 'integer']
-) {}
-
-class MergedWithChoice extends MergeClasses<MergedWithChoice>(
-  'MergedWithChoice'
-)([], DatatypeChoiceTestValue, { extra: Schema.String }) {}
-
-describe('DatatypeChoice with MergeClasses', () => {
-  describe('fields', () => {
-    test('merged class has DatatypeChoice fields and plain fields', () => {
-      expect(MergedWithChoice.fields).toHaveProperty('valueString')
-      expect(MergedWithChoice.fields).toHaveProperty('valueBoolean')
-      expect(MergedWithChoice.fields).toHaveProperty('valueInteger')
-      expect(MergedWithChoice.fields).toHaveProperty('extra')
+    test('decodes a tagged boolean variant', () => {
+      const result = decode({ _tag: 'boolean', boolean: true })
+      expect(result).toEqual({ _tag: 'boolean', boolean: true })
     })
 
-    test('no extra fields beyond what was specified', () => {
-      expect(Object.keys(MergedWithChoice.fields)).toHaveLength(4)
+    test('decodes a tagged integer variant', () => {
+      const result = decode({ _tag: 'integer', integer: 42 })
+      expect(result).toEqual({ _tag: 'integer', integer: 42 })
+    })
+
+    test('rejects unknown _tag', () => {
+      expect(() => decodeUnknown({ _tag: 'Quantity', Quantity: 1 })).toThrow()
+    })
+
+    test('rejects missing _tag', () => {
+      expect(() => decodeUnknown({ string: 'hello' })).toThrow()
     })
   })
 
-  describe('static methods', () => {
-    test('allValueKeys returns the prefixed keys', () => {
-      const keys = (
-        MergedWithChoice as unknown as Record<
-          string,
-          () => ReadonlyArray<string>
-        >
-      ).allValueKeys()
-      expect(new Set(keys)).toEqual(
-        new Set(['valueString', 'valueBoolean', 'valueInteger'])
-      )
-    })
-  })
-
-  describe('instance via constructor', () => {
-    const instance = new MergedWithChoice({
-      extra: 'test',
-      valueString: 'hello',
-    })
-
-    test('preserves field values', () => {
-      expect(instance.extra).toBe('test')
-      expect(instance.valueString).toBe('hello')
-    })
-
-    test('isExactlyOneValuePresent when one value is set', () => {
-      expect(
-        (instance as unknown as Record<string, unknown>)
-          .isExactlyOneValuePresent
-      ).toBeTypeOf('function')
-      expect(
-        (
-          instance as unknown as { isExactlyOneValuePresent(): boolean }
-        ).isExactlyOneValuePresent()
-      ).toBe(true)
-    })
-
-    test('isNoValuePresent when no values are set', () => {
-      const empty = new MergedWithChoice({ extra: 'x' })
-      expect(
-        (empty as unknown as { isNoValuePresent(): boolean }).isNoValuePresent()
-      ).toBe(true)
-    })
-
-    test('isExactlyOneValuePresent false when multiple values set', () => {
-      const multi = new MergedWithChoice({
-        extra: 'x',
-        valueString: 'a',
-        valueBoolean: true,
-      })
-      expect(
-        (
-          multi as unknown as { isExactlyOneValuePresent(): boolean }
-        ).isExactlyOneValuePresent()
-      ).toBe(false)
-    })
-  })
-
-  describe('instance via make()', () => {
-    test('preserves field values', () => {
-      const instance = MergedWithChoice.make({
-        extra: 'world',
-        valueInteger: 42,
-      })
-      expect(instance.extra).toBe('world')
-      expect(instance.valueInteger).toBe(42)
-    })
-
-    test('choice methods work on make() instances', () => {
-      const instance = MergedWithChoice.make({
-        extra: 'world',
-        valueInteger: 42,
-      })
-      expect(
-        (
-          instance as unknown as { isExactlyOneValuePresent(): boolean }
-        ).isExactlyOneValuePresent()
-      ).toBe(true)
-    })
-  })
-
-  describe('Schema.decode', () => {
-    const decode = Schema.decodeUnknownSync(MergedWithChoice)
-
-    test('decodes valid input', () => {
-      const result = decode({ extra: 'decoded', valueString: 'hi' })
-      expect(result.extra).toBe('decoded')
-      expect(result.valueString).toBe('hi')
-    })
-
-    test('decoded instances have choice methods', () => {
-      const result = decode({ extra: 'decoded', valueBoolean: true })
-      expect(
-        (
-          result as unknown as { isExactlyOneValuePresent(): boolean }
-        ).isExactlyOneValuePresent()
-      ).toBe(true)
-    })
-
-    test('rejects invalid input', () => {
-      expect(() => decode({ extra: 123 })).toThrow()
-    })
-  })
-
-  describe('choice invariants through MergeClasses', () => {
-    test('property: isExactlyOnePresent and isNoPresent are correct', () => {
-      const keys = ['valueString', 'valueBoolean', 'valueInteger'] as const
-
+  describe('round-trip encode/decode', () => {
+    test('property: encode ∘ decode is identity', () => {
+      const arb = Arbitrary.make(ValueChoice)
       fc.assert(
-        fc.property(presencePatternArb(keys), ({ obj, definedCount }) => {
-          const instance = Object.assign(
-            new MergedWithChoice({ extra: 'test' }),
-            obj
-          )
-          const asRecord = instance as unknown as Record<string, () => boolean>
-          expect(asRecord.isExactlyOneValuePresent()).toBe(definedCount === 1)
-          expect(asRecord.isNoValuePresent()).toBe(definedCount === 0)
-        }),
-        { numRuns: 20 }
+        fc.property(arb, (value) => {
+          const encoded = encode(value)
+          const decoded = decode(encoded)
+          expect(decoded).toEqual(value)
+        })
       )
     })
+  })
+
+  describe('arbitrary generation', () => {
+    test('property: every generated value has exactly one _tag from the allowed set', () => {
+      const allowedTags = new Set(['string', 'boolean', 'integer'])
+      const arb = Arbitrary.make(ValueChoice)
+      fc.assert(
+        fc.property(arb, (value) => {
+          expect(allowedTags.has(value._tag)).toBe(true)
+          // Verify the variant carries its named field
+          switch (value._tag) {
+            case 'string':
+              expect(value.string).toBeDefined()
+              break
+            case 'boolean':
+              expect(value.boolean).toBeDefined()
+              break
+            case 'integer':
+              expect(value.integer).toBeDefined()
+              break
+          }
+        })
+      )
+    })
+  })
+
+  describe('type narrowing', () => {
+    test('_tag narrows to specific variant', () => {
+      const value = decode({ _tag: 'string', string: 'test' })
+      if (value._tag === 'string') {
+        // TypeScript narrows this — accessing .string is type-safe
+        expect(value.string).toBe('test')
+      }
+    })
+  })
+
+  describe('as Schema.optional field', () => {
+    const ResourceSchema = Schema.Struct({
+      value: Schema.optional(ValueChoice),
+      name: Schema.String,
+    })
+    const decodeResource = Schema.decodeSync(ResourceSchema)
+
+    test('decodes with value present', () => {
+      const result = decodeResource({
+        name: 'test',
+        value: { _tag: 'integer', integer: 99 },
+      })
+      expect(result.value).toEqual({ _tag: 'integer', integer: 99 })
+    })
+
+    test('decodes with value absent', () => {
+      const result = decodeResource({ name: 'test' })
+      expect(result.value).toBeUndefined()
+    })
+
+    test('property: arbitrary generates valid optional values', () => {
+      const arb = Arbitrary.make(ResourceSchema)
+      fc.assert(
+        fc.property(arb, (resource) => {
+          expect(resource.name).toBeTypeOf('string')
+          if (resource.value !== undefined) {
+            expect(resource.value._tag).toBeTypeOf('string')
+          }
+        })
+      )
+    })
+  })
+})
+
+// ---------------------------------------------------------------------------
+// DatatypeChoice with overrideFields
+// ---------------------------------------------------------------------------
+
+describe('DatatypeChoice with overrideFields', () => {
+  const CustomStringSchema = Schema.String.pipe(
+    Schema.minLength(1),
+    Schema.maxLength(10)
+  )
+  const CustomStringDatatype = Datatype('string', CustomStringSchema)
+
+  const ChoiceWithOverride = DatatypeChoice(
+    ['string', 'boolean'],
+    [CustomStringDatatype]
+  )
+  const decode = Schema.decodeSync(ChoiceWithOverride)
+
+  test('override schema is used for the specified type', () => {
+    // Valid: string within 1-10 chars
+    expect(() => decode({ _tag: 'string', string: 'hello' })).not.toThrow()
+    // Invalid: empty string violates minLength(1)
+    expect(() => decode({ _tag: 'string', string: '' })).toThrow()
+    // Invalid: too long
+    expect(() =>
+      decode({ _tag: 'string', string: 'this is way too long' })
+    ).toThrow()
+  })
+
+  test('non-overridden type uses default schema', () => {
+    expect(() => decode({ _tag: 'boolean', boolean: true })).not.toThrow()
+  })
+
+  test('property: arbitrary respects override constraints', () => {
+    const arb = Arbitrary.make(ChoiceWithOverride)
+    fc.assert(
+      fc.property(arb, (value) => {
+        if (value._tag === 'string') {
+          expect(value.string.length).toBeGreaterThanOrEqual(1)
+          expect(value.string.length).toBeLessThanOrEqual(10)
+        }
+      })
+    )
   })
 })

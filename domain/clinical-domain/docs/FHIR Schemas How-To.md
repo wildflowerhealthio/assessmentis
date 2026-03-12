@@ -14,7 +14,7 @@ const MyResourceFromFhirR4 = Schema.Struct({
 })
   .annotations({ identifier: 'MyResourceFromFhirR4' })
   .pipe(
-    Schema.extend(DomainResource(MyResourceId)),
+    Schema.extend(Resource(MyResourceId)),
     Schema.compose(
       Schema.typeSchema(Schema.Unknown) as Schema.Schema<
         MyResource,

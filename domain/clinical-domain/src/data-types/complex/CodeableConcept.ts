@@ -6,8 +6,8 @@ import { Element, type ElementEncoded } from '../base/Element'
 import { Datatype } from '../Datatype'
 import { Coding, type CodingEncoded } from './Coding'
 
-export const Key = 'CodeableConcept'
-export type Key = typeof Key
+export const DomainType = 'CodeableConcept'
+export type DomainType = typeof DomainType
 
 const fields = {
   /**
@@ -29,15 +29,15 @@ const fields = {
 
 /** Encoded (wire-format) shape of a {@link CodeableConcept}. */
 export interface CodeableConceptEncoded
-  extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<Key> {}
+  extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<DomainType> {}
 
-const ElementMixin = Element<Key>(Key)
+const ElementMixin = Element<DomainType>(DomainType)
 
 /**
  * A concept that may be defined by one or more coding systems. Wraps an
  * array of {@link Coding} values plus optional free-text.
  */
-export class CodeableConcept extends MergeClasses<CodeableConcept>(Key)(
+export class CodeableConcept extends MergeClasses<CodeableConcept>(DomainType)(
   [],
   ElementMixin,
   fields

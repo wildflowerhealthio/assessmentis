@@ -14,8 +14,8 @@ import { CompositionEventSchema } from './CompositionEvent'
 import { CompositionRelatesToSchema } from './CompositionRelatesTo'
 import { CompositionSection } from './CompositionSection'
 
-const Key = 'Composition' as const
-type Key = typeof Key
+const DomainType = 'Composition' as const
+type DomainType = typeof DomainType
 
 const fields = {
   identifier: Schema.optional(Schema.suspend(() => Identifier)),
@@ -40,17 +40,17 @@ const fields = {
   section: Schema.optional(Schema.Array(CompositionSection)),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(Key)
+const resourceMixin = Resource(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Composition}. */
 export interface CompositionEncoded
-  extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<Key> {}
+  extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<DomainType> {}
 
 /**
  * A set of resources composed into a single coherent clinical statement with
  * clinical attestation.
  */
-export class Composition extends MergeClasses<Composition>(Key)(
+export class Composition extends MergeClasses<Composition>(DomainType)(
   [],
   resourceMixin,
   fields

@@ -5,7 +5,7 @@ import { MergeClasses } from '@assessmentis/util'
 import { Element, type ElementEncoded } from '../base/Element'
 import { Code } from './Code'
 
-const Key = 'Attachment'
+const DomainType = 'Attachment'
 
 const fields = {
   /**
@@ -21,9 +21,10 @@ const fields = {
    * The actual data of the attachment - a sequence of bytes, base64 encoded.
    */
   data: Schema.optional(Schema.String),
-  /**
-   * A location where the data can be accessed.
-   */
+  /** A location where the data can be accessed.
+   *
+   * @remarks Renamed from FHIR R4's `url` to avoid collision with the
+   * branded persistence URL on Element. */
   dataUrl: Schema.optional(Schema.String),
   /**
    * The number of bytes of data that make up this attachment (before base64 encoding, if that is done).
@@ -45,15 +46,17 @@ const fields = {
 
 /** Encoded (wire-format) shape of an {@link Attachment}. */
 export interface AttachmentEncoded
-  extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<typeof Key> {}
+  extends
+    Schema.Struct.Encoded<typeof fields>,
+    ElementEncoded<typeof DomainType> {}
 
-const ElementMixin = Element(Key)
+const ElementMixin = Element(DomainType)
 /**
  * For identifying specific representations or attachments.
  * This data type is used for all attachments including images, documents, etc.
  * Note: Per FHIR spec, if data is present, contentType SHALL be populated.
  */
-export class Attachment extends MergeClasses<Attachment>(Key)(
+export class Attachment extends MergeClasses<Attachment>(DomainType)(
   [],
   ElementMixin,
   fields

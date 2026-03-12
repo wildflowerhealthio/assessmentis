@@ -14,8 +14,8 @@ import {
   type QuestionnaireResponseItemEncoded,
 } from './QuestionnaireResponseItem'
 
-const Key = 'QuestionnaireResponse' as const
-type Key = typeof Key
+const DomainType = 'QuestionnaireResponse' as const
+type DomainType = typeof DomainType
 
 /** FHIR R4 questionnaire response lifecycle status values. */
 export const QuestionnaireResponseStatus = Schema.Enums({
@@ -39,11 +39,11 @@ const fields = {
   subject: Schema.optional(Schema.suspend(() => Reference)),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(Key)
+const resourceMixin = Resource(DomainType)
 
 /** Encoded (wire-format) shape of a {@link QuestionnaireResponse}, including recursive items. */
 export interface QuestionnaireResponseEncoded
-  extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<Key> {
+  extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<DomainType> {
   readonly item?: ReadonlyArray<QuestionnaireResponseItemEncoded> | undefined
 }
 
@@ -51,7 +51,7 @@ export interface QuestionnaireResponseEncoded
  * A structured set of questions and their answers.
  */
 export class QuestionnaireResponse extends MergeClasses<QuestionnaireResponse>(
-  Key
+  DomainType
 )([], resourceMixin, fields, {
   item: Schema.optional(
     Schema.Array(

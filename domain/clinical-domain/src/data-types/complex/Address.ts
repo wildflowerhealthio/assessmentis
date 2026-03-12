@@ -2,7 +2,7 @@ import { Schema } from 'effect'
 
 import { Period } from './Period'
 
-const Key = 'Address'
+const DomainType = 'Address'
 
 const fields = {
   /**
@@ -36,7 +36,9 @@ const fields = {
   /**
    * This component contains the house number, apartment number, street name, street direction, P.O. Box number, delivery hints, and similar address information.
    */
-  line: Schema.Array(Schema.String),
+  line: Schema.Array(Schema.String).pipe(
+    Schema.optionalWith({ default: () => [] as ReadonlyArray<string> })
+  ),
   /**
    * The name of the city, town, suburb, village or other community or delivery center.
    */
@@ -70,6 +72,6 @@ export interface AddressEncoded extends Schema.Struct.Encoded<typeof fields> {}
  * An address expressed using postal conventions
  * (as opposed to GPS or other location definition formats).
  */
-export class Address extends Schema.Class<Address>(Key)(fields) {
-  static readonly DomainType = Key
+export class Address extends Schema.Class<Address>(DomainType)(fields) {
+  static readonly DomainType = DomainType
 }

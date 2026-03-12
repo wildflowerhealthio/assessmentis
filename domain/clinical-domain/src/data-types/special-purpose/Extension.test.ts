@@ -1,135 +1,106 @@
 import * as fc from 'fast-check'
 import { describe, expect, test } from 'vitest'
 import { Arbitrary, Schema } from 'effect'
-import { capitalize } from 'effect/String'
 
-import { AllDatatypeKeys } from '../Datatype'
+import { AllDatatypeNames } from '../Datatype'
 import { Extension } from './Extension'
 
-const decode = Schema.decodeSync(Extension)
-
-// Expected value[x] option keys — derived from the same source as the
-// production code so the test stays in sync with AllDatatypeKeys.
-const expectedOptionKeys = [...AllDatatypeKeys].map(
-  (k) => `value${capitalize(k)}`
-)
-
-// Map of value[x] key → a sample value that satisfies the field's schema.
-// Typed primitives need their specific type; Schema.Unknown keys accept anything.
-const sampleValueForKey = (key: string): unknown => {
-  switch (key) {
-    case 'valueBoolean':
-      return true
-    case 'valueDecimal':
-    case 'valueInteger':
-      return 42
-    case 'valueDate':
-      return '2024-01-01'
-    case 'valueDateTime':
-      return '2024-01-01T00:00:00Z'
-    default:
-      return 'sentinel'
-  }
-}
-
-// Arbitrary: a single random option key
-const optionKeyArb = fc.constantFrom(...expectedOptionKeys)
-
-// Arbitrary: exactly two distinct option keys
-const twoOptionKeysArb = fc
-  .subarray(expectedOptionKeys, { minLength: 2, maxLength: 2 })
-  .filter((arr) => arr.length === 2)
+// Use decodeUnknown since we're constructing raw wire-format objects
+const decode = Schema.decodeUnknownSync(Extension)
 
 describe('Extension', () => {
-  test('Element mixin: Key static equals "Extension"', () => {
+  test('DomainType static equals "Extension"', () => {
     expect(Extension.DomainType).toBe('Extension')
   })
 
-  test('DatatypeChoice mixin: allValueKeys matches all value-prefixed datatype keys', () => {
-    expect(new Set(Extension.allValueKeys())).toEqual(
-      new Set(expectedOptionKeys)
-    )
-  })
-
-  test('property: minimal decode defaults domainType, extension, and all value[x] to absent', () => {
+  test('property: minimal decode defaults domainType and extension', () => {
     fc.assert(
       fc.property(fc.string({ minLength: 1 }), (url) => {
         const ext = decode({ definitionUrl: url })
         expect(ext.domainType).toBe('Extension')
         expect(ext.extension).toEqual([])
         expect(ext.definitionUrl).toBe(url)
+        expect(ext.value).toBeUndefined()
       })
     )
   })
 
-  test('property: isNonePresent is true when no value[x] key is set', () => {
-    fc.assert(
-      fc.property(fc.string({ minLength: 1 }), (url) => {
-        const ext = decode({ definitionUrl: url }) as Extension
-        expect(ext.isNoValuePresent()).toBe(true)
-      })
-    )
+  test('decodes with a string value variant', () => {
+    const ext = decode({
+      definitionUrl: 'http://test',
+      value: { _tag: 'string', string: 'hello' },
+    })
+    expect(ext.value?._tag).toBe('string')
+    if (ext.value?._tag === 'string') {
+      expect(ext.value.string).toBe('hello')
+    }
   })
 
-  test('property: setting exactly one value[x] key makes isExactlyOnePresent true', () => {
-    fc.assert(
-      fc.property(optionKeyArb, (key) => {
-        const ext = decode({
-          definitionUrl: 'http://test',
-          [key]: sampleValueForKey(key),
-        }) as Extension
-        expect(ext.isExactlyOneValuePresent()).toBe(true)
-        expect(ext.isNoValuePresent()).toBe(false)
-      })
-    )
+  test('decodes with a boolean value variant', () => {
+    const ext = decode({
+      definitionUrl: 'http://test',
+      value: { _tag: 'boolean', boolean: true },
+    })
+    expect(ext.value?._tag).toBe('boolean')
+    if (ext.value?._tag === 'boolean') {
+      expect(ext.value.boolean).toBe(true)
+    }
   })
 
-  test('property: setting two value[x] keys → isExactlyOneValuePresent false, isNoValuePresent false', () => {
-    fc.assert(
-      fc.property(twoOptionKeysArb, ([keyA, keyB]) => {
-        const ext = decode({
-          definitionUrl: 'http://test',
-          [keyA]: sampleValueForKey(keyA),
-          [keyB]: sampleValueForKey(keyB),
-        }) as Extension
-        expect(ext.isExactlyOneValuePresent()).toBe(false)
-        expect(ext.isNoValuePresent()).toBe(false)
-      })
-    )
+  test('decodes with value absent', () => {
+    const ext = decode({ definitionUrl: 'http://test' })
+    expect(ext.value).toBeUndefined()
   })
 
-  test('property: Arbitrary.make produces Extensions with one-or-none value and correct prototype', () => {
+  test('rejects unknown _tag in value', () => {
+    expect(() =>
+      decode({
+        definitionUrl: 'http://test',
+        value: { _tag: 'notAType', notAType: 'x' },
+      })
+    ).toThrow()
+  })
+
+  test('property: value _tag is always a valid DatatypeName', () => {
+    const allowedTags = new Set(AllDatatypeNames)
     const arb = Arbitrary.make(Extension)
     fc.assert(
       fc.property(arb, (ext) => {
         expect(ext).toBeInstanceOf(Extension)
-        expect(typeof ext.isExactlyOneValuePresent).toBe('function')
-        expect(typeof ext.isNoValuePresent).toBe('function')
-
-        const none = ext.isNoValuePresent()
-        const one = ext.isExactlyOneValuePresent()
-        // Must be exactly one of: none present or one present
-        expect(none || one).toBe(true)
-        expect(none && one).toBe(false)
+        if (ext.value !== undefined) {
+          expect(allowedTags.has(ext.value._tag)).toBe(true)
+        }
       })
     )
   })
 
-  test('self-recursive: decodes nested extensions preserving value[x]', () => {
+  test('self-recursive: decodes nested extensions preserving value', () => {
     const ext = decode({
       definitionUrl: 'http://outer',
-      valueString: 'outer-value',
+      value: { _tag: 'string', string: 'outer-value' },
       extension: [
         {
           definitionUrl: 'http://inner',
-          valueInteger: 42,
+          value: { _tag: 'integer', integer: 42 },
         },
       ],
     })
     expect(ext.extension).toHaveLength(1)
     expect(ext.extension[0].definitionUrl).toBe('http://inner')
-    // Child is also an Extension with mixin methods
-    const child = ext.extension[0] as Extension
-    expect(child.isExactlyOneValuePresent()).toBe(true)
+    expect(ext.extension[0].value?._tag).toBe('integer')
+    if (ext.extension[0].value?._tag === 'integer') {
+      expect(ext.extension[0].value.integer).toBe(42)
+    }
+  })
+
+  test('round-trip encode/decode preserves value', () => {
+    const encode = Schema.encodeSync(Extension)
+    const input = decode({
+      definitionUrl: 'http://test',
+      value: { _tag: 'dateTime', dateTime: '2024-01-01T00:00:00Z' },
+    })
+    const encoded = encode(input)
+    const reDecoded = decode(encoded)
+    expect(reDecoded.value?._tag).toBe('dateTime')
   })
 })

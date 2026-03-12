@@ -7,7 +7,7 @@ import type { BackboneElement } from '../../data-types/base/BackboneElement'
  * Custom FHIR extension recording when a questionnaire item was answered.
  *
  * @remarks
- * Stores a `valueDateTime` under the `questionnaire-item-answered-at` definition URL.
+ * Stores a dateTime value under the `questionnaire-item-answered-at` definition URL.
  * Provides `make`, `get`, and `with` helpers for constructing, reading, and
  * updating the extension on backbone elements.
  */
@@ -19,8 +19,8 @@ export class QuestionnaireItemAnsweredAtExtension {
   ): Extension {
     return new Extension(
       {
-        ...data,
         definitionUrl: QuestionnaireItemAnsweredAtExtension.definitionUrl,
+        value: { _tag: 'dateTime', dateTime: data.valueDateTime },
       },
       options
     )
@@ -34,11 +34,13 @@ export class QuestionnaireItemAnsweredAtExtension {
     const ext = be.modifierExtension.find(
       (ext) => ext.definitionUrl == this.definitionUrl
     )
-    return ext && 'valueDateTime' in ext ? ext.valueDateTime : undefined
+    return ext && ext.value?._tag === 'dateTime'
+      ? ext.value?.dateTime
+      : undefined
   }
 
   /**
-   * Returns a copy of `t` with the answered-at modifier extension set (or removed if `undefined`).
+   * Returns a copy of \`t\` with the answered-at modifier extension set (or removed if \`undefined\`).
    */
   static with<T extends { modifierExtension: ReadonlyArray<Extension> }>(
     t: T,
@@ -52,10 +54,10 @@ export class QuestionnaireItemAnsweredAtExtension {
         ),
         ...(valueDateTime
           ? [
-              {
+              Extension.make({
                 definitionUrl: this.definitionUrl,
-                valueDateTime: valueDateTime,
-              },
+                value: { _tag: 'dateTime', dateTime: valueDateTime },
+              }),
             ]
           : []),
       ],

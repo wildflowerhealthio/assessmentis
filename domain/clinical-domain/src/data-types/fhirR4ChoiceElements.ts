@@ -535,6 +535,7 @@ const FhirR4ChoiceElements = {
     'Reference',
     'SampledData',
     'Signature',
+    'SimpleQuantity',
     'Timing',
     'MetaDataTypes',
     'ContactDetail',

@@ -1,7 +1,7 @@
-import { Arbitrary, Schema, type FastCheck } from 'effect'
-import { capitalize } from 'effect/String'
+import type { ParseResult, SchemaAST } from 'effect'
+import { Arbitrary, Effect, Schema } from 'effect'
 
-import type FhirR4ChoiceElements from './fhirR4ChoiceElements'
+import FhirR4ChoiceElements from './fhirR4ChoiceElements'
 
 /**
  * A named FHIR data type paired with its Effect Schema. Used to build
@@ -45,24 +45,43 @@ export const UriDatatype = Datatype('uri', Schema.String)
 export const UrlDatatype = Datatype('url', Schema.String)
 export const CanonicalDatatype = Datatype('canonical', Schema.String)
 
-type FhirR4DatatypeOptionNames =
-  FhirR4ChoiceElements[keyof FhirR4ChoiceElements][number]
-
+// The `any` here is intentional for maximum compatibility on the input side —
+// `Schema.declare` parameterizes the *decoded* type, and using `unknown` would
+// be overly restrictive for a pass-through placeholder. With `any`, the schema
+// accepts any encoded value and maps to `unknown` on the decoded side, so the
+// `any` never leaks into consumer code and carries no type-safety risk.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const UnknownFromAny = Schema.declare<any>(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (_input: unknown): _input is any => true
-).pipe(
-  Schema.annotations({
+const PermissivePassthrough = Schema.declare<unknown, any, []>(
+  [],
+  {
+    encode:
+      () =>
+      (
+        x: unknown,
+        _options: SchemaAST.ParseOptions,
+        _declaration: SchemaAST.Declaration
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ): Effect.Effect<any, ParseResult.ParseIssue, never> =>
+        Effect.succeed(x),
+    decode:
+      () =>
+      (
+        x: unknown,
+        _options: SchemaAST.ParseOptions,
+        _declaration: SchemaAST.Declaration
+      ): Effect.Effect<unknown, ParseResult.ParseIssue, never> =>
+        Effect.succeed(x),
+  },
+  {
     description: 'A placeholder schema that accepts any value.',
     arbitrary: () => Arbitrary.makeLazy(Schema.Object),
-  })
+  }
 )
 
 /**
  * Lookup table of all FHIR R4 data type names to their {@link Datatype}
  * definitions. Primitive types use typed schemas; complex types that are not
- * yet fully modeled use a permissive `UnknownFromAny` placeholder.
+ * yet fully modeled use a permissive `PermissivePassthrough` placeholder.
  */
 export const baseDatatypes = {
   string: StringDatatype,
@@ -75,397 +94,112 @@ export const baseDatatypes = {
   uri: UriDatatype,
   url: UrlDatatype,
   canonical: CanonicalDatatype,
-  code: Datatype('code', UnknownFromAny),
-  Reference: Datatype('Reference', UnknownFromAny),
-  Identifier: Datatype('Identifier', UnknownFromAny),
+  code: Datatype('code', PermissivePassthrough),
+  Reference: Datatype('Reference', PermissivePassthrough),
+  Identifier: Datatype('Identifier', PermissivePassthrough),
   // Primitive types
-  base64Binary: Datatype('base64Binary', UnknownFromAny),
-  id: Datatype('id', UnknownFromAny),
-  instant: Datatype('instant', UnknownFromAny),
-  markdown: Datatype('markdown', UnknownFromAny),
-  oid: Datatype('oid', UnknownFromAny),
-  positiveInt: Datatype('positiveInt', UnknownFromAny),
-  unsignedInt: Datatype('unsignedInt', UnknownFromAny),
-  uuid: Datatype('uuid', UnknownFromAny),
+  base64Binary: Datatype('base64Binary', PermissivePassthrough),
+  id: Datatype('id', PermissivePassthrough),
+  instant: Datatype('instant', PermissivePassthrough),
+  markdown: Datatype('markdown', PermissivePassthrough),
+  oid: Datatype('oid', PermissivePassthrough),
+  positiveInt: Datatype('positiveInt', PermissivePassthrough),
+  unsignedInt: Datatype('unsignedInt', PermissivePassthrough),
+  uuid: Datatype('uuid', PermissivePassthrough),
   // Complex data types
-  Address: Datatype('Address', UnknownFromAny),
-  Age: Datatype('Age', UnknownFromAny),
-  Annotation: Datatype('Annotation', UnknownFromAny),
-  Attachment: Datatype('Attachment', UnknownFromAny),
-  CodeableConcept: Datatype('CodeableConcept', UnknownFromAny),
-  Coding: Datatype('Coding', UnknownFromAny),
-  ContactPoint: Datatype('ContactPoint', UnknownFromAny),
-  Count: Datatype('Count', UnknownFromAny),
-  Distance: Datatype('Distance', UnknownFromAny),
-  Duration: Datatype('Duration', UnknownFromAny),
-  HumanName: Datatype('HumanName', UnknownFromAny),
-  Money: Datatype('Money', UnknownFromAny),
-  Period: Datatype('Period', UnknownFromAny),
-  Quantity: Datatype('Quantity', UnknownFromAny),
-  Range: Datatype('Range', UnknownFromAny),
-  Ratio: Datatype('Ratio', UnknownFromAny),
-  SampledData: Datatype('SampledData', UnknownFromAny),
-  Signature: Datatype('Signature', UnknownFromAny),
-  SimpleQuantity: Datatype('SimpleQuantity', UnknownFromAny),
-  Timing: Datatype('Timing', UnknownFromAny),
+  Address: Datatype('Address', PermissivePassthrough),
+  Age: Datatype('Age', PermissivePassthrough),
+  Annotation: Datatype('Annotation', PermissivePassthrough),
+  Attachment: Datatype('Attachment', PermissivePassthrough),
+  CodeableConcept: Datatype('CodeableConcept', PermissivePassthrough),
+  Coding: Datatype('Coding', PermissivePassthrough),
+  ContactPoint: Datatype('ContactPoint', PermissivePassthrough),
+  Count: Datatype('Count', PermissivePassthrough),
+  Distance: Datatype('Distance', PermissivePassthrough),
+  Duration: Datatype('Duration', PermissivePassthrough),
+  HumanName: Datatype('HumanName', PermissivePassthrough),
+  Money: Datatype('Money', PermissivePassthrough),
+  Period: Datatype('Period', PermissivePassthrough),
+  Quantity: Datatype('Quantity', PermissivePassthrough),
+  Range: Datatype('Range', PermissivePassthrough),
+  Ratio: Datatype('Ratio', PermissivePassthrough),
+  SampledData: Datatype('SampledData', PermissivePassthrough),
+  Signature: Datatype('Signature', PermissivePassthrough),
+  SimpleQuantity: Datatype('SimpleQuantity', PermissivePassthrough),
+  Timing: Datatype('Timing', PermissivePassthrough),
   // Metadata types
-  MetaDataTypes: Datatype('MetaDataTypes', UnknownFromAny),
-  ContactDetail: Datatype('ContactDetail', UnknownFromAny),
-  Contributor: Datatype('Contributor', UnknownFromAny),
-  DataRequirement: Datatype('DataRequirement', UnknownFromAny),
-  Expression: Datatype('Expression', UnknownFromAny),
-  ParameterDefinition: Datatype('ParameterDefinition', UnknownFromAny),
-  RelatedArtifact: Datatype('RelatedArtifact', UnknownFromAny),
-  TriggerDefinition: Datatype('TriggerDefinition', UnknownFromAny),
-  UsageContext: Datatype('UsageContext', UnknownFromAny),
+  MetaDataTypes: Datatype('MetaDataTypes', PermissivePassthrough),
+  ContactDetail: Datatype('ContactDetail', PermissivePassthrough),
+  Contributor: Datatype('Contributor', PermissivePassthrough),
+  DataRequirement: Datatype('DataRequirement', PermissivePassthrough),
+  Expression: Datatype('Expression', PermissivePassthrough),
+  ParameterDefinition: Datatype('ParameterDefinition', PermissivePassthrough),
+  RelatedArtifact: Datatype('RelatedArtifact', PermissivePassthrough),
+  TriggerDefinition: Datatype('TriggerDefinition', PermissivePassthrough),
+  UsageContext: Datatype('UsageContext', PermissivePassthrough),
   // Special types
-  Dosage: Datatype('Dosage', UnknownFromAny),
-  Meta: Datatype('Meta', UnknownFromAny),
-  // Wildcard
-  '*': Datatype('*', UnknownFromAny),
-} as const satisfies {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readonly [K in FhirR4DatatypeOptionNames]: Datatype<K, any, any>
-}
+  Dosage: Datatype('Dosage', PermissivePassthrough),
+  Meta: Datatype('Meta', PermissivePassthrough),
+} as const
 
-const arbitraries: {
-  [K in keyof typeof baseDatatypes]: FastCheck.Arbitrary<
-    Schema.Schema.Type<(typeof baseDatatypes)[K]['schema']>
-  >
-} = {
-  string: Arbitrary.make(baseDatatypes.string.schema),
-  boolean: Arbitrary.make(baseDatatypes.boolean.schema),
-  decimal: Arbitrary.make(baseDatatypes.decimal.schema),
-  integer: Arbitrary.make(baseDatatypes.integer.schema),
-  date: Arbitrary.make(baseDatatypes.date.schema),
-  dateTime: Arbitrary.make(baseDatatypes.dateTime.schema),
-  time: Arbitrary.make(baseDatatypes.time.schema),
-  uri: Arbitrary.make(baseDatatypes.uri.schema),
-  url: Arbitrary.make(baseDatatypes.url.schema),
-  canonical: Arbitrary.make(baseDatatypes.canonical.schema),
-  code: Arbitrary.make(baseDatatypes.code.schema),
-  Reference: Arbitrary.make(baseDatatypes.Reference.schema),
-  Identifier: Arbitrary.make(baseDatatypes.Identifier.schema),
-  // Primitive types
-  base64Binary: Arbitrary.make(baseDatatypes.base64Binary.schema),
-  id: Arbitrary.make(baseDatatypes.id.schema),
-  instant: Arbitrary.make(baseDatatypes.instant.schema),
-  markdown: Arbitrary.make(baseDatatypes.markdown.schema),
-  oid: Arbitrary.make(baseDatatypes.oid.schema),
-  positiveInt: Arbitrary.make(baseDatatypes.positiveInt.schema),
-  unsignedInt: Arbitrary.make(baseDatatypes.unsignedInt.schema),
-  uuid: Arbitrary.make(baseDatatypes.uuid.schema),
-  // Complex data types
-  Address: Arbitrary.make(baseDatatypes.Address.schema),
-  Age: Arbitrary.make(baseDatatypes.Age.schema),
-  Annotation: Arbitrary.make(baseDatatypes.Annotation.schema),
-  Attachment: Arbitrary.make(baseDatatypes.Attachment.schema),
-  CodeableConcept: Arbitrary.make(baseDatatypes.CodeableConcept.schema),
-  Coding: Arbitrary.make(baseDatatypes.Coding.schema),
-  ContactPoint: Arbitrary.make(baseDatatypes.ContactPoint.schema),
-  Count: Arbitrary.make(baseDatatypes.Count.schema),
-  Distance: Arbitrary.make(baseDatatypes.Distance.schema),
-  Duration: Arbitrary.make(baseDatatypes.Duration.schema),
-  HumanName: Arbitrary.make(baseDatatypes.HumanName.schema),
-  Money: Arbitrary.make(baseDatatypes.Money.schema),
-  Period: Arbitrary.make(baseDatatypes.Period.schema),
-  Quantity: Arbitrary.make(baseDatatypes.Quantity.schema),
-  Range: Arbitrary.make(baseDatatypes.Range.schema),
-  Ratio: Arbitrary.make(baseDatatypes.Ratio.schema),
-  SampledData: Arbitrary.make(baseDatatypes.SampledData.schema),
-  Signature: Arbitrary.make(baseDatatypes.Signature.schema),
-  SimpleQuantity: Arbitrary.make(baseDatatypes.SimpleQuantity.schema),
-  Timing: Arbitrary.make(baseDatatypes.Timing.schema),
-  // Metadata types
-  MetaDataTypes: Arbitrary.make(baseDatatypes.MetaDataTypes.schema),
-  ContactDetail: Arbitrary.make(baseDatatypes.ContactDetail.schema),
-  Contributor: Arbitrary.make(baseDatatypes.Contributor.schema),
-  DataRequirement: Arbitrary.make(baseDatatypes.DataRequirement.schema),
-  Expression: Arbitrary.make(baseDatatypes.Expression.schema),
-  ParameterDefinition: Arbitrary.make(baseDatatypes.ParameterDefinition.schema),
-  RelatedArtifact: Arbitrary.make(baseDatatypes.RelatedArtifact.schema),
-  TriggerDefinition: Arbitrary.make(baseDatatypes.TriggerDefinition.schema),
-  UsageContext: Arbitrary.make(baseDatatypes.UsageContext.schema),
-  // Special types
-  Dosage: Arbitrary.make(baseDatatypes.Dosage.schema),
-  Meta: Arbitrary.make(baseDatatypes.Meta.schema),
-  // Wildcard
-  '*': Arbitrary.make(baseDatatypes['*'].schema),
-}
+/** All data type names available for choice-element fields. */
+export const AllDatatypeNames = FhirR4ChoiceElements['*']
 
-type BaseDatatypes = typeof baseDatatypes
-
-const datatypeFields = {
-  string: Schema.optional(StringDatatype.schema),
-  boolean: Schema.optional(BooleanDatatype.schema),
-  decimal: Schema.optional(DecimalDatatype.schema),
-  integer: Schema.optional(IntegerDatatype.schema),
-  date: Schema.optional(DateDatatype.schema),
-  dateTime: Schema.optional(DateTimeDatatype.schema),
-  time: Schema.optional(TimeDatatype.schema),
-  uri: Schema.optional(UriDatatype.schema),
-  url: Schema.optional(UrlDatatype.schema),
-  canonical: Schema.optional(CanonicalDatatype.schema),
-  code: Schema.optional(baseDatatypes.code.schema),
-  Reference: Schema.optional(baseDatatypes.Reference.schema),
-  Identifier: Schema.optional(baseDatatypes.Identifier.schema),
-  // Primitive types
-  base64Binary: Schema.optional(baseDatatypes.base64Binary.schema),
-  id: Schema.optional(baseDatatypes.id.schema),
-  instant: Schema.optional(baseDatatypes.instant.schema),
-  markdown: Schema.optional(baseDatatypes.markdown.schema),
-  oid: Schema.optional(baseDatatypes.oid.schema),
-  positiveInt: Schema.optional(baseDatatypes.positiveInt.schema),
-  unsignedInt: Schema.optional(baseDatatypes.unsignedInt.schema),
-  uuid: Schema.optional(baseDatatypes.uuid.schema),
-  // Complex data types
-  Address: Schema.optional(baseDatatypes.Address.schema),
-  Age: Schema.optional(baseDatatypes.Age.schema),
-  Annotation: Schema.optional(baseDatatypes.Annotation.schema),
-  Attachment: Schema.optional(baseDatatypes.Attachment.schema),
-  CodeableConcept: Schema.optional(baseDatatypes.CodeableConcept.schema),
-  Coding: Schema.optional(baseDatatypes.Coding.schema),
-  ContactPoint: Schema.optional(baseDatatypes.ContactPoint.schema),
-  Count: Schema.optional(baseDatatypes.Count.schema),
-  Distance: Schema.optional(baseDatatypes.Distance.schema),
-  Duration: Schema.optional(baseDatatypes.Duration.schema),
-  HumanName: Schema.optional(baseDatatypes.HumanName.schema),
-  Money: Schema.optional(baseDatatypes.Money.schema),
-  Period: Schema.optional(baseDatatypes.Period.schema),
-  Quantity: Schema.optional(baseDatatypes.Quantity.schema),
-  Range: Schema.optional(baseDatatypes.Range.schema),
-  Ratio: Schema.optional(baseDatatypes.Ratio.schema),
-  SampledData: Schema.optional(baseDatatypes.SampledData.schema),
-  Signature: Schema.optional(baseDatatypes.Signature.schema),
-  SimpleQuantity: Schema.optional(baseDatatypes.SimpleQuantity.schema),
-  Timing: Schema.optional(baseDatatypes.Timing.schema),
-  // Metadata types
-  MetaDataTypes: Schema.optional(baseDatatypes.MetaDataTypes.schema),
-  ContactDetail: Schema.optional(baseDatatypes.ContactDetail.schema),
-  Contributor: Schema.optional(baseDatatypes.Contributor.schema),
-  DataRequirement: Schema.optional(baseDatatypes.DataRequirement.schema),
-  Expression: Schema.optional(baseDatatypes.Expression.schema),
-  ParameterDefinition: Schema.optional(
-    baseDatatypes.ParameterDefinition.schema
-  ),
-  RelatedArtifact: Schema.optional(baseDatatypes.RelatedArtifact.schema),
-  TriggerDefinition: Schema.optional(baseDatatypes.TriggerDefinition.schema),
-  UsageContext: Schema.optional(baseDatatypes.UsageContext.schema),
-  // Special types
-  Dosage: Schema.optional(baseDatatypes.Dosage.schema),
-  Meta: Schema.optional(baseDatatypes.Meta.schema),
-  // Wildcard
-  '*': Schema.optional(baseDatatypes['*'].schema),
-} as const satisfies {
-  [K in FhirR4ChoiceElements[keyof FhirR4ChoiceElements][number] as BaseDatatypes[K]['name']]: Schema.optional<
-    BaseDatatypes[K]['schema']
-  >
-}
-
-/** All FHIR R4 data type names available for choice-element fields. */
-export const AllDatatypeKeys = Object.keys(datatypeFields) as ReadonlyArray<
-  keyof typeof datatypeFields
->
-
-/** String-literal union of all FHIR R4 data type names in {@link baseDatatypes}. */
-export type DatatypeFieldKey = keyof typeof datatypeFields
-
-type DatatypeMixinClass<
-  Self,
-  Prefix extends string,
-  PrefixedFields extends Schema.Struct.Fields,
-> = Schema.Class<
-  Self,
-  PrefixedFields,
-  Schema.Struct.Encoded<PrefixedFields>,
-  Schema.Struct.Context<PrefixedFields>,
-  Schema.Struct.Constructor<PrefixedFields>,
-  {
-    readonly [P in Prefix as `isExactlyOne${Capitalize<P>}Present`]: (
-      this: Schema.Struct.Type<PrefixedFields>
-    ) => boolean
-  } & {
-    readonly [P in Prefix as `isNo${Capitalize<P>}Present`]: (
-      this: Schema.Struct.Type<PrefixedFields>
-    ) => boolean
-  },
-  object
-> & {
-  readonly [P in Prefix as `all${Capitalize<P>}Keys`]: () => ReadonlyArray<
-    keyof PrefixedFields
-  >
-} & {
-  readonly [P in Prefix as `arbitrary${Capitalize<P>}OneOrNone`]: Arbitrary.LazyArbitrary<
-    Schema.Struct.Type<PrefixedFields>
-  >
-}
+/** String-literal union of all data type names in {@link baseDatatypes}. */
+export type DatatypeName = keyof typeof baseDatatypes
 
 /**
- * Builds a Schema.Class mixin representing a FHIR choice element (value\[x\]).
+ * Builds a `Schema.Union` of `Schema.TaggedStruct` variants representing a
+ * choice element (value\[x\]). Each data type name becomes a tagged variant
+ * with `_tag` set to the type name and the value under the same key.
  *
- * Each picked data type becomes an optional `{prefix}{CapitalizedName}` field
- * (e.g. `valueString`, `valueBoolean`). The mixin adds instance methods
- * `isExactlyOne{Prefix}Present()` and `isNo{Prefix}Present()`, plus static
- * helpers `all{Prefix}Keys()` and `arbitrary{Prefix}OneOrNone`.
+ * @example
+ * ```typescript
+ * const ValueChoice = DatatypeChoice(['Quantity', 'string', 'boolean'])
+ * // Produces: { _tag: 'Quantity', Quantity: ... } | { _tag: 'string', string: ... } | ...
  *
- * @typeParam Self - The concrete class extending this mixin
- * @typeParam Prefix - Field name prefix (typically `'value'` or `'answer'`)
- * @typeParam PickedKeys - Subset of FHIR data type names to include
- * @typeParam OverrideFields - Optional type-specific schema overrides for individual keys
- * @param identifier - Schema identifier string
- * @param prefix - The prefix prepended to each data type name
- * @param pickedKeys - Array of data type names to include in the choice
- * @param overrideFields - Optional array of {@link Datatype} overrides for specific keys
+ * // Use as a field on a resource:
+ * const fields = { value: Schema.optional(ValueChoice) }
+ * ```
  *
- * @remarks
- * Compose with `MergeClasses` to add choice-element fields to a resource schema
- * alongside its own fields. The resulting arbitrary generates instances with
- * exactly one value\[x\] key set.
+ * @param datatypeNames - Array of data type names to include in the choice
+ * @param overrideFields - Optional array of {@link Datatype} overrides for specific names
  */
 export function DatatypeChoice<
-  Self,
-  const Prefix extends string,
-  const PickedKeys extends ReadonlyArray<DatatypeFieldKey>,
-  const OverrideFields extends ReadonlyArray<
+  const DatatypeNames extends ReadonlyArray<DatatypeName>,
+  const Overrides extends ReadonlyArray<
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Datatype<PickedKeys[number], any, any>
+    Datatype<DatatypeNames[number], any, any>
   > = [],
->(
-  identifier: string,
-  prefix: Prefix,
-  pickedKeys: PickedKeys,
-  overrideFields?: OverrideFields
-): DatatypeMixinClass<
-  Self,
-  Prefix,
-  {
-    [K in Exclude<
-      PickedKeys[number],
-      OverrideFields[number]['name']
-    > as `${Prefix}${Capitalize<K>}`]: (typeof datatypeFields)[K]
-  } & {
-    [K in OverrideFields[number]['name'] as `${Prefix}${Capitalize<K>}`]: Schema.optional<
-      Extract<OverrideFields[number], { name: K }>['schema']
-    >
-  }
-> {
-  type PrefixedFields = {
-    [K in Exclude<
-      PickedKeys[number],
-      OverrideFields[number]['name']
-    > as `${Prefix}${Capitalize<K>}`]: (typeof datatypeFields)[K]
-  } & {
-    [K in OverrideFields[number]['name'] as `${Prefix}${Capitalize<K>}`]: Schema.optional<
-      Extract<OverrideFields[number], { name: K }>['schema']
-    >
-  }
-  type FieldType = Schema.Struct.Type<PrefixedFields>
-
-  const optionKeys = pickedKeys.map(
-    (key: PickedKeys[number]): `${Prefix}${Capitalize<PickedKeys[number]>}` =>
-      `${prefix}${capitalize(key)}`
-  ) as unknown as ReadonlyArray<keyof FieldType>
-
-  const fields = {} as PrefixedFields
-  for (const key in datatypeFields) {
-    if (pickedKeys.includes(key as DatatypeFieldKey)) {
-      const prefixedKey = `${prefix}${capitalize(key)}` as keyof PrefixedFields
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      fields[prefixedKey] = (datatypeFields as any)[key]
-    }
-  }
-  for (const override of overrideFields ?? []) {
-    const prefixedKey =
-      `${prefix}${capitalize(override.name)}` satisfies `${Prefix}${Capitalize<OverrideFields[number]['name']>}` as keyof PrefixedFields
+>(datatypeNames: DatatypeNames, overrideFields?: Overrides) {
+  const variants: {
+    [K in keyof DatatypeNames]: DatatypeNames[K] extends DatatypeName
+      ? Schema.TaggedStruct<
+          DatatypeNames[K],
+          {
+            [F in DatatypeNames[K]]: DatatypeNames[K] extends Overrides[number]['name']
+              ? Extract<Overrides[number], { name: DatatypeNames[K] }>['schema']
+              : (typeof baseDatatypes)[DatatypeNames[K]]['schema']
+          }
+        >
+      : never
+  } = datatypeNames.map((name) => {
+    const schema =
+      overrideFields?.find((o) => o.name === name)?.schema ??
+      baseDatatypes[name].schema
+    return Schema.TaggedStruct(name, { [name]: schema })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fields[prefixedKey] = Schema.optional(override.schema) as any
+  }) as any
+
+  const u = Schema.Union(...variants)
+  const s = u as typeof u & {
+    make: (
+      encoded: typeof u.Encoded,
+      overrideOptions?: SchemaAST.ParseOptions
+    ) => typeof u.Type
   }
-
-  const DatatypeMixin = Schema.Class<Self>(identifier)(fields, {
-    arbitrary: (_fcx) => (fc) =>
-      fc.constantFrom(...pickedKeys).chain((key) =>
-        arbitraries[key].map(
-          (u) =>
-            ({
-              [`${prefix}${capitalize(key)}` as keyof FieldType]: u,
-            }) as Self
-        )
-      ),
-  })
-  if (typeof DatatypeMixin === 'string') throw new Error(DatatypeMixin)
-
-  const arbitraryOneOrNone: Arbitrary.LazyArbitrary<
-    Schema.Struct.Type<PrefixedFields>
-  > = (fc: typeof FastCheck) =>
-    fc.constantFrom(...pickedKeys).chain((key: PickedKeys[number]) =>
-      arbitraries[key].map(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (u: any) =>
-          ({
-            [`${prefix}${capitalize(key)}`]: u,
-          }) as Schema.Struct.Type<PrefixedFields>
-      )
-    )
-
-  Object.assign(DatatypeMixin, {
-    [`all${capitalize(prefix)}Keys`]: (): ReadonlyArray<keyof FieldType> =>
-      optionKeys,
-    [`arbitrary${capitalize(prefix)}OneOrNone`]: arbitraryOneOrNone,
-  })
-
-  Object.assign(DatatypeMixin.prototype, {
-    [`isExactlyOne${capitalize(prefix)}Present`](
-      this: Schema.Struct.Type<PrefixedFields>
-    ): boolean {
-      return (
-        optionKeys.map((key) => this[key] !== undefined).filter(Boolean)
-          .length === 1
-      )
-    },
-    [`isNo${capitalize(prefix)}Present`](
-      this: Schema.Struct.Type<PrefixedFields>
-    ): boolean {
-      return optionKeys.every((key) => this[key] === undefined)
-    },
-  })
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return DatatypeMixin as any
+  s.make = Schema.decodeSync(
+    u as Schema.Schema<typeof u.Type, typeof u.Encoded, never>
+  )
+  return s
 }
-
-/**
- * Generates prefixed optional passthrough fields for a choice element's
- * encoded representation. Each field accepts its encoded type unchanged.
- *
- * @typeParam Prefix - Field name prefix (e.g. `'value'`)
- * @typeParam PickedKeys - Data type names to include
- * @param prefix - The prefix prepended to each data type name
- * @param pickedKeys - Array of data type names
- * @returns An object of `Schema.optional` fields suitable for `Schema.Struct`
- */
-export const DatatypeChoiceEncodedPassthroughFields = <
-  const Prefix extends string,
-  const PickedKeys extends ReadonlyArray<DatatypeFieldKey>,
->(
-  prefix: Prefix,
-  pickedKeys: PickedKeys
-): {
-  [K in PickedKeys[number] as `${Prefix}${Capitalize<K>}`]: Schema.optional<
-    Schema.Schema<
-      (typeof baseDatatypes)[K]['schema']['Encoded'],
-      (typeof baseDatatypes)[K]['schema']['Encoded'],
-      never
-    >
-  >
-} =>
-  Object.fromEntries(
-    pickedKeys.map((key) => [
-      `${prefix}${capitalize(key)}`,
-
-      Schema.optional(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        Schema.declare<any>((_input: unknown): _input is any => true)
-      ),
-    ])
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ) as any

@@ -33,7 +33,7 @@ export const makeVideoCallRoomConfigExtension = (
     subExtensions.push(
       Extension.make({
         definitionUrl: SUB_EXTENSION_URLS.expiresAt,
-        valueDateTime: config.expiresAt,
+        value: { _tag: 'dateTime', dateTime: config.expiresAt } as const,
       })
     )
   }
@@ -42,7 +42,7 @@ export const makeVideoCallRoomConfigExtension = (
     subExtensions.push(
       Extension.make({
         definitionUrl: SUB_EXTENSION_URLS.enableRecording,
-        valueBoolean: config.enableRecording,
+        value: { _tag: 'boolean', boolean: config.enableRecording },
       })
     )
   }
@@ -51,7 +51,7 @@ export const makeVideoCallRoomConfigExtension = (
     subExtensions.push(
       Extension.make({
         definitionUrl: SUB_EXTENSION_URLS.enableChat,
-        valueBoolean: config.enableChat,
+        value: { _tag: 'boolean', boolean: config.enableChat },
       })
     )
   }
@@ -80,18 +80,18 @@ export const parseVideoCallRoomConfigExtension = (
   for (const sub of ext.extension) {
     switch (sub.definitionUrl) {
       case SUB_EXTENSION_URLS.expiresAt:
-        if (sub.valueDateTime !== undefined) {
-          config.expiresAt = sub.valueDateTime
+        if (sub.value?._tag === 'dateTime') {
+          config.expiresAt = sub.value.dateTime
         }
         break
       case SUB_EXTENSION_URLS.enableRecording:
-        if (sub.valueBoolean !== undefined) {
-          config.enableRecording = sub.valueBoolean
+        if (sub.value?._tag === 'boolean') {
+          config.enableRecording = sub.value.boolean
         }
         break
       case SUB_EXTENSION_URLS.enableChat:
-        if (sub.valueBoolean !== undefined) {
-          config.enableChat = sub.valueBoolean
+        if (sub.value?._tag === 'boolean') {
+          config.enableChat = sub.value.boolean
         }
         break
     }

@@ -1,10 +1,6 @@
-import { Schema, type Arbitrary } from 'effect'
+import { Schema } from 'effect'
 
-import {
-  AnnotateArrayWithArbitrary,
-  mergeArbitraries,
-  MergeClasses,
-} from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary, MergeClasses } from '@assessmentis/util'
 
 import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
 import { Annotation } from '../../data-types/complex/Annotation'
@@ -13,14 +9,13 @@ import {
   Identifier,
   Reference,
 } from '../../data-types/complex/IdentifierAndReference'
-import { Period } from '../../data-types/complex/Period'
 import { DatatypeChoice } from '../../data-types/Datatype'
 import FhirR4ChoiceElements from '../../data-types/fhirR4ChoiceElements'
 import { ObservationComponent } from './ObservationComponent'
 import { ObservationReferenceRange } from './ObservationReferenceRange'
 
-const Key = 'Observation' as const
-type Key = typeof Key
+const DomainType = 'Observation' as const
+type DomainType = typeof DomainType
 
 /**
  * The status of the result value.
@@ -41,12 +36,6 @@ export type ObservationStatus = typeof ObservationStatus.Type
 
 // --- Observation ---
 
-class ObservationValue extends DatatypeChoice(
-  'ObservationValue',
-  'value',
-  FhirR4ChoiceElements['Observation.value[x]']
-) {}
-
 const fields = {
   identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
   basedOn: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
@@ -63,11 +52,14 @@ const fields = {
     )
   ),
   encounter: Schema.optional(Schema.suspend(() => Reference)),
-  effectiveDateTime: Schema.optional(Schema.DateTimeUtc),
-  effectivePeriod: Schema.optional(Schema.suspend(() => Period)),
-  effectiveInstant: Schema.optional(Schema.DateTimeUtc),
   issued: Schema.optional(Schema.DateTimeUtc),
   performer: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
+  value: Schema.optional(
+    DatatypeChoice(FhirR4ChoiceElements['Observation.value[x]'])
+  ),
+  effective: Schema.optional(
+    DatatypeChoice(FhirR4ChoiceElements['Observation.effective[x]'])
+  ),
   dataAbsentReason: Schema.optional(Schema.suspend(() => CodeableConcept)),
   interpretation: Schema.optional(
     Schema.Array(Schema.suspend(() => CodeableConcept))
@@ -91,32 +83,17 @@ const fields = {
   ),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(Key)
+const resourceMixin = Resource(DomainType)
 
-type ObservationValueMixinEncoded = typeof ObservationValue.Encoded
 /** Encoded (wire-format) shape of an {@link Observation}. */
 export interface ObservationEncoded
-  extends
-    Schema.Struct.Encoded<typeof fields>,
-    ResourceEncoded<Key>,
-    ObservationValueMixinEncoded {}
+  extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<DomainType> {}
 
 /**
  * Measurements and simple assertions made about a patient, device or other subject.
  */
-export class Observation extends MergeClasses<Observation>(Key)(
-  [
-    {
-      arbitrary: (): Arbitrary.LazyArbitrary<Observation> =>
-        mergeArbitraries(
-          (props) => new Observation(props),
-          resourceMixin,
-          ObservationValue.arbitraryValueOneOrNone,
-          fields
-        ),
-    },
-  ],
+export class Observation extends MergeClasses<Observation>(DomainType)(
+  [],
   fields,
-  resourceMixin,
-  ObservationValue
+  resourceMixin
 ) {}

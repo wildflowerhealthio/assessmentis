@@ -3,8 +3,8 @@ import { Schema } from 'effect'
 import { Element, type ElementEncoded } from '../base/Element'
 import { Reference } from './IdentifierAndReference'
 
-const Key = 'Annotation'
-type Key = typeof Key
+const DomainType = 'Annotation'
+type DomainType = typeof DomainType
 
 const fields = {
   /**
@@ -28,14 +28,14 @@ const fields = {
 
 /** Encoded (wire-format) shape of an {@link Annotation}. */
 export interface AnnotationEncoded
-  extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<Key> {}
+  extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<DomainType> {}
 
 /**
  * A text note which also contains information about who made the statement and when.
  */
-export class Annotation extends Schema.Class<Annotation>(Key)({
-  ...Element(Key).fields,
+export class Annotation extends Schema.Class<Annotation>(DomainType)({
+  ...Element(DomainType).fields,
   ...fields,
 }) {
-  static readonly DomainType = Key
+  static readonly DomainType = DomainType
 }

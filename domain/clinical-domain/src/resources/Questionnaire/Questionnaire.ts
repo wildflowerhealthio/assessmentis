@@ -6,8 +6,8 @@ import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
 import { Coding } from '../../data-types/complex/Coding'
 import { QuestionnaireItem } from './QuestionnaireItem'
 
-const Key = 'Questionnaire' as const
-type Key = typeof Key
+const DomainType = 'Questionnaire' as const
+type DomainType = typeof DomainType
 
 // --- Questionnaire ---
 
@@ -41,11 +41,11 @@ const fields = {
   version: Schema.optional(Schema.String),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(Key)
+const resourceMixin = Resource(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Questionnaire}. */
 export interface QuestionnaireEncoded
-  extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<Key> {}
+  extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<DomainType> {}
 
 /**
  * A structured set of questions intended to guide the collection of answers
@@ -53,7 +53,7 @@ export interface QuestionnaireEncoded
  * presentation, phraseology and grouping to allow coherent, consistent
  * data collection.
  */
-export class Questionnaire extends MergeClasses<Questionnaire>(Key)(
+export class Questionnaire extends MergeClasses<Questionnaire>(DomainType)(
   [],
   resourceMixin,
   fields

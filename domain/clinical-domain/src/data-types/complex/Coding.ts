@@ -5,7 +5,7 @@ import { MergeClasses } from '@assessmentis/util'
 import { Element, type ElementEncoded } from '../base/Element'
 import { Code } from './Code'
 
-const Key = 'Coding' as const
+const DomainType = 'Coding' as const
 
 const fields = {
   /**
@@ -35,17 +35,19 @@ const fields = {
   // _version?: Element | undefined;
 } as const satisfies Schema.Struct.Fields
 
-const ElementMixin = Element(Key)
+const ElementMixin = Element(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Coding}. */
 export interface CodingEncoded
-  extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<typeof Key> {}
+  extends
+    Schema.Struct.Encoded<typeof fields>,
+    ElementEncoded<typeof DomainType> {}
 
 /**
  * A reference to a code defined by a terminology system. Binds a `code` to
  * a `system` URI and optional `display` text.
  */
-export class Coding extends MergeClasses<Coding>(Key)(
+export class Coding extends MergeClasses<Coding>(DomainType)(
   [],
   ElementMixin,
   fields

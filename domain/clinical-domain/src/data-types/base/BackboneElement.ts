@@ -31,7 +31,6 @@ const fields = {
     ),
     Schema.annotations({
       arbitrary: () => (fc) => fc.constant([]),
-      default: [],
     }),
     Schema.optionalWith({
       default: (): ReadonlyArray<Extension> => [],

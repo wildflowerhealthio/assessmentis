@@ -13,8 +13,8 @@ import {
 } from '../../data-types/complex/IdentifierAndReference'
 import { Period } from '../../data-types/complex/Period'
 
-const Key = 'Media' as const
-type Key = typeof Key
+const DomainType = 'Media' as const
+type DomainType = typeof DomainType
 
 /**
  * The status of the media resource.
@@ -65,17 +65,17 @@ const fields = {
   note: Schema.optional(Schema.Array(Schema.suspend(() => Annotation))),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(Key)
+const resourceMixin = Resource(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Media}. */
 export interface MediaEncoded
-  extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<Key> {}
+  extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<DomainType> {}
 
 /**
  * A photo, video, or audio recording acquired or used in healthcare.
  * The actual content may be inline or provided by direct reference.
  */
-export class Media extends MergeClasses<Media>(Key)(
+export class Media extends MergeClasses<Media>(DomainType)(
   [],
   resourceMixin,
   fields

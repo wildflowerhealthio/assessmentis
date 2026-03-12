@@ -21,8 +21,8 @@ import {
   EncounterStatusHistory,
 } from './EncounterStatusHistory'
 
-const Key = 'Encounter' as const
-type Key = typeof Key
+const DomainType = 'Encounter' as const
+type DomainType = typeof DomainType
 
 // --- Encounter ---
 
@@ -92,17 +92,17 @@ const fields = {
   partOf: Schema.optional(Schema.suspend(() => Reference)),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(Key)
+const resourceMixin = Resource(DomainType)
 
 /** Encoded (wire-format) shape of an {@link Encounter}. */
 export interface EncounterEncoded
-  extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<Key> {}
+  extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<DomainType> {}
 
 /**
  * An interaction between a patient and healthcare provider(s) for the purpose of
  * providing healthcare service(s) or assessing the health status of a patient.
  */
-export class Encounter extends MergeClasses<Encounter>(Key)(
+export class Encounter extends MergeClasses<Encounter>(DomainType)(
   [],
   resourceMixin,
   fields

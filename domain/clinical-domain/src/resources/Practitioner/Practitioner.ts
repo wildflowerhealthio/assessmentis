@@ -12,8 +12,8 @@ import { HumanName } from '../../data-types/complex/HumanName'
 import { Identifier } from '../../data-types/complex/IdentifierAndReference'
 import { PractitionerQualification } from './PractitionerQualification'
 
-const Key = 'Practitioner' as const
-type Key = typeof Key
+const DomainType = 'Practitioner' as const
+type DomainType = typeof DomainType
 
 // --- Practitioner ---
 
@@ -32,16 +32,16 @@ const fields = {
   ),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(Key)
+const resourceMixin = Resource(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Practitioner}. */
 export interface PractitionerEncoded
-  extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<Key> {}
+  extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<DomainType> {}
 
 /**
  * A person who is directly or indirectly involved in the provisioning of healthcare.
  */
-export class Practitioner extends MergeClasses<Practitioner>(Key)(
+export class Practitioner extends MergeClasses<Practitioner>(DomainType)(
   [],
   resourceMixin,
   fields
