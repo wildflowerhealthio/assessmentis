@@ -1,9 +1,6 @@
 import type { Effect, Scope } from 'effect'
 
-import type {
-  OriginState,
-  ResourcesConstraint,
-} from '@assessmentis/effectful-store'
+import type { Origin, Resource } from '@assessmentis/effectful-store'
 
 import type { BaseOriginDefinition } from './BaseOriginDefinition'
 
@@ -15,10 +12,10 @@ import type { BaseOriginDefinition } from './BaseOriginDefinition'
  * Credential resolution is injected at construction time via a callback,
  * keeping the dependency direction correct (infrastructure → domain).
  */
-export interface OriginType<Resources extends ResourcesConstraint, R = never> {
+export interface OriginType<Resources extends Resource.ResourceSet, R = never> {
   readonly tag: string
   readonly make: (
     definition: BaseOriginDefinition,
     originConfig: Record<string, unknown> | undefined
-  ) => Effect.Effect<OriginState<Resources, never>, never, R | Scope.Scope>
+  ) => Effect.Effect<Origin.AnyState<Resources, never>, never, R | Scope.Scope>
 }

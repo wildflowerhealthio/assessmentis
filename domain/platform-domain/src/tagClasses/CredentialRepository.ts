@@ -137,5 +137,4 @@ export interface CredentialRepository<
     never,
     Scope.Scope | TTokenContext
   >
-
 }

@@ -3,6 +3,7 @@ import {
   Chunk,
   Effect,
   Either,
+  HashMap,
   Logger,
   LogLevel,
   Option,
@@ -12,10 +13,9 @@ import {
 
 import {
   ReadonlyUrl,
-  Resource,
   UriEncodedOriginUrl,
-  type OriginState,
-  type ReadyOrigin,
+  type Origin,
+  type Resource,
 } from '@assessmentis/effectful-store'
 import { AuthError, Loading, UnhandledError } from '@assessmentis/ontology'
 
@@ -64,12 +64,12 @@ describe('hubStateStream', () => {
   it('calls originMaker and emits state for matching tags', async () => {
     const originState = {
       originUrl: ReadonlyUrl.fromEncoded(encode('https://example.com')),
-      activeResources: { Patient: true as const },
-      resolver: {} as ReadyOrigin<TestResources, 'Patient'>['resolver'],
+      supportedResources: { Patient: true as const },
+      resolver: {} as Origin.Ready<TestResources, 'Patient'>['resolver'],
       errorStatus: undefined,
       provokeReauthenticate: () => Effect.void,
       provokeReauthorize: () => Effect.void,
-    } satisfies OriginState<TestResources, 'Patient'>
+    } satisfies Origin.AnyState<TestResources, 'Patient'>
 
     const maker = vi.fn(
       (
@@ -95,7 +95,9 @@ describe('hubStateStream', () => {
     expect(maker.mock.calls[0][0]._tag).toBe('test_origin')
     expect(emissions).toHaveLength(1)
     const state = Either.getOrThrow(emissions[0]!)
-    expect(state.get('https://example.com/')).toBe(originState)
+    expect(Option.getOrThrow(HashMap.get(state, 'https://example.com/'))).toBe(
+      originState
+    )
   })
 
   it('emits error origin state for unrecognized tags', async () => {
@@ -116,16 +118,15 @@ describe('hubStateStream', () => {
 
     expect(emissions).toHaveLength(1)
     const state = Either.getOrThrow(emissions[0]!)
-    const origin = state.get('https://example.com/')
-    expect(origin).toBeDefined()
-    expect(origin!.resolver).toBeUndefined()
-    expect(origin!.errorStatus).toBeInstanceOf(UnhandledError)
+    const origin = Option.getOrThrow(HashMap.get(state, 'https://example.com/'))
+    expect(origin.resolver).toBeUndefined()
+    expect(origin.errorStatus).toBeInstanceOf(UnhandledError)
   })
 
   it('removes origin from state when it is removed from org', async () => {
     const makeOriginForUrl = (url: string) => ({
       originUrl: ReadonlyUrl.fromEncoded(encode(url)),
-      activeResources: { Patient: true as const },
+      supportedResources: { Patient: true as const },
       resolver: undefined,
       errorStatus: undefined,
       provokeReauthenticate: () => Effect.void,
@@ -137,7 +138,7 @@ describe('hubStateStream', () => {
         tag: 'ta',
         make: () =>
           Effect.succeed(
-            makeOriginForUrl('https://a.com') as unknown as OriginState<
+            makeOriginForUrl('https://a.com') as unknown as Origin.AnyState<
               TestResources,
               never
             >
@@ -147,7 +148,7 @@ describe('hubStateStream', () => {
         tag: 'tb',
         make: () =>
           Effect.succeed(
-            makeOriginForUrl('https://b.com') as unknown as OriginState<
+            makeOriginForUrl('https://b.com') as unknown as Origin.AnyState<
               TestResources,
               never
             >
@@ -175,10 +176,10 @@ describe('hubStateStream', () => {
     expect(emissions).toHaveLength(2)
     const state0 = Either.getOrThrow(emissions[0]!)
     const state1 = Either.getOrThrow(emissions[1]!)
-    expect(state0.has('https://a.com/')).toBe(true)
-    expect(state0.has('https://b.com/')).toBe(true)
-    expect(state1.has('https://b.com/')).toBe(false)
-    expect(state1.has('https://a.com/')).toBe(true)
+    expect(HashMap.has(state0, 'https://a.com/')).toBe(true)
+    expect(HashMap.has(state0, 'https://b.com/')).toBe(true)
+    expect(HashMap.has(state1, 'https://b.com/')).toBe(false)
+    expect(HashMap.has(state1, 'https://a.com/')).toBe(true)
   })
 
   it('logs when an origin is deregistered', async () => {
@@ -189,7 +190,7 @@ describe('hubStateStream', () => {
 
     const makeOriginForUrl = (url: string) => ({
       originUrl: ReadonlyUrl.fromEncoded(encode(url)),
-      activeResources: { Patient: true as const },
+      supportedResources: { Patient: true as const },
       resolver: undefined,
       errorStatus: undefined,
       provokeReauthenticate: () => Effect.void,
@@ -201,7 +202,7 @@ describe('hubStateStream', () => {
         tag: 'ta',
         make: () =>
           Effect.succeed(
-            makeOriginForUrl('https://a.com') as unknown as OriginState<
+            makeOriginForUrl('https://a.com') as unknown as Origin.AnyState<
               TestResources,
               never
             >
@@ -211,7 +212,7 @@ describe('hubStateStream', () => {
         tag: 'tb',
         make: () =>
           Effect.succeed(
-            makeOriginForUrl('https://b.com') as unknown as OriginState<
+            makeOriginForUrl('https://b.com') as unknown as Origin.AnyState<
               TestResources,
               never
             >
@@ -247,15 +248,15 @@ describe('hubStateStream', () => {
   it('caches origin state when definition is unchanged', async () => {
     const originState = {
       originUrl: ReadonlyUrl.fromEncoded(encode('https://a.com')),
-      activeResources: { Patient: true as const },
-      resolver: undefined as unknown as ReadyOrigin<
+      supportedResources: { Patient: true as const },
+      resolver: undefined as unknown as Origin.Ready<
         TestResources,
         never
       >['resolver'],
       errorStatus: undefined,
       provokeReauthenticate: () => Effect.void,
       provokeReauthorize: () => Effect.void,
-    } satisfies OriginState<TestResources, never>
+    } satisfies Origin.AnyState<TestResources, never>
 
     const maker = vi.fn(() => Effect.succeed(originState))
 
@@ -275,14 +276,16 @@ describe('hubStateStream', () => {
     expect(emissions).toHaveLength(2)
     const state0 = Either.getOrThrow(emissions[0]!)
     const state1 = Either.getOrThrow(emissions[1]!)
-    expect(state0.get('https://a.com/')).toBe(state1.get('https://a.com/'))
+    expect(Option.getOrThrow(HashMap.get(state0, 'https://a.com/'))).toBe(
+      Option.getOrThrow(HashMap.get(state1, 'https://a.com/'))
+    )
   })
 
   it('re-registers when definition changes', async () => {
     const maker = vi.fn((def: BaseOriginDefinition) =>
       Effect.succeed({
         originUrl: ReadonlyUrl.fromEncoded(encode('https://a.com')),
-        activeResources: def.activeResources,
+        supportedResources: def.activeResources,
         resolver: undefined,
         errorStatus: undefined,
         provokeReauthenticate: () => Effect.void,
@@ -291,7 +294,7 @@ describe('hubStateStream', () => {
     ) as unknown as (
       def: BaseOriginDefinition,
       cred: Record<string, unknown> | undefined
-    ) => Effect.Effect<OriginState<TestResources, never>>
+    ) => Effect.Effect<Origin.AnyState<TestResources, never>>
 
     await Effect.runPromise(
       collectAll(
@@ -378,7 +381,7 @@ describe('hubStateStream', () => {
       errorStatus: undefined,
       provokeReauthenticate: () => Effect.void,
       provokeReauthorize: () => Effect.void,
-    } as unknown as OriginState<TestResources, never>
+    } as unknown as Origin.AnyState<TestResources, never>
 
     const maker = vi.fn(() => Effect.succeed(originState))
 
@@ -423,7 +426,7 @@ describe('hubStateStream', () => {
       errorStatus: undefined,
       provokeReauthenticate: () => Effect.void,
       provokeReauthorize: () => Effect.void,
-    } as unknown as OriginState<TestResources, never>
+    } as unknown as Origin.AnyState<TestResources, never>
 
     const maker = vi.fn(
       (

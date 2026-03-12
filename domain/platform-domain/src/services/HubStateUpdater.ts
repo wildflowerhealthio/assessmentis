@@ -1,10 +1,18 @@
-import { Effect, Either, Equal, Record, Stream, type Scope } from 'effect'
+import {
+  Effect,
+  Either,
+  Equal,
+  HashMap,
+  Record,
+  Stream,
+  type Scope,
+} from 'effect'
 
 import {
   ReadonlyUrl,
   type Hub,
-  type OriginState,
-  type ResourcesConstraint,
+  type Origin,
+  type Resource,
 } from '@assessmentis/effectful-store'
 import {
   UnhandledError,
@@ -33,24 +41,28 @@ const asEqualityCheckable = (
 
 type EqualityCheckable = ReturnType<typeof asEqualityCheckable>
 
-type OriginCacheEntry<Resources extends ResourcesConstraint> = {
+type OriginCacheEntry<Resources extends Resource.ResourceSet> = {
   readonly wrappedDef: EqualityCheckable
-  readonly state: OriginState<Resources, never>
+  readonly state: Origin.AnyState<Resources, never>
 }
 
-type OriginCache<Resources extends ResourcesConstraint> = Map<
+type OriginCache<Resources extends Resource.ResourceSet> = Map<
   string,
   OriginCacheEntry<Resources>
 >
 
 // --- Build HubState with caching ---
 
-const buildHubState = <Resources extends ResourcesConstraint, R>(
+const buildHubState = <Resources extends Resource.ResourceSet, R>(
   originMakers: {
     [tag: string]: (
       definition: BaseOriginDefinition,
       originConfig: Record<string, unknown> | undefined
-    ) => Effect.Effect<OriginState<Resources, never>, never, R | Scope.Scope>
+    ) => Effect.Effect<
+      Origin.AnyState<Resources, never>,
+      never,
+      R | Scope.Scope
+    >
   },
   org: Org,
   userOrg: UserOrg | undefined,
@@ -62,7 +74,7 @@ const buildHubState = <Resources extends ResourcesConstraint, R>(
 > =>
   Effect.gen(function* () {
     const newCache: OriginCache<Resources> = new Map()
-    const state = new Map<string, OriginState<Resources, never>>()
+    const state = new Map<string, Origin.AnyState<Resources, never>>()
 
     for (const [url, def] of Record.toEntries(org.origins)) {
       const originUrl = ReadonlyUrl.fromEncoded(url)
@@ -85,9 +97,9 @@ const buildHubState = <Resources extends ResourcesConstraint, R>(
         newCache.set(urlKey, { wrappedDef: wrapped, state: origin })
         state.set(origin.originUrl.toString(), origin)
       } else {
-        const errorOrigin: OriginState<Resources, never> = {
+        const errorOrigin: Origin.AnyState<Resources, never> = {
           originUrl,
-          activeResources: def.activeResources,
+          supportedResources: def.activeResources,
           resolver: undefined,
           errorStatus: new UnhandledError({
             message: `Unsupported origin tag '${def._tag}'`,
@@ -106,7 +118,7 @@ const buildHubState = <Resources extends ResourcesConstraint, R>(
       }
     }
 
-    return [newCache, state] as [
+    return [newCache, HashMap.fromIterable(state)] as [
       OriginCache<Resources>,
       Hub.HubState<Resources>,
     ]
@@ -121,7 +133,7 @@ const buildHubState = <Resources extends ResourcesConstraint, R>(
  * The `R` parameter propagates the context requirements of the origin makers
  * into the returned stream, so callers can provide those services externally.
  */
-export const hubStateStream = <Resources extends ResourcesConstraint, R>(
+export const hubStateStream = <Resources extends Resource.ResourceSet, R>(
   originTypes: readonly OriginType<Resources, R>[],
   orgStream: Stream.Stream<
     Either.Either<
