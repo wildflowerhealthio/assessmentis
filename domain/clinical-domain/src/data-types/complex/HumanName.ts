@@ -1,10 +1,10 @@
 import { Schema } from 'effect'
+
 import { Period } from './Period'
 
-/**
- * A human's name with the ability to identify parts and usage.
- */
-export const HumanName = Schema.Struct({
+const DomainType = 'HumanName'
+
+const fields = {
   /**
    * Identifies the purpose for this name.
    * usual | official | temp | nickname | anonymous | old | maiden
@@ -43,7 +43,17 @@ export const HumanName = Schema.Struct({
   /**
    * Indicates the period of time when this name was valid for the named person.
    */
-  period: Schema.optional(Period),
-})
+  period: Schema.optional(Schema.suspend(() => Period)),
+} as const
 
-export type HumanName = typeof HumanName.Type
+/** Encoded (wire-format) shape of a {@link HumanName}. */
+export interface HumanNameEncoded extends Schema.Struct.Encoded<
+  typeof fields
+> {}
+
+/**
+ * A human's name with the ability to identify parts and usage.
+ */
+export class HumanName extends Schema.Class<HumanName>(DomainType)(fields) {
+  static readonly DomainType = DomainType
+}

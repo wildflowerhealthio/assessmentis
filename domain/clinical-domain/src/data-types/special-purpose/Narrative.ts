@@ -1,7 +1,12 @@
 import { Schema } from 'effect'
-import { Element } from '../base/Element'
 
-const NarrativeId = Schema.String.pipe(Schema.brand('NarrativeId'))
+import { MergeClasses } from '@assessmentis/util'
+
+import { Element, type ElementEncoded } from '../base/Element'
+
+const DomainType = 'Narrative' as const
+type DomainType = typeof DomainType
+
 const NarrativeStatus = Schema.Union(
   /**The contents of the narrative are entirely generated from the core elements in the content. */
   Schema.Literal('generated'),
@@ -9,9 +14,9 @@ const NarrativeStatus = Schema.Union(
   Schema.Literal('additional'),
   Schema.Literal('empty')
 )
+type NarrativeStatus = typeof NarrativeStatus.Type
 
-export const Narrative = Schema.Struct({
-  ...Element(NarrativeId).fields,
+const fields = {
   status: NarrativeStatus,
   /**
    * Limited xhtml content
@@ -22,4 +27,22 @@ export const Narrative = Schema.Struct({
    * some non-whitespace characters
    */
   div: Schema.String,
-})
+} as const satisfies Schema.Struct.Fields
+
+const ElementMixin = Element(DomainType)
+
+/** Encoded (wire-format) shape of a {@link Narrative}. */
+export interface NarrativeEncoded
+  extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<DomainType> {}
+
+/**
+ * Human-readable XHTML summary of a resource, with a `status` indicating
+ * whether the narrative is generated, additional, or empty.
+ */
+export class Narrative extends MergeClasses<Narrative>(DomainType)(
+  [],
+  ElementMixin,
+  fields
+) {
+  static readonly DomainType = DomainType
+}

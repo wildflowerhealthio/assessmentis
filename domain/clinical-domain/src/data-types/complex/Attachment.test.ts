@@ -1,16 +1,15 @@
-import { expect, test, describe } from 'vitest'
-import { Attachment } from './Attachment'
-import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
-import type { DeepReadonly } from '@assessmentis/util'
-import type { Attachment as FhirAttachment } from 'fhir/r4'
+import { describe, expect, expectTypeOf, test } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
 
-// Compile-time check that Encoded schema matches FHIR R4
-const _attachmentEncoded: DeepReadonly<FhirAttachment> = Attachment.Encoded
+import { Attachment, type AttachmentEncoded } from './Attachment'
 
 const attachmentArb = Arbitrary.make(Attachment)
 
 describe('Attachment model', () => {
+  test('should encode to encoded type', () => {
+    expectTypeOf<typeof Attachment.Encoded>().toExtend<AttachmentEncoded>()
+  })
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(attachmentArb, (attachment) => {

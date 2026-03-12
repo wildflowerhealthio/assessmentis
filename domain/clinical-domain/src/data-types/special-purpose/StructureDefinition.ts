@@ -1,0 +1,124 @@
+import { Schema } from 'effect'
+
+import type { baseDatatypes, DatatypeName } from '../Datatype'
+import { Extension } from './Extension'
+
+/** Extracts the decoded value type for a specific datatype tag from the choice union. */
+type DatatypeValueFor<Tag extends DatatypeName> = {
+  _tag: Tag
+} & {
+  [name in Tag]: Extract<typeof baseDatatypes, { _tag: Tag }>[Tag]
+}
+
+/*
+{
+  "resourceType": "StructureDefinition",
+  "url": "http://hl7.org/fhir/StructureDefinition/data-absent-reason",
+  "name": "Data Absent Reason",
+  "kind": "complex-type",
+  "type": "Extension",
+  "baseDefinition": "http://hl7.org/fhir/StructureDefinition/Extension"
+}
+*/
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const StructureDefinitionKind = Schema.Enums({
+  'primitive-type': 'primitive-type',
+  'complex-type': 'complex-type',
+  resource: 'resource',
+  logical: 'logical',
+})
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const StructureDefinitionType = Schema.Enums({ Extension: 'Extension' })
+
+/**
+ * Describes a FHIR StructureDefinition for an Extension profile. Provides
+ * `getValues` and `withValues` to read/write typed extension values on
+ * resources without manually traversing the `extension` array.
+ *
+ * @typeParam Tag - The data type name this definition targets (e.g. `'dateTime'`),
+ *   or `null` if it carries no value (container-only extension)
+ */
+export class StructureDefinition<Tag extends DatatypeName | null = null> {
+  static readonly extensionBaseDefinitionUrl =
+    'http://hl7.org/fhir/StructureDefinition/Extension'
+  url: string
+  name: string
+  kind: typeof StructureDefinitionKind.Type
+  type: typeof StructureDefinitionType.Type
+  baseDefinition: string
+  relevantField: Tag
+
+  constructor(args: {
+    url: string
+    name: string
+    kind: typeof StructureDefinitionKind.Type
+    type: typeof StructureDefinitionType.Type
+    relevantField: Tag
+    baseDefinition: string
+  }) {
+    this.url = args.url
+    this.name = args.name
+    this.kind = args.kind
+    this.type = args.type
+    this.baseDefinition = args.baseDefinition
+    this.relevantField = args.relevantField
+  }
+
+  /**
+   * Extracts all values for this extension from a resource's `extension` array.
+   *
+   * @param resource - Any object with an `extension` array
+   * @returns Array of typed values from matching extensions
+   */
+  getValues(resource: {
+    extension?: ReadonlyArray<Extension>
+  }): ReadonlyArray<DatatypeValueFor<NonNullable<Tag>>> {
+    const { relevantField } = this
+    if (relevantField == null) return []
+    if (!resource.extension) return []
+
+    return resource.extension
+      .filter(
+        (
+          ext
+        ): ext is Extension & { value: DatatypeValueFor<NonNullable<Tag>> } =>
+          ext.definitionUrl === this.url && ext.value?._tag === relevantField
+      )
+      .map((ext) => ext.value[relevantField])
+  }
+
+  /**
+   * Returns a copy of `resource` with its extension array updated to contain
+   * the given values for this definition. Existing extensions with other URLs
+   * are preserved; existing extensions with this URL are replaced.
+   */
+  withValues<
+    T extends {
+      extension?: ReadonlyArray<Extension>
+    },
+  >(resource: T, values: ReadonlyArray<DatatypeValueFor<NonNullable<Tag>>>): T {
+    const { relevantField } = this
+    if (relevantField == null) return resource
+    const existingExtensions =
+      resource.extension?.filter((ext) => ext.definitionUrl !== this.url) ?? []
+
+    const newExtensions = [
+      ...existingExtensions,
+      ...values.map((value) =>
+        Extension.make({
+          definitionUrl: this.url,
+          value: Extension.ValueChoice.make({
+            _tag: relevantField,
+            [relevantField]: value,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } as any),
+        })
+      ),
+    ]
+
+    return {
+      ...resource,
+      extension: newExtensions,
+    }
+  }
+}

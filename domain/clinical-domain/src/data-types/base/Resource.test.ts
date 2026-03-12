@@ -1,22 +1,64 @@
-import { expect, test, describe } from 'vitest'
-import { Resource } from './Resource'
-import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
-import type { DeepReadonly } from '@assessmentis/util'
-import type { Resource as FhirResource } from 'fhir/r4'
+import { describe, expect, expectTypeOf, test } from 'vitest'
+import { Arbitrary, Schema } from 'effect'
 
-const TestResource = Resource(Schema.String)
+import { MergeClasses } from '@assessmentis/util'
 
-// Compile-time check that Encoded schema matches FHIR R4
-const _resourceEncoded: DeepReadonly<Omit<FhirResource, 'resourceType'>> =
-  TestResource.Encoded
+import type { Extension } from '../special-purpose/Extension'
+import { Resource, type ResourceEncoded } from './Resource'
 
-const resourceArb = Arbitrary.make(TestResource)
+const ResourceMixin = Resource('TestResource')
 
-describe('Resource base model', () => {
-  test('property: encode-decode cycle', () => {
+class TestResource extends MergeClasses<TestResource>('TestResource')(
+  [],
+  ResourceMixin
+) {}
+
+describe('Resource', () => {
+  describe('types', () => {
+    test('Type.domainType is the literal domain type string', () => {
+      expectTypeOf<
+        (typeof TestResource)['Type']['domainType']
+      >().toEqualTypeOf<'TestResource'>()
+    })
+
+    test('ResourceEncoded extends the Encoded type', () => {
+      expectTypeOf<ResourceEncoded<'TestResource'>>().toExtend<
+        typeof TestResource.Encoded
+      >()
+    })
+
+    test('Type has all Resource fields', () => {
+      type T = (typeof TestResource)['Type']
+      expectTypeOf<T['extension']>().toExtend<ReadonlyArray<Extension>>()
+      expectTypeOf<T['modifierExtension']>().toExtend<
+        ReadonlyArray<Extension>
+      >()
+      expectTypeOf<T['contained']>().toExtend<ReadonlyArray<unknown>>()
+    })
+  })
+
+  test('decodes minimal input — defaults apply', () => {
+    const decoded = Schema.decodeSync(TestResource)({})
+    expect(decoded.domainType).toBe('TestResource')
+    expect(decoded.extension).toEqual([])
+    expect(decoded.modifierExtension).toEqual([])
+    expect(decoded.contained).toEqual([])
+    expect(decoded.url).toBeUndefined()
+    expect(decoded.meta).toBeUndefined()
+    expect(decoded.text).toBeUndefined()
+    expect(decoded.language).toBeUndefined()
+    expect(decoded.implicitRules).toBeUndefined()
+  })
+
+  test('DomainType static equals the domain type', () => {
+    expect(TestResource.DomainType).toBe('TestResource')
+  })
+
+  test('property: encode-decode round-trip', () => {
+    const arb = Arbitrary.make(TestResource)
     fc.assert(
-      fc.property(resourceArb, (resource) => {
+      fc.property(arb, (resource) => {
         const encoded = Schema.encodeSync(TestResource)(resource)
         const decoded = Schema.decodeSync(TestResource)(encoded)
         expect(decoded).toEqual(resource)
