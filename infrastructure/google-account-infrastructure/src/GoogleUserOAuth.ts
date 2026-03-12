@@ -10,7 +10,7 @@ import {
 } from 'effect'
 import { HttpBody, HttpClient } from '@effect/platform'
 
-import { AuthError } from '@assessmentis/ontology'
+import { AuthError, UnhandledError } from '@assessmentis/ontology'
 import {
   AuthDataService,
   DocumentStoreLiveCredential,
@@ -66,6 +66,11 @@ export interface GoogleUserCredentialIdentifier {
  *
  * Refresh context: {@link AuthDataService} (bearer token for the request)
  * and {@link HttpClient.HttpClient} (to call the refresh endpoint).
+ *
+ * **Important:** The refresh method issues requests to relative URLs
+ * (e.g. `/api/credentials/...`). The provided {@link HttpClient.HttpClient}
+ * must be configured with the appropriate base URL for this to resolve
+ * correctly.
  */
 export class GoogleUserOAuthLiveCredential extends DocumentStoreLiveCredential<
   typeof tag,
@@ -75,12 +80,7 @@ export class GoogleUserOAuthLiveCredential extends DocumentStoreLiveCredential<
   static readonly schema = GoogleUserOAuthToken
 
   static pathFor(identity: GoogleUserCredentialIdentifier): DocumentPath {
-    return [
-      'users',
-      identity.userId,
-      'credentials',
-      `${tag}:${identity.email}`,
-    ] as DocumentPath
+    return ['users', identity.userId, 'credentials', `${tag}:${identity.email}`]
   }
 
   static readOnce(identity: GoogleUserCredentialIdentifier) {
@@ -124,7 +124,7 @@ export class GoogleUserOAuthLiveCredential extends DocumentStoreLiveCredential<
         HttpBody.json({}),
         Effect.mapError(
           (cause) =>
-            new AuthError({
+            new UnhandledError({
               message: 'Failed to serialize refresh request body',
               cause,
             })

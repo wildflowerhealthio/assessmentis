@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
-import { ensureIsDocumentData } from './DocumentStore'
+import {
+  ensureIsDocumentData,
+  setStrictDocumentValidation,
+} from './DocumentStore'
 
 describe('ensureIsDocumentData', () => {
   test('returns a plain object for valid input', () => {
@@ -38,10 +41,10 @@ describe('ensureIsDocumentData', () => {
 
   describe('development mode', () => {
     beforeEach(() => {
-      vi.stubEnv('NODE_ENV', 'development')
+      setStrictDocumentValidation(true)
     })
     afterEach(() => {
-      vi.unstubAllEnvs() // Clean up after each test
+      setStrictDocumentValidation(false) // Clean up after each test
     })
 
     test('throws TypeError for null', () => {

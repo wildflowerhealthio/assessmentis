@@ -1,10 +1,7 @@
 import { DateTime, Effect, pipe, RequestResolver, Schema } from 'effect'
 import type { HttpClient } from '@effect/platform/HttpClient'
 
-import {
-  Location as LocationClass,
-  type Location,
-} from '@assessmentis/clinical-domain'
+import { Location } from '@assessmentis/clinical-domain'
 import {
   Code,
   CodeableConcept,
@@ -12,7 +9,7 @@ import {
   VideoCallRoomIdentifier,
   findVideoCallRoomConfig,
 } from '@assessmentis/clinical-domain/data-types'
-import { ReadonlyUrl, type Resource } from '@assessmentis/effectful-store'
+import { Resource } from '@assessmentis/effectful-store'
 import { UnhandledError } from '@assessmentis/ontology'
 
 import type { DailyCoOriginDefinition } from '../../DailyCoOriginDefinition'
@@ -32,36 +29,50 @@ import {
   type AuthReadable,
 } from '../../resolverUtils'
 
+const LocationUrl = Location.UrlSchema
+
 /**
  * Build a Location from a Daily.co room API response.
  */
-const roomToLocation = (room: {
-  name: string
-  url: string
-}): Resource.WithResourceUrl<Location> => {
-  return LocationClass.make({
-    domainType: 'Location' as const,
-    name: room.name,
-    status: 'active' as const,
-    mode: 'instance' as const,
-    physicalType: CodeableConcept.make({
-      coding: [
-        Coding.make({
-          system:
-            'http://terminology.hl7.org/CodeSystem/location-physical-type',
-          code: Code.make('vi'),
-          display: 'Virtual',
+const roomToLocation = (room: { name: string; url: string }) =>
+  Schema.decode(LocationUrl)(room.url).pipe(
+    Effect.mapError(
+      (cause) =>
+        new UnhandledError({
+          message: `Invalid room URL: ${room.url}`,
+          cause,
+        })
+    ),
+    Effect.flatMap((url) => {
+      const location = Location.make({
+        url,
+        domainType: 'Location' as const,
+        name: room.name,
+        status: 'active' as const,
+        mode: 'instance' as const,
+        physicalType: CodeableConcept.make({
+          coding: [
+            Coding.make({
+              system:
+                'http://terminology.hl7.org/CodeSystem/location-physical-type',
+              code: Code.make('vi'),
+              display: 'Virtual',
+            }),
+          ],
         }),
-      ],
-    }),
-    identifier: [
-      VideoCallRoomIdentifier.make({ value: room.name }).toIdentifier(),
-    ],
-    url: Schema.decodeSync(
-      pipe(ReadonlyUrl.FromString, Schema.brand('Location/url'))
-    )(room.url),
-  }) as Resource.WithResourceUrl<Location>
-}
+        identifier: [
+          VideoCallRoomIdentifier.make({ value: room.name }).toIdentifier(),
+        ],
+      })
+      return Resource.hasResourceUrl(location)
+        ? Effect.succeed(location)
+        : Effect.fail(
+            new UnhandledError({
+              message: `Expected Location to have url after construction`,
+            })
+          )
+    })
+  )
 
 export const makeLocationResolver = (
   httpClient: HttpClient,
@@ -84,7 +95,7 @@ export const makeLocationResolver = (
           handle404('Location', { url: request.url }),
           assertStatus(200),
           parseAs(CompleteApiDailyCoRoom),
-          Effect.map((apiRoom) => roomToLocation(apiRoom))
+          Effect.flatMap((apiRoom) => roomToLocation(apiRoom))
         )
       }
       case 'Search':
@@ -97,8 +108,8 @@ export const makeLocationResolver = (
               data: Schema.Array(CompleteApiDailyCoRoom),
             })
           ),
-          Effect.map((response) =>
-            response.data.map((room) => roomToLocation(room))
+          Effect.flatMap((response) =>
+            Effect.all(response.data.map((room) => roomToLocation(room)))
           )
         )
       case 'Create':
@@ -155,7 +166,7 @@ export const makeLocationResolver = (
             handleHttpClientError('HTTP Client Error while creating room'),
             assertStatus(200),
             parseAs(CompleteApiDailyCoRoom),
-            Effect.map((apiRoom) => roomToLocation(apiRoom))
+            Effect.flatMap((apiRoom) => roomToLocation(apiRoom))
           )
         })
       case 'Update':

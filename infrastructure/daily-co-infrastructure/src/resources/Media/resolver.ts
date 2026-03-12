@@ -2,7 +2,7 @@ import { Effect, pipe, RequestResolver, Schema } from 'effect'
 import type { HttpClient } from '@effect/platform/HttpClient'
 
 import type { Media } from '@assessmentis/clinical-domain'
-import type { Resource } from '@assessmentis/effectful-store'
+import { Resource } from '@assessmentis/effectful-store'
 import { UnhandledError } from '@assessmentis/ontology'
 
 import {
@@ -19,7 +19,7 @@ import {
 } from '../../resolverUtils'
 import { DailyCoMedia } from './DailyCoMedia'
 
-const decodeMedia = Schema.decodeSync(DailyCoMedia)
+const decodeMedia = Schema.decode(DailyCoMedia)
 
 export const makeMediaResolver = (
   httpClient: HttpClient,
@@ -37,7 +37,13 @@ export const makeMediaResolver = (
         )
       case 'Search':
         return Effect.gen(function* () {
-          const roomName = request.params.encounter as string | undefined
+          const encounterParam = request.params.encounter
+          const roomName =
+            typeof encounterParam === 'string'
+              ? encounterParam
+              : Array.isArray(encounterParam)
+                ? encounterParam[0]
+                : undefined
           if (!roomName) {
             return yield* Effect.fail(
               new UnhandledError({
@@ -70,15 +76,31 @@ export const makeMediaResolver = (
               rec.id
             )
             if (downloadLink) {
-              results.push(
-                decodeMedia({
-                  id: rec.id,
-                  start_ts: rec.start_ts,
-                  duration: rec.duration,
-                  downloadLink,
-                  resourceUrl: `${baseUrl}/recordings/${rec.id}`,
-                }) as Resource.WithResourceUrl<Media>
+              const media = yield* decodeMedia({
+                id: rec.id,
+                start_ts: rec.start_ts,
+                duration: rec.duration,
+                downloadLink,
+                resourceUrl: `${baseUrl}/recordings/${rec.id}`,
+              }).pipe(
+                Effect.mapError(
+                  (cause) =>
+                    new UnhandledError({
+                      message: 'Error decoding Media from Daily.co recording',
+                      cause,
+                    })
+                ),
+                Effect.flatMap((m) =>
+                  Resource.hasResourceUrl(m)
+                    ? Effect.succeed(m)
+                    : Effect.fail(
+                        new UnhandledError({
+                          message: 'Expected Media to have url after decoding',
+                        })
+                      )
+                )
               )
+              results.push(media)
             }
           }
           return results

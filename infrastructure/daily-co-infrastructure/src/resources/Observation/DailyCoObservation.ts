@@ -1,4 +1,4 @@
-import { Schema } from 'effect'
+import { Effect, ParseResult, Schema } from 'effect'
 
 import {
   Observation,
@@ -25,32 +25,35 @@ export const DailyCoTranscriptInput = Schema.Struct({
 export const DailyCoObservation: Schema.Schema<
   Observation,
   typeof DailyCoTranscriptInput.Encoded
-> = Schema.transform(DailyCoTranscriptInput, Observation, {
+> = Schema.transformOrFail(DailyCoTranscriptInput, Observation, {
   strict: true,
-  decode: (transcript): ObservationEncoded => ({
-    status: 'final',
-    code: {
-      coding: [
+  decode: (transcript) =>
+    Effect.succeed<ObservationEncoded>({
+      domainType: 'Observation',
+      status: 'final',
+      code: {
+        coding: [
+          {
+            system: 'http://assessment.is/fhir/observation-type',
+            code: 'video-call-transcript',
+            display: 'Video Call Transcript',
+          },
+        ],
+      },
+      value: {
+        _tag: 'string',
+        string: transcript.accessLink,
+      },
+      identifier: [
         {
-          system: 'http://assessment.is/fhir/observation-type',
-          code: 'video-call-transcript',
-          display: 'Video Call Transcript',
+          system: 'http://assessment.is/fhir/daily-co-transcript-id',
+          value: transcript.transcriptId,
         },
       ],
-    },
-    value: {
-      _tag: 'string',
-      string: transcript.accessLink,
-    },
-    identifier: [
-      {
-        system: 'http://assessment.is/fhir/daily-co-transcript-id',
-        value: transcript.transcriptId,
-      },
-    ],
-    url: transcript.resourceUrl,
-  }),
-  encode: () => {
-    throw new Error('DailyCoObservation is decode-only')
-  },
+      url: transcript.resourceUrl,
+    }),
+  encode: (_, _opts, ast) =>
+    Effect.fail(
+      new ParseResult.Type(ast, _, 'DailyCoObservation is decode-only')
+    ),
 })

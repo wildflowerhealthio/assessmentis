@@ -38,11 +38,11 @@ Export from `src/{category}/contexts/index.ts`.
 
 Update:
 
-- `src/Schemas.ts` to include `{ResourceName}`
+- `src/ResourceDataTypes.ts` to include `{ResourceName}`
 - `src/Repositories.ts` to include `{ResourceName}: {ResourceName}Repository`
 - `RepositoriesType` to include `{ResourceName}`
 
-The schema and repository keys must match the FHIR `resourceType` literal.
+The resource data type and repository keys must match the domain type literal.
 
 ## 5. Wire consumers and docs
 
@@ -52,7 +52,6 @@ The schema and repository keys must match the FHIR `resourceType` literal.
 ## Most-used code locations
 
 - Schema examples: [../src/resources](../src/resources)
-- Schema registry: [../src/Schemas.ts](../src/Schemas.ts)
 - Resource data types: [../src/ResourceDataTypes.ts](../src/ResourceDataTypes.ts)
 - Hub Tag: [../src/ClinicalDomainHub.ts](../src/ClinicalDomainHub.ts)
 

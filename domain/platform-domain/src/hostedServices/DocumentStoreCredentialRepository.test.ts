@@ -145,7 +145,8 @@ describe('makeDocumentStoreCredentialRepository', () => {
           typeof TestLiveCredential
         >(TestLiveCredential)
         const credential = yield* repo.get(identity)
-        yield* Effect.yieldNow()
+        // Sleep just briefly to let the credential load
+        yield* Effect.sleep('2 millis')
         return yield* credential.get
       }).pipe(
         Effect.provideService(

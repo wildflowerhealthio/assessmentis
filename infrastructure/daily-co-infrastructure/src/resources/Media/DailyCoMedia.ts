@@ -1,4 +1,4 @@
-import { Schema } from 'effect'
+import { Effect, ParseResult, Schema } from 'effect'
 
 import { Media, type MediaEncoded } from '@assessmentis/clinical-domain'
 
@@ -24,18 +24,18 @@ export const DailyCoRecordingInput = Schema.Struct({
 export const DailyCoMedia: Schema.Schema<
   Media,
   typeof DailyCoRecordingInput.Encoded
-> = Schema.transform(DailyCoRecordingInput, Media, {
+> = Schema.transformOrFail(DailyCoRecordingInput, Media, {
   strict: true,
-  decode: (rec): MediaEncoded => ({
-    domainType: 'Media',
-    status: 'completed',
-    identifier: [{ value: rec.id }],
-    createdDateTime: new Date(rec.start_ts * 1000).toISOString(),
-    duration: rec.duration,
-    content: { dataUrl: rec.downloadLink },
-    url: rec.resourceUrl,
-  }),
-  encode: () => {
-    throw new Error('DailyCoMedia is decode-only')
-  },
+  decode: (rec) =>
+    Effect.succeed<MediaEncoded>({
+      domainType: 'Media',
+      status: 'completed',
+      identifier: [{ value: rec.id }],
+      createdDateTime: new Date(rec.start_ts * 1000).toISOString(),
+      duration: rec.duration,
+      content: { dataUrl: rec.downloadLink },
+      url: rec.resourceUrl,
+    }),
+  encode: (_, _opts, ast) =>
+    Effect.fail(new ParseResult.Type(ast, _, 'DailyCoMedia is decode-only')),
 })

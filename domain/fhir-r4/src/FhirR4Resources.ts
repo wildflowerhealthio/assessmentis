@@ -2,6 +2,7 @@ import type FhirR4 from 'fhir/r4'
 
 export type Keys =
   | 'Composition'
+  | 'DiagnosticReport'
   | 'Encounter'
   | 'Location'
   | 'Media'
@@ -17,6 +18,7 @@ type AbstractEncodedTypes = {
 
 export interface EncodedTypes extends AbstractEncodedTypes {
   Composition: FhirR4.Composition
+  DiagnosticReport: FhirR4.DiagnosticReport
   Encounter: FhirR4.Encounter
   Location: FhirR4.Location
   Media: FhirR4.Media

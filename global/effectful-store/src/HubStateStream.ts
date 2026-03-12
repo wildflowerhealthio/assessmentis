@@ -1,10 +1,11 @@
-import type { Scope } from 'effect'
 import {
   Effect,
   Either,
   Equal,
+  Exit,
   HashMap,
   Record as EffectRecord,
+  Scope,
   Stream,
 } from 'effect'
 
@@ -89,6 +90,7 @@ const wrapForEquality = (
 type OriginCacheEntry<Resources extends Resource.ResourceSet> = {
   readonly wrappedDef: Equal.Equal
   readonly state: Origin.AnyState<Resources, never>
+  readonly scope: Scope.CloseableScope
 }
 
 type OriginCache<Resources extends Resource.ResourceSet> = Map<
@@ -162,20 +164,36 @@ const buildHubState = <Resources extends Resource.ResourceSet, R>(
         newCache.set(urlKey, cached)
         state.set(urlKey, cached.state)
       } else if (def._tag in originMakers) {
+        // Close the old scope if this is a replacement (definition changed)
+        if (cached) yield* Scope.close(cached.scope, Exit.void)
         // Safe: `in` check above guarantees the maker exists
         const maker = originMakers[def._tag]!
-        const origin = yield* maker(originUrl, def, originConfig)
-        newCache.set(urlKey, { wrappedDef: wrapped, state: origin })
+        const childScope = yield* Scope.make()
+        const origin = yield* maker(originUrl, def, originConfig).pipe(
+          Effect.provideService(Scope.Scope, childScope)
+        )
+        newCache.set(urlKey, {
+          wrappedDef: wrapped,
+          state: origin,
+          scope: childScope,
+        })
         state.set(urlKey, origin)
       } else {
         const errorOrigin = makeUnsupportedOrigin<Resources>(originUrl, def)
-        newCache.set(urlKey, { wrappedDef: wrapped, state: errorOrigin })
+        const childScope = yield* Scope.make()
+        newCache.set(urlKey, {
+          wrappedDef: wrapped,
+          state: errorOrigin,
+          scope: childScope,
+        })
         state.set(urlKey, errorOrigin)
       }
     }
 
     for (const oldKey of cache.keys()) {
       if (!newCache.has(oldKey)) {
+        const entry = cache.get(oldKey)!
+        yield* Scope.close(entry.scope, Exit.void)
         yield* Effect.log(`Origin deregistered: ${oldKey}`)
       }
     }

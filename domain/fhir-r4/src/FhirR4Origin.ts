@@ -29,12 +29,12 @@ import type {
   Questionnaire,
   QuestionnaireResponse,
 } from '@assessmentis/clinical-domain'
-import {
-  type ReadonlyUrl,
-  type Origin,
-  type Resource,
-  type ResourceRequest,
+import type {
+  ReadonlyUrl,
+  Origin,
+  ResourceRequest,
 } from '@assessmentis/effectful-store'
+import { Resource } from '@assessmentis/effectful-store'
 import { FhirR4Client } from '@assessmentis/fhir-r4'
 import {
   ExternalAssertionError,
@@ -112,13 +112,6 @@ const extractFhirId = (url: { readonly pathname: string }): string => {
 }
 
 /**
- * Type guard: asserts a resource has a non-undefined url
- */
-const hasResourceUrl = <T extends Resource.AnyResource>(
-  value: T
-): value is Resource.WithResourceUrl<T> => value.url !== undefined
-
-/**
  * Decode raw FHIR JSON and assert the result has a url
  */
 const decodeAndAssertUrl = <T extends Resource.Resource<string>>(
@@ -142,7 +135,7 @@ const decodeAndAssertUrl = <T extends Resource.Resource<string>>(
           })
       ),
       Effect.flatMap((decoded) =>
-        hasResourceUrl(decoded)
+        Resource.hasResourceUrl(decoded)
           ? Effect.succeed(decoded)
           : Effect.fail(
               new ExternalAssertionError({

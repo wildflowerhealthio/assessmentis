@@ -9,7 +9,7 @@ import type {
 } from '@assessmentis/ontology'
 import { type DeepReadonly } from '@assessmentis/util'
 
-export class FhirR4Client extends Context.Tag('BareFhirR4Client')<
+export class FhirR4Client extends Context.Tag('FhirR4Client')<
   FhirR4Client,
   {
     create: (params: {
