@@ -1,7 +1,14 @@
 import { Effect } from 'effect'
-import type { DocumentData, Firestore, SetOptions } from 'firebase/firestore'
-import { doc, setDoc } from 'firebase/firestore'
+
 import { UnhandledError } from '@assessmentis/ontology'
+
+import {
+  doc,
+  setDoc,
+  type DocumentData,
+  type Firestore,
+  type SetOptions,
+} from 'firebase/firestore'
 
 /**
  * Effect-based wrapper for Firestore setDoc operation

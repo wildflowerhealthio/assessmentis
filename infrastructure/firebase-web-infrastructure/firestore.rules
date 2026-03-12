@@ -6,30 +6,30 @@ service cloud.firestore {
     function isSignedIn() {
       return request.auth != null;
     }
-    
+
     function isGlobalAdmin() {
       let globalAdmins = [
         "NYHqWb9dcRg1v2XxijROridZOur2"
       ];
       return isSignedIn() && (request.auth.uid in globalAdmins);
     }
-    
+
     function getOrgRoles(orgId) {
     	let userData = get(/databases/$(database)/documents/orgs/$(orgId)/users/$(request.auth.uid));
       return (
       	isSignedIn()
-      	&& userData != null 
+      	&& userData != null
         	? userData.roles
           : []
       )
     }
-    
+
     function canReadOrgInternal(orgId) {
     	let orgRoles = getOrgRoles(orgId);
       return isGlobalAdmin() || orgRoles.hasAny(['admin', 'clinician'])
-      
+
     }
-    
+
     function canManageConfig(orgId) {
     	let orgRoles = getOrgRoles(orgId);
       return isGlobalAdmin() || orgRoles.hasAny(['admin'])
@@ -40,12 +40,16 @@ service cloud.firestore {
       allow get, list: if isSignedIn() && request.auth.uid == uid || isGlobalAdmin();
       allow create, update, delete: if isSignedIn() && isGlobalAdmin();
     }
-    
+
     match /users/{uid}/tokens/googleOAuthAccessToken {
       allow get, list: if isSignedIn() && request.auth.uid == uid || isGlobalAdmin();
       allow create, update, delete: if isSignedIn() && isGlobalAdmin();
     }
-    
+
+    match /users/{uid}/credentials/{credentialId} {
+      allow get, list, create, update, delete: if isSignedIn() && request.auth.uid == uid || isGlobalAdmin();
+    }
+
     match /orgs/{path=**} {
     	allow read, write: if isGlobalAdmin();
     }
@@ -53,6 +57,11 @@ service cloud.firestore {
     match /orgs/{orgId} {
       allow get: if canReadOrgInternal(orgId);
       allow create, update, delete: if canManageConfig(orgId);
+    }
+
+    match /orgs/{orgId}/credentials/{credentialId} {
+      allow read: if canReadOrgInternal(orgId);
+      allow write: if canManageConfig(orgId);
     }
 
 		// FIRE CMS

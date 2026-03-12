@@ -111,8 +111,7 @@ assessmentis/
 │   ├── google-fhir-web-infrastructure/     # Google Healthcare API client
 │   ├── daily-co-infrastructure/        # Daily.co video integration
 │   ├── firebase-web-infrastructure/    # Firebase client
-│   ├── document-template-instances/    # React document templates
-│   └── google-meet-infrastructure/     # (Currently unused)
+│   └── document-template-instances/    # React document templates
 └── global/
     ├── util/               # Domain-agnostic utilities
     ├── react-util/         # React components & hooks

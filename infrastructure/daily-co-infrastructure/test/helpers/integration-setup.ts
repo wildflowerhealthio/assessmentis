@@ -1,11 +1,12 @@
 import 'dotenv/config'
-import { http } from 'msw'
-import { beforeAll, afterAll, afterEach } from 'vitest'
-import { Effect, Layer, TestContext } from 'effect'
-import { DailyCoContext, type DailyCoConfig } from '@assessmentis/config-domain'
-import { FetchHttpClient } from '@effect/platform'
+
+import { afterAll, afterEach, beforeAll } from 'vitest'
+
 import { setupNodeIntercepting } from '@assessmentis/testing-utils/vcr-js/node'
-import { DailyCoVideoCallClientLayer } from '../../src/DailyCoVideoCallClientLayer'
+
+import { http } from 'msw'
+
+import type { DailyCoOriginDefinition } from '../../src/DailyCoOriginDefinition'
 
 export const DAILY_CO_API_BASE = 'https://api.daily.co'
 
@@ -13,10 +14,11 @@ export const DAILY_CO_API_BASE = 'https://api.daily.co'
  * Test configuration for Daily.co API
  * Uses environment variables for real API access in record mode
  */
-export const testConfig: DailyCoConfig = {
+export const testConfig: DailyCoOriginDefinition = {
   _tag: 'daily_co' as const,
   dailyCoProxyUrl: 'https://api.daily.co/v1',
   recordingsBucket: undefined,
+  activeResources: { Location: true, Media: true, Observation: true },
 }
 
 const isRecordMode = process.env.RECORD === 'true'
@@ -45,22 +47,6 @@ export const verifyDailyCoAuth = (): void => {
     console.log('Recording mode enabled - will record new tapes')
   }
 }
-
-/**
- * Create the live test layer with real Daily.co API
- */
-export const LiveTestLayer = DailyCoVideoCallClientLayer.pipe(
-  Layer.provide(
-    Layer.succeed(DailyCoContext, {
-      config: testConfig,
-      authHeadersEffect: Effect.sync(() => ({
-        Authorization: `Bearer ${getDailyCoApiKey()}`,
-      })),
-    })
-  ),
-  Layer.provide(FetchHttpClient.layer),
-  Layer.provide(TestContext.TestContext)
-)
 
 // Create mock handlers for any endpoints that should be mocked rather than recorded
 const mockHandlers: Parameters<typeof http.get>[] = []

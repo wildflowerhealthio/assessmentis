@@ -49,15 +49,6 @@ export class OrgAdminService extends Effect.Service<OrgAdminService>()(
                 : cause
             )
           )
-          if (data == undefined) {
-            return yield* Effect.fail(
-              new NotFoundError({
-                resourceType: 'User',
-                params: { userId },
-              })
-            )
-          }
-
           return yield* Schema.decodeUnknown(User)(data).pipe(
             Effect.mapError(
               (cause) =>
@@ -92,23 +83,20 @@ export class OrgAdminService extends Effect.Service<OrgAdminService>()(
                   : cause
               )
             )
-          if (data == undefined) {
-            return yield* Effect.fail(
-              new NotFoundError({
-                resourceType: 'User',
-                params: { userId },
-              })
+          const parsed = yield* Schema.decodeUnknown(
+            Schema.Struct({
+              roles: Schema.Array(Schema.String),
+            })
+          )(data).pipe(
+            Effect.mapError(
+              (cause) =>
+                new UnhandledError({
+                  message: `User roles missing or invalid for user ${userId} in org ${orgSlug}`,
+                  cause,
+                })
             )
-          }
-
-          if (!('roles' in data) || !Array.isArray(data.roles)) {
-            return yield* Effect.fail(
-              new UnhandledError({
-                message: `User roles missing or invalid for user ${userId} in org ${orgSlug}`,
-              })
-            )
-          }
-          return data.roles
+          )
+          return parsed.roles
         })
 
       return {
