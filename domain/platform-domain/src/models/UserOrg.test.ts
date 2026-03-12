@@ -18,14 +18,14 @@ describe('UserOrg', () => {
     )
   })
 
-  test('defaults originConfig to empty object', () => {
+  test('defaults originConfigs to empty object', () => {
     const result = decode({})
-    expect(result.originConfig).toEqual({})
+    expect(result.originConfigs).toEqual({})
   })
 
-  test('decodes originConfig with _tag and preserves extra properties', () => {
+  test('decodes originConfigs with _tag and preserves extra properties', () => {
     const result = decode({
-      originConfig: {
+      originConfigs: {
         'https%3A%2F%2Fexample.com': {
           _tag: 'google_user_oauth_token',
           email: 'user@example.com',
@@ -33,8 +33,8 @@ describe('UserOrg', () => {
       },
     })
     expect(
-      result.originConfig[
-        'https%3A%2F%2Fexample.com' as keyof typeof result.originConfig
+      result.originConfigs[
+        'https%3A%2F%2Fexample.com' as keyof typeof result.originConfigs
       ]
     ).toEqual({ _tag: 'google_user_oauth_token', email: 'user@example.com' })
   })

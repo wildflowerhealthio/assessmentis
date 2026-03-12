@@ -161,11 +161,6 @@ export const startOrgService = (
     const orgPubSubFiber = yield* Effect.forkDaemon(
       Stream.runIntoPubSub(
         pubsubAsPerpetualStream(orgSlugPubSub).pipe(
-          Stream.tap((slug) =>
-            Effect.sync(() => {
-              console.log('Org slug:', slug)
-            })
-          ),
           StreamEither.flatMap(
             (orgSlug) =>
               documentStore.subscribeTo('orgs', orgSlug).pipe(
@@ -205,10 +200,6 @@ export const startOrgService = (
           .pipe(
             Effect.flatMap((_) => {
               return orgSlugPubSub.subscribe.pipe(Effect.flatMap(Queue.takeAll))
-            }),
-            Effect.flatMap((chunk) => {
-              console.log('Set active org slug to chunk:', chunk)
-              return Effect.void
             }),
             Effect.scoped
           )

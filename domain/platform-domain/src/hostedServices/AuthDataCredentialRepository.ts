@@ -21,12 +21,12 @@ import type {
 } from '../tagClasses/CredentialRepository'
 
 /**
- * Constructor contract for a credential class backed by AuthData.
+ * Constructor contract for a credential constructor backed by AuthData.
  *
  * Must provide a static `fromAuthData` mapping and accept a `SubscriptionRef`
  * in its constructor.
  */
-export interface AuthDataCredentialClass<
+export interface AuthDataCredentialConstructor<
   Tag extends string,
   TCredentialToken extends CredentialToken<TCredentialToken, Tag>,
 > {
@@ -97,7 +97,7 @@ export const makeAuthDataCredentialRepository = <
   Tag extends string,
   TCredentialToken extends CredentialToken<TCredentialToken, Tag>,
 >(
-  CredentialClass: AuthDataCredentialClass<Tag, TCredentialToken>
+  CredentialClass: AuthDataCredentialConstructor<Tag, TCredentialToken>
 ): Effect.Effect<
   AuthDataLiveCredential<Tag, TCredentialToken>,
   never,

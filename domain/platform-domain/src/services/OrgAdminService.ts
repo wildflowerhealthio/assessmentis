@@ -1,4 +1,4 @@
-import { Context, Effect, Layer, Schema } from 'effect'
+import { Effect, Schema } from 'effect'
 
 import {
   NotFoundError,
@@ -19,86 +19,27 @@ import { CurrentOrg, DocumentStore } from '../tagClasses'
  * operations for request/response patterns. Each instance is bound to the
  * org provided by {@link CurrentOrg}.
  *
- * @see {@link OrgAdminServiceLayer} for the standard DocumentStore-backed provider
+ * @see {@link OrgAdminService.Default} for the standard DocumentStore-backed layer
  */
-export class OrgAdminService extends Context.Tag('OrgAdminService')<
-  OrgAdminService,
+export class OrgAdminService extends Effect.Service<OrgAdminService>()(
+  'OrgAdminService',
   {
-    /** Look up a user's roles within this service instance's org. */
-    getUserOrgRoles: (
-      userId: UserId
-    ) => Effect.Effect<
-      ReadonlyArray<string>,
-      | AuthError
-      | AuthzError
-      | NotFoundError<'User', { userId: UserId }>
-      | UnhandledError
-    >
+    effect: Effect.gen(function* () {
+      const orgSlug = yield* CurrentOrg
+      const documentStore = yield* DocumentStore
 
-    /** Fetch a user profile by ID. Global operation (not org-specific). */
-    getUser: (
-      userId: UserId
-    ) => Effect.Effect<
-      User,
-      | AuthError
-      | AuthzError
-      | NotFoundError<'User', { userId: UserId }>
-      | UnhandledError
-    >
-  }
->() {}
-
-/**
- * Standard {@link OrgAdminService} layer backed by {@link DocumentStore}.
- * Requires {@link CurrentOrg} and {@link DocumentStore}.
- */
-export const OrgAdminServiceLayer = Layer.effect(
-  OrgAdminService,
-  Effect.gen(function* () {
-    const orgSlug = yield* CurrentOrg
-    const documentStore = yield* DocumentStore
-
-    // Get user from Firestore
-    const getUser: typeof OrgAdminService.Service.getUser = (userId) =>
-      Effect.gen(function* () {
-        const data = yield* documentStore.get('users', userId).pipe(
-          Effect.mapError((cause) =>
-            cause instanceof NotFoundError
-              ? new NotFoundError({
-                  resourceType: 'User',
-                  params: { userId },
-                })
-              : cause
-          )
-        )
-        if (data == undefined) {
-          return yield* Effect.fail(
-            new NotFoundError({
-              resourceType: 'User',
-              params: { userId },
-            })
-          )
-        }
-
-        return yield* Schema.decodeUnknown(User)(data).pipe(
-          Effect.mapError(
-            (cause) =>
-              new UnhandledError({
-                message: 'Error decoding User document',
-                cause,
-              })
-          )
-        )
-      })
-
-    // Get user's roles in this org
-    const getUserOrgRoles: typeof OrgAdminService.Service.getUserOrgRoles = (
-      userId
-    ) =>
-      Effect.gen(function* () {
-        const data = yield* documentStore
-          .get('orgs', orgSlug, 'users', userId)
-          .pipe(
+      /** Fetch a user profile by ID. Global operation (not org-specific). */
+      const getUser = (
+        userId: UserId
+      ): Effect.Effect<
+        User,
+        | AuthError
+        | AuthzError
+        | NotFoundError<'User', { userId: UserId }>
+        | UnhandledError
+      > =>
+        Effect.gen(function* () {
+          const data = yield* documentStore.get('users', userId).pipe(
             Effect.mapError((cause) =>
               cause instanceof NotFoundError
                 ? new NotFoundError({
@@ -108,28 +49,80 @@ export const OrgAdminServiceLayer = Layer.effect(
                 : cause
             )
           )
-        if (data == undefined) {
-          return yield* Effect.fail(
-            new NotFoundError({
-              resourceType: 'User',
-              params: { userId },
-            })
-          )
-        }
+          if (data == undefined) {
+            return yield* Effect.fail(
+              new NotFoundError({
+                resourceType: 'User',
+                params: { userId },
+              })
+            )
+          }
 
-        if (!('roles' in data) || !Array.isArray(data.roles)) {
-          return yield* Effect.fail(
-            new UnhandledError({
-              message: `User roles missing or invalid for user ${userId} in org ${orgSlug}`,
-            })
+          return yield* Schema.decodeUnknown(User)(data).pipe(
+            Effect.mapError(
+              (cause) =>
+                new UnhandledError({
+                  message: 'Error decoding User document',
+                  cause,
+                })
+            )
           )
-        }
-        return data.roles as ReadonlyArray<string>
-      })
+        })
 
-    return {
-      getUser,
-      getUserOrgRoles,
-    }
-  })
-)
+      /** Look up a user's roles within this service instance's org. */
+      const getUserOrgRoles = (
+        userId: UserId
+      ): Effect.Effect<
+        ReadonlyArray<string>,
+        | AuthError
+        | AuthzError
+        | NotFoundError<'User', { userId: UserId }>
+        | UnhandledError
+      > =>
+        Effect.gen(function* () {
+          const data = yield* documentStore
+            .get('orgs', orgSlug, 'users', userId)
+            .pipe(
+              Effect.mapError((cause) =>
+                cause instanceof NotFoundError
+                  ? new NotFoundError({
+                      resourceType: 'User',
+                      params: { userId },
+                    })
+                  : cause
+              )
+            )
+          if (data == undefined) {
+            return yield* Effect.fail(
+              new NotFoundError({
+                resourceType: 'User',
+                params: { userId },
+              })
+            )
+          }
+
+          if (!('roles' in data) || !Array.isArray(data.roles)) {
+            return yield* Effect.fail(
+              new UnhandledError({
+                message: `User roles missing or invalid for user ${userId} in org ${orgSlug}`,
+              })
+            )
+          }
+          return data.roles
+        })
+
+      return {
+        getUser,
+        getUserOrgRoles,
+      }
+    }),
+  }
+) {}
+
+/**
+ * Standard {@link OrgAdminService} layer backed by {@link DocumentStore}.
+ * Requires {@link CurrentOrg} and {@link DocumentStore}.
+ *
+ * @deprecated Use {@link OrgAdminService.Default} instead.
+ */
+export const OrgAdminServiceLayer = OrgAdminService.Default

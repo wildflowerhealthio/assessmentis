@@ -1,20 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
-import {
-  Chunk,
-  Effect,
-  Either,
-  HashMap,
-  Logger,
-  LogLevel,
-  Option,
-  Schema,
-  Stream,
-} from 'effect'
+import { Chunk, Effect, Either, HashMap, Option, Schema, Stream } from 'effect'
 
 import {
   ReadonlyUrl,
   UriEncodedOriginUrl,
   type Origin,
+  type OriginConfig,
   type Resource,
 } from '@assessmentis/effectful-store'
 import { AuthError, Loading, UnhandledError } from '@assessmentis/ontology'
@@ -38,14 +29,14 @@ const makeDefinition = (
 ): BaseOriginDefinition =>
   ({
     _tag: tag,
-    activeResources: { Patient: true as const },
+    supportedResources: { Patient: true as const },
     ...extra,
   }) as BaseOriginDefinition
 
 const makeOrg = (origins: Record<string, BaseOriginDefinition>): Org =>
   ({
     slug: 'test-org' as OrgSlug,
-    emoji: '🏥',
+    emoji: '\u{1f3e5}',
     origins: Object.fromEntries(
       Object.entries(origins).map(([url, def]) => [encode(url), def])
     ),
@@ -60,8 +51,8 @@ const makeInput = (org: Org, userOrg?: UserOrg) =>
 const collectAll = <A, R>(stream: Stream.Stream<A, never, R>) =>
   stream.pipe(Stream.runCollect, Effect.map(Chunk.toReadonlyArray))
 
-describe('hubStateStream', () => {
-  it('calls originMaker and emits state for matching tags', async () => {
+describe('hubStateStream (platform-domain wrapper)', () => {
+  it('maps Org origins to hub state via generic hubStateStream', async () => {
     const originState = {
       originUrl: ReadonlyUrl.fromEncoded(encode('https://example.com')),
       supportedResources: { Patient: true as const },
@@ -73,7 +64,8 @@ describe('hubStateStream', () => {
 
     const maker = vi.fn(
       (
-        _def: BaseOriginDefinition,
+        _originUrl: ReadonlyUrl,
+        _def: OriginConfig,
         _cred: Record<string, unknown> | undefined
       ) => Effect.succeed(originState)
     )
@@ -92,7 +84,7 @@ describe('hubStateStream', () => {
     )
 
     expect(maker).toHaveBeenCalledOnce()
-    expect(maker.mock.calls[0][0]._tag).toBe('test_origin')
+    expect(maker.mock.calls[0][1]._tag).toBe('test_origin')
     expect(emissions).toHaveLength(1)
     const state = Either.getOrThrow(emissions[0]!)
     expect(Option.getOrThrow(HashMap.get(state, 'https://example.com/'))).toBe(
@@ -100,226 +92,52 @@ describe('hubStateStream', () => {
     )
   })
 
-  it('emits error origin state for unrecognized tags', async () => {
-    const emissions = await Effect.runPromise(
-      collectAll(
-        hubStateStream<TestResources, never>(
-          [],
-          Stream.make(
-            makeInput(
-              makeOrg({
-                'https://example.com': makeDefinition('unknown_type'),
-              })
-            )
-          )
-        )
-      ).pipe(Effect.scoped)
-    )
-
-    expect(emissions).toHaveLength(1)
-    const state = Either.getOrThrow(emissions[0]!)
-    const origin = Option.getOrThrow(HashMap.get(state, 'https://example.com/'))
-    expect(origin.resolver).toBeUndefined()
-    expect(origin.errorStatus).toBeInstanceOf(UnhandledError)
-  })
-
-  it('removes origin from state when it is removed from org', async () => {
-    const makeOriginForUrl = (url: string) => ({
-      originUrl: ReadonlyUrl.fromEncoded(encode(url)),
-      supportedResources: { Patient: true as const },
-      resolver: undefined,
-      errorStatus: undefined,
-      provokeReauthenticate: () => Effect.void,
-      provokeReauthorize: () => Effect.void,
-    })
-
-    const originTypes = [
-      {
-        tag: 'ta',
-        make: () =>
-          Effect.succeed(
-            makeOriginForUrl('https://a.com') as unknown as Origin.AnyState<
-              TestResources,
-              never
-            >
-          ),
-      },
-      {
-        tag: 'tb',
-        make: () =>
-          Effect.succeed(
-            makeOriginForUrl('https://b.com') as unknown as Origin.AnyState<
-              TestResources,
-              never
-            >
-          ),
-      },
-    ]
-
-    const emissions = await Effect.runPromise(
-      collectAll(
-        hubStateStream<TestResources, never>(
-          originTypes,
-          Stream.make(
-            makeInput(
-              makeOrg({
-                'https://a.com': makeDefinition('ta'),
-                'https://b.com': makeDefinition('tb'),
-              })
-            ),
-            makeInput(makeOrg({ 'https://a.com': makeDefinition('ta') }))
-          )
-        )
-      ).pipe(Effect.scoped)
-    )
-
-    expect(emissions).toHaveLength(2)
-    const state0 = Either.getOrThrow(emissions[0]!)
-    const state1 = Either.getOrThrow(emissions[1]!)
-    expect(HashMap.has(state0, 'https://a.com/')).toBe(true)
-    expect(HashMap.has(state0, 'https://b.com/')).toBe(true)
-    expect(HashMap.has(state1, 'https://b.com/')).toBe(false)
-    expect(HashMap.has(state1, 'https://a.com/')).toBe(true)
-  })
-
-  it('logs when an origin is deregistered', async () => {
-    const logs: Array<string> = []
-    const testLogger = Logger.make(({ message }) => {
-      logs.push(String(message))
-    })
-
-    const makeOriginForUrl = (url: string) => ({
-      originUrl: ReadonlyUrl.fromEncoded(encode(url)),
-      supportedResources: { Patient: true as const },
-      resolver: undefined,
-      errorStatus: undefined,
-      provokeReauthenticate: () => Effect.void,
-      provokeReauthorize: () => Effect.void,
-    })
-
-    const originTypes = [
-      {
-        tag: 'ta',
-        make: () =>
-          Effect.succeed(
-            makeOriginForUrl('https://a.com') as unknown as Origin.AnyState<
-              TestResources,
-              never
-            >
-          ),
-      },
-      {
-        tag: 'tb',
-        make: () =>
-          Effect.succeed(
-            makeOriginForUrl('https://b.com') as unknown as Origin.AnyState<
-              TestResources,
-              never
-            >
-          ),
-      },
-    ]
-
-    await Effect.runPromise(
-      collectAll(
-        hubStateStream<TestResources, never>(
-          originTypes,
-          Stream.make(
-            makeInput(
-              makeOrg({
-                'https://a.com': makeDefinition('ta'),
-                'https://b.com': makeDefinition('tb'),
-              })
-            ),
-            makeInput(makeOrg({ 'https://a.com': makeDefinition('ta') }))
-          )
-        )
-      ).pipe(
-        Effect.scoped,
-        Logger.withMinimumLogLevel(LogLevel.All),
-        Effect.provide(Logger.replace(Logger.defaultLogger, testLogger))
-      )
-    )
-
-    expect(logs.some((msg) => msg.includes('Origin deregistered'))).toBe(true)
-    expect(logs.some((msg) => msg.includes('https://b.com/'))).toBe(true)
-  })
-
-  it('caches origin state when definition is unchanged', async () => {
+  it('passes UserOrg originConfigs through to maker', async () => {
     const originState = {
       originUrl: ReadonlyUrl.fromEncoded(encode('https://a.com')),
       supportedResources: { Patient: true as const },
-      resolver: undefined as unknown as Origin.Ready<
-        TestResources,
-        never
-      >['resolver'],
+      resolver: undefined,
       errorStatus: undefined,
       provokeReauthenticate: () => Effect.void,
       provokeReauthorize: () => Effect.void,
-    } satisfies Origin.AnyState<TestResources, never>
+    } as unknown as Origin.AnyState<TestResources, never>
 
-    const maker = vi.fn(() => Effect.succeed(originState))
+    const maker = vi.fn(
+      (
+        _originUrl: ReadonlyUrl,
+        _def: OriginConfig,
+        _cred: Record<string, unknown> | undefined
+      ) => Effect.succeed(originState)
+    )
 
     const org = makeOrg({ 'https://a.com': makeDefinition('t') })
-
-    const emissions = await Effect.runPromise(
-      collectAll(
-        hubStateStream<TestResources, never>(
-          [{ tag: 't', make: maker }],
-          Stream.make(makeInput(org), makeInput(org))
-        )
-      ).pipe(Effect.scoped)
-    )
-
-    // Cached: maker is called once, second emission reuses the state
-    expect(maker).toHaveBeenCalledOnce()
-    expect(emissions).toHaveLength(2)
-    const state0 = Either.getOrThrow(emissions[0]!)
-    const state1 = Either.getOrThrow(emissions[1]!)
-    expect(Option.getOrThrow(HashMap.get(state0, 'https://a.com/'))).toBe(
-      Option.getOrThrow(HashMap.get(state1, 'https://a.com/'))
-    )
-  })
-
-  it('re-registers when definition changes', async () => {
-    const maker = vi.fn((def: BaseOriginDefinition) =>
-      Effect.succeed({
-        originUrl: ReadonlyUrl.fromEncoded(encode('https://a.com')),
-        supportedResources: def.activeResources,
-        resolver: undefined,
-        errorStatus: undefined,
-        provokeReauthenticate: () => Effect.void,
-        provokeReauthorize: () => Effect.void,
-      })
-    ) as unknown as (
-      def: BaseOriginDefinition,
-      cred: Record<string, unknown> | undefined
-    ) => Effect.Effect<Origin.AnyState<TestResources, never>>
+    const encodedUrl = encode('https://a.com')
+    const userOrg = decodeUserOrg({
+      originConfigs: {
+        [encodedUrl]: {
+          _tag: 'google_user_oauth_token',
+          email: 'user@example.com',
+        },
+      },
+    })
 
     await Effect.runPromise(
       collectAll(
         hubStateStream<TestResources, never>(
           [{ tag: 't', make: maker }],
-          Stream.make(
-            makeInput(
-              makeOrg({
-                'https://a.com': makeDefinition('t', { extra: 'v1' }),
-              })
-            ),
-            makeInput(
-              makeOrg({
-                'https://a.com': makeDefinition('t', { extra: 'v2' }),
-              })
-            )
-          )
+          Stream.make(makeInput(org, userOrg))
         )
       ).pipe(Effect.scoped)
     )
 
-    expect(maker).toHaveBeenCalledTimes(2)
+    expect(maker).toHaveBeenCalledOnce()
+    expect(maker.mock.calls[0][2]).toEqual({
+      _tag: 'google_user_oauth_token',
+      email: 'user@example.com',
+    })
   })
 
-  it('passes through Left errors', async () => {
+  it('passes through Left errors from org stream', async () => {
     const emissions = await Effect.runPromise(
       collectAll(
         hubStateStream<TestResources, never>(
@@ -373,23 +191,25 @@ describe('hubStateStream', () => {
     expect(Either.isLeft(emissions[0]!)).toBe(true)
   })
 
-  it('rebuilds origin when credential identity changes', async () => {
+  it('rebuilds origin when UserOrg credential identity changes', async () => {
     const originState = {
       originUrl: ReadonlyUrl.fromEncoded(encode('https://a.com')),
-      activeResources: { Patient: true as const },
+      supportedResources: { Patient: true as const },
       resolver: undefined,
       errorStatus: undefined,
       provokeReauthenticate: () => Effect.void,
       provokeReauthorize: () => Effect.void,
     } as unknown as Origin.AnyState<TestResources, never>
 
-    const maker = vi.fn(() => Effect.succeed(originState))
+    const maker = vi.fn((_originUrl: ReadonlyUrl) =>
+      Effect.succeed(originState)
+    )
 
     const org = makeOrg({ 'https://a.com': makeDefinition('t') })
     const encodedUrl = encode('https://a.com')
 
     const userOrg1 = decodeUserOrg({
-      originConfig: {
+      originConfigs: {
         [encodedUrl]: {
           _tag: 'google_user_oauth_token',
           email: 'a@example.com',
@@ -397,7 +217,7 @@ describe('hubStateStream', () => {
       },
     })
     const userOrg2 = decodeUserOrg({
-      originConfig: {
+      originConfigs: {
         [encodedUrl]: {
           _tag: 'google_user_oauth_token',
           email: 'b@example.com',
@@ -416,49 +236,5 @@ describe('hubStateStream', () => {
 
     // Email changed, so maker should be called twice
     expect(maker).toHaveBeenCalledTimes(2)
-  })
-
-  it('passes credential context to maker', async () => {
-    const originState = {
-      originUrl: ReadonlyUrl.fromEncoded(encode('https://a.com')),
-      activeResources: { Patient: true as const },
-      resolver: undefined,
-      errorStatus: undefined,
-      provokeReauthenticate: () => Effect.void,
-      provokeReauthorize: () => Effect.void,
-    } as unknown as Origin.AnyState<TestResources, never>
-
-    const maker = vi.fn(
-      (
-        _def: BaseOriginDefinition,
-        _cred: Record<string, unknown> | undefined
-      ) => Effect.succeed(originState)
-    )
-
-    const org = makeOrg({ 'https://a.com': makeDefinition('t') })
-    const encodedUrl = encode('https://a.com')
-    const userOrg = decodeUserOrg({
-      originConfig: {
-        [encodedUrl]: {
-          _tag: 'google_user_oauth_token',
-          email: 'user@example.com',
-        },
-      },
-    })
-
-    await Effect.runPromise(
-      collectAll(
-        hubStateStream<TestResources, never>(
-          [{ tag: 't', make: maker }],
-          Stream.make(makeInput(org, userOrg))
-        )
-      ).pipe(Effect.scoped)
-    )
-
-    expect(maker).toHaveBeenCalledOnce()
-    expect(maker.mock.calls[0][1]).toEqual({
-      _tag: 'google_user_oauth_token',
-      email: 'user@example.com',
-    })
   })
 })

@@ -4,6 +4,7 @@ import {
   Effect,
   Either,
   Fiber,
+  MutableHashMap,
   Option,
   pipe,
   Readable,
@@ -31,12 +32,12 @@ import type {
 import { DocumentStore, type DocumentPath } from '../tagClasses/DocumentStore'
 
 /**
- * Constructor contract for a credential class backed by DocumentStore.
+ * Constructor contract for a credential constructor backed by DocumentStore.
  *
  * Extends {@link CredentialTokenDefinition} with a constructor that accepts an
  * identity and a state ref, producing a {@link DocumentStoreLiveCredential}.
  */
-export interface DocumentStoreCredentialClass<
+export interface DocumentStoreCredentialConstructor<
   Tag extends string,
   TIdentifier extends { readonly _tag: Tag },
   TCredentialToken extends CredentialToken<TCredentialToken, Tag>,
@@ -203,9 +204,9 @@ export const makeDocumentStoreCredentialRepository = <
   TCredentialToken extends CredentialToken<TCredentialToken, Tag>,
   TCredentialTokenEncoded,
   TTokenContext,
-  CredentialClass extends DocumentStoreCredentialClass<
+  CredentialClass extends DocumentStoreCredentialConstructor<
     Tag,
-    { readonly _tag: Tag } & TIdentifier,
+    TIdentifier,
     TCredentialToken,
     TCredentialTokenEncoded,
     TTokenContext
@@ -216,8 +217,9 @@ export const makeDocumentStoreCredentialRepository = <
   Effect.gen(function* () {
     const documentStore = yield* DocumentStore
     // Per-tag caches keep credential types precise — no union needed at lookup.
-    const cache = new Map<
-      string,
+    // Uses MutableHashMap for hash-stable identity comparison via Equal/Hash.
+    const cache = MutableHashMap.empty<
+      TIdentifier,
       DocumentStoreLiveCredential<Tag, TCredentialToken, TTokenContext>
     >()
 
@@ -234,10 +236,9 @@ export const makeDocumentStoreCredentialRepository = <
         never,
         Scope.Scope | TTokenContext
       > {
-        const cacheKey = JSON.stringify(identity)
-        const cached = cache.get(cacheKey)
-        if (cached) {
-          return Effect.succeed(cached)
+        const cached = MutableHashMap.get(cache, identity)
+        if (Option.isSome(cached)) {
+          return Effect.succeed(cached.value)
         }
 
         return Effect.gen(function* () {
@@ -246,7 +247,7 @@ export const makeDocumentStoreCredentialRepository = <
           >(
             Either.left(
               new Loading({
-                entity: { toString: () => cacheKey },
+                entity: { toString: () => String(identity) },
               })
             )
           )
@@ -273,7 +274,7 @@ export const makeDocumentStoreCredentialRepository = <
           )
 
           // Schedule proactive token refresh before expiry
-          const nextRefreshFibre = yield* SynchronizedRef.make<
+          const nextRefreshFiber = yield* SynchronizedRef.make<
             Option.Option<Fiber.Fiber<void, TokenStreamError>>
           >(Option.none())
 
@@ -313,7 +314,7 @@ export const makeDocumentStoreCredentialRepository = <
           const watchWithRefresh = watchStream.pipe(
             StreamEither.tapRight((token) =>
               SynchronizedRef.updateEffect(
-                nextRefreshFibre,
+                nextRefreshFiber,
                 Option.match({
                   onNone() {
                     return scheduleRefresh(token).pipe(Effect.map(Option.some))
@@ -335,7 +336,7 @@ export const makeDocumentStoreCredentialRepository = <
             SubscriptionRef.set(stateRef, value)
           ).pipe(Effect.forkScoped)
 
-          cache.set(cacheKey, credential)
+          MutableHashMap.set(cache, identity, credential)
 
           return credential
         })

@@ -47,6 +47,18 @@ describe('DateTimeUtcFromFirebaseTimestamp', () => {
       const result = encode(dt)
       expect(result).toEqual({ seconds: 0, nanoseconds: 0 })
     })
+
+    it('should encode negative timestamps just below an integer', () => {
+      const dt = DateTime.unsafeMake(-1)
+      const result = encode(dt)
+      expect(result).toEqual({ seconds: -1, nanoseconds: 999_000_000 })
+    })
+
+    it('should encode negative timestamps just above an integer', () => {
+      const dt = DateTime.unsafeMake(-999)
+      const result = encode(dt)
+      expect(result).toEqual({ seconds: -1, nanoseconds: 1_000_000 })
+    })
   })
 
   describe('roundtrip', () => {

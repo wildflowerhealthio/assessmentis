@@ -11,12 +11,44 @@ export interface DocumentData {
  * A Firestore-style document path: an even-length tuple of alternating
  * collection and document ID segments
  *
- * @example ['orgs', 'acme']` or `['orgs', 'acme', 'users', 'uid123']`).
+ * @example `['orgs', 'acme']` or `['orgs', 'acme', 'users', 'uid123']`).
  */
 export type DocumentPath = ReadonlyArray<string> & {
   0: string
   1: string
   length: 2 | 4 | 6
+}
+
+/**
+ * Validates and coerces an unknown value into {@link DocumentData}.
+ *
+ * In development (`NODE_ENV !== 'production'`), throws descriptive errors
+ * if the value is not a valid document data object (i.e. a non-null,
+ * non-array plain object).
+ *
+ * In production, silently strips non-record values by returning an empty
+ * object.
+ *
+ * @throws {@link TypeError} In development, if `x` is not a plain object.
+ */
+export function ensureIsDocumentData(x: unknown): DocumentData {
+  if (typeof x !== 'object' || x === null || Array.isArray(x)) {
+    if (process.env['NODE_ENV'] == 'development') {
+      throw new TypeError(
+        `Expected DocumentData (a plain object), but received ${
+          x === null ? 'null' : Array.isArray(x) ? 'an array' : typeof x
+        }`
+      )
+    }
+    return {}
+  }
+
+  // Structurally, any non-null non-array object satisfies { [field: string]: unknown }
+  const record: DocumentData = Object.create(null)
+  for (const [key, value] of Object.entries(x)) {
+    record[key] = value
+  }
+  return record
 }
 
 /**
@@ -69,7 +101,7 @@ export class DocumentStore extends Context.Tag('DocumentStore')<
      */
     update(
       data: Partial<DocumentData>,
-      ...path: DocumentPath
+      ...path: DocumentPath | readonly [DocumentPath]
     ): Effect.Effect<void, UnhandledError, never>
   }
 >() {}

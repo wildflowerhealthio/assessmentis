@@ -57,7 +57,7 @@ export class AuthDataService extends Context.Tag('AuthDataService')<
    * Takes the first value from the auth data stream, failing with
    * {@link UnhandledError} if the stream is already closed.
    */
-  static tryGetAuthData(): Effect.Effect<
+  static getAuthData(): Effect.Effect<
     AuthData,
     AuthError | UnhandledError,
     Scope.Scope | AuthDataService
