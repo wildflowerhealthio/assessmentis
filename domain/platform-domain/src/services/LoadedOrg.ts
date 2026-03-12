@@ -1,8 +1,25 @@
 import { Context, Effect, Either, Layer, Schema } from 'effect'
-import type { OrgSlug } from '@assessmentis/platform-domain'
-import { CurrentOrg, DocumentStore, Org } from '@assessmentis/platform-domain'
-import { BadDataError, NotFoundError } from '@assessmentis/ontology'
 
+import { BadDataError, NotFoundError } from '@assessmentis/ontology'
+import {
+  CurrentOrg,
+  DocumentStore,
+  Org,
+  type OrgSlug,
+} from '@assessmentis/platform-domain'
+
+/**
+ * Effect context tag carrying the resolved {@link Org} instance for the
+ * current request or session.
+ *
+ * @remarks
+ * Used on the server side (Cloud Functions) after auth validation. Domain
+ * code depends on this tag to access the active org without passing it as
+ * a parameter.
+ *
+ * @see {@link LoadedOrgLayer} for the standard DocumentStore-backed provider
+ * @see {@link LiteralLoadedOrgLayer} for test/literal construction
+ */
 export class LoadedOrg extends Context.Tag('LoadedOrg')<LoadedOrg, Org>() {}
 
 const decodeOrg = (orgSlug: OrgSlug, data: unknown | undefined) =>
@@ -26,6 +43,11 @@ const decodeOrg = (orgSlug: OrgSlug, data: unknown | undefined) =>
     )
   })
 
+/**
+ * Constructs a {@link LoadedOrg} layer from raw data, decoding it with the
+ * {@link Org} schema. Useful in tests or when the org document is already
+ * available.
+ */
 export const LiteralLoadedOrgLayer = (
   orgSlug: OrgSlug,
   data: unknown
@@ -35,6 +57,10 @@ export const LiteralLoadedOrgLayer = (
   never
 > => Layer.effect(LoadedOrg, decodeOrg(orgSlug, data))
 
+/**
+ * Standard {@link LoadedOrg} layer that reads from {@link DocumentStore}
+ * using the {@link CurrentOrg} slug.
+ */
 export const LoadedOrgLayer = Layer.effect(
   LoadedOrg,
   Effect.gen(function* () {

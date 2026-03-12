@@ -17,13 +17,17 @@
   },
   "dependencies": {
     "effect": "^3.19.9",
+    "@assessmentis/effectful-store": "*",
     "@assessmentis/util": "*",
     "@assessmentis/video-call-domain": "*",
     "@assessmentis/clinical-domain": "*"
   },
   "devDependencies": {
     "@assessmentis/eslint-config": "*",
+    "@assessmentis/ontology": "*",
     "@assessmentis/prettier-config": "*",
-    "@assessmentis/typescript-config": "*"
+    "@assessmentis/testing-utils": "*",
+    "@assessmentis/typescript-config": "*",
+    "vitest": "^4.0.15"
   }
 }

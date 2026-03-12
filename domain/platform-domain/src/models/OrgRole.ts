@@ -1,6 +1,8 @@
 import { Schema } from 'effect'
+
 import { OrgSlug, Role } from './IdTypes'
 
+/** A user's set of {@link Role}s within a specific organization. */
 export const OrgRole = Schema.Struct({
   orgSlug: OrgSlug,
   roles: Schema.Array(Role),

@@ -1,10 +1,15 @@
 import { vi } from 'vitest'
-import type { Context } from 'effect'
-import { Effect, Stream } from 'effect'
-import type { DocumentStore, DocumentData } from '../../tagClasses'
+import { Effect, Stream, type Context } from 'effect'
+
 import { NotFoundError } from '@assessmentis/ontology'
-import type { Org } from '../../models/Org'
+
 import { OrgSlug } from '../../models/IdTypes'
+import type { Org } from '../../models/Org'
+import {
+  type DocumentData,
+  type DocumentPath,
+  type DocumentStore,
+} from '../../tagClasses'
 
 type DocumentStoreService = Context.Tag.Service<typeof DocumentStore>
 
@@ -14,14 +19,8 @@ type DocumentStoreService = Context.Tag.Service<typeof DocumentStore>
 export const defaultOrg = (): Org => ({
   slug: OrgSlug.make('test-org'),
   emoji: '🏢',
-  frontendConfig: {
-    fhirServer: {
-      _tag: 'not_implemented' as const,
-    },
-    videoCallClient: {
-      _tag: 'not_implemented' as const,
-    },
-  },
+  origins: {},
+  originConfigs: {},
 })
 
 /**
@@ -40,11 +39,11 @@ export const mockDocumentStoreImplementations: {
      */
     notFound:
       () =>
-      (...path: readonly string[]) =>
+      (...path: DocumentPath | readonly [DocumentPath]) =>
         Effect.fail(
           new NotFoundError({
             resourceType: 'Document',
-            params: { path: path },
+            params: { path: path.length === 1 ? path[0] : path },
           })
         ),
 
@@ -53,16 +52,20 @@ export const mockDocumentStoreImplementations: {
      */
     returning:
       (data: DocumentData) =>
-      (..._path: readonly string[]) =>
+      (..._path: DocumentPath | readonly [DocumentPath]) =>
         Effect.succeed(data),
 
     /**
      * Returns data from a custom function, useful for complex logic
      */
     withCallback:
-      (fn: (...path: readonly string[]) => DocumentData | undefined) =>
-      (...path: readonly string[]) => {
-        const data = fn(...path)
+      (
+        fn: (
+          ...path: DocumentPath | readonly [DocumentPath]
+        ) => DocumentData | undefined
+      ) =>
+      (...path: DocumentPath | readonly [DocumentPath]) => {
+        const data = fn(path.length === 1 ? path[0] : path)
 
         if (data !== undefined) {
           return Effect.succeed(data)
@@ -71,7 +74,7 @@ export const mockDocumentStoreImplementations: {
         return Effect.fail(
           new NotFoundError({
             resourceType: 'Document',
-            params: { path: path },
+            params: { path: path.length === 1 ? path[0] : path },
           })
         )
       },
@@ -83,7 +86,7 @@ export const mockDocumentStoreImplementations: {
      */
     emptyStream:
       () =>
-      (..._path: readonly string[]) =>
+      (..._path: DocumentPath | readonly [DocumentPath]) =>
         Stream.never,
   },
 
