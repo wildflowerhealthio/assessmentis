@@ -68,10 +68,7 @@ export const createLoggingProxy = <T extends object>(
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return function (this: unknown, ...args: any[]) {
-        const result = value.apply(
-          this === receiver ? proxyTarget : this,
-          args
-        )
+        const result = value.apply(this === receiver ? proxyTarget : this, args)
         const method = String(prop)
 
         if (isPromiseLike(result)) {

@@ -1,19 +1,19 @@
+import { Effect, Exit } from 'effect'
 import type { Response } from 'express'
 import { onRequest, type Request } from 'firebase-functions/https'
 import { info } from 'firebase-functions/logger'
-import { Effect, Exit, Layer } from 'effect'
-import { CurrentUserId } from '@assessmentis/platform-domain'
+
 import type { AuthError, UnhandledError } from '@assessmentis/ontology'
+import { CurrentUserId } from '@assessmentis/platform-domain'
+
+import { CurrentUserIdLayerLive } from '../layers/CurrentUserIdLayerLive'
+import { makeRequestRuntime } from '../util/BaseLayer'
 import {
   defaultHttpOptions,
   oauth2Client,
   scopes,
 } from '../util/functionContext'
 import { handleError } from '../util/handleError'
-import { AuthRepository } from '@assessmentis/firebase-server-infrastructure'
-import { LoadedUserLayerLive } from '../layers/LoadedUserLayerLive'
-import { makeRequestRuntime } from '../util/BaseLayer'
-import { CurrentUserIdLayerLive } from '../layers/CurrentUserIdLayerLive'
 
 /**
  * Generate Google OAuth authorization URL for a verified user
@@ -41,13 +41,7 @@ export const googleLogin = onRequest(
   defaultHttpOptions,
   async (request: Request, response: Response) => {
     info('Received request for Google OAuth login')
-    const runtime = makeRequestRuntime(
-      AuthRepository.Default.pipe(
-        Layer.provide(LoadedUserLayerLive),
-        Layer.provideMerge(CurrentUserIdLayerLive)
-      ),
-      { request }
-    )
+    const runtime = makeRequestRuntime(CurrentUserIdLayerLive, { request })
     await runtime.runPromiseExit(googleLoginEffect(request)).then((exit) =>
       exit.pipe(
         Exit.match({

@@ -1,5 +1,7 @@
-import { CurrentOrg } from '@assessmentis/platform-domain'
 import { Effect, Layer } from 'effect'
+
+import { CurrentOrg } from '@assessmentis/platform-domain'
+
 import { UnhandledError } from '../../../../global/ontology/src/errors'
 import { FunctionsContext } from '../tags/FunctionsContext'
 
