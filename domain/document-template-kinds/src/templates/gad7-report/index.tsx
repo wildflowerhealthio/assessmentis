@@ -1,14 +1,17 @@
-import type { ComponentFamily } from '../../types'
-import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { ObservationRepository } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import { string } from 'fast-check'
 import { Effect } from 'effect'
-import type {
-  Reference,
-  WithId,
-} from '@assessmentis/clinical-domain/data-types'
-import { referenceAsString } from '@assessmentis/clinical-domain/data-types'
 import type { JSX } from 'react'
+
+import {
+  ClinicalDomainHub,
+  type Observation,
+} from '@assessmentis/clinical-domain'
+import type { Reference } from '@assessmentis/clinical-domain/data-types'
+import type { Resource } from '@assessmentis/effectful-store'
 import { gad7 } from '@assessmentis/questionnaire-entities'
+
+import { NotFoundError } from '@assessmentis/ontology'
+import type { ComponentFamily } from '../../types'
 
 export const gad7Report = (
   {
@@ -19,14 +22,14 @@ export const gad7Report = (
     },
   }: ComponentFamily,
   patientReference: Reference
-): Effect.Effect<JSX.Element, unknown, ObservationRepository> =>
+): Effect.Effect<JSX.Element, unknown, ClinicalDomainHub> =>
   Effect.gen(function* () {
-    const observationRepository = yield* ObservationRepository
+    const hub = yield* ClinicalDomainHub
     const title = <TitleComponent title="GAD-7 Report" />
 
-    const observations = yield* observationRepository.getMany({
-      subject: referenceAsString(patientReference),
-    })
+    const observations = yield* hub.search('Observation', {
+      subject: patientReference.reference,
+    } as const)
 
     const gad7Observations = gad7.questionnaire.item
       ?.map((item) =>
@@ -34,7 +37,7 @@ export const gad7Report = (
           (obs) => item.code?.[0]?.code === obs.code.coding?.[0]?.code
         )
       )
-      .filter((o): o is WithId<Observation> => Boolean(o))
+      .filter((o): o is Resource.WithResourceUrl<Observation> => Boolean(o))
 
     if (
       gad7Observations == undefined ||
@@ -42,7 +45,13 @@ export const gad7Report = (
       gad7Observations.some((obs) => obs === undefined)
     ) {
       return yield* Effect.fail(
-        new Error('GAD-7 observations not found for the patient')
+        new NotFoundError({
+          resourceType: 'Observation',
+          params: {
+            subject: patientReference.reference,
+            code: string,
+          },
+        }) // ('GAD-7 score observation not found for the patient')
       )
     }
 
@@ -52,7 +61,13 @@ export const gad7Report = (
 
     if (!scoreObservations) {
       return yield* Effect.fail(
-        new Error('GAD-7 score observation not found for the patient')
+        new NotFoundError({
+          resourceType: 'Observation',
+          params: {
+            subject: patientReference.reference,
+            code: gad7.codings.totalScore.code,
+          },
+        }) // ('GAD-7 score observation not found for the patient')
       )
     }
     return (

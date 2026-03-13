@@ -16,6 +16,9 @@ export { default as FhirR4ChoiceElements } from './fhirR4ChoiceElements'
 export interface Datatype<out Name extends string, A, I> {
   readonly name: Name
   readonly schema: Schema.Schema<A, I, never>
+  from: <Others extends { _tag: string }>(
+    value: Others | undefined | ({ _tag: Name } & { [K in Name]: A })
+  ) => A | undefined
 }
 
 /**
@@ -30,6 +33,14 @@ export const Datatype = <const Name extends string, A, I>(
   ({
     name,
     schema,
+    from: <Others extends { _tag: string }>(
+      value: Others | undefined | ({ _tag: Name } & { [K in Name]: A })
+    ) =>
+      value &&
+      value._tag == name &&
+      (value as { [K in Name]?: A })[name] !== undefined
+        ? (value as { [K in Name]: A })[name]
+        : undefined,
   }) as const
 
 // ---------------------------------------------------------------------------

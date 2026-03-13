@@ -1,4 +1,5 @@
 import { Schema } from 'effect'
+
 import type { VideoCallRoomId } from './VideoCallRoom'
 
 export const ExternalVideoCallTranscriptionId = Schema.String.pipe(

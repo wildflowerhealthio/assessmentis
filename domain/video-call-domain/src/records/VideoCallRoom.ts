@@ -12,8 +12,12 @@ export const VideoCallRoomName = Schema.String.pipe(
 
 export type VideoCallRoomName = typeof VideoCallRoomName.Type
 
+export const EncounterId = Schema.String.pipe(Schema.brand('EncounterId'))
+
+export type EncounterId = typeof EncounterId.Type
+
 export const VideoCallRoom = Schema.Struct({
-  encounterId: Schema.String,
+  encounterId: EncounterId,
   videoCallRoomId: VideoCallRoomId,
   videoCallRoomName: VideoCallRoomName,
   url: Schema.String,

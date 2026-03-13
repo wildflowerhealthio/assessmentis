@@ -1,6 +1,7 @@
 import { Schema } from 'effect'
-import { VideoCallRoomId } from './VideoCallRoom'
 import { DateTimeUtc, DurationFromMillis } from 'effect/Schema'
+
+import { VideoCallRoomId } from './VideoCallRoom'
 
 export const VideoCallRecordingId = Schema.UUID.pipe(
   Schema.brand('VideoCallRecordingId')

@@ -1,0 +1,38 @@
+import * as fc from 'fast-check'
+import { describe, expect, test } from 'vitest'
+import { Either, Schema } from 'effect'
+
+import { CredentialId } from './CredentialId'
+
+describe('CredentialId', () => {
+  test('property: decode-encode cycle preserves string values', () => {
+    fc.assert(
+      fc.property(fc.string(), (str) => {
+        const decode = Schema.decodeUnknownEither(CredentialId)
+        const encode = Schema.encodeUnknownEither(CredentialId)
+
+        const decoded = decode(str)
+        if (Either.isRight(decoded)) {
+          const encoded = encode(decoded.right)
+          expect(Either.isRight(encoded)).toBe(true)
+          if (Either.isRight(encoded)) {
+            expect(encoded.right).toBe(str)
+          }
+        }
+      })
+    )
+  })
+
+  test('property: non-string values always fail to decode', () => {
+    fc.assert(
+      fc.property(
+        fc.oneof(fc.integer(), fc.boolean(), fc.object(), fc.constant(null)),
+        (value) => {
+          const decode = Schema.decodeUnknownEither(CredentialId)
+          const result = decode(value)
+          expect(Either.isLeft(result)).toBe(true)
+        }
+      )
+    )
+  })
+})
