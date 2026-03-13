@@ -7,21 +7,27 @@ import {
   ScrollRestoration,
   useNavigate,
 } from 'react-router'
+
 import './globals.css'
-import { FiberFailureCauseId } from 'effect/Runtime'
+
 import { Cause } from 'effect'
+import { FiberFailureCauseId } from 'effect/Runtime'
+
 import {
+  AuthError,
   ExternalAssertionError,
   NotFoundError,
   UnhandledError,
-  AuthError,
 } from '@assessmentis/ontology'
+
 import * as firebase from 'app/firebase'
+
 import * as auth from './FirebaseWebLayer'
-import { BreadcrumbProvider } from './modules/global/components/BreadcrumbProvider/BreadcrumbProvider'
-import { shouldShowRawData } from './util/debugHelpers'
-import { PageLoader } from './modules/common/components/PageLoader/PageLoader'
 import { PlatformContextProvider } from './layers/PlatformContextProvider'
+import { BreadcrumbProvider } from './modules/Breadcrumbs/BreadcrumbProvider'
+import { PageLoader } from './modules/common/components/PageLoader/PageLoader'
+import { shouldShowRawData } from './util/debugHelpers'
+
 // HydrateFallback is rendered while the client loader is running
 export function HydrateFallback() {
   return <PageLoader />

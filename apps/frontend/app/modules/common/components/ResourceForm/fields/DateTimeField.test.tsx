@@ -1,8 +1,9 @@
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen, act } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
 import { DateTime, Option } from 'effect'
-import type { DateTimeFieldProps } from './DateTimeField'
-import { DateTimeField } from './DateTimeField'
+
+import { act, render, screen } from '@testing-library/react'
+
+import { DateTimeField, type DateTimeFieldProps } from './DateTimeField'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

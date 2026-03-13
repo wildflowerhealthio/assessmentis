@@ -1,93 +1,85 @@
+import { DateTime, Effect } from 'effect'
 import { useNavigate } from 'react-router'
-import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
-import { EncounterForm } from 'app/modules/resources/Encounter/components/EncounterForm'
-import { createEncounter } from 'app/modules/resources/Encounter/actions/createEncounter'
-import type { EncounterFormSchema } from 'app/modules/resources/Encounter/schemas/EncounterFormSchema'
-import { DateTime, Effect, Schema } from 'effect'
-import {
-  QuestionnaireId,
-  QuestionnaireResponseRepository,
-} from '@assessmentis/clinical-domain/content-management'
-import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
-import {
-  EncounterRepository,
-  LocationRepository,
-} from '@assessmentis/clinical-domain/administration'
-import { usePlatformContext } from '../layers/PlatformContext'
-import { VideoCallClient } from '@assessmentis/video-call-domain'
 
-const decodeQuestionnaireId = Schema.decodeUnknownSync(QuestionnaireId)
+import {
+  ClinicalDomainHub,
+  Encounter,
+  EncounterLocation,
+  EncounterParticipant,
+} from '@assessmentis/clinical-domain'
+import { Period, Reference } from '@assessmentis/clinical-domain/data-types'
+
+import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
+
+import 'app/traits/Link/implementations/Encounter'
+
+import { useBreadcrumbs } from 'app/modules/Breadcrumbs/useBreadcrumbs'
+import { createEncounter } from 'app/modules/resources/Encounter/actions/createEncounter'
+import { EncounterForm } from 'app/modules/resources/Encounter/components/EncounterForm'
+import type { EncounterFormSchema } from 'app/modules/resources/Encounter/schemas/EncounterFormSchema'
+
+import { useHub } from '../layers/useHub'
 
 // Provide default values to prevent uncontrolled input warnings
 const defaultValues: Promise<typeof EncounterFormSchema.Encoded> =
   Promise.resolve({
-    patientId: undefined,
-    practitionerIds: undefined,
-    questionnaireIds: [],
+    patientUrl: undefined,
+    practitionerUrls: undefined,
+    questionnaireUrls: [],
     periodStart: undefined,
     periodEnd: undefined,
     locationId: undefined,
   })
 
 export default function CreateEncounterPage() {
-  const { clinicalDataRepositoryService, VideoCallClientService } =
-    usePlatformContext()
+  const hub = useHub()
   const navigate = useNavigate()
 
-  useBreadcrumbs([
-    { label: 'Encounters', href: '/Encounter' },
-    { label: 'New' },
-  ])
+  useBreadcrumbs(Encounter, { label: 'New' })
 
   const handleSubmit = async (data: typeof EncounterFormSchema.Type) => {
     const encounter = await Effect.runPromise(
       createEncounter({
-        subject: data.patientId
-          ? { reference: `Patient/${data.patientId}` }
-          : undefined,
-        participant: data.practitionerIds?.map((id) => ({
-          individual: { reference: `Practitioner/${id}` },
-        })),
-        period:
-          data.periodStart || data.periodEnd
-            ? {
-                start: data.periodStart?.pipe(DateTime.toUtc),
-                end: data.periodEnd?.pipe(DateTime.toUtc),
-              }
+        encounter: {
+          subject: data.patientUrl
+            ? Reference.make({
+                reference: data.patientUrl.toString(),
+                type: 'Patient',
+              })
             : undefined,
-        // User-selected physical location (video room is created by createEncounter)
-        location: data.locationId
-          ? [
-              {
-                location: { reference: `Location/${data.locationId}` },
-              },
-            ]
-          : undefined,
-        questionnaireResponses: data.questionnaireIds.map((id) => ({
-          questionnaire: decodeQuestionnaireId(id),
+          participant: data.practitionerUrls?.map((id) =>
+            EncounterParticipant.make({
+              individual: Reference.make({
+                reference: `Practitioner/${id}`,
+              }),
+            })
+          ),
+          period:
+            data.periodStart || data.periodEnd
+              ? Period.make({
+                  start: data.periodStart?.pipe(DateTime.toUtc),
+                  end: data.periodEnd?.pipe(DateTime.toUtc),
+                })
+              : undefined,
+          // User-selected physical location (video room is created by createEncounter)
+          location: data.locationUrl
+            ? [
+                EncounterLocation.make({
+                  location: Reference.make({
+                    reference: data.locationUrl.toString(),
+                    type: 'Location',
+                  }),
+                }),
+              ]
+            : undefined,
+        },
+        questionnaireResponses: data.questionnaireUrls.map((questionnaire) => ({
+          questionnaire,
         })),
-      }).pipe(
-        Effect.provideServiceEffect(
-          QuestionnaireResponseRepository,
-          clinicalDataRepositoryService.effect.QuestionnaireResponse
-        ),
-        Effect.provideServiceEffect(
-          EncounterRepository,
-          clinicalDataRepositoryService.effect.Encounter
-        ),
-        Effect.provideServiceEffect(
-          VideoCallClient,
-          VideoCallClientService.client
-        ),
-        Effect.provideServiceEffect(
-          LocationRepository,
-          clinicalDataRepositoryService.effect.Location
-        )
-      )
+      }).pipe(Effect.provideService(ClinicalDomainHub, hub))
     )
 
-    // Navigate to the created encounter
-    navigate(`/Encounter/${encounter.id}`)
+    navigate(encounter.Link)
   }
 
   return (

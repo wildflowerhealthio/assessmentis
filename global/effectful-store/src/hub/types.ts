@@ -79,7 +79,10 @@ export const LOADING_TIMEOUT = Duration.seconds(15)
 // --- Hub types ---
 
 /** The error channel of a Hub's state stream — either still loading or a common error. */
-export type HubError = Loading<string> | ResourceRequest.CommonErrors
+export type HubError =
+  | Loading<'Hub'>
+  | Loading<'Configuration'>
+  | ResourceRequest.CommonErrors
 
 /**
  * Snapshot of all known origins, keyed by origin URL string. Each value is

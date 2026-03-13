@@ -1,7 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
-import { Effect, Layer, Stream } from 'effect'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { Effect, Either, Layer, Stream } from 'effect'
 import { MemoryRouter } from 'react-router'
+
+import { render, screen, waitFor } from '@testing-library/react'
+
 import { PlatformContextProvider } from './PlatformContextProvider'
 
 // Mock infrastructure modules
@@ -10,87 +12,90 @@ vi.mock('@assessmentis/firebase-web-infrastructure', () => ({
   startAuthDataService: vi.fn(() =>
     Effect.succeed({
       authDataStream: Stream.empty,
+      authData: Effect.succeed({ userId: 'mock-user-id' }),
       signOut: Effect.succeed(undefined),
+      shutdown: Effect.succeed(undefined),
     })
   ),
 }))
 
 vi.mock('@assessmentis/google-fhir-web-infrastructure', () => ({
-  LoadedGapiClient: {
-    Default: Layer.empty,
-  },
-  LoadedGapiHealthcareClient: {
-    Default: Layer.empty,
-  },
-  startAccessTokenSyncer: vi.fn(() => Effect.succeed(undefined)),
+  LoadedGapiClient: { Default: Layer.empty },
+  LoadedGapiHealthcareClient: { Default: Layer.empty },
+  makeGoogleFhirOriginType: vi.fn(() => ({
+    tag: 'google_fhir_store',
+    make: vi.fn(() =>
+      Effect.succeed({ resolver: undefined, activeResources: {} })
+    ),
+  })),
+}))
+
+vi.mock('@assessmentis/daily-co-infrastructure', () => ({
+  makeDailyCoOriginType: vi.fn(() => ({
+    tag: 'daily_co',
+    make: vi.fn(() =>
+      Effect.succeed({ resolver: undefined, activeResources: {} })
+    ),
+  })),
 }))
 
 vi.mock('../FirebaseWebLayer', () => ({
   FirebaseWebLayer: Layer.empty,
 }))
 
-vi.mock('@assessmentis/platform-domain', () => ({
-  AuthDataService: {
-    Service: {},
+vi.mock('@assessmentis/platform-domain', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, unknown>>()
+  return {
+    ...actual,
+    createAuthDataPubSub: Effect.succeed({
+      publish: vi.fn(),
+      subscribe: vi.fn(),
+    }),
+    createOrgPubSub: Effect.succeed({
+      publish: vi.fn(),
+      subscribe: vi.fn(),
+    }),
+    createOrgSlugPubSub: Effect.succeed({
+      publish: vi.fn(),
+      subscribe: vi.fn(),
+    }),
+    createUserPubSub: Effect.succeed({
+      publish: vi.fn(),
+      subscribe: vi.fn(),
+    }),
+    startOrgService: vi.fn(() =>
+      Effect.succeed({
+        activeOrgStream: Stream.make(
+          Either.right({
+            slug: '',
+            emoji: '',
+            origins: {},
+            originConfigs: {},
+          })
+        ),
+        orgSlugStream: Stream.empty,
+        activeOrg: Effect.succeed(null),
+        setActiveOrgSlug: vi.fn(() => Effect.void),
+        shutdown: Effect.void,
+      })
+    ),
+    startUserService: vi.fn(() =>
+      Effect.succeed({
+        user: Effect.succeed({ org_roles: {} }),
+        userStream: Stream.empty,
+        shutdown: Effect.void,
+      })
+    ),
+  }
+})
+
+vi.mock('./CredentialService', () => ({
+  makeCredentialService: Effect.succeed({
+    get: vi.fn(() => Effect.succeed({})),
+  }),
+  CredentialService: {
+    of: (service: unknown) => service,
   },
-  createAuthDataPubSub: Effect.succeed({
-    publish: vi.fn(),
-    subscribe: vi.fn(),
-  }),
-  createOrgPubSub: Effect.succeed({
-    publish: vi.fn(),
-    subscribe: vi.fn(),
-  }),
-  createOrgSlugPubSub: Effect.succeed({
-    publish: vi.fn(),
-    subscribe: vi.fn(),
-  }),
-  createUserPubSub: Effect.succeed({
-    publish: vi.fn(),
-    subscribe: vi.fn(),
-  }),
-  startOrgService: vi.fn(() =>
-    Effect.succeed({
-      activeOrgStream: Stream.empty,
-      activeOrg: Effect.succeed(null),
-      setActiveOrgSlug: vi.fn(() => Effect.succeed(undefined)),
-    })
-  ),
-  startUserService: vi.fn(() =>
-    Effect.succeed({
-      user: Effect.succeed({ org_roles: {} }),
-    })
-  ),
-}))
-
-vi.mock('./FhirR4ClientService', () => ({
-  FhirR4ClientService: {
-    Service: {},
-  },
-  createFhirR4ClientPubSub: Effect.succeed({
-    publish: vi.fn(),
-    subscribe: vi.fn(),
-  }),
-  startFhirR4ClientService: vi.fn(() =>
-    Effect.succeed({
-      client: {},
-    })
-  ),
-}))
-
-vi.mock('./ClinicalDataRepositoriesService', () => ({
-  ClinicalDataRepositoryService: Effect.succeed({
-    repository: {},
-  }),
-  Default: Layer.empty,
-}))
-
-vi.mock('./VideoCallClientService', () => ({
-  startVideoCallClientService: vi.fn(() =>
-    Effect.succeed({
-      client: {},
-    })
-  ),
 }))
 
 describe('PlatformContextProvider', () => {

@@ -1,5 +1,12 @@
-import { makeResourceListIndexPage } from 'app/modules/resources/ResourcePages/makeResourceListIndexPage'
-import { patientConfig } from 'app/modules/resources/Patient/resourcePagesConfig'
+import { Patient } from '@assessmentis/clinical-domain'
 
-const PatientIndexPage = makeResourceListIndexPage(patientConfig)
-export default PatientIndexPage
+import '../traits/BreadcrumbLabel/implementations/Patient'
+import '../traits/Labeled/implementations/Patient'
+import '../traits/Link/implementations/Patient'
+import '../traits/Listable/implementations/Patient'
+
+import { ResourceListIndexPage } from '../modules/ResourceListIndexPage/ResourceListIndexPage'
+
+export default function PatientIndexPage() {
+  return <ResourceListIndexPage klass={Patient} />
+}

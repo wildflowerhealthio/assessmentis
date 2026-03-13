@@ -1,11 +1,9 @@
 // Replace your-framework with the framework you are using, e.g. react-vite, nextjs, nextjs-vite, etc.
 import type { Meta, StoryObj } from '@storybook/react-vite'
-
 import { Arbitrary, FastCheck } from 'effect'
-import {
-  QuestionnaireItemType,
-  QuestionnaireItem,
-} from '@assessmentis/clinical-domain/content-management'
+
+import { QuestionnaireItem } from '@assessmentis/clinical-domain'
+
 import DisplayQuestionnaireItemForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/components/DisplayQuestionnaireItemForm/DisplayQuestionnaireItemForm'
 
 //👇 This default export determines where your story goes in the story list
@@ -26,7 +24,7 @@ export const Heading1: Story = {
     questionnaireItem: {
       ...arbitraryQuestionnaireItem,
       text: 'Heading 1',
-      type: QuestionnaireItemType.enums.display,
+      type: 'display',
       // style: QuestionnaireItemStyle.HEADING1,
     },
   },
@@ -38,7 +36,7 @@ export const Heading2: Story = {
     questionnaireItem: {
       ...arbitraryQuestionnaireItem,
       text: 'Heading 2',
-      type: QuestionnaireItemType.enums.display,
+      type: 'display',
       // style: QuestionnaireItemStyle.HEADING2,
     },
   },
@@ -50,7 +48,7 @@ export const Heading3: Story = {
     questionnaireItem: {
       ...arbitraryQuestionnaireItem,
       text: 'Heading 3',
-      type: QuestionnaireItemType.enums.display,
+      type: 'display',
       // style: QuestionnaireItemStyle.HEADING3,
     },
   },
@@ -62,7 +60,7 @@ export const Question: Story = {
     questionnaireItem: {
       ...arbitraryQuestionnaireItem,
       text: 'This is just a question',
-      type: QuestionnaireItemType.enums.display,
+      type: 'display',
       // style: QuestionnaireItemStyle.QUESTION,
     },
   },

@@ -136,7 +136,7 @@ export const makeHub = <Resources extends Resource.ResourceSet>(
   Effect.gen(function* () {
     const stateRef = yield* SubscriptionRef.make<
       Either.Either<_HubState<Resources>, _HubError>
-    >(Either.left(new Loading({ entity: 'Hub' })))
+    >(Either.left(new Loading({ entity: 'Hub' } as const)))
 
     yield* stateStream.pipe(
       Stream.runForEach((state) => SubscriptionRef.set(stateRef, state)),

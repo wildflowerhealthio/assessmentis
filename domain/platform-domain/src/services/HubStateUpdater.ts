@@ -1,4 +1,4 @@
-import { Either, Stream, type Scope } from 'effect'
+import { Either, Match, pipe, Stream, type Scope } from 'effect'
 
 import {
   hubStateStream as genericHubStateStream,
@@ -8,15 +8,16 @@ import {
   type Resource,
 } from '@assessmentis/effectful-store'
 import {
+  Loading,
   type AuthError,
   type AuthzError,
-  type Loading,
   type UnhandledError,
 } from '@assessmentis/ontology'
 
 import type { OrgSlug } from '../models/IdTypes'
 import type { Org } from '../models/Org'
 import type { UserOrg } from '../models/UserOrg'
+import { StreamEither } from '@assessmentis/util'
 
 /**
  * Maps platform-domain `Org` + `UserOrg` into the generic
@@ -57,7 +58,7 @@ export const hubStateStream = <Resources extends Resource.ResourceSet, R>(
 ): Stream.Stream<
   Either.Either<
     Hub.HubState<Resources>,
-    Loading<{ orgSlug: OrgSlug }> | AuthError | AuthzError | UnhandledError
+    Loading<'Configuration'> | AuthError | AuthzError | UnhandledError
   >,
   never,
   R | Scope.Scope
@@ -69,5 +70,17 @@ export const hubStateStream = <Resources extends Resource.ResourceSet, R>(
     )
   )
 
-  return genericHubStateStream(originTypes, snapshotStream)
+  return pipe(
+    genericHubStateStream(originTypes, snapshotStream),
+    StreamEither.mapError(
+      Match.typeTags<
+        Loading<{ orgSlug: OrgSlug }> | AuthError | AuthzError | UnhandledError
+      >()({
+        Loading: () => new Loading({ entity: 'Configuration' } as const),
+        AuthError: (e) => e,
+        AuthzError: (e) => e,
+        UnhandledError: (e) => e,
+      })
+    )
+  )
 }

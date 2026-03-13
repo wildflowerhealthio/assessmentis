@@ -1,6 +1,11 @@
-import { Effect, Layer, Scope } from 'effect'
+import { Effect, Either, Layer, Schema, Scope, Stream } from 'effect'
+import { FetchHttpClient, HttpClient } from '@effect/platform'
 import { Suspense, useMemo } from 'react'
-import { PlatformContext } from './PlatformContext'
+import { Await } from 'react-router'
+
+import type { ResourceDataTypes } from '@assessmentis/clinical-domain'
+import { makeDailyCoOriginType } from '@assessmentis/daily-co-infrastructure'
+import { Hub } from '@assessmentis/effectful-store'
 import {
   FirebaseWebDocumentStoreLayer,
   startAuthDataService,
@@ -8,75 +13,197 @@ import {
 import {
   LoadedGapiClient,
   LoadedGapiHealthcareClient,
-  startAccessTokenSyncer,
+  makeGoogleFhirOriginType,
 } from '@assessmentis/google-fhir-web-infrastructure'
-import { FirebaseWebLayer } from '../FirebaseWebLayer'
+import { type AuthError, type AuthzError } from '@assessmentis/ontology'
+import { Loading, NotFoundError, UnhandledError } from '@assessmentis/ontology'
 import {
+  hubStateStream,
   AuthDataService,
   createAuthDataPubSub,
   createOrgPubSub,
   createOrgSlugPubSub,
   createUserPubSub,
+  DocumentStore,
+  NoSelectedOrgError,
   startOrgService,
   startUserService,
+  UserOrg,
+  type DocumentPath,
+  type Org,
+  type OrgService,
+  type OrgSlug,
 } from '@assessmentis/platform-domain'
-import {
-  createFhirR4ClientPubSub,
-  FhirR4ClientService,
-  startFhirR4ClientService,
-} from './FhirR4ClientService'
-import { ClinicalDataRepositoryService } from './ClinicalDataRepositoriesService'
-import { startVideoCallClientService } from './VideoCallClientService'
-import { Await } from 'react-router'
 import { useEffectTs } from '@assessmentis/react-util'
+import { StreamEither } from '@assessmentis/util'
+
+import { ErrorBoundary } from 'react-error-boundary'
+
+import { FirebaseWebLayer } from '../FirebaseWebLayer'
+import { ErrorHandlerBody } from '../modules/common/components/ErrorHandlerBody'
+import { PageLoader } from '../modules/common/components/PageLoader/PageLoader'
 import NavHeaderContainer, {
   TextHeader,
 } from '../modules/global/components/NavHeader/NavHeader'
-import { PageLoader } from '../modules/common/components/PageLoader/PageLoader'
-import { ErrorBoundary } from 'react-error-boundary'
+import { makeCredentialService } from './CredentialService'
 import { PlatformlessErrorFallback } from './PlatformAwareErrorFallback'
-import { ErrorHandlerBody } from '../modules/common/components/ErrorHandlerBody'
+import { PlatformContext } from './PlatformContext'
+
+// --- Extracted stream helpers ---
+
+type UserOrgEither = Either.Either<UserOrg | undefined, UnhandledError>
+
+const makeUserOrgStream = (
+  orgSlugStream: (typeof OrgService.Service)['orgSlugStream'],
+  documentStore: typeof DocumentStore.Service,
+  userId: string
+): Stream.Stream<UserOrgEither, never, Scope.Scope> =>
+  orgSlugStream.pipe(
+    Stream.flatMap(
+      Either.match({
+        onLeft: (err): Stream.Stream<UserOrgEither> =>
+          err instanceof NoSelectedOrgError
+            ? Stream.succeed(Either.right(undefined))
+            : Stream.succeed(
+                Either.left(
+                  new UnhandledError({ message: String(err), cause: err })
+                )
+              ),
+        onRight: (orgSlug): Stream.Stream<UserOrgEither> =>
+          documentStore
+            .subscribeTo([
+              'users',
+              userId,
+              'orgs',
+              orgSlug,
+            ] satisfies DocumentPath)
+            .pipe(
+              Stream.map(
+                Either.match({
+                  onLeft: (err) =>
+                    err instanceof NotFoundError
+                      ? Either.right(undefined as UserOrg | undefined)
+                      : Either.left(
+                          err instanceof UnhandledError
+                            ? err
+                            : new UnhandledError({
+                                message: String(err),
+                                cause: err,
+                              })
+                        ),
+                  onRight: (data) => {
+                    const decoded = Schema.decodeUnknownEither(UserOrg)(data)
+                    return Either.match(decoded, {
+                      onLeft: (parseError) =>
+                        Either.left(
+                          new UnhandledError({
+                            message: 'Failed to decode UserOrg document',
+                            cause: parseError,
+                          })
+                        ),
+                      onRight: (userOrg) =>
+                        Either.right(userOrg as UserOrg | undefined),
+                    })
+                  },
+                })
+              )
+            ),
+      }),
+      { switch: true }
+    )
+  )
+
+type OrgEither = Either.Either<
+  Org,
+  Loading<{ orgSlug: OrgSlug }> | UnhandledError
+>
+
+const makeMappedOrgStream = (
+  activeOrgStream: (typeof OrgService.Service)['activeOrgStream']
+): Stream.Stream<OrgEither, never, Scope.Scope> =>
+  activeOrgStream.pipe(
+    Stream.map(
+      Either.match({
+        onLeft: (err): OrgEither =>
+          err instanceof NoSelectedOrgError
+            ? Either.left(new Loading({ entity: { orgSlug: '' as OrgSlug } }))
+            : Either.left(
+                err instanceof UnhandledError
+                  ? err
+                  : new UnhandledError({ message: String(err), cause: err })
+              ),
+        onRight: Either.right,
+      })
+    )
+  )
+
+// --- Platform effect ---
 
 const platformEffect = Effect.gen(function* () {
   const authDataPubSub = yield* createAuthDataPubSub
   const orgSlugPubsub = yield* createOrgSlugPubSub
   const orgPubSub = yield* createOrgPubSub
   const userPubSub = yield* createUserPubSub
-  const fhirR4ClientPubSub = yield* createFhirR4ClientPubSub
 
   const authDataService = yield* startAuthDataService(authDataPubSub)
   const orgService = yield* startOrgService(orgSlugPubsub, orgPubSub)
   const userService = yield* startUserService(userPubSub).pipe(
     Effect.provideService(AuthDataService, authDataService)
   )
-  yield* startAccessTokenSyncer(authDataService.authDataStream)
 
-  const fhirR4ClientService = yield* startFhirR4ClientService(
-    fhirR4ClientPubSub,
-    orgService.activeOrgStream
+  const credentialService = yield* makeCredentialService.pipe(
+    Effect.provideService(AuthDataService, authDataService)
   )
 
-  const clinicalDataRepositoryService =
-    yield* ClinicalDataRepositoryService.pipe(
-      Effect.provide(
-        ClinicalDataRepositoryService.Default.pipe(
-          Layer.provide(Layer.succeed(FhirR4ClientService, fhirR4ClientService))
-        )
-      )
-    )
+  const gapiClient = yield* yield* LoadedGapiClient
+  const healthcare = yield* LoadedGapiHealthcareClient
+  const httpClient = yield* HttpClient.HttpClient
 
-  const VideoCallClientService = yield* startVideoCallClientService(
-    authDataService,
-    orgService.activeOrg
+  const authData = yield* authDataService.authData
+  const { userId } = authData
+  const documentStore = yield* DocumentStore
+
+  const originTypes = [
+    makeGoogleFhirOriginType({
+      gapiClient,
+      healthcare,
+      userId,
+      getCredential: (id) => credentialService.get(id),
+    }),
+    makeDailyCoOriginType({
+      httpClient,
+      getCredential: (id) => credentialService.get(id),
+    }),
+  ]
+
+  const userOrgStream = makeUserOrgStream(
+    orgService.orgSlugStream,
+    documentStore,
+    userId
   )
+  const mappedOrgStream = makeMappedOrgStream(orgService.activeOrgStream)
+
+  const combinedStream: Stream.Stream<
+    Either.Either<
+      { org: Org; userOrg: UserOrg | undefined },
+      Loading<{ orgSlug: OrgSlug }> | AuthError | AuthzError | UnhandledError
+    >,
+    never,
+    Scope.Scope
+  > = StreamEither.zipLatestWith(
+    mappedOrgStream,
+    userOrgStream,
+    (org, userOrg) => ({ org, userOrg })
+  )
+
+  const stateStream = hubStateStream(originTypes, combinedStream)
+  const hub = yield* Hub.makeHub<ResourceDataTypes>(stateStream)
 
   return {
     authDataService,
     orgService,
     userService,
-    fhirR4ClientService,
-    clinicalDataRepositoryService,
-    VideoCallClientService,
+    hub,
   }
 }).pipe(
   Effect.provide(
@@ -85,7 +212,8 @@ const platformEffect = Effect.gen(function* () {
       Layer.provideMerge(
         LoadedGapiHealthcareClient.Default,
         LoadedGapiClient.Default
-      )
+      ),
+      FetchHttpClient.layer
     )
   )
 )

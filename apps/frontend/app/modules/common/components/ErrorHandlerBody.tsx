@@ -1,19 +1,24 @@
+import { Either, type Scope, type Stream } from 'effect'
+import React, { useEffect, useState, type JSX } from 'react'
+
 import {
+  AuthError,
   BadDataError,
   ExternalAssertionError,
   NotFoundError,
   UnhandledError,
-  AuthError,
 } from '@assessmentis/ontology'
-import type { JSX } from 'react'
-import React, { useEffect, useState } from 'react'
+import {
+  NoSelectedOrgError,
+  type Org,
+  type OrgSlug,
+  type User,
+  type UserId,
+} from '@assessmentis/platform-domain'
+import { useStream } from '@assessmentis/react-util'
+
 import { LoginButton } from '../../global/components/LoginButton'
 import { Generic404Content } from './Generic404Content'
-import type { Scope, Stream } from 'effect'
-import { Either } from 'effect'
-import type { OrgSlug, Org, UserId, User } from '@assessmentis/platform-domain'
-import { NoSelectedOrgError } from '@assessmentis/platform-domain'
-import { useStream } from '@assessmentis/react-util'
 
 const useBestError = ({
   error,

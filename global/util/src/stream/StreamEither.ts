@@ -74,6 +74,12 @@ export namespace StreamEither {
       Stream.map(self, Either.mapLeft(f))
   )
 
+  /**
+   * Alias for {@link mapLeft} — transforms the `Left` (error) value of each
+   * element. Named for discoverability alongside Effect's `mapError`.
+   */
+  export const mapError = mapLeft
+
   // -------------------------------------------------------------------------------------
   // sequencing
   // -------------------------------------------------------------------------------------

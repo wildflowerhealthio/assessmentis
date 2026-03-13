@@ -1,50 +1,46 @@
 import { Effect } from 'effect'
-import { VideoCallClient } from '@assessmentis/video-call-domain'
-import { EncounterRepository } from '@assessmentis/clinical-domain/administration'
+
+import {
+  ClinicalDomainHub,
+  type Encounter,
+  type Media,
+} from '@assessmentis/clinical-domain'
+import { Reference } from '@assessmentis/clinical-domain/data-types'
+import type { Resource } from '@assessmentis/effectful-store'
 import type {
-  UnhandledError,
-  ExternalAssertionError,
-  NotFoundError,
   AuthError,
   AuthzError,
+  ExternalAssertionError,
+  NotFoundError,
+  UnhandledError,
 } from '@assessmentis/ontology'
-import type { WithId } from '@assessmentis/clinical-domain/data-types'
-import type {
-  Encounter,
-  EncounterId,
-} from '@assessmentis/clinical-domain/administration'
-import type {
-  Media,
-  MediaId,
-} from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { MediaRepository } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import { VideoCallClient } from '@assessmentis/video-call-domain'
 
 /**
  * Fetches recordings for an encounter's video call room and creates Media resources
  * linked to the encounter.
  *
- * @param encounterId - The ID of the encounter to update
+ * @param encounterUrl - The URL of the encounter to update
  */
 export const updateEncounterRecordingsAndTranscripts = (
-  encounterId: EncounterId
+  encounterUrl: Resource.InferResourceUrl<Encounter>
 ): Effect.Effect<
-  WithId<Encounter>,
+  Resource.WithResourceUrl<Encounter>,
   | UnhandledError
   | AuthError
   | AuthzError
   | ExternalAssertionError
-  | NotFoundError<'Encounter', { id: EncounterId }>
-  | NotFoundError<'Media', { id: MediaId }>
+  | NotFoundError<'Encounter', { url: Resource.InferResourceUrl<Encounter> }>
+  | NotFoundError<'Media', { url: Resource.InferResourceUrl<Media> }>
   | NotFoundError<'Recording', { id: string }>,
-  EncounterRepository | VideoCallClient | MediaRepository
+  ClinicalDomainHub | VideoCallClient
 > => {
   return Effect.gen(function* () {
-    const encounterRepository = yield* EncounterRepository
+    const hub = yield* ClinicalDomainHub
     const videoCalls = yield* VideoCallClient
-    const mediaRepository = yield* MediaRepository
 
     // Get the current encounter
-    const encounter = yield* encounterRepository.get(encounterId)
+    const encounter = yield* hub.get('Encounter', encounterUrl)
 
     // Extract the room name from the encounter location
     const roomUrl = encounter.location?.[0]?.location?.identifier?.value
@@ -57,8 +53,8 @@ export const updateEncounterRecordingsAndTranscripts = (
     if (!roomName) return encounter
 
     // Fetch all existing Media resources
-    const knownMediaItems = yield* mediaRepository.getMany({
-      encounter: `Encounter/${encounterId}`,
+    const knownMediaItems = yield* hub.search('Media', {
+      encounter: `Encounter/${encounterUrl}`,
     })
 
     // Get media with fresh URLs from the video call service
@@ -69,21 +65,22 @@ export const updateEncounterRecordingsAndTranscripts = (
       return encounter
     }
 
-    const updatedMedia: WithId<Media>[] = []
+    const updatedMedia: Resource.WithResourceUrl<Media>[] = []
     const newRecordings: Media[] = []
 
     for (const recording of latestRecordings) {
       // Find the corresponding existing media and update it with fresh URL
       const correspondingMedia = knownMediaItems.find((known) =>
-        known.identifier?.some((knownId) =>
-          recording.identifier?.some((id) => id.value === knownId.value)
+        known.identifier?.some((knownId: { value?: string }) =>
+          recording.identifier?.some(
+            (id: { value?: string }) => id.value === knownId.value
+          )
         )
       )
       if (correspondingMedia) {
-        const updated: WithId<Media> = {
+        const updated: Resource.WithResourceUrl<Media> = {
           ...correspondingMedia,
           content: recording.content,
-          id: correspondingMedia.id,
         }
         updatedMedia.push(updated)
       } else {
@@ -91,22 +88,19 @@ export const updateEncounterRecordingsAndTranscripts = (
       }
     }
 
-    // Update existing Media resources with fresh URLs
-    // TODO: Investigate bulk update support in MediaRepository
-    for (const media of updatedMedia) {
-      yield* mediaRepository.update(media)
-    }
+    yield* Effect.all(updatedMedia.map((media) => hub.update('Media', media)))
 
     // Create new Media resources linked to the encounter
-    const mediaToCreate = newRecordings.map((media) => ({
+    const encounterRef = Reference.make({
+      reference: `Encounter/${encounterUrl}`,
+    })
+    const mediaToCreate: Media[] = newRecordings.map((media) => ({
       ...media,
-      encounter: {
-        reference: `Encounter/${encounterId}`,
-      },
+      encounter: encounterRef,
     }))
 
     if (mediaToCreate.length > 0) {
-      yield* mediaRepository.createMany(mediaToCreate)
+      yield* hub.createMany('Media', mediaToCreate)
     }
 
     return encounter

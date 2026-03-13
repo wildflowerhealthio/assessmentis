@@ -75,7 +75,7 @@ export const makeGoogleFhirOriginType = (deps: {
 }): OriginFactory<ResourceDataTypes> => ({
   tag: 'google_fhir',
   make: (
-    originUrl: ReadonlyUrl,
+    _originUrl: ReadonlyUrl,
     baseDef: OriginConfig,
     originConfig: Record<string, unknown> | undefined
   ) => {

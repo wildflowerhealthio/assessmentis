@@ -1,5 +1,5 @@
-import type { ComponentType } from 'react'
-import { useState } from 'react'
+import { useState, type ComponentType } from 'react'
+
 import classes from '../ResourceForm.module.css'
 
 export interface PickerComponentProps {

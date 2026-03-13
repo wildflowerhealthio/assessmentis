@@ -1,7 +1,10 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
+
 import { cn } from '@assessmentis/react-util'
+
 import { shouldShowRawData } from 'app/util/debugHelpers'
+
 import classes from './ResourceDetailPage.module.css'
 
 interface ResourceDetailSection {

@@ -1,4 +1,5 @@
 import { cn } from '@assessmentis/react-util'
+
 import styles from './SplitPane.module.css'
 
 interface IProps {

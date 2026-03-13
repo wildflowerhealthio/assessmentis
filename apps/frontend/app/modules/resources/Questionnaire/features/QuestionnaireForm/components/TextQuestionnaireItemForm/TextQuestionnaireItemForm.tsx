@@ -1,15 +1,18 @@
 'use client'
 
-import { type ChangeEventHandler, type SetStateAction } from 'react'
-import classes from './TextQuestionnaireItemForm.module.css'
-import type {
-  QuestionnaireItem,
-  QuestionnaireItemUIControlCode,
-  QuestionnaireResponseItem,
-} from '@assessmentis/clinical-domain/content-management'
-import { withAnsweredAt } from '@assessmentis/clinical-domain/content-management'
-import { cn } from '@assessmentis/react-util'
 import { DateTime, Effect } from 'effect'
+import { type ChangeEventHandler, type SetStateAction } from 'react'
+
+import {
+  QuestionnaireItemAnsweredAtExtension,
+  QuestionnaireResponseItem,
+  QuestionnaireResponseItemAnswer,
+  type QuestionnaireItem,
+  type QuestionnaireItemUIControlCode,
+} from '@assessmentis/clinical-domain'
+import { cn } from '@assessmentis/react-util'
+
+import classes from './TextQuestionnaireItemForm.module.css'
 
 export interface IProps {
   questionnaireItem: QuestionnaireItem
@@ -32,23 +35,25 @@ const TextQuestionnaireItemForm = ({
   ) => {
     const valueString = ev.currentTarget.value
     setQuestionnaireResponseItem(
-      (qri: QuestionnaireResponseItem): QuestionnaireResponseItem => ({
-        ...qri,
-        answer: [
-          withAnsweredAt(
-            { valueString, modifierExtension: [] },
-            Effect.runSync(DateTime.now)
-          ),
-        ],
-      })
+      (qri: QuestionnaireResponseItem): QuestionnaireResponseItem =>
+        QuestionnaireResponseItem.make({
+          ...qri,
+          answer: [
+            QuestionnaireResponseItemAnswer.make({
+              value: { _tag: 'string', string: valueString },
+              modifierExtension: [
+                QuestionnaireItemAnsweredAtExtension.make({
+                  valueDateTime: Effect.runSync(DateTime.now),
+                }),
+              ],
+            }),
+          ],
+        })
     )
   }
 
-  const valueElement = questionnaireResponseItem.answer?.[0]
-  const valueString =
-    valueElement && 'valueString' in valueElement
-      ? valueElement.valueString
-      : ''
+  const answerValue = questionnaireResponseItem.answer?.[0]?.value
+  const valueString = answerValue?._tag === 'string' ? answerValue.string : ''
 
   return (
     <label className={cn('label-3', classes.TextQuestionnaireItem__label)}>

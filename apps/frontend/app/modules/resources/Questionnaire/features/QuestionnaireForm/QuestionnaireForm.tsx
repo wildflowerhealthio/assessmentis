@@ -1,16 +1,24 @@
+import { Effect } from 'effect'
 import { useState, type SetStateAction } from 'react'
-import type {
-  Questionnaire,
-  QuestionnaireItemLink,
+
+import {
+  ClinicalDomainHub,
   QuestionnaireResponse,
   QuestionnaireResponseItem,
-} from '@assessmentis/clinical-domain/content-management'
-import { QuestionnaireResponseRepository } from '@assessmentis/clinical-domain/content-management'
-import QuestionnaireItemForm from './components/QuestionnaireItemForm/QuestionnaireItemForm'
-import { Effect } from 'effect'
-import { hasId } from '@assessmentis/clinical-domain/data-types'
+  type Questionnaire,
+  type QuestionnaireItemLink,
+} from '@assessmentis/clinical-domain'
+import type { ReadonlyUrl } from '@assessmentis/effectful-store'
+
 import { useAutoSave } from 'app/modules/common/hooks/useAutoSave'
-import { usePlatformContext } from '../../../../../layers/PlatformContext'
+
+import { useHub } from '../../../../../layers/useHub'
+import QuestionnaireItemForm from './components/QuestionnaireItemForm/QuestionnaireItemForm'
+
+const hasUrl = <T extends { readonly url?: ReadonlyUrl | undefined }>(
+  resource: T
+): resource is T & { readonly url: NonNullable<T['url']> } =>
+  resource.url !== undefined
 
 type IProps = {
   questionnaire: Questionnaire
@@ -23,7 +31,7 @@ const QuestionnaireForm = ({
   questionnaireResponse: loadedQuestionnaireResponse,
   highlightLinks,
 }: IProps) => {
-  const { clinicalDataRepositoryService } = usePlatformContext()
+  const hub = useHub()
   const [questionnaireResponse, setQuestionnaireResponse] =
     useState<QuestionnaireResponse>(loadedQuestionnaireResponse)
 
@@ -33,16 +41,10 @@ const QuestionnaireForm = ({
     onSave: async (data) => {
       await Effect.runPromise(
         Effect.gen(function* () {
-          const questionnaireResponseClient =
-            yield* QuestionnaireResponseRepository
-          if (!hasId(data)) return
-          return yield* questionnaireResponseClient.update(data)
-        }).pipe(
-          Effect.provideServiceEffect(
-            QuestionnaireResponseRepository,
-            clinicalDataRepositoryService.effect.QuestionnaireResponse
-          )
-        )
+          const h = yield* ClinicalDomainHub
+          if (!data || !hasUrl(data)) return
+          return yield* h.update('QuestionnaireResponse', data)
+        }).pipe(Effect.provideService(ClinicalDomainHub, hub))
       )
     },
     delay: 5000,
@@ -58,25 +60,32 @@ const QuestionnaireForm = ({
           questionnaireResponseItem={
             questionnaireResponse.item?.find(
               ({ linkId }) => linkId == item.linkId
-            ) ?? { linkId: item.linkId }
+            ) ?? QuestionnaireResponseItem.make({ linkId: item.linkId })
           }
           setQuestionnaireResponseItem={(
             update: SetStateAction<QuestionnaireResponseItem>
           ) =>
-            setQuestionnaireResponse((qr) => ({
-              ...qr,
-              item: [
-                ...(qr.item?.filter(({ linkId }) => linkId != item.linkId) ??
-                  []),
-                typeof update == 'function'
-                  ? update(
-                      qr.item?.find(({ linkId }) => linkId == item.linkId) ?? {
-                        linkId: item.linkId,
-                      }
-                    )
-                  : update,
-              ],
-            }))
+            setQuestionnaireResponse((qr) =>
+              QuestionnaireResponse.make({
+                ...qr,
+                item: [
+                  ...(qr.item?.filter(({ linkId }) => linkId != item.linkId) ??
+                    []),
+                  typeof update == 'function'
+                    ? QuestionnaireResponseItem.make(
+                        update(
+                          qr.item?.find(
+                            ({ linkId }) => linkId == item.linkId
+                          ) ??
+                            QuestionnaireResponseItem.make({
+                              linkId: item.linkId,
+                            })
+                        )
+                      )
+                    : QuestionnaireResponseItem.make(update),
+                ],
+              })
+            )
           }
           uiControl={undefined}
         />

@@ -1,22 +1,42 @@
-import type { Questionnaire } from '@assessmentis/clinical-domain/content-management'
+import { Questionnaire } from '@assessmentis/clinical-domain'
 import { questionnaireTemplates } from '@assessmentis/questionnaire-entities'
-import type { Route } from './+types/Questionnaire._index'
-import { QuestionnaireListItem } from '../modules/resources/Questionnaire/components/QuestionnaireListItem/QuestionnaireListItem'
+
+import { useResourceCollection } from '../layers/useResourceCollection'
+import { useBreadcrumbs } from '../modules/Breadcrumbs/useBreadcrumbs'
 import { ResourceListPage } from '../modules/common/components/ResourceListPage/ResourceListPage'
-import { useBreadcrumbs } from 'app/modules/global/components/BreadcrumbProvider/useBreadcrumbs'
-import { createResourceCollectionHook } from '../modules/common/utils/createResourceCollectionHook'
+import { ResourceListItem } from '../modules/resources/ResourcePages/ResourceListItem/ResourceListItem'
 
-const useQuestionnaires = createResourceCollectionHook<Questionnaire>({
-  resourceType: 'Questionnaire',
-})
+import '../traits/Labeled/implementations/Questionnaire'
+import '../traits/Listable/implementations/Questionnaire'
+import '../traits/BreadcrumbLabel/implementations/Questionnaire'
+import '../traits/Link/implementations/Questionnaire'
 
-export default function QuestionnairePage(_: Route.ComponentProps) {
+function QuestionnaireListItem(props: {
+  item: Questionnaire
+  onDelete: () => void
+  loading: boolean
+}) {
+  const { displayName, summaryItems } = props.item.Listable
+
+  return (
+    <ResourceListItem
+      displayName={displayName}
+      summaryItems={summaryItems}
+      viewPath={`/Questionnaire/${props.item.url?.asUriComponent() ?? ''}`}
+      editPath={`/Questionnaire/${props.item.url?.asUriComponent() ?? ''}`}
+      onDelete={props.onDelete}
+      loading={props.loading}
+    />
+  )
+}
+
+export default function QuestionnairePage() {
   const {
     collectionPromise: questionnairesPromise,
     deleteItem: deleteQuestionnaire,
     createItem: createQuestionnaire,
-  } = useQuestionnaires()
-  useBreadcrumbs([{ label: 'Questionnaires' }])
+  } = useResourceCollection(Questionnaire)
+  useBreadcrumbs(Questionnaire)
 
   const loadTemplateByTitleForm = async function (formData: FormData) {
     const templateToCreate = questionnaireTemplates.find(
@@ -28,11 +48,11 @@ export default function QuestionnairePage(_: Route.ComponentProps) {
   return (
     <>
       <ResourceListPage
-        title="Questionnaires"
+        title={Questionnaire.Labeled.pluralLabel}
         collectionPromise={questionnairesPromise}
         createPath=""
-        createLabel="Create Questionnaire"
-        onDelete={deleteQuestionnaire}
+        createLabel={`Create ${Questionnaire.Labeled.singularLabel}`}
+        onDelete={(url) => deleteQuestionnaire(url?.toString())}
         ItemComponent={QuestionnaireListItem}
       />
 

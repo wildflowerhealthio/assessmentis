@@ -1,25 +1,26 @@
 import { DateTime, Effect } from 'effect'
-import type {
-  Encounter,
-  EncounterId,
-} from '@assessmentis/clinical-domain/administration'
+
 import {
-  EncounterRepository,
-  Location,
-} from '@assessmentis/clinical-domain/administration'
+  ClinicalDomainHub,
+  EncounterLocation,
+  EncounterParticipant,
+  isVirtualLocation,
+  type Encounter,
+} from '@assessmentis/clinical-domain'
+import { Period, Reference } from '@assessmentis/clinical-domain/data-types'
+import type { ReadonlyUrl, Resource } from '@assessmentis/effectful-store'
 import type {
+  AuthError,
+  AuthzError,
   ExternalAssertionError,
   NotFoundError,
   UnhandledError,
-  AuthError,
-  AuthzError,
 } from '@assessmentis/ontology'
-import type { WithId } from '@assessmentis/clinical-domain/data-types'
+
 import type { EncounterFormData } from '../schemas/EncounterFormSchema'
 
 export const updateEncounter = (
-  id: EncounterId,
-  currentEncounter: Encounter,
+  currentEncounter: Resource.WithResourceUrl<Encounter>,
   formData: EncounterFormData
 ): Effect.Effect<
   Encounter,
@@ -27,51 +28,58 @@ export const updateEncounter = (
   | AuthError
   | AuthzError
   | ExternalAssertionError
-  | NotFoundError<'Encounter', { id: EncounterId }>,
-  EncounterRepository
+  | NotFoundError<'Encounter', { url: ReadonlyUrl }>,
+  ClinicalDomainHub
 > => {
   return Effect.gen(function* () {
-    const repository = yield* EncounterRepository
+    const hub = yield* ClinicalDomainHub
 
     // Build updated encounter with form data
-    const updatedEncounter: WithId<Encounter> = {
+    const updatedEncounter: Resource.WithResourceUrl<Encounter> = {
       ...currentEncounter,
-      id,
       // Update subject (patient)
-      subject: formData.patientId
-        ? { reference: `Patient/${formData.patientId}` }
+      subject: formData.patientUrl
+        ? Reference.make({
+            reference: formData.patientUrl.toString(),
+            type: 'Patient',
+          })
         : undefined,
       // Update participant (practitioners)
-      participant: formData.practitionerIds?.map((practitionerId) => ({
-        individual: { reference: `Practitioner/${practitionerId}` },
-      })),
+      participant: formData.practitionerUrls?.map((practitionerUrl) =>
+        EncounterParticipant.make({
+          individual: Reference.make({
+            reference: practitionerUrl.toString(),
+            type: 'Practitioner',
+          }),
+        })
+      ),
       // Update period
       period:
         formData.periodStart || formData.periodEnd
-          ? {
+          ? Period.make({
               start: formData.periodStart?.pipe(DateTime.toUtc),
               end: formData.periodEnd?.pipe(DateTime.toUtc),
-            }
+            })
           : undefined,
       // Update location references (preserve virtual/video room locations)
       location: [
         // Keep existing virtual location entries (video room)
-        ...(currentEncounter.location?.filter((l) =>
-          Location.isVirtualLocation(l)
-        ) ?? []),
+        ...(currentEncounter.location?.filter((l) => isVirtualLocation(l)) ??
+          []),
         // Add user-selected physical location if provided
-        ...(formData.locationId
+        ...(formData.locationUrl
           ? [
-              {
-                location: {
-                  reference: `Location/${formData.locationId}`,
-                },
-              },
+              EncounterLocation.make({
+                location: Reference.make({
+                  reference: formData.locationUrl.toString(),
+                  type: 'Location',
+                }),
+              }),
             ]
           : []),
       ],
     }
 
-    return yield* repository.update(updatedEncounter)
+    return yield* hub.update('Encounter', updatedEncounter)
   })
 }
