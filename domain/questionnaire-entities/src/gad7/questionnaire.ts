@@ -16,7 +16,8 @@ export const questionnaire: Questionnaire = Questionnaire.make({
   url: Questionnaire.UrlSchema.make(
     new ReadonlyUrl({
       protocol: 'https:',
-      pathname: '/ig/HL7/pco-ig/en//Questionnaire-69737-5',
+      // Nothing is hosted at this canonical URL — it is an identifier only
+      pathname: '/ig/HL7/pco-ig/en/Questionnaire-69737-5',
       host: 'build.fhir.org',
     })
   ),

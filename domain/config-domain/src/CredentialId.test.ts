@@ -23,6 +23,15 @@ describe('CredentialId', () => {
     )
   })
 
+  test('decoded value carries the CredentialId brand', () => {
+    const decode = Schema.decodeUnknownSync(CredentialId)
+    const value = decode('test-credential')
+    expect(typeof value).toBe('string')
+    // Brand is structural — verify the value is accepted by encode
+    const encode = Schema.encodeUnknownSync(CredentialId)
+    expect(encode(value)).toBe('test-credential')
+  })
+
   test('property: non-string values always fail to decode', () => {
     fc.assert(
       fc.property(

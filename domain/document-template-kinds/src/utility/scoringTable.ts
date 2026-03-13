@@ -34,12 +34,10 @@ export const makeScoringTable =
     if (
       !items.every(
         (item) =>
-          item.answerOption?.every(
-            ({ value }) =>
-              value?._tag == 'Coding' &&
-              headerCodes.some(
-                (hc) => hc.code === Coding.Datatype.from(value)?.code
-              )
+          item.answerOption?.every(({ value }) =>
+            headerCodes.some(
+              (hc) => hc.code === Coding.Datatype.from(value)?.code
+            )
           ) ?? false
       )
     ) {

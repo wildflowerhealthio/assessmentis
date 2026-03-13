@@ -21,7 +21,9 @@ export const baseChoiceObservation = {
   category: [surveyCategory],
 } as const satisfies Pick<Observation, 'domainType' | 'category'>
 
+export type ObservationInput = ConstructorParameters<typeof Observation>[0]
+
 export type ObservationTemplate = Omit<
-  ConstructorParameters<typeof Observation>[0],
+  ObservationInput,
   'url' | 'meta' | 'status'
 >

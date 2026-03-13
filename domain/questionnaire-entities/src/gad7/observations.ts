@@ -13,10 +13,6 @@ export const totalScore = {
     coding: [codings.totalScore],
     text: codings.totalScore.display,
   }),
-  method: CodeableConcept.make({
-    coding: [codings.totalScore],
-    text: 'This is calculated by assigning scores of 0, 1, 2, and 3 to the response categories, respectively, of “not at all,” “several days,” “more than half the days,” and “nearly every day.” GAD-7 total score for the seven items ranges from 0 to 21.',
-  }),
   referenceRange: [
     ObservationReferenceRange.make({
       low: Quantity.make({ value: 0 }),

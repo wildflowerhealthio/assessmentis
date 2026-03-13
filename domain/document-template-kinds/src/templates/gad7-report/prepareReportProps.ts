@@ -56,10 +56,7 @@ export const makeGad7ScoringTable: (
   gad7QuestionnaireItems,
   (item) => {
     const answer = item?.answer?.[0]
-    const answerCode =
-      answer && 'valueCoding' in answer
-        ? (answer.valueCoding as Coding | undefined)?.code
-        : undefined
+    const answerCode = Coding.Datatype.from(answer?.value)?.code
     return answerCode && answerCode in gad7ScoreByAnswerCode
       ? gad7ScoreByAnswerCode[answerCode]
       : undefined

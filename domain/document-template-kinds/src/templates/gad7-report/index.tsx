@@ -1,4 +1,3 @@
-import { string } from 'fast-check'
 import { Effect } from 'effect'
 import type { JSX } from 'react'
 
@@ -49,7 +48,6 @@ export const gad7Report = (
           resourceType: 'Observation',
           params: {
             subject: patientReference.reference,
-            code: string,
           },
         }) // ('GAD-7 score observation not found for the patient')
       )

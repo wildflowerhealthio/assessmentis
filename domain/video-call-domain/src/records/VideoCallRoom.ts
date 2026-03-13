@@ -12,6 +12,7 @@ export const VideoCallRoomName = Schema.String.pipe(
 
 export type VideoCallRoomName = typeof VideoCallRoomName.Type
 
+// Vestigial — should be removed when VideoCallRoom migrates to use URLs
 export const EncounterId = Schema.String.pipe(Schema.brand('EncounterId'))
 
 export type EncounterId = typeof EncounterId.Type

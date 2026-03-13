@@ -112,7 +112,7 @@ export const describeAsVideoCallClient = (
               Option.flatMap(Cause.failureOption),
               Option.getOrThrow
             )
-            expect((error as { _tag: string })._tag).toBe('NotFoundError')
+            expect(error._tag).toBe('NotFoundError')
           }
         }).pipe(Effect.provide(VideoCallClientLayer))
       )
@@ -179,7 +179,7 @@ export const describeAsVideoCallClient = (
               Option.flatMap(Cause.failureOption),
               Option.getOrThrow
             )
-            expect((error as { _tag: string })._tag).toBe('NotFoundError')
+            expect(error._tag).toBe('NotFoundError')
           }
         }).pipe(Effect.provide(VideoCallClientLayer))
       )

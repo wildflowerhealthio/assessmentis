@@ -37,7 +37,7 @@ export const Datatype = <const Name extends string, A, I>(
       value: Others | undefined | ({ _tag: Name } & { [K in Name]: A })
     ) =>
       value &&
-      value._tag == name &&
+      value._tag === name &&
       (value as { [K in Name]?: A })[name] !== undefined
         ? (value as { [K in Name]: A })[name]
         : undefined,

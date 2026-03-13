@@ -1,7 +1,4 @@
-import {
-  type Observation,
-  type QuestionnaireResponse,
-} from '@assessmentis/clinical-domain'
+import { type QuestionnaireResponse } from '@assessmentis/clinical-domain'
 import {
   CodeableConcept,
   Coding,
@@ -9,7 +6,11 @@ import {
 } from '@assessmentis/clinical-domain/data-types'
 
 import { codings } from './codings'
-import { baseChoiceObservation, type ObservationTemplate } from './internal'
+import {
+  baseChoiceObservation,
+  type ObservationInput,
+  type ObservationTemplate,
+} from './internal'
 import { totalScore } from './observations'
 
 const questionLinkIds = [
@@ -58,7 +59,7 @@ const findAnswerCoding = (
 
 export const computeGad7HelperTotalScoreObservation = (
   response: QuestionnaireResponse
-): Omit<ConstructorParameters<typeof Observation>[0], 'status'> => {
+): Omit<ObservationInput, 'status'> => {
   const totalScoreValue = questionLinkIds.reduce((acc, linkId) => {
     const answerCoding = findAnswerCoding(response, linkId)
     if (!answerCoding?.coding?.[0]?.code) return acc
@@ -78,7 +79,7 @@ export const computeGad7HelperTotalScoreObservation = (
 
 export const extractObservationsFromGad7Response = (
   response: QuestionnaireResponse
-): Omit<ConstructorParameters<typeof Observation>[0], 'status'>[] => {
+): Omit<ObservationInput, 'status'>[] => {
   const questionObsList = questionLinkIds.map((linkId) => {
     const code = questionCodeByLinkId[linkId]
     const answerCoding = findAnswerCoding(response, linkId)
@@ -92,7 +93,14 @@ export const extractObservationsFromGad7Response = (
       }),
       encounter: response.encounter,
       derivedFrom: responseResource ? [responseResource] : undefined,
-      ...(answerCoding ? { valueCodeableConcept: answerCoding } : {}),
+      ...(answerCoding
+        ? {
+            value: {
+              _tag: 'CodeableConcept' as const,
+              CodeableConcept: answerCoding,
+            },
+          }
+        : {}),
     } satisfies ObservationTemplate
   })
 
