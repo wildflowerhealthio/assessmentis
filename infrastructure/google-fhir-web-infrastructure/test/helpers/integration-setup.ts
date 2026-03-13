@@ -1,5 +1,4 @@
 import { Effect, Layer } from 'effect'
-import { isPromiseLike } from 'effect/Predicate'
 
 import type { GoogleFhirConfig } from '@assessmentis/config-domain'
 
@@ -69,47 +68,6 @@ export const setupClientOnWindow = async () => {
 
       console.log('Initializing gapi healthcare client')
       const healthcare = yield* LoadedGapiHealthcareClient
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const handler1: ProxyHandler<any> = {
-        get(target, prop, receiver) {
-          const gotten = target[prop]
-          if (gotten instanceof Function) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            return function (this: unknown, ...args: any[]) {
-              const res = gotten.apply(this === receiver ? target : this, args)
-              if (isPromiseLike(res)) {
-                res.then(
-                  (r) =>
-                    console.log({
-                      prop: String(prop),
-                      args,
-                      resolved: r,
-                    }),
-                  (e) =>
-                    console.log({
-                      prop: String(prop),
-                      args,
-                      error: e,
-                    })
-                )
-              } else {
-                console.log({
-                  prop: String(prop),
-                  args,
-                  immediate: res,
-                })
-              }
-              return res
-            }
-          }
-          return gotten
-        },
-      }
-      healthcare.projects.locations.datasets.fhirStores.fhir = new Proxy(
-        healthcare.projects.locations.datasets.fhirStores.fhir,
-        handler1
-      )
 
       return makeGapiGoogleHealthcareClient({
         getAccessToken: Effect.succeed(getGcloudToken()),

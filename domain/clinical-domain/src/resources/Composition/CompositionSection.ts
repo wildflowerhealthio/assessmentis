@@ -63,9 +63,8 @@ export class CompositionSection extends MergeClasses<CompositionSection>(
                       depthIdentifier: 'id:CompositionSection',
                     },
                     fc.constant<ReadonlyArray<never>>([]),
-                    fc.constant<ReadonlyArray<never>>([]),
                     fc.array<CompositionSection>(tie('self'), {
-                      depthIdentifier: 'id:self',
+                      depthIdentifier: 'id:CompositionSection',
                       maxLength: 2,
                     })
                   ),
