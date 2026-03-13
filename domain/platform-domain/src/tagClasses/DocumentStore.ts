@@ -18,6 +18,13 @@ export type DocumentPath = ReadonlyArray<string> & {
   1: string
   length: 2 | 4 | 6
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare const process: any // Declare process without requiring node types
+const shouldThrowStrictly =
+  typeof process !== 'undefined'
+    ? process?.env?.NODE_ENV === 'development'
+    : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (import.meta as any)?.env?.MODE == 'development'
 
 /**
  * Whether to throw on invalid document data. Defaults to false.

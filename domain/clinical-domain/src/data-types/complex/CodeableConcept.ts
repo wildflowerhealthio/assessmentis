@@ -41,10 +41,7 @@ export class CodeableConcept extends MergeClasses<CodeableConcept>(DomainType)(
   [],
   ElementMixin,
   fields
-) {}
-
-/** {@link Datatype} wrapper for use in {@link DatatypeChoice} value\[x\] unions. */
-export const CodeableConceptDatatype = Datatype(
-  'CodeableConcept',
-  CodeableConcept
-)
+) {
+  /** {@link Datatype} wrapper for use in {@link DatatypeChoice} value\[x\] unions. */
+  static Datatype = Datatype('CodeableConcept', CodeableConcept)
+}

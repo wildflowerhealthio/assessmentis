@@ -111,7 +111,7 @@ export const createFhirResponseHandlers = <
       ? Effect.succeed(resp)
       : Effect.fail(
           new UnhandledError({
-            message: `The FHIR response was not successful '${String(resp)}'`,
+            message: `The FHIR response was not successful '${JSON.stringify(resp, null, 2)}'`,
           })
         )
   )

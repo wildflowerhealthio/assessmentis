@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'vitest'
+
 import type { ComponentFamily } from '@assessmentis/document-template-kinds'
+
 import base from './base'
 
 const _base: ComponentFamily = base

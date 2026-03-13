@@ -3,6 +3,7 @@ import { Schema } from 'effect'
 import { MergeClasses } from '@assessmentis/util'
 
 import { Element, type ElementEncoded } from '../base/Element'
+import { Datatype } from '../Datatype'
 import { Code } from './Code'
 
 const fields = {
@@ -58,4 +59,6 @@ export class Quantity extends MergeClasses<Quantity>('Quantity')(
   [],
   elementMixin,
   fields
-) {}
+) {
+  static Datatype = Datatype('Quantity', Quantity)
+}
