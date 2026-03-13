@@ -1,7 +1,13 @@
-import type { Coding } from '@assessmentis/clinical-domain/data-types'
-import { Code } from '@assessmentis/clinical-domain/data-types'
+import type { Effect } from 'effect'
+
+import type { QuestionnaireResponseItem } from '@assessmentis/clinical-domain'
+import { Code, Coding } from '@assessmentis/clinical-domain/data-types'
 import { gad7 } from '@assessmentis/questionnaire-entities'
-import { makeScoringTable as makeScoringTableFunction } from '../../utility/scoringTable'
+
+import {
+  makeScoringTable as makeScoringTableFunction,
+  type ScoringTable,
+} from '../../utility/scoringTable'
 
 const gad7ScoreByAnswerCode: Readonly<Record<string, number | undefined>> = {
   'LA6568-5': 0,
@@ -11,26 +17,26 @@ const gad7ScoreByAnswerCode: Readonly<Record<string, number | undefined>> = {
 }
 
 const headerCodes: ReadonlyArray<Coding> = [
-  {
+  Coding.make({
     system: 'http://loinc.org',
     code: Code.make('LA6568-5'),
     display: 'Not at all',
-  },
-  {
+  }),
+  Coding.make({
     system: 'http://loinc.org',
     code: Code.make('LA6569-3'),
     display: 'Several days',
-  },
-  {
+  }),
+  Coding.make({
     system: 'http://loinc.org',
     code: Code.make('LA6570-1'),
     display: 'More than half the days',
-  },
-  {
+  }),
+  Coding.make({
     system: 'http://loinc.org',
     code: Code.make('LA6571-9'),
     display: 'Nearly every day',
-  },
+  }),
 ]
 
 const gad7QuestionnaireItems = (() => {
@@ -44,12 +50,13 @@ const gad7QuestionnaireItems = (() => {
   return items
 })()
 
-export const makeGad7ScoringTable = makeScoringTableFunction(
+export const makeGad7ScoringTable: (
+  responseItems: QuestionnaireResponseItem[]
+) => Effect.Effect<ScoringTable, string> = makeScoringTableFunction(
   gad7QuestionnaireItems,
   (item) => {
     const answer = item?.answer?.[0]
-    const answerCode =
-      answer && 'valueCoding' in answer ? answer.valueCoding?.code : undefined
+    const answerCode = Coding.Datatype.from(answer?.value)?.code
     return answerCode && answerCode in gad7ScoreByAnswerCode
       ? gad7ScoreByAnswerCode[answerCode]
       : undefined

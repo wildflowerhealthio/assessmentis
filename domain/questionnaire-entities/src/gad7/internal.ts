@@ -1,23 +1,29 @@
+import type { Observation } from '@assessmentis/clinical-domain'
 import {
   Code,
-  type CodeableConcept,
+  CodeableConcept,
+  Coding,
 } from '@assessmentis/clinical-domain/data-types'
-import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
 import { literalOf } from '@assessmentis/util'
 
-const surveyCategory = {
+const surveyCategory = CodeableConcept.make({
   coding: [
-    {
+    Coding.make({
       system: 'http://terminology.hl7.org/CodeSystem/observation-category',
       code: literalOf(Code)('survey'),
       display: 'Survey',
-    },
+    }),
   ],
-} as const satisfies CodeableConcept
+})
 
 export const baseChoiceObservation = {
-  resourceType: 'Observation',
+  domainType: 'Observation',
   category: [surveyCategory],
-} as const satisfies Pick<Observation, 'resourceType' | 'category'>
+} as const satisfies Pick<Observation, 'domainType' | 'category'>
 
-export type ObservationTemplate = Omit<Observation, 'id' | 'meta' | 'status'>
+export type ObservationInput = ConstructorParameters<typeof Observation>[0]
+
+export type ObservationTemplate = Omit<
+  ObservationInput,
+  'url' | 'meta' | 'status'
+>
