@@ -19,7 +19,7 @@
   "dependencies": {
     "@assessmentis/clinical-domain": "*",
     "@assessmentis/config-domain": "*",
-    "@assessmentis/fhir-client": "*",
+    "@assessmentis/fhir-r4": "*",
     "@assessmentis/firebase-server-infrastructure": "*",
     "@assessmentis/ontology": "*",
     "@assessmentis/platform-domain": "*",

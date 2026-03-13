@@ -1,14 +1,14 @@
+import {
+  IntegerDatatype,
+  Quantity,
+} from '@assessmentis/clinical-domain/data-types'
 import type { ObservationSectionWithMethodComponent } from '@assessmentis/document-template-kinds'
 
 export const ObservationSectionWithMethod: ObservationSectionWithMethodComponent =
   ({ observation }) => {
-    let score: number | undefined = undefined
-
-    if ('valueInteger' in observation) {
-      score = observation.valueInteger
-    } else if ('valueQuantity' in observation) {
-      score = observation.valueQuantity.value
-    }
+    const score: number | undefined =
+      IntegerDatatype.from(observation.value) ??
+      Quantity.Datatype.from(observation.value)?.value
 
     const title = observation?.code?.text ?? ''
 

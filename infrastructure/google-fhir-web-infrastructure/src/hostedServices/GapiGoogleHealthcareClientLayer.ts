@@ -1,30 +1,18 @@
-import { LoadedGapiClient } from '../services/LoadedGapiClient'
-import { LoadedGapiHealthcareClient } from '../services/LoadedGapiHealthcareClient'
-import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
-import type { FhirR4Client } from '@assessmentis/fhir-client'
+import { Effect } from 'effect'
+import type { UnknownException } from 'effect/Cause'
+
+import type { GoogleFhirConfig } from '@assessmentis/config-domain'
 import {
   buildFhirResourcePath,
   buildFhirStoreParent,
   createFhirResponseHandlers,
-} from '@assessmentis/fhir-client'
-import type { ExternalAssertionError } from '@assessmentis/ontology'
-import { AuthError, UnhandledError } from '@assessmentis/ontology'
+  type FhirR4Client,
+} from '@assessmentis/fhir-r4'
+import { UnhandledError, type AuthError } from '@assessmentis/ontology'
 import { buildSearchParams } from '@assessmentis/util'
-import type { Scope } from 'effect'
-import { Effect, Schedule } from 'effect'
-import type { UnknownException } from 'effect/Cause'
 
-const _retryGoogle502s = <A extends { status: number }, E>(
-  innerCall: Effect.Effect<A, E>
-) =>
-  Effect.retry(innerCall, {
-    until: (err) => {
-      console.error('FHIR API call error:', err)
-      return err != 502
-    },
-    times: 3,
-    schedule: Schedule.exponential('500 millis', 2),
-  })
+import type { GapiClient } from '../services/LoadedGapiClient'
+import type { GapiHealthcareClient } from '../services/LoadedGapiHealthcareClient'
 
 interface GapiErrorResponse {
   // The raw response string.
@@ -77,31 +65,25 @@ const recoverGapiHttpError: <A, R>(
   }
 )
 
-export const startGapiGoogleHealthcareClient: Effect.Effect<
-  typeof FhirR4Client.Service,
-  ExternalAssertionError | AuthError,
-  | Scope.Scope
-  | LoadedGapiClient
-  | LoadedGapiHealthcareClient
-  | LoadedGoogleFhirConfig
-> = Effect.gen(function* () {
-  const { projectId, dataset, region, storeId } = yield* LoadedGoogleFhirConfig
-  const client = yield* yield* LoadedGapiClient
+export const makeGapiGoogleHealthcareClient = ({
+  getAccessToken,
+  gapiClient,
+  healthcare,
+  config,
+}: {
+  getAccessToken: Effect.Effect<string, AuthError | UnhandledError>
+  gapiClient: GapiClient
+  healthcare: GapiHealthcareClient
+  config: GoogleFhirConfig
+}): typeof FhirR4Client.Service => {
+  const { projectId, dataset, region, storeId } = config
 
-  yield* Effect.retry(
-    Effect.suspend(() => {
-      const token = client.getToken()?.access_token
-
-      if (token) {
-        return Effect.succeed(void 0)
-      }
-      return Effect.fail(AuthError.Unauthenticated)
-    }),
-    Schedule.addDelay(Schedule.recurs(10), () => '100 millis')
-  )
-  const healthcare = yield* LoadedGapiHealthcareClient
-
-  const parent = buildFhirStoreParent({ projectId, dataset, region, storeId })
+  const parent = buildFhirStoreParent({
+    projectId,
+    dataset,
+    region,
+    storeId,
+  })
 
   const handlers = createFhirResponseHandlers<
     { status?: number | undefined },
@@ -118,127 +100,155 @@ export const startGapiGoogleHealthcareClient: Effect.Effect<
       resp.status !== undefined && resp.status >= 200 && resp.status < 300,
   })
 
+  /** Resolve the current access token, then run `fn` with it. */
+  const withToken = <A, E, R>(
+    fn: (access_token: string) => Effect.Effect<A, E, R>
+  ) => Effect.flatMap(getAccessToken, fn)
+
   const read: (typeof FhirR4Client.Service)['read'] = <
     ResourceType extends string,
   >({
-    resourceType,
+    domainType: resourceType,
     id,
   }: {
-    resourceType: ResourceType
+    domainType: ResourceType
     id: string
   }) =>
-    Effect.tryPromise(() =>
-      healthcare.projects.locations.datasets.fhirStores.fhir.read({
-        name: buildFhirResourcePath(parent, resourceType, id),
-      })
-    ).pipe(
-      recoverGapiHttpError,
-      Effect.flatMap((resp) =>
-        handlers.handleReadResponse(resp, { resourceType, id })
-      ),
-      Effect.map((response) => response.result)
+    withToken((access_token) =>
+      Effect.tryPromise(() =>
+        healthcare.projects.locations.datasets.fhirStores.fhir.read({
+          name: buildFhirResourcePath(parent, resourceType, id),
+          access_token,
+        })
+      ).pipe(
+        recoverGapiHttpError,
+        Effect.flatMap((resp) =>
+          handlers.handleReadResponse(resp, { resourceType, id })
+        ),
+        Effect.map((response) => response.result)
+      )
     )
 
   const search: (typeof FhirR4Client.Service)['search'] = (params) => {
-    const { resourceType, ...searchParams } = params
-    return Effect.tryPromise(() =>
-      client.request({
-        path: `https://content-healthcare.googleapis.com/v1/${parent}/fhir/${resourceType}/_search?${buildSearchParams(searchParams)}`,
-        method: 'POST',
-        headers: {
-          'content-type': 'application/fhir+json;charset=utf-8',
-        },
-        body: '',
-      })
-    ).pipe(
-      recoverGapiHttpError,
-      Effect.flatMap((resp) => handlers.handleSearchResponse(resp)),
-      Effect.map((response) => response.result as unknown)
+    const { domainType, ...searchParams } = params
+    return withToken((access_token) =>
+      Effect.tryPromise(() =>
+        // Uses a raw gapiClient.request instead of the healthcare SDK because
+        // the SDK's search method doesn't support _search POST with params.
+        // Bearer header is required here because gapiClient.request doesn't
+        // inject auth automatically (unlike the healthcare SDK methods which
+        // accept access_token as a parameter).
+        gapiClient.request({
+          path: `https://content-healthcare.googleapis.com/v1/${parent}/fhir/${domainType}/_search?${buildSearchParams(searchParams)}`,
+          method: 'POST',
+          headers: {
+            'content-type': 'application/fhir+json;charset=utf-8',
+            Authorization: `Bearer ${access_token}`,
+          },
+          body: '',
+        })
+      ).pipe(
+        recoverGapiHttpError,
+        Effect.flatMap((resp) => handlers.handleSearchResponse(resp)),
+        Effect.map((response) => response.result as unknown)
+      )
     )
   }
 
   const create: (typeof FhirR4Client.Service)['create'] = ({
-    type,
+    domainType: type,
     resource,
   }: {
-    type: string
+    domainType: string
     resource: unknown
   }) =>
-    Effect.tryPromise(() =>
-      healthcare.projects.locations.datasets.fhirStores.fhir.create({
-        parent,
-        type,
-        resource: resource as gapi.client.healthcare.HttpBody,
-      })
-    ).pipe(
-      recoverGapiHttpError,
-      Effect.flatMap((resp) => handlers.handleCreateResponse(resp)),
-      Effect.map((response) => response.result)
+    withToken((access_token) =>
+      Effect.tryPromise(() =>
+        healthcare.projects.locations.datasets.fhirStores.fhir.create({
+          parent,
+          type,
+          resource: resource as gapi.client.healthcare.HttpBody,
+          access_token,
+        })
+      ).pipe(
+        recoverGapiHttpError,
+        Effect.flatMap((resp) => handlers.handleCreateResponse(resp)),
+        Effect.map((response) => response.result)
+      )
     )
 
   const update: (typeof FhirR4Client.Service)['update'] = <
     ResourceType extends string,
   >({
     id,
-    type,
+    domainType: type,
     resource,
   }: {
     id: string
-    type: ResourceType
+    domainType: ResourceType
     resource: unknown
   }) =>
-    Effect.tryPromise(() =>
-      healthcare.projects.locations.datasets.fhirStores.fhir.update({
-        name: buildFhirResourcePath(parent, type, id),
-        resource: resource as gapi.client.healthcare.HttpBody,
-      })
-    ).pipe(
-      recoverGapiHttpError,
-      Effect.flatMap((resp) =>
-        handlers.handleUpdateResponse<ResourceType>(resp, {
-          resourceType: type,
-          id,
+    withToken((access_token) =>
+      Effect.tryPromise(() =>
+        healthcare.projects.locations.datasets.fhirStores.fhir.update({
+          name: buildFhirResourcePath(parent, type, id),
+          resource: resource as gapi.client.healthcare.HttpBody,
+          access_token,
         })
-      ),
-      Effect.map((response) => response.result)
+      ).pipe(
+        recoverGapiHttpError,
+        Effect.flatMap((resp) =>
+          handlers.handleUpdateResponse<ResourceType>(resp, {
+            resourceType: type,
+            id,
+          })
+        ),
+        Effect.map((response) => response.result)
+      )
     )
 
   const deleteResource: (typeof FhirR4Client.Service)['delete'] = <
     ResourceType extends string,
   >({
     id,
-    type,
+    domainType: type,
   }: {
     id: string
-    type: ResourceType
+    domainType: ResourceType
   }) =>
-    Effect.tryPromise(() =>
-      healthcare.projects.locations.datasets.fhirStores.fhir.delete({
-        name: buildFhirResourcePath(parent, type, id),
-      })
-    ).pipe(
-      recoverGapiHttpError,
-      Effect.flatMap((resp) =>
-        handlers.handleDeleteResponse<ResourceType>(resp, {
-          resourceType: type,
-          id,
+    withToken((access_token) =>
+      Effect.tryPromise(() =>
+        healthcare.projects.locations.datasets.fhirStores.fhir.delete({
+          name: buildFhirResourcePath(parent, type, id),
+          access_token,
         })
-      ),
-      Effect.asVoid
+      ).pipe(
+        recoverGapiHttpError,
+        Effect.flatMap((resp) =>
+          handlers.handleDeleteResponse<ResourceType>(resp, {
+            resourceType: type,
+            id,
+          })
+        ),
+        Effect.asVoid
+      )
     )
 
   const executeBundle: (typeof FhirR4Client.Service)['executeBundle'] = (
     bundle
   ) =>
-    Effect.tryPromise(() =>
-      healthcare.projects.locations.datasets.fhirStores.fhir.executeBundle({
-        parent,
-        resource: bundle as gapi.client.healthcare.HttpBody,
-      })
-    ).pipe(
-      recoverGapiHttpError,
-      Effect.flatMap((resp) => handlers.handleExecuteBundleResponse(resp)),
-      Effect.map((response) => response.result)
+    withToken((access_token) =>
+      Effect.tryPromise(() =>
+        healthcare.projects.locations.datasets.fhirStores.fhir.executeBundle({
+          parent,
+          resource: bundle as gapi.client.healthcare.HttpBody,
+          access_token,
+        })
+      ).pipe(
+        recoverGapiHttpError,
+        Effect.flatMap((resp) => handlers.handleExecuteBundleResponse(resp)),
+        Effect.map((response) => response.result)
+      )
     )
 
   return {
@@ -249,4 +259,4 @@ export const startGapiGoogleHealthcareClient: Effect.Effect<
     delete: deleteResource,
     executeBundle,
   }
-})
+}

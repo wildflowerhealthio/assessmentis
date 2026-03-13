@@ -1,6 +1,7 @@
 import { Context, type Effect, type Either, type Stream } from 'effect'
 
 import type { NotFoundError, UnhandledError } from '@assessmentis/ontology'
+import { isDevelopment } from '@assessmentis/util'
 
 /** A plain key-value record representing a single document's fields. */
 export interface DocumentData {
@@ -18,12 +19,11 @@ export type DocumentPath = ReadonlyArray<string> & {
   1: string
   length: 2 | 4 | 6
 }
-
 /**
- * Whether to throw on invalid document data. Defaults to false.
- * Set to true in development to surface data integrity issues early.
+ * Whether to throw on invalid document data. Defaults to `isDevelopment()`
+ * so that data integrity issues are surfaced early in development builds.
  */
-let _strictValidation = false
+let _strictValidation = isDevelopment()
 
 /**
  * Enable strict validation mode for {@link ensureIsDocumentData}.

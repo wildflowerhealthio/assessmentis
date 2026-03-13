@@ -1,2 +1,2 @@
-export * from './AccessTokenSyncer'
 export * from './GapiGoogleHealthcareClientLayer'
+export * from './GoogleFhirOriginType'
