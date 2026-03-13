@@ -4,22 +4,10 @@ Task wrap-up checklist — run health checks, surface next steps, and execute be
 
 ## Steps
 
-1. **Health Check** — Assess the current codebase state by running these in parallel where possible:
-   - `git status` to see changed, staged, and untracked files
-   - `git diff` (staged and unstaged) to review uncommitted changes
-   - `npm run typecheck` to check for type errors
-   - `npm run lint` to check for lint violations
-   - `npm run test` — only if you judge it relevant based on what changed (e.g., skip if only docs or config were touched)
-   - Scan files touched in this session for TODO/FIXME/HACK comments added during the work
+1. **Review repo state** — Run `git status` and `git diff` (staged and unstaged) to see what's changed. Do NOT run typecheck, lint, or tests automatically.
 
-2. **If anything is broken** (type errors, lint violations, test failures, half-applied changes), use `AskUserQuestion` with a multiple-choice list explaining each problem found. Options should include:
-   - Fix [specific issue] before wrapping up
-   - Skip — leave it as-is
-   - Revert uncommitted changes related to this issue
-
-   Do NOT proceed to step 3 until all issues are resolved or explicitly skipped by the user.
-
-3. **Build a context-aware next-steps checklist.** You're running at the end of a session — you have deep context about what was done, what was tricky, and what's still loose. Use that accumulated judgment here. Examine the actual diff, commit history, and repo state, but also draw on everything you learned during the session. Use `AskUserQuestion` with `multiSelect: true`. Only include items that are genuinely worth doing based on your understanding of the work — never pad with generic filler. Each item should reference specific files or changes. Possible items (include only when warranted):
+2. **Build a context-aware next-steps checklist.** You're running at the end of a session — you have deep context about what was done, what was tricky, and what's still loose. Use that accumulated judgment here. Examine the actual diff, commit history, and repo state, but also draw on everything you learned during the session. Use `AskUserQuestion` with `multiSelect: true`. Only include items that are genuinely worth doing based on your understanding of the work — never pad with generic filler. Each item should reference specific files or changes. Possible items (include only when warranted):
+   - Run typecheck, lint, or tests (only suggest if you have reason to think something may be broken)
    - Update docs that describe changed behavior (list specific file paths)
    - Add or update tests for new or changed code (list specific files lacking coverage)
    - Commit uncommitted changes (summarize what would be committed)
@@ -31,12 +19,12 @@ Task wrap-up checklist — run health checks, surface next steps, and execute be
    The **last option must always be**:
    - "Update Learnings Inbox"
 
-4. **Execute** the items the user selected, in logical order:
+3. **Execute** the items the user selected, in logical order:
    - Formatting/linting before commits
    - Commits before PRs
    - Doc updates and learnings inbox entries last
 
-5. **Learnings Inbox entries** use this format and are appended below the `<!-- Append new entries below this line -->` marker in `docs/Agents/Learnings Inbox.md`. Never edit or delete existing entries.
+4. **Learnings Inbox entries** use this format and are appended below the `<!-- Append new entries below this line -->` marker in `docs/Agents/Learnings Inbox.md`. Never edit or delete existing entries.
 
    ```
    ### [short title]

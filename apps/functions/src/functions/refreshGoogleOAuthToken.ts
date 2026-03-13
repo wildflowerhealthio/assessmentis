@@ -1,4 +1,4 @@
-import { DateTime, Effect, Exit, Option } from 'effect'
+import { DateTime, Effect, Exit, Layer, Option } from 'effect'
 import type { Response } from 'express'
 import { onRequest, type Request } from 'firebase-functions/https'
 import { error, info } from 'firebase-functions/logger'
@@ -7,6 +7,7 @@ import {
   GoogleUserOAuthLiveCredential,
   type GoogleUserCredentialIdentifier,
 } from '@assessmentis/google-account-infrastructure'
+import { parseCredentialId } from '@assessmentis/config-domain'
 import {
   AuthError,
   NotFoundError,
@@ -17,7 +18,6 @@ import {
   type DocumentStore,
 } from '@assessmentis/platform-domain'
 
-import { CurrentUserIdLayerLive } from '../layers/CurrentUserIdLayerLive'
 import { makeAuthedRequestRuntime } from '../util/BaseLayer'
 import { defaultHttpOptions, oauth2Client } from '../util/functionContext'
 import { handleError } from '../util/handleError'
@@ -40,16 +40,15 @@ export const refreshCredentialEffect = (
     const { userId } = yield* CurrentUserId
 
     // Parse credential tag and key from the credential ID
-    const colonIndex = credentialId.indexOf(':')
-    if (colonIndex === -1) {
+    const parsed = parseCredentialId(credentialId)
+    if (Option.isNone(parsed)) {
       return yield* Effect.fail(
         new AuthError({
           message: `Invalid credential ID format: ${credentialId}`,
         })
       )
     }
-    const credentialTag = credentialId.substring(0, colonIndex)
-    const credentialKey = credentialId.substring(colonIndex + 1)
+    const { tag: credentialTag, key: credentialKey } = parsed.value
 
     switch (credentialTag) {
       case 'google_user_oauth_token': {
@@ -137,7 +136,7 @@ export const refreshCredential = onRequest(
     const credentialId = decodeURIComponent(pathMatch[1])
     info('Received request to refresh credential:', credentialId)
 
-    const runtime = makeAuthedRequestRuntime(CurrentUserIdLayerLive, {
+    const runtime = makeAuthedRequestRuntime(Layer.empty, {
       request,
     })
 
@@ -168,9 +167,3 @@ export const refreshCredential = onRequest(
       )
   }
 )
-
-/**
- * @deprecated Use {@link refreshCredential} instead. Kept for backward
- * compatibility during deployment transition.
- */
-export const refreshGoogleOAuthToken = refreshCredential

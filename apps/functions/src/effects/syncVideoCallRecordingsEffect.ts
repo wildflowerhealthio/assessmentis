@@ -1,20 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Effect, Layer, pipe, Request, Schema, type Either } from 'effect'
+import { Effect, Layer, pipe, Schema, type Either } from 'effect'
 import { info, error as logError } from 'firebase-functions/logger'
 
-import {
-  Media,
-  type Encounter,
-  type Location,
-} from '@assessmentis/clinical-domain'
+import { ClinicalDomainHub, Media } from '@assessmentis/clinical-domain'
 import { Reference } from '@assessmentis/clinical-domain/data-types'
-import type {
-  Hub,
-  ResourceRequest,
-  ReadonlyUrl,
-  Resource,
-} from '@assessmentis/effectful-store'
-import { FhirR4Client } from '@assessmentis/fhir-r4'
+import { Resource } from '@assessmentis/effectful-store'
 import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
 import {
   BadDataError,
@@ -47,7 +36,7 @@ interface SyncOrgResult {
 
 /**
  * Sync recordings and transcripts for a single org.
- * Requires VideoCallClient, FhirR4Client, and DocumentStore to be provided.
+ * Requires VideoCallClient, ClinicalDomainHub, and DocumentStore to be provided.
  */
 const syncSingleOrgInner = (
   orgSlug: OrgSlug
@@ -59,11 +48,10 @@ const syncSingleOrgInner = (
   | BadDataError
   | NotFoundError<'Transcript', { id: string }>
   | NotFoundError<'Recording', { id: string }>,
-  VideoCallClient | FhirR4Client | DocumentStore
+  VideoCallClient | ClinicalDomainHub | DocumentStore
 > =>
   Effect.gen(function* () {
     const videoCallClient = yield* VideoCallClient
-    const fhirClient = yield* FhirR4Client
     const documentStore = yield* DocumentStore
 
     // Get org data for sync timestamps
@@ -114,7 +102,7 @@ const syncSingleOrgInner = (
 
     // Process recordings
     for (const recording of recordings) {
-      const synced = yield* syncMediaToFhir(fhirClient, recording).pipe(
+      const synced = yield* syncMediaToFhir(recording).pipe(
         Effect.catchAll((e) => {
           logError(
             `Error syncing recording ${recording.media.identifier?.[0]?.value} for org ${orgSlug}:`,
@@ -128,7 +116,7 @@ const syncSingleOrgInner = (
 
     // Process transcripts
     for (const transcript of transcripts) {
-      const synced = yield* syncMediaToFhir(fhirClient, transcript).pipe(
+      const synced = yield* syncMediaToFhir(transcript).pipe(
         Effect.catchAll((e) => {
           logError(
             `Error syncing transcript ${transcript.media.identifier?.[0]?.value} for org ${orgSlug}:`,
@@ -168,7 +156,6 @@ const syncSingleOrgInner = (
  * Returns true if the media was synced (created or updated), false if skipped.
  */
 const syncMediaToFhir = (
-  fhirClient: typeof FhirR4Client.Service,
   mediaWithRoom: MediaWithRoom
 ): Effect.Effect<
   {
@@ -180,15 +167,10 @@ const syncMediaToFhir = (
   | AuthError
   | NotFoundError<'Room', { name: VideoCallRoomName }>
   | NotFoundError<'Encounter', { id: string }>,
-  never
+  ClinicalDomainHub
 > =>
   Effect.gen(function* () {
-    // TODO, supply this with a tag
-    const hub: Hub.Hub<{
-      Location: Location
-      Encounter: Encounter
-      Media: Media
-    }> = {} as any
+    const hub = yield* ClinicalDomainHub
     const mediaUpdates: Record<
       string,
       Either.Either<unknown, UnhandledError>
@@ -200,18 +182,8 @@ const syncMediaToFhir = (
     const mediaUrl = media.identifier?.[0]?.value
     if (!mediaUrl) return { mediaUpdates, mediaCreations }
 
-    // Get the full room URL for encounter lookup
-
     // Search for Encounter with matching location identifier
-    const encounterSearchResult = yield* Effect.request(
-      Request.of<ResourceRequest.Search<Encounter>>()({
-        _tag: 'Search',
-        origin: {} as any,
-        domainType: 'Encounter',
-        params: {},
-      }),
-      hub.resolver
-    ).pipe(
+    const encounterSearchResult = yield* hub.search('Encounter', {}).pipe(
       Effect.mapError(
         (e) =>
           new UnhandledError({
@@ -228,69 +200,61 @@ const syncMediaToFhir = (
     }
 
     // Check if Media with this identifier already exists
-    const mediaSearchResult = yield* Effect.request(
-      Request.of<ResourceRequest.Search<Media>>()({
-        _tag: 'Search',
-        origin: {} as any,
-        domainType: 'Media',
-        params: {
-          url: mediaUrl,
-          encounter: encounterEntry.url.toString(),
-        },
-      }),
-      hub.resolver
-    ).pipe(
-      Effect.mapError(
-        (e) =>
-          new UnhandledError({
-            message: 'Error searching for existing media',
-            cause: e,
-          })
-      )
-    )
-
-    const existingMedia: (Media & { url: ReadonlyUrl }) | undefined =
-      mediaSearchResult[0]
-
-    if (existingMedia) {
-      mediaUpdates[existingMedia.url.toString()] = yield* Effect.request(
-        Request.of<ResourceRequest.Update<Media>>()({
-          _tag: 'Update',
-          domainType: 'Media',
-          resource: Media.make({
-            ...existingMedia,
-            content: media.content,
-          }) as Resource.WithResourceUrl<Media>,
-          origin: {} as any,
-        }),
-        hub.resolver
-      ).pipe(
+    const mediaSearchResult = yield* hub
+      .search('Media', {
+        url: mediaUrl,
+        encounter: encounterEntry.url.toString(),
+      })
+      .pipe(
         Effect.mapError(
           (e) =>
             new UnhandledError({
-              message: `Error updating media ${existingMedia.url.toString()}`,
+              message: 'Error searching for existing media',
               cause: e,
             })
-        ),
-        Effect.either
+        )
       )
+
+    const existingMedia = mediaSearchResult[0]
+
+    if (existingMedia) {
+      const updatedMedia = Media.make({
+        ...existingMedia,
+        content: media.content,
+      })
+
+      if (!Resource.hasResourceUrl(updatedMedia)) {
+        return yield* Effect.fail(
+          new UnhandledError({
+            message: 'Updated media lost its url during construction',
+          })
+        )
+      }
+
+      mediaUpdates[existingMedia.url.toString()] = yield* hub
+        .update('Media', updatedMedia)
+        .pipe(
+          Effect.mapError(
+            (e) =>
+              new UnhandledError({
+                message: `Error updating media ${existingMedia.url.toString()}`,
+                cause: e,
+              })
+          ),
+          Effect.either
+        )
     } else {
       mediaCreations.push(
         yield* pipe(
-          Effect.request(
-            Request.of<ResourceRequest.Create<Media>>()({
-              domainType: 'Media',
-              resource: Media.make({
-                ...media,
-                encounter: Reference.make({
-                  reference: encounterEntry.url.toString(),
-                  type: 'Encounter',
-                }),
+          hub.create(
+            'Media',
+            Media.make({
+              ...media,
+              encounter: Reference.make({
+                reference: encounterEntry.url.toString(),
+                type: 'Encounter',
               }),
-              origin: {} as any,
-              _tag: 'Create',
-            } as const),
-            hub.resolver
+            })
           ),
           Effect.mapError(
             (e) =>
@@ -305,7 +269,7 @@ const syncMediaToFhir = (
     }
 
     return { mediaUpdates, mediaCreations }
-  }) as any
+  })
 
 /**
  * Main sync effect that processes all eligible orgs.
@@ -345,6 +309,7 @@ export const syncVideoCallRecordingsEffect = Effect.gen(function* () {
     info(`Starting sync for org: ${orgSlug}`)
 
     // Build per-org layer
+    // TODO: Add ClinicalDomainHub layer once backend Hub wiring is implemented
     const orgLayer = Layer.provideMerge(
       FhirR4ClientLayerLive,
       Layer.provideMerge(

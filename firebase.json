@@ -51,20 +51,6 @@
         }
       },
       {
-        "source": "/api/refreshGoogleOAuthToken",
-        "function": {
-          "functionId": "refreshGoogleOAuthToken",
-          "region": "northamerica-northeast1"
-        }
-      },
-      {
-        "source": "/api/sync-video-call-recordings",
-        "function": {
-          "functionId": "syncVideoCallRecordingsOnDemand",
-          "region": "northamerica-northeast1"
-        }
-      },
-      {
         "source": "**",
         "destination": "/index.html"
       }

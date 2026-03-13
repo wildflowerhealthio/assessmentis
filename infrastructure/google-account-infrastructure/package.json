@@ -15,6 +15,7 @@
     "lint:fix": "eslint --fix \"./{src,test}/**/*\""
   },
   "dependencies": {
+    "@assessmentis/config-domain": "*",
     "@assessmentis/effectful-store": "*",
     "@assessmentis/ontology": "*",
     "@assessmentis/platform-domain": "*",
