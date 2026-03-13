@@ -4,6 +4,7 @@ import { MergeClasses } from '@assessmentis/util'
 
 import { Element, type ElementEncoded } from '../base/Element'
 import { Code } from './Code'
+import { Datatype } from '../Datatype'
 
 const DomainType = 'Coding' as const
 
@@ -51,4 +52,6 @@ export class Coding extends MergeClasses<Coding>(DomainType)(
   [],
   ElementMixin,
   fields
-) {}
+) {
+  static Datatype = Datatype('Coding', Coding)
+}

@@ -1,7 +1,9 @@
 import { Context, Schema } from 'effect'
 
+/**
+ * @deprecated use the config from the Google-Accounts project
+ */
 export const GoogleFhirConfig = Schema.TaggedStruct('google_fhir_store', {
-  apiKey: Schema.NullOr(Schema.String),
   projectId: Schema.String,
   region: Schema.String,
   dataset: Schema.String,

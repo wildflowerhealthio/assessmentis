@@ -1,9 +1,10 @@
 import { Effect, Schema } from 'effect'
+
 import type {
-  QuestionnaireResponseItem,
   QuestionnaireItem,
-} from '@assessmentis/clinical-domain/content-management'
-import type { Coding } from '@assessmentis/clinical-domain/data-types'
+  QuestionnaireResponseItem,
+} from '@assessmentis/clinical-domain'
+import { Coding } from '@assessmentis/clinical-domain/data-types'
 
 export const ScoringTable = Schema.Struct({
   dataHeaders: Schema.Array(Schema.String),
@@ -33,10 +34,10 @@ export const makeScoringTable =
     if (
       !items.every(
         (item) =>
-          item.answerOption?.every(
-            (option) =>
-              'valueCoding' in option &&
-              headerCodes.some((hc) => hc.code === option.valueCoding?.code)
+          item.answerOption?.every(({ value }) =>
+            headerCodes.some(
+              (hc) => hc.code === Coding.Datatype.from(value)?.code
+            )
           ) ?? false
       )
     ) {
@@ -51,8 +52,7 @@ export const makeScoringTable =
       const item =
         items.find((i) => i.linkId === responseItem.linkId) ?? undefined
       const answer = responseItem?.answer?.[0]
-      const answerCode =
-        answer && 'valueCoding' in answer ? answer.valueCoding.code : undefined
+      const answerCode = Coding.Datatype.from(answer?.value)?.code
       const itemScore = (answerCode && score(responseItem)) ?? undefined
       totalScore += itemScore ?? 0
 

@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@assessmentis/util": "*",
+    "@assessmentis/ontology": "*",
     "@assessmentis/clinical-domain": "*",
     "@assessmentis/questionnaire-entities": "*",
     "effect": "^3.19.8"

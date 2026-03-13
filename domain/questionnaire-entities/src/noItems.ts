@@ -1,11 +1,11 @@
-import type { Questionnaire } from '@assessmentis/clinical-domain/content-management'
+import { Questionnaire } from '@assessmentis/clinical-domain'
 
 const title = 'The Questionnaire With No Items'
 
-export const questionnaire: Questionnaire = {
-  resourceType: 'Questionnaire',
+export const questionnaire: Questionnaire = Questionnaire.make({
+  domainType: 'Questionnaire',
   title: title,
   name: 'noItems',
   status: 'draft',
   item: [],
-}
+})

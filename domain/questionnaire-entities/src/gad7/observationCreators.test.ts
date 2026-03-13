@@ -6,7 +6,8 @@ import {
   QuestionnaireItemLink,
   QuestionnaireResponse,
   QuestionnaireResponseItem,
-} from '@assessmentis/clinical-domain/content-management'
+  QuestionnaireResponseItemAnswer,
+} from '@assessmentis/clinical-domain'
 import type { CodeableConcept } from '@assessmentis/clinical-domain/data-types'
 import { literalOf } from '@assessmentis/util'
 
@@ -54,25 +55,31 @@ const buildResponse = (scores: ReadonlyArray<number | null>) =>
         maxLength: 7,
       })
       .map(
-        (items): QuestionnaireResponse => ({
-          ...qr,
-          item: items.map((item, idx) => {
-            const { linkId: _, answer: __, ...qri } = item
-            const linkId = questionLinkIds[idx]
-            const score = scores[idx]
-            return score === null
-              ? { ...qri, linkId }
-              : {
-                  ...qri,
-                  linkId,
-                  answer: [
-                    {
-                      valueCoding: scoreToCoding[score],
-                    },
-                  ],
-                }
-          }),
-        })
+        (items): QuestionnaireResponse =>
+          QuestionnaireResponse.make({
+            ...qr,
+            item: items.map((item, idx) => {
+              const { linkId: _, answer: __, ...qri } = item
+              const linkId = questionLinkIds[idx]
+              const score = scores[idx]
+              return QuestionnaireResponseItem.make(
+                score === null
+                  ? { ...qri, linkId }
+                  : {
+                      ...qri,
+                      linkId,
+                      answer: [
+                        QuestionnaireResponseItemAnswer.make({
+                          value: {
+                            _tag: 'Coding',
+                            Coding: scoreToCoding[score],
+                          },
+                        }),
+                      ],
+                    }
+              )
+            }),
+          })
       )
   )
 
@@ -98,7 +105,7 @@ describe('GAD-7 observations extraction', () => {
           const questionObs = observations.slice(0, 7)
 
           questionObs.forEach((obs, idx) => {
-            expect(obs.resourceType).toBe('Observation')
+            expect(obs.domainType).toBe('Observation')
             expect(obs.category?.[0]?.coding?.[0]?.code).toBe('survey')
             expect(obs.code.coding?.[0]).toEqual(linkIdToQuestionCoding[idx])
 
