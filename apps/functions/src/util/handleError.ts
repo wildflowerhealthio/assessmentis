@@ -1,6 +1,7 @@
-import { AuthError, AuthzError, UnhandledError } from '@assessmentis/ontology'
 import { Cause } from 'effect'
 import type { Response } from 'firebase-functions/v1'
+
+import { AuthError, AuthzError, UnhandledError } from '@assessmentis/ontology'
 
 /**
  * Handle errors and send appropriate response

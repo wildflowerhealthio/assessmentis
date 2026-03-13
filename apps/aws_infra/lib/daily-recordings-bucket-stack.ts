@@ -1,10 +1,10 @@
 import {
+  aws_iam,
+  aws_s3,
   CfnOutput,
+  Duration,
   Stack,
   type StackProps,
-  Duration,
-  aws_s3,
-  aws_iam,
 } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 

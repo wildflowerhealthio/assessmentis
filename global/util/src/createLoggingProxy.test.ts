@@ -1,9 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import {
-  createLoggingProxy,
-  type MethodCallLog,
-} from './createLoggingProxy'
+import { createLoggingProxy, type MethodCallLog } from './createLoggingProxy'
 
 describe('createLoggingProxy', () => {
   describe('synchronous methods', () => {
@@ -41,9 +38,7 @@ describe('createLoggingProxy', () => {
       const proxy = createLoggingProxy(target, (entry) => logs.push(entry))
 
       expect(proxy.getValue()).toBe(10)
-      expect(logs).toEqual([
-        { method: 'getValue', args: [], result: 10 },
-      ])
+      expect(logs).toEqual([{ method: 'getValue', args: [], result: 10 }])
     })
   })
 
@@ -74,9 +69,7 @@ describe('createLoggingProxy', () => {
       const proxy = createLoggingProxy(target, (entry) => logs.push(entry))
 
       await expect(proxy.fail()).rejects.toThrow('boom')
-      expect(logs).toEqual([
-        { method: 'fail', args: [], error: err },
-      ])
+      expect(logs).toEqual([{ method: 'fail', args: [], error: err }])
     })
   })
 

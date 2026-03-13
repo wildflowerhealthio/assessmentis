@@ -1,6 +1,7 @@
 import { Context } from 'effect'
-import type { OrgSlug } from '@assessmentis/platform-domain'
 import type { Request } from 'firebase-functions/https'
+
+import type { OrgSlug } from '@assessmentis/platform-domain'
 
 /**
  * Run a global Effect in a Cloud Function and handle the response

@@ -22,7 +22,6 @@ describe('safeDebugString', () => {
     })
 
     it('renders anonymous functions', () => {
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
       expect(safeDebugString(() => {})).toBe('[Function: anonymous]')
     })
 
