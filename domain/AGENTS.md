@@ -14,4 +14,4 @@ Pure business logic. No side effects, no framework dependencies.
 - [Platform Domain Explanation](./platform-domain/Platform%20Domain%20Explanation.md) — Auth, authorization, org context, DocumentStore
 - [Effect Patterns Reference](../docs/Effect/Patterns%20Reference.md) — Repository pattern, error wrappers, generators
 - [docs/Testing/](../docs/Testing/Testing%20Reference.md) — Property-based testing patterns
-- [FHIR Modeling Reference](./clinical-domain/FHIR%20Modeling%20Reference.md) — FHIR R4 schema conventions
+- [FHIR Modeling Reference](./clinical-domain/docs/FHIR%20Modeling%20Reference.md) — FHIR R4 schema conventions

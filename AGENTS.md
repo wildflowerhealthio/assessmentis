@@ -7,13 +7,40 @@ Read [AGENTS Explanation](./docs/Agents/Explanation.md) for what this file is an
 - **Node.js 22.x required** (npm 10.9.2+)
 - **Domain packages must be pure** — no side effects, no HTTP, no DB, no file I/O
 - **Changes MUST include corresponding test updates**
-- **This project is picky about testing** — Read [docs/Testing/](./docs/Testing/Testing%20Reference.md)
-- **Clarify before building** — Before starting any task, pause and think about the request, then ask clarifying questions to minimize guessing and confirm shared understanding. The last question should be: "Do you think I understand well enough to start?" If the user says to ask more, do another think-and-ask cycle. Err on the side of asking too many questions.
-- **Claude SHOULD use AskUserQuestion** Split large batches of questions over multiple asks
-- **Surface early, don't spiral** — If you've taken 3+ investigative actions on a sub-problem without converging, or you're about to work around something that smells like an accidental inconsistency, **stop and present the issue to the user**. Also surface: ambiguous naming, conflicting patterns across files, anything where you're choosing between two plausible interpretations. The trigger is: _"Am I guessing?"_ — if yes, ask.
-- **Work as collaborators** — The user brings domain knowledge, intent, and taste. They also often have a months long context window, and may recall things only past agents knew. The agent brings speed, breadth, and tireless attention to detail. Lean into that split. Don't silently resolve judgment calls or spiral into obscure problems — surface them so the human can contribute what they're best at.
-- **Context window handoff is mandatory** — When you estimate you have used ~85% of your context window, you MUST: (1) finish or stabilize any in-progress work so the codebase is not left in a broken state, (2) write a handoff doc in `TODO.md` covering what was done, what remains, current blockers, and any decisions the next agent needs to know, and (3) append any non-obvious learnings to [Learnings Inbox](./docs/Agents/Learnings%20Inbox.md). Do not start new sub-tasks at this point — wrap up and hand off cleanly.
-- **No unsafe casts or `any`** — Code should be type-safe by design, not by assertion. Never use `as`, `any`, `@ts-ignore`, or `@ts-expect-error` to silence the compiler — if the types don't fit, fix the types. If you encounter a situation where a cast seems unavoidable, surface it to the user in the response message (or PR description) with an explanation of why, so they can decide whether the design needs rethinking.
+
+### Agents MUST read relevant docs before certain tasks
+
+- [Testing](./docs/Testing/Testing%20Reference.md)
+  - [Unit Testing](./docs/Testing/Unit%20Testing%20How-To.md)
+  - [Property Testing](./docs/Testing/Property%20Testing%20Reference.md)
+- [Doc Comments](./docs/Documentation/Doc%20Comments%20Reference.md)
+
+### Agents SHOULD Clarify before building or planning
+
+Before starting any task, pause and think about the request, then ask clarifying questions to minimize guessing and confirm shared understanding. The last question should be: "Do you think I understand well enough to start?" If the user says to ask more, do another think-and-ask cycle. Err on the side of asking too many questions.
+
+### Claude SHOULD use AskUserQuestion
+
+Split large batches of questions over multiple asks
+
+### Agents SHOULD NOT silently resolve judgment calls or spiral into obscure problem
+
+The user brings domain knowledge, intent, and taste. They also often have a months long context window, and may recall things only past agents knew.
+Don't silently resolve judgment calls or spiral into obscure problems — surface them so the human can contribute what they're best at.
+
+### Agents SHOULD NOT guess at user intent or code state
+
+If you've taken 3+ investigative actions on a sub-problem without converging, or you're about to work around something that smells like an accidental inconsistency, **stop and present the issue to the user**. Also surface: ambiguous naming, conflicting patterns across files, anything where you're choosing between two plausible interpretations. The trigger is: _"Am I guessing?"_ — if yes, ask.
+
+### Agents SHOULD NOT use `any`, `@ts-ignore`, `@ts-expect-error`, unsafe casts
+
+Code should be type-safe by design, not by assertion. If you encounter a situation where a cast seems unavoidable, surface it to the user in the response message (or PR description) with an explanation of why, so they can decide whether the design needs rethinking.
+
+There do exist some, narrow exceptions to the rule:
+
+- Type parameters within type parameters with complex structures
+- When used in test files in such a way that it doesn't materially reduce confidence in the test
+- Deeply technical, foundation code, that can't reasonably typecheck that is meaningfully tested in other ways
 
 ## Branch Naming
 
