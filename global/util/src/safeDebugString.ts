@@ -1,10 +1,18 @@
 /**
+ * Options for {@link safeDebugString}.
+ */
+export interface SafeDebugStringOptions {
+  /** Maximum character length before truncation (default: 2000). */
+  maxLength?: number
+  /** Number of spaces for JSON indentation (default: 2). */
+  indent?: number
+}
+
+/**
  * Safely converts an unknown value to a human-readable debug string.
  *
  * @param value - The value to represent as a debug string
  * @param options - Optional configuration for the output
- * @param options.maxLength - Maximum character length before truncation (default: 2000)
- * @param options.indent - Number of spaces for JSON indentation (default: 2)
  * @returns A string representation suitable for error messages and logging
  *
  * @remarks
@@ -25,7 +33,7 @@
  */
 export const safeDebugString = (
   value: unknown,
-  options?: { maxLength?: number; indent?: number }
+  options?: SafeDebugStringOptions
 ): string => {
   const maxLength = options?.maxLength ?? 2000
   const indent = options?.indent ?? 2
@@ -46,7 +54,8 @@ export const safeDebugString = (
 
   const replacer = (_key: string, val: unknown): unknown => {
     if (typeof val === 'bigint') return `<BigInt: ${val}n>`
-    if (typeof val === 'function') return `[Function: ${val.name || 'anonymous'}]`
+    if (typeof val === 'function')
+      return `[Function: ${val.name || 'anonymous'}]`
     if (typeof val === 'symbol') return val.toString()
     if (typeof val === 'object' && val !== null) {
       if (seen.has(val)) return '[Circular]'

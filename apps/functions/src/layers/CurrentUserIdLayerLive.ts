@@ -1,7 +1,9 @@
-import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
-import { CurrentUserId, UserId } from '@assessmentis/platform-domain'
-import { AuthError } from '@assessmentis/ontology'
 import { Effect, Layer } from 'effect'
+
+import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
+import { AuthError } from '@assessmentis/ontology'
+import { CurrentUserId, UserId } from '@assessmentis/platform-domain'
+
 import { FunctionsContext } from '../tags/FunctionsContext'
 
 export const CurrentUserIdLayerLive = Layer.effect(

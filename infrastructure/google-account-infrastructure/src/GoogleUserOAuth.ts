@@ -10,6 +10,7 @@ import {
 } from 'effect'
 import { HttpBody, HttpClient } from '@effect/platform'
 
+import { makeCredentialId } from '@assessmentis/config-domain'
 import { AuthError, UnhandledError } from '@assessmentis/ontology'
 import {
   AuthDataService,
@@ -80,7 +81,12 @@ export class GoogleUserOAuthLiveCredential extends DocumentStoreLiveCredential<
   static readonly schema = GoogleUserOAuthToken
 
   static pathFor(identity: GoogleUserCredentialIdentifier): DocumentPath {
-    return ['users', identity.userId, 'credentials', `${tag}:${identity.email}`]
+    return [
+      'users',
+      identity.userId,
+      'credentials',
+      makeCredentialId(tag, identity.email),
+    ]
   }
 
   static readOnce(identity: GoogleUserCredentialIdentifier) {
@@ -131,7 +137,7 @@ export class GoogleUserOAuthLiveCredential extends DocumentStoreLiveCredential<
         ),
         Effect.flatMap((body) =>
           httpClient.post(
-            `/api/credentials/${encodeURIComponent(`${tag}:${this.email}`)}`,
+            `/api/credentials/${encodeURIComponent(makeCredentialId(tag, this.email))}`,
             {
               body,
               headers: {

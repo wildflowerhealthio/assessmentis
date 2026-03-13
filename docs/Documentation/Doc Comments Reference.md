@@ -99,6 +99,38 @@ When a function returns a tuple or object with multiple fields, describe each fi
  */
 ```
 
+### Options Objects
+
+When a function accepts an options bag (an object parameter with multiple optional fields), extract a named `interface` and document its properties there instead of using nested `@param` tags. This keeps the function's doc comment focused on _what the function does_ while letting the interface document _what each option means_:
+
+```ts
+/**
+ * Options for {@link safeDebugString}.
+ */
+export interface SafeDebugStringOptions {
+  /** Maximum character length before truncation (default: 2000). */
+  maxLength?: number
+  /** Number of spaces for JSON indentation (default: 2). */
+  indent?: number
+}
+
+/**
+ * Safely converts an unknown value to a human-readable debug string.
+ *
+ * @param value - The value to represent as a debug string
+ * @param options - Optional configuration for the output
+ * @returns A string representation suitable for error messages and logging
+ */
+export const safeDebugString = (
+  value: unknown,
+  options?: SafeDebugStringOptions
+): string => { … }
+```
+
+Why: TSDoc's `@param options.maxLength` syntax is non-standard and not supported by `eslint-plugin-tsdoc`. A named interface gives each property its own doc comment, renders correctly in IDE hover tooltips, and is reusable if multiple functions share the same shape.
+
+Name the interface `{FunctionName}Options` (PascalCase) and place it immediately above the function it belongs to. Use `{@link fn}` in the interface's summary to cross-reference the consumer.
+
 ### Linking and Cross-Referencing
 
 Use `{@link Symbol}` to reference in-project symbols inline. Use `@see` on its own line for related-reading pointers:

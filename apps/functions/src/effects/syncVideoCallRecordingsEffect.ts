@@ -1,13 +1,9 @@
 import { Effect, Layer, pipe, Schema, type Either } from 'effect'
 import { info, error as logError } from 'firebase-functions/logger'
 
-import { Encounter } from '@assessmentis/clinical-domain/administration'
-import { makeClinicalDataRepository } from '@assessmentis/clinical-domain/assessmentis'
-import {
-  Media,
-  type MediaId,
-} from '@assessmentis/clinical-domain/diagnostic-medicine'
-import { FhirR4Client } from '@assessmentis/fhir-client'
+import { ClinicalDomainHub, Media } from '@assessmentis/clinical-domain'
+import { Reference } from '@assessmentis/clinical-domain/data-types'
+import { Resource } from '@assessmentis/effectful-store'
 import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
 import {
   BadDataError,
@@ -30,9 +26,6 @@ import {
 } from '@assessmentis/video-call-domain'
 
 import { FhirR4ClientLayerLive } from '../layers/FhirR4ClientService'
-import { VideoCallClientLayerFromOrg } from '../layers/VideoCallClientService'
-
-const _ROOM_IDENTIFIER_SYSTEM = 'http://assessment.is/fhir/video-call-room-name'
 
 interface SyncOrgResult {
   orgSlug: string
@@ -43,7 +36,7 @@ interface SyncOrgResult {
 
 /**
  * Sync recordings and transcripts for a single org.
- * Requires VideoCallClient, FhirR4Client, and DocumentStore to be provided.
+ * Requires VideoCallClient, ClinicalDomainHub, and DocumentStore to be provided.
  */
 const syncSingleOrgInner = (
   orgSlug: OrgSlug
@@ -55,11 +48,10 @@ const syncSingleOrgInner = (
   | BadDataError
   | NotFoundError<'Transcript', { id: string }>
   | NotFoundError<'Recording', { id: string }>,
-  VideoCallClient | FhirR4Client | DocumentStore
+  VideoCallClient | ClinicalDomainHub | DocumentStore
 > =>
   Effect.gen(function* () {
     const videoCallClient = yield* VideoCallClient
-    const fhirClient = yield* FhirR4Client
     const documentStore = yield* DocumentStore
 
     // Get org data for sync timestamps
@@ -105,38 +97,12 @@ const syncSingleOrgInner = (
       `Found ${recordings.length} recordings and ${transcripts.length} transcripts for org ${orgSlug}`
     )
 
-    // Cache room URLs to avoid redundant API calls
-    const roomUrlCache = new Map<string, string>()
-    const getRoomUrl = (
-      roomName: VideoCallRoomName
-    ): Effect.Effect<
-      string,
-      | UnhandledError
-      | ExternalAssertionError
-      | AuthError
-      | NotFoundError<'Room', { name: VideoCallRoomName }>
-    > => {
-      const cached = roomUrlCache.get(roomName)
-      if (cached) return Effect.succeed(cached)
-
-      return videoCallClient.getRoom(roomName).pipe(
-        Effect.map((room) => {
-          roomUrlCache.set(roomName, room.url)
-          return room.url
-        })
-      )
-    }
-
     let recordingsSynced = 0
     let transcriptsSynced = 0
 
     // Process recordings
     for (const recording of recordings) {
-      const synced = yield* syncMediaToFhir(
-        fhirClient,
-        recording,
-        getRoomUrl
-      ).pipe(
+      const synced = yield* syncMediaToFhir(recording).pipe(
         Effect.catchAll((e) => {
           logError(
             `Error syncing recording ${recording.media.identifier?.[0]?.value} for org ${orgSlug}:`,
@@ -150,11 +116,7 @@ const syncSingleOrgInner = (
 
     // Process transcripts
     for (const transcript of transcripts) {
-      const synced = yield* syncMediaToFhir(
-        fhirClient,
-        transcript,
-        getRoomUrl
-      ).pipe(
+      const synced = yield* syncMediaToFhir(transcript).pipe(
         Effect.catchAll((e) => {
           logError(
             `Error syncing transcript ${transcript.media.identifier?.[0]?.value} for org ${orgSlug}:`,
@@ -194,17 +156,7 @@ const syncSingleOrgInner = (
  * Returns true if the media was synced (created or updated), false if skipped.
  */
 const syncMediaToFhir = (
-  fhirClient: typeof FhirR4Client.Service,
-  mediaWithRoom: MediaWithRoom,
-  getRoomUrl: (
-    roomName: VideoCallRoomName
-  ) => Effect.Effect<
-    string,
-    | UnhandledError
-    | ExternalAssertionError
-    | AuthError
-    | NotFoundError<'Room', { name: VideoCallRoomName }>
-  >
+  mediaWithRoom: MediaWithRoom
 ): Effect.Effect<
   {
     mediaUpdates: Record<string, Either.Either<unknown, UnhandledError>>
@@ -214,9 +166,11 @@ const syncMediaToFhir = (
   | ExternalAssertionError
   | AuthError
   | NotFoundError<'Room', { name: VideoCallRoomName }>
-  | NotFoundError<'Encounter', { id: string }>
+  | NotFoundError<'Encounter', { id: string }>,
+  ClinicalDomainHub
 > =>
   Effect.gen(function* () {
+    const hub = yield* ClinicalDomainHub
     const mediaUpdates: Record<
       string,
       Either.Either<unknown, UnhandledError>
@@ -224,61 +178,33 @@ const syncMediaToFhir = (
 
     const mediaCreations = [] as Array<Either.Either<unknown, UnhandledError>>
 
-    const encounterRepository = makeClinicalDataRepository(
-      fhirClient,
-      'Encounter',
-      Encounter
-    )
-
-    const mediaRepository = makeClinicalDataRepository(
-      fhirClient,
-      'Media',
-      Media
-    )
-
-    const { media, roomName } = mediaWithRoom
-    const mediaIdentifier = media.identifier?.[0]?.value
-    if (!mediaIdentifier) return { mediaUpdates, mediaCreations }
-
-    // Get the full room URL for encounter lookup
-    const _roomUrl = yield* getRoomUrl(roomName)
+    const { media } = mediaWithRoom
+    const mediaUrl = media.identifier?.[0]?.value
+    if (!mediaUrl) return { mediaUpdates, mediaCreations }
 
     // Search for Encounter with matching location identifier
-    const encounterSearchResult = yield* encounterRepository
-      .getMany({
-        // TODO: Fix location search
-        // 'location:identifier': `${ROOM_IDENTIFIER_SYSTEM}|${roomUrl}`,
-      })
-      .pipe(
-        Effect.mapError(
-          (e) =>
-            new UnhandledError({
-              message: 'Error searching for encounter',
-              cause: e,
-            })
-        )
+    const encounterSearchResult = yield* hub.search('Encounter', {}).pipe(
+      Effect.mapError(
+        (e) =>
+          new UnhandledError({
+            message: 'Error searching for encounter',
+            cause: e,
+          })
       )
+    )
 
-    const encounterBundle = encounterSearchResult as {
-      entry?: Array<{
-        resource?: { id: string; resourceType: string }
-      }>
-    }
-
-    const encounterEntry = encounterBundle.entry?.[0]?.resource
-    if (!encounterEntry?.id) {
+    const encounterEntry = encounterSearchResult[0]
+    if (!encounterEntry?.url) {
       // No encounter found for this room - skip
       return { mediaUpdates, mediaCreations }
     }
 
-    const encounterId = encounterEntry.id
-
     // Check if Media with this identifier already exists
-    const mediaSearchResult = yield* mediaRepository
-      .getMany
-      // TODO: Fix media search
-      // { id: mediaIdentifier, encounter: `Encounter/${encounterId}` }
-      ()
+    const mediaSearchResult = yield* hub
+      .search('Media', {
+        url: mediaUrl,
+        encounter: encounterEntry.url.toString(),
+      })
       .pipe(
         Effect.mapError(
           (e) =>
@@ -289,40 +215,47 @@ const syncMediaToFhir = (
         )
       )
 
-    const mediaBundle = mediaSearchResult as {
-      entry?: Array<{
-        resource?: { id: MediaId; resourceType: string }
-      }>
-    }
-
-    const existingMedia = mediaBundle.entry?.[0]?.resource
+    const existingMedia = mediaSearchResult[0]
 
     if (existingMedia) {
-      // TODO: Update existing Media with fresh URL
-      // mediaUpdates[existingMedia.id] = yield* mediaRepository
-      //   .update({
-      //     ...existingMedia
-      //     content: media.content,
-      //   })
-      //   .pipe(
-      //     Effect.mapError(
-      //       (e) =>
-      //         new UnhandledError({
-      //           message: `Error updating media ${existingMedia.id}`,
-      //           cause: e,
-      //         })
-      //     ),
-      //     Effect.either
-      //   )
+      const updatedMedia = Media.make({
+        ...existingMedia,
+        content: media.content,
+      })
+
+      if (!Resource.hasResourceUrl(updatedMedia)) {
+        return yield* Effect.fail(
+          new UnhandledError({
+            message: 'Updated media lost its url during construction',
+          })
+        )
+      }
+
+      mediaUpdates[existingMedia.url.toString()] = yield* hub
+        .update('Media', updatedMedia)
+        .pipe(
+          Effect.mapError(
+            (e) =>
+              new UnhandledError({
+                message: `Error updating media ${existingMedia.url.toString()}`,
+                cause: e,
+              })
+          ),
+          Effect.either
+        )
     } else {
       mediaCreations.push(
         yield* pipe(
-          mediaRepository.create({
-            ...media,
-            encounter: {
-              reference: `Encounter/${encounterId}`,
-            },
-          }),
+          hub.create(
+            'Media',
+            Media.make({
+              ...media,
+              encounter: Reference.make({
+                reference: encounterEntry.url.toString(),
+                type: 'Encounter',
+              }),
+            })
+          ),
           Effect.mapError(
             (e) =>
               new UnhandledError({
@@ -356,11 +289,12 @@ export const syncVideoCallRecordingsEffect = Effect.gen(function* () {
       }),
   })
 
-  // Filter to eligible orgs
+  // Filter to eligible orgs — those with a daily_co origin
   const eligibleOrgs = orgsSnapshot.docs.filter((doc) => {
-    const data = doc.data()
-    const vcClient = data?.frontendConfig?.videoCallClient
-    return vcClient?._tag && vcClient._tag !== 'not_implemented'
+    const data = doc.data() as { origins?: Record<string, { _tag?: string }> }
+    const origins = data?.origins
+    if (!origins) return false
+    return Object.values(origins).some((def) => def._tag === 'daily_co')
   })
 
   info(
@@ -375,12 +309,11 @@ export const syncVideoCallRecordingsEffect = Effect.gen(function* () {
     info(`Starting sync for org: ${orgSlug}`)
 
     // Build per-org layer
-    const orgLayer = Layer.mergeAll(
-      VideoCallClientLayerFromOrg,
-      FhirR4ClientLayerLive
-    ).pipe(
-      Layer.provideMerge(LoadedOrgLayer),
-      Layer.provide(
+    // TODO: Add ClinicalDomainHub layer once backend Hub wiring is implemented
+    const orgLayer = Layer.provideMerge(
+      FhirR4ClientLayerLive,
+      Layer.provideMerge(
+        LoadedOrgLayer,
         Layer.mergeAll(
           Layer.succeed(CurrentOrg, orgSlug),
           Layer.succeed(DocumentStore, documentStore)

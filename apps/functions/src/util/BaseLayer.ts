@@ -1,20 +1,23 @@
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
-import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
-import { NodeSdk } from '@effect/opentelemetry'
-import { FetchHttpClient } from '@effect/platform'
 import { Layer, ManagedRuntime } from 'effect'
 import { layerCurrentZoneLocal } from 'effect/DateTime'
-import { FunctionsContext } from '../tags/FunctionsContext'
+import { NodeSdk } from '@effect/opentelemetry'
+import { FetchHttpClient } from '@effect/platform'
+
 import {
   FirebaseAdmin,
   FirebaseAdminDocumentStoreLayer,
 } from '@assessmentis/firebase-server-infrastructure'
+import type { AuthError } from '@assessmentis/ontology'
 import type {
   CurrentUserId,
   DocumentStore,
 } from '@assessmentis/platform-domain'
+
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
+import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
+
 import { CurrentUserIdLayerLive } from '../layers/CurrentUserIdLayerLive'
-import type { AuthError } from '@assessmentis/ontology'
+import { FunctionsContext } from '../tags/FunctionsContext'
 
 const NodeSdkLive = NodeSdk.layer(() => ({
   resource: { serviceName: 'assessmentis-functions' },
