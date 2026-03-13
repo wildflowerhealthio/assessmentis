@@ -118,12 +118,12 @@ describe('FhirR4Origin', () => {
     test('surfaces NotFoundError from client without swallowing it', () => {
       fc.assert(
         fc.property(fhirIdArb, (id) => {
-          const readFn = vi.fn((url) =>
+          const readFn = vi.fn(() =>
             Effect.fail(
-              new NotFoundError({
+              new NotFoundError<any, { id: string }>({
                 resourceType: 'Patient',
                 params: {
-                  url: ReadonlyUrl.make({ host: 'not-a-patient.com' }),
+                  id,
                 },
               })
             )

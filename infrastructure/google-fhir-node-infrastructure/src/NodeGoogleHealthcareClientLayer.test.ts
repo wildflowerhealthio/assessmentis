@@ -1,10 +1,13 @@
-import { describe, expect, vi } from 'vitest'
-import { Effect, Layer } from 'effect'
-import { it } from '@effect/vitest'
 import * as fc from 'fast-check'
-import { FhirR4Client, buildFhirStoreParent } from '@assessmentis/fhir-client'
+import { describe, expect, vi } from 'vitest'
+import { it } from '@effect/vitest'
+import { Effect, Layer } from 'effect'
+
 import { LoadedGoogleFhirConfig } from '@assessmentis/config-domain'
+import { buildFhirStoreParent, FhirR4Client } from '@assessmentis/fhir-r4'
 import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
+
+import { NodeGoogleHealthcareFhirR4ClientLayer } from './NodeGoogleHealthcareClientLayer'
 
 // Use vi.hoisted to ensure mocks are available and configured before vi.mock runs
 const {
@@ -132,8 +135,6 @@ vi.mock('firebase-admin/firestore', () => ({
   })),
 }))
 
-import { NodeGoogleHealthcareFhirR4ClientLayer } from './NodeGoogleHealthcareClientLayer'
-
 /**
  * These tests verify that NodeGoogleHealthcareFhirR4ClientLayer correctly:
  * 1. Constructs the Google Healthcare API paths
@@ -208,7 +209,6 @@ describe('NodeGoogleHealthcareClientLayer', () => {
 
   const testConfig = {
     _tag: 'google_fhir_store' as const,
-    apiKey: null,
     projectId: 'test-project',
     region: 'us-central1',
     dataset: 'test-dataset',
@@ -238,7 +238,7 @@ describe('NodeGoogleHealthcareClientLayer', () => {
         for (const input of testInputs) {
           // Test read
           const readResult = yield* client.read({
-            resourceType: input.readResource.resourceType,
+            domainType: input.readResource.resourceType,
             id: input.readResource.id,
           })
           results.push({
@@ -251,16 +251,16 @@ describe('NodeGoogleHealthcareClientLayer', () => {
           })
 
           // Test search without params
-          yield* client.search({ resourceType: input.searchResourceType })
+          yield* client.search({ domainType: input.searchResourceType })
           results.push({
             operation: 'searchWithoutParams',
-            input: { resourceType: input.searchResourceType },
+            input: { domainType: input.searchResourceType },
             success: true,
           })
 
           // Test search with params
           yield* client.search({
-            resourceType: input.searchWithParams.resourceType,
+            domainType: input.searchWithParams.resourceType,
             ...input.searchWithParams.params,
           })
           results.push({
@@ -275,7 +275,7 @@ describe('NodeGoogleHealthcareClientLayer', () => {
             name: [{ given: ['Test'] }],
           }
           const createResult = yield* client.create({
-            type: input.createResource.resourceType,
+            domainType: input.createResource.resourceType,
             resource,
           })
           results.push({
@@ -294,7 +294,7 @@ describe('NodeGoogleHealthcareClientLayer', () => {
           }
           yield* client.update({
             id: input.updateResource.id,
-            type: input.updateResource.resourceType,
+            domainType: input.updateResource.resourceType,
             resource: updateResource,
           })
           results.push({
@@ -306,7 +306,7 @@ describe('NodeGoogleHealthcareClientLayer', () => {
           // Test delete
           yield* client.delete({
             id: input.deleteResource.id,
-            type: input.deleteResource.resourceType,
+            domainType: input.deleteResource.resourceType,
           })
           results.push({
             operation: 'delete',

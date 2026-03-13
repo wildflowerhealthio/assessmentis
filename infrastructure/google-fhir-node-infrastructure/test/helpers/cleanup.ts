@@ -1,5 +1,6 @@
 import { Effect } from 'effect'
-import { FhirR4Client } from '@assessmentis/fhir-client'
+
+import { FhirR4Client } from '@assessmentis/fhir-r4'
 
 export interface TrackedResource {
   type: string
@@ -45,7 +46,7 @@ export class TestResourceTracker {
 
       for (const { type, id } of this.resources) {
         yield* client
-          .delete({ type, id })
+          .delete({ domainType: type, id })
           .pipe(Effect.catchAll(() => Effect.succeed(void 0)))
       }
 

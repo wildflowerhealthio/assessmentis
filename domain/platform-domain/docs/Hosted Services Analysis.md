@@ -8,25 +8,25 @@ Research analysis of the "hosted services" pattern in `platform-domain` and how 
 
 The `hostedServices/` directory contains four modules that manage long-running, stateful, reactive services on the client side:
 
-| Module | Manages | Lifecycle primitives used |
-|---|---|---|
-| `AuthDataCredentialRepository` | Credentials derived from auth token stream | `SubscriptionRef`, `Stream.runForEach`, `Effect.forkScoped` |
+| Module                              | Manages                                                    | Lifecycle primitives used                                                               |
+| ----------------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `AuthDataCredentialRepository`      | Credentials derived from auth token stream                 | `SubscriptionRef`, `Stream.runForEach`, `Effect.forkScoped`                             |
 | `DocumentStoreCredentialRepository` | Credentials stored in DocumentStore with proactive refresh | `SubscriptionRef`, `SynchronizedRef`, `Fiber`, `Stream.runForEach`, `Effect.forkScoped` |
-| `OrgService` | Selected org slug + resolved Org document | `PubSub` (sliding, replay 1), `Effect.forkDaemon`, `Stream.runIntoPubSub` |
-| `UserService` | Authenticated user's profile document | `PubSub` (sliding, replay 1), `Effect.forkDaemon`, `Stream.runIntoPubSubScoped` |
+| `OrgService`                        | Selected org slug + resolved Org document                  | `PubSub` (sliding, replay 1), `Effect.forkDaemon`, `Stream.runIntoPubSub`               |
+| `UserService`                       | Authenticated user's profile document                      | `PubSub` (sliding, replay 1), `Effect.forkDaemon`, `Stream.runIntoPubSubScoped`         |
 
 ### How they're wired (PlatformContextProvider)
 
 All four are started imperatively in `PlatformContextProvider.tsx`:
 
-```
+```typescript
 platformEffect = Effect.gen(function* () {
-  const authDataPubSub = yield* createAuthDataPubSub     // PubSub factory
-  const orgSlugPubsub  = yield* createOrgSlugPubSub
+  const authDataPubSub = yield* createAuthDataPubSub // PubSub factory
+  const orgSlugPubsub = yield* createOrgSlugPubSub
   // ... more PubSub creation ...
   const authDataService = yield* startAuthDataService(authDataPubSub)
-  const orgService      = yield* startOrgService(orgSlugPubsub, orgPubSub)
-  const userService     = yield* startUserService(userPubSub).pipe(
+  const orgService = yield* startOrgService(orgSlugPubsub, orgPubSub)
+  const userService = yield* startUserService(userPubSub).pipe(
     Effect.provideService(AuthDataService, authDataService)
   )
   // ...
@@ -55,6 +55,7 @@ Yes. Effect's `Layer` system is explicitly designed for long-running services wi
 - **`ManagedRuntime`** wraps a Layer into a runtime that can be used from non-Effect code (like React components). It handles scope lifecycle.
 
 The current code does not use any of these. Instead, it manually:
+
 1. Creates PubSubs
 2. Passes them to `start*` functions
 3. Forks daemon fibers
@@ -70,7 +71,7 @@ Currently: factory functions (`startOrgService`, `startUserService`) that take P
 
 Idiomatic alternative: `Layer.scoped` + `Effect.acquireRelease`.
 
-```
+```typescript
 // Sketch — OrgService as a Layer
 export const OrgServiceLive: Layer.Layer<OrgService, never, DocumentStore> =
   Layer.scoped(
@@ -90,6 +91,7 @@ export const OrgServiceLive: Layer.Layer<OrgService, never, DocumentStore> =
 ```
 
 Key benefits:
+
 - **No PubSub plumbing exposed to callers.** The PubSub/SubscriptionRef is an internal implementation detail.
 - **No manual `shutdown` method.** Scope finalization handles cleanup.
 - **Composable via `Layer.provide`.** Instead of manually wiring in `PlatformContextProvider`, you declare dependency relationships and Effect resolves them.
@@ -100,6 +102,7 @@ Key benefits:
 Currently: `makeDocumentStoreCredentialRepository` and `makeAuthDataCredentialRepository` are `Effect.gen` factories. They use `Effect.forkScoped` correctly but manage their own caches via mutable `Map`.
 
 These are closer to idiomatic already, but could benefit from:
+
 - Using `Effect.cachedWithTTL` or `Effect.cached` for the per-identity cache instead of a manual `Map`.
 - Using `Effect.acquireRelease` for the refresh fiber lifecycle instead of `SynchronizedRef<Option<Fiber>>`.
 
@@ -109,9 +112,10 @@ These are closer to idiomatic already, but could benefit from:
 
 The `DocumentStoreCredentialRepository` manually tracks refresh fibers in a `SynchronizedRef<Option<Fiber>>`, interrupting old fibers and forking new ones. This is a resource lifecycle problem:
 
-```
+```typescript
 // Current: manual fiber tracking
-const nextRefreshFibre = yield* SynchronizedRef.make<Option<Fiber>>(Option.none())
+const nextRefreshFibre =
+  yield * SynchronizedRef.make<Option<Fiber>>(Option.none())
 // ... later, manually interrupt + fork
 
 // Alternative: acquireRelease scopes the fiber automatically
@@ -135,6 +139,7 @@ Replaces the manual `start*` + `shutdown` pattern. The Layer's scope manages fib
 #### `ManagedRuntime` for React integration
 
 Instead of manually creating a `Scope` in `useMemo` (which is never closed), `ManagedRuntime` provides:
+
 - Automatic scope management
 - A `runPromise` method for use in React
 - Proper cleanup via `dispose()`
@@ -145,15 +150,12 @@ Instead of manually creating a `Scope` in `useMemo` (which is never closed), `Ma
 
 The current `PlatformContextProvider` imperatively sequences service startup and manually threads dependencies. With Layers:
 
-```
+```typescript
 const PlatformLayer = Layer.mergeAll(
   OrgServiceLive,
   UserServiceLive,
-  CredentialRepositoryLive,
-).pipe(
-  Layer.provide(AuthDataServiceLive),
-  Layer.provide(DocumentStoreLive),
-)
+  CredentialRepositoryLive
+).pipe(Layer.provide(AuthDataServiceLive), Layer.provide(DocumentStoreLive))
 ```
 
 Effect resolves the dependency graph, ensures correct ordering, and shares resources (memoization is built into Layer).
@@ -180,16 +182,16 @@ The `DocumentStoreCredentialRepository` is the most complex hosted service. It m
 
 Each of these has a more idiomatic Effect counterpart:
 
-| Current | Idiomatic alternative |
-|---|---|
-| Manual `Map` cache | `Effect.cached` or `Cache` (Effect's built-in TTL cache) |
-| `SynchronizedRef<Option<Fiber>>` for refresh | `Effect.acquireRelease` scoping the refresh fiber, or `Schedule`-based retry |
-| Duration arithmetic for refresh timing | `Schedule.duration` + `Schedule.delayed` |
-| Manual fiber interrupt + re-fork | Scoped fibers that are naturally interrupted when the credential scope closes |
+| Current                                      | Idiomatic alternative                                                         |
+| -------------------------------------------- | ----------------------------------------------------------------------------- |
+| Manual `Map` cache                           | `Effect.cached` or `Cache` (Effect's built-in TTL cache)                      |
+| `SynchronizedRef<Option<Fiber>>` for refresh | `Effect.acquireRelease` scoping the refresh fiber, or `Schedule`-based retry  |
+| Duration arithmetic for refresh timing       | `Schedule.duration` + `Schedule.delayed`                                      |
+| Manual fiber interrupt + re-fork             | Scoped fibers that are naturally interrupted when the credential scope closes |
 
 The refresh scheduling logic (lines 280-311 of `DocumentStoreCredentialRepository.ts`) manually computes delay durations and forks fibers. Effect's `Schedule` module handles this pattern declaratively:
 
-```
+```typescript
 // Sketch: scheduled refresh
 const refreshSchedule = Schedule.once.pipe(
   Schedule.delayed(() => timeUntilRefreshNeeded(token))
@@ -203,15 +205,15 @@ However, the current design re-schedules on every token update (cancelling the o
 
 ## Summary of Recommendations
 
-| Area | Current | Recommended | Impact |
-|---|---|---|---|
-| OrgService / UserService | `start*` + manual shutdown | `Layer.scoped` | Eliminates boilerplate, enables composition |
-| Reactive state primitive | `PubSub.sliding` + `Take` + utility wrappers | `SubscriptionRef` | Removes `Take` ceremony, utilities become unnecessary |
-| Service wiring | Imperative sequencing in PlatformContextProvider | `Layer.mergeAll` + `Layer.provide` | Declarative dependency graph, auto-memoization |
-| React integration | Manual `Scope.make()` never closed | `ManagedRuntime` | Proper cleanup, standard API |
-| Credential cache | Manual `Map` | `Cache` or `Effect.cached` | Built-in TTL, automatic eviction |
-| Refresh fiber lifecycle | `SynchronizedRef<Option<Fiber>>` | Scoped fibers or `Schedule` | Automatic cleanup, less manual state |
-| Error propagation | `shutdown` methods, swallowed errors | Layer error channel | Structural error surfacing |
+| Area                     | Current                                          | Recommended                        | Impact                                                |
+| ------------------------ | ------------------------------------------------ | ---------------------------------- | ----------------------------------------------------- |
+| OrgService / UserService | `start*` + manual shutdown                       | `Layer.scoped`                     | Eliminates boilerplate, enables composition           |
+| Reactive state primitive | `PubSub.sliding` + `Take` + utility wrappers     | `SubscriptionRef`                  | Removes `Take` ceremony, utilities become unnecessary |
+| Service wiring           | Imperative sequencing in PlatformContextProvider | `Layer.mergeAll` + `Layer.provide` | Declarative dependency graph, auto-memoization        |
+| React integration        | Manual `Scope.make()` never closed               | `ManagedRuntime`                   | Proper cleanup, standard API                          |
+| Credential cache         | Manual `Map`                                     | `Cache` or `Effect.cached`         | Built-in TTL, automatic eviction                      |
+| Refresh fiber lifecycle  | `SynchronizedRef<Option<Fiber>>`                 | Scoped fibers or `Schedule`        | Automatic cleanup, less manual state                  |
+| Error propagation        | `shutdown` methods, swallowed errors             | Layer error channel                | Structural error surfacing                            |
 
 ### Migration path
 

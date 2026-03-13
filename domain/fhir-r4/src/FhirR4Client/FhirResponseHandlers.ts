@@ -6,7 +6,7 @@ import {
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
-import { failIf } from '@assessmentis/util'
+import { safeDebugString } from '@assessmentis/util'
 
 /**
  * A set of handlers to coerce FHIR responses of a given type into the right shape
@@ -71,8 +71,8 @@ export const createFhirResponseHandlers = <
   isSuccess: (resp: T) => resp is S
   // etc
 }): FhirResponseHandlers<T, R, S> => {
-  const handleAuthErr = failIf(
-    request.isUnauthenticated,
+  const handleAuthErr = Effect.liftPredicate(
+    (resp: T) => !request.isUnauthenticated(resp),
     (cause) =>
       new AuthError({
         message: 'Unauthorized access to FHIR resource',
@@ -80,8 +80,8 @@ export const createFhirResponseHandlers = <
       })
   )
 
-  const handleAuthzErr = failIf(
-    request.isUnauthorized,
+  const handleAuthzErr = Effect.liftPredicate(
+    (resp: T) => !request.isUnauthorized(resp),
     (cause) =>
       new AuthzError({
         message: 'Forbidden access to FHIR resource',
@@ -96,8 +96,8 @@ export const createFhirResponseHandlers = <
     resourceType: ResourceType
     id: string
   }) =>
-    failIf(
-      request.isNotFound,
+    Effect.liftPredicate(
+      (resp: T) => !request.isNotFound(resp),
       (cause) =>
         new NotFoundError({
           resourceType,
@@ -111,7 +111,7 @@ export const createFhirResponseHandlers = <
       ? Effect.succeed(resp)
       : Effect.fail(
           new UnhandledError({
-            message: `The FHIR response was not successful '${String(resp)}'`,
+            message: `The FHIR response was not successful '${safeDebugString(resp)}'`,
           })
         )
   )

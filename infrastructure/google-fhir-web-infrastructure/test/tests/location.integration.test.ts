@@ -1,8 +1,10 @@
-import { setupClientOnWindow } from '../helpers/integration-setup'
-import { FhirR4Client } from '@assessmentis/fhir-client'
-import { describeAsFhirR4LocationClient } from '@assessmentis/fhir-client/interface-tests'
-import { Layer } from 'effect'
 import { describe } from 'vitest'
+import { Layer } from 'effect'
+
+import { FhirR4Client } from '@assessmentis/fhir-r4'
+import { describeAsFhirR4LocationClient } from '@assessmentis/fhir-r4/interface-tests'
+
+import { setupClientOnWindow } from '../helpers/integration-setup'
 
 /**
  * Live E2E tests for Location CRUD operations against Google Healthcare API
