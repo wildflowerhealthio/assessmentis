@@ -51,7 +51,6 @@ Follow [apps/frontend/app/modules/resources/Adding Clinical Resource Types How-T
 
 ## Most-used code locations
 
-- Domain schema registry: [../../domain/clinical-domain/src/Schemas.ts](../../domain/clinical-domain/src/Schemas.ts)
 - Domain resource data types: [../../domain/clinical-domain/src/ResourceDataTypes.ts](../../domain/clinical-domain/src/ResourceDataTypes.ts)
 - Hub Tag: [../../domain/clinical-domain/src/ClinicalDomainHub.ts](../../domain/clinical-domain/src/ClinicalDomainHub.ts)
 - Frontend Hub hook: [../../apps/frontend/app/layers/useHub.ts](../../apps/frontend/app/layers/useHub.ts)

@@ -1,5 +1,5 @@
 import { Match, pipe } from 'effect'
-import { useEffect, useMemo, type DependencyList } from 'react'
+import { useEffect, type DependencyList } from 'react'
 
 import type {
   BreadcrumbLabelConstructor,

@@ -26,7 +26,7 @@ Task wrap-up checklist — run health checks, surface next steps, and execute be
 
 4. **Learnings Inbox entries** use this format and are appended below the `<!-- Append new entries below this line -->` marker in `docs/Agents/Learnings Inbox.md`. Never edit or delete existing entries.
 
-   ```
+   ```markdown
    ### [short title]
    **Discovered during**: [task or branch name]
    **Learning**: [the actionable insight]

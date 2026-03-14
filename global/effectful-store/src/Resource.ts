@@ -2,23 +2,23 @@ import type { ReadonlyUrl } from './ReadonlyUrl'
 
 /**
  * String literal `'domainType'` used as the discriminant property key on resources.
- * @deprecated
+ * @deprecated Use the string literal `'domainType'` directly.
  */
 export const ResourceType = 'domainType' as const
 /**
  * The literal type `'domainType'`.
- * @deprecated
+ * @deprecated Use the string literal `'domainType'` directly.
  */
 export type ResourceType = typeof ResourceType
 
 /**
  * String literal `'url'` used as the URL property key on resources.
- * @deprecated
+ * @deprecated Use the string literal `'url'` directly.
  */
 export const ResourceUrl = 'url' as const
 /**
  * The literal type `'url'`.
- * @deprecated
+ * @deprecated Use the string literal `'url'` directly.
  */
 export type ResourceUrl = typeof ResourceUrl
 
@@ -70,7 +70,7 @@ export type ResourceSet = {
 }
 
 /**
- * @deprecated Use {@link WithResourceUrl} instead for URL-based identity.
+ * @deprecated Use {@link WithResourceUrl} instead.
  */
 export type WithId<T extends { readonly id?: string | undefined }> = T & {
   readonly id: NonNullable<T['id']>
