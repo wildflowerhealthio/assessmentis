@@ -6,6 +6,7 @@ import {
   CodeableConcept,
   Coding,
   DatatypeChoice,
+  Quantity,
   Reference,
 } from '@assessmentis/clinical-domain/data-types'
 import type { Resource } from '@assessmentis/effectful-store'
@@ -52,8 +53,10 @@ export class ObservationFormData extends Schema.Class<ObservationFormData>(
   static fromResource(
     observation: Observation
   ): typeof ObservationFormData.Encoded {
-    // PermissivePassthrough types (Quantity, CodeableConcept) still need casts
-    // at this form boundary where we know the runtime shape.
+    // Use Datatype.from() to extract typed values from the choice union.
+    // Quantity and CodeableConcept use PermissivePassthrough in the base
+    // datatypes, but Datatype.from() narrows correctly at runtime because
+    // it checks the _tag discriminant.
     const valueFields = observation.value
       ? DatatypeChoice.match(
           observation.value,
@@ -62,29 +65,20 @@ export class ObservationFormData extends Schema.Class<ObservationFormData>(
               valueType: 'valueString' as const,
               valueString: s,
             }),
-            Quantity: (q) => {
-              const typed = q as { value?: number; unit?: string } | undefined
+            Quantity: () => {
+              const q = Quantity.Datatype.from(observation.value)
               return {
                 valueType: 'valueQuantity' as const,
-                valueQuantityValue: typed?.value?.toString(),
-                valueQuantityUnit: typed?.unit,
+                valueQuantityValue: q?.value?.toString(),
+                valueQuantityUnit: q?.unit,
               }
             },
-            CodeableConcept: (cc) => {
-              const typed = cc as
-                | {
-                    text?: string
-                    coding?: Array<{
-                      code?: string
-                      system?: string
-                      display?: string
-                    }>
-                  }
-                | undefined
-              const firstCoding = typed?.coding?.[0]
+            CodeableConcept: () => {
+              const cc = CodeableConcept.Datatype.from(observation.value)
+              const firstCoding = cc?.coding?.[0]
               return {
                 valueType: 'valueCodeableConcept' as const,
-                valueCodeableConceptText: typed?.text,
+                valueCodeableConceptText: cc?.text,
                 valueCodeableConceptCodingCode: firstCoding?.code,
                 valueCodeableConceptCodingSystem: firstCoding?.system,
                 valueCodeableConceptCodingDisplay: firstCoding?.display,
@@ -154,10 +148,10 @@ export class ObservationFormData extends Schema.Class<ObservationFormData>(
           ...base,
           value: {
             _tag: 'Quantity',
-            Quantity: {
+            Quantity: Quantity.make({
               value: quantityValue,
               unit: this.valueQuantityUnit,
-            },
+            }),
           },
         })
       }
@@ -189,8 +183,9 @@ export class ObservationFormData extends Schema.Class<ObservationFormData>(
     return this.toResource()
   }
 
-  toUpdatePayload(base: Observation): Resource.WithResourceUrl<Observation> {
-    if (!base.url) throw new Error('Cannot update resource without url')
+  toUpdatePayload(
+    base: Resource.WithResourceUrl<Observation>
+  ): Resource.WithResourceUrl<Observation> {
     return { ...base, ...this.toResource(), url: base.url }
   }
 }

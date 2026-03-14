@@ -36,7 +36,7 @@ export default function QuestionnairePage() {
     deleteItem: deleteQuestionnaire,
     createItem: createQuestionnaire,
   } = useResourceCollection(Questionnaire)
-  useBreadcrumbs(Questionnaire)
+  useBreadcrumbs(() => [Questionnaire], [])
 
   const loadTemplateByTitleForm = async function (formData: FormData) {
     const templateToCreate = questionnaireTemplates.find(

@@ -1,5 +1,7 @@
 import * as ClinicalDomain from '@assessmentis/clinical-domain'
 
+import '../../Labeled/implementations/Composition'
+
 import type { BreadcrumbLabelInstance } from '../BreadcrumbLabel'
 
 declare module '@assessmentis/clinical-domain' {
@@ -12,7 +14,7 @@ declare module '@assessmentis/clinical-domain' {
 }
 
 Object.defineProperty(ClinicalDomain.Composition, 'BreadcrumbLabel', {
-  value: 'Compositions',
+  value: ClinicalDomain.Composition.Labeled.pluralLabel,
   configurable: true,
 })
 

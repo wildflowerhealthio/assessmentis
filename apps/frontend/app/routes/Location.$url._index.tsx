@@ -21,7 +21,7 @@ export default function LocationDetailPage({ params }: Route.ComponentProps) {
 
   const locationPromise = useEitherStream(locationStream)
 
-  useBreadcrumbs(Location, locationPromise)
+  useBreadcrumbs(() => [Location, locationPromise], [locationPromise])
 
   const loader = (
     <ResourceDetailPage

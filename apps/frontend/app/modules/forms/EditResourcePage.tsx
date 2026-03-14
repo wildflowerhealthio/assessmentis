@@ -3,6 +3,7 @@ import { useMemo, type ComponentType } from 'react'
 import { useNavigate } from 'react-router'
 
 import type { ResourceDataTypes } from '@assessmentis/clinical-domain'
+import { Resource } from '@assessmentis/effectful-store'
 import { useEitherStream } from '@assessmentis/react-util'
 
 import { useHub } from '../../layers/useHub'
@@ -51,16 +52,19 @@ export function EditResourcePage<
   // which useEitherStream converts to a rejected promise for the error boundary.
   const resourceStream = useResourceSubscription(klass, rawUrl)
   const resourcePromise = useEitherStream(resourceStream)
-  const breadcrumbSegmentPromise = useMemo(
+  useBreadcrumbs(
     () =>
-      resourcePromise.then((r): BreadcrumbSegment => {
-        assertLink(r)
-        assertBreadcrumbLabel(r)
-        return { href: r.Link, label: r.BreadcrumbLabel }
-      }),
-    [resourcePromise]
+      [
+        klass,
+        resourcePromise.then((r) => {
+          assertLink(r)
+          assertBreadcrumbLabel(r)
+          return { label: r.BreadcrumbLabel, href: r.Link }
+        }) satisfies Promise<BreadcrumbSegment>,
+        'Edit',
+      ] as const,
+    [klass, resourcePromise]
   )
-  useBreadcrumbs(klass, breadcrumbSegmentPromise, 'Edit')
 
   const initialValues = useMemo(
     () => resourcePromise.then((r) => Form.fromResource(r)),
@@ -69,6 +73,12 @@ export function EditResourcePage<
 
   const handleSubmit = async (formData: TFormData) => {
     const resource = await resourcePromise
+
+    if (!Resource.hasResourceUrl(resource)) {
+      throw new Error(
+        `Cannot update ${klass.DomainType} without a resource URL`
+      )
+    }
 
     const updated = formData.toUpdatePayload(resource)
     await Effect.runPromise(hub.update(klass.DomainType, updated))

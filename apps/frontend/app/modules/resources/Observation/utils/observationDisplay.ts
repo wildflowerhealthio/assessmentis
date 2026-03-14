@@ -3,8 +3,10 @@ import { Effect } from 'effect'
 
 import type { Observation } from '@assessmentis/clinical-domain'
 import {
+  CodeableConcept,
   DatatypeChoice,
   type Period,
+  Quantity,
 } from '@assessmentis/clinical-domain/data-types'
 
 import {
@@ -56,24 +58,17 @@ export const formatObservationValue = (
       return yield* DatatypeChoice.match(
         v,
         {
-          Quantity: (q) => {
-            const typed = q as { value?: number; unit?: string } | undefined
-            return Effect.succeed(
-              `${typed?.value ?? ''} ${typed?.unit ?? ''}`.trim()
-            )
+          Quantity: () => {
+            const q = Quantity.Datatype.from(v)
+            return Effect.succeed(`${q?.value ?? ''} ${q?.unit ?? ''}`.trim())
           },
           string: (s) => Effect.succeed(s),
           integer: (n) => Effect.succeed(n.toString()),
           Ratio: (r) => Effect.succeed(String(r)),
-          CodeableConcept: (cc) => {
-            const typed = cc as
-              | {
-                  text?: string
-                  coding?: Array<{ display?: string }>
-                }
-              | undefined
+          CodeableConcept: () => {
+            const cc = CodeableConcept.Datatype.from(v)
             return Effect.succeed(
-              typed?.text ?? typed?.coding?.[0]?.display ?? 'Coded value'
+              cc?.text ?? cc?.coding?.[0]?.display ?? 'Coded value'
             )
           },
           boolean: (b) => Effect.succeed(b ? 'Yes' : 'No'),

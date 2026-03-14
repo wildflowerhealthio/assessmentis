@@ -1,3 +1,14 @@
+/**
+ * Provider that holds the current breadcrumb trail in state.
+ *
+ * Mount once near the app root. Child routes call {@link useBreadcrumbs}
+ * to declare their trail; the header reads it via `useBreadcrumbContext`.
+ *
+ * State updates are de-duplicated with a deep-equality check so that
+ * re-renders from route data streaming don't cause unnecessary flicker.
+ *
+ * @packageDocumentation
+ */
 import { useState } from 'react'
 
 import {
@@ -5,7 +16,12 @@ import {
   type BreadcrumbSegmentOrPromise,
 } from './BreadcrumbContext'
 
-// Deep equality check for breadcrumb segments
+/**
+ * Deep equality check for breadcrumb segment arrays.
+ *
+ * Promises are compared by reference only (they are stable per `useMemo`
+ * call in `useBreadcrumbs`). Resolved segments are compared by value.
+ */
 const areBreadcrumbsEqual = (
   a: BreadcrumbSegmentOrPromise[],
   b: BreadcrumbSegmentOrPromise[]

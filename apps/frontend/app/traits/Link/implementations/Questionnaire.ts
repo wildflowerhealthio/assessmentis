@@ -12,4 +12,4 @@ declare module '@assessmentis/clinical-domain' {
   }
 }
 
-applyDefaultLinkTraitImplementation(ClinicalDomain.QuestionnaireResponse)
+applyDefaultLinkTraitImplementation(ClinicalDomain.Questionnaire)

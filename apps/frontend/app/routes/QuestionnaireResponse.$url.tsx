@@ -48,7 +48,8 @@ export default function QuestionnaireResponseDetailsPage({
           )
         )
 
-      const questionnaireResponse = yield* hub.get('QuestionnaireResponse',
+      const questionnaireResponse = yield* hub.get(
+        'QuestionnaireResponse',
         questionnaireResponseUrl
       )
 
@@ -117,11 +118,14 @@ const ResponsePage = ({
     Set<QuestionnaireItemLink>
   >(new Set())
 
-  useBreadcrumbs(QuestionnaireResponse, {
-    label:
+  useBreadcrumbs(
+    () => [
+      QuestionnaireResponse,
       questionnaire.title ||
-      `Response ${questionnaireResponse.url?.toString() ?? 'Unknown'}`,
-  })
+        `Response ${questionnaireResponse.url?.toString() ?? 'Unknown'}`,
+    ],
+    [questionnaire.title, questionnaireResponse.url]
+  )
 
   const mediaFilters = useMemo(
     () => (encounterUrl ? { encounter: encounterUrl } : undefined),
@@ -146,7 +150,9 @@ const ResponsePage = ({
     }
     console.log('Extracted observations:', extractedObservations)
 
-    return Effect.runPromise(hub.createMany('Observation', extractedObservations))
+    return Effect.runPromise(
+      hub.createMany('Observation', extractedObservations)
+    )
       .then((data) => {
         console.log('Synced observations:', data)
       })

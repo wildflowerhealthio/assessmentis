@@ -59,7 +59,10 @@ export default function EncounterPage({ params }: Route.ComponentProps) {
     }))
   }, [encounterPromise])
 
-  useBreadcrumbs(Encounter, justEncounterPromise)
+  useBreadcrumbs(
+    () => [Encounter, justEncounterPromise],
+    [justEncounterPromise]
+  )
 
   return (
     <Suspense fallback={<div>Loading interview call...</div>}>

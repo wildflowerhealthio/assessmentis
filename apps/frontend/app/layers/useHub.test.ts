@@ -76,53 +76,19 @@ describe('useHub', () => {
   })
 
   describe('Hub methods are accessible and typed correctly', () => {
-    it('exposes a get method', () => {
+    it.each([
+      { method: 'get' },
+      { method: 'subscribe' },
+      { method: 'search' },
+      { method: 'subscribeSearch' },
+      { method: 'create' },
+      { method: 'update' },
+      { method: 'delete' },
+    ] as const)('exposes a $method method', ({ method }) => {
       vi.mocked(usePlatformContext).mockReturnValue(createMockPlatformContext())
       const { result } = renderHook(() => useHub())
 
-      expect(typeof result.current.get).toBe('function')
-    })
-
-    it('exposes a subscribe method', () => {
-      vi.mocked(usePlatformContext).mockReturnValue(createMockPlatformContext())
-      const { result } = renderHook(() => useHub())
-
-      expect(typeof result.current.subscribe).toBe('function')
-    })
-
-    it('exposes a search method', () => {
-      vi.mocked(usePlatformContext).mockReturnValue(createMockPlatformContext())
-      const { result } = renderHook(() => useHub())
-
-      expect(typeof result.current.search).toBe('function')
-    })
-
-    it('exposes a subscribeSearch method', () => {
-      vi.mocked(usePlatformContext).mockReturnValue(createMockPlatformContext())
-      const { result } = renderHook(() => useHub())
-
-      expect(typeof result.current.subscribeSearch).toBe('function')
-    })
-
-    it('exposes a create method', () => {
-      vi.mocked(usePlatformContext).mockReturnValue(createMockPlatformContext())
-      const { result } = renderHook(() => useHub())
-
-      expect(typeof result.current.create).toBe('function')
-    })
-
-    it('exposes an update method', () => {
-      vi.mocked(usePlatformContext).mockReturnValue(createMockPlatformContext())
-      const { result } = renderHook(() => useHub())
-
-      expect(typeof result.current.update).toBe('function')
-    })
-
-    it('exposes a delete method', () => {
-      vi.mocked(usePlatformContext).mockReturnValue(createMockPlatformContext())
-      const { result } = renderHook(() => useHub())
-
-      expect(typeof result.current.delete).toBe('function')
+      expect(typeof result.current[method]).toBe('function')
     })
 
     it('get returns an Effect', () => {
@@ -305,7 +271,7 @@ describe('useHub', () => {
       })
     )
 
-    it('calls delete with the provided domainType and url', () =>
+    it.effect('calls delete with the provided domainType and url', () =>
       Effect.gen(function* () {
         const deleteFn = vi.fn(() => Effect.succeed(undefined))
         const mockHub = createMockHub({ delete: deleteFn })
@@ -321,6 +287,7 @@ describe('useHub', () => {
         yield* result.current.delete('Patient', fakeUrl)
 
         expect(deleteFn).toHaveBeenCalledWith('Patient', fakeUrl)
-      }))
+      })
+    )
   })
 })

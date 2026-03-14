@@ -68,11 +68,14 @@ The Hub's `SubscriptionRef` exposes a `changes` stream. Frontend consumers can s
 
 The migration from the former per-resource repository pattern to Hub is complete. All consumers now use Hub methods directly:
 
-1. `hub.get({ domainType, url })` — fetch a single resource
-2. `hub.search({ domainType, params })` — search resources
-3. `hub.create({ domainType, resource, origin })` — create a resource
-4. `hub.update({ domainType, resource })` — update a resource
-5. `hub.delete({ domainType, url })` — delete a resource
+1. `hub.get(domainType, url)` — fetch a single resource
+2. `hub.search(domainType, params?)` — search resources
+3. `hub.create(domainType, resource, origin?)` — create a resource
+4. `hub.createMany(domainType, resources, origin?)` — create multiple resources
+5. `hub.update(domainType, resource)` — update a resource
+6. `hub.delete(domainType, url)` — delete a resource
+7. `hub.subscribe(domainType, url)` — subscribe to a single resource (returns `Stream<Either>`)
+8. `hub.subscribeSearch(domainType, params?)` — subscribe to search results (returns `Stream<Either>`)
 
 ## See Also
 

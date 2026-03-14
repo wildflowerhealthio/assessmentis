@@ -134,6 +134,21 @@ export class QuestionnaireResponseItem extends MergeClasses<QuestionnaireRespons
       yield* child.deepQuestionnaireResponseItems()
     }
   }
+
+  /** Returns a copy with the child item matching `linkId` replaced (or inserted) by applying `updater`. */
+  withChildItem(
+    linkId: typeof QuestionnaireItemLink.Type,
+    updater: (prev: QuestionnaireResponseItem) => QuestionnaireResponseItem
+  ): QuestionnaireResponseItem {
+    const existing =
+      this.item?.find((i) => i.linkId === linkId) ??
+      QuestionnaireResponseItem.make({ linkId })
+    const updated = updater(existing)
+    return QuestionnaireResponseItem.make({
+      ...this,
+      item: [...(this.item?.filter((i) => i.linkId !== linkId) ?? []), updated],
+    })
+  }
 }
 
 /** Shared letrec for mutually recursive QRItem/QRItemAnswer arbitrary generation */

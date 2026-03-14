@@ -34,8 +34,8 @@ export const getFullEncounter = (
   | AuthError
   | AuthzError
   | ExternalAssertionError
-  | NotFoundError<'Encounter', { readonly url: string | ReadonlyUrl }>
-  | NotFoundError<'Location', { readonly url: string | ReadonlyUrl }>,
+  | NotFoundError<'Encounter', { readonly url: ReadonlyUrl }>
+  | NotFoundError<'Location', { readonly url: ReadonlyUrl }>,
   ClinicalDomainHub
 > =>
   Effect.gen(function* () {

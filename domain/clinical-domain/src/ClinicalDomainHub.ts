@@ -35,11 +35,11 @@ import type ResourceDataTypes from './ResourceDataTypes'
  * @example Reactive subscriptions
  * ```typescript
  * // Subscribe to resource changes
- * const patientStream = hub.subscribePatient(patientUrl)
+ * const patientStream = hub.subscribe('Patient', patientUrl)
  * // Returns: Stream<Either<Patient, NotFoundError | CommonErrors>>
  *
  * // Subscribe to search results
- * const encountersStream = hub.subscribeSearchEncounter({ patient: patientUrl })
+ * const encountersStream = hub.subscribeSearch('Encounter', { patient: patientUrl })
  * // Returns: Stream<Either<Encounter[], CommonErrors>>
  * ```
  *

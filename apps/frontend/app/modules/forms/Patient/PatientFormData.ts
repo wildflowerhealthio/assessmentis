@@ -68,8 +68,9 @@ export class PatientFormData extends Schema.Class<PatientFormData>(
     return this.toResource()
   }
 
-  toUpdatePayload(base: Patient): Resource.WithResourceUrl<Patient> {
-    if (!base.url) throw new Error('Cannot update resource without url')
+  toUpdatePayload(
+    base: Resource.WithResourceUrl<Patient>
+  ): Resource.WithResourceUrl<Patient> {
     return { ...base, ...this.toResource(), url: base.url }
   }
 }

@@ -1,13 +1,19 @@
 import type { Schema } from 'effect'
 
+import type { Resource } from '@assessmentis/effectful-store'
+
 /**
  * Instance-side contract. Decoded form data knows how to
  * produce domain payloads.
  */
 
-export interface FormData<TResource, TCreatePayload, TUpdatePayload> {
+export interface FormData<
+  TResource extends Resource.AnyResource,
+  TCreatePayload,
+  TUpdatePayload,
+> {
   toCreatePayload(): TCreatePayload
-  toUpdatePayload(base: TResource): TUpdatePayload
+  toUpdatePayload(base: Resource.WithResourceUrl<TResource>): TUpdatePayload
 }
 /**
  * Class/static-side contract. The class is a Schema that also
@@ -15,7 +21,7 @@ export interface FormData<TResource, TCreatePayload, TUpdatePayload> {
  */
 
 export interface FormDataConstructor<
-  TResource,
+  TResource extends Resource.AnyResource,
   TCreatePayload,
   TUpdatePayload,
   TFormData extends FormData<TResource, TCreatePayload, TUpdatePayload>,

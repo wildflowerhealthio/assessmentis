@@ -1,5 +1,7 @@
 import * as ClinicalDomain from '@assessmentis/clinical-domain'
 
+import '../../Labeled/implementations/Observation'
+
 import type { BreadcrumbLabelInstance } from '../BreadcrumbLabel'
 
 declare module '@assessmentis/clinical-domain' {
@@ -12,7 +14,7 @@ declare module '@assessmentis/clinical-domain' {
 }
 
 Object.defineProperty(ClinicalDomain.Observation, 'BreadcrumbLabel', {
-  value: 'Observations',
+  value: ClinicalDomain.Observation.Labeled.pluralLabel,
   configurable: true,
 })
 

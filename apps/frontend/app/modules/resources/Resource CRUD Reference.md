@@ -38,18 +38,20 @@ modules/resources/{ResourceName}/
 
 Examples: `Patient._index.tsx`, `Patient.new.tsx`.
 
-## Repository access pattern
+## Hub access pattern
 
-All resource modules consume repositories through `ClinicalDataRepositoryService`.
+All resource modules consume the Hub through `useHub()` (or `ClinicalDomainHub` in Effect code).
 
 Common operations used by actions/hooks:
 
-- `get`
-- `getMany`
-- `create`
-- `createMany`
-- `update`
-- `delete`
+- `hub.get(domainType, url)`
+- `hub.search(domainType, params?)`
+- `hub.create(domainType, resource, origin?)`
+- `hub.createMany(domainType, resources, origin?)`
+- `hub.update(domainType, resource)`
+- `hub.delete(domainType, url)`
+- `hub.subscribe(domainType, url)` — reactive single-resource stream
+- `hub.subscribeSearch(domainType, params?)` — reactive search stream
 
 ## Form schema pattern
 

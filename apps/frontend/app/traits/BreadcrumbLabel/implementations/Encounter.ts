@@ -1,5 +1,7 @@
 import * as ClinicalDomain from '@assessmentis/clinical-domain'
 
+import '../../Labeled/implementations/Encounter'
+
 import { getEncounterDisplayName } from '../../../modules/resources/Encounter/utils/encounterDisplay'
 import { runEffectSyncFlat } from '../../../runEffectSync'
 import type { BreadcrumbLabelInstance } from '../BreadcrumbLabel'
@@ -14,7 +16,7 @@ declare module '@assessmentis/clinical-domain' {
 }
 
 Object.defineProperty(ClinicalDomain.Encounter, 'BreadcrumbLabel', {
-  value: 'Encounters',
+  value: ClinicalDomain.Encounter.Labeled.pluralLabel,
   configurable: true,
 })
 

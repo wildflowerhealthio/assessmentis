@@ -1,5 +1,7 @@
 import * as ClinicalDomain from '@assessmentis/clinical-domain'
 
+import '../../Labeled/implementations/Questionnaire'
+
 import type { BreadcrumbLabelInstance } from '../BreadcrumbLabel'
 
 declare module '@assessmentis/clinical-domain' {
@@ -12,12 +14,12 @@ declare module '@assessmentis/clinical-domain' {
 }
 
 Object.defineProperty(ClinicalDomain.Questionnaire, 'BreadcrumbLabel', {
-  value: 'Questionnaire',
+  value: ClinicalDomain.Questionnaire.Labeled.pluralLabel,
   configurable: true,
 })
 
 Object.defineProperty(
-  ClinicalDomain.QuestionnaireResponse.prototype,
+  ClinicalDomain.Questionnaire.prototype,
   'BreadcrumbLabel',
   {
     get(this: ClinicalDomain.Questionnaire): string {

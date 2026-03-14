@@ -350,6 +350,67 @@ describe('StreamEither', () => {
     })
   })
 
+  describe('catchTag', () => {
+    class FooError {
+      readonly _tag = 'FooError' as const
+      constructor(readonly message: string) {}
+    }
+    class BarError {
+      readonly _tag = 'BarError' as const
+      constructor(readonly message: string) {}
+    }
+
+    it.effect('recovers matching Left values to Right', () =>
+      Effect.gen(function* () {
+        const stream: Stream.Stream<
+          Either.Either<string, FooError | BarError>
+        > = Stream.make(
+          Either.right('ok'),
+          Either.left(new FooError('bad')),
+          Either.left(new BarError('also bad'))
+        )
+
+        const result = yield* collect(
+          stream.pipe(
+            StreamEither.catchTag('FooError', (e) =>
+              Either.right(`recovered: ${e.message}`)
+            )
+          )
+        )
+
+        expect(result).toEqual([
+          Either.right('ok'),
+          Either.right('recovered: bad'),
+          Either.left(new BarError('also bad')),
+        ])
+      })
+    )
+
+    it.effect('can transform matching Left into a different Left', () =>
+      Effect.gen(function* () {
+        const stream: Stream.Stream<
+          Either.Either<string, FooError | BarError>
+        > = Stream.make(
+          Either.left(new FooError('convert me')),
+          Either.left(new BarError('keep me'))
+        )
+
+        const result = yield* collect(
+          stream.pipe(
+            StreamEither.catchTag('FooError', (e) =>
+              Either.left(new BarError(`was foo: ${e.message}`))
+            )
+          )
+        )
+
+        expect(result).toEqual([
+          Either.left(new BarError('was foo: convert me')),
+          Either.left(new BarError('keep me')),
+        ])
+      })
+    )
+  })
+
   describe('unwrap', () => {
     describe('with Right values', () => {
       it.effect.prop(

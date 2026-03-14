@@ -195,7 +195,7 @@ describe('useResourceSubscription', () => {
           if (Either.isLeft(item)) {
             const error = item.left as unknown as NotFoundError<
               string,
-              { url: string }
+              { unparseableUrl: string }
             >
             expect(error.resourceType).toBe('Patient')
           } else {
@@ -223,9 +223,9 @@ describe('useResourceSubscription', () => {
           if (Either.isLeft(item)) {
             const error = item.left as unknown as NotFoundError<
               string,
-              { url: string }
+              { unparseableUrl: string }
             >
-            expect(error.params.url).toBe(INVALID_URL)
+            expect(error.params.unparseableUrl).toBe(INVALID_URL)
           } else {
             throw new Error('Expected a Left, got Right')
           }
@@ -318,7 +318,7 @@ describe('useResourceSubscription', () => {
           if (Either.isLeft(items[0])) {
             const error = items[0].left as unknown as NotFoundError<
               string,
-              { url: string }
+              { unparseableUrl: string }
             >
             expect(error._tag).toBe('NotFoundError')
             expect(error.resourceType).toBe('Encounter')

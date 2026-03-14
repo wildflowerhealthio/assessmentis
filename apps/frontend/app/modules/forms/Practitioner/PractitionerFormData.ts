@@ -73,8 +73,9 @@ export class PractitionerFormData extends Schema.Class<PractitionerFormData>(
     return this.toResource()
   }
 
-  toUpdatePayload(base: Practitioner): Resource.WithResourceUrl<Practitioner> {
-    if (!base.url) throw new Error('Cannot update resource without url')
+  toUpdatePayload(
+    base: Resource.WithResourceUrl<Practitioner>
+  ): Resource.WithResourceUrl<Practitioner> {
     return { ...base, ...this.toResource(), url: base.url }
   }
 }

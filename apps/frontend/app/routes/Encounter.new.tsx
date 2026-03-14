@@ -35,7 +35,7 @@ export default function CreateEncounterPage() {
   const hub = useHub()
   const navigate = useNavigate()
 
-  useBreadcrumbs(Encounter, { label: 'New' })
+  useBreadcrumbs(() => [Encounter, 'New'], [])
 
   const handleSubmit = async (data: typeof EncounterFormSchema.Type) => {
     const encounter = await Effect.runPromise(

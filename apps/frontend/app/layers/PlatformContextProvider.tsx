@@ -1,4 +1,4 @@
-import { Effect, Either, Layer, Schema, Scope, Stream } from 'effect'
+import { Effect, Either, Layer, Match, Schema, Scope } from 'effect'
 import { FetchHttpClient, HttpClient } from '@effect/platform'
 import { Suspense, useMemo } from 'react'
 import { Await } from 'react-router'
@@ -15,24 +15,25 @@ import {
   LoadedGapiHealthcareClient,
   makeGoogleFhirOriginType,
 } from '@assessmentis/google-fhir-web-infrastructure'
-import { type AuthError, type AuthzError } from '@assessmentis/ontology'
-import { Loading, NotFoundError, UnhandledError } from '@assessmentis/ontology'
+import type { BadDataError, NotFoundError } from '@assessmentis/ontology'
+import { UnhandledError } from '@assessmentis/ontology'
 import {
-  hubStateStream,
   AuthDataService,
   createAuthDataPubSub,
   createOrgPubSub,
   createOrgSlugPubSub,
   createUserPubSub,
-  DocumentStore,
-  NoSelectedOrgError,
+  mapOrgStreamToHubState,
   startOrgService,
   startUserService,
+  type NoSelectedOrgError,
+  type DocumentStore,
   UserOrg,
   type DocumentPath,
   type Org,
   type OrgService,
   type OrgSlug,
+  type UserId,
 } from '@assessmentis/platform-domain'
 import { useEffectTs } from '@assessmentis/react-util'
 import { StreamEither } from '@assessmentis/util'
@@ -51,88 +52,75 @@ import { PlatformContext } from './PlatformContext'
 
 // --- Extracted stream helpers ---
 
-type UserOrgEither = Either.Either<UserOrg | undefined, UnhandledError>
-
+/**
+ * Subscribes to the UserOrg document for the current user and selected org.
+ *
+ * `UserOrg | undefined` because a user may not yet have a UserOrg document
+ * for the selected org -- `NotFoundError` is mapped to `undefined` rather
+ * than treated as a failure. `NoSelectedOrgError` passes through as a `Left`
+ * for downstream handling by {@link mapOrgStreamToHubState}.
+ */
 const makeUserOrgStream = (
   orgSlugStream: (typeof OrgService.Service)['orgSlugStream'],
   documentStore: typeof DocumentStore.Service,
-  userId: string
-): Stream.Stream<UserOrgEither, never, Scope.Scope> =>
+  userId: UserId
+): StreamEither.StreamEither<
+  UserOrg | undefined,
+  NoSelectedOrgError | UnhandledError,
+  never,
+  Scope.Scope
+> =>
   orgSlugStream.pipe(
-    Stream.flatMap(
-      Either.match({
-        onLeft: (err): Stream.Stream<UserOrgEither> =>
-          err instanceof NoSelectedOrgError
-            ? Stream.succeed(Either.right(undefined))
-            : Stream.succeed(
-                Either.left(
-                  new UnhandledError({ message: String(err), cause: err })
-                )
-              ),
-        onRight: (orgSlug): Stream.Stream<UserOrgEither> =>
-          documentStore
-            .subscribeTo([
-              'users',
-              userId,
-              'orgs',
-              orgSlug,
-            ] satisfies DocumentPath)
-            .pipe(
-              Stream.map(
-                Either.match({
-                  onLeft: (err) =>
-                    err instanceof NotFoundError
-                      ? Either.right(undefined as UserOrg | undefined)
-                      : Either.left(
-                          err instanceof UnhandledError
-                            ? err
-                            : new UnhandledError({
-                                message: String(err),
-                                cause: err,
-                              })
-                        ),
-                  onRight: (data) => {
-                    const decoded = Schema.decodeUnknownEither(UserOrg)(data)
-                    return Either.match(decoded, {
-                      onLeft: (parseError) =>
-                        Either.left(
-                          new UnhandledError({
-                            message: 'Failed to decode UserOrg document',
-                            cause: parseError,
-                          })
-                        ),
-                      onRight: (userOrg) =>
-                        Either.right(userOrg as UserOrg | undefined),
+    StreamEither.flatMap(
+      (slug): StreamEither.StreamEither<UserOrg | undefined, UnhandledError> =>
+        documentStore
+          .subscribeTo(['users', userId, 'orgs', slug] satisfies DocumentPath)
+          .pipe(
+            StreamEither.mapEffect((data) =>
+              Schema.decodeUnknown(UserOrg)(data).pipe(
+                Effect.mapError(
+                  (parseError) =>
+                    new UnhandledError({
+                      message: 'Failed to decode UserOrg document',
+                      cause: parseError,
                     })
-                  },
-                })
+                ),
+                Effect.map((userOrg): UserOrg | undefined => userOrg)
               )
             ),
-      }),
+            StreamEither.catchTag('NotFoundError', () =>
+              Either.right<UserOrg | undefined>(undefined)
+            )
+          ),
       { switch: true }
     )
   )
 
-type OrgEither = Either.Either<
-  Org,
-  Loading<{ orgSlug: OrgSlug }> | UnhandledError
->
-
-const makeMappedOrgStream = (
+/**
+ * Maps the active org stream errors, wrapping unexpected errors as
+ * `UnhandledError` while preserving `NoSelectedOrgError` for downstream
+ * handling in {@link mapOrgStreamToHubState}.
+ */
+const makeActiveOrgSnapshotStream = (
   activeOrgStream: (typeof OrgService.Service)['activeOrgStream']
-): Stream.Stream<OrgEither, never, Scope.Scope> =>
+): StreamEither.StreamEither<
+  Org,
+  NoSelectedOrgError | UnhandledError,
+  never,
+  Scope.Scope
+> =>
   activeOrgStream.pipe(
-    Stream.map(
-      Either.match({
-        onLeft: (err): OrgEither =>
-          err instanceof NoSelectedOrgError
-            ? Either.left(new Loading({ entity: { orgSlug: '' as OrgSlug } }))
-            : Either.left(
-                err instanceof UnhandledError
-                  ? err
-                  : new UnhandledError({ message: String(err), cause: err })
-              ),
-        onRight: Either.right,
+    StreamEither.mapLeft(
+      Match.typeTags<
+        | NoSelectedOrgError
+        | NotFoundError<'Org', { orgSlug: OrgSlug }>
+        | BadDataError
+        | UnhandledError
+      >()({
+        NoSelectedOrgError: (e) => e as NoSelectedOrgError | UnhandledError,
+        NotFoundError: (e) => UnhandledError.fromUnknown(e),
+        BadDataError: (e) => UnhandledError.fromUnknown(e),
+        UnhandledError: (e) => e,
       })
     )
   )
@@ -181,22 +169,17 @@ const platformEffect = Effect.gen(function* () {
     documentStore,
     userId
   )
-  const mappedOrgStream = makeMappedOrgStream(orgService.activeOrgStream)
+  const activeOrgSnapshotStream = makeActiveOrgSnapshotStream(
+    orgService.activeOrgStream
+  )
 
-  const combinedStream: Stream.Stream<
-    Either.Either<
-      { org: Org; userOrg: UserOrg | undefined },
-      Loading<{ orgSlug: OrgSlug }> | AuthError | AuthzError | UnhandledError
-    >,
-    never,
-    Scope.Scope
-  > = StreamEither.zipLatestWith(
-    mappedOrgStream,
+  const combinedStream = StreamEither.zipLatestWith(
+    activeOrgSnapshotStream,
     userOrgStream,
     (org, userOrg) => ({ org, userOrg })
   )
 
-  const stateStream = hubStateStream(originTypes, combinedStream)
+  const stateStream = mapOrgStreamToHubState(originTypes, combinedStream)
   const hub = yield* Hub.makeHub<ResourceDataTypes>(stateStream)
 
   return {

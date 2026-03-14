@@ -12,9 +12,10 @@ import { AuthError, Loading, UnhandledError } from '@assessmentis/ontology'
 
 import type { BaseOriginDefinition } from '../models/BaseOriginDefinition'
 import type { OrgSlug } from '../models/IdTypes'
+import { NoSelectedOrgError } from '../hostedServices/OrgService'
 import type { Org } from '../models/Org'
 import { UserOrg } from '../models/UserOrg'
-import { hubStateStream } from './HubStateUpdater'
+import { mapOrgStreamToHubState } from './HubStateUpdater'
 
 const decodeUserOrg = Schema.decodeUnknownSync(UserOrg)
 
@@ -51,7 +52,7 @@ const makeInput = (org: Org, userOrg?: UserOrg) =>
 const collectAll = <A, R>(stream: Stream.Stream<A, never, R>) =>
   stream.pipe(Stream.runCollect, Effect.map(Chunk.toReadonlyArray))
 
-describe('hubStateStream (platform-domain wrapper)', () => {
+describe('mapOrgStreamToHubState (platform-domain wrapper)', () => {
   it('maps Org origins to hub state via generic hubStateStream', async () => {
     const originState = {
       originUrl: ReadonlyUrl.fromEncoded(encode('https://example.com')),
@@ -72,7 +73,7 @@ describe('hubStateStream (platform-domain wrapper)', () => {
 
     const emissions = await Effect.runPromise(
       collectAll(
-        hubStateStream<TestResources, never>(
+        mapOrgStreamToHubState<TestResources, never>(
           [{ tag: 'test_origin', make: maker }],
           Stream.make(
             makeInput(
@@ -123,7 +124,7 @@ describe('hubStateStream (platform-domain wrapper)', () => {
 
     await Effect.runPromise(
       collectAll(
-        hubStateStream<TestResources, never>(
+        mapOrgStreamToHubState<TestResources, never>(
           [{ tag: 't', make: maker }],
           Stream.make(makeInput(org, userOrg))
         )
@@ -140,7 +141,7 @@ describe('hubStateStream (platform-domain wrapper)', () => {
   it('passes through Left errors from org stream', async () => {
     const emissions = await Effect.runPromise(
       collectAll(
-        hubStateStream<TestResources, never>(
+        mapOrgStreamToHubState<TestResources, never>(
           [],
           Stream.make(
             makeInput(makeOrg({})),
@@ -160,7 +161,7 @@ describe('hubStateStream (platform-domain wrapper)', () => {
   it('passes through Left(Loading)', async () => {
     const emissions = await Effect.runPromise(
       collectAll(
-        hubStateStream<TestResources, never>(
+        mapOrgStreamToHubState<TestResources, never>(
           [],
           Stream.make(
             makeInput(makeOrg({})),
@@ -180,7 +181,7 @@ describe('hubStateStream (platform-domain wrapper)', () => {
   it('passes through Left(AuthError)', async () => {
     const emissions = await Effect.runPromise(
       collectAll(
-        hubStateStream<TestResources, never>(
+        mapOrgStreamToHubState<TestResources, never>(
           [{ tag: 't', make: vi.fn() }],
           Stream.make(Either.left(AuthError.Unauthenticated))
         )
@@ -189,6 +190,22 @@ describe('hubStateStream (platform-domain wrapper)', () => {
 
     expect(emissions).toHaveLength(1)
     expect(Either.isLeft(emissions[0]!)).toBe(true)
+  })
+
+  it('maps NoSelectedOrgError to Loading', async () => {
+    const emissions = await Effect.runPromise(
+      collectAll(
+        mapOrgStreamToHubState<TestResources, never>(
+          [],
+          Stream.make(Either.left(new NoSelectedOrgError()))
+        )
+      ).pipe(Effect.scoped)
+    )
+
+    expect(emissions).toHaveLength(1)
+    expect(Either.isLeft(emissions[0]!)).toBe(true)
+    const error = Option.getOrThrow(Either.getLeft(emissions[0]!))
+    expect(error).toBeInstanceOf(Loading)
   })
 
   it('rebuilds origin when UserOrg credential identity changes', async () => {
@@ -227,7 +244,7 @@ describe('hubStateStream (platform-domain wrapper)', () => {
 
     await Effect.runPromise(
       collectAll(
-        hubStateStream<TestResources, never>(
+        mapOrgStreamToHubState<TestResources, never>(
           [{ tag: 't', make: maker }],
           Stream.make(makeInput(org, userOrg1), makeInput(org, userOrg2))
         )

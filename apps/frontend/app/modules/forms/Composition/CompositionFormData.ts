@@ -29,7 +29,7 @@ export class CompositionFormData extends Schema.Class<CompositionFormData>(
     }
   }
 
-  private toResource(): Composition {
+  private toResource(existingDate?: DateTime.Utc): Composition {
     return Composition.make({
       title: this.title || 'New Composition',
       status: 'preliminary',
@@ -38,7 +38,7 @@ export class CompositionFormData extends Schema.Class<CompositionFormData>(
         ? Reference.make({ reference: this.patientUrl.toString() })
         : undefined,
       author: [Reference.make({ display: 'Anonymous' })],
-      date: Effect.runSync(DateTime.now),
+      date: existingDate ?? Effect.runSync(DateTime.now),
       section: [],
     })
   }
@@ -47,8 +47,13 @@ export class CompositionFormData extends Schema.Class<CompositionFormData>(
     return this.toResource()
   }
 
-  toUpdatePayload(base: Composition): Resource.WithResourceUrl<Composition> {
-    if (!base.url) throw new Error('Cannot update resource without url')
-    return { ...base, ...this.toResource(), url: base.url }
+  toUpdatePayload(
+    base: Resource.WithResourceUrl<Composition>
+  ): Resource.WithResourceUrl<Composition> {
+    return {
+      ...base,
+      ...this.toResource(base.date),
+      url: base.url,
+    }
   }
 }

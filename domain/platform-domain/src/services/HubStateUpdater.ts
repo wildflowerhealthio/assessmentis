@@ -14,6 +14,7 @@ import {
   type UnhandledError,
 } from '@assessmentis/ontology'
 
+import { NoSelectedOrgError } from '../hostedServices/OrgService'
 import type { OrgSlug } from '../models/IdTypes'
 import type { Org } from '../models/Org'
 import type { UserOrg } from '../models/UserOrg'
@@ -45,12 +46,19 @@ const toOriginSourceSnapshot = (
  * The `R` parameter propagates the context requirements of the origin makers
  * into the returned stream, so callers can provide those services externally.
  */
-export const hubStateStream = <Resources extends Resource.ResourceSet, R>(
+export const mapOrgStreamToHubState = <
+  Resources extends Resource.ResourceSet,
+  R,
+>(
   originTypes: readonly OriginFactory<Resources, R>[],
   orgStream: Stream.Stream<
     Either.Either<
       { org: Org; userOrg: UserOrg | undefined },
-      Loading<{ orgSlug: OrgSlug }> | AuthError | AuthzError | UnhandledError
+      | NoSelectedOrgError
+      | Loading<{ orgSlug: OrgSlug }>
+      | AuthError
+      | AuthzError
+      | UnhandledError
     >,
     never,
     Scope.Scope
@@ -63,10 +71,25 @@ export const hubStateStream = <Resources extends Resource.ResourceSet, R>(
   never,
   R | Scope.Scope
 > => {
-  // Map the org stream to produce OriginSourceSnapshots
-  const snapshotStream = Stream.map(orgStream, (either) =>
-    Either.map(either, ({ org, userOrg }) =>
-      toOriginSourceSnapshot(org, userOrg)
+  // Convert NoSelectedOrgError → Loading before the generic hub stream,
+  // then map org+userOrg to OriginSourceSnapshots
+  const snapshotStream = orgStream.pipe(
+    StreamEither.mapLeft(
+      (
+        err
+      ):
+        | Loading<{ orgSlug: OrgSlug }>
+        | AuthError
+        | AuthzError
+        | UnhandledError =>
+        err instanceof NoSelectedOrgError
+          ? new Loading({ entity: { orgSlug: '' as OrgSlug } })
+          : err
+    ),
+    Stream.map((either) =>
+      Either.map(either, ({ org, userOrg }) =>
+        toOriginSourceSnapshot(org, userOrg)
+      )
     )
   )
 

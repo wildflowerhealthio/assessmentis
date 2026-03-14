@@ -68,8 +68,9 @@ export class LocationFormData extends Schema.Class<LocationFormData>(
     return this.toResource()
   }
 
-  toUpdatePayload(base: Location): Resource.WithResourceUrl<Location> {
-    if (!base.url) throw new Error('Cannot update resource without url')
+  toUpdatePayload(
+    base: Resource.WithResourceUrl<Location>
+  ): Resource.WithResourceUrl<Location> {
     return { ...base, ...this.toResource(), url: base.url }
   }
 }

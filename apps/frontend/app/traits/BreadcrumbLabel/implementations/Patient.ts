@@ -1,5 +1,7 @@
 import * as ClinicalDomain from '@assessmentis/clinical-domain'
 
+import '../../Labeled/implementations/Patient'
+
 import { formatHumanName } from '../../../modules/common/utils/fhirDisplay'
 import type { BreadcrumbLabelInstance } from '../BreadcrumbLabel'
 
@@ -13,7 +15,7 @@ declare module '@assessmentis/clinical-domain' {
 }
 
 Object.defineProperty(ClinicalDomain.Patient, 'BreadcrumbLabel', {
-  value: 'Patients',
+  value: ClinicalDomain.Patient.Labeled.pluralLabel,
   configurable: true,
 })
 

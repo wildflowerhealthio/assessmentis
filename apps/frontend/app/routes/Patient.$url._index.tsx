@@ -31,7 +31,7 @@ export default function PatientDetailPage({ params }: Route.ComponentProps) {
 
   const patientPromise = useEitherStream(patientStream)
 
-  useBreadcrumbs(Patient, patientPromise)
+  useBreadcrumbs(() => [Patient, patientPromise], [patientPromise])
 
   const loader = (
     <div style={{ padding: 'var(--space-4)' }}>

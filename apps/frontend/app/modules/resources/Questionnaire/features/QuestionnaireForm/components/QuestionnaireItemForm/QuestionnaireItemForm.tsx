@@ -5,6 +5,7 @@ import type { SetStateAction } from 'react'
 import {
   getUiControlCode,
   QuestionnaireItemAnswerOption,
+  QuestionnaireItemType,
   QuestionnaireResponseItem,
   type QuestionnaireItem,
   type QuestionnaireItemLink,
@@ -16,6 +17,7 @@ import RadioQuestionnaireItemForm, {
   RadioQuestionnaireItemFormGroup,
 } from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/components/RadioQuestionnaireItemForm/RadioQuestionnaireItemForm'
 import TextQuestionnaireItemForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/components/TextQuestionnaireItemForm/TextQuestionnaireItemForm'
+import { updateResponseItem } from '../../updateResponseItem'
 
 interface IProps {
   questionnaireItem: QuestionnaireItem
@@ -42,7 +44,7 @@ const QuestionnaireItemForm = ({
     ) : undefined
 
   switch (questionnaireItem.type) {
-    case 'boolean': {
+    case QuestionnaireItemType.enums.boolean: {
       return (
         <div
           style={
@@ -62,7 +64,7 @@ const QuestionnaireItemForm = ({
         </div>
       )
     }
-    case 'text': {
+    case QuestionnaireItemType.enums.text: {
       return (
         <div
           style={
@@ -82,7 +84,7 @@ const QuestionnaireItemForm = ({
         </div>
       )
     }
-    case 'group': {
+    case QuestionnaireItemType.enums.group: {
       const questionnaireItems = questionnaireItem.item ?? []
       const items = (
         <>
@@ -100,27 +102,7 @@ const QuestionnaireItemForm = ({
                 update: SetStateAction<QuestionnaireResponseItem>
               ) =>
                 setQuestionnaireResponseItem(
-                  (qri: QuestionnaireResponseItem): QuestionnaireResponseItem =>
-                    QuestionnaireResponseItem.make({
-                      ...qri,
-                      item: [
-                        ...(qri.item?.filter(
-                          ({ linkId }) => linkId != qi.linkId
-                        ) ?? []),
-                        typeof update == 'function'
-                          ? QuestionnaireResponseItem.make(
-                              update(
-                                qri.item?.find(
-                                  ({ linkId }) => linkId == qi.linkId
-                                ) ??
-                                  QuestionnaireResponseItem.make({
-                                    linkId: qi.linkId,
-                                  })
-                              )
-                            )
-                          : update,
-                      ],
-                    })
+                  updateResponseItem(qi.linkId, update)
                 )
               }
               uiControl={getUiControlCode(questionnaireItem)}
@@ -129,7 +111,9 @@ const QuestionnaireItemForm = ({
         </>
       )
       if (
-        questionnaireItems.every((item) => item.type == 'boolean') &&
+        questionnaireItems.every(
+          (item) => item.type == QuestionnaireItemType.enums.boolean
+        ) &&
         getUiControlCode(questionnaireItem) == 'table'
       ) {
         return (
@@ -150,7 +134,7 @@ const QuestionnaireItemForm = ({
       }
       return items
     }
-    case 'display':
+    case QuestionnaireItemType.enums.display:
       return (
         <DisplayQuestionnaireItemForm
           key={questionnaireItem.linkId}
@@ -158,7 +142,7 @@ const QuestionnaireItemForm = ({
           uiControl={uiControl}
         />
       )
-    case 'choice': {
+    case QuestionnaireItemType.enums.choice: {
       return (
         <div
           style={

@@ -8,6 +8,7 @@ import {
   Reference,
 } from '../../data-types/complex/IdentifierAndReference'
 import { Questionnaire } from '../Questionnaire/Questionnaire'
+import type { QuestionnaireItemLink } from '../Questionnaire/QuestionnaireItemLink'
 import { QuestionnaireItemAnsweredAtExtension } from '../Questionnaire/QuestionnaireItemAnsweredAt'
 import {
   QuestionnaireResponseItem,
@@ -70,6 +71,21 @@ export class QuestionnaireResponse extends MergeClasses<QuestionnaireResponse>(
       yield child
       yield* child.deepQuestionnaireResponseItems()
     }
+  }
+
+  /** Returns a copy with the child item matching `linkId` replaced (or inserted) by applying `updater`. */
+  withChildItem(
+    linkId: typeof QuestionnaireItemLink.Type,
+    updater: (prev: QuestionnaireResponseItem) => QuestionnaireResponseItem
+  ): QuestionnaireResponse {
+    const existing =
+      this.item?.find((i) => i.linkId === linkId) ??
+      QuestionnaireResponseItem.make({ linkId })
+    const updated = updater(existing)
+    return QuestionnaireResponse.make({
+      ...this,
+      item: [...(this.item?.filter((i) => i.linkId !== linkId) ?? []), updated],
+    })
   }
 
   /**

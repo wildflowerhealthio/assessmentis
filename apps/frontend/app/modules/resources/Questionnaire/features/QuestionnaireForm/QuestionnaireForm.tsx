@@ -2,23 +2,19 @@ import { Effect } from 'effect'
 import { useState, type SetStateAction } from 'react'
 
 import {
-  ClinicalDomainHub,
-  QuestionnaireResponse,
   QuestionnaireResponseItem,
+  type QuestionnaireResponse,
+  ClinicalDomainHub,
   type Questionnaire,
   type QuestionnaireItemLink,
 } from '@assessmentis/clinical-domain'
-import type { ReadonlyUrl } from '@assessmentis/effectful-store'
+import { Resource } from '@assessmentis/effectful-store'
 
 import { useAutoSave } from 'app/modules/common/hooks/useAutoSave'
 
 import { useHub } from '../../../../../layers/useHub'
 import QuestionnaireItemForm from './components/QuestionnaireItemForm/QuestionnaireItemForm'
-
-const hasUrl = <T extends { readonly url?: ReadonlyUrl | undefined }>(
-  resource: T
-): resource is T & { readonly url: NonNullable<T['url']> } =>
-  resource.url !== undefined
+import { updateResponseItem } from './updateResponseItem'
 
 type IProps = {
   questionnaire: Questionnaire
@@ -42,7 +38,7 @@ const QuestionnaireForm = ({
       await Effect.runPromise(
         Effect.gen(function* () {
           const h = yield* ClinicalDomainHub
-          if (!data || !hasUrl(data)) return
+          if (!data || !Resource.hasResourceUrl(data)) return
           return yield* h.update('QuestionnaireResponse', data)
         }).pipe(Effect.provideService(ClinicalDomainHub, hub))
       )
@@ -65,27 +61,7 @@ const QuestionnaireForm = ({
           setQuestionnaireResponseItem={(
             update: SetStateAction<QuestionnaireResponseItem>
           ) =>
-            setQuestionnaireResponse((qr) =>
-              QuestionnaireResponse.make({
-                ...qr,
-                item: [
-                  ...(qr.item?.filter(({ linkId }) => linkId != item.linkId) ??
-                    []),
-                  typeof update == 'function'
-                    ? QuestionnaireResponseItem.make(
-                        update(
-                          qr.item?.find(
-                            ({ linkId }) => linkId == item.linkId
-                          ) ??
-                            QuestionnaireResponseItem.make({
-                              linkId: item.linkId,
-                            })
-                        )
-                      )
-                    : QuestionnaireResponseItem.make(update),
-                ],
-              })
-            )
+            setQuestionnaireResponse(updateResponseItem(item.linkId, update))
           }
           uiControl={undefined}
         />

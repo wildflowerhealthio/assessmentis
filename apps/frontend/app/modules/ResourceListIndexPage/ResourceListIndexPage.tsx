@@ -75,7 +75,7 @@ export function ResourceListIndexPage<
     filters
   )
 
-  useBreadcrumbs(klass)
+  useBreadcrumbs(() => [klass], [klass])
 
   function ItemComponent(itemProps: {
     item: ResourceDataTypes[K]

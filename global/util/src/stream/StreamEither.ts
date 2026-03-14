@@ -272,6 +272,76 @@ export namespace StreamEither {
   )
 
   // -------------------------------------------------------------------------------------
+  // error recovery
+  // -------------------------------------------------------------------------------------
+
+  /**
+   * Catches `Left` values whose `_tag` matches the given tag and applies `f`
+   * to recover them into a `Right` value or a different `Left`.
+   *
+   * Non-matching `Left` values and `Right` values pass through unchanged.
+   * Mirrors Effect's `catchTag` naming convention.
+   */
+  export const catchTag: {
+    <E extends { readonly _tag: string }, Tag extends E['_tag'], A2, E2>(
+      tag: Tag,
+      f: (e: Extract<E, { readonly _tag: Tag }>) => Either.Either<A2, E2>
+    ): <A, StreamErr, R>(
+      self: Stream.Stream<Either.Either<A, E>, StreamErr, R>
+    ) => Stream.Stream<
+      Either.Either<A | A2, Exclude<E, { readonly _tag: Tag }> | E2>,
+      StreamErr,
+      R
+    >
+    <
+      A,
+      E extends { readonly _tag: string },
+      Tag extends E['_tag'],
+      A2,
+      E2,
+      StreamErr,
+      R,
+    >(
+      self: Stream.Stream<Either.Either<A, E>, StreamErr, R>,
+      tag: Tag,
+      f: (e: Extract<E, { readonly _tag: Tag }>) => Either.Either<A2, E2>
+    ): Stream.Stream<
+      Either.Either<A | A2, Exclude<E, { readonly _tag: Tag }> | E2>,
+      StreamErr,
+      R
+    >
+  } = dual(
+    3,
+    <
+      A,
+      E extends { readonly _tag: string },
+      Tag extends E['_tag'],
+      A2,
+      E2,
+      StreamErr,
+      R,
+    >(
+      self: Stream.Stream<Either.Either<A, E>, StreamErr, R>,
+      tag: Tag,
+      f: (e: Extract<E, { readonly _tag: Tag }>) => Either.Either<A2, E2>
+    ): Stream.Stream<
+      Either.Either<A | A2, Exclude<E, { readonly _tag: Tag }> | E2>,
+      StreamErr,
+      R
+    > =>
+      Stream.map(self, (either) =>
+        Either.isLeft(either) && either.left._tag === tag
+          ? (f(
+              either.left as Extract<E, { readonly _tag: Tag }>
+            ) as Either.Either<A | A2, Exclude<E, { readonly _tag: Tag }> | E2>)
+          : (either as Either.Either<
+              A | A2,
+              Exclude<E, { readonly _tag: Tag }> | E2
+            >)
+      )
+  )
+
+  // -------------------------------------------------------------------------------------
   // conversions
   // -------------------------------------------------------------------------------------
 

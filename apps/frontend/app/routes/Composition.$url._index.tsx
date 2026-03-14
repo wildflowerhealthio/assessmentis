@@ -27,7 +27,7 @@ export default function CompositionDetailsPage({
 
   const compositionLoader = useEitherStream(compositionStream)
 
-  useBreadcrumbs(Composition, compositionLoader)
+  useBreadcrumbs(() => [Composition, compositionLoader], [compositionLoader])
 
   const loader = (
     <ResourceDetailPage

@@ -47,8 +47,14 @@ export function useResourceSubscription<
     | NotFoundError<
         ResourceDataTypes[TDomainType]['domainType'],
         {
-          readonly url: string | ReadonlyUrl
+          readonly url: Resource.InferResourceUrl<
+            ResourceDataTypes[TDomainType]
+          >
         }
+      >
+    | NotFoundError<
+        ResourceDataTypes[TDomainType]['domainType'],
+        { readonly unparseableUrl: string }
       >
   >,
   never,
@@ -69,10 +75,10 @@ export function useResourceSubscription<
       Either.left(
         new NotFoundError<
           ResourceDataTypes[TDomainType]['domainType'],
-          { url: string | ReadonlyUrl }
+          { unparseableUrl: string }
         >({
           resourceType: ResourceSchema.DomainType,
-          params: { url: rawUrl },
+          params: { unparseableUrl: rawUrl },
         } as const)
       )
     )

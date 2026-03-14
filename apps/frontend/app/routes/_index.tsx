@@ -3,7 +3,7 @@ import { Effect } from 'effect'
 import { useBreadcrumbs } from 'app/modules/Breadcrumbs/useBreadcrumbs'
 
 export default function Home() {
-  useBreadcrumbs()
+  useBreadcrumbs(() => [], [])
 
   return (
     <section>

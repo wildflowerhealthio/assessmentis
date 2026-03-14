@@ -75,7 +75,7 @@ export function PromisedDataPicker<T extends PickerItemInstance>({
     </ErrorBoundary>
   )
 }
-const isLoader = Symbol()
+const isLoading = Symbol()
 
 export function BasePicker<T extends PickerItemInstance>(
   props: BasePickerProps<T>
@@ -102,7 +102,7 @@ export function BasePicker<T extends PickerItemInstance>(
 
   // Create placeholder items while loading if we have a value but no matching items
   const displayItems = useMemo((): (
-    | (PickerItemInstance & { [isLoader]: true })
+    | (PickerItemInstance & { [isLoading]: true })
     | T
   )[] => {
     if (selectedItems.length > 0) {
@@ -111,8 +111,8 @@ export function BasePicker<T extends PickerItemInstance>(
     // If we have a value but no selectedItems (items still loading), show placeholder
     if (picking.value && loading) {
       const ids = Array.isArray(picking.value) ? picking.value : [picking.value]
-      return ids.map((id): PickerItemInstance & { [isLoader]: true } => ({
-        [isLoader]: true,
+      return ids.map((id): PickerItemInstance & { [isLoading]: true } => ({
+        [isLoading]: true,
         PickerItem: {
           id: id,
           display: 'Loading...',
@@ -134,8 +134,8 @@ export function BasePicker<T extends PickerItemInstance>(
         value={displayItems}
         onChange={(item) => {
           if (Array.isArray(item)) {
-            handleSelectMany(item.filter((x): x is T => isLoader in x))
-          } else if (item && !(isLoader in item)) {
+            handleSelectMany(item.filter((x): x is T => !(isLoading in x)))
+          } else if (item && !(isLoading in item)) {
             handleSelect(item)
           }
         }}

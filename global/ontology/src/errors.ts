@@ -28,6 +28,31 @@ export class UnhandledError extends Data.TaggedError('UnhandledError')<{
     return this
   }
 
+  /**
+   * Coerce an unknown value into an `UnhandledError`.
+   *
+   * 1. If the value is already an `UnhandledError`, return it as-is.
+   * 2. If the value has an `asUnhandledError` method, call it and return the
+   *    result — provided the result is actually an `UnhandledError` instance.
+   * 3. Otherwise, wrap the value in a new `UnhandledError`.
+   */
+  static fromUnknown(err: unknown): UnhandledError {
+    if (err instanceof UnhandledError) return err
+    if (
+      typeof err === 'object' &&
+      err !== null &&
+      'asUnhandledError' in err &&
+      typeof (err as { asUnhandledError: unknown }).asUnhandledError ===
+        'function'
+    ) {
+      const converted = (
+        err as { asUnhandledError: () => unknown }
+      ).asUnhandledError()
+      if (converted instanceof UnhandledError) return converted
+    }
+    return new UnhandledError({ message: String(err), cause: err })
+  }
+
   static get arbitrary(): Arbitrary.LazyArbitrary<UnhandledError> {
     return (fc: typeof FastCheck) =>
       fc

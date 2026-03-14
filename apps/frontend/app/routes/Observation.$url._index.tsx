@@ -31,7 +31,7 @@ export default function ObservationDetailPage({
 
   const observationPromise = useEitherStream(observationStream)
 
-  useBreadcrumbs(Observation, observationPromise)
+  useBreadcrumbs(() => [Observation, observationPromise], [observationPromise])
 
   const loader = (
     <ResourceDetailPage

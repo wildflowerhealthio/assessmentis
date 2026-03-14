@@ -39,7 +39,7 @@ export function CreateResourcePage<
   const navigate = useNavigate()
   const hub = useHub()
 
-  useBreadcrumbs(klass, 'New')
+  useBreadcrumbs(() => [klass, 'New'], [klass])
 
   const handleSubmit = async (formData: TFormData) => {
     const domainData = formData.toCreatePayload()

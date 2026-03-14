@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { Arbitrary, FastCheck, Schema } from 'effect'
 
+import { DatatypeChoice } from '@assessmentis/clinical-domain/data-types'
+
 import { ObservationFormData } from './ObservationFormData'
 
 const observationFormArb = Arbitrary.make(ObservationFormData)
@@ -52,9 +54,7 @@ describe('ObservationFormData', () => {
         extension: [],
         reference: 'http://encounters.com/encounter-456',
       })
-      expect('valueString' in observation && observation.valueString).toBe(
-        '120/80'
-      )
+      expect(DatatypeChoice.cases(observation.value).string).toBe('120/80')
     })
 
     it('should transform form data with valueQuantity', () => {
@@ -67,9 +67,7 @@ describe('ObservationFormData', () => {
 
       const observation = formData.toCreatePayload()
 
-      expect(
-        'valueQuantity' in observation && observation.valueQuantity
-      ).toEqual({
+      expect(DatatypeChoice.cases(observation.value).Quantity).toMatchObject({
         value: 70.5,
         unit: 'kg',
       })
@@ -88,8 +86,7 @@ describe('ObservationFormData', () => {
       const observation = formData.toCreatePayload()
 
       expect(
-        'valueCodeableConcept' in observation &&
-          observation.valueCodeableConcept
+        DatatypeChoice.cases(observation.value).CodeableConcept
       ).toMatchObject({
         text: 'Moderate pain',
         coding: [

@@ -31,7 +31,10 @@ export default function PractitionerDetailPage({
 
   const practitionerPromise = useEitherStream(practitionerStream)
 
-  useBreadcrumbs(Practitioner, practitionerPromise)
+  useBreadcrumbs(
+    () => [Practitioner, practitionerPromise],
+    [practitionerPromise]
+  )
 
   const loader = (
     <ResourceDetailPage
