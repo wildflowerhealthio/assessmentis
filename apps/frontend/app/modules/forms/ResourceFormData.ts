@@ -1,29 +1,29 @@
-import type { ResourceDataTypes } from '@assessmentis/clinical-domain'
+import type { ClinicalDomainClasses } from '@assessmentis/clinical-domain'
 import type { Resource } from '@assessmentis/effectful-store'
 
 import type { FormData, FormDataConstructor } from './FormData'
 
 /**
  * Narrowed constructor type for resource page components.
- * Fixes TCreatePayload = ResourceDataTypes[K] and
- * TUpdatePayload = Resource.WithResourceUr\<ResourceDataTypes[K]\>.
+ * Fixes TCreatePayload = InstanceType<K> and
+ * TUpdatePayload = Resource.WithResourceUrl<InstanceType<K>>.
  */
 export type ResourceFormDataConstructor<
-  K extends keyof ResourceDataTypes & string,
+  K extends ClinicalDomainClasses,
   TFormData extends ResourceFormData<K>,
   TFormDataEncoded,
 > = FormDataConstructor<
-  ResourceDataTypes[K],
-  ResourceDataTypes[K],
-  Resource.WithResourceUrl<ResourceDataTypes[K]>,
+  InstanceType<K>,
+  InstanceType<K>,
+  Resource.WithResourceUrl<InstanceType<K>>,
   TFormData,
   TFormDataEncoded
 >
 
 export interface ResourceFormData<
-  K extends keyof ResourceDataTypes & string,
+  K extends ClinicalDomainClasses,
 > extends FormData<
-  ResourceDataTypes[K],
-  ResourceDataTypes[K],
-  Resource.WithResourceUrl<ResourceDataTypes[K]>
+  InstanceType<K>,
+  InstanceType<K>,
+  Resource.WithResourceUrl<InstanceType<K>>
 > {}

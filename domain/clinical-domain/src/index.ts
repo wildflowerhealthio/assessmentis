@@ -22,6 +22,8 @@ export * from './resources/QuestionnaireResponse'
 export type {
   default as ResourceDataTypes,
   ResourceType,
+  ClinicalDomainClasses,
 } from './ResourceDataTypes'
+export { toSupportedClasses } from './ResourceDataTypes'
 export * from './types'
 export { ClinicalDomainHub as ClinicalDomainHub } from './ClinicalDomainHub'

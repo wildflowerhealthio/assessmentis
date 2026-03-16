@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, vi } from 'vitest'
 import { it } from '@effect/vitest'
 import { Effect, Either, Stream } from 'effect'
 
+import { Patient } from '@assessmentis/clinical-domain'
 import type { ReadonlyUrl } from '@assessmentis/effectful-store'
 
 import { renderHook } from '@testing-library/react'
@@ -102,7 +103,7 @@ describe('useHub', () => {
 
       const { result } = renderHook(() => useHub())
       const getResult = result.current.get(
-        'Patient',
+        Patient,
 
         {} as any
       )
@@ -124,7 +125,7 @@ describe('useHub', () => {
 
       const { result } = renderHook(() => useHub())
 
-      const stream = result.current.subscribe('Patient', {} as any)
+      const stream = result.current.subscribe(Patient, {} as any)
 
       return Effect.runPromise(Stream.runCollect(stream)).then((chunk) => {
         const items = Array.from(chunk)
@@ -143,7 +144,7 @@ describe('useHub', () => {
       )
 
       const { result } = renderHook(() => useHub())
-      const searchResult = result.current.search('Patient')
+      const searchResult = result.current.search(Patient)
 
       return Effect.runPromise(searchResult).then((value) => {
         expect(value).toBe(mockResults)
@@ -160,7 +161,7 @@ describe('useHub', () => {
       )
 
       const { result } = renderHook(() => useHub())
-      const stream = result.current.subscribeSearch('Patient')
+      const stream = result.current.subscribeSearch(Patient)
 
       return Effect.runPromise(Stream.runCollect(stream)).then((chunk) => {
         const items = Array.from(chunk)
@@ -184,7 +185,7 @@ describe('useHub', () => {
 
       const { result } = renderHook(() => useHub())
 
-      const createResult = result.current.create('Patient', newResource as any)
+      const createResult = result.current.create(Patient, newResource as any)
 
       return Effect.runPromise(createResult).then((value) => {
         expect(value).toBe(createdResource)
@@ -205,7 +206,7 @@ describe('useHub', () => {
 
       const { result } = renderHook(() => useHub())
 
-      const updateResult = result.current.update('Patient', resource as any)
+      const updateResult = result.current.update(Patient, resource as any)
 
       return Effect.runPromise(updateResult).then((value) => {
         expect(value).toBe(resource)
@@ -222,7 +223,7 @@ describe('useHub', () => {
 
       const { result } = renderHook(() => useHub())
 
-      const deleteResult = result.current.delete('Patient', {} as any)
+      const deleteResult = result.current.delete(Patient, {} as any)
 
       return Effect.runPromise(deleteResult).then((value) => {
         expect(value).toBeUndefined()
@@ -231,7 +232,7 @@ describe('useHub', () => {
   })
 
   describe('Hub method invocations pass through correctly', () => {
-    it.effect('calls get with the provided domainType and url', () =>
+    it.effect('calls get with the provided class and url', () =>
       Effect.gen(function* () {
         const getFn = vi.fn(() => Effect.succeed({}))
         const mockHub = createMockHub({ get: getFn })
@@ -244,13 +245,13 @@ describe('useHub', () => {
         const fakeUrl = {
           toString: () => 'https://example.com/Patient/1',
         } as any
-        yield* result.current.get('Patient', fakeUrl)
+        yield* result.current.get(Patient, fakeUrl)
 
-        expect(getFn).toHaveBeenCalledWith('Patient', fakeUrl)
+        expect(getFn).toHaveBeenCalledWith(Patient, fakeUrl)
       })
     )
 
-    it.effect('calls subscribe with the provided domainType and url', () =>
+    it.effect('calls subscribe with the provided class and url', () =>
       Effect.gen(function* () {
         const subscribeFn = vi.fn(() => Stream.succeed(Either.right({})))
         const mockHub = createMockHub({ subscribe: subscribeFn })
@@ -264,14 +265,14 @@ describe('useHub', () => {
           toString: () => 'https://example.com/Patient/1',
         } as any as ReadonlyUrl
         yield* result.current
-          .subscribe('Patient', fakeUrl)
+          .subscribe(Patient, fakeUrl)
           .pipe(Stream.runCollect)
 
-        expect(subscribeFn).toHaveBeenCalledWith('Patient', fakeUrl)
+        expect(subscribeFn).toHaveBeenCalledWith(Patient, fakeUrl)
       })
     )
 
-    it.effect('calls delete with the provided domainType and url', () =>
+    it.effect('calls delete with the provided class and url', () =>
       Effect.gen(function* () {
         const deleteFn = vi.fn(() => Effect.succeed(undefined))
         const mockHub = createMockHub({ delete: deleteFn })
@@ -284,9 +285,9 @@ describe('useHub', () => {
         const fakeUrl = {
           toString: () => 'https://example.com/Patient/1',
         } as any
-        yield* result.current.delete('Patient', fakeUrl)
+        yield* result.current.delete(Patient, fakeUrl)
 
-        expect(deleteFn).toHaveBeenCalledWith('Patient', fakeUrl)
+        expect(deleteFn).toHaveBeenCalledWith(Patient, fakeUrl)
       })
     )
   })

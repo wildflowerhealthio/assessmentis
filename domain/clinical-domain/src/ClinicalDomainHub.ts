@@ -2,7 +2,7 @@ import { Context } from 'effect'
 
 import type { Hub } from '@assessmentis/effectful-store'
 
-import type ResourceDataTypes from './ResourceDataTypes'
+import type { ClinicalDomainClasses } from './ResourceDataTypes'
 
 /**
  * ClinicalDomainHub provides centralized access to all clinical domain resources
@@ -21,13 +21,13 @@ import type ResourceDataTypes from './ResourceDataTypes'
  *   const hub = yield* ClinicalDomainHub
  *
  *   // Fetch a patient
- *   const patient = yield* hub.get('Patient', patientUrl)
+ *   const patient = yield* hub.get(Patient, patientUrl)
  *
  *   // Search for encounters
- *   const encounters = yield* hub.search('Encounter', { patient: patientUrl })
+ *   const encounters = yield* hub.search(Encounter, { patient: patientUrl })
  *
  *   // Create a new observation
- *   const obs = yield* hub.create('Observation', newObservation)
+ *   const obs = yield* hub.create(Observation, newObservation)
  * })
  * ```
  *
@@ -35,18 +35,18 @@ import type ResourceDataTypes from './ResourceDataTypes'
  * @example Reactive subscriptions
  * ```typescript
  * // Subscribe to resource changes
- * const patientStream = hub.subscribe('Patient', patientUrl)
+ * const patientStream = hub.subscribe(Patient, patientUrl)
  * // Returns: Stream<Either<Patient, NotFoundError | CommonErrors>>
  *
  * // Subscribe to search results
- * const encountersStream = hub.subscribeSearch('Encounter', { patient: patientUrl })
+ * const encountersStream = hub.subscribeSearch(Encounter, { patient: patientUrl })
  * // Returns: Stream<Either<Encounter[], CommonErrors>>
  * ```
  *
  * @see {@link Hub} for full API documentation
- * @see ResourceDataTypes for available resource types
+ * @see ClinicalDomainClasses for available resource types
  */
 export class ClinicalDomainHub extends Context.Tag('ClinicalDomainHub')<
   ClinicalDomainHub,
-  Hub.Hub<ResourceDataTypes>
+  Hub.Hub<ClinicalDomainClasses>
 >() {}

@@ -1,14 +1,15 @@
 import { vi } from 'vitest'
-import { Effect, Stream, type Context } from 'effect'
+import { Effect, Stream } from 'effect'
+import type { Context } from 'effect'
 
 import { NotFoundError } from '@assessmentis/ontology'
 
 import { OrgSlug } from '../../models/IdTypes'
 import type { Org } from '../../models/Org'
-import {
-  type DocumentData,
-  type DocumentPath,
-  type DocumentStore,
+import type {
+  DocumentData,
+  DocumentPath,
+  DocumentStore,
 } from '../../tagClasses'
 
 type DocumentStoreService = Context.Tag.Service<typeof DocumentStore>

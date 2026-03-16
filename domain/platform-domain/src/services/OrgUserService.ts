@@ -4,8 +4,8 @@ import {
   AuthzError,
   NotFoundError,
   UnhandledError,
-  type AuthError,
 } from '@assessmentis/ontology'
+import type { AuthError } from '@assessmentis/ontology'
 
 import { CurrentOrg } from '../tagClasses'
 import { CurrentUserId } from '../tagClasses/CurrentUserId'

@@ -1,20 +1,19 @@
 import { Effect } from 'effect'
-import { useMemo, type ComponentType } from 'react'
+import { useMemo } from 'react'
+import type { ComponentType } from 'react'
 import { useNavigate } from 'react-router'
 
-import type { ResourceDataTypes } from '@assessmentis/clinical-domain'
+import type { ClinicalDomainClasses } from '@assessmentis/clinical-domain'
 import { Resource } from '@assessmentis/effectful-store'
 import { useEitherStream } from '@assessmentis/react-util'
 
 import { useHub } from '../../layers/useHub'
 import { useResourceSubscription } from '../../layers/useResourceSubscription'
-import {
-  assertBreadcrumbLabel,
-  type BreadcrumbLabelConstructor,
-} from '../../traits/BreadcrumbLabel/BreadcrumbLabel'
-import type { DomainTypedConstructor } from '../../traits/DomainTyped/DomainTyped'
+import { assertBreadcrumbLabel } from '../../traits/BreadcrumbLabel/BreadcrumbLabel'
+import type { BreadcrumbLabelConstructor } from '../../traits/BreadcrumbLabel/BreadcrumbLabel'
 import type { LabeledConstructor } from '../../traits/Labeled/Labeled'
-import { assertLink, type LinkConstructor } from '../../traits/Link/Link'
+import { assertLink } from '../../traits/Link/Link'
+import type { LinkConstructor } from '../../traits/Link/Link'
 import type { BreadcrumbSegment } from '../Breadcrumbs/BreadcrumbContext'
 import { useBreadcrumbs } from '../Breadcrumbs/useBreadcrumbs'
 import { FormPage } from '../common/components/FormPage/FormPage'
@@ -24,7 +23,10 @@ import type {
 } from './ResourceFormData'
 
 export function EditResourcePage<
-  K extends keyof ResourceDataTypes & string,
+  K extends ClinicalDomainClasses &
+    LabeledConstructor &
+    BreadcrumbLabelConstructor &
+    LinkConstructor,
   TFormData extends ResourceFormData<K>,
   TFormDataEncoded,
 >({
@@ -33,10 +35,7 @@ export function EditResourcePage<
   FormComponent,
   url: rawUrl,
 }: {
-  klass: LabeledConstructor &
-    BreadcrumbLabelConstructor &
-    LinkConstructor &
-    DomainTypedConstructor<K>
+  klass: K
   Form: ResourceFormDataConstructor<K, TFormData, TFormDataEncoded>
   FormComponent: ComponentType<{
     onSubmit: (data: TFormData) => void | Promise<void>
@@ -81,7 +80,7 @@ export function EditResourcePage<
     }
 
     const updated = formData.toUpdatePayload(resource)
-    await Effect.runPromise(hub.update(klass.DomainType, updated))
+    await Effect.runPromise(hub.update(klass, updated))
     assertLink(resource)
     navigate(resource.Link)
   }

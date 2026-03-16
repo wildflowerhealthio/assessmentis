@@ -1,10 +1,11 @@
-import { Effect, Schema, type Scope } from 'effect'
+import { Effect, Schema } from 'effect'
+import type { Scope } from 'effect'
 import type { HttpClient } from '@effect/platform'
 
-import type { ResourceDataTypes } from '@assessmentis/clinical-domain'
 import type { LiveCredential } from '@assessmentis/platform-domain'
 
 import { makeDailyCoReadyOrigin } from './DailyCoOrigin'
+import type { SupportedClasses } from './DailyCoOrigin'
 import { DailyCoOriginDefinition } from './DailyCoOriginDefinition'
 import type {
   DailyCoProxyIdentifier,
@@ -15,6 +16,11 @@ import type {
   OriginFactory,
   ReadonlyUrl,
 } from '@assessmentis/effectful-store'
+import type {
+  Location,
+  Media,
+  Observation,
+} from '@assessmentis/clinical-domain'
 
 /**
  * Creates an {@link OriginFactory} for DailyCo origins.
@@ -31,11 +37,11 @@ export const makeDailyCoOriginType = (deps: {
     never,
     Scope.Scope
   >
-}): OriginFactory<ResourceDataTypes> => ({
+}): OriginFactory<SupportedClasses, never> => ({
   tag: 'daily_co',
-  make: (
+  make: <Keys extends SupportedClasses['DomainType']>(
     _originUrl: ReadonlyUrl,
-    baseDef: OriginConfig,
+    baseDef: OriginConfig<Keys>,
     _originConfig: unknown
   ) => {
     const def = Schema.decodeUnknownSync(DailyCoOriginDefinition)(baseDef)

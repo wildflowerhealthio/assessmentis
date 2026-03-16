@@ -6,10 +6,10 @@ import {
   ClinicalDomainHub,
   Media,
   Observation,
+  Questionnaire,
   QuestionnaireResponse,
-  type Questionnaire,
-  type QuestionnaireItemLink,
 } from '@assessmentis/clinical-domain'
+import type { QuestionnaireItemLink } from '@assessmentis/clinical-domain'
 import { UnhandledError } from '@assessmentis/ontology'
 import { gad7 } from '@assessmentis/questionnaire-entities'
 import { useEffectTs } from '@assessmentis/react-util'
@@ -49,7 +49,7 @@ export default function QuestionnaireResponseDetailsPage({
         )
 
       const questionnaireResponse = yield* hub.get(
-        'QuestionnaireResponse',
+        QuestionnaireResponse,
         questionnaireResponseUrl
       )
 
@@ -58,10 +58,10 @@ export default function QuestionnaireResponseDetailsPage({
         questionnaireResponse.encounter?.reference ?? undefined
 
       const questionnaire = questionnaireUrl
-        ? yield* hub.get('Questionnaire', questionnaireUrl)
+        ? yield* hub.get(Questionnaire, questionnaireUrl)
         : undefined
 
-      const observations = yield* hub.search('Observation', {
+      const observations = yield* hub.search(Observation, {
         encounter: encounterUrl,
       })
 
@@ -150,9 +150,7 @@ const ResponsePage = ({
     }
     console.log('Extracted observations:', extractedObservations)
 
-    return Effect.runPromise(
-      hub.createMany('Observation', extractedObservations)
-    )
+    return Effect.runPromise(hub.createMany(Observation, extractedObservations))
       .then((data) => {
         console.log('Synced observations:', data)
       })

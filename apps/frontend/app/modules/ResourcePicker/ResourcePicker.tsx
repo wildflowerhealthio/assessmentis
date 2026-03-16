@@ -1,20 +1,15 @@
-import type { ResourceDataTypes } from '@assessmentis/clinical-domain'
+import type { ClinicalDomainClasses } from '@assessmentis/clinical-domain'
 
-import type { DomainTypedConstructor } from '../../traits/DomainTyped/DomainTyped'
-import type {
-  PickerItemConstructor,
-  PickerItemInstance,
-} from '../../traits/Picker/PickerItem'
+import type { PickerItemConstructor } from '../../traits/Picker/PickerItem'
 import { PromisedDataPicker } from './internal/BasePicker'
 import type { BasePickerProps } from './internal/PickerTypes'
 import { usePickerData } from './internal/usePickerData'
 
 export function ResourcePicker<
-  K extends keyof ResourceDataTypes,
-  Klass extends PickerItemConstructor & DomainTypedConstructor<K>,
+  K extends ClinicalDomainClasses & PickerItemConstructor,
 >(
-  props: { klass: Klass } & Omit<
-    BasePickerProps<ResourceDataTypes[K] & PickerItemInstance>,
+  props: { klass: K } & Omit<
+    BasePickerProps<InstanceType<K>>,
     'items' | 'loading'
   >
 ) {

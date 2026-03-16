@@ -12,20 +12,19 @@ import type { PlatformContext } from './layers/PlatformContext'
  */
 export function createMockHub(overrides: Partial<any> = {}): any {
   return {
-    get: (_domainType: string, _url: any) => Effect.succeed({}),
-    subscribe: (_domainType: string, _url: any) =>
-      Stream.succeed(Either.right({})),
-    search: (_domainType: string, _params?: any) => Effect.succeed([]),
-    subscribeSearch: (_domainType: string, _params?: any) =>
+    get: (_klass: any, _url: any) => Effect.succeed({}),
+    subscribe: (_klass: any, _url: any) => Stream.succeed(Either.right({})),
+    search: (_klass: any, _params?: any) => Effect.succeed([]),
+    subscribeSearch: (_klass: any, _params?: any) =>
       Stream.succeed(Either.right([])),
-    create: (_domainType: string, resource: any, _origin?: any) =>
+    create: (_klass: any, resource: any, _origin?: any) =>
       Effect.succeed({ ...resource, url: 'http://example.com/test' }),
-    createMany: (_domainType: string, resources: any[], _origin?: any) =>
+    createMany: (_klass: any, resources: any[], _origin?: any) =>
       Effect.succeed(
         resources.map((r) => ({ ...r, url: 'http://example.com/test' }))
       ),
-    update: (_domainType: string, resource: any) => Effect.succeed(resource),
-    delete: (_domainType: string, _url: any) => Effect.succeed(undefined),
+    update: (_klass: any, resource: any) => Effect.succeed(resource),
+    delete: (_klass: any, _url: any) => Effect.succeed(undefined),
     ...overrides,
   }
 }

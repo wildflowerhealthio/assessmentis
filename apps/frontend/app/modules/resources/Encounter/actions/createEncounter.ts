@@ -74,7 +74,7 @@ export const createEncounter = (
 
     // Create a standalone Location resource for the video room
     const videoRoomLocation = yield* hub.create(
-      'Location',
+      Location,
       Location.make({
         name: 'Video Room',
         identifier: [
@@ -116,10 +116,10 @@ export const createEncounter = (
       location: [videoRoomEntry],
     })
 
-    const createdEncounter = yield* hub.create('Encounter', encounterData)
+    const createdEncounter = yield* hub.create(Encounter, encounterData)
 
     const questionnaireResponseRows = yield* hub.createMany(
-      'QuestionnaireResponse',
+      QuestionnaireResponse,
       args.questionnaireResponses.map((questionnaireResponse) =>
         QuestionnaireResponse.make({
           encounter: Reference.make({

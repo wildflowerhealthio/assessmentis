@@ -15,7 +15,7 @@ import { deepDataStruct } from '@assessmentis/util'
 import { ReadonlyUrl } from './ReadonlyUrl'
 import type { HubState } from './hub/types'
 import type * as Origin from './Origin'
-import type * as Resource from './Resource'
+import type { Resource } from '.'
 
 // --- Generic input interfaces ---
 
@@ -26,9 +26,11 @@ import type * as Resource from './Resource'
  * `onExcessProperty: 'preserve'`) and participate in structural equality
  * checks.
  */
-export interface OriginConfig {
+export interface OriginConfig<in DomainTypes extends string> {
   readonly _tag: string
-  readonly supportedResources: { readonly [x: string]: true }
+  readonly supportedResources: { readonly [x: string]: true } & {
+    readonly [k in DomainTypes]: true
+  }
   readonly originConfig?: Record<string, unknown> | undefined
 }
 
@@ -42,9 +44,10 @@ export interface OriginConfig {
  *    (or per org) configuration blobs (e.g. OAuth tokens).
  */
 export interface OriginSourceSnapshot<
-  OriginConfigs extends { readonly [encodedUrl: string]: OriginConfig } = {
-    readonly [encodedUrl: string]: OriginConfig
-  },
+  OriginConfigs extends { readonly [encodedUrl: string]: OriginConfig<never> } =
+    {
+      readonly [encodedUrl: string]: OriginConfig<never>
+    },
 > {
   readonly origins: OriginConfigs
   readonly originConfigs?:
@@ -61,15 +64,19 @@ export interface OriginSourceSnapshot<
  * per-user config blob, and returns an Effect producing the origin state.
  */
 export interface OriginFactory<
-  Resources extends Resource.ResourceSet,
-  R = never,
+  in SupportedClasses extends Resource.AnyDomainClass,
+  out R = never,
 > {
   readonly tag: string
-  readonly make: (
+  readonly make: <Keys extends SupportedClasses['DomainType']>(
     originUrl: ReadonlyUrl,
-    config: OriginConfig,
+    config: OriginConfig<Keys>,
     originConfig: Record<string, unknown> | undefined
-  ) => Effect.Effect<Origin.AnyState<Resources, never>, never, R | Scope.Scope>
+  ) => Effect.Effect<
+    Origin.AnyState<SupportedClasses & { DomainType: Keys }>,
+    never,
+    R | Scope.Scope
+  >
 }
 
 // --- Definition equality via Data/Equal ---
@@ -79,7 +86,7 @@ export interface OriginFactory<
  * `Equal.equals` performs structural comparison across emissions.
  */
 const wrapForEquality = (
-  def: OriginConfig,
+  def: OriginConfig<never>,
   originConfig: Record<string, unknown> | undefined
 ): Equal.Equal =>
   deepDataStruct({
@@ -87,71 +94,57 @@ const wrapForEquality = (
     _originConfig: originConfig,
   })
 
-type OriginCacheEntry<Resources extends Resource.ResourceSet> = {
+type OriginCacheEntry<SupportedClasses extends Resource.AnyDomainClass> = {
   readonly wrappedDef: Equal.Equal
-  readonly state: Origin.AnyState<Resources, never>
+  readonly state: Origin.AnyState<SupportedClasses>
   readonly scope: Scope.CloseableScope
 }
 
-type OriginCache<Resources extends Resource.ResourceSet> = Map<
-  string,
-  OriginCacheEntry<Resources>
->
+type OriginCache = Map<string, OriginCacheEntry<never>>
 
 // --- Error origin helper ---
 
+const toSupportedClasses = <_DomainTypes extends string>(_map: {
+  [k: string]: true
+}): object => ({})
+
+type SupportedClasses<_DomainTypes extends string> = never
+
 /**
  * Constructs an errored origin state for an unrecognized origin tag.
- * Built at the concrete `ResourceSet` level first, then widened — this
- * lets TypeScript verify the `supportedResources` assignment without
- * needing to prove index-signature-to-mapped-type compatibility in a
- * generic context.
  */
-const makeUnsupportedOrigin = <Resources extends Resource.ResourceSet>(
+const makeUnsupportedOrigin = <DomainTypes extends string>(
   originUrl: ReadonlyUrl,
-  def: OriginConfig
-): Origin.Errored<Resources, never> => {
-  const concrete: Origin.Errored<Resource.ResourceSet, never> = {
-    originUrl,
-    supportedResources: def.supportedResources,
-    resolver: undefined,
-    errorStatus: new UnhandledError({
-      message: `Unsupported origin tag '${def._tag}'`,
-    }),
-    provokeReauthenticate: () => Effect.void,
-    provokeReauthorize: () => Effect.void,
-  }
-  return concrete
-}
+  def: OriginConfig<DomainTypes>
+): Origin.Errored<SupportedClasses<DomainTypes>> => ({
+  originUrl,
+  supportedResources: toSupportedClasses<DomainTypes>(def.supportedResources),
+  resolver: undefined,
+  errorStatus: new UnhandledError({
+    message: `Unsupported origin tag '${def._tag}'`,
+  }),
+  provokeReauthenticate: () => Effect.void,
+  provokeReauthorize: () => Effect.void,
+})
 
 // --- Build HubState with caching ---
 
-const buildHubState = <Resources extends Resource.ResourceSet, R>(
+const buildHubState = <R>(
   originMakers: {
     [tag: string]: (
       originUrl: ReadonlyUrl,
-      definition: OriginConfig,
+      definition: OriginConfig<never>,
       originConfig: Record<string, unknown> | undefined
-    ) => Effect.Effect<
-      Origin.AnyState<Resources, never>,
-      never,
-      R | Scope.Scope
-    >
+    ) => Effect.Effect<Origin.AnyState<never>, never, R | Scope.Scope>
   },
   snapshot: OriginSourceSnapshot,
-  cache: OriginCache<Resources>
-): Effect.Effect<
-  [OriginCache<Resources>, HubState<Resources>],
-  never,
-  R | Scope.Scope
-> =>
+  cache: OriginCache
+): Effect.Effect<[OriginCache, HubState], never, R | Scope.Scope> =>
   Effect.gen(function* () {
-    const newCache: OriginCache<Resources> = new Map()
-    const state = new Map<string, Origin.AnyState<Resources, never>>()
+    const newCache: OriginCache = new Map()
+    const state = new Map<string, Origin.AnyState<never>>()
 
-    for (const [url, def] of EffectRecord.toEntries(
-      snapshot.origins as { [key: string]: OriginConfig }
-    )) {
+    for (const [url, def] of EffectRecord.toEntries(snapshot.origins)) {
       const originUrl = ReadonlyUrl.fromEncoded(url)
       const urlKey = originUrl.toString()
       const originConfig: Record<string, unknown> | undefined =
@@ -179,7 +172,7 @@ const buildHubState = <Resources extends Resource.ResourceSet, R>(
         })
         state.set(urlKey, origin)
       } else {
-        const errorOrigin = makeUnsupportedOrigin<Resources>(originUrl, def)
+        const errorOrigin = makeUnsupportedOrigin(originUrl, def)
         const childScope = yield* Scope.make()
         newCache.set(urlKey, {
           wrappedDef: wrapped,
@@ -198,9 +191,9 @@ const buildHubState = <Resources extends Resource.ResourceSet, R>(
       }
     }
 
-    return [newCache, HashMap.fromIterable(state)] as [
-      OriginCache<Resources>,
-      HubState<Resources>,
+    return [newCache, HashMap.fromIterable(state)] satisfies [
+      OriginCache,
+      HubState,
     ]
   })
 
@@ -218,35 +211,32 @@ const buildHubState = <Resources extends Resource.ResourceSet, R>(
  * factories into the returned stream, so callers can provide those services
  * externally.
  */
-export const hubStateStream = <Resources extends Resource.ResourceSet, R, E>(
-  originFactories: readonly OriginFactory<Resources, R>[],
+export const hubStateStream = <
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Factories extends ReadonlyArray<OriginFactory<any, R>>,
+  E,
+  R,
+>(
+  originFactories: Factories,
   sourceStream: Stream.Stream<
     Either.Either<OriginSourceSnapshot, E>,
     never,
     Scope.Scope
   >
-): Stream.Stream<
-  Either.Either<HubState<Resources>, E>,
-  never,
-  R | Scope.Scope
-> => {
+): Stream.Stream<Either.Either<HubState, E>, never, R | Scope.Scope> => {
   const originMakers = Object.fromEntries(
     originFactories.map((ot) => [ot.tag, ot.make])
   )
 
-  type Output = Either.Either<HubState<Resources>, E>
+  type Output = Either.Either<HubState, E>
 
   return Stream.mapAccumEffect(
     sourceStream,
-    new Map() as OriginCache<Resources>,
+    new Map() as OriginCache,
     (
       cache,
       inputEither
-    ): Effect.Effect<
-      [OriginCache<Resources>, Output],
-      never,
-      R | Scope.Scope
-    > => {
+    ): Effect.Effect<[OriginCache, Output], never, R | Scope.Scope> => {
       if (Either.isLeft(inputEither)) {
         return Effect.succeed([cache, Either.left(inputEither.left)])
       }
@@ -254,10 +244,7 @@ export const hubStateStream = <Resources extends Resource.ResourceSet, R, E>(
       return buildHubState(originMakers, snapshot, cache).pipe(
         Effect.map(
           ([newCache, hubState]) =>
-            [newCache, Either.right(hubState)] as [
-              OriginCache<Resources>,
-              Output,
-            ]
+            [newCache, Either.right(hubState)] satisfies [OriginCache, Output]
         )
       )
     }

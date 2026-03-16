@@ -1,12 +1,11 @@
-import {
-  type Effect,
-  type HashMap,
-  type Request as EffectRequest,
-  type Stream,
-  Deferred,
-  Duration,
-  type Either,
-  type SubscriptionRef,
+import { Deferred, Duration } from 'effect'
+import type {
+  Effect,
+  HashMap,
+  Request as EffectRequest,
+  Stream,
+  Either,
+  SubscriptionRef,
 } from 'effect'
 
 import type {
@@ -24,23 +23,23 @@ import type * as ResourceRequest from '../ResourceRequest'
 
 // --- Pipeline types ---
 
-/** Union of all CRUD request types across every resource in the map. */
-export type AnyRequest<Resources extends Resource.ResourceSet> =
-  Origin.AnyResourceRequest<Resources[keyof Resources]>
+/** Union of all CRUD request types across every domain class in the union. */
+export type AnyRequest<Classes extends Resource.AnyDomainClass> =
+  Origin.AnyResourceRequest<Classes>
 
-/** A request entry (request + deferred result) for any resource in the map. */
-export type AnyEntry<Resources extends Resource.ResourceSet> =
-  EffectRequest.Entry<AnyRequest<Resources>>
+/** A request entry (request + deferred result) for any domain class in the union. */
+export type AnyEntry<Classes extends Resource.AnyDomainClass> =
+  EffectRequest.Entry<AnyRequest<Classes>>
 
 /**
  * A request entry guaranteed to have a concrete `origin` URL. Global
  * searches (with `origin: null`) have been resolved to per-origin entries
  * before reaching this type.
  */
-export type OriginBoundEntry<Resources extends Resource.ResourceSet> =
+export type OriginBoundEntry<Classes extends Resource.AnyDomainClass> =
   EffectRequest.Entry<
-    | Exclude<AnyRequest<Resources>, { readonly _tag: 'Search' }>
-    | (ResourceRequest.Search<Resources[keyof Resources]> & {
+    | Exclude<AnyRequest<Classes>, { readonly _tag: 'Search' }>
+    | (ResourceRequest.Search<Classes> & {
         readonly origin: ReadonlyUrl
       })
   >
@@ -50,19 +49,19 @@ export type OriginBoundEntry<Resources extends Resource.ResourceSet> =
  * called as `failEntry(entry, error)` or `failEntry(error)(entry)`.
  */
 export const failEntry: {
-  <Resources extends Resource.ResourceSet>(
-    entry: AnyEntry<Resources>,
+  <Classes extends Resource.AnyDomainClass>(
+    entry: AnyEntry<Classes>,
     error: UnhandledError | ResourceRequest.CommonErrors
   ): SideEffect.EffectAction
   (
     error: UnhandledError | ResourceRequest.CommonErrors
-  ): <Resources extends Resource.ResourceSet>(
-    entry: AnyEntry<Resources>
+  ): <Classes extends Resource.AnyDomainClass>(
+    entry: AnyEntry<Classes>
   ) => SideEffect.EffectAction
 } = dual(
   2,
-  <Resources extends Resource.ResourceSet>(
-    entry: AnyEntry<Resources>,
+  <Classes extends Resource.AnyDomainClass>(
+    entry: AnyEntry<Classes>,
     error: UnhandledError | ResourceRequest.CommonErrors
   ): SideEffect.EffectAction => Deferred.fail(entry.result, error)
 )
@@ -88,30 +87,28 @@ export type HubError =
  * Snapshot of all known origins, keyed by origin URL string. Each value is
  * an {@link Origin.AnyState} that may or may not be ready to resolve requests.
  */
-export type HubState<Resources extends Resource.ResourceSet> = HashMap.HashMap<
-  string,
-  Origin.AnyState<Resources, never>
->
+export type HubState = HashMap.HashMap<string, Origin.AnyState<never>>
 
 /** Reactive ref holding the current Hub state or error, with a subscribable changes stream. */
-export type HubRef<Resources extends Resource.ResourceSet> =
-  SubscriptionRef.SubscriptionRef<Either.Either<HubState<Resources>, HubError>>
+export type HubRef = SubscriptionRef.SubscriptionRef<
+  Either.Either<HubState, HubError>
+>
 
 /**
- * Typed CRUD and subscription methods for a single resource type. These are
- * the per-resource operations exposed by {@link Repository}.
+ * Typed CRUD and subscription methods for a single domain class. These are
+ * the per-class operations exposed by {@link Repository}.
  *
- * @typeParam TResource - The resource type these methods operate on
+ * @typeParam Klass - The domain class these methods operate on
  */
-export interface ResourceMethods<TResource extends Resource.Resource<string>> {
+export interface ResourceMethods<Klass extends Resource.AnyDomainClass> {
   readonly get: (
     url: ReadonlyUrl
   ) => Effect.Effect<
-    Resource.WithResourceUrl<TResource>,
+    Resource.WithResourceUrl<InstanceType<Klass>>,
     | ResourceRequest.CommonErrors
     | NotFoundError<
-        TResource['domainType'],
-        { url: Resource.InferResourceUrl<TResource> }
+        Klass['DomainType'],
+        { url: Resource.InferResourceUrl<InstanceType<Klass>> }
       >,
     never
   >
@@ -119,57 +116,57 @@ export interface ResourceMethods<TResource extends Resource.Resource<string>> {
     url: ReadonlyUrl
   ) => Stream.Stream<
     Either.Either<
-      Resource.WithResourceUrl<TResource>,
+      Resource.WithResourceUrl<InstanceType<Klass>>,
       | ResourceRequest.CommonErrors
       | NotFoundError<
-          TResource['domainType'],
-          { url: Resource.InferResourceUrl<TResource> }
+          Klass['DomainType'],
+          { url: Resource.InferResourceUrl<InstanceType<Klass>> }
         >
     >,
     never,
     never
   >
   readonly search: (
-    params?: ResourceRequest.SearchParam<TResource>
+    params?: ResourceRequest.SearchParam<InstanceType<Klass>>
   ) => Effect.Effect<
-    ReadonlyArray<Resource.WithResourceUrl<TResource>>,
+    ReadonlyArray<Resource.WithResourceUrl<InstanceType<Klass>>>,
     ResourceRequest.CommonErrors,
     never
   >
   readonly subscribeSearch: (
-    params?: ResourceRequest.SearchParam<TResource>
+    params?: ResourceRequest.SearchParam<InstanceType<Klass>>
   ) => Stream.Stream<
     Either.Either<
-      ReadonlyArray<Resource.WithResourceUrl<TResource>>,
+      ReadonlyArray<Resource.WithResourceUrl<InstanceType<Klass>>>,
       ResourceRequest.CommonErrors
     >,
     never,
     never
   >
   readonly create: (
-    resource: TResource,
+    resource: InstanceType<Klass>,
     origin?: ReadonlyUrl
   ) => Effect.Effect<
-    Resource.WithResourceUrl<TResource>,
+    Resource.WithResourceUrl<InstanceType<Klass>>,
     ResourceRequest.CommonErrors,
     never
   >
   readonly createMany: (
-    resources: ReadonlyArray<TResource>,
+    resources: ReadonlyArray<InstanceType<Klass>>,
     origin?: ReadonlyUrl
   ) => Effect.Effect<
-    ReadonlyArray<Resource.WithResourceUrl<TResource>>,
+    ReadonlyArray<Resource.WithResourceUrl<InstanceType<Klass>>>,
     ResourceRequest.CommonErrors,
     never
   >
   readonly update: (
-    resource: Resource.WithResourceUrl<TResource>
+    resource: Resource.WithResourceUrl<InstanceType<Klass>>
   ) => Effect.Effect<
-    Resource.WithResourceUrl<TResource>,
+    Resource.WithResourceUrl<InstanceType<Klass>>,
     | ResourceRequest.CommonErrors
     | NotFoundError<
-        TResource['domainType'],
-        { url: Resource.InferResourceUrl<TResource> }
+        Klass['DomainType'],
+        { url: Resource.InferResourceUrl<InstanceType<Klass>> }
       >,
     never
   >
@@ -179,25 +176,25 @@ export interface ResourceMethods<TResource extends Resource.Resource<string>> {
     void,
     | ResourceRequest.CommonErrors
     | NotFoundError<
-        TResource['domainType'],
-        { url: Resource.InferResourceUrl<TResource> }
+        Klass['DomainType'],
+        { url: Resource.InferResourceUrl<InstanceType<Klass>> }
       >,
     never
   >
 }
 
 /**
- * Maps each {@link ResourceMethods} operation into a domain-type-dispatched
- * method. The first argument is always the `domainType` string, followed by
+ * Maps each {@link ResourceMethods} operation into a class-dispatched
+ * method. The first argument is always the domain class, followed by
  * the original method parameters.
  *
- * @typeParam Resources - The full resources map
+ * @typeParam Classes - The full union of domain classes
  */
-export type Repository<Resources extends Resource.ResourceSet> = {
-  [K in keyof ResourceMethods<Resource.Resource<string>>]: <
-    R extends keyof Resources & string,
+export type Repository<Classes extends Resource.AnyDomainClass> = {
+  [K in keyof ResourceMethods<Resource.AnyDomainClass>]: <
+    Klass extends Classes,
   >(
-    domainType: R,
-    ...args: Parameters<ResourceMethods<Resources[R]>[K]>
-  ) => ReturnType<ResourceMethods<Resources[R]>[K]>
+    klass: Klass,
+    ...args: Parameters<ResourceMethods<Klass>[K]>
+  ) => ReturnType<ResourceMethods<Klass>[K]>
 }

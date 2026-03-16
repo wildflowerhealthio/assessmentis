@@ -2,13 +2,12 @@ import { Effect, Schema } from 'effect'
 import { useMemo } from 'react'
 
 import type {
+  ClinicalDomainClasses,
   RepositoryFilters,
-  ResourceDataTypes,
 } from '@assessmentis/clinical-domain'
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import { useCollectionPromise, useEitherStream } from '@assessmentis/react-util'
 
-import type { HubResourceConstructor } from '../traits/HubResource'
 import { useHub } from './useHub'
 import { useSearchSubscription } from './useSearchSubscription'
 
@@ -38,14 +37,11 @@ const urlKeyOf = <T extends { url?: ReadonlyUrl | undefined }>(
  * }
  * ```
  */
-export function useResourceCollection<
-  TDomainType extends keyof ResourceDataTypes & string,
->(
-  ResourceSchema: HubResourceConstructor<TDomainType>,
-  filters?: RepositoryFilters<ResourceDataTypes[TDomainType]>
+export function useResourceCollection<K extends ClinicalDomainClasses>(
+  ResourceSchema: K,
+  filters?: RepositoryFilters<InstanceType<K>>
 ) {
   const hub = useHub()
-  const domainType = ResourceSchema.DomainType
 
   const stream = useSearchSubscription(ResourceSchema, filters)
   const resourcesPromise = useEitherStream(stream)
@@ -53,16 +49,14 @@ export function useResourceCollection<
   const actions = useMemo(
     () => ({
       apiDelete: (urlKey: string) =>
-        Effect.runPromise(hub.delete(domainType, decodeUrl(urlKey))),
-      apiCreate: (
-        t: ResourceDataTypes[TDomainType]
-      ): Promise<ResourceDataTypes[TDomainType]> =>
-        Effect.runPromise(hub.create(domainType, t)),
+        Effect.runPromise(hub.delete(ResourceSchema, decodeUrl(urlKey))),
+      apiCreate: (t: InstanceType<K>): Promise<InstanceType<K>> =>
+        Effect.runPromise(hub.create(ResourceSchema, t)),
     }),
-    [hub, domainType]
+    [hub, ResourceSchema]
   )
 
-  return useCollectionPromise<ResourceDataTypes[TDomainType]>(
+  return useCollectionPromise<InstanceType<K>>(
     actions,
     resourcesPromise,
     urlKeyOf

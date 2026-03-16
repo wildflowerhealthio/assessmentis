@@ -8,20 +8,28 @@ import {
   LogLevel,
   Option,
   Stream,
+  Scope,
 } from 'effect'
 
 import { UnhandledError } from '@assessmentis/ontology'
 
 import { ReadonlyUrl, UriEncodedOriginUrl } from './ReadonlyUrl'
 import type * as Origin from './Origin'
-import type * as Resource from './Resource'
-import {
-  hubStateStream,
-  type OriginConfig,
-  type OriginSourceSnapshot,
+import { hubStateStream } from './HubStateStream'
+import type {
+  OriginConfig,
+  OriginFactory,
+  OriginSourceSnapshot,
 } from './HubStateStream'
+import type { Resource } from '.'
+// --- Resource types ---
 
-type TestResources = { Patient: Resource.Resource<'Patient'> }
+class Patient {
+  static readonly DomainType = 'Patient' as const
+  static readonly UrlSchema = ReadonlyUrl.FromString
+  readonly domainType = 'Patient' as const
+  readonly url?: ReadonlyUrl | undefined
+}
 
 const encode = (url: string): UriEncodedOriginUrl =>
   UriEncodedOriginUrl.make(encodeURIComponent(url))
@@ -29,14 +37,14 @@ const encode = (url: string): UriEncodedOriginUrl =>
 const makeDefinition = (
   tag: string,
   extra?: Record<string, unknown>
-): OriginConfig => ({
+): OriginConfig<'Patient'> => ({
   _tag: tag,
   supportedResources: { Patient: true as const },
   ...extra,
 })
 
 const makeSnapshot = (
-  origins: Record<string, OriginConfig>,
+  origins: Record<string, OriginConfig<'Patient'>>,
   originConfigs?: Record<string, Record<string, unknown>>
 ): OriginSourceSnapshot => ({
   origins: Object.fromEntries(
@@ -49,6 +57,32 @@ const makeSnapshot = (
     : undefined,
 })
 
+/**
+ * Test adapter: bridges a plain factory object to OriginFactory's generic
+ * `make` signature. The generic `Keys` parameter on `OriginFactory.make` is
+ * redundant in tests where we always use concrete resource types, so the cast
+ * does not reduce test confidence.
+ */
+/**
+ * Test-only type alias: `OriginFactory.make` is generic over `Keys`, which
+ * makes inline factory objects incompatible without a cast. Using `any` for
+ * the class parameter bypasses this in tests where we always use concrete
+ * resource types, so the cast does not reduce test confidence.
+ */
+
+const asFactory = <
+  SupportedClasses extends Resource.AnyDomainClass,
+  R = never,
+>(f: {
+  tag: string
+  make: (
+    originUrl: ReadonlyUrl,
+    config: OriginConfig<SupportedClasses['DomainType']>,
+    originConfig: Record<string, unknown> | undefined
+  ) => Effect.Effect<Origin.AnyState<SupportedClasses>, never, R | Scope.Scope>
+}): OriginFactory<SupportedClasses, R> =>
+  f as OriginFactory<SupportedClasses, R>
+
 const right = <A>(a: A) => Either.right(a)
 
 const collectAll = <A, R>(stream: Stream.Stream<A, never, R>) =>
@@ -56,27 +90,27 @@ const collectAll = <A, R>(stream: Stream.Stream<A, never, R>) =>
 
 describe('hubStateStream', () => {
   it('calls origin factory and emits state for matching tags', async () => {
-    const originState = {
+    const originState: Origin.AnyState<typeof Patient> = {
       originUrl: ReadonlyUrl.fromEncoded(encode('https://example.com')),
-      supportedResources: { Patient: true as const },
-      resolver: {} as Origin.Ready<TestResources, 'Patient'>['resolver'],
+      supportedResources: { Patient: Patient },
+      resolver: {} as Origin.Ready<typeof Patient>['resolver'],
       errorStatus: undefined,
       provokeReauthenticate: () => Effect.void,
       provokeReauthorize: () => Effect.void,
-    } satisfies Origin.AnyState<TestResources, 'Patient'>
+    }
 
     const maker = vi.fn(
       (
         _originUrl: ReadonlyUrl,
-        _def: OriginConfig,
+        _def: OriginConfig<never>,
         _cred: Record<string, unknown> | undefined
       ) => Effect.succeed(originState)
     )
 
     const emissions = await Effect.runPromise(
       collectAll(
-        hubStateStream<TestResources, never, never>(
-          [{ tag: 'test_origin', make: maker }],
+        hubStateStream<[OriginFactory<typeof Patient, never>], never, never>(
+          [asFactory({ tag: 'test_origin', make: maker })],
           Stream.make(
             right(
               makeSnapshot({
@@ -100,7 +134,7 @@ describe('hubStateStream', () => {
   it('emits error origin state for unrecognized tags', async () => {
     const emissions = await Effect.runPromise(
       collectAll(
-        hubStateStream<TestResources, never, never>(
+        hubStateStream<[], never, never>(
           [],
           Stream.make(
             right(
@@ -123,7 +157,7 @@ describe('hubStateStream', () => {
   it('removes origin from state when it is removed from snapshot', async () => {
     const makeOriginForUrl = (url: string) => ({
       originUrl: ReadonlyUrl.fromEncoded(encode(url)),
-      supportedResources: { Patient: true as const },
+      supportedResources: { Patient: Patient },
       resolver: undefined,
       errorStatus: undefined,
       provokeReauthenticate: () => Effect.void,
@@ -131,31 +165,28 @@ describe('hubStateStream', () => {
     })
 
     const originFactories = [
-      {
+      asFactory({
         tag: 'ta',
         make: (_originUrl: ReadonlyUrl) =>
-          Effect.succeed(
-            makeOriginForUrl('https://a.com') as unknown as Origin.AnyState<
-              TestResources,
-              never
-            >
-          ),
-      },
-      {
+          Effect.succeed(makeOriginForUrl('https://a.com')),
+      }),
+      asFactory({
         tag: 'tb',
         make: (_originUrl: ReadonlyUrl) =>
-          Effect.succeed(
-            makeOriginForUrl('https://b.com') as unknown as Origin.AnyState<
-              TestResources,
-              never
-            >
-          ),
-      },
-    ]
+          Effect.succeed(makeOriginForUrl('https://b.com')),
+      }),
+    ] as const
 
     const emissions = await Effect.runPromise(
       collectAll(
-        hubStateStream<TestResources, never, never>(
+        hubStateStream<
+          readonly [
+            OriginFactory<typeof Patient, never>,
+            OriginFactory<typeof Patient, never>,
+          ],
+          never,
+          never
+        >(
           originFactories,
           Stream.make(
             right(
@@ -187,7 +218,7 @@ describe('hubStateStream', () => {
 
     const makeOriginForUrl = (url: string) => ({
       originUrl: ReadonlyUrl.fromEncoded(encode(url)),
-      supportedResources: { Patient: true as const },
+      supportedResources: { Patient: Patient },
       resolver: undefined,
       errorStatus: undefined,
       provokeReauthenticate: () => Effect.void,
@@ -195,31 +226,28 @@ describe('hubStateStream', () => {
     })
 
     const originFactories = [
-      {
+      asFactory({
         tag: 'ta',
         make: (_originUrl: ReadonlyUrl) =>
-          Effect.succeed(
-            makeOriginForUrl('https://a.com') as unknown as Origin.AnyState<
-              TestResources,
-              never
-            >
-          ),
-      },
-      {
+          Effect.succeed(makeOriginForUrl('https://a.com')),
+      }),
+      asFactory({
         tag: 'tb',
         make: (_originUrl: ReadonlyUrl) =>
-          Effect.succeed(
-            makeOriginForUrl('https://b.com') as unknown as Origin.AnyState<
-              TestResources,
-              never
-            >
-          ),
-      },
-    ]
+          Effect.succeed(makeOriginForUrl('https://b.com')),
+      }),
+    ] as const
 
     await Effect.runPromise(
       collectAll(
-        hubStateStream<TestResources, never, never>(
+        hubStateStream<
+          readonly [
+            OriginFactory<typeof Patient, never>,
+            OriginFactory<typeof Patient, never>,
+          ],
+          never,
+          never
+        >(
           originFactories,
           Stream.make(
             right(
@@ -243,17 +271,16 @@ describe('hubStateStream', () => {
   })
 
   it('caches origin state when definition is structurally equal', async () => {
-    const originState = {
+    const originState: Origin.AnyState<typeof Patient> = {
       originUrl: ReadonlyUrl.fromEncoded(encode('https://a.com')),
-      supportedResources: { Patient: true as const },
+      supportedResources: { Patient: Patient },
       resolver: undefined as unknown as Origin.Ready<
-        TestResources,
-        never
+        typeof Patient
       >['resolver'],
       errorStatus: undefined,
       provokeReauthenticate: () => Effect.void,
       provokeReauthorize: () => Effect.void,
-    } satisfies Origin.AnyState<TestResources, never>
+    }
 
     const maker = vi.fn((_originUrl: ReadonlyUrl) =>
       Effect.succeed(originState)
@@ -268,8 +295,8 @@ describe('hubStateStream', () => {
 
     const emissions = await Effect.runPromise(
       collectAll(
-        hubStateStream<TestResources, never, never>(
-          [{ tag: 't', make: maker }],
+        hubStateStream<[OriginFactory<typeof Patient, never>], never, never>(
+          [asFactory({ tag: 't', make: maker })],
           Stream.make(right(snap1), right(snap2))
         )
       ).pipe(Effect.scoped)
@@ -287,25 +314,26 @@ describe('hubStateStream', () => {
   })
 
   it('re-creates origin when definition changes', async () => {
-    const maker = vi.fn((_originUrl: ReadonlyUrl, def: OriginConfig) =>
-      Effect.succeed({
-        originUrl: ReadonlyUrl.fromEncoded(encode('https://a.com')),
-        supportedResources: def.supportedResources,
-        resolver: undefined,
-        errorStatus: undefined,
-        provokeReauthenticate: () => Effect.void,
-        provokeReauthorize: () => Effect.void,
-      })
-    ) as unknown as (
-      originUrl: ReadonlyUrl,
-      def: OriginConfig,
-      cred: Record<string, unknown> | undefined
-    ) => Effect.Effect<Origin.AnyState<TestResources, never>>
+    const maker = vi.fn(
+      (_originUrl: ReadonlyUrl, _def: OriginConfig<'Patient'>) =>
+        Effect.succeed<Origin.AnyState<typeof Patient>>({
+          originUrl: ReadonlyUrl.fromEncoded(encode('https://a.com')),
+          supportedResources: { Patient: Patient },
+          resolver: undefined,
+          errorStatus: undefined,
+          provokeReauthenticate: () => Effect.void,
+          provokeReauthorize: () => Effect.void,
+        })
+    )
 
     await Effect.runPromise(
       collectAll(
-        hubStateStream<TestResources, never, never>(
-          [{ tag: 't', make: maker }],
+        hubStateStream<
+          readonly [OriginFactory<typeof Patient, never>],
+          never,
+          never
+        >(
+          [asFactory({ tag: 't', make: maker })] as const,
           Stream.make(
             right(
               makeSnapshot({
@@ -328,13 +356,13 @@ describe('hubStateStream', () => {
   it('passes through Left errors', async () => {
     const emissions = await Effect.runPromise(
       collectAll(
-        hubStateStream<TestResources, never, UnhandledError>(
+        hubStateStream<[], UnhandledError, never>(
           [],
           Stream.make(
             right(makeSnapshot({})),
             Either.left(new UnhandledError({ message: 'source failed' }))
           )
-        )
+        ).pipe(Stream.orDie)
       ).pipe(Effect.scoped)
     )
 
@@ -346,14 +374,14 @@ describe('hubStateStream', () => {
   })
 
   it('rebuilds origin when origin config changes', async () => {
-    const originState = {
+    const originState: Origin.AnyState<typeof Patient> = {
       originUrl: ReadonlyUrl.fromEncoded(encode('https://a.com')),
-      supportedResources: { Patient: true as const },
+      supportedResources: { Patient: Patient },
       resolver: undefined,
       errorStatus: undefined,
       provokeReauthenticate: () => Effect.void,
       provokeReauthorize: () => Effect.void,
-    } as unknown as Origin.AnyState<TestResources, never>
+    }
 
     const maker = vi.fn((_originUrl: ReadonlyUrl) =>
       Effect.succeed(originState)
@@ -363,8 +391,8 @@ describe('hubStateStream', () => {
 
     await Effect.runPromise(
       collectAll(
-        hubStateStream<TestResources, never, never>(
-          [{ tag: 't', make: maker }],
+        hubStateStream<[OriginFactory<typeof Patient, never>], never, never>(
+          [asFactory({ tag: 't', make: maker })] as const,
           Stream.make(
             right({
               origins: {
@@ -398,19 +426,19 @@ describe('hubStateStream', () => {
   })
 
   it('passes origin config to factory', async () => {
-    const originState = {
+    const originState: Origin.AnyState<typeof Patient> = {
       originUrl: ReadonlyUrl.fromEncoded(encode('https://a.com')),
-      supportedResources: { Patient: true as const },
+      supportedResources: { Patient: Patient },
       resolver: undefined,
       errorStatus: undefined,
       provokeReauthenticate: () => Effect.void,
       provokeReauthorize: () => Effect.void,
-    } as unknown as Origin.AnyState<TestResources, never>
+    }
 
     const maker = vi.fn(
       (
         _originUrl: ReadonlyUrl,
-        _def: OriginConfig,
+        _def: OriginConfig<never>,
         _cred: Record<string, unknown> | undefined
       ) => Effect.succeed(originState)
     )
@@ -419,8 +447,12 @@ describe('hubStateStream', () => {
 
     await Effect.runPromise(
       collectAll(
-        hubStateStream<TestResources, never, never>(
-          [{ tag: 't', make: maker }],
+        hubStateStream<
+          readonly [OriginFactory<typeof Patient, never>],
+          never,
+          never
+        >(
+          [asFactory({ tag: 't', make: maker })] as const,
           Stream.make(
             right({
               origins: {
@@ -455,14 +487,14 @@ describe('hubStateStream', () => {
       pathname: '', // no trailing slash — toString() would differ from urlKey
     })
 
-    const originState = {
+    const originState: Origin.AnyState<typeof Patient> = {
       originUrl: makerOriginUrl,
-      supportedResources: { Patient: true as const },
+      supportedResources: { Patient: Patient },
       resolver: undefined,
       errorStatus: undefined,
       provokeReauthenticate: () => Effect.void,
       provokeReauthorize: () => Effect.void,
-    } as unknown as Origin.AnyState<TestResources, never>
+    }
 
     const maker = vi.fn((_originUrl: ReadonlyUrl) =>
       Effect.succeed(originState)
@@ -478,8 +510,12 @@ describe('hubStateStream', () => {
 
     const emissions = await Effect.runPromise(
       collectAll(
-        hubStateStream<TestResources, never, never>(
-          [{ tag: 't', make: maker }],
+        hubStateStream<
+          readonly [OriginFactory<typeof Patient, never>],
+          never,
+          never
+        >(
+          [asFactory({ tag: 't', make: maker })] as const,
           Stream.make(right(snap1), right(snap2))
         )
       ).pipe(Effect.scoped)

@@ -13,8 +13,8 @@ import {
   Subscribable,
   SubscriptionRef,
   SynchronizedRef,
-  type Scope,
 } from 'effect'
+import type { Scope } from 'effect'
 import { pipeArguments } from 'effect/Pipeable'
 
 import type { NotFoundError } from '@assessmentis/ontology'
@@ -29,7 +29,8 @@ import type {
   LiveCredential,
   TokenStreamError,
 } from '../tagClasses/CredentialRepository'
-import { DocumentStore, type DocumentPath } from '../tagClasses/DocumentStore'
+import { DocumentStore } from '../tagClasses/DocumentStore'
+import type { DocumentPath } from '../tagClasses/DocumentStore'
 
 /**
  * Constructor contract for a credential constructor backed by DocumentStore.

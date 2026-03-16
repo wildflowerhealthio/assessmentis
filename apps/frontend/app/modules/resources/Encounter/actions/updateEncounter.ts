@@ -2,10 +2,10 @@ import { DateTime, Effect } from 'effect'
 
 import {
   ClinicalDomainHub,
+  Encounter,
   EncounterLocation,
   EncounterParticipant,
   isVirtualLocation,
-  type Encounter,
 } from '@assessmentis/clinical-domain'
 import { Period, Reference } from '@assessmentis/clinical-domain/data-types'
 import type { ReadonlyUrl, Resource } from '@assessmentis/effectful-store'
@@ -80,6 +80,6 @@ export const updateEncounter = (
       ],
     }
 
-    return yield* hub.update('Encounter', updatedEncounter)
+    return yield* hub.update(Encounter, updatedEncounter)
   })
 }

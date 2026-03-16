@@ -1,17 +1,17 @@
-import { Either, Match, pipe, Stream, type Scope } from 'effect'
+import { Either, Match, pipe, Stream } from 'effect'
+import type { Scope } from 'effect'
 
-import {
-  hubStateStream as genericHubStateStream,
-  type Hub,
-  type OriginFactory,
-  type OriginSourceSnapshot,
-  type Resource,
+import { hubStateStream as genericHubStateStream } from '@assessmentis/effectful-store'
+import type {
+  Hub,
+  OriginFactory,
+  OriginSourceSnapshot,
 } from '@assessmentis/effectful-store'
-import {
-  Loading,
-  type AuthError,
-  type AuthzError,
-  type UnhandledError,
+import { Loading } from '@assessmentis/ontology'
+import type {
+  AuthError,
+  AuthzError,
+  UnhandledError,
 } from '@assessmentis/ontology'
 
 import { NoSelectedOrgError } from '../hostedServices/OrgService'
@@ -46,11 +46,9 @@ const toOriginSourceSnapshot = (
  * The `R` parameter propagates the context requirements of the origin makers
  * into the returned stream, so callers can provide those services externally.
  */
-export const mapOrgStreamToHubState = <
-  Resources extends Resource.ResourceSet,
-  R,
->(
-  originTypes: readonly OriginFactory<Resources, R>[],
+export const mapOrgStreamToHubState = <R>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  originTypes: readonly OriginFactory<any, R>[],
   orgStream: Stream.Stream<
     Either.Either<
       { org: Org; userOrg: UserOrg | undefined },
@@ -65,7 +63,7 @@ export const mapOrgStreamToHubState = <
   >
 ): Stream.Stream<
   Either.Either<
-    Hub.HubState<Resources>,
+    Hub.HubState,
     Loading<'Configuration'> | AuthError | AuthzError | UnhandledError
   >,
   never,
@@ -93,8 +91,18 @@ export const mapOrgStreamToHubState = <
     )
   )
 
+  type SnapshotErrors =
+    | Loading<{ orgSlug: OrgSlug }>
+    | AuthError
+    | AuthzError
+    | UnhandledError
+
   return pipe(
-    genericHubStateStream(originTypes, snapshotStream),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    genericHubStateStream<readonly OriginFactory<any, R>[], SnapshotErrors, R>(
+      originTypes,
+      snapshotStream
+    ),
     StreamEither.mapError(
       Match.typeTags<
         Loading<{ orgSlug: OrgSlug }> | AuthError | AuthzError | UnhandledError

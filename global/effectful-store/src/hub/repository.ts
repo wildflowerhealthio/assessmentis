@@ -1,10 +1,5 @@
-import {
-  Effect,
-  Request as EffectRequest,
-  pipe,
-  type RequestResolver,
-  Stream,
-} from 'effect'
+import { Effect, Request as EffectRequest, pipe, Stream } from 'effect'
+import type { RequestResolver } from 'effect'
 
 import type { ReadonlyUrl } from '../ReadonlyUrl'
 import type * as Resource from '../Resource'
@@ -24,19 +19,19 @@ import { whenOriginChanges } from './change-detection'
  * and subscriptions through a shared `RequestResolver`. Origin resolution
  * (which origin owns a given URL or resource type) is handled automatically.
  */
-export const makeRepository = <Resources extends Resource.ResourceSet>(
-  stateRef: HubRef<Resources>,
-  resolver: RequestResolver.RequestResolver<AnyRequest<Resources>, never>
-): Repository<Resources> => {
+export const makeRepository = <Classes extends Resource.AnyDomainClass>(
+  stateRef: HubRef,
+  resolver: RequestResolver.RequestResolver<AnyRequest<Classes>, never>
+): Repository<Classes> => {
   return {
-    get<R extends keyof Resources & string>(domainType: R, url: ReadonlyUrl) {
+    get<Klass extends Classes>(klass: Klass, url: ReadonlyUrl) {
       return Effect.flatMap(
-        resolveOriginFromUrl(stateRef, url, domainType),
+        resolveOriginFromUrl(stateRef, url, klass),
         (origin) =>
           Effect.request(
-            EffectRequest.of<ResourceRequest.Get<Resources[R]>>()({
+            EffectRequest.of<ResourceRequest.Get<Klass>>()({
               _tag: 'Get',
-              domainType,
+              klass,
               url,
               origin,
             }),
@@ -44,14 +39,14 @@ export const makeRepository = <Resources extends Resource.ResourceSet>(
           )
       )
     },
-    search<R extends keyof Resources & string>(
-      domainType: R,
-      params?: ResourceRequest.SearchParam<Resources[R]>
+    search<Klass extends Classes>(
+      klass: Klass,
+      params?: ResourceRequest.SearchParam<InstanceType<Klass>>
     ) {
       return Effect.request(
-        EffectRequest.of<ResourceRequest.Search<Resources[R]>>()({
+        EffectRequest.of<ResourceRequest.Search<Klass>>()({
           _tag: 'Search',
-          domainType,
+          klass,
           params: params ?? {},
           origin: null,
         }),
@@ -59,18 +54,18 @@ export const makeRepository = <Resources extends Resource.ResourceSet>(
       )
     },
 
-    create<R extends keyof Resources & string>(
-      domainType: R,
-      resource: Resources[R],
+    create<Klass extends Classes>(
+      klass: Klass,
+      resource: InstanceType<Klass>,
       origin?: ReadonlyUrl
     ) {
       return Effect.flatMap(
-        resolveOriginForCreate(stateRef, domainType, origin),
+        resolveOriginForCreate(stateRef, klass, origin),
         (resolvedOrigin) =>
           Effect.request(
-            EffectRequest.of<ResourceRequest.Create<Resources[R]>>()({
+            EffectRequest.of<ResourceRequest.Create<Klass>>()({
               _tag: 'Create',
-              domainType,
+              klass,
               resource,
               origin: resolvedOrigin,
             }),
@@ -79,20 +74,20 @@ export const makeRepository = <Resources extends Resource.ResourceSet>(
       )
     },
 
-    createMany<R extends keyof Resources & string>(
-      domainType: R,
-      resources: ReadonlyArray<Resources[R]>,
+    createMany<Klass extends Classes>(
+      klass: Klass,
+      resources: ReadonlyArray<InstanceType<Klass>>,
       origin?: ReadonlyUrl
     ) {
       return Effect.flatMap(
-        resolveOriginForCreate(stateRef, domainType, origin),
+        resolveOriginForCreate(stateRef, klass, origin),
         (resolvedOrigin) =>
           Effect.all(
             resources.map((resource) =>
               Effect.request(
-                EffectRequest.of<ResourceRequest.Create<Resources[R]>>()({
+                EffectRequest.of<ResourceRequest.Create<Klass>>()({
                   _tag: 'Create',
-                  domainType,
+                  klass,
                   resource,
                   origin: resolvedOrigin,
                 }),
@@ -104,17 +99,17 @@ export const makeRepository = <Resources extends Resource.ResourceSet>(
       )
     },
 
-    update<R extends keyof Resources & string>(
-      domainType: R,
-      resource: Resource.WithResourceUrl<Resources[R]>
+    update<Klass extends Classes>(
+      klass: Klass,
+      resource: Resource.WithResourceUrl<InstanceType<Klass>>
     ) {
       return Effect.flatMap(
-        resolveOriginFromUrl(stateRef, resource.url, domainType),
+        resolveOriginFromUrl(stateRef, resource.url, klass),
         (origin) =>
           Effect.request(
-            EffectRequest.of<ResourceRequest.Update<Resources[R]>>()({
+            EffectRequest.of<ResourceRequest.Update<Klass>>()({
               _tag: 'Update',
-              domainType,
+              klass,
               resource,
               origin,
             }),
@@ -123,17 +118,14 @@ export const makeRepository = <Resources extends Resource.ResourceSet>(
       )
     },
 
-    delete<R extends keyof Resources & string>(
-      domainType: R,
-      url: ReadonlyUrl
-    ) {
+    delete<Klass extends Classes>(klass: Klass, url: ReadonlyUrl) {
       return Effect.flatMap(
-        resolveOriginFromUrl(stateRef, url, domainType),
+        resolveOriginFromUrl(stateRef, url, klass),
         (origin) =>
           Effect.request(
-            EffectRequest.of<ResourceRequest.Delete<Resources[R]>>()({
+            EffectRequest.of<ResourceRequest.Delete<Klass>>()({
               _tag: 'Delete',
-              domainType,
+              klass,
               resource: { url },
               origin,
             }),
@@ -144,23 +136,20 @@ export const makeRepository = <Resources extends Resource.ResourceSet>(
 
     // These currently only update on changes to the repository.
     // No source meaningfully supports this yet,
-    subscribe<R extends keyof Resources & string>(
-      domainType: R,
-      url: ReadonlyUrl
-    ) {
+    subscribe<Klass extends Classes>(klass: Klass, url: ReadonlyUrl) {
       return pipe(
-        whenOriginChanges(stateRef.changes, domainType, url),
-        Stream.mapEffect(() => Effect.either(this.get(domainType, url)))
+        whenOriginChanges(stateRef.changes, klass, url),
+        Stream.mapEffect(() => Effect.either(this.get(klass, url)))
       )
     },
 
-    subscribeSearch<R extends keyof Resources & string>(
-      domainType: R,
-      params?: ResourceRequest.SearchParam<Resources[R]>
+    subscribeSearch<Klass extends Classes>(
+      klass: Klass,
+      params?: ResourceRequest.SearchParam<InstanceType<Klass>>
     ) {
       return pipe(
-        whenOriginChanges(stateRef.changes, domainType, null),
-        Stream.mapEffect(() => Effect.either(this.search(domainType, params)))
+        whenOriginChanges(stateRef.changes, klass, null),
+        Stream.mapEffect(() => Effect.either(this.search(klass, params)))
       )
     },
   }

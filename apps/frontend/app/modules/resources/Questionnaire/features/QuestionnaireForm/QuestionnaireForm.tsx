@@ -1,12 +1,15 @@
 import { Effect } from 'effect'
-import { useState, type SetStateAction } from 'react'
+import { useState } from 'react'
+import type { SetStateAction } from 'react'
 
 import {
   QuestionnaireResponseItem,
-  type QuestionnaireResponse,
+  QuestionnaireResponse,
   ClinicalDomainHub,
-  type Questionnaire,
-  type QuestionnaireItemLink,
+} from '@assessmentis/clinical-domain'
+import type {
+  Questionnaire,
+  QuestionnaireItemLink,
 } from '@assessmentis/clinical-domain'
 import { Resource } from '@assessmentis/effectful-store'
 
@@ -39,7 +42,7 @@ const QuestionnaireForm = ({
         Effect.gen(function* () {
           const h = yield* ClinicalDomainHub
           if (!data || !Resource.hasResourceUrl(data)) return
-          return yield* h.update('QuestionnaireResponse', data)
+          return yield* h.update(QuestionnaireResponse, data)
         }).pipe(Effect.provideService(ClinicalDomainHub, hub))
       )
     },

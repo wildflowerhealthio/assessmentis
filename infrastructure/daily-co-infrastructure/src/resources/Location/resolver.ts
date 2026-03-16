@@ -80,7 +80,7 @@ export const makeLocationResolver = (
   auth: AuthReadable,
   config: DailyCoOriginDefinition
 ) =>
-  RequestResolver.fromEffect((request: AnyRequest<Location>) => {
+  RequestResolver.fromEffect((request: AnyRequest<typeof Location>) => {
     switch (request._tag) {
       case 'Get': {
         const roomName = extractIdFromUrl(request.url)

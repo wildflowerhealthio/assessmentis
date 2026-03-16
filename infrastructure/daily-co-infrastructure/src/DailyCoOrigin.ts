@@ -1,16 +1,9 @@
 import { Effect, RequestResolver } from 'effect'
 import type { HttpClient } from '@effect/platform/HttpClient'
 
-import type {
-  Location,
-  Media,
-  Observation,
-} from '@assessmentis/clinical-domain'
-import {
-  ReadonlyUrl,
-  type Origin,
-  type ResourceRequest,
-} from '@assessmentis/effectful-store'
+import { Location, Media, Observation } from '@assessmentis/clinical-domain'
+import type { Origin, ResourceRequest } from '@assessmentis/effectful-store'
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import type {
   AuthError,
   AuthzError,
@@ -27,11 +20,11 @@ import { makeObservationResolver } from './resources/Observation/resolver'
 // Resources
 // ---------------------------------------------------------------------------
 
-type Resources = {
-  readonly Location: Location
-  readonly Media: Media
-  readonly Observation: Observation
-}
+/** Union of all domain class constructors supported by this origin. */
+export type SupportedClasses =
+  | typeof Location
+  | typeof Media
+  | typeof Observation
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -57,7 +50,7 @@ export const makeDailyCoReadyOrigin = ({
     AuthError | AuthzError | UnhandledError,
     never
   >
-}): Origin.Ready<Resources, keyof Resources> => {
+}): Origin.Ready<SupportedClasses> => {
   const baseUrl =
     typeof window === 'undefined'
       ? 'https://api.daily.co/v1'
@@ -69,29 +62,37 @@ export const makeDailyCoReadyOrigin = ({
     pathname: new URL(baseUrl).pathname,
   })
 
-  const resolvers: {
-    [K in keyof Resources]: RequestResolver.RequestResolver<
-      AnyRequest<Resources[K]>,
-      never
-    >
-  } = {
-    Location: makeLocationResolver(httpClient, baseUrl, auth, config),
-    Media: makeMediaResolver(httpClient, baseUrl, auth),
-    Observation: makeObservationResolver(httpClient, baseUrl, auth),
+  // Each resolver handles a single domain class, but at runtime we dispatch
+  // by DomainType. The contravariant request type prevents a clean union, so
+  // we widen to AnyDomainClass (same approach as FhirR4Origin).
+  const resolvers: Record<
+    string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    RequestResolver.RequestResolver<AnyRequest<any>, never>
+  > = {
+    [Location.DomainType]: makeLocationResolver(
+      httpClient,
+      baseUrl,
+      auth,
+      config
+    ),
+    [Media.DomainType]: makeMediaResolver(httpClient, baseUrl, auth),
+    [Observation.DomainType]: makeObservationResolver(
+      httpClient,
+      baseUrl,
+      auth
+    ),
   }
 
-  const resolverForResource = <K extends keyof Resources>(request: {
-    domainType: K
-  }): RequestResolver.RequestResolver<AnyRequest<Resources[K]>, never> =>
-    resolvers[request.domainType]
+  const resolverForResource = (request: {
+    klass: SupportedClasses
+  }): RequestResolver.RequestResolver<AnyRequest<SupportedClasses>, never> =>
+    resolvers[request.klass.DomainType]
 
-  const resolver: ResourceRequest.MultiResolver<
-    Resources,
-    keyof Resources,
-    never
-  > = RequestResolver.fromEffect((request) =>
-    Effect.request(request, resolverForResource(request))
-  )
+  const resolver: ResourceRequest.MultiResolver<SupportedClasses, never> =
+    RequestResolver.fromEffect((request) =>
+      Effect.request(request, resolverForResource(request))
+    )
 
   return {
     originUrl,
@@ -100,9 +101,9 @@ export const makeDailyCoReadyOrigin = ({
     provokeReauthenticate,
     provokeReauthorize,
     supportedResources: {
-      Location: true,
-      Media: true,
-      Observation: true,
+      [Location.DomainType]: Location,
+      [Media.DomainType]: Media,
+      [Observation.DomainType]: Observation,
     },
   }
 }

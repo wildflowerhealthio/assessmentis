@@ -1,12 +1,8 @@
 import { Context, Effect, Either, Layer, Schema } from 'effect'
 
 import { BadDataError, NotFoundError } from '@assessmentis/ontology'
-import {
-  CurrentOrg,
-  DocumentStore,
-  Org,
-  type OrgSlug,
-} from '@assessmentis/platform-domain'
+import { CurrentOrg, DocumentStore, Org } from '@assessmentis/platform-domain'
+import type { OrgSlug } from '@assessmentis/platform-domain'
 
 /**
  * Effect context tag carrying the resolved {@link Org} instance for the

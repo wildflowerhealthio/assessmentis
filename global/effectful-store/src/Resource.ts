@@ -1,3 +1,4 @@
+import type { Schema } from 'effect'
 import type { ReadonlyUrl } from './ReadonlyUrl'
 
 /**
@@ -64,10 +65,39 @@ export type InferResourceUrl<T extends Resource<string>> = NonNullable<T['url']>
  * Constraint for the `Resources` type parameter used throughout the store.
  * Maps string keys to {@link Resource.Resource} instances whose `domainType`
  * matches the key.
+ *
+ * @deprecated Use {@link DomainClass} union instead.
  */
 export type ResourceSet = {
   readonly [K: string]: Resource<typeof K>
 }
+
+/**
+ * Constraint for a class constructor that produces {@link Resource} instances.
+ * Hub, Repository, Origin, and related types are parameterized by a union of
+ * `DomainClass` types rather than a mapped {@link ResourceSet}.
+ *
+ * @typeParam Instance - The instance type produced by the constructor
+ * @typeParam TDomainType - String literal identifying the resource kind
+ * @typeParam TUrlSchema - The branded URL schema for this resource type
+ */
+export interface DomainClass<
+  out Instance extends {
+    readonly domainType: TDomainType
+    readonly url?: TUrl | undefined
+  },
+  out TDomainType extends string,
+  TUrl extends ReadonlyUrl,
+> {
+  readonly DomainType: TDomainType
+  readonly UrlSchema: Schema.Schema<TUrl, string, never>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  new (...args: any[]): Instance
+}
+
+/** Shorthand for a {@link DomainClass} with unconstrained type parameters. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyDomainClass = DomainClass<Resource<string>, string, any>
 
 /**
  * @deprecated Use {@link WithResourceUrl} instead.

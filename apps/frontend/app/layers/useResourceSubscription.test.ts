@@ -50,7 +50,7 @@ describe('useResourceSubscription', () => {
       renderHook(() => useResourceSubscription(Patient, VALID_PATIENT_URL))
 
       expect(subscribeFn).toHaveBeenCalledWith(
-        'Patient',
+        Patient,
         expect.objectContaining({
           protocol: 'https:',
           host: 'example.com',
@@ -91,7 +91,7 @@ describe('useResourceSubscription', () => {
 
       renderHook(() => useResourceSubscription(Patient, VALID_PATIENT_URL))
 
-      expect(subscribeFn).toHaveBeenCalledWith('Patient', expect.anything())
+      expect(subscribeFn).toHaveBeenCalledWith(Patient, expect.anything())
     })
 
     it('passes the correct domainType (Encounter) to hub.subscribe', () => {
@@ -103,7 +103,7 @@ describe('useResourceSubscription', () => {
 
       renderHook(() => useResourceSubscription(Encounter, VALID_ENCOUNTER_URL))
 
-      expect(subscribeFn).toHaveBeenCalledWith('Encounter', expect.anything())
+      expect(subscribeFn).toHaveBeenCalledWith(Encounter, expect.anything())
     })
 
     it('does not call hub.subscribe when rawId is invalid', () => {
@@ -195,7 +195,7 @@ describe('useResourceSubscription', () => {
           if (Either.isLeft(item)) {
             const error = item.left as unknown as NotFoundError<
               string,
-              { unparseableUrl: string }
+              { unparsableUrl: string }
             >
             expect(error.resourceType).toBe('Patient')
           } else {
@@ -223,9 +223,9 @@ describe('useResourceSubscription', () => {
           if (Either.isLeft(item)) {
             const error = item.left as unknown as NotFoundError<
               string,
-              { unparseableUrl: string }
+              { unparsableUrl: string }
             >
-            expect(error.params.unparseableUrl).toBe(INVALID_URL)
+            expect(error.params.unparsableUrl).toBe(INVALID_URL)
           } else {
             throw new Error('Expected a Left, got Right')
           }
@@ -318,7 +318,7 @@ describe('useResourceSubscription', () => {
           if (Either.isLeft(items[0])) {
             const error = items[0].left as unknown as NotFoundError<
               string,
-              { unparseableUrl: string }
+              { unparsableUrl: string }
             >
             expect(error._tag).toBe('NotFoundError')
             expect(error.resourceType).toBe('Encounter')

@@ -1,43 +1,34 @@
-import { useState, type ComponentType } from 'react'
+import { useState } from 'react'
+import type { ComponentType } from 'react'
 
 import type {
+  ClinicalDomainClasses,
   RepositoryFilters,
-  ResourceDataTypes,
 } from '@assessmentis/clinical-domain'
 
 import { useResourceCollection } from '../../layers/useResourceCollection'
 import type { BreadcrumbLabelConstructor } from '../../traits/BreadcrumbLabel/BreadcrumbLabel'
-import type { DomainTypedConstructor } from '../../traits/DomainTyped/DomainTyped'
-import type { HubResourceConstructor } from '../../traits/HubResource'
 import type { LabeledConstructor } from '../../traits/Labeled'
-import {
-  assertLink,
-  type LinkConstructor,
-  type LinkInstance,
-} from '../../traits/Link/Link'
-import {
-  assertListable,
-  type ListableConstructor,
-  type ListableInstance,
-} from '../../traits/Listable/Listable'
+import { assertLink } from '../../traits/Link/Link'
+import type { LinkConstructor } from '../../traits/Link/Link'
+import { assertListable } from '../../traits/Listable/Listable'
+import type { ListableConstructor } from '../../traits/Listable/Listable'
 import { useBreadcrumbs } from '../Breadcrumbs/useBreadcrumbs'
 import { ResourceListPage } from '../common/components/ResourceListPage/ResourceListPage'
 import { ResourceListItem } from '../resources/ResourcePages/ResourceListItem/ResourceListItem'
 
-type ResourceListIndexPageKlass<K extends keyof ResourceDataTypes & string> =
+type ResourceListIndexPageKlass = ClinicalDomainClasses &
   ListableConstructor &
-    LabeledConstructor &
-    BreadcrumbLabelConstructor &
-    LinkConstructor &
-    HubResourceConstructor<K> &
-    DomainTypedConstructor<K>
+  LabeledConstructor &
+  BreadcrumbLabelConstructor &
+  LinkConstructor
 
-function ListableResourceListItem<K extends keyof ResourceDataTypes & string>(
+function ListableResourceListItem<K extends ResourceListIndexPageKlass>(
   props: {
-    item: ResourceDataTypes[K] & ListableInstance & LinkInstance
+    item: InstanceType<K>
     onDelete: () => void
     loading: boolean
-  } & { klass: ResourceListIndexPageKlass<K> }
+  } & { klass: K }
 ) {
   const { item, onDelete, loading } = props
   const { displayName, summaryItems } = item.Listable
@@ -57,18 +48,18 @@ function ListableResourceListItem<K extends keyof ResourceDataTypes & string>(
 const emptyFilters = {}
 
 export function ResourceListIndexPage<
-  K extends keyof ResourceDataTypes & string,
+  K extends ResourceListIndexPageKlass,
 >(props: {
-  klass: ResourceListIndexPageKlass<K>
+  klass: K
   FilterComponent?: ComponentType<{
-    onFiltersChange: (params: RepositoryFilters<ResourceDataTypes[K]>) => void
+    onFiltersChange: (params: RepositoryFilters<InstanceType<K>>) => void
   }>
 }) {
   const { klass, FilterComponent } = props
   const { singularLabel, pluralLabel } = klass.Labeled
 
   const [filters, setFilters] =
-    useState<RepositoryFilters<ResourceDataTypes[K]>>(emptyFilters)
+    useState<RepositoryFilters<InstanceType<K>>>(emptyFilters)
 
   const { collectionPromise, deleteItem } = useResourceCollection(
     klass,
@@ -78,7 +69,7 @@ export function ResourceListIndexPage<
   useBreadcrumbs(() => [klass], [klass])
 
   function ItemComponent(itemProps: {
-    item: ResourceDataTypes[K]
+    item: InstanceType<K>
     onDelete: () => void
     loading: boolean
   }) {

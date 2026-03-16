@@ -17,7 +17,7 @@ import {
   Schema,
 } from 'effect'
 
-import type {
+import {
   Composition,
   DiagnosticReport,
   Encounter,
@@ -29,6 +29,7 @@ import type {
   Questionnaire,
   QuestionnaireResponse,
 } from '@assessmentis/clinical-domain'
+import type { ClinicalDomainClasses } from '@assessmentis/clinical-domain'
 import type {
   ReadonlyUrl,
   Origin,
@@ -40,9 +41,8 @@ import {
   ExternalAssertionError,
   NotFoundError,
   UnhandledError,
-  type AuthError,
-  type AuthzError,
 } from '@assessmentis/ontology'
+import type { AuthError, AuthzError } from '@assessmentis/ontology'
 
 import { BaseUrl } from './data-types/UrlIdentification'
 import { FhirR4Bundle } from './resources/Bundle'
@@ -64,39 +64,26 @@ export const fhirProtocols = {
 
 export type FhirR4Protocol = (typeof fhirProtocols)[keyof typeof fhirProtocols]
 
-// Type alias (not interface) to provide implicit index signature for
-// compatibility with MultiResolver constraints
-type Resources = {
-  readonly Composition: Composition
-  readonly DiagnosticReport: DiagnosticReport
-  readonly Encounter: Encounter
-  readonly Location: Location
-  readonly Media: Media
-  readonly Observation: Observation
-  readonly Patient: Patient
-  readonly Practitioner: Practitioner
-  readonly Questionnaire: Questionnaire
-  readonly QuestionnaireResponse: QuestionnaireResponse
+/** Union of all FHIR R4 domain class constructors supported by this origin. */
+type SupportedClasses = ClinicalDomainClasses & {
+  DomainType: keyof typeof FhirR4Schemas
 }
 
-// Explicit mapped type ensures FhirR4Schemas[K] resolves to Schema<Resources[K], ...>
+// Explicit mapped type ensures FhirR4Schemas[K] resolves to Schema<InstanceType<K>, ...>
 // for generic K, rather than a union of all concrete schema types.
 
-const FhirR4Schemas: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [K in keyof Resources]: Schema.Schema<Resources[K], any, BaseUrl>
-} = {
-  Composition: FhirR4Composition,
-  DiagnosticReport: FhirR4DiagnosticReport,
-  Encounter: FhirR4Encounter,
-  Location: FhirR4Location,
-  Media: FhirR4Media,
-  Observation: FhirR4Observation,
-  Patient: FhirR4Patient,
-  Practitioner: FhirR4Practitioner,
-  Questionnaire: FhirR4Questionnaire,
-  QuestionnaireResponse: FhirR4QuestionnaireResponse,
-}
+const FhirR4Schemas = {
+  [Composition.DomainType]: FhirR4Composition,
+  [DiagnosticReport.DomainType]: FhirR4DiagnosticReport,
+  [Encounter.DomainType]: FhirR4Encounter,
+  [Location.DomainType]: FhirR4Location,
+  [Media.DomainType]: FhirR4Media,
+  [Observation.DomainType]: FhirR4Observation,
+  [Patient.DomainType]: FhirR4Patient,
+  [Practitioner.DomainType]: FhirR4Practitioner,
+  [Questionnaire.DomainType]: FhirR4Questionnaire,
+  [QuestionnaireResponse.DomainType]: FhirR4QuestionnaireResponse,
+} as const
 
 // --- Helpers ---
 
@@ -199,12 +186,12 @@ const makeBundleDecoder = <T extends Resource.Resource<string>>(
     )
 }
 
-const resolverForResource = <K extends keyof Resources>(request: {
-  domainType: K
-}): AllActionResolver<Resources[K]> =>
+const resolverForResource = <Klass extends SupportedClasses>(request: {
+  klass: Klass
+}): AllActionResolver<Klass> =>
   makeResolverSet({
-    domainType: request.domainType,
-    Schema: FhirR4Schemas[request.domainType],
+    klass: request.klass,
+    Schema: FhirR4Schemas[request.klass.DomainType],
   })
 
 export const makeFhirR4ReadyOrigin = ({
@@ -225,25 +212,22 @@ export const makeFhirR4ReadyOrigin = ({
     AuthError | AuthzError | UnhandledError,
     never
   >
-}): Origin.Ready<Resources, keyof Resources> => {
-  const resolver: ResourceRequest.MultiResolver<
-    Resources,
-    keyof Resources,
-    never
-  > = RequestResolver.fromEffect((request) => {
-    const innerResolver = resolverForResource(request)
+}): Origin.Ready<SupportedClasses> => {
+  const resolver: ResourceRequest.MultiResolver<SupportedClasses, never> =
+    RequestResolver.fromEffect((request) => {
+      const innerResolver = resolverForResource(request)
 
-    return Effect.request(
-      request,
-      innerResolver.pipe(
-        RequestResolver.provideContext(
-          Context.make(FhirR4Client, client).pipe(
-            Context.add(BaseUrl, originUrl)
+      return Effect.request(
+        request,
+        innerResolver.pipe(
+          RequestResolver.provideContext(
+            Context.make(FhirR4Client, client).pipe(
+              Context.add(BaseUrl, originUrl)
+            )
           )
         )
       )
-    )
-  })
+    })
 
   return {
     originUrl,
@@ -252,48 +236,53 @@ export const makeFhirR4ReadyOrigin = ({
     provokeReauthenticate,
     provokeReauthorize,
     supportedResources: {
-      Composition: true,
-      DiagnosticReport: true,
-      Encounter: true,
-      Location: true,
-      Media: true,
-      Observation: true,
-      Patient: true,
-      Practitioner: true,
-      Questionnaire: true,
-      QuestionnaireResponse: true,
+      [Composition.DomainType]: Composition,
+      [DiagnosticReport.DomainType]: DiagnosticReport,
+      [Encounter.DomainType]: Encounter,
+      [Location.DomainType]: Location,
+      [Media.DomainType]: Media,
+      [Observation.DomainType]: Observation,
+      [Patient.DomainType]: Patient,
+      [Practitioner.DomainType]: Practitioner,
+      [Questionnaire.DomainType]: Questionnaire,
+      [QuestionnaireResponse.DomainType]: QuestionnaireResponse,
     },
   }
 }
 
-type AllActionResolver<T extends Resource.Resource<string>> =
+type AllActionResolver<Klass extends Resource.AnyDomainClass> =
   RequestResolver.RequestResolver<
-    | ResourceRequest.Get<T>
-    | ResourceRequest.Search<T>
-    | ResourceRequest.Create<T>
-    | ResourceRequest.Update<T>
-    | ResourceRequest.Delete<T>,
+    | ResourceRequest.Get<Klass>
+    | ResourceRequest.Search<Klass>
+    | ResourceRequest.Create<Klass>
+    | ResourceRequest.Update<Klass>
+    | ResourceRequest.Delete<Klass>,
     FhirR4Client | BaseUrl
   >
 
-const makeResolverSet = <T extends Resource.Resource<string>>({
-  domainType,
+const makeResolverSet = <Klass extends SupportedClasses>({
+  klass,
   Schema: schema,
 }: {
-  domainType: T['domainType']
+  klass: Klass
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Schema: Schema.Schema<T, any, BaseUrl>
-}): AllActionResolver<T> => {
+  Schema: Schema.Schema<any, any, BaseUrl>
+}): AllActionResolver<Klass> => {
   const encode = Schema.encode(schema)
   const decoder = decodeAndAssertUrl(schema)
   const bundleDecoder = makeBundleDecoder(schema)
 
+  const domainType = klass.DomainType
+
   const Get = RequestResolver.makeBatched(
-    (requests: ReadonlyArray<ResourceRequest.Get<T>>) =>
+    (requests: ReadonlyArray<ResourceRequest.Get<Klass>>) =>
       Effect.gen(function* () {
         const client = yield* FhirR4Client
         // Group by resourceType (though they should all be the same)
-        const byType = Array.groupBy(requests, (r) => r.domainType)
+        const byType = Array.groupBy(
+          requests,
+          (r): Klass['DomainType'] => r.klass.DomainType
+        )
 
         for (const [resType, reqs] of Record.toEntries(byType)) {
           if (reqs.length === 1) {
@@ -308,7 +297,7 @@ const makeResolverSet = <T extends Resource.Resource<string>>({
                 Effect.catchTag('NotFoundError', () =>
                   Effect.fail(
                     new NotFoundError({
-                      resourceType: resType,
+                      resourceType: resType as Klass['DomainType'],
                       params: { url: reqs[0].url },
                     })
                   )
@@ -367,16 +356,19 @@ const makeResolverSet = <T extends Resource.Resource<string>>({
   )
 
   const Search = RequestResolver.fromEffect(
-    (request: ResourceRequest.Search<T>) =>
+    (request: ResourceRequest.Search<SupportedClasses>) =>
       Effect.flatMap(FhirR4Client, (client) =>
         client
-          .search({ domainType: request.domainType, ...request.params })
+          .search({
+            ...request.params,
+            domainType: request.klass.DomainType,
+          })
           .pipe(Effect.flatMap(bundleDecoder))
       )
   )
 
   const Create = RequestResolver.fromEffect(
-    (request: ResourceRequest.Create<T>) =>
+    (request: ResourceRequest.Create<SupportedClasses>) =>
       Effect.flatMap(FhirR4Client, (client) =>
         encode(request.resource).pipe(
           Effect.mapError(
@@ -389,7 +381,7 @@ const makeResolverSet = <T extends Resource.Resource<string>>({
 
           Effect.flatMap((resource) =>
             client.create({
-              domainType: request.domainType,
+              domainType: request.klass.DomainType,
               resource,
             })
           ),
@@ -399,7 +391,7 @@ const makeResolverSet = <T extends Resource.Resource<string>>({
   )
 
   const Update = RequestResolver.fromEffect(
-    (request: ResourceRequest.Update<T>) => {
+    (request: ResourceRequest.Update<SupportedClasses>) => {
       const fhirId = extractFhirId(request.resource.url)
       return Effect.flatMap(FhirR4Client, (client) =>
         encode(request.resource).pipe(
@@ -429,18 +421,18 @@ const makeResolverSet = <T extends Resource.Resource<string>>({
   )
 
   const Delete = RequestResolver.fromEffect(
-    (request: ResourceRequest.Delete<T>) =>
+    (request: ResourceRequest.Delete<SupportedClasses>) =>
       Effect.flatMap(FhirR4Client, (client) =>
         client
           .delete({
-            domainType: request.domainType,
+            domainType: request.klass.DomainType,
             id: extractFhirId(request.resource.url),
           })
           .pipe(
             Effect.catchTag('NotFoundError', () =>
               Effect.fail(
                 new NotFoundError({
-                  resourceType: request.domainType,
+                  resourceType: request.klass.DomainType,
                   params: { url: request.resource.url },
                 })
               )

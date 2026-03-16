@@ -1,7 +1,7 @@
 import type { Either, Stream } from 'effect'
 import { useMemo } from 'react'
 
-import type { ResourceDataTypes } from '@assessmentis/clinical-domain'
+import type { ClinicalDomainClasses } from '@assessmentis/clinical-domain'
 import type { Resource, ResourceRequest } from '@assessmentis/effectful-store'
 
 import { useHub } from './useHub'
@@ -32,16 +32,12 @@ type SearchFilters = Partial<
  * }
  * ```
  */
-export function useSearchSubscription<
-  TDomainType extends keyof ResourceDataTypes,
->(
-  ResourceSchema: {
-    readonly DomainType: TDomainType
-  },
+export function useSearchSubscription<K extends ClinicalDomainClasses>(
+  ResourceSchema: K,
   filters?: SearchFilters
 ): Stream.Stream<
   Either.Either<
-    ReadonlyArray<Resource.WithResourceUrl<ResourceDataTypes[TDomainType]>>,
+    ReadonlyArray<Resource.WithResourceUrl<InstanceType<K>>>,
     ResourceRequest.CommonErrors
   >,
   never,
@@ -52,11 +48,11 @@ export function useSearchSubscription<
   return useMemo(
     () =>
       hub.subscribeSearch(
-        ResourceSchema.DomainType,
+        ResourceSchema,
         filters satisfies
-          | ResourceRequest.SearchParam<ResourceDataTypes[TDomainType]>
+          | ResourceRequest.SearchParam<InstanceType<K>>
           | undefined
       ),
-    [hub, ResourceSchema.DomainType, filters]
+    [hub, ResourceSchema, filters]
   )
 }

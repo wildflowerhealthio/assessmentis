@@ -3,7 +3,7 @@ import { FetchHttpClient, HttpClient } from '@effect/platform'
 import { Suspense, useMemo } from 'react'
 import { Await } from 'react-router'
 
-import type { ResourceDataTypes } from '@assessmentis/clinical-domain'
+import type { ClinicalDomainClasses } from '@assessmentis/clinical-domain'
 import { makeDailyCoOriginType } from '@assessmentis/daily-co-infrastructure'
 import { Hub } from '@assessmentis/effectful-store'
 import {
@@ -27,13 +27,15 @@ import {
   mapOrgStreamToHubState,
   startOrgService,
   startUserService,
-  type NoSelectedOrgError,
   UserOrg,
-  type DocumentPath,
-  type Org,
-  type OrgService,
-  type OrgSlug,
-  type UserId,
+} from '@assessmentis/platform-domain'
+import type {
+  NoSelectedOrgError,
+  DocumentPath,
+  Org,
+  OrgService,
+  OrgSlug,
+  UserId,
 } from '@assessmentis/platform-domain'
 import { useEffectTs } from '@assessmentis/react-util'
 import { StreamEither } from '@assessmentis/util'
@@ -180,7 +182,7 @@ const platformEffect = Effect.gen(function* () {
   )
 
   const stateStream = mapOrgStreamToHubState(originTypes, combinedStream)
-  const hub = yield* Hub.makeHub<ResourceDataTypes>(stateStream)
+  const hub = yield* Hub.makeHub<ClinicalDomainClasses>(stateStream)
 
   return {
     authDataService,

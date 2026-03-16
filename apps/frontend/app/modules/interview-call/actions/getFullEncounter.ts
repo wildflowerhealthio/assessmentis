@@ -2,19 +2,19 @@ import { Effect, Equal, Option } from 'effect'
 
 import {
   ClinicalDomainHub,
+  Encounter,
   Location,
-  type Encounter,
-  type EncounterLocation,
-  type Questionnaire,
-  type QuestionnaireResponse,
+  Questionnaire,
+  QuestionnaireResponse,
 } from '@assessmentis/clinical-domain'
+import type { EncounterLocation } from '@assessmentis/clinical-domain'
 import type { ReadonlyUrl, Resource } from '@assessmentis/effectful-store'
-import {
-  UnhandledError,
-  type AuthError,
-  type AuthzError,
-  type ExternalAssertionError,
-  type NotFoundError,
+import { UnhandledError } from '@assessmentis/ontology'
+import type {
+  AuthError,
+  AuthzError,
+  ExternalAssertionError,
+  NotFoundError,
 } from '@assessmentis/ontology'
 
 export type FullEncounter = {
@@ -41,7 +41,7 @@ export const getFullEncounter = (
   Effect.gen(function* () {
     const hub = yield* ClinicalDomainHub
 
-    const encounter = yield* hub.get('Encounter', encounterUrl)
+    const encounter = yield* hub.get(Encounter, encounterUrl)
 
     // Resolve location references
     const locationUrls = (encounter.location ?? []).map(
@@ -49,15 +49,15 @@ export const getFullEncounter = (
     )
     const locations = yield* Effect.allSuccesses(
       locationUrls.map((urlEffect) =>
-        Effect.flatMap(urlEffect, (url) => hub.get('Location', url))
+        Effect.flatMap(urlEffect, (url) => hub.get(Location, url))
       )
     )
 
     // Fetch questionnaire responses for this encounter
-    const responses = yield* hub.search('QuestionnaireResponse', {
+    const responses = yield* hub.search(QuestionnaireResponse, {
       encounter: encounterUrl.toString(),
     })
-    const allQuestionnaires = yield* hub.search('Questionnaire')
+    const allQuestionnaires = yield* hub.search(Questionnaire)
 
     const questionnaireResponses = yield* Effect.all(
       responses.map((questionnaireResponse) =>

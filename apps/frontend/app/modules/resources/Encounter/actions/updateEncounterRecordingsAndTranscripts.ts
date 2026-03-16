@@ -2,8 +2,8 @@ import { Effect } from 'effect'
 
 import {
   ClinicalDomainHub,
-  type Encounter,
-  type Media,
+  Encounter,
+  Media,
 } from '@assessmentis/clinical-domain'
 import { Reference } from '@assessmentis/clinical-domain/data-types'
 import type { Resource } from '@assessmentis/effectful-store'
@@ -40,7 +40,7 @@ export const updateEncounterRecordingsAndTranscripts = (
     const videoCalls = yield* VideoCallClient
 
     // Get the current encounter
-    const encounter = yield* hub.get('Encounter', encounterUrl)
+    const encounter = yield* hub.get(Encounter, encounterUrl)
 
     // Extract the room name from the encounter location
     const roomUrl = encounter.location?.[0]?.location?.identifier?.value
@@ -53,7 +53,7 @@ export const updateEncounterRecordingsAndTranscripts = (
     if (!roomName) return encounter
 
     // Fetch all existing Media resources
-    const knownMediaItems = yield* hub.search('Media', {
+    const knownMediaItems = yield* hub.search(Media, {
       encounter: `Encounter/${encounterUrl}`,
     })
 
@@ -88,7 +88,7 @@ export const updateEncounterRecordingsAndTranscripts = (
       }
     }
 
-    yield* Effect.all(updatedMedia.map((media) => hub.update('Media', media)))
+    yield* Effect.all(updatedMedia.map((media) => hub.update(Media, media)))
 
     // Create new Media resources linked to the encounter
     const encounterRef = Reference.make({
@@ -100,7 +100,7 @@ export const updateEncounterRecordingsAndTranscripts = (
     }))
 
     if (mediaToCreate.length > 0) {
-      yield* hub.createMany('Media', mediaToCreate)
+      yield* hub.createMany(Media, mediaToCreate)
     }
 
     return encounter

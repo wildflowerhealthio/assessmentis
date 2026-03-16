@@ -1,12 +1,9 @@
 import { Either, Option, Schema, Stream } from 'effect'
 import { useMemo } from 'react'
 
-import type { ResourceDataTypes } from '@assessmentis/clinical-domain'
-import {
-  ReadonlyUrl,
-  type Resource,
-  type ResourceRequest,
-} from '@assessmentis/effectful-store'
+import type { ClinicalDomainClasses } from '@assessmentis/clinical-domain'
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
+import type { Resource, ResourceRequest } from '@assessmentis/effectful-store'
 import { NotFoundError } from '@assessmentis/ontology'
 
 import { useHub } from './useHub'
@@ -33,29 +30,20 @@ import { useHub } from './useHub'
  * }
  * ```
  */
-export function useResourceSubscription<
-  TDomainType extends keyof ResourceDataTypes,
->(
-  ResourceSchema: {
-    readonly DomainType: TDomainType
-  },
+export function useResourceSubscription<K extends ClinicalDomainClasses>(
+  ResourceSchema: K,
   rawUrl: string
 ): Stream.Stream<
   Either.Either<
-    Resource.WithResourceUrl<ResourceDataTypes[TDomainType]>,
+    Resource.WithResourceUrl<InstanceType<K>>,
     | ResourceRequest.CommonErrors
     | NotFoundError<
-        ResourceDataTypes[TDomainType]['domainType'],
+        K['DomainType'],
         {
-          readonly url: Resource.InferResourceUrl<
-            ResourceDataTypes[TDomainType]
-          >
+          readonly url: Resource.InferResourceUrl<InstanceType<K>>
         }
       >
-    | NotFoundError<
-        ResourceDataTypes[TDomainType]['domainType'],
-        { readonly unparseableUrl: string }
-      >
+    | NotFoundError<K['DomainType'], { readonly unparsableUrl: string }>
   >,
   never,
   never
@@ -68,19 +56,16 @@ export function useResourceSubscription<
     )(rawUrl)
 
     if (Option.isSome(urlOption)) {
-      return hub.subscribe(ResourceSchema.DomainType, urlOption.value)
+      return hub.subscribe(ResourceSchema, urlOption.value)
     }
 
     return Stream.succeed(
       Either.left(
-        new NotFoundError<
-          ResourceDataTypes[TDomainType]['domainType'],
-          { unparseableUrl: string }
-        >({
+        new NotFoundError<K['DomainType'], { unparsableUrl: string }>({
           resourceType: ResourceSchema.DomainType,
-          params: { unparseableUrl: rawUrl },
+          params: { unparsableUrl: rawUrl },
         } as const)
       )
     )
-  }, [rawUrl, ResourceSchema.DomainType, hub])
+  }, [rawUrl, ResourceSchema, hub])
 }

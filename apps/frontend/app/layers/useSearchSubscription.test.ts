@@ -36,7 +36,7 @@ describe('useSearchSubscription', () => {
 
     renderHook(() => useSearchSubscription(Patient))
 
-    expect(subscribeSearchFn).toHaveBeenCalledWith('Patient', undefined)
+    expect(subscribeSearchFn).toHaveBeenCalledWith(Patient, undefined)
   })
 
   it('passes filters to hub.subscribeSearch', () => {
@@ -49,7 +49,7 @@ describe('useSearchSubscription', () => {
     const filters = { name: 'Smith' }
     renderHook(() => useSearchSubscription(Patient, filters))
 
-    expect(subscribeSearchFn).toHaveBeenCalledWith('Patient', filters)
+    expect(subscribeSearchFn).toHaveBeenCalledWith(Patient, filters)
   })
 
   it('returns the stream from hub.subscribeSearch', () => {
@@ -101,6 +101,6 @@ describe('useSearchSubscription', () => {
     const filters = { encounter: 'Encounter/123' }
     renderHook(() => useSearchSubscription(Media, filters))
 
-    expect(subscribeSearchFn).toHaveBeenCalledWith('Media', filters)
+    expect(subscribeSearchFn).toHaveBeenCalledWith(Media, filters)
   })
 })

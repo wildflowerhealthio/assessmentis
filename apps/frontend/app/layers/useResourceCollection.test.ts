@@ -53,7 +53,7 @@ describe('useResourceCollection', () => {
 
     renderHook(() => useResourceCollection(Patient))
 
-    expect(subscribeSearchFn).toHaveBeenCalledWith('Patient', undefined)
+    expect(subscribeSearchFn).toHaveBeenCalledWith(Patient, undefined)
   })
 
   it('passes filters to hub.subscribeSearch', () => {
@@ -66,7 +66,7 @@ describe('useResourceCollection', () => {
     const filters = { status: 'planned' }
     renderHook(() => useResourceCollection(Encounter, filters))
 
-    expect(subscribeSearchFn).toHaveBeenCalledWith('Encounter', filters)
+    expect(subscribeSearchFn).toHaveBeenCalledWith(Encounter, filters)
   })
 
   it('deleteItem calls hub.delete with the decoded URL', async () => {
@@ -84,7 +84,7 @@ describe('useResourceCollection', () => {
     await result.current.deleteItem('https://example.com/Patient/123')
 
     expect(deleteFn).toHaveBeenCalledWith(
-      'Patient',
+      Patient,
       expect.objectContaining({
         pathname: '/Patient/123',
       })
