@@ -5,8 +5,8 @@ import {
   CodeableConcept,
   Period,
   Reference,
-  type BackboneElementEncoded,
 } from '../../data-types'
+import type { BackboneElementEncoded } from '../../data-types'
 
 const fields = {
   type: Schema.optional(Schema.Array(Schema.suspend(() => CodeableConcept))),

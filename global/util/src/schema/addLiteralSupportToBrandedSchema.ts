@@ -1,4 +1,5 @@
-import { Brand, type Schema } from 'effect'
+import { Brand } from 'effect'
+import type { Schema } from 'effect'
 
 /**
  * Creates a branded literal constructor from a branded schema. Allows

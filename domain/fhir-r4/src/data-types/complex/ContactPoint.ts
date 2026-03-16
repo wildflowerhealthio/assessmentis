@@ -1,9 +1,7 @@
 import { Schema } from 'effect'
 
-import {
-  ContactPoint,
-  type ContactPointEncoded,
-} from '@assessmentis/clinical-domain/data-types'
+import { ContactPoint } from '@assessmentis/clinical-domain/data-types'
+import type { ContactPointEncoded } from '@assessmentis/clinical-domain/data-types'
 import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
 
 import type FhirR4 from 'fhir/r4'

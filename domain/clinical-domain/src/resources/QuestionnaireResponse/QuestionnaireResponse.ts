@@ -2,7 +2,8 @@ import { DateTime, Option, Schema } from 'effect'
 
 import { MergeClasses } from '@assessmentis/util'
 
-import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
+import { Resource } from '../../data-types/base/Resource'
+import type { ResourceEncoded } from '../../data-types/base/Resource'
 import {
   Identifier,
   Reference,
@@ -10,10 +11,8 @@ import {
 import { Questionnaire } from '../Questionnaire/Questionnaire'
 import type { QuestionnaireItemLink } from '../Questionnaire/QuestionnaireItemLink'
 import { QuestionnaireItemAnsweredAtExtension } from '../Questionnaire/QuestionnaireItemAnsweredAt'
-import {
-  QuestionnaireResponseItem,
-  type QuestionnaireResponseItemEncoded,
-} from './QuestionnaireResponseItem'
+import { QuestionnaireResponseItem } from './QuestionnaireResponseItem'
+import type { QuestionnaireResponseItemEncoded } from './QuestionnaireResponseItem'
 
 const DomainType = 'QuestionnaireResponse' as const
 type DomainType = typeof DomainType

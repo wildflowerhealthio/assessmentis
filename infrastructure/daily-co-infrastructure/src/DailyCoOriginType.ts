@@ -16,11 +16,6 @@ import type {
   OriginFactory,
   ReadonlyUrl,
 } from '@assessmentis/effectful-store'
-import type {
-  Location,
-  Media,
-  Observation,
-} from '@assessmentis/clinical-domain'
 
 /**
  * Creates an {@link OriginFactory} for DailyCo origins.

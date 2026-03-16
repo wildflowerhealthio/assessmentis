@@ -1,12 +1,10 @@
-import { pipe, Schema, type FastCheck } from 'effect'
+import { pipe, Schema } from 'effect'
+import type { FastCheck } from 'effect'
 
 import { mergeArbitraries, MergeClasses } from '@assessmentis/util'
 
-import {
-  BackboneElement,
-  Coding,
-  type BackboneElementEncoded,
-} from '../../data-types'
+import { BackboneElement, Coding } from '../../data-types'
+import type { BackboneElementEncoded } from '../../data-types'
 import { QuestionnaireItemAnswerOption } from './QuestionnaireItemAnswerOption'
 import { QuestionnaireItemLink } from './QuestionnaireItemLink'
 

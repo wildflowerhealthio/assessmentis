@@ -5,8 +5,8 @@ import {
   CodeableConcept,
   Identifier,
   Reference,
-  type BackboneElementEncoded,
 } from '../../data-types'
+import type { BackboneElementEncoded } from '../../data-types'
 
 const fields = {
   preAdmissionIdentifier: Schema.optional(Schema.suspend(() => Identifier)),

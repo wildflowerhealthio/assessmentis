@@ -1,6 +1,7 @@
 import { Schema } from 'effect'
 
-import { Coding, type CodingEncoded } from '../complex/Coding'
+import { Coding } from '../complex/Coding'
+import type { CodingEncoded } from '../complex/Coding'
 
 const DomainType = 'Meta' as const
 type DomainType = typeof DomainType

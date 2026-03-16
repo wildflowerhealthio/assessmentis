@@ -1,4 +1,5 @@
-import { Either, Option, Stream, type Effect, type Scope } from 'effect'
+import { Either, Option, Stream } from 'effect'
+import type { Effect, Scope } from 'effect'
 import React, { Suspense, useMemo } from 'react'
 import { Await } from 'react-router'
 
@@ -8,13 +9,8 @@ import {
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
-import {
-  NoSelectedOrgError,
-  type Org,
-  type OrgSlug,
-  type User,
-  type UserId,
-} from '@assessmentis/platform-domain'
+import { NoSelectedOrgError } from '@assessmentis/platform-domain'
+import type { Org, OrgSlug, User, UserId } from '@assessmentis/platform-domain'
 import { useStream } from '@assessmentis/react-util'
 import { StreamEither } from '@assessmentis/util'
 

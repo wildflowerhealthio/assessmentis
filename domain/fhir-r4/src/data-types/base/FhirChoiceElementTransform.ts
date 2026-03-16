@@ -3,8 +3,8 @@ import { Schema } from 'effect'
 import {
   baseDatatypes,
   DatatypeChoice,
-  type DatatypeName,
 } from '@assessmentis/clinical-domain/data-types'
+import type { DatatypeName } from '@assessmentis/clinical-domain/data-types'
 import { capitalize } from '@assessmentis/util'
 
 type DomainChoiceType<

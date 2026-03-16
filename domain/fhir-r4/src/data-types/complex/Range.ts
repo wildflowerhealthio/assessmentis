@@ -1,9 +1,7 @@
 import { Schema } from 'effect'
 
-import {
-  Range,
-  type RangeEncoded,
-} from '@assessmentis/clinical-domain/data-types'
+import { Range } from '@assessmentis/clinical-domain/data-types'
+import type { RangeEncoded } from '@assessmentis/clinical-domain/data-types'
 import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
 
 import type FhirR4 from 'fhir/r4'

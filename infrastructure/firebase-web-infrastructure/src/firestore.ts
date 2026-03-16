@@ -1,10 +1,11 @@
-import { Chunk, Effect, Option, Stream, type StreamEmit } from 'effect'
+import { Chunk, Effect, Option, Stream } from 'effect'
+import type { StreamEmit } from 'effect'
 
-import {
-  onSnapshot,
-  type DocumentData,
-  type DocumentReference,
-  type FirestoreError,
+import { onSnapshot } from 'firebase/firestore'
+import type {
+  DocumentData,
+  DocumentReference,
+  FirestoreError,
 } from 'firebase/firestore'
 
 export const snapshotStream = (

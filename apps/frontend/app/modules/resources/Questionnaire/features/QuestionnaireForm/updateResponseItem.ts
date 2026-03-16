@@ -1,9 +1,7 @@
 import type { SetStateAction } from 'react'
 
-import {
-  QuestionnaireResponseItem,
-  type QuestionnaireItemLink,
-} from '@assessmentis/clinical-domain'
+import { QuestionnaireResponseItem } from '@assessmentis/clinical-domain'
+import type { QuestionnaireItemLink } from '@assessmentis/clinical-domain'
 
 /**
  * Creates a state updater that replaces or inserts a child

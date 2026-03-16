@@ -4,10 +4,8 @@ import type { QuestionnaireResponseItem } from '@assessmentis/clinical-domain'
 import { Code, Coding } from '@assessmentis/clinical-domain/data-types'
 import { gad7 } from '@assessmentis/questionnaire-entities'
 
-import {
-  makeScoringTable as makeScoringTableFunction,
-  type ScoringTable,
-} from '../../utility/scoringTable'
+import { makeScoringTable as makeScoringTableFunction } from '../../utility/scoringTable'
+import type { ScoringTable } from '../../utility/scoringTable'
 
 const gad7ScoreByAnswerCode: Readonly<Record<string, number | undefined>> = {
   'LA6568-5': 0,

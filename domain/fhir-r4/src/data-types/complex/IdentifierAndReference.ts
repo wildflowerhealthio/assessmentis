@@ -1,10 +1,9 @@
 import { Schema } from 'effect'
 
-import {
-  Identifier,
-  Reference,
-  type IdentifierEncoded,
-  type ReferenceEncoded,
+import { Identifier, Reference } from '@assessmentis/clinical-domain/data-types'
+import type {
+  IdentifierEncoded,
+  ReferenceEncoded,
 } from '@assessmentis/clinical-domain/data-types'
 import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
 

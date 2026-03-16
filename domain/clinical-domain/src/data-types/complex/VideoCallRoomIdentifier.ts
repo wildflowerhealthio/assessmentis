@@ -3,13 +3,10 @@ import { Schema } from 'effect'
 import { MergeClasses } from '@assessmentis/util'
 
 import { Element } from '../base/'
-import { CodeableConcept, type CodeableConceptEncoded } from './CodeableConcept'
-import {
-  Identifier,
-  IdentifierUse,
-  Reference,
-  type ReferenceEncoded,
-} from './IdentifierAndReference'
+import { CodeableConcept } from './CodeableConcept'
+import type { CodeableConceptEncoded } from './CodeableConcept'
+import { Identifier, IdentifierUse, Reference } from './IdentifierAndReference'
+import type { ReferenceEncoded } from './IdentifierAndReference'
 import { Period } from './Period'
 
 /**

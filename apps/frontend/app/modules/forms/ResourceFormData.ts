@@ -6,7 +6,7 @@ import type { FormData, FormDataConstructor } from './FormData'
 /**
  * Narrowed constructor type for resource page components.
  * Fixes TCreatePayload = InstanceType<K> and
- * TUpdatePayload = Resource.WithResourceUrl<InstanceType<K>>.
+ * TUpdatePayload = Resource.WithResourceUrl\<InstanceType\<K\>\>.
  */
 export type ResourceFormDataConstructor<
   K extends ClinicalDomainClasses,

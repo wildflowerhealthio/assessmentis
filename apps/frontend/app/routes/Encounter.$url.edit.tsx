@@ -2,11 +2,10 @@ import { DateTime, Effect } from 'effect'
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router'
 
-import {
-  ClinicalDomainHub,
-  Encounter,
-  type EncounterLocation,
-  type EncounterParticipant,
+import { ClinicalDomainHub, Encounter } from '@assessmentis/clinical-domain'
+import type {
+  EncounterLocation,
+  EncounterParticipant,
 } from '@assessmentis/clinical-domain'
 import { Resource } from '@assessmentis/effectful-store'
 import { useEitherStream } from '@assessmentis/react-util'

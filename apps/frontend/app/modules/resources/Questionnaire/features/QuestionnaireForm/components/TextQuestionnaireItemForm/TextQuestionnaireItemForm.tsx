@@ -1,14 +1,16 @@
 'use client'
 
 import { DateTime, Effect } from 'effect'
-import { type ChangeEventHandler, type SetStateAction } from 'react'
+import type { ChangeEventHandler, SetStateAction } from 'react'
 
 import {
   QuestionnaireItemAnsweredAtExtension,
   QuestionnaireResponseItem,
   QuestionnaireResponseItemAnswer,
-  type QuestionnaireItem,
-  type QuestionnaireItemUIControlCode,
+} from '@assessmentis/clinical-domain'
+import type {
+  QuestionnaireItem,
+  QuestionnaireItemUIControlCode,
 } from '@assessmentis/clinical-domain'
 import { cn } from '@assessmentis/react-util'
 

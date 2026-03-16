@@ -1,5 +1,7 @@
-import { Either, type Scope, type Stream } from 'effect'
-import React, { useEffect, useState, type JSX } from 'react'
+import { Either } from 'effect'
+import type { Scope, Stream } from 'effect'
+import React, { useEffect, useState } from 'react'
+import type { JSX } from 'react'
 
 import {
   AuthError,
@@ -8,13 +10,8 @@ import {
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
-import {
-  NoSelectedOrgError,
-  type Org,
-  type OrgSlug,
-  type User,
-  type UserId,
-} from '@assessmentis/platform-domain'
+import { NoSelectedOrgError } from '@assessmentis/platform-domain'
+import type { Org, OrgSlug, User, UserId } from '@assessmentis/platform-domain'
 import { useStream } from '@assessmentis/react-util'
 
 import { LoginButton } from '../../global/components/LoginButton'

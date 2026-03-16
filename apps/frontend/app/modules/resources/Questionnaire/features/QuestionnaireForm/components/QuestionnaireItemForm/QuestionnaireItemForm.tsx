@@ -7,9 +7,11 @@ import {
   QuestionnaireItemAnswerOption,
   QuestionnaireItemType,
   QuestionnaireResponseItem,
-  type QuestionnaireItem,
-  type QuestionnaireItemLink,
-  type QuestionnaireItemUIControlCode,
+} from '@assessmentis/clinical-domain'
+import type {
+  QuestionnaireItem,
+  QuestionnaireItemLink,
+  QuestionnaireItemUIControlCode,
 } from '@assessmentis/clinical-domain'
 
 import DisplayQuestionnaireItemForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/components/DisplayQuestionnaireItemForm/DisplayQuestionnaireItemForm'

@@ -2,7 +2,8 @@ import { Schema } from 'effect'
 
 import { MergeClasses } from '@assessmentis/util'
 
-import { Element, type ElementEncoded } from '../base/Element'
+import { Element } from '../base/Element'
+import type { ElementEncoded } from '../base/Element'
 
 const DomainType = 'Narrative' as const
 type DomainType = typeof DomainType

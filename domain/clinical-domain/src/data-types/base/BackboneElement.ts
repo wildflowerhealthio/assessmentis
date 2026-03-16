@@ -2,8 +2,10 @@ import { pipe, Schema } from 'effect'
 
 import type { ReadonlyUrl } from '@assessmentis/effectful-store'
 
-import { Extension, type ExtensionEncoded } from '../special-purpose/Extension'
-import { Element, type ElementEncoded, type ElementFields } from './Element'
+import { Extension } from '../special-purpose/Extension'
+import type { ExtensionEncoded } from '../special-purpose/Extension'
+import { Element } from './Element'
+import type { ElementEncoded, ElementFields } from './Element'
 
 // ---------------------------------------------------------------------------
 // Types

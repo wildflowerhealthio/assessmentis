@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import { type CompositionSectionEncoded } from '@assessmentis/clinical-domain'
+import type { CompositionSectionEncoded } from '@assessmentis/clinical-domain'
 import { mutableEncoded } from '@assessmentis/util'
 
 import type FhirR4 from 'fhir/r4'

@@ -1,13 +1,7 @@
 import { assert, describe, expect, vi } from 'vitest'
 import { it } from '@effect/vitest'
-import {
-  Chunk,
-  Effect,
-  Either,
-  FastCheck as fc,
-  Stream,
-  type Brand,
-} from 'effect'
+import { Chunk, Effect, Either, FastCheck as fc, Stream } from 'effect'
+import type { Brand } from 'effect'
 
 import { StreamEither } from './StreamEither'
 

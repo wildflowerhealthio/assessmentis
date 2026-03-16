@@ -4,8 +4,8 @@ import {
   Location,
   LocationMode,
   LocationStatus,
-  type LocationEncoded,
 } from '@assessmentis/clinical-domain'
+import type { LocationEncoded } from '@assessmentis/clinical-domain'
 import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
 
 import type FhirR4 from 'fhir/r4'

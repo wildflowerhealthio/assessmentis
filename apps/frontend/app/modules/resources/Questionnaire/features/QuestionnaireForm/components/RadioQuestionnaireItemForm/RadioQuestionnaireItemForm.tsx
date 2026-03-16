@@ -1,5 +1,5 @@
 import { Data, DateTime, Effect, Equal } from 'effect'
-import { type ChangeEventHandler, type SetStateAction } from 'react'
+import type { ChangeEventHandler, SetStateAction } from 'react'
 
 import {
   QuestionnaireItemAnsweredAtExtension,
@@ -7,8 +7,10 @@ import {
   QuestionnaireItemUIControlCode,
   QuestionnaireResponseItem,
   QuestionnaireResponseItemAnswer,
-  type QuestionnaireItem,
-  type QuestionnaireItemAnswerOption as QuestionnaireItemAnswerOptionType,
+} from '@assessmentis/clinical-domain'
+import type {
+  QuestionnaireItem,
+  QuestionnaireItemAnswerOption as QuestionnaireItemAnswerOptionType,
 } from '@assessmentis/clinical-domain'
 import { DatatypeChoice } from '@assessmentis/clinical-domain/data-types'
 import { cn } from '@assessmentis/react-util'

@@ -1,11 +1,7 @@
 import { Schema } from 'effect'
 
-import {
-  BackboneElement,
-  Coding,
-  Period,
-  type BackboneElementEncoded,
-} from '../../data-types'
+import { BackboneElement, Coding, Period } from '../../data-types'
+import type { BackboneElementEncoded } from '../../data-types'
 
 const fields = {
   class: Schema.suspend(() => Coding),

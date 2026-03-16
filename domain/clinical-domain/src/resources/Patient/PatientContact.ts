@@ -9,8 +9,8 @@ import {
   HumanName,
   Period,
   Reference,
-  type BackboneElementEncoded,
 } from '../../data-types'
+import type { BackboneElementEncoded } from '../../data-types'
 
 const fields = {
   relationship: Schema.optional(

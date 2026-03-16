@@ -2,7 +2,8 @@ import { Schema } from 'effect'
 
 import { MergeClasses, TimelessDateFromString } from '@assessmentis/util'
 
-import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
+import { Resource } from '../../data-types/base/Resource'
+import type { ResourceEncoded } from '../../data-types/base/Resource'
 import { Address } from '../../data-types/complex/Address'
 import { AdministrativeGender } from '../../data-types/complex/AdministrativeGender'
 import { Attachment } from '../../data-types/complex/Attachment'

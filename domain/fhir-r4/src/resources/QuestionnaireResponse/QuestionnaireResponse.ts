@@ -3,8 +3,8 @@ import { Schema } from 'effect'
 import {
   QuestionnaireResponse,
   QuestionnaireResponseStatus,
-  type QuestionnaireResponseEncoded,
 } from '@assessmentis/clinical-domain'
+import type { QuestionnaireResponseEncoded } from '@assessmentis/clinical-domain'
 import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
 
 import type FhirR4 from 'fhir/r4'

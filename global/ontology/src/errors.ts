@@ -1,4 +1,5 @@
-import { Data, type Arbitrary, type FastCheck } from 'effect'
+import { Data } from 'effect'
+import type { Arbitrary, FastCheck } from 'effect'
 
 /**
  * A catch-all error for unanticipated failures where no specific handling exists.

@@ -1,4 +1,5 @@
-import { Effect, Layer, pipe, Schema, type Either } from 'effect'
+import { Effect, Layer, pipe, Schema } from 'effect'
+import type { Either } from 'effect'
 import { info, error as logError } from 'firebase-functions/logger'
 
 import {
@@ -13,9 +14,8 @@ import {
   BadDataError,
   NotFoundError,
   UnhandledError,
-  type AuthError,
-  type ExternalAssertionError,
 } from '@assessmentis/ontology'
+import type { AuthError, ExternalAssertionError } from '@assessmentis/ontology'
 import {
   CurrentOrg,
   DocumentStore,
@@ -23,10 +23,10 @@ import {
   Org,
   OrgSlug,
 } from '@assessmentis/platform-domain'
-import {
-  VideoCallClient,
-  type MediaWithRoom,
-  type VideoCallRoomName,
+import { VideoCallClient } from '@assessmentis/video-call-domain'
+import type {
+  MediaWithRoom,
+  VideoCallRoomName,
 } from '@assessmentis/video-call-domain'
 
 import { FhirR4ClientLayerLive } from '../layers/FhirR4ClientService'

@@ -1,9 +1,7 @@
 import { Schema } from 'effect'
 
-import {
-  Coding,
-  type CodingEncoded,
-} from '@assessmentis/clinical-domain/data-types'
+import { Coding } from '@assessmentis/clinical-domain/data-types'
+import type { CodingEncoded } from '@assessmentis/clinical-domain/data-types'
 import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
 
 import type FhirR4 from 'fhir/r4'

@@ -1,4 +1,5 @@
-import { Cause, Chunk, Effect, Exit, Fiber, Stream, type Scope } from 'effect'
+import { Cause, Chunk, Effect, Exit, Fiber, Stream } from 'effect'
+import type { Scope } from 'effect'
 import { useEffect } from 'react'
 
 import { useStatePromise } from './effectHooks'

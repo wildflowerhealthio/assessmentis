@@ -1,22 +1,23 @@
-import { Context, Effect, Layer, type Schema, type Scope } from 'effect'
+import { Context, Effect, Layer } from 'effect'
+import type { Schema, Scope } from 'effect'
 import { HttpClient } from '@effect/platform'
 
-import {
-  DailyCoProxyLiveCredential,
-  type DailyCoProxyIdentifier,
-  type DailyCoProxyToken,
+import { DailyCoProxyLiveCredential } from '@assessmentis/daily-co-infrastructure'
+import type {
+  DailyCoProxyIdentifier,
+  DailyCoProxyToken,
 } from '@assessmentis/daily-co-infrastructure'
-import {
-  GoogleUserOAuthLiveCredential,
-  type GoogleUserCredentialIdentifier,
-  type GoogleUserOAuthToken,
+import { GoogleUserOAuthLiveCredential } from '@assessmentis/google-account-infrastructure'
+import type {
+  GoogleUserCredentialIdentifier,
+  GoogleUserOAuthToken,
 } from '@assessmentis/google-account-infrastructure'
 import {
   AuthDataService,
   makeAuthDataCredentialRepository,
   makeDocumentStoreCredentialRepository,
-  type LiveCredential,
 } from '@assessmentis/platform-domain'
+import type { LiveCredential } from '@assessmentis/platform-domain'
 
 type GoogleUserOAuthTokenEncoded = Schema.Schema.Encoded<
   typeof GoogleUserOAuthLiveCredential.schema

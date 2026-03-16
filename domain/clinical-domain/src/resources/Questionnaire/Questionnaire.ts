@@ -2,7 +2,8 @@ import { Schema } from 'effect'
 
 import { MergeClasses } from '@assessmentis/util'
 
-import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
+import { Resource } from '../../data-types/base/Resource'
+import type { ResourceEncoded } from '../../data-types/base/Resource'
 import { Coding } from '../../data-types/complex/Coding'
 import { QuestionnaireItem } from './QuestionnaireItem'
 

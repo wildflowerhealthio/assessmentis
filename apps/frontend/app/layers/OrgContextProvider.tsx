@@ -6,9 +6,10 @@ import {
   BadDataError,
   NotFoundError,
   UnhandledError,
-  type AuthError,
 } from '@assessmentis/ontology'
-import { NoSelectedOrgError, type Org } from '@assessmentis/platform-domain'
+import type { AuthError } from '@assessmentis/ontology'
+import { NoSelectedOrgError } from '@assessmentis/platform-domain'
+import type { Org } from '@assessmentis/platform-domain'
 import { useStream } from '@assessmentis/react-util'
 import { StreamEither } from '@assessmentis/util'
 

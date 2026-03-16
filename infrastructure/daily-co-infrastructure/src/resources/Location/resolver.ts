@@ -23,11 +23,8 @@ import {
   postRequest,
 } from '../../httpHelpers'
 import { CompleteApiDailyCoRoom } from '../../models/ApiDailyCoRoomSchema'
-import {
-  extractIdFromUrl,
-  type AnyRequest,
-  type AuthReadable,
-} from '../../resolverUtils'
+import { extractIdFromUrl } from '../../resolverUtils'
+import type { AnyRequest, AuthReadable } from '../../resolverUtils'
 
 const LocationUrl = Location.UrlSchema
 

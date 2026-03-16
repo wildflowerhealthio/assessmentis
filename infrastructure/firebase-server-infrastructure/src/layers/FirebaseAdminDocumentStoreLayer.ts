@@ -1,11 +1,8 @@
 import { Effect, Either, Layer } from 'effect'
 
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
-import {
-  DocumentStore,
-  type DocumentData,
-  type DocumentPath,
-} from '@assessmentis/platform-domain'
+import { DocumentStore } from '@assessmentis/platform-domain'
+import type { DocumentData, DocumentPath } from '@assessmentis/platform-domain'
 import { unsubscribableCallbackAsStream } from '@assessmentis/util'
 
 import type { Firestore } from 'firebase-admin/firestore'

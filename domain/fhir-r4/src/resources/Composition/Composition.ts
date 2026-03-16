@@ -1,9 +1,7 @@
 import { Schema } from 'effect'
 
-import {
-  Composition,
-  type CompositionEncoded,
-} from '@assessmentis/clinical-domain'
+import { Composition } from '@assessmentis/clinical-domain'
+import type { CompositionEncoded } from '@assessmentis/clinical-domain'
 import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
 
 import type FhirR4 from 'fhir/r4'

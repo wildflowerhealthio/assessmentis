@@ -7,8 +7,8 @@ import {
   CodeableConcept,
   Quantity,
   Range,
-  type BackboneElementEncoded,
 } from '../../data-types'
+import type { BackboneElementEncoded } from '../../data-types'
 
 const DomainType = 'ObservationReferenceRange' as const
 type DomainType = typeof DomainType

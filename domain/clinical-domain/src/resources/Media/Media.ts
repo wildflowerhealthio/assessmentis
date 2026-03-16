@@ -2,15 +2,16 @@ import { Schema } from 'effect'
 
 import { MergeClasses } from '@assessmentis/util'
 
-import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
+import { Resource } from '../../data-types/base/Resource'
+import type { ResourceEncoded } from '../../data-types/base/Resource'
 import { Annotation } from '../../data-types/complex/Annotation'
 import { Attachment } from '../../data-types/complex/Attachment'
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import {
   Identifier,
   Reference,
-  type ReferenceEncoded,
 } from '../../data-types/complex/IdentifierAndReference'
+import type { ReferenceEncoded } from '../../data-types/complex/IdentifierAndReference'
 import { Period } from '../../data-types/complex/Period'
 
 const DomainType = 'Media' as const

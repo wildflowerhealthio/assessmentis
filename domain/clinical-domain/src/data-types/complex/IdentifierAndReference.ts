@@ -5,8 +5,10 @@ import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import { ExternalAssertionError } from '@assessmentis/ontology'
 import { mergeArbitraries, MergeClasses } from '@assessmentis/util'
 
-import { Element, type ElementEncoded } from '../base/'
-import { CodeableConcept, type CodeableConceptEncoded } from './CodeableConcept'
+import { Element } from '../base/'
+import type { ElementEncoded } from '../base/'
+import { CodeableConcept } from './CodeableConcept'
+import type { CodeableConceptEncoded } from './CodeableConcept'
 import { Period } from './Period'
 
 /**

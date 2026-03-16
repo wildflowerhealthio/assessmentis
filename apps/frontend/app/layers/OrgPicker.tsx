@@ -1,7 +1,8 @@
 import { Effect, Option } from 'effect'
 import React, { useCallback } from 'react'
 
-import { OrgSlug, type Org, type User } from '@assessmentis/platform-domain'
+import { OrgSlug } from '@assessmentis/platform-domain'
+import type { Org, User } from '@assessmentis/platform-domain'
 import { cn } from '@assessmentis/react-util'
 
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'

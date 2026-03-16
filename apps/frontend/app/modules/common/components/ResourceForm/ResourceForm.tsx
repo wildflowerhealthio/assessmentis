@@ -1,5 +1,6 @@
 import { Either, Schema } from 'effect'
-import React, { Suspense, use, useRef, useState, type FormEvent } from 'react'
+import React, { Suspense, use, useRef, useState } from 'react'
+import type { FormEvent } from 'react'
 
 import { cn } from '@assessmentis/react-util'
 

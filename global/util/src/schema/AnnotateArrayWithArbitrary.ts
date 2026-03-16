@@ -1,4 +1,5 @@
-import { Arbitrary, Schema, type FastCheck } from 'effect'
+import { Arbitrary, Schema } from 'effect'
+import type { FastCheck } from 'effect'
 
 /**
  * Annotates an array schema with a custom arbitrary generator that produces

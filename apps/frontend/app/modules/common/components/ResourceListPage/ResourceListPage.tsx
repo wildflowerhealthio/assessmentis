@@ -1,4 +1,5 @@
-import { Suspense, type ComponentType, type ReactNode } from 'react'
+import { Suspense } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 import { Await, Link } from 'react-router'
 
 import { cn } from '@assessmentis/react-util'

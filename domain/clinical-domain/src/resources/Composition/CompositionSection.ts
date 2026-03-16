@@ -1,11 +1,10 @@
-import { pipe, Schema, type FastCheck } from 'effect'
+import { pipe, Schema } from 'effect'
+import type { FastCheck } from 'effect'
 
 import { mergeArbitraries, MergeClasses } from '@assessmentis/util'
 
-import {
-  BackboneElement,
-  type BackboneElementEncoded,
-} from '../../data-types/base/BackboneElement'
+import { BackboneElement } from '../../data-types/base/BackboneElement'
+import type { BackboneElementEncoded } from '../../data-types/base/BackboneElement'
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import { Reference } from '../../data-types/complex/IdentifierAndReference'
 import { Narrative } from '../../data-types/special-purpose/Narrative'

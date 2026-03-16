@@ -1,11 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Effect, Either, Stream } from 'effect'
 
-import {
-  NoSelectedOrgError,
-  OrgSlug,
-  type Org,
-} from '@assessmentis/platform-domain'
+import { NoSelectedOrgError, OrgSlug } from '@assessmentis/platform-domain'
+import type { Org } from '@assessmentis/platform-domain'
 
 import { render, screen, waitFor } from '@testing-library/react'
 

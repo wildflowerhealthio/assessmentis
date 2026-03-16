@@ -2,7 +2,8 @@ import { Schema } from 'effect'
 
 import { AnnotateArrayWithArbitrary, MergeClasses } from '@assessmentis/util'
 
-import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
+import { Resource } from '../../data-types/base/Resource'
+import type { ResourceEncoded } from '../../data-types/base/Resource'
 import { Annotation } from '../../data-types/complex/Annotation'
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import {

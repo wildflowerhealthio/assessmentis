@@ -1,8 +1,10 @@
 import {
   getUiDisplayLevel,
   QuestionnaireItemUiDisplayLevel,
-  type QuestionnaireItem,
-  type QuestionnaireItemUIControlCode,
+} from '@assessmentis/clinical-domain'
+import type {
+  QuestionnaireItem,
+  QuestionnaireItemUIControlCode,
 } from '@assessmentis/clinical-domain'
 import { cn } from '@assessmentis/react-util'
 

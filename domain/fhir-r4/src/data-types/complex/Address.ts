@@ -1,9 +1,7 @@
 import { Schema } from 'effect'
 
-import {
-  Address,
-  type AddressEncoded,
-} from '@assessmentis/clinical-domain/data-types'
+import { Address } from '@assessmentis/clinical-domain/data-types'
+import type { AddressEncoded } from '@assessmentis/clinical-domain/data-types'
 import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
 
 import type FhirR4 from 'fhir/r4'

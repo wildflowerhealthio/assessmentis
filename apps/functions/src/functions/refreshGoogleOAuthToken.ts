@@ -1,22 +1,19 @@
 import { DateTime, Effect, Exit, Layer, Option } from 'effect'
 import type { Response } from 'express'
-import { onRequest, type Request } from 'firebase-functions/https'
+import { onRequest } from 'firebase-functions/https'
+import type { Request } from 'firebase-functions/https'
 import { error, info } from 'firebase-functions/logger'
 
-import {
-  GoogleUserOAuthLiveCredential,
-  type GoogleUserCredentialIdentifier,
-} from '@assessmentis/google-account-infrastructure'
+import { GoogleUserOAuthLiveCredential } from '@assessmentis/google-account-infrastructure'
+import type { GoogleUserCredentialIdentifier } from '@assessmentis/google-account-infrastructure'
 import { parseCredentialId } from '@assessmentis/config-domain'
 import {
   AuthError,
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
-import {
-  CurrentUserId,
-  type DocumentStore,
-} from '@assessmentis/platform-domain'
+import { CurrentUserId } from '@assessmentis/platform-domain'
+import type { DocumentStore } from '@assessmentis/platform-domain'
 
 import { makeAuthedRequestRuntime } from '../util/BaseLayer'
 import { defaultHttpOptions, oauth2Client } from '../util/functionContext'

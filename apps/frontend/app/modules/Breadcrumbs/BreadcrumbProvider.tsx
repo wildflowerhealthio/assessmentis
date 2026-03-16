@@ -11,10 +11,8 @@
  */
 import { useState } from 'react'
 
-import {
-  BreadcrumbContext,
-  type BreadcrumbSegmentOrPromise,
-} from './BreadcrumbContext'
+import { BreadcrumbContext } from './BreadcrumbContext'
+import type { BreadcrumbSegmentOrPromise } from './BreadcrumbContext'
 
 /**
  * Deep equality check for breadcrumb segment arrays.

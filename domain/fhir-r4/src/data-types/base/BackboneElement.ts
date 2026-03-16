@@ -1,9 +1,7 @@
 import { Schema } from 'effect'
 
-import {
-  BackboneElement,
-  type BackboneElementEncoded,
-} from '@assessmentis/clinical-domain/data-types'
+import { BackboneElement } from '@assessmentis/clinical-domain/data-types'
+import type { BackboneElementEncoded } from '@assessmentis/clinical-domain/data-types'
 import { mutableEncoded } from '@assessmentis/util'
 
 import type FhirR4 from 'fhir/r4'

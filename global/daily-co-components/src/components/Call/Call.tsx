@@ -1,4 +1,5 @@
-import { useCallback, useState, type JSX } from 'react'
+import { useCallback, useState } from 'react'
+import type { JSX } from 'react'
 
 import {
   useDailyEvent,

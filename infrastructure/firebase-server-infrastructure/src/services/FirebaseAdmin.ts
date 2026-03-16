@@ -1,11 +1,7 @@
 import { Effect } from 'effect'
 
-import {
-  getApp,
-  initializeApp,
-  type App,
-  type AppOptions,
-} from 'firebase-admin/app'
+import { getApp, initializeApp } from 'firebase-admin/app'
+import type { App, AppOptions } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'
 import { getFirestore } from 'firebase-admin/firestore'
 

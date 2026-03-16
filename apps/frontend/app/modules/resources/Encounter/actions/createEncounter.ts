@@ -6,8 +6,10 @@ import {
   EncounterLocation,
   Location,
   QuestionnaireResponse,
-  type EncounterEncoded,
-  type QuestionnaireResponseEncoded,
+} from '@assessmentis/clinical-domain'
+import type {
+  EncounterEncoded,
+  QuestionnaireResponseEncoded,
 } from '@assessmentis/clinical-domain'
 import {
   Code,

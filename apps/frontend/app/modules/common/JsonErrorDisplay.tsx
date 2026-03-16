@@ -1,6 +1,6 @@
 'use client'
 
-import { type FallbackProps } from 'react-error-boundary'
+import type { FallbackProps } from 'react-error-boundary'
 
 export const JsonErrorDisplay = (props: FallbackProps) => {
   return (

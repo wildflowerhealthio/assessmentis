@@ -1,13 +1,5 @@
-import {
-  Chunk,
-  Effect,
-  Option,
-  Stream,
-  Take,
-  type Either,
-  type PubSub,
-  type Scope,
-} from 'effect'
+import { Chunk, Effect, Option, Stream, Take } from 'effect'
+import type { Either, PubSub, Scope } from 'effect'
 
 /**
  * Subscribes to a `PubSub<Take<Either<A, E>>>` and returns a perpetual stream.

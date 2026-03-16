@@ -5,9 +5,9 @@ import type { Observation } from '@assessmentis/clinical-domain'
 import {
   CodeableConcept,
   DatatypeChoice,
-  type Period,
   Quantity,
 } from '@assessmentis/clinical-domain/data-types'
+import type { Period } from '@assessmentis/clinical-domain/data-types'
 
 import {
   humanizeDateTimeForLocalReader,

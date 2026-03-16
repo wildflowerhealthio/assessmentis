@@ -9,7 +9,7 @@ import {
   Tray,
 } from '@assessmentis/daily-co-components/components'
 
-import { type DailyEvent } from '@daily-co/daily-js'
+import type { DailyEvent } from '@daily-co/daily-js'
 import { DailyAudio, DailyProvider, useCallObject } from '@daily-co/daily-react'
 
 enum VideoCallState {

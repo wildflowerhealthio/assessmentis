@@ -1,4 +1,5 @@
-import { Data, type Equal } from 'effect'
+import { Data } from 'effect'
+import type { Equal } from 'effect'
 
 /**
  * The result of deeply wrapping a value for structural equality.

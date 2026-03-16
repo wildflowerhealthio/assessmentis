@@ -4,8 +4,8 @@ import {
   buildFhirResourcePath,
   buildFhirStoreParent,
   buildFhirTypePath,
-  type GoogleHealthcareConfig,
 } from './GoogleHealthcarePaths'
+import type { GoogleHealthcareConfig } from './GoogleHealthcarePaths'
 
 describe('GoogleHealthcarePaths', () => {
   const config: GoogleHealthcareConfig = {

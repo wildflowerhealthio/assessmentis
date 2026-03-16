@@ -6,7 +6,6 @@ import type { Resource, ResourceRequest } from '@assessmentis/effectful-store'
 import { useEitherStream } from '@assessmentis/react-util'
 
 import { useHub } from '../../../layers/useHub'
-import type { PickerItemInstance } from '../../../traits/Picker/PickerItem'
 
 export interface UsePickerDataOptions<K extends ClinicalDomainClasses> {
   klass: K

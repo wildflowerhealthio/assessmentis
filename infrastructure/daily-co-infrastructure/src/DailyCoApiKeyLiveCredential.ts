@@ -1,18 +1,12 @@
-import {
-  Duration,
-  Effect,
-  Schema,
-  type Either,
-  type Scope,
-  type SubscriptionRef,
-} from 'effect'
+import { Duration, Effect, Schema } from 'effect'
+import type { Either, Scope, SubscriptionRef } from 'effect'
 
-import {
-  DocumentStoreLiveCredential,
-  type CredentialError,
-  type CredentialToken,
-  type DocumentPath,
-  type TokenStreamError,
+import { DocumentStoreLiveCredential } from '@assessmentis/platform-domain'
+import type {
+  CredentialError,
+  CredentialToken,
+  DocumentPath,
+  TokenStreamError,
 } from '@assessmentis/platform-domain'
 
 const tag = 'dailyco_api_key' as const

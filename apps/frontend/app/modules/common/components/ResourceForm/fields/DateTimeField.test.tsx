@@ -3,7 +3,8 @@ import { DateTime, Option } from 'effect'
 
 import { act, render, screen } from '@testing-library/react'
 
-import { DateTimeField, type DateTimeFieldProps } from './DateTimeField'
+import { DateTimeField } from './DateTimeField'
+import type { DateTimeFieldProps } from './DateTimeField'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

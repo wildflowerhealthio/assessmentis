@@ -6,8 +6,8 @@ import {
   Identifier,
   Period,
   Reference,
-  type BackboneElementEncoded,
 } from '../../data-types'
+import type { BackboneElementEncoded } from '../../data-types'
 
 const fields = {
   identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),

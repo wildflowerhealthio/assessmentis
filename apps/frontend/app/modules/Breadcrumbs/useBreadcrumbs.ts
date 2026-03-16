@@ -1,15 +1,16 @@
 import { Match, pipe } from 'effect'
-import { useEffect, type DependencyList } from 'react'
+import { useEffect } from 'react'
+import type { DependencyList } from 'react'
 
 import type {
   BreadcrumbLabelConstructor,
   BreadcrumbLabelInstance,
 } from '../../traits/BreadcrumbLabel/BreadcrumbLabel'
 import type { LinkConstructor, LinkInstance } from '../../traits/Link/Link'
-import {
-  useBreadcrumbContext,
-  type BreadcrumbSegment,
-  type BreadcrumbSegmentOrPromise,
+import { useBreadcrumbContext } from './BreadcrumbContext'
+import type {
+  BreadcrumbSegment,
+  BreadcrumbSegmentOrPromise,
 } from './BreadcrumbContext'
 
 /**

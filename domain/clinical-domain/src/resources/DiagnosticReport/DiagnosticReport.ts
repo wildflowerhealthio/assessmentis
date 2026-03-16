@@ -3,7 +3,8 @@ import { Schema } from 'effect'
 import { MergeClasses } from '@assessmentis/util'
 
 import { Period } from '../../data-types'
-import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
+import { Resource } from '../../data-types/base/Resource'
+import type { ResourceEncoded } from '../../data-types/base/Resource'
 import { Attachment } from '../../data-types/complex/Attachment'
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import {

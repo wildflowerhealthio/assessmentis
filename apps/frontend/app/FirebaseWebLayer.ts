@@ -2,7 +2,8 @@ import { Layer } from 'effect'
 
 import { FirebaseWeb } from '@assessmentis/firebase-web-infrastructure'
 
-import { initializeApp, type FirebaseOptions } from 'firebase/app'
+import { initializeApp } from 'firebase/app'
+import type { FirebaseOptions } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 

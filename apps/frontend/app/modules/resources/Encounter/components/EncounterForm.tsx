@@ -13,10 +13,8 @@ import {
 import type { CommonFieldProps } from 'app/modules/common/components/ResourceForm/ResourceForm'
 
 import { ResourcePicker } from '../../../ResourcePicker/ResourcePicker'
-import {
-  EncounterFormSchema,
-  type EncounterFormData,
-} from '../schemas/EncounterFormSchema'
+import { EncounterFormSchema } from '../schemas/EncounterFormSchema'
+import type { EncounterFormData } from '../schemas/EncounterFormSchema'
 
 interface EncounterFormProps {
   onSubmit: (data: EncounterFormData) => void | Promise<void>

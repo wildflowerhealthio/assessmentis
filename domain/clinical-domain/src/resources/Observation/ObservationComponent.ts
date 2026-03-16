@@ -6,8 +6,8 @@ import {
   BackboneElement,
   CodeableConcept,
   DatatypeChoice,
-  type BackboneElementEncoded,
 } from '../../data-types'
+import type { BackboneElementEncoded } from '../../data-types'
 import FhirR4ChoiceElements from '../../data-types/fhirR4ChoiceElements'
 import { ObservationReferenceRange } from './ObservationReferenceRange'
 

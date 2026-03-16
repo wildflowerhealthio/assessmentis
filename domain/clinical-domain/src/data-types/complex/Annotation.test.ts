@@ -2,7 +2,8 @@ import * as fc from 'fast-check'
 import { describe, expect, expectTypeOf, test } from 'vitest'
 import { Arbitrary, Schema } from 'effect'
 
-import { Annotation, type AnnotationEncoded } from './Annotation'
+import { Annotation } from './Annotation'
+import type { AnnotationEncoded } from './Annotation'
 
 const annotationArb = Arbitrary.make(Annotation)
 
