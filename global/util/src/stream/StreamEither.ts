@@ -341,6 +341,56 @@ export namespace StreamEither {
       )
   )
 
+  /**
+   * Keeps only `Left` values that satisfy the predicate; drops those that
+   * don't. `Right` values always pass through unchanged.
+   *
+   * @remarks
+   * With a refinement overload the error type narrows automatically —
+   * pair with {@link isNotTagged} to exclude a specific error variant:
+   *
+   * @example
+   * ```ts
+   * stream.pipe(
+   *   StreamEither.filterErrors(isNotTagged('Loading')),
+   * )
+   * ```
+   */
+  export const filterErrors: {
+    <E, E2 extends E>(
+      refinement: (e: E) => e is E2
+    ): <A, StreamErr, R>(
+      self: Stream.Stream<Either.Either<A, E>, StreamErr, R>
+    ) => Stream.Stream<Either.Either<A, E2>, StreamErr, R>
+
+    <E>(
+      predicate: (e: E) => boolean
+    ): <A, StreamErr, R>(
+      self: Stream.Stream<Either.Either<A, E>, StreamErr, R>
+    ) => Stream.Stream<Either.Either<A, E>, StreamErr, R>
+
+    <A, E, E2 extends E, StreamErr, R>(
+      self: Stream.Stream<Either.Either<A, E>, StreamErr, R>,
+      refinement: (e: E) => e is E2
+    ): Stream.Stream<Either.Either<A, E2>, StreamErr, R>
+
+    <A, E, StreamErr, R>(
+      self: Stream.Stream<Either.Either<A, E>, StreamErr, R>,
+      predicate: (e: E) => boolean
+    ): Stream.Stream<Either.Either<A, E>, StreamErr, R>
+  } = dual(
+    2,
+    <A, E, E2 extends E, StreamErr, R>(
+      self: Stream.Stream<Either.Either<A, E>, StreamErr, R>,
+      predicate: (e: E) => e is E2
+    ): Stream.Stream<Either.Either<A, E2>, StreamErr, R> =>
+      Stream.filter(
+        self,
+        (either): either is Either.Either<A, E2> =>
+          Either.isRight(either) || predicate(either.left)
+      )
+  )
+
   // -------------------------------------------------------------------------------------
   // conversions
   // -------------------------------------------------------------------------------------

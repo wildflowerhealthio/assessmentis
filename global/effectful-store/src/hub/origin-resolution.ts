@@ -11,6 +11,7 @@ import {
 } from 'effect'
 
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
+import { isNotTagged, StreamEither } from '@assessmentis/util'
 
 import type * as Resource from '../Resource'
 import * as Origin from '../Origin'
@@ -76,10 +77,7 @@ export const awaitReady = (
     const error = current.left
     if (error._tag !== 'Loading') return Effect.fail(error)
     return stateRef.changes.pipe(
-      Stream.filter(
-        (e): e is Either.Either<HubState, ResourceRequest.CommonErrors> =>
-          !(Either.isLeft(e) && e.left._tag === 'Loading')
-      ),
+      StreamEither.filterErrors(isNotTagged('Loading')),
       Stream.runHead,
       Effect.flatMap(
         Effect.mapError(

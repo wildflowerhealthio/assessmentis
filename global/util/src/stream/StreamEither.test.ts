@@ -344,6 +344,98 @@ describe('StreamEither', () => {
     })
   })
 
+  describe('filterErrors', () => {
+    class FooError {
+      readonly _tag = 'FooError' as const
+      constructor(readonly message: string) {}
+    }
+    class BarError {
+      readonly _tag = 'BarError' as const
+      constructor(readonly message: string) {}
+    }
+
+    it.effect('keeps Right values unchanged', () =>
+      Effect.gen(function* () {
+        const stream: Stream.Stream<
+          Either.Either<string, FooError | BarError>
+        > = Stream.make(
+          Either.right('a'),
+          Either.right('b'),
+          Either.left(new FooError('drop me'))
+        )
+
+        const result = yield* collect(
+          stream.pipe(StreamEither.filterErrors((e) => e._tag !== 'FooError'))
+        )
+
+        expect(result).toEqual([Either.right('a'), Either.right('b')])
+      })
+    )
+
+    it.effect(
+      'keeps Left values matching the predicate and drops non-matching',
+      () =>
+        Effect.gen(function* () {
+          const stream: Stream.Stream<
+            Either.Either<string, FooError | BarError>
+          > = Stream.make(
+            Either.right('ok'),
+            Either.left(new FooError('drop')),
+            Either.left(new BarError('keep'))
+          )
+
+          const result = yield* collect(
+            stream.pipe(StreamEither.filterErrors((e) => e._tag !== 'FooError'))
+          )
+
+          expect(result).toEqual([
+            Either.right('ok'),
+            Either.left(new BarError('keep')),
+          ])
+        })
+    )
+
+    it.effect('drops all Left values when predicate always returns false', () =>
+      Effect.gen(function* () {
+        const stream: Stream.Stream<
+          Either.Either<string, FooError | BarError>
+        > = Stream.make(
+          Either.right('ok'),
+          Either.left(new FooError('gone')),
+          Either.left(new BarError('also gone'))
+        )
+
+        const result = yield* collect(
+          stream.pipe(StreamEither.filterErrors(() => false))
+        )
+
+        expect(result).toEqual([Either.right('ok')])
+      })
+    )
+
+    it.effect('keeps all Left values when predicate always returns true', () =>
+      Effect.gen(function* () {
+        const stream: Stream.Stream<
+          Either.Either<string, FooError | BarError>
+        > = Stream.make(
+          Either.right('ok'),
+          Either.left(new FooError('kept')),
+          Either.left(new BarError('also kept'))
+        )
+
+        const result = yield* collect(
+          stream.pipe(StreamEither.filterErrors(() => true))
+        )
+
+        expect(result).toEqual([
+          Either.right('ok'),
+          Either.left(new FooError('kept')),
+          Either.left(new BarError('also kept')),
+        ])
+      })
+    )
+  })
+
   describe('catchTag', () => {
     class FooError {
       readonly _tag = 'FooError' as const
