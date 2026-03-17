@@ -573,6 +573,46 @@ describe('StreamEither', () => {
     )
   })
 
+  describe('head', () => {
+    it.effect(
+      'returns the Right value from a stream whose first element is Right',
+      () =>
+        Effect.gen(function* () {
+          const stream = Stream.make(
+            Either.right('first'),
+            Either.right('second')
+          )
+          const result = yield* StreamEither.head(stream)
+          expect(result).toBe('first')
+        })
+    )
+
+    it.effect(
+      'fails with the Left error from a stream whose first element is Left',
+      () =>
+        Effect.gen(function* () {
+          const error = { _tag: 'TestError' as const, message: 'boom' }
+          const stream: Stream.Stream<Either.Either<string, typeof error>> =
+            Stream.make(Either.left(error), Either.right('second'))
+          const result = yield* StreamEither.head(stream).pipe(Effect.either)
+          expect(result).toEqual(Either.left(error))
+        })
+    )
+
+    it.effect('fails with NoSuchElementException for an empty stream', () =>
+      Effect.gen(function* () {
+        const stream = Stream.empty as Stream.Stream<
+          Either.Either<string, never>
+        >
+        const result = yield* StreamEither.head(stream).pipe(Effect.either)
+        expect(Either.isLeft(result)).toBe(true)
+        if (Either.isLeft(result)) {
+          expect((result.left as any)._tag).toBe('NoSuchElementException')
+        }
+      })
+    )
+  })
+
   describe('unwrap', () => {
     describe('with Right values', () => {
       it.effect.prop(

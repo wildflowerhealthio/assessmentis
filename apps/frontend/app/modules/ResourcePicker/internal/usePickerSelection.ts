@@ -27,7 +27,7 @@ export function usePickerSelection<T extends PickerItemInstance>(
 } {
   const value = props.value
   // Normalize value to array internally
-  const normalizedValue: ReadonlyArray<string> = useMemo(() => {
+  const pickedIds: ReadonlyArray<string> = useMemo(() => {
     if (typeof value === 'string') {
       return [value] as ReadonlyArray<string>
     } else if (Array.isArray(value)) {
@@ -37,40 +37,36 @@ export function usePickerSelection<T extends PickerItemInstance>(
   }, [value])
 
   const selectedItems = useMemo(() => {
-    return items.filter((item) =>
-      normalizedValue.includes(item.PickerItem.id.toString())
-    )
-  }, [items, normalizedValue])
+    return items.filter((item) => pickedIds.includes(item.PickerItem.id))
+  }, [items, pickedIds])
 
   const handleSelect = useCallback(
-    (item: T) => {
+    ({ PickerItem: { id } }: T) => {
       if (props.multiple) {
-        const isCurrentlySelected = normalizedValue.includes(
-          item.PickerItem.id.toString()
-        )
+        const isCurrentlySelected = pickedIds.includes(id)
 
         const newIds = isCurrentlySelected
-          ? normalizedValue.filter((id) => id !== item.PickerItem.id)
-          : [...normalizedValue, item.PickerItem.id]
+          ? pickedIds.filter((v) => v !== id)
+          : [...pickedIds, id]
 
         props.onChange(newIds)
       } else {
-        if (normalizedValue[0] === item.PickerItem.id) {
+        if (pickedIds[0] === id) {
           // Deselect if already selected
           props.onChange(undefined)
           return
         } else {
-          props.onChange(item.PickerItem.id)
+          props.onChange(id)
         }
       }
     },
-    [props, normalizedValue]
+    [props, pickedIds]
   )
 
   const handleSelectMany = useCallback(
     (items: ReadonlyArray<T>) => {
       if (props.multiple) {
-        props.onChange(items.map((i) => i.PickerItem.id.toString()))
+        props.onChange(items.map((i) => i.PickerItem.id))
       }
     },
     [props]
@@ -78,9 +74,9 @@ export function usePickerSelection<T extends PickerItemInstance>(
 
   const isSelected = useCallback(
     (item: T) => {
-      return normalizedValue.includes(item.PickerItem.id.toString())
+      return pickedIds.includes(item.PickerItem.id)
     },
-    [normalizedValue]
+    [pickedIds]
   )
 
   return { selectedItems, handleSelect, handleSelectMany, isSelected }

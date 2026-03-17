@@ -1,16 +1,13 @@
 import type { PickerItemInstance } from '../../../traits/Picker/PickerItem'
 
 export function defaultFilter<T extends PickerItemInstance>(
-  item: T,
+  { PickerItem: { display, secondary } }: T,
   query: string
 ): boolean {
   const lowerQuery = query.toLowerCase()
 
-  const matchesDisplayName = item.PickerItem.display
-    .toLowerCase()
-    .includes(lowerQuery)
-  const matchesSecondaryText =
-    item.PickerItem.secondary.toLowerCase().includes(lowerQuery) ?? false
+  if (display.toLowerCase().includes(lowerQuery)) return true
+  if (secondary == undefined) return false
 
-  return matchesDisplayName || matchesSecondaryText
+  return secondary.toLowerCase().includes(lowerQuery)
 }

@@ -48,10 +48,10 @@ Origin.match(origin, {
 The Hub is a plain object (not a class) backed by a `SubscriptionRef`. Its internal state wraps the origin map in an `Either` so the Hub itself can be in a loading or error state:
 
 ```typescript
-SubscriptionRef<Either<HubState<Resources>, HubError>>
+SubscriptionRef<Either<HubState, HubError>>
 ```
 
-where `HubState<Resources> = HashMap<string, Origin.AnyState<Resources, never>>`.
+where `HubState = HashMap<string, Origin.AnyState<never>>`.
 
 The `Either` wrapper means the Hub distinguishes between "no origins registered yet" (Right with empty map) and "Hub is still initializing" (Left with `Loading`). Operations use `awaitReady` to wait for the Hub to leave the Loading state before routing.
 

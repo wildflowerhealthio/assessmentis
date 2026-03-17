@@ -1,5 +1,5 @@
 import { DateTime, Effect, Option, Schema } from 'effect'
-import { Suspense, useMemo, useState } from 'react'
+import { Fragment, Suspense, useMemo, useState } from 'react'
 import { Await, useNavigate } from 'react-router'
 
 import {
@@ -13,6 +13,9 @@ import type { QuestionnaireItemLink } from '@assessmentis/clinical-domain'
 import { UnhandledError } from '@assessmentis/ontology'
 import { gad7 } from '@assessmentis/questionnaire-entities'
 import { useEffectTs } from '@assessmentis/react-util'
+
+import 'app/traits/BreadcrumbLabel/implementations/QuestionnaireResponse'
+import 'app/traits/Link/implementations/QuestionnaireResponse'
 
 import { useBreadcrumbs } from 'app/modules/Breadcrumbs/useBreadcrumbs'
 import QuestionnaireForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/QuestionnaireForm'
@@ -135,8 +138,6 @@ const ResponsePage = ({
     useResourceCollection(Media, mediaFilters)
 
   const syncObservations = () => {
-    console.log('Syncing observations...')
-
     let extractedObservations: Observation[] = []
     if (questionnaire.code?.[0].code == gad7.codings.questionnaire.code) {
       extractedObservations = gad7
@@ -148,15 +149,8 @@ const ResponsePage = ({
           })
         )
     }
-    console.log('Extracted observations:', extractedObservations)
 
     return Effect.runPromise(hub.createMany(Observation, extractedObservations))
-      .then((data) => {
-        console.log('Synced observations:', data)
-      })
-      .catch((error) => {
-        console.error('Failed to sync observations:', error)
-      })
   }
 
   return (
@@ -199,7 +193,7 @@ const ResponsePage = ({
             <Await resolve={mediaPromise}>
               {(mediaCollection) =>
                 mediaCollection.map(({ data }) => (
-                  <>
+                  <Fragment key={data.url?.toString()}>
                     <video
                       style={{ width: '100%', aspectRatio: 'calc(16/9)' }}
                       onTimeUpdate={(e) => {
@@ -238,7 +232,7 @@ const ResponsePage = ({
                     >
                       Delete
                     </button>
-                  </>
+                  </Fragment>
                 ))
               }
             </Await>

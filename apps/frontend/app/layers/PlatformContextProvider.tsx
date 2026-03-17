@@ -1,6 +1,6 @@
 import { Effect, Either, Layer, Match, Schema, Scope } from 'effect'
 import { FetchHttpClient, HttpClient } from '@effect/platform'
-import { Suspense, useMemo } from 'react'
+import { Suspense } from 'react'
 import { Await } from 'react-router'
 
 import type { ClinicalDomainClasses } from '@assessmentis/clinical-domain'
@@ -222,12 +222,7 @@ const LoaderPage = ({ title }: { title?: string }) => (
 export const PlatformContextProvider: React.FC<
   React.PropsWithChildren<object>
 > = ({ children }) => {
-  const thisPlatformEffect = useMemo(() => {
-    const scope = Effect.runSync(Scope.make())
-    return platformEffect.pipe(Effect.provideService(Scope.Scope, scope))
-  }, [])
-
-  const platformPromise = useEffectTs(thisPlatformEffect)
+  const platformPromise = useEffectTs(platformEffect)
 
   if (typeof window === 'undefined') {
     return <LoaderPage title="Loading Without Window" />

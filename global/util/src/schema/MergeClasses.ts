@@ -106,6 +106,10 @@ export type ClassAnnotation<Self> =
  * The merged class inherits:
  * - **Fields** — the intersection of all input classes' fields.
  * - **Prototype methods** — walked from each input class's prototype chain.
+ *   Uses **first-writer-wins** conflict resolution: if two input classes define
+ *   a prototype method with the same name, the version from the class that
+ *   appears *first* in the argument list is kept and later duplicates are
+ *   silently skipped.
  * - **Static members** — enumerable statics (own + inherited) from each input.
  *
  * Usage follows the same two-call pattern as `Schema.Class`:

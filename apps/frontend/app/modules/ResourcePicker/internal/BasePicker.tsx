@@ -156,14 +156,14 @@ export function BasePicker<T extends PickerItemInstance>(
             displayValue={(
               item:
                 | undefined
-                | { displayName: string }
-                | { displayName: string }[]
+                | { PickerItem: { display: string; secondary?: string } }
+                | { PickerItem: { display: string; secondary?: string } }[]
             ) => {
               if (!item) return ''
               if (Array.isArray(item)) {
-                return item.map((i) => i.displayName).join(', ')
+                return item.map((i) => i.PickerItem.display).join(', ')
               }
-              return item.displayName || ''
+              return item.PickerItem.display || ''
             }}
           />
 

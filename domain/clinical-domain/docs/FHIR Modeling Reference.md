@@ -11,7 +11,7 @@ For step-by-step Clinical Resource implementation, see [Adding Resource Types Ho
 - Model identifiers as branded Schema types (for example PatientId).
 - Extend Resource or Resource for base fields.
 - Use Schema.suspend for recursive types and references.
-- Prefer value sets under value-sets/ for constrained coded values.
+- Prefer value sets under data-types/complex/ (e.g., AdministrativeGender) or alongside resources under resources/{ResourceName}/ for constrained coded values.
 - Use TimelessDateFromString for date-only fields when applicable.
 - Use Schema.DateTimeUtc for instants and timestamps.
 - Resource ids are optional on create but required on read/update results; use WithId + assertId where needed.
@@ -23,13 +23,13 @@ FHIR R4 uses choice elements where a field can hold one of several data types, d
 Each resource defines its own allowed types. The definitive list is in `src/data-types/fhir-r4-choice-elements.json` (from `https://hl7.org/fhir/R4/choice-elements.json`).
 
 - Model choice elements as `Datatype<Name, A, I>` instances (see `src/data-types/Datatype.ts`).
-- Compose into `ValueUnion(...)` to produce a `Schema.Union` of single-field structs.
+- Compose into `DatatypeChoice(...)` to produce a `Schema.Union` of single-field structs.
 - Each union branch is `{ value${Name}: schema }` — enforces exactly-one-value at the type level.
 - Use `Schema.extend(baseStruct, valueUnion)` to combine base fields with the value union.
 
 ```typescript
 // Per FHIR R4: Observation.value[x]
-const ObservationValue = ValueUnion(
+const ObservationValue = DatatypeChoice(
   QuantityDatatype,
   CodeableConceptDatatype,
   StringDatatype,
@@ -76,7 +76,7 @@ Extension is a special case — defined in `ElementAndExtension.ts` to break cir
 - Resource-specific schemas live under resources/ organized by resource.
 - Shared complex types live under data-types/complex and data-types/special-purpose.
 - Datatype definitions for choice elements live in data-types/Datatype.ts (primitives) and alongside their complex type files.
-- Register all resource schemas in Schemas.ts for repository wiring.
+- Register all resource schemas in ResourceDataTypes.ts for Hub wiring.
 
 ## TypeScript gotchas
 
@@ -132,7 +132,7 @@ Don't naively drop type annotations during a refactor without checking for circu
 ## Most-used code locations
 
 - Resource base types: [src/data-types/base](../src/data-types/base)
-- Datatype and ValueUnion: [src/data-types/Datatype.ts](../src/data-types/Datatype.ts)
+- Datatype and DatatypeChoice: [src/data-types/Datatype.ts](../src/data-types/Datatype.ts)
 - FHIR R4 choice elements: [src/data-types/fhirR4ChoiceElements.ts](../src/data-types/fhirR4ChoiceElements.ts)
 - Example resource: [src/resources/Patient](../src/resources/Patient)
 - Clinical Resource How-To: [Adding Resource Types How-To.md](./Adding%20Resource%20Types%20How-To.md)

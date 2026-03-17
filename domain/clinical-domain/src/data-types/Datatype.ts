@@ -24,7 +24,7 @@ export interface Datatype<out Name extends string, A, I> {
 /**
  * Factory function to create a Datatype.
  *
- * Builds a `Schema.Struct({ value${Name}: schema })` for use in ValueUnion.
+ * Builds a `Schema.Struct({ value${Name}: schema })` for use in DatatypeChoice.
  */
 export const Datatype = <const Name extends string, A, I>(
   name: Name,

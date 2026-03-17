@@ -127,6 +127,6 @@ export interface ObservationEncoded
  */
 export class Observation extends MergeClasses<Observation>(DomainType)(
   [],
-  fields,
-  resourceMixin
+  resourceMixin,
+  fields
 ) {}

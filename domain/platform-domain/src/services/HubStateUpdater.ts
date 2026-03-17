@@ -93,13 +93,9 @@ export const mapOrgStreamToHubState = <
     StreamEither.mapLeft(
       (
         err
-      ):
-        | Loading<{ orgSlug: OrgSlug }>
-        | AuthError
-        | AuthzError
-        | UnhandledError =>
-        err instanceof NoSelectedOrgError
-          ? new Loading({ entity: { orgSlug: '' as OrgSlug } })
+      ): Loading<'Configuration'> | AuthError | AuthzError | UnhandledError =>
+        err instanceof NoSelectedOrgError || err instanceof Loading
+          ? new Loading({ entity: 'Configuration' as const })
           : err
     ),
     Stream.map((either) =>
@@ -110,7 +106,7 @@ export const mapOrgStreamToHubState = <
   )
 
   type SnapshotErrors =
-    | Loading<{ orgSlug: OrgSlug }>
+    | Loading<'Configuration'>
     | AuthError
     | AuthzError
     | UnhandledError
@@ -124,7 +120,7 @@ export const mapOrgStreamToHubState = <
     >(originTypes, snapshotStream),
     StreamEither.mapError(
       Match.typeTags<
-        Loading<{ orgSlug: OrgSlug }> | AuthError | AuthzError | UnhandledError
+        Loading<'Configuration'> | AuthError | AuthzError | UnhandledError
       >()({
         Loading: () => new Loading({ entity: 'Configuration' } as const),
         AuthError: (e) => e,

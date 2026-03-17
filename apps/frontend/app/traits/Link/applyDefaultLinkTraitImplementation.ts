@@ -15,7 +15,8 @@ export function applyDefaultLinkTraitImplementation(
 
   Object.defineProperty(klass.prototype, 'Link', {
     get(this: DomainTypedInstance<string> & { url?: ReadonlyUrl }): string {
-      return `/${this.domainType}/${this.url?.asUriComponent() ?? ''}`
+      const urlPart = this.url?.asUriComponent()
+      return urlPart ? `/${this.domainType}/${urlPart}` : `/${this.domainType}`
     },
     configurable: true,
   })
