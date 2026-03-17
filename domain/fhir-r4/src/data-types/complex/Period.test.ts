@@ -20,12 +20,12 @@ const baseUrl = ReadonlyUrl.make({
 const TestBaseUrl = Layer.succeed(BaseUrl, baseUrl)
 
 describe('FhirR4Period', () => {
-  test('property: FHIR encode-decode round-trip', async () => {
-    await fc.assert(
-      fc.asyncProperty(
+  test('property: FHIR encode-decode round-trip', () => {
+    fc.assert(
+      fc.property(
         Arbitrary.make(Period).map((v) => deepAssignBaseUrls(v, baseUrl)),
-        async (period) => {
-          const decoded = await Effect.runPromise(
+        (period) => {
+          const decoded = Effect.runSync(
             Effect.gen(function* () {
               const fhir: FhirR4.Period =
                 yield* Schema.encode(FhirR4Period)(period)

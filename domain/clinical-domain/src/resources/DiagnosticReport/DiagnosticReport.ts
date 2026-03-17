@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import { MergeClasses } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary, MergeClasses } from '@assessmentis/util'
 
 import { Period } from '../../data-types'
 import { Resource } from '../../data-types/base/Resource'
@@ -38,31 +38,67 @@ export const DiagnosticReportStatus = Schema.Enums({
 export type DiagnosticReportStatus = typeof DiagnosticReportStatus.Type
 
 const fields = {
-  identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
-  basedOn: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
+  identifier: Schema.optional(
+    Schema.Array(Schema.suspend(() => Identifier)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
+  basedOn: Schema.optional(
+    Schema.Array(Schema.suspend(() => Reference)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   status: DiagnosticReportStatus,
   category: Schema.optional(
-    Schema.Array(Schema.suspend(() => CodeableConcept))
+    Schema.Array(Schema.suspend(() => CodeableConcept)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
   ),
   code: Schema.suspend(() => CodeableConcept),
   subject: Schema.optional(Schema.suspend(() => Reference)),
   encounter: Schema.optional(Schema.suspend(() => Reference)),
 
   issued: Schema.optional(Schema.DateTimeUtc),
-  performer: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
-  resultsInterpreter: Schema.optional(
-    Schema.Array(Schema.suspend(() => Reference))
+  performer: Schema.optional(
+    Schema.Array(Schema.suspend(() => Reference)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
   ),
-  specimen: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
-  result: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
-  imagingStudy: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
-  media: Schema.optional(Schema.Array(DiagnosticReportMedia)),
+  resultsInterpreter: Schema.optional(
+    Schema.Array(Schema.suspend(() => Reference)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
+  specimen: Schema.optional(
+    Schema.Array(Schema.suspend(() => Reference)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
+  result: Schema.optional(
+    Schema.Array(Schema.suspend(() => Reference)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
+  imagingStudy: Schema.optional(
+    Schema.Array(Schema.suspend(() => Reference)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
+  media: Schema.optional(
+    Schema.Array(DiagnosticReportMedia).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   conclusion: Schema.optional(Schema.String),
   conclusionCode: Schema.optional(
-    Schema.Array(Schema.suspend(() => CodeableConcept))
+    Schema.Array(Schema.suspend(() => CodeableConcept)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
   ),
   presentedForm: Schema.optional(
-    Schema.Array(Schema.suspend(() => Attachment))
+    Schema.Array(Schema.suspend(() => Attachment)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
   ),
   effective: Schema.optional(
     DatatypeChoice(FhirR4ChoiceElements['DiagnosticReport.effective[x]'], [

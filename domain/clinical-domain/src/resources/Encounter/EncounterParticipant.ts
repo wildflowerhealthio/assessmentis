@@ -1,5 +1,7 @@
 import { Schema } from 'effect'
 
+import { AnnotateArrayWithArbitrary } from '@assessmentis/util'
+
 import {
   BackboneElement,
   CodeableConcept,
@@ -9,7 +11,11 @@ import {
 import type { BackboneElementEncoded } from '../../data-types'
 
 const fields = {
-  type: Schema.optional(Schema.Array(Schema.suspend(() => CodeableConcept))),
+  type: Schema.optional(
+    Schema.Array(Schema.suspend(() => CodeableConcept)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   period: Schema.optional(Schema.suspend(() => Period)),
   individual: Schema.optional(Schema.suspend(() => Reference)),
 } as const satisfies Schema.Struct.Fields

@@ -1,5 +1,7 @@
 import { Schema } from 'effect'
 
+import { AnnotateArrayWithArbitrary } from '@assessmentis/util'
+
 import {
   BackboneElement,
   CodeableConcept,
@@ -10,7 +12,11 @@ import {
 import type { BackboneElementEncoded } from '../../data-types'
 
 const fields = {
-  identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
+  identifier: Schema.optional(
+    Schema.Array(Schema.suspend(() => Identifier)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   code: Schema.suspend(() => CodeableConcept),
   period: Schema.optional(Schema.suspend(() => Period)),
   issuer: Schema.optional(Schema.suspend(() => Reference)),

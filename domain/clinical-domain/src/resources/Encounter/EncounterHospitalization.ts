@@ -1,5 +1,7 @@
 import { Schema } from 'effect'
 
+import { AnnotateArrayWithArbitrary } from '@assessmentis/util'
+
 import {
   BackboneElement,
   CodeableConcept,
@@ -14,13 +16,19 @@ const fields = {
   admitSource: Schema.optional(Schema.suspend(() => CodeableConcept)),
   reAdmission: Schema.optional(Schema.suspend(() => CodeableConcept)),
   dietPreference: Schema.optional(
-    Schema.Array(Schema.suspend(() => CodeableConcept))
+    Schema.Array(Schema.suspend(() => CodeableConcept)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
   ),
   specialCourtesy: Schema.optional(
-    Schema.Array(Schema.suspend(() => CodeableConcept))
+    Schema.Array(Schema.suspend(() => CodeableConcept)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
   ),
   specialArrangement: Schema.optional(
-    Schema.Array(Schema.suspend(() => CodeableConcept))
+    Schema.Array(Schema.suspend(() => CodeableConcept)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
   ),
   destination: Schema.optional(Schema.suspend(() => Reference)),
   dischargeDisposition: Schema.optional(Schema.suspend(() => CodeableConcept)),

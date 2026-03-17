@@ -1,5 +1,7 @@
 import { Schema } from 'effect'
 
+import { AnnotateArrayWithArbitrary } from '@assessmentis/util'
+
 import {
   Address,
   AdministrativeGender,
@@ -14,10 +16,16 @@ import type { BackboneElementEncoded } from '../../data-types'
 
 const fields = {
   relationship: Schema.optional(
-    Schema.Array(Schema.suspend(() => CodeableConcept))
+    Schema.Array(Schema.suspend(() => CodeableConcept)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
   ),
   name: Schema.optional(Schema.suspend(() => HumanName)),
-  telecom: Schema.optional(Schema.Array(Schema.suspend(() => ContactPoint))),
+  telecom: Schema.optional(
+    Schema.Array(Schema.suspend(() => ContactPoint)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   address: Schema.optional(Schema.suspend(() => Address)),
   gender: Schema.optional(AdministrativeGender),
   organization: Schema.optional(Schema.suspend(() => Reference)),

@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import { MergeClasses } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary, MergeClasses } from '@assessmentis/util'
 
 import { Resource } from '../../data-types/base/Resource'
 import type { ResourceEncoded } from '../../data-types/base/Resource'
@@ -21,14 +21,30 @@ type DomainType = typeof DomainType
 
 const fields = {
   operationalStatus: Schema.optional(Schema.suspend(() => Coding)),
-  identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
+  identifier: Schema.optional(
+    Schema.Array(Schema.suspend(() => Identifier)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   name: Schema.optional(Schema.String),
-  alias: Schema.optional(Schema.Array(Schema.String)),
+  alias: Schema.optional(
+    Schema.Array(Schema.String).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   description: Schema.optional(Schema.String),
   status: Schema.optional(LocationStatus),
   mode: Schema.optional(LocationMode),
-  type: Schema.optional(Schema.Array(Schema.suspend(() => CodeableConcept))),
-  telecom: Schema.optional(Schema.Array(Schema.suspend(() => ContactPoint))),
+  type: Schema.optional(
+    Schema.Array(Schema.suspend(() => CodeableConcept)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
+  telecom: Schema.optional(
+    Schema.Array(Schema.suspend(() => ContactPoint)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   address: Schema.optional(Schema.suspend(() => Address)),
   physicalType: Schema.optional(Schema.suspend(() => CodeableConcept)),
   position: Schema.optional(

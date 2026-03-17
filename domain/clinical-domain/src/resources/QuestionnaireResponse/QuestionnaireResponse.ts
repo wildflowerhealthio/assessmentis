@@ -1,6 +1,6 @@
 import { DateTime, Option, Schema } from 'effect'
 
-import { MergeClasses } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary, MergeClasses } from '@assessmentis/util'
 
 import { Resource } from '../../data-types/base/Resource'
 import type { ResourceEncoded } from '../../data-types/base/Resource'
@@ -29,10 +29,18 @@ export const QuestionnaireResponseStatus = Schema.Enums({
 const fields = {
   author: Schema.optional(Schema.suspend(() => Reference)),
   authored: Schema.optional(Schema.String),
-  basedOn: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
+  basedOn: Schema.optional(
+    Schema.Array(Schema.suspend(() => Reference)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   encounter: Schema.optional(Schema.suspend(() => Reference)),
   identifier: Schema.optional(Schema.suspend(() => Identifier)),
-  partOf: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
+  partOf: Schema.optional(
+    Schema.Array(Schema.suspend(() => Reference)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   questionnaire: Schema.optional(Questionnaire.UrlSchema),
   source: Schema.optional(Schema.suspend(() => Reference)),
   status: QuestionnaireResponseStatus,

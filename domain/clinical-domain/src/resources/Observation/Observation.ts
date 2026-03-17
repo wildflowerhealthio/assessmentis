@@ -38,12 +38,26 @@ export type ObservationStatus = typeof ObservationStatus.Type
 // --- Observation ---
 
 const fields = {
-  identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
-  basedOn: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
-  partOf: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
+  identifier: Schema.optional(
+    Schema.Array(Schema.suspend(() => Identifier)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
+  basedOn: Schema.optional(
+    Schema.Array(Schema.suspend(() => Reference)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
+  partOf: Schema.optional(
+    Schema.Array(Schema.suspend(() => Reference)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   status: ObservationStatus,
   category: Schema.optional(
-    Schema.Array(Schema.suspend(() => CodeableConcept))
+    Schema.Array(Schema.suspend(() => CodeableConcept)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
   ),
   code: Schema.suspend(() => CodeableConcept),
   subject: Schema.optional(Schema.suspend(() => Reference)),
@@ -54,7 +68,11 @@ const fields = {
   ),
   encounter: Schema.optional(Schema.suspend(() => Reference)),
   issued: Schema.optional(Schema.DateTimeUtc),
-  performer: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
+  performer: Schema.optional(
+    Schema.Array(Schema.suspend(() => Reference)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   value: Schema.optional(
     DatatypeChoice(FhirR4ChoiceElements['Observation.value[x]'])
   ),
@@ -63,9 +81,15 @@ const fields = {
   ),
   dataAbsentReason: Schema.optional(Schema.suspend(() => CodeableConcept)),
   interpretation: Schema.optional(
-    Schema.Array(Schema.suspend(() => CodeableConcept))
+    Schema.Array(Schema.suspend(() => CodeableConcept)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
   ),
-  note: Schema.optional(Schema.Array(Schema.suspend(() => Annotation))),
+  note: Schema.optional(
+    Schema.Array(Schema.suspend(() => Annotation)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   bodySite: Schema.optional(Schema.suspend(() => CodeableConcept)),
   method: Schema.optional(Schema.suspend(() => CodeableConcept)),
   specimen: Schema.optional(Schema.suspend(() => Reference)),
@@ -75,8 +99,16 @@ const fields = {
       AnnotateArrayWithArbitrary({ maxLength: 2 })
     )
   ),
-  hasMember: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
-  derivedFrom: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
+  hasMember: Schema.optional(
+    Schema.Array(Schema.suspend(() => Reference)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
+  derivedFrom: Schema.optional(
+    Schema.Array(Schema.suspend(() => Reference)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   component: Schema.optional(
     Schema.Array(ObservationComponent).pipe(
       AnnotateArrayWithArbitrary({ maxLength: 2 })
