@@ -82,14 +82,15 @@ export type OriginFactoryResources<O extends OriginFactory<any, any, any>> =
 type OriginCacheEntry<SupportedClasses extends Resource.AnyDomainClass> = {
   readonly def: OriginDefinition<never>
   readonly state: Origin.AnyState<SupportedClasses>
-  readonly scope: Scope.CloseableScope
+  readonly scope: Scope.CloseableScope | undefined
 }
 
 type OriginCache = Map<string, OriginCacheEntry<never>>
 
 // --- Error origin helper ---
 
-const toSupportedClasses = <_DomainTypes extends string>(_map: {
+/** Returns an empty object — errored origins can never resolve requests. */
+const emptySupportedResources = <_DomainTypes extends string>(_map: {
   [k: string]: true
 }): object => ({})
 
@@ -103,7 +104,9 @@ const makeUnsupportedOrigin = <DomainTypes extends string>(
   def: OriginDefinition<DomainTypes>
 ): Origin.Errored<SupportedClasses<DomainTypes>> => ({
   originUrl,
-  supportedResources: toSupportedClasses<DomainTypes>(def.supportedResources),
+  supportedResources: emptySupportedResources<DomainTypes>(
+    def.supportedResources
+  ),
   resolver: undefined,
   errorStatus: new UnhandledError({
     message: `Unsupported origin tag '${def._tag}'`,
@@ -138,7 +141,8 @@ const buildHubState = <R>(
         state.set(urlKey, cached.state)
       } else if (def._tag in originMakers) {
         // Close the old scope if this is a replacement (definition changed)
-        if (cached) yield* Scope.close(cached.scope, Exit.void)
+        const oldScope = cached?.scope
+        if (oldScope) yield* Scope.close(oldScope, Exit.void)
         // Safe: `in` check above guarantees the maker exists
         const maker = originMakers[def._tag]!
         const childScope = yield* Scope.make()
@@ -153,11 +157,10 @@ const buildHubState = <R>(
         state.set(urlKey, origin)
       } else {
         const errorOrigin = makeUnsupportedOrigin(originUrl, def)
-        const childScope = yield* Scope.make()
         newCache.set(urlKey, {
           def,
           state: errorOrigin,
-          scope: childScope,
+          scope: undefined,
         })
         state.set(urlKey, errorOrigin)
       }
@@ -166,7 +169,8 @@ const buildHubState = <R>(
     for (const oldKey of cache.keys()) {
       if (!newCache.has(oldKey)) {
         const entry = cache.get(oldKey)!
-        yield* Scope.close(entry.scope, Exit.void)
+        const { scope } = entry
+        if (scope) yield* Scope.close(scope, Exit.void)
         yield* Effect.log(`Origin deregistered: ${oldKey}`)
       }
     }

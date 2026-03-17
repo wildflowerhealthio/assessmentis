@@ -78,9 +78,7 @@ const fields = {
   ),
   managingOrganization: Schema.optional(Schema.suspend(() => Reference)),
   link: Schema.optional(
-    Schema.Array(PatientLink).pipe(
-      AnnotateArrayWithArbitrary({ maxLength: 2 })
-    )
+    Schema.Array(PatientLink).pipe(AnnotateArrayWithArbitrary({ maxLength: 2 }))
   ),
 } as const satisfies Schema.Struct.Fields
 

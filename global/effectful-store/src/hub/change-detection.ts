@@ -45,7 +45,7 @@ export const whenOriginChanges = <Classes extends Resource.AnyDomainClass>(
     const prevOrigins = originsUsedByQuery(prevState)
     const nextOrigins = originsUsedByQuery(nextState)
     if (prevOrigins.length !== nextOrigins.length) return false
-    return prevOrigins.every((o, i) => o === nextOrigins[i])
+    return prevOrigins.every((o) => nextOrigins.includes(o))
   }
 
   return pipe(

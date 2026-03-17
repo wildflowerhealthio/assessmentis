@@ -54,18 +54,11 @@ const makeSnapshot = (
 })
 
 /**
- * Test adapter: bridges a plain factory object to OriginFactory's generic
- * `make` signature. The generic `Keys` parameter on `OriginFactory.make` is
- * redundant in tests where we always use concrete resource types, so the cast
- * does not reduce test confidence.
- */
-/**
  * Test-only type alias: `OriginFactory.make` is generic over `Keys`, which
  * makes inline factory objects incompatible without a cast. Using `any` for
  * the class parameter bypasses this in tests where we always use concrete
  * resource types, so the cast does not reduce test confidence.
  */
-
 const asFactory = <
   SupportedClasses extends Resource.AnyDomainClass,
   R = never,

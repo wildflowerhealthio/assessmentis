@@ -90,4 +90,27 @@ describe('useResourceCollection', () => {
       })
     )
   })
+
+  it('createItem delegates to hub.create with the resource schema and item', async () => {
+    const patient = { resourceType: 'Patient', name: [{ family: 'Smith' }] }
+    const createFn = vi.fn((_klass: unknown, resource: unknown) =>
+      Effect.succeed({
+        ...(resource as Record<string, unknown>),
+        url: 'https://example.com/Patient/456',
+      })
+    )
+    const mockHub = createMockHub({
+      subscribeSearch: vi.fn(() => Stream.succeed(Either.right([]))),
+      create: createFn,
+    })
+    vi.mocked(usePlatformContext).mockReturnValue(
+      createMockPlatformContext({ hub: mockHub })
+    )
+
+    const { result } = renderHook(() => useResourceCollection(Patient))
+
+    await result.current.createItem(patient as never)
+
+    expect(createFn).toHaveBeenCalledWith(Patient, patient)
+  })
 })

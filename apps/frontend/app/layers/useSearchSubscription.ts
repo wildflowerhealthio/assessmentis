@@ -21,6 +21,16 @@ type SearchFilters = Partial<
  * @param filters - Optional search filters to narrow results
  * @returns Stream of Either\<Resource[], Error\> that updates when matching resources change
  *
+ * @remarks
+ * The `filters` parameter is included in the `useMemo` dependency array by
+ * reference. If you pass an inline object literal (e.g.
+ * `useSearchSubscription(Patient, { name: 'Smith' })`), a new object is
+ * created every render, which defeats memoization and causes a
+ * re-subscription on every render cycle.
+ *
+ * Always pass a **stable reference** for `filters` — for example via
+ * `useState`, `useMemo`, or a module-level constant.
+ *
  * @example
  * ```typescript
  * import { Patient } from '@assessmentis/clinical-domain'

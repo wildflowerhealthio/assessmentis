@@ -3,6 +3,7 @@ import { it } from '@effect/vitest'
 import { Chunk, Effect, Either, FastCheck as fc, Stream } from 'effect'
 import type { Brand } from 'effect'
 
+import { isNotTagged } from '../predicates'
 import { StreamEither } from './StreamEither'
 
 const rightStream = <A>(a: A) => Stream.succeed(Either.right(a))
@@ -434,6 +435,81 @@ describe('StreamEither', () => {
         ])
       })
     )
+
+    it.effect.prop(
+      'Right values always pass through unchanged, and Left values in output' +
+        ' are exactly those satisfying the predicate',
+      { stream: streamEitherArb, keep: fc.boolean() },
+      ({ stream, keep }) =>
+        Effect.gen(function* () {
+          const predicate = vi.fn((_e: E) => keep)
+
+          const inputs = yield* collect(stream)
+          const outputs = yield* collect(
+            stream.pipe(StreamEither.filterErrors(predicate))
+          )
+
+          let outputIdx = 0
+          for (const input of inputs) {
+            if (Either.isRight(input)) {
+              // Right values always pass through unchanged
+              const out = outputs[outputIdx]
+              if (out === undefined || !Either.isRight(out)) {
+                assert.fail('Expected Right in output for each Right in input')
+              }
+              expect(out.right).toEqual(input.right)
+              outputIdx++
+            } else if (predicate(input.left)) {
+              // Left values matching the predicate appear in the output
+              const out = outputs[outputIdx]
+              if (out === undefined || !Either.isLeft(out)) {
+                assert.fail(
+                  'Expected Left in output for matching Left in input'
+                )
+              }
+              expect(out.left).toEqual(input.left)
+              outputIdx++
+            }
+            // Left values not matching the predicate are dropped
+          }
+
+          // All output elements are accounted for
+          expect(outputIdx).toBe(outputs.length)
+        })
+    )
+
+    describe('refinement overload', () => {
+      it.effect(
+        'narrows the error type when using a type guard like isNotTagged',
+        () =>
+          Effect.gen(function* () {
+            const stream: Stream.Stream<
+              Either.Either<string, FooError | BarError>
+            > = Stream.make(
+              Either.right('ok'),
+              Either.left(new FooError('drop')),
+              Either.left(new BarError('keep'))
+            )
+
+            const filtered = stream.pipe(
+              StreamEither.filterErrors(isNotTagged('FooError'))
+            )
+
+            // Type-level assertion: the filtered stream should have narrowed
+            // the error type to exclude FooError. This assignment would fail
+            // at compile time if type narrowing were broken.
+            const _typeCheck: Stream.Stream<Either.Either<string, BarError>> =
+              filtered
+
+            const result = yield* collect(_typeCheck)
+
+            expect(result).toEqual([
+              Either.right('ok'),
+              Either.left(new BarError('keep')),
+            ])
+          })
+      )
+    })
   })
 
   describe('catchTag', () => {

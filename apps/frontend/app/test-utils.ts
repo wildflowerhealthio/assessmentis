@@ -1,16 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Effect, Either, Stream } from 'effect'
 
+import type { ClinicalDomainClasses } from '@assessmentis/clinical-domain'
+import type { Hub } from '@assessmentis/effectful-store'
 import type { NoSelectedOrgError, Org } from '@assessmentis/platform-domain'
 import { neverUsedMock } from '@assessmentis/testing-utils'
 
 import type { PlatformContext } from './layers/PlatformContext'
 
+type MockHub = Hub.Hub<ClinicalDomainClasses>
+// Keys are checked (catches renames), but values are `any` since vi.fn() mocks
+// use simplified return types that don't match the full generic signatures.
+type MockHubOverrides = Partial<
+  Record<keyof Hub.Repository<ClinicalDomainClasses>, any>
+>
+
 /**
  * Creates a mock Hub with sensible defaults for testing.
  * Returns success cases for all methods by default.
  */
-export function createMockHub(overrides: Partial<any> = {}): any {
+export function createMockHub(overrides: MockHubOverrides = {}): MockHub {
   return {
     get: (_klass: any, _url: any) => Effect.succeed({}),
     subscribe: (_klass: any, _url: any) => Stream.succeed(Either.right({})),
@@ -26,7 +35,7 @@ export function createMockHub(overrides: Partial<any> = {}): any {
     update: (_klass: any, resource: any) => Effect.succeed(resource),
     delete: (_klass: any, _url: any) => Effect.succeed(undefined),
     ...overrides,
-  }
+  } as MockHub
 }
 
 /**
@@ -52,7 +61,7 @@ export function createMockPlatformContext(
     userOrgs?: Record<string, string>
 
     setActiveOrgSlug?: (...args: any[]) => Effect.Effect<void>
-    hub?: any
+    hub?: MockHub
   } = {}
 ): PlatformContext {
   const defaultSetActiveOrgSlug = () => Effect.succeed(undefined as void)

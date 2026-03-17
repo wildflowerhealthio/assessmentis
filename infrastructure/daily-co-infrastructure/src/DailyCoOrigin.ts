@@ -77,42 +77,35 @@ export const makeDailyCoReadyOrigin = ({
     ),
   } as const
 
-  // const resolverForResource = <Klass extends SupportedClasses>(request: {
-  //   klass: Klass
-  // }): RequestResolver.RequestResolver<AnyRequest<Klass>, never> =>
+  // Each per-class resolver is contravariant in its request type, so it can't
+  // directly unify with the multi-class resolver signature. This helper widens
+  // the resolver type once, keeping each Match branch concise.
+  // K is inferred from the resolver only; the request stays at the union type
+  // because Match.when narrows klass but not the branded url field.
+  const dispatch = <K extends SupportedClasses>(
+    request: Origin.AnyResourceRequest<SupportedClasses>,
+    resolver: RequestResolver.RequestResolver<
+      Origin.AnyResourceRequest<K>,
+      never
+    >
+  ) =>
+    Effect.request(
+      request,
+      resolver as ResourceRequest.MultiResolver<SupportedClasses, never>
+    )
 
   const resolver: ResourceRequest.MultiResolver<SupportedClasses, never> =
     RequestResolver.fromEffect(
       (request: Origin.AnyResourceRequest<SupportedClasses>) =>
         Match.value(request).pipe(
           Match.when({ klass: { DomainType: 'Location' } }, (request) =>
-            Effect.request(
-              request,
-              resolvers['Location'] satisfies RequestResolver.RequestResolver<
-                Origin.AnyResourceRequest<typeof Location>,
-                never
-              > as ResourceRequest.MultiResolver<SupportedClasses, never>
-            )
+            dispatch(request, resolvers['Location'])
           ),
           Match.when({ klass: { DomainType: 'Media' } }, (request) =>
-            Effect.request(
-              request,
-              resolvers['Media'] satisfies RequestResolver.RequestResolver<
-                Origin.AnyResourceRequest<typeof Media>,
-                never
-              > as ResourceRequest.MultiResolver<SupportedClasses, never>
-            )
+            dispatch(request, resolvers['Media'])
           ),
           Match.when({ klass: { DomainType: 'Observation' } }, (request) =>
-            Effect.request(
-              request,
-              resolvers[
-                'Observation'
-              ] satisfies RequestResolver.RequestResolver<
-                Origin.AnyResourceRequest<typeof Observation>,
-                never
-              > as ResourceRequest.MultiResolver<SupportedClasses, never>
-            )
+            dispatch(request, resolvers['Observation'])
           ),
           Match.orElse((a) =>
             Effect.fail(
