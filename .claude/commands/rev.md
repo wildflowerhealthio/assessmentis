@@ -21,9 +21,9 @@ Revise code to better match project conventions. Takes a keyword for the convent
 
    If the target code doesn't seem relevant to the keyword (e.g., running `/rev comments` but the selected code is a test file with no exports), use `AskUserQuestion` to ask whether to apply the convention to the target anyway, or to suggest other files from recent work that would benefit more.
 
-3. **Revise the code** to conform to the conventions in the reference doc. Be opinionated — this skill exists because the user wants their style applied, not a gentle suggestion. Make the changes directly.
+2. **Revise the code** to conform to the conventions in the reference doc. Be opinionated — this skill exists because the user wants their style applied, not a gentle suggestion. Make the changes directly.
 
-4. **Briefly explain what you changed and why**, referencing specific conventions from the reference doc. Keep it to 2-3 sentences.
+3. **Briefly explain what you changed and why**, referencing specific conventions from the reference doc. Keep it to 2-3 sentences.
 
 ## Guidelines
 

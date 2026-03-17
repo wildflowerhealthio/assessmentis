@@ -1,7 +1,11 @@
-import { useSearchParams } from 'react-router'
 import { useEffect } from 'react'
-import type { RepositoryFilters } from '@assessmentis/clinical-domain'
-import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import { useSearchParams } from 'react-router'
+
+import type {
+  Observation,
+  RepositoryFilters,
+} from '@assessmentis/clinical-domain'
+
 import { ObservationFilters } from './ObservationFilters/ObservationFilters'
 
 export function ObservationFiltersBridge({

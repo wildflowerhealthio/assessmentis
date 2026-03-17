@@ -1,19 +1,23 @@
-import { Either, Stream, type Scope } from 'effect'
+import { Data, Either, Match, pipe, Stream } from 'effect'
+import type { Scope } from 'effect'
 
-import {
-  hubStateStream as genericHubStateStream,
-  type Hub,
-  type OriginFactory,
-  type OriginSourceSnapshot,
-  type Resource,
+import { hubStateStream as genericHubStateStream } from '@assessmentis/effectful-store'
+import type {
+  Hub,
+  OriginDefinition,
+  OriginFactory,
+  OriginFactoryResources,
+  OriginSourceSnapshot,
 } from '@assessmentis/effectful-store'
-import {
-  type AuthError,
-  type AuthzError,
-  type Loading,
-  type UnhandledError,
+import { Loading } from '@assessmentis/ontology'
+import { StreamEither } from '@assessmentis/util'
+import type {
+  AuthError,
+  AuthzError,
+  UnhandledError,
 } from '@assessmentis/ontology'
 
+import { NoSelectedOrgError } from '../hostedServices/OrgService'
 import type { OrgSlug } from '../models/IdTypes'
 import type { Org } from '../models/Org'
 import type { UserOrg } from '../models/UserOrg'
@@ -21,14 +25,28 @@ import type { UserOrg } from '../models/UserOrg'
 /**
  * Maps platform-domain `Org` + `UserOrg` into the generic
  * {@link OriginSourceSnapshot} expected by effectful-store's
- * `hubStateStream`.
+ * `hubStateStream`. Merges per-user configuration into each origin
+ * definition via shallow spread, so the factory receives a single
+ * merged config object.
  */
 const toOriginSourceSnapshot = (
   org: Org,
   userOrg: UserOrg | undefined
 ): OriginSourceSnapshot => ({
-  origins: org.origins,
-  originConfigs: userOrg?.originConfigs,
+  origins: Object.fromEntries(
+    Object.entries(org.origins).map(
+      ([url, def]) =>
+        [
+          url,
+          Data.struct({
+            ...userOrg?.originUserConfigs?.[
+              url as keyof typeof userOrg.originUserConfigs
+            ],
+            ...def,
+          }) as OriginDefinition<never>,
+        ] as const
+    )
+  ),
 })
 
 /**
@@ -44,30 +62,75 @@ const toOriginSourceSnapshot = (
  * The `R` parameter propagates the context requirements of the origin makers
  * into the returned stream, so callers can provide those services externally.
  */
-export const hubStateStream = <Resources extends Resource.ResourceSet, R>(
-  originTypes: readonly OriginFactory<Resources, R>[],
+export const mapOrgStreamToHubState = <
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Factories extends ReadonlyArray<OriginFactory<any, any, any | never>>,
+>(
+  originTypes: Factories,
   orgStream: Stream.Stream<
     Either.Either<
       { org: Org; userOrg: UserOrg | undefined },
-      Loading<{ orgSlug: OrgSlug }> | AuthError | AuthzError | UnhandledError
+      | NoSelectedOrgError
+      | Loading<{ orgSlug: OrgSlug }>
+      | AuthError
+      | AuthzError
+      | UnhandledError
     >,
     never,
     Scope.Scope
   >
 ): Stream.Stream<
   Either.Either<
-    Hub.HubState<Resources>,
-    Loading<{ orgSlug: OrgSlug }> | AuthError | AuthzError | UnhandledError
+    Hub.HubState,
+    Loading<'Configuration'> | AuthError | AuthzError | UnhandledError
   >,
   never,
-  R | Scope.Scope
+  OriginFactoryResources<Factories[number]> | Scope.Scope
 > => {
-  // Map the org stream to produce OriginSourceSnapshots
-  const snapshotStream = Stream.map(orgStream, (either) =>
-    Either.map(either, ({ org, userOrg }) =>
-      toOriginSourceSnapshot(org, userOrg)
+  // Convert NoSelectedOrgError → Loading before the generic hub stream,
+  // then map org+userOrg to OriginSourceSnapshots
+  const snapshotStream = orgStream.pipe(
+    StreamEither.mapLeft(
+      (
+        err
+      ):
+        | Loading<{ orgSlug: OrgSlug }>
+        | AuthError
+        | AuthzError
+        | UnhandledError =>
+        err instanceof NoSelectedOrgError
+          ? new Loading({ entity: { orgSlug: '' as OrgSlug } })
+          : err
+    ),
+    Stream.map((either) =>
+      Either.map(either, ({ org, userOrg }) =>
+        toOriginSourceSnapshot(org, userOrg)
+      )
     )
   )
 
-  return genericHubStateStream(originTypes, snapshotStream)
+  type SnapshotErrors =
+    | Loading<{ orgSlug: OrgSlug }>
+    | AuthError
+    | AuthzError
+    | UnhandledError
+
+  return pipe(
+    genericHubStateStream<
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      readonly OriginFactory<any, any, any>[],
+      SnapshotErrors,
+      OriginFactoryResources<Factories[number]>
+    >(originTypes, snapshotStream),
+    StreamEither.mapError(
+      Match.typeTags<
+        Loading<{ orgSlug: OrgSlug }> | AuthError | AuthzError | UnhandledError
+      >()({
+        Loading: () => new Loading({ entity: 'Configuration' } as const),
+        AuthError: (e) => e,
+        AuthzError: (e) => e,
+        UnhandledError: (e) => e,
+      })
+    )
+  )
 }

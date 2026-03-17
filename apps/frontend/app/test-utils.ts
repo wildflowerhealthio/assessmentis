@@ -1,10 +1,42 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Effect, Stream, type Either } from 'effect'
+import { Effect, Either, Stream } from 'effect'
 
+import type { ClinicalDomainClasses } from '@assessmentis/clinical-domain'
+import type { Hub } from '@assessmentis/effectful-store'
 import type { NoSelectedOrgError, Org } from '@assessmentis/platform-domain'
 import { neverUsedMock } from '@assessmentis/testing-utils'
 
 import type { PlatformContext } from './layers/PlatformContext'
+
+type MockHub = Hub.Hub<ClinicalDomainClasses>
+// Keys are checked (catches renames), but values are `any` since vi.fn() mocks
+// use simplified return types that don't match the full generic signatures.
+type MockHubOverrides = Partial<
+  Record<keyof Hub.Repository<ClinicalDomainClasses>, any>
+>
+
+/**
+ * Creates a mock Hub with sensible defaults for testing.
+ * Returns success cases for all methods by default.
+ */
+export function createMockHub(overrides: MockHubOverrides = {}): MockHub {
+  return {
+    get: (_klass: any, _url: any) => Effect.succeed({}),
+    subscribe: (_klass: any, _url: any) => Stream.succeed(Either.right({})),
+    search: (_klass: any, _params?: any) => Effect.succeed([]),
+    subscribeSearch: (_klass: any, _params?: any) =>
+      Stream.succeed(Either.right([])),
+    create: (_klass: any, resource: any, _origin?: any) =>
+      Effect.succeed({ ...resource, url: 'http://example.com/test' }),
+    createMany: (_klass: any, resources: any[], _origin?: any) =>
+      Effect.succeed(
+        resources.map((r) => ({ ...r, url: 'http://example.com/test' }))
+      ),
+    update: (_klass: any, resource: any) => Effect.succeed(resource),
+    delete: (_klass: any, _url: any) => Effect.succeed(undefined),
+    ...overrides,
+  } as MockHub
+}
 
 /**
  * Creates a mock PlatformContext with sensible defaults.
@@ -29,6 +61,7 @@ export function createMockPlatformContext(
     userOrgs?: Record<string, string>
 
     setActiveOrgSlug?: (...args: any[]) => Effect.Effect<void>
+    hub?: MockHub
   } = {}
 ): PlatformContext {
   const defaultSetActiveOrgSlug = () => Effect.succeed(undefined as void)
@@ -45,10 +78,6 @@ export function createMockPlatformContext(
         org_roles: overrides.userOrgs ?? {},
       }),
     } as any,
-    fhirR4ClientService: neverUsedMock('fhirR4ClientService'),
-    clinicalDataRepositoryService: neverUsedMock(
-      'clinicalDataRepositoryService'
-    ),
-    VideoCallClientService: neverUsedMock('VideoCallClientService'),
+    hub: overrides.hub ?? createMockHub(),
   }
 }

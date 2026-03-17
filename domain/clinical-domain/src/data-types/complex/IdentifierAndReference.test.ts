@@ -5,11 +5,10 @@ import { Arbitrary, Effect, Exit, Schema } from 'effect'
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import { ExternalAssertionError } from '@assessmentis/ontology'
 
-import {
-  Identifier,
-  Reference,
-  type IdentifierEncoded,
-  type ReferenceEncoded,
+import { Identifier, Reference } from './IdentifierAndReference'
+import type {
+  IdentifierEncoded,
+  ReferenceEncoded,
 } from './IdentifierAndReference'
 
 /**

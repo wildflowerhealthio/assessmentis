@@ -19,51 +19,49 @@ import {
 
 import { AuthError, AuthzError, NotFoundError } from '@assessmentis/ontology'
 
-import { makeHubFromRef, type HubError, type HubState } from './Hub'
+import { makeHubFromRef } from './Hub'
+import type { HubError, HubState } from './Hub'
 import type * as Origin from './Origin'
 import { ReadonlyUrl } from './ReadonlyUrl'
-import type * as Resource from './Resource'
+import * as Resource from './Resource'
 import type * as ResourceRequest from './ResourceRequest'
 
 // --- Resource types ---
 
-interface TestResource extends Resource.Resource<'TestResource'> {
-  readonly domainType: 'TestResource'
+class TestResource {
+  static readonly DomainType = 'TestResource' as const
+  static readonly UrlSchema = ReadonlyUrl.FromString
+  readonly domainType = 'TestResource' as const
   readonly url?: ReadonlyUrl | undefined
-  readonly name: string
+  readonly name!: string
 }
 
-interface OtherResource extends Resource.Resource<'OtherResource'> {
-  readonly domainType: 'OtherResource'
+class OtherResource {
+  static readonly DomainType = 'OtherResource' as const
+  static readonly UrlSchema = ReadonlyUrl.FromString
+  readonly domainType = 'OtherResource' as const
   readonly url?: ReadonlyUrl | undefined
-  readonly value: number
+  readonly value!: number
 }
 
-type TestResources = {
-  readonly TestResource: TestResource
-  readonly OtherResource: OtherResource
-}
-
-type TR = TestResources['TestResource']
+type TestClasses = typeof TestResource | typeof OtherResource
 
 // --- Mutable hub test harness ---
 
-const makeMutableHub = <
-  Resources extends Record<string, Resource.Resource<string>>,
->() =>
+const makeMutableHub = <Classes extends Resource.AnyDomainClass>() =>
   Effect.gen(function* () {
     const stateRef = yield* SubscriptionRef.make<
-      Either.Either<HubState<Resources>, HubError>
+      Either.Either<HubState, HubError>
     >(Either.right(HashMap.empty()))
-    const hub = makeHubFromRef(stateRef)
+    const hub = makeHubFromRef<Classes>(stateRef)
 
-    const setOriginState = <SupportedResources extends keyof Resources>(
-      origin: Origin.AnyState<Resources, SupportedResources>
+    const setOriginState = <SupportedClasses extends Classes>(
+      origin: Origin.AnyState<SupportedClasses>
     ): Effect.Effect<void> =>
       SubscriptionRef.update(stateRef, (current) => {
         const state = Either.isRight(current)
           ? current.right
-          : HashMap.empty<string, Origin.AnyState<Resources, never>>()
+          : HashMap.empty<string, Origin.AnyState<never>>()
         return Either.right(
           HashMap.set(state, origin.originUrl.toString(), origin)
         )
@@ -73,7 +71,7 @@ const makeMutableHub = <
       SubscriptionRef.update(stateRef, (current) => {
         const state = Either.isRight(current)
           ? current.right
-          : HashMap.empty<string, Origin.AnyState<Resources, never>>()
+          : HashMap.empty<string, Origin.AnyState<never>>()
         return Either.right(HashMap.remove(state, originUrl.toString()))
       })
 
@@ -88,7 +86,7 @@ const makeMutableHub = <
 const noopProvoke = () => Effect.void
 
 type AnyTestRequest = Origin.AnyResourceRequest<
-  TestResources[keyof TestResources]
+  typeof TestResource | typeof OtherResource
 >
 
 /** Verified mock: embeds provenance (origin tag) in responses so tests can
@@ -99,25 +97,29 @@ const makeTrackedResolver = (originUrl: ReadonlyUrl) => {
     switch (request._tag) {
       case 'Get':
         return Effect.succeed({
-          domainType: request.domainType,
+          domainType: request.klass.DomainType,
           url: request.url,
           name: `from:${tag}`,
-        } as Resource.WithResourceUrl<TestResources[keyof TestResources]>)
+        } as Resource.WithResourceUrl<TestResource | OtherResource>)
       case 'Search':
         return Effect.succeed([
           {
-            domainType: request.domainType,
-            url: originUrl.appendToPathname(`/${String(request.domainType)}/s`),
+            domainType: request.klass.DomainType,
+            url: originUrl.appendToPathname(
+              `/${String(request.klass.DomainType)}/s`
+            ),
             name: `from:${tag}`,
           },
         ] as ReadonlyArray<
-          Resource.WithResourceUrl<TestResources[keyof TestResources]>
+          Resource.WithResourceUrl<TestResource | OtherResource>
         >)
       case 'Create':
         return Effect.succeed({
           ...request.resource,
-          url: originUrl.appendToPathname(`/${String(request.domainType)}/new`),
-        } as Resource.WithResourceUrl<TestResources[keyof TestResources]>)
+          url: originUrl.appendToPathname(
+            `/${String(request.klass.DomainType)}/new`
+          ),
+        } as Resource.WithResourceUrl<TestResource | OtherResource>)
       case 'Update':
         return Effect.succeed(request.resource)
       case 'Delete':
@@ -128,52 +130,48 @@ const makeTrackedResolver = (originUrl: ReadonlyUrl) => {
     handler,
     resolver: RequestResolver.fromEffect(
       handler
-    ) as ResourceRequest.MultiResolver<
-      TestResources,
-      keyof TestResources,
-      never
-    >,
+    ) as ResourceRequest.MultiResolver<TestClasses, never>,
     requestGenerators: {
       Get: () => {
-        const req = Request.of<ResourceRequest.Get<TestResource>>()({
+        const req = Request.of<ResourceRequest.Get<typeof TestResource>>()({
           _tag: 'Get',
-          domainType: 'TestResource',
+          klass: TestResource,
           url: originUrl.appendToPathname('/TestResource/1'),
           origin: originUrl,
         })
         return req
       },
       Search: () => {
-        const req = Request.of<ResourceRequest.Search<TR>>()({
+        const req = Request.of<ResourceRequest.Search<typeof TestResource>>()({
           _tag: 'Search',
-          domainType: 'TestResource',
+          klass: TestResource,
           params: {},
           origin: originUrl,
         })
         return req
       },
       SearchAll: () => {
-        const req = Request.of<ResourceRequest.Search<TR>>()({
+        const req = Request.of<ResourceRequest.Search<typeof TestResource>>()({
           _tag: 'Search',
-          domainType: 'TestResource',
+          klass: TestResource,
           params: {},
           origin: null,
         })
         return req
       },
       Create: () => {
-        const req = Request.of<ResourceRequest.Create<TR>>()({
+        const req = Request.of<ResourceRequest.Create<typeof TestResource>>()({
           _tag: 'Create',
-          domainType: 'TestResource',
+          klass: TestResource,
           resource: { domainType: 'TestResource', name: 'new' },
           origin: originUrl,
         })
         return req
       },
       Update: () => {
-        const req = Request.of<ResourceRequest.Update<TR>>()({
+        const req = Request.of<ResourceRequest.Update<typeof TestResource>>()({
           _tag: 'Update',
-          domainType: 'TestResource',
+          klass: TestResource,
           resource: {
             domainType: 'TestResource',
             url: originUrl.appendToPathname('/TestResource/1'),
@@ -184,9 +182,9 @@ const makeTrackedResolver = (originUrl: ReadonlyUrl) => {
         return req
       },
       Delete: () => {
-        const req = Request.of<ResourceRequest.Delete<TR>>()({
+        const req = Request.of<ResourceRequest.Delete<typeof TestResource>>()({
           _tag: 'Delete',
-          domainType: 'TestResource',
+          klass: TestResource,
           resource: { url: originUrl.appendToPathname('/TestResource/1') },
           origin: originUrl,
         })
@@ -221,29 +219,31 @@ const requestTagArb: fc.Arbitrary<RequestTag> = fc.oneof(
 // --- Composite arbitraries ---
 
 const arbitraryEmptyMutableHubEffect =
-  fc.constant(makeMutableHub<TestResources>())
+  fc.constant(makeMutableHub<TestClasses>())
 
 const arbitraryReadyOrigin = <
-  SupportedResources extends keyof TestResources = keyof TestResources,
+  SupportedClasses extends TestClasses = TestClasses,
 >({
   originUrl,
   supportedResources,
 }: {
   originUrl?: fc.Arbitrary<ReadonlyUrl>
-  supportedResources?: { [K in SupportedResources]: true } & {
-    [K in keyof TestResources]?: boolean
+  supportedResources: {
+    readonly [Klass in SupportedClasses as Klass['DomainType']]: Klass
+  } & {
+    readonly [K: string]: Resource.AnyDomainClass
   }
-} = {}): fc.Arbitrary<{
+}): fc.Arbitrary<{
   url: ReadonlyUrl
   handler: ReturnType<typeof vi.fn>
-  origin: Origin.Ready<TestResources, SupportedResources>
+  origin: Origin.Ready<SupportedClasses>
   requestGenerators: {
-    Get: () => ResourceRequest.Get<TestResource>
-    Search: () => ResourceRequest.Search<TestResource>
-    SearchAll: () => ResourceRequest.Search<TestResource>
-    Create: () => ResourceRequest.Create<TestResource>
-    Update: () => ResourceRequest.Update<TestResource>
-    Delete: () => ResourceRequest.Delete<TestResource>
+    Get: () => ResourceRequest.Get<typeof TestResource>
+    Search: () => ResourceRequest.Search<typeof TestResource>
+    SearchAll: () => ResourceRequest.Search<typeof TestResource>
+    Create: () => ResourceRequest.Create<typeof TestResource>
+    Update: () => ResourceRequest.Update<typeof TestResource>
+    Delete: () => ResourceRequest.Delete<typeof TestResource>
   }
 }> =>
   (originUrl ?? originUrlArb).map((url) => {
@@ -253,10 +253,7 @@ const arbitraryReadyOrigin = <
       handler,
       origin: {
         originUrl: url,
-        supportedResources: supportedResources ?? {
-          TestResource: true,
-          OtherResource: true,
-        },
+        supportedResources,
         resolver,
         errorStatus: undefined,
         provokeReauthenticate: noopProvoke,
@@ -271,7 +268,7 @@ const arbitraryPermanentErrorOrigin = ({
   originUrl,
 }: { originUrl?: fc.Arbitrary<ReadonlyUrl> } = {}): fc.Arbitrary<{
   url: ReadonlyUrl
-  origin: Origin.Errored<TestResources, keyof TestResources>
+  origin: Origin.Errored<TestClasses>
   error: AuthError | AuthzError
   requestGenerators: ReturnType<typeof makeTrackedResolver>['requestGenerators']
 }> =>
@@ -288,7 +285,10 @@ const arbitraryPermanentErrorOrigin = ({
         url,
         origin: {
           originUrl: url,
-          supportedResources: { TestResource: true, OtherResource: true },
+          supportedResources: {
+            TestResource: TestResource,
+            OtherResource: OtherResource,
+          } as any,
           resolver: undefined,
           errorStatus: error,
           provokeReauthenticate: noopProvoke,
@@ -304,7 +304,7 @@ const arbitraryLoadingOrigin = ({
   originUrl,
 }: { originUrl?: fc.Arbitrary<ReadonlyUrl> } = {}): fc.Arbitrary<{
   url: ReadonlyUrl
-  origin: Origin.Loading<TestResources, keyof TestResources>
+  origin: Origin.Loading<TestClasses>
   requestGenerators: ReturnType<typeof makeTrackedResolver>['requestGenerators']
 }> =>
   (originUrl ?? originUrlArb).map((url) => {
@@ -313,7 +313,10 @@ const arbitraryLoadingOrigin = ({
       url,
       origin: {
         originUrl: url,
-        supportedResources: { TestResource: true, OtherResource: true },
+        supportedResources: {
+          TestResource: TestResource,
+          OtherResource: OtherResource,
+        },
         resolver: undefined,
         errorStatus: undefined,
         provokeReauthenticate: noopProvoke,
@@ -326,11 +329,19 @@ const arbitraryLoadingOrigin = ({
 const arbitraryHubWithAllReadyOriginsEffect = fc
   .tuple(
     arbitraryEmptyMutableHubEffect,
-    fc.uniqueArray(arbitraryReadyOrigin(), {
-      minLength: 1,
-      maxLength: 4,
-      selector: (o) => o.url.toString(),
-    })
+    fc.uniqueArray(
+      arbitraryReadyOrigin({
+        supportedResources: {
+          TestResource: TestResource,
+          OtherResource: OtherResource,
+        },
+      }),
+      {
+        minLength: 1,
+        maxLength: 4,
+        selector: (o) => o.url.toString(),
+      }
+    )
   )
   .map(([emptyHubEffect, readyOrigins]) =>
     Effect.gen(function* () {
@@ -343,11 +354,19 @@ const arbitraryHubWithAllReadyOriginsEffect = fc
 const arbitraryHubWithSomePermanentErrorOriginsEffect = fc
   .tuple(
     arbitraryEmptyMutableHubEffect,
-    fc.uniqueArray(arbitraryReadyOrigin(), {
-      minLength: 1,
-      maxLength: 3,
-      selector: (o) => o.url.toString(),
-    }),
+    fc.uniqueArray(
+      arbitraryReadyOrigin({
+        supportedResources: {
+          TestResource: TestResource,
+          OtherResource: OtherResource,
+        },
+      }),
+      {
+        minLength: 1,
+        maxLength: 3,
+        selector: (o) => o.url.toString(),
+      }
+    ),
     fc.uniqueArray(arbitraryPermanentErrorOrigin(), {
       minLength: 1,
       maxLength: 3,
@@ -420,9 +439,9 @@ describe('Hub', () => {
           const { hub, origins } = yield* arbitraryHubWithAllReadyOriginsEffect
 
           const results = yield* Effect.request(
-            Request.of<ResourceRequest.Search<TR>>()({
+            Request.of<ResourceRequest.Search<typeof TestResource>>()({
               _tag: 'Search',
-              domainType: 'TestResource',
+              klass: TestResource,
               params: {},
               origin: null,
             }),
@@ -448,7 +467,7 @@ describe('Hub', () => {
       },
       ({ errored, requestTag }) =>
         Effect.gen(function* () {
-          const { hub, setOriginState } = yield* makeMutableHub<TestResources>()
+          const { hub, setOriginState } = yield* makeMutableHub<TestClasses>()
           yield* setOriginState(errored.origin)
 
           const exit = yield* Effect.request(
@@ -469,9 +488,9 @@ describe('Hub', () => {
           const { hub } = yield* hubContext
 
           const exit = yield* Effect.request(
-            Request.of<ResourceRequest.Search<TR>>()({
+            Request.of<ResourceRequest.Search<typeof TestResource>>()({
               _tag: 'Search',
-              domainType: 'TestResource',
+              klass: TestResource,
               params: {},
               origin: null,
             }),
@@ -488,12 +507,17 @@ describe('Hub', () => {
       'requests to a Loading origin succeed when origin becomes ready',
       {
         loading: arbitraryLoadingOrigin(),
-        ready: arbitraryReadyOrigin(),
+        ready: arbitraryReadyOrigin({
+          supportedResources: {
+            TestResource: TestResource,
+            OtherResource: OtherResource,
+          },
+        }),
         requestTag: requestTagArb,
       },
       ({ loading, ready, requestTag }) =>
         Effect.gen(function* () {
-          const { hub, setOriginState } = yield* makeMutableHub<TestResources>()
+          const { hub, setOriginState } = yield* makeMutableHub<TestClasses>()
           // Use the same URL for loading and ready origins
           const readyAtSameUrl: typeof ready.origin = {
             ...ready.origin,
@@ -528,7 +552,7 @@ describe('Hub', () => {
       },
       ({ loading, permanentError, requestTag }) =>
         Effect.gen(function* () {
-          const { hub, setOriginState } = yield* makeMutableHub<TestResources>()
+          const { hub, setOriginState } = yield* makeMutableHub<TestClasses>()
           yield* setOriginState(loading.origin)
 
           const fiber = yield* Effect.request(
@@ -551,11 +575,16 @@ describe('Hub', () => {
       'fan-out search waits for Loading origins and succeeds when they become ready',
       {
         loading: arbitraryLoadingOrigin(),
-        ready: arbitraryReadyOrigin(),
+        ready: arbitraryReadyOrigin({
+          supportedResources: {
+            TestResource: TestResource,
+            OtherResource: OtherResource,
+          },
+        }),
       },
       ({ loading, ready }) =>
         Effect.gen(function* () {
-          const { hub, setOriginState } = yield* makeMutableHub<TestResources>()
+          const { hub, setOriginState } = yield* makeMutableHub<TestClasses>()
           const readyAtSameUrl: typeof ready.origin = {
             ...ready.origin,
             originUrl: loading.url,
@@ -563,9 +592,9 @@ describe('Hub', () => {
           yield* setOriginState(loading.origin)
 
           const fiber = yield* Effect.request(
-            Request.of<ResourceRequest.Search<TR>>()({
+            Request.of<ResourceRequest.Search<typeof TestResource>>()({
               _tag: 'Search',
-              domainType: 'TestResource',
+              klass: TestResource,
               params: {},
               origin: null,
             }),
@@ -595,9 +624,9 @@ describe('Hub', () => {
           const { hub } = yield* arbitraryEmptyMutableHubEffect
 
           const exit = yield* Effect.request(
-            Request.of<ResourceRequest.Search<TR>>()({
+            Request.of<ResourceRequest.Search<typeof TestResource>>()({
               _tag: 'Search',
-              domainType: 'TestResource',
+              klass: TestResource,
               params: {},
               origin,
             }),
@@ -613,8 +642,10 @@ describe('Hub', () => {
       'requests for a resource type the origin does not support fail with UnhandledError',
       {
         arbitraryEmptyMutableHubEffect,
-        readyOrigin: arbitraryReadyOrigin<'OtherResource'>({
-          supportedResources: { OtherResource: true, TestResource: false },
+        readyOrigin: arbitraryReadyOrigin<typeof OtherResource>({
+          supportedResources: {
+            OtherResource: OtherResource,
+          },
         }),
         requestTag: requestTagArb,
       },
@@ -639,13 +670,15 @@ describe('Hub', () => {
       { origin: originUrlArb },
       ({ origin }) =>
         Effect.gen(function* () {
-          const { hub, setOriginState } = yield* makeMutableHub<TestResources>()
+          const { hub, setOriginState } = yield* makeMutableHub<TestClasses>()
           const { handler, resolver, requestGenerators } =
             makeTrackedResolver(origin)
 
-          yield* setOriginState({
+          yield* setOriginState<typeof OtherResource>({
             originUrl: origin,
-            supportedResources: { OtherResource: true },
+            supportedResources: {
+              OtherResource: OtherResource,
+            },
             resolver,
             errorStatus: undefined,
             provokeReauthenticate: noopProvoke,
@@ -668,7 +701,12 @@ describe('Hub', () => {
       'setOriginState makes the origin reachable; deregisterOrigin removes it',
       {
         arbitraryEmptyMutableHubEffect,
-        ready: arbitraryReadyOrigin(),
+        ready: arbitraryReadyOrigin({
+          supportedResources: {
+            TestResource: TestResource,
+            OtherResource: OtherResource,
+          },
+        }),
         requestTag: requestTagArb,
       },
       ({ arbitraryEmptyMutableHubEffect, ready, requestTag }) =>
@@ -697,9 +735,17 @@ describe('Hub', () => {
           origin: baseUrlArb,
           firstOrigin: arbitraryReadyOrigin({
             originUrl: baseUrlArb,
+            supportedResources: {
+              TestResource: TestResource,
+              OtherResource: OtherResource,
+            },
           }),
           secondOrigin: arbitraryReadyOrigin({
             originUrl: baseUrlArb,
+            supportedResources: {
+              TestResource: TestResource,
+              OtherResource: OtherResource,
+            },
           }),
         })
       })
@@ -738,6 +784,10 @@ describe('Hub', () => {
           origin: baseUrlArb,
           ready: arbitraryReadyOrigin({
             originUrl: baseUrlArb,
+            supportedResources: {
+              TestResource: TestResource,
+              OtherResource: OtherResource,
+            },
           }),
           errored: arbitraryPermanentErrorOrigin({
             originUrl: baseUrlArb,
@@ -779,7 +829,15 @@ describe('Hub', () => {
   describe('subscribe', () => {
     it.effect.prop(
       'emits the resource when origin is ready',
-      { ready: arbitraryReadyOrigin(), arbitraryEmptyMutableHubEffect },
+      {
+        ready: arbitraryReadyOrigin({
+          supportedResources: {
+            TestResource: TestResource,
+            OtherResource: OtherResource,
+          },
+        }),
+        arbitraryEmptyMutableHubEffect,
+      },
       ({ ready, arbitraryEmptyMutableHubEffect }) =>
         Effect.gen(function* () {
           const { hub, setOriginState } = yield* arbitraryEmptyMutableHubEffect
@@ -787,7 +845,7 @@ describe('Hub', () => {
 
           const url = ready.url.appendToPathname('/TestResource/1')
           const results = yield* hub
-            .subscribe('TestResource', url)
+            .subscribe(TestResource, url)
             .pipe(Stream.take(1), Stream.runCollect)
 
           const items = Chunk.toReadonlyArray(results)
@@ -798,14 +856,22 @@ describe('Hub', () => {
 
     it.effect.prop(
       'emits Left when no origin matches, then Right when origin becomes available',
-      { ready: arbitraryReadyOrigin(), arbitraryEmptyMutableHubEffect },
+      {
+        ready: arbitraryReadyOrigin({
+          supportedResources: {
+            TestResource: TestResource,
+            OtherResource: OtherResource,
+          },
+        }),
+        arbitraryEmptyMutableHubEffect,
+      },
       ({ ready, arbitraryEmptyMutableHubEffect }) =>
         Effect.gen(function* () {
           const { hub, setOriginState } = yield* arbitraryEmptyMutableHubEffect
           const url = ready.url.appendToPathname('/TestResource/1')
 
           const latch = yield* Deferred.make<void>()
-          const fiber = yield* hub.subscribe('TestResource', url).pipe(
+          const fiber = yield* hub.subscribe(TestResource, url).pipe(
             Stream.tap(() => Deferred.succeed(latch, void 0)),
             Stream.take(2),
             Stream.runCollect,
@@ -828,8 +894,20 @@ describe('Hub', () => {
         arbitraryEmptyMutableHubEffect,
         origins: originUrlArb.chain((baseUrl) =>
           fc.record({
-            first: arbitraryReadyOrigin({ originUrl: fc.constant(baseUrl) }),
-            second: arbitraryReadyOrigin({ originUrl: fc.constant(baseUrl) }),
+            first: arbitraryReadyOrigin({
+              originUrl: fc.constant(baseUrl),
+              supportedResources: {
+                TestResource: TestResource,
+                OtherResource: OtherResource,
+              },
+            }),
+            second: arbitraryReadyOrigin({
+              originUrl: fc.constant(baseUrl),
+              supportedResources: {
+                TestResource: TestResource,
+                OtherResource: OtherResource,
+              },
+            }),
           })
         ),
       },
@@ -840,7 +918,7 @@ describe('Hub', () => {
 
           const resourceUrl = first.url.appendToPathname('/TestResource/1')
           const latch = yield* Deferred.make<void>()
-          const fiber = yield* hub.subscribe('TestResource', resourceUrl).pipe(
+          const fiber = yield* hub.subscribe(TestResource, resourceUrl).pipe(
             Stream.tap(() => Deferred.succeed(latch, void 0)),
             Stream.take(2),
             Stream.runCollect,
@@ -866,9 +944,17 @@ describe('Hub', () => {
               fc.record({
                 first: arbitraryReadyOrigin({
                   originUrl: fc.constant(baseUrl),
+                  supportedResources: {
+                    TestResource: TestResource,
+                    OtherResource: OtherResource,
+                  },
                 }),
                 second: arbitraryReadyOrigin({
                   originUrl: fc.constant(baseUrl),
+                  supportedResources: {
+                    TestResource: TestResource,
+                    OtherResource: OtherResource,
+                  },
                 }),
               })
             ),
@@ -876,9 +962,17 @@ describe('Hub', () => {
               fc.record({
                 first: arbitraryReadyOrigin({
                   originUrl: fc.constant(baseUrl),
+                  supportedResources: {
+                    TestResource: TestResource,
+                    OtherResource: OtherResource,
+                  },
                 }),
                 second: arbitraryReadyOrigin({
                   originUrl: fc.constant(baseUrl),
+                  supportedResources: {
+                    TestResource: TestResource,
+                    OtherResource: OtherResource,
+                  },
                 }),
               })
             ),
@@ -898,7 +992,7 @@ describe('Hub', () => {
           const resourceUrl =
             target.first.url.appendToPathname('/TestResource/1')
           const latch = yield* Deferred.make<void>()
-          const fiber = yield* hub.subscribe('TestResource', resourceUrl).pipe(
+          const fiber = yield* hub.subscribe(TestResource, resourceUrl).pipe(
             Stream.tap(() => Deferred.succeed(latch, void 0)),
             Stream.take(2),
             Stream.runCollect,
@@ -929,7 +1023,7 @@ describe('Hub', () => {
           const { hub, origins } = yield* arbitraryHubWithAllReadyOriginsEffect
 
           const results = yield* hub
-            .subscribeSearch('TestResource')
+            .subscribeSearch(TestResource)
             .pipe(Stream.take(1), Stream.runCollect)
 
           const items = Chunk.toReadonlyArray(results)
@@ -941,13 +1035,21 @@ describe('Hub', () => {
 
     it.effect.prop(
       'emits Left when no origins exist, then Right when one is registered',
-      { ready: arbitraryReadyOrigin(), arbitraryEmptyMutableHubEffect },
+      {
+        ready: arbitraryReadyOrigin({
+          supportedResources: {
+            TestResource: TestResource,
+            OtherResource: OtherResource,
+          },
+        }),
+        arbitraryEmptyMutableHubEffect,
+      },
       ({ ready, arbitraryEmptyMutableHubEffect }) =>
         Effect.gen(function* () {
           const { hub, setOriginState } = yield* arbitraryEmptyMutableHubEffect
 
           const latch = yield* Deferred.make<void>()
-          const fiber = yield* hub.subscribeSearch('TestResource').pipe(
+          const fiber = yield* hub.subscribeSearch(TestResource).pipe(
             Stream.tap(() => Deferred.succeed(latch, void 0)),
             Stream.take(2),
             Stream.runCollect,
@@ -970,8 +1072,20 @@ describe('Hub', () => {
         arbitraryEmptyMutableHubEffect,
         origins: originUrlArb.chain((baseUrl) =>
           fc.record({
-            first: arbitraryReadyOrigin({ originUrl: fc.constant(baseUrl) }),
-            second: arbitraryReadyOrigin({ originUrl: fc.constant(baseUrl) }),
+            first: arbitraryReadyOrigin({
+              originUrl: fc.constant(baseUrl),
+              supportedResources: {
+                TestResource: TestResource,
+                OtherResource: OtherResource,
+              },
+            }),
+            second: arbitraryReadyOrigin({
+              originUrl: fc.constant(baseUrl),
+              supportedResources: {
+                TestResource: TestResource,
+                OtherResource: OtherResource,
+              },
+            }),
           })
         ),
       },
@@ -981,7 +1095,7 @@ describe('Hub', () => {
           yield* setOriginState(first.origin)
 
           const latch = yield* Deferred.make<void>()
-          const fiber = yield* hub.subscribeSearch('TestResource').pipe(
+          const fiber = yield* hub.subscribeSearch(TestResource).pipe(
             Stream.tap(() => Deferred.succeed(latch, void 0)),
             Stream.take(2),
             Stream.runCollect,
@@ -1005,36 +1119,32 @@ describe('Hub', () => {
           .record({
             testOnly: originUrlArb.chain((baseUrl) =>
               fc.record({
-                first: arbitraryReadyOrigin<'TestResource'>({
+                first: arbitraryReadyOrigin<typeof TestResource>({
                   originUrl: fc.constant(baseUrl),
                   supportedResources: {
-                    TestResource: true,
-                    OtherResource: false,
+                    TestResource: TestResource,
                   },
                 }),
-                second: arbitraryReadyOrigin<'TestResource'>({
+                second: arbitraryReadyOrigin<typeof TestResource>({
                   originUrl: fc.constant(baseUrl),
                   supportedResources: {
-                    TestResource: true,
-                    OtherResource: false,
+                    TestResource: TestResource,
                   },
                 }),
               })
             ),
             otherOnly: originUrlArb.chain((baseUrl) =>
               fc.record({
-                first: arbitraryReadyOrigin<'OtherResource'>({
+                first: arbitraryReadyOrigin<typeof OtherResource>({
                   originUrl: fc.constant(baseUrl),
                   supportedResources: {
-                    OtherResource: true,
-                    TestResource: false,
+                    OtherResource: OtherResource,
                   },
                 }),
-                second: arbitraryReadyOrigin<'OtherResource'>({
+                second: arbitraryReadyOrigin<typeof OtherResource>({
                   originUrl: fc.constant(baseUrl),
                   supportedResources: {
-                    OtherResource: true,
-                    TestResource: false,
+                    OtherResource: OtherResource,
                   },
                 }),
               })
@@ -1052,7 +1162,7 @@ describe('Hub', () => {
           yield* setOriginState(otherOnly.first.origin)
 
           const latch = yield* Deferred.make<void>()
-          const fiber = yield* hub.subscribeSearch('TestResource').pipe(
+          const fiber = yield* hub.subscribeSearch(TestResource).pipe(
             Stream.tap(() => Deferred.succeed(latch, void 0)),
             Stream.take(2),
             Stream.runCollect,
@@ -1077,14 +1187,22 @@ describe('Hub', () => {
   describe('HubRepository', () => {
     it.effect.prop(
       'get infers origin from URL and returns the resource',
-      { ready: arbitraryReadyOrigin(), arbitraryEmptyMutableHubEffect },
+      {
+        ready: arbitraryReadyOrigin({
+          supportedResources: {
+            TestResource: TestResource,
+            OtherResource: OtherResource,
+          },
+        }),
+        arbitraryEmptyMutableHubEffect,
+      },
       ({ ready, arbitraryEmptyMutableHubEffect }) =>
         Effect.gen(function* () {
           const { hub, setOriginState } = yield* arbitraryEmptyMutableHubEffect
           yield* setOriginState(ready.origin)
 
           const url = ready.url.appendToPathname('/TestResource/1')
-          const result = yield* hub.get('TestResource', url)
+          const result = yield* hub.get(TestResource, url)
 
           expect(result.url).toEqual(url)
           expect(ready.handler).toHaveBeenCalledWith(
@@ -1102,7 +1220,7 @@ describe('Hub', () => {
           const unregisteredUrl = origin.appendToPathname('/TestResource/1')
 
           const exit = yield* hub
-            .get('TestResource', unregisteredUrl)
+            .get(TestResource, unregisteredUrl)
             .pipe(Effect.exit)
 
           expect(squashFailure(exit)).toBeInstanceOf(NotFoundError)
@@ -1125,7 +1243,10 @@ describe('Hub', () => {
           const childOrigin = origin.appendToPathname('/sub')
           yield* setOriginState({
             originUrl: origin,
-            supportedResources: { TestResource: true, OtherResource: true },
+            supportedResources: {
+              TestResource: TestResource,
+              OtherResource: OtherResource,
+            },
             resolver: resolver1,
             errorStatus: undefined,
             provokeReauthenticate: noopProvoke,
@@ -1133,7 +1254,10 @@ describe('Hub', () => {
           })
           yield* setOriginState({
             originUrl: childOrigin,
-            supportedResources: { TestResource: true, OtherResource: true },
+            supportedResources: {
+              TestResource: TestResource,
+              OtherResource: OtherResource,
+            },
             resolver: resolver2,
             errorStatus: undefined,
             provokeReauthenticate: noopProvoke,
@@ -1142,7 +1266,7 @@ describe('Hub', () => {
 
           const ambiguousUrl = childOrigin.appendToPathname('/TestResource/1')
           const exit = yield* hub
-            .get('TestResource', ambiguousUrl)
+            .get(TestResource, ambiguousUrl)
             .pipe(Effect.exit)
 
           expect(squashFailure(exit)._tag).toBe('UnhandledError')
@@ -1156,7 +1280,7 @@ describe('Hub', () => {
         Effect.gen(function* () {
           const { hub, origins } = yield* arbitraryHubWithAllReadyOriginsEffect
 
-          const results = yield* hub.search('TestResource')
+          const results = yield* hub.search(TestResource)
 
           expect(results).toHaveLength(origins.length)
           origins.forEach((o) =>
@@ -1169,14 +1293,21 @@ describe('Hub', () => {
 
     it.effect.prop(
       'create with explicit origin routes to that origin',
-      { ready: arbitraryReadyOrigin() },
+      {
+        ready: arbitraryReadyOrigin({
+          supportedResources: {
+            TestResource: TestResource,
+            OtherResource: OtherResource,
+          },
+        }),
+      },
       ({ ready }) =>
         Effect.gen(function* () {
-          const { hub, setOriginState } = yield* makeMutableHub<TestResources>()
+          const { hub, setOriginState } = yield* makeMutableHub<TestClasses>()
           yield* setOriginState(ready.origin)
 
           const result = yield* hub.create(
-            'TestResource',
+            TestResource,
             { domainType: 'TestResource', name: 'new' },
             ready.url
           )
@@ -1193,13 +1324,20 @@ describe('Hub', () => {
 
     it.effect.prop(
       'create without origin infers the single matching origin',
-      { ready: arbitraryReadyOrigin() },
+      {
+        ready: arbitraryReadyOrigin({
+          supportedResources: {
+            TestResource: TestResource,
+            OtherResource: OtherResource,
+          },
+        }),
+      },
       ({ ready }) =>
         Effect.gen(function* () {
-          const { hub, setOriginState } = yield* makeMutableHub<TestResources>()
+          const { hub, setOriginState } = yield* makeMutableHub<TestClasses>()
           yield* setOriginState(ready.origin)
 
-          const result = yield* hub.create('TestResource', {
+          const result = yield* hub.create(TestResource, {
             domainType: 'TestResource',
             name: 'new',
           })
@@ -1215,10 +1353,10 @@ describe('Hub', () => {
       'create without origin fails with UnhandledError when no origins exist',
       () =>
         Effect.gen(function* () {
-          const { hub } = yield* makeMutableHub<TestResources>()
+          const { hub } = yield* makeMutableHub<TestClasses>()
 
           const exit = yield* hub
-            .create('TestResource', {
+            .create(TestResource, {
               domainType: 'TestResource',
               name: 'new',
             })
@@ -1230,14 +1368,21 @@ describe('Hub', () => {
 
     it.effect.prop(
       'createMany creates multiple resources in one batch',
-      { ready: arbitraryReadyOrigin() },
+      {
+        ready: arbitraryReadyOrigin({
+          supportedResources: {
+            TestResource: TestResource,
+            OtherResource: OtherResource,
+          },
+        }),
+      },
       ({ ready }) =>
         Effect.gen(function* () {
-          const { hub, setOriginState } = yield* makeMutableHub<TestResources>()
+          const { hub, setOriginState } = yield* makeMutableHub<TestClasses>()
           yield* setOriginState(ready.origin)
 
           const results = yield* hub.createMany(
-            'TestResource',
+            TestResource,
             [
               { domainType: 'TestResource', name: 'a' },
               { domainType: 'TestResource', name: 'b' },
@@ -1252,14 +1397,21 @@ describe('Hub', () => {
 
     it.effect.prop(
       'update infers origin from resource URL',
-      { ready: arbitraryReadyOrigin() },
+      {
+        ready: arbitraryReadyOrigin({
+          supportedResources: {
+            TestResource: TestResource,
+            OtherResource: OtherResource,
+          },
+        }),
+      },
       ({ ready }) =>
         Effect.gen(function* () {
-          const { hub, setOriginState } = yield* makeMutableHub<TestResources>()
+          const { hub, setOriginState } = yield* makeMutableHub<TestClasses>()
           yield* setOriginState(ready.origin)
 
           const url = ready.url.appendToPathname('/TestResource/1')
-          const result = yield* hub.update('TestResource', {
+          const result = yield* hub.update(TestResource, {
             domainType: 'TestResource',
             url,
             name: 'updated',
@@ -1274,14 +1426,21 @@ describe('Hub', () => {
 
     it.effect.prop(
       'delete infers origin from URL',
-      { ready: arbitraryReadyOrigin() },
+      {
+        ready: arbitraryReadyOrigin({
+          supportedResources: {
+            TestResource: TestResource,
+            OtherResource: OtherResource,
+          },
+        }),
+      },
       ({ ready }) =>
         Effect.gen(function* () {
-          const { hub, setOriginState } = yield* makeMutableHub<TestResources>()
+          const { hub, setOriginState } = yield* makeMutableHub<TestClasses>()
           yield* setOriginState(ready.origin)
 
           const url = ready.url.appendToPathname('/TestResource/1')
-          yield* hub.delete('TestResource', url)
+          yield* hub.delete(TestResource, url)
 
           expect(ready.handler).toHaveBeenCalledWith(
             expect.objectContaining({ _tag: 'Delete' })

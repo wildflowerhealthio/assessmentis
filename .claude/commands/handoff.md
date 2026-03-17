@@ -34,7 +34,7 @@ Hand off the current task to a future agent session. Finishes immediate work, wr
 
 4. **Update Learnings Inbox** — after Handoff.md is written, append any non-obvious learnings discovered during this session to `docs/Agents/Learnings Inbox.md`. Use the standard entry format:
 
-   ```
+   ```markdown
    ### [short title]
    **Discovered during**: [task or branch name]
    **Learning**: [the actionable insight]

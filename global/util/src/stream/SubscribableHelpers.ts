@@ -1,11 +1,5 @@
-import {
-  Effect,
-  Readable,
-  Stream,
-  Subscribable,
-  type Either,
-  type SubscriptionRef,
-} from 'effect'
+import { Effect, Readable, Stream, Subscribable } from 'effect'
+import type { Either, SubscriptionRef } from 'effect'
 import { pipeArguments } from 'effect/Pipeable'
 
 import { StreamEither } from './StreamEither'

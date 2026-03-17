@@ -1,12 +1,14 @@
-import { pipe, Schema, type FastCheck } from 'effect'
-
-import { mergeArbitraries, MergeClasses } from '@assessmentis/util'
+import { pipe, Schema } from 'effect'
+import type { FastCheck } from 'effect'
 
 import {
-  BackboneElement,
-  Coding,
-  type BackboneElementEncoded,
-} from '../../data-types'
+  AnnotateArrayWithArbitrary,
+  mergeArbitraries,
+  MergeClasses,
+} from '@assessmentis/util'
+
+import { BackboneElement, Coding } from '../../data-types'
+import type { BackboneElementEncoded } from '../../data-types'
 import { QuestionnaireItemAnswerOption } from './QuestionnaireItemAnswerOption'
 import { QuestionnaireItemLink } from './QuestionnaireItemLink'
 
@@ -52,9 +54,17 @@ export const QuestionItemType = Schema.Union(
 )
 
 const questionnaireItemFields = {
-  answerOption: Schema.optional(Schema.Array(QuestionnaireItemAnswerOption)),
+  answerOption: Schema.optional(
+    Schema.Array(QuestionnaireItemAnswerOption).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   answerValueSet: Schema.optional(Schema.String),
-  code: Schema.optional(Schema.Array(Schema.suspend(() => Coding))),
+  code: Schema.optional(
+    Schema.Array(Schema.suspend(() => Coding)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   definition: Schema.optional(Schema.String),
   enableBehavior: Schema.optional(
     Schema.Union(Schema.Literal('all'), Schema.Literal('any'), Schema.Undefined)

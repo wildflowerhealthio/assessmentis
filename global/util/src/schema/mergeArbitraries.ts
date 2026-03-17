@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Arbitrary, Schema, type FastCheck } from 'effect'
+import { Arbitrary, Schema } from 'effect'
+import type { FastCheck } from 'effect'
 
 /**
  * A value that {@link mergeArbitraries} can extract an arbitrary from.

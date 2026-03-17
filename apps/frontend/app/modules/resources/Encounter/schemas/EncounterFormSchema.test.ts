@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest'
-import { Arbitrary, Schema, FastCheck } from 'effect'
+import { describe, expect, it } from 'vitest'
+import { Arbitrary, FastCheck, Schema } from 'effect'
+
 import { EncounterFormSchema } from './EncounterFormSchema'
 
 const encounterFormArb = Arbitrary.make(EncounterFormSchema)
@@ -28,14 +29,14 @@ describe('EncounterFormSchema', () => {
 
   it('should allow optional fields to be undefined', () => {
     const minimalData = {
-      questionnaireIds: ['questionnaire-123'],
+      questionnaireUrls: ['http://questionnaires.com/questionnaire-123'],
     }
 
     const result = Schema.decodeUnknownSync(EncounterFormSchema)(minimalData)
-    expect(result.patientId).toBeUndefined()
-    expect(result.practitionerIds).toBeUndefined()
+    expect(result.patientUrl).toBeUndefined()
+    expect(result.practitionerUrls).toBeUndefined()
     expect(result.periodStart).toBeUndefined()
     expect(result.periodEnd).toBeUndefined()
-    expect(result.locationId).toBeUndefined()
+    expect(result.locationUrl).toBeUndefined()
   })
 })

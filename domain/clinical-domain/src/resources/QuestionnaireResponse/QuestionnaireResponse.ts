@@ -1,18 +1,18 @@
 import { DateTime, Option, Schema } from 'effect'
 
-import { MergeClasses } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary, MergeClasses } from '@assessmentis/util'
 
-import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
+import { Resource } from '../../data-types/base/Resource'
+import type { ResourceEncoded } from '../../data-types/base/Resource'
 import {
   Identifier,
   Reference,
 } from '../../data-types/complex/IdentifierAndReference'
 import { Questionnaire } from '../Questionnaire/Questionnaire'
+import type { QuestionnaireItemLink } from '../Questionnaire/QuestionnaireItemLink'
 import { QuestionnaireItemAnsweredAtExtension } from '../Questionnaire/QuestionnaireItemAnsweredAt'
-import {
-  QuestionnaireResponseItem,
-  type QuestionnaireResponseItemEncoded,
-} from './QuestionnaireResponseItem'
+import { QuestionnaireResponseItem } from './QuestionnaireResponseItem'
+import type { QuestionnaireResponseItemEncoded } from './QuestionnaireResponseItem'
 
 const DomainType = 'QuestionnaireResponse' as const
 type DomainType = typeof DomainType
@@ -29,10 +29,18 @@ export const QuestionnaireResponseStatus = Schema.Enums({
 const fields = {
   author: Schema.optional(Schema.suspend(() => Reference)),
   authored: Schema.optional(Schema.String),
-  basedOn: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
+  basedOn: Schema.optional(
+    Schema.Array(Schema.suspend(() => Reference)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   encounter: Schema.optional(Schema.suspend(() => Reference)),
   identifier: Schema.optional(Schema.suspend(() => Identifier)),
-  partOf: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
+  partOf: Schema.optional(
+    Schema.Array(Schema.suspend(() => Reference)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   questionnaire: Schema.optional(Questionnaire.UrlSchema),
   source: Schema.optional(Schema.suspend(() => Reference)),
   status: QuestionnaireResponseStatus,
@@ -70,6 +78,21 @@ export class QuestionnaireResponse extends MergeClasses<QuestionnaireResponse>(
       yield child
       yield* child.deepQuestionnaireResponseItems()
     }
+  }
+
+  /** Returns a copy with the child item matching `linkId` replaced (or inserted) by applying `updater`. */
+  withChildItem(
+    linkId: typeof QuestionnaireItemLink.Type,
+    updater: (prev: QuestionnaireResponseItem) => QuestionnaireResponseItem
+  ): QuestionnaireResponse {
+    const existing =
+      this.item?.find((i) => i.linkId === linkId) ??
+      QuestionnaireResponseItem.make({ linkId })
+    const updated = updater(existing)
+    return QuestionnaireResponse.make({
+      ...this,
+      item: [...(this.item?.filter((i) => i.linkId !== linkId) ?? []), updated],
+    })
   }
 
   /**

@@ -1,10 +1,7 @@
 import { Effect } from 'effect'
 import type { JSX } from 'react'
 
-import {
-  ClinicalDomainHub,
-  type Observation,
-} from '@assessmentis/clinical-domain'
+import { ClinicalDomainHub, Observation } from '@assessmentis/clinical-domain'
 import type { Reference } from '@assessmentis/clinical-domain/data-types'
 import type { Resource } from '@assessmentis/effectful-store'
 import { gad7 } from '@assessmentis/questionnaire-entities'
@@ -26,7 +23,7 @@ export const gad7Report = (
     const hub = yield* ClinicalDomainHub
     const title = <TitleComponent title="GAD-7 Report" />
 
-    const observations = yield* hub.search('Observation', {
+    const observations = yield* hub.search(Observation, {
       subject: patientReference.reference,
     } as const)
 

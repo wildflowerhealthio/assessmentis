@@ -1,10 +1,7 @@
 import { Schema } from 'effect'
 
-import {
-  Observation,
-  ObservationStatus,
-  type ObservationEncoded,
-} from '@assessmentis/clinical-domain'
+import { Observation, ObservationStatus } from '@assessmentis/clinical-domain'
+import type { ObservationEncoded } from '@assessmentis/clinical-domain'
 import { FhirR4ChoiceElements } from '@assessmentis/clinical-domain/data-types'
 import {
   extendObjectSchemas,

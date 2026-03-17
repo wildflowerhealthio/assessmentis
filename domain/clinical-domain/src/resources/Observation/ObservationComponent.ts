@@ -1,13 +1,13 @@
 import { Schema } from 'effect'
 
-import { MergeClasses } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary, MergeClasses } from '@assessmentis/util'
 
 import {
   BackboneElement,
   CodeableConcept,
   DatatypeChoice,
-  type BackboneElementEncoded,
 } from '../../data-types'
+import type { BackboneElementEncoded } from '../../data-types'
 import FhirR4ChoiceElements from '../../data-types/fhirR4ChoiceElements'
 import { ObservationReferenceRange } from './ObservationReferenceRange'
 
@@ -18,9 +18,15 @@ const fields = {
   code: Schema.suspend(() => CodeableConcept),
   dataAbsentReason: Schema.optional(Schema.suspend(() => CodeableConcept)),
   interpretation: Schema.optional(
-    Schema.Array(Schema.suspend(() => CodeableConcept))
+    Schema.Array(Schema.suspend(() => CodeableConcept)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
   ),
-  referenceRange: Schema.optional(Schema.Array(ObservationReferenceRange)),
+  referenceRange: Schema.optional(
+    Schema.Array(ObservationReferenceRange).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   value: Schema.optional(
     DatatypeChoice(FhirR4ChoiceElements['Observation.component.value[x]'])
   ),

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { createLoggingProxy, type MethodCallLog } from './createLoggingProxy'
+import { createLoggingProxy } from './createLoggingProxy'
+import type { MethodCallLog } from './createLoggingProxy'
 
 describe('createLoggingProxy', () => {
   describe('synchronous methods', () => {

@@ -2,7 +2,8 @@ import { Schema } from 'effect'
 
 import { AnnotateArrayWithArbitrary, MergeClasses } from '@assessmentis/util'
 
-import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
+import { Resource } from '../../data-types/base/Resource'
+import type { ResourceEncoded } from '../../data-types/base/Resource'
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import { Coding } from '../../data-types/complex/Coding'
 import {
@@ -27,7 +28,11 @@ type DomainType = typeof DomainType
 // --- Encounter ---
 
 const fields = {
-  identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
+  identifier: Schema.optional(
+    Schema.Array(Schema.suspend(() => Identifier)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   status: EncounterStatus,
   statusHistory: Schema.optional(
     Schema.Array(EncounterStatusHistory).pipe(
@@ -40,7 +45,11 @@ const fields = {
       AnnotateArrayWithArbitrary({ maxLength: 2 })
     )
   ),
-  type: Schema.optional(Schema.Array(Schema.suspend(() => CodeableConcept))),
+  type: Schema.optional(
+    Schema.Array(Schema.suspend(() => CodeableConcept)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   serviceType: Schema.optional(Schema.suspend(() => CodeableConcept)),
   priority: Schema.optional(Schema.suspend(() => CodeableConcept)),
   subject: Schema.optional(Schema.suspend(() => Reference)),
@@ -67,10 +76,14 @@ const fields = {
   period: Schema.optional(Schema.suspend(() => Period)),
   length: Schema.optional(Schema.suspend(() => Quantity)),
   reasonCode: Schema.optional(
-    Schema.Array(Schema.suspend(() => CodeableConcept))
+    Schema.Array(Schema.suspend(() => CodeableConcept)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
   ),
   reasonReference: Schema.optional(
-    Schema.Array(Schema.suspend(() => Reference))
+    Schema.Array(Schema.suspend(() => Reference)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
   ),
   diagnosis: Schema.optional(
     Schema.Array(EncounterDiagnosis).pipe(

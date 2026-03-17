@@ -1,9 +1,7 @@
 import { Schema } from 'effect'
 
-import {
-  HumanName,
-  type HumanNameEncoded,
-} from '@assessmentis/clinical-domain/data-types'
+import { HumanName } from '@assessmentis/clinical-domain/data-types'
+import type { HumanNameEncoded } from '@assessmentis/clinical-domain/data-types'
 import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
 
 import type FhirR4 from 'fhir/r4'

@@ -1,8 +1,10 @@
-import { pipe, Schema, type Brand } from 'effect'
+import { pipe, Schema } from 'effect'
+import type { Brand } from 'effect'
 
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
 
-import { Extension, type ExtensionEncoded } from '../special-purpose/Extension'
+import { Extension } from '../special-purpose/Extension'
+import type { ExtensionEncoded } from '../special-purpose/Extension'
 
 // Re-export so barrel consumers that previously got Extension from ./base
 // continue to resolve. Note: special-purpose/index.ts also re-exports

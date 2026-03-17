@@ -1,6 +1,7 @@
 import { Schema } from 'effect'
 
-import { Patient, type PatientEncoded } from '@assessmentis/clinical-domain'
+import { Patient } from '@assessmentis/clinical-domain'
+import type { PatientEncoded } from '@assessmentis/clinical-domain'
 import { AdministrativeGender } from '@assessmentis/clinical-domain/data-types'
 import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
 

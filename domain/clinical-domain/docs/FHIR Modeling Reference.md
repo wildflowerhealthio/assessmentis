@@ -136,5 +136,5 @@ Don't naively drop type annotations during a refactor without checking for circu
 - FHIR R4 choice elements: [src/data-types/fhirR4ChoiceElements.ts](../src/data-types/fhirR4ChoiceElements.ts)
 - Example resource: [src/resources/Patient](../src/resources/Patient)
 - Clinical Resource How-To: [Adding Resource Types How-To.md](./Adding%20Resource%20Types%20How-To.md)
-- Resource registry: [src/Schemas.ts](../src/Schemas.ts)
+- Resource data types: [src/ResourceDataTypes.ts](../src/ResourceDataTypes.ts)
 - Resource tests: alongside resource files in src/resources/

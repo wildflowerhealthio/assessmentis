@@ -12,11 +12,8 @@ import {
   parseAs,
 } from '../../httpHelpers'
 import { ApiDailyCoTranscriptSchema } from '../../models/ApiDailyCoTranscriptSchema'
-import {
-  fetchTranscriptAccessLink,
-  type AnyRequest,
-  type AuthReadable,
-} from '../../resolverUtils'
+import { fetchTranscriptAccessLink } from '../../resolverUtils'
+import type { AnyRequest, AuthReadable } from '../../resolverUtils'
 import { DailyCoObservation } from './DailyCoObservation'
 
 const decodeObservation = Schema.decode(DailyCoObservation)
@@ -26,7 +23,7 @@ export const makeObservationResolver = (
   baseUrl: string,
   auth: AuthReadable
 ) =>
-  RequestResolver.fromEffect((request: AnyRequest<Observation>) => {
+  RequestResolver.fromEffect((request: AnyRequest<typeof Observation>) => {
     switch (request._tag) {
       case 'Get':
         return Effect.fail(

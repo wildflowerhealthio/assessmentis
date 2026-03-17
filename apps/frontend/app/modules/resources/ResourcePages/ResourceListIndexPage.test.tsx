@@ -1,38 +1,49 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, act } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { Schema } from 'effect'
 import { MemoryRouter } from 'react-router'
-import { Option, Effect } from 'effect'
-import { makeResourceListIndexPage } from './makeResourceListIndexPage'
-import type { ResourcePagesConfig } from './resourcePagesConfigType'
+
+import { Location } from '@assessmentis/clinical-domain'
+
+import { act, render, screen } from '@testing-library/react'
+
+import '../../../traits/BreadcrumbLabel/implementations/Location'
+import '../../../traits/Labeled/implementations/Location'
+import '../../../traits/Link/implementations/Location'
+import '../../../traits/Listable/implementations/Location'
+
+import { ResourceListIndexPage } from '../../ResourceListIndexPage/ResourceListIndexPage'
 
 // --- Mocks ---------------------------------------------------------------
 
-vi.mock('../../global/components/BreadcrumbProvider/useBreadcrumbs', () => ({
+vi.mock('../../Breadcrumbs/useBreadcrumbs', () => ({
   useBreadcrumbs: vi.fn(),
 }))
+
+const decodeLocation = Schema.decodeSync(Location)
 
 const mockDeleteItem = vi.fn(async () => {})
 const mockCollectionData = [
   {
-    data: {
-      id: 'item-1',
-      name: 'First Item',
-      resourceType: 'TestResource',
-    },
+    data: decodeLocation({
+      name: 'Clinic A',
+      status: 'active',
+      url: 'http://example.com/Location/1',
+    }),
     loading: false,
   },
   {
-    data: {
-      id: 'item-2',
-      name: 'Second Item',
-      resourceType: 'TestResource',
-    },
+    data: decodeLocation({
+      name: 'Clinic B',
+      status: 'suspended',
+      mode: 'instance',
+      url: 'http://example.com/Location/2',
+    }),
     loading: false,
   },
 ]
 
-vi.mock('../../common/utils/createResourceCollectionHook', () => ({
-  createResourceCollectionHook: () => () => ({
+vi.mock('../../../layers/useResourceCollection', () => ({
+  useResourceCollection: () => ({
     collectionPromise: Promise.resolve(mockCollectionData),
     deleteItem: mockDeleteItem,
   }),
@@ -40,34 +51,17 @@ vi.mock('../../common/utils/createResourceCollectionHook', () => ({
 
 // --- Test helpers --------------------------------------------------------
 
-function createTestConfig(
-  overrides: Partial<ResourcePagesConfig<any, any>> = {}
-): ResourcePagesConfig<any, any> {
-  return {
-    resourceType: 'TestResource',
-    singularLabel: 'Test Resource',
-    pluralLabel: 'Test Resources',
-    paramName: 'testResourceId',
-    decodeId: (raw) => Option.some(raw),
-    getDisplayName: (r: { name: string }) => r.name,
-    schema: {} as never,
-    FormComponent: (() => null) as never,
-    defaultFormValues: { name: '' },
-    extractFormValues: () => ({ name: '' }),
-    createAction: () =>
-      Effect.succeed({ id: 'x', resourceType: 'TestResource' }),
-    updateAction: () =>
-      Effect.succeed({ id: 'x', resourceType: 'TestResource' }),
-    getListSummaryItems: (r: { name: string }) => [`Summary for ${r.name}`],
-    ...overrides,
-  }
-}
-
-function renderPage(config = createTestConfig()) {
-  const Page = makeResourceListIndexPage(config)
+function renderPage(
+  filterComponent?: React.ComponentType<{
+    onFiltersChange: (params: object) => void
+  }>
+) {
   return render(
     <MemoryRouter>
-      <Page />
+      <ResourceListIndexPage
+        klass={Location}
+        FilterComponent={filterComponent}
+      />
     </MemoryRouter>
   )
 }
@@ -79,47 +73,47 @@ describe('ResourceListIndexPage', () => {
     vi.clearAllMocks()
   })
 
-  it('renders the page title from pluralLabel', async () => {
+  it('renders the page title from Labeled.pluralLabel', async () => {
     await act(async () => {
       renderPage()
     })
-    expect(screen.getByText('Test Resources')).toBeDefined()
+    expect(screen.getByText('Locations')).toBeDefined()
   })
 
   it('renders a create link with correct label', async () => {
     await act(async () => {
       renderPage()
     })
-    const createLink = screen.getByText('Create New Test Resource')
+    const createLink = screen.getByText('Create New Location')
     expect(createLink).toBeDefined()
-    expect(createLink.getAttribute('href')).toBe('/TestResource/new')
+    expect(createLink.getAttribute('href')).toBe('/Location/new')
   })
 
-  it('renders list items with display names from config', async () => {
+  it('renders list items with display names from Listable trait', async () => {
     await act(async () => {
       renderPage()
     })
-    expect(screen.getByText('First Item')).toBeDefined()
-    expect(screen.getByText('Second Item')).toBeDefined()
+    expect(screen.getByText('Clinic A')).toBeDefined()
+    expect(screen.getByText('Clinic B')).toBeDefined()
   })
 
-  it('renders summary items from getListSummaryItems', async () => {
+  it('renders summary items from Listable trait', async () => {
     await act(async () => {
       renderPage()
     })
-    expect(screen.getByText('Summary for First Item')).toBeDefined()
-    expect(screen.getByText('Summary for Second Item')).toBeDefined()
+    // Clinic A: status=active, no mode → "active"
+    expect(screen.getByText('active')).toBeDefined()
+    // Clinic B: status=suspended, mode=instance → "suspended • instance"
+    expect(screen.getByText('suspended • instance')).toBeDefined()
   })
 
-  it('renders filter component when FilterComponent is defined', async () => {
-    const config = createTestConfig({
-      FilterComponent: () => (
-        <div data-testid="filter-component">Filters Active</div>
-      ),
-    })
+  it('renders filter component when FilterComponent is provided', async () => {
+    const FilterComponent = () => (
+      <div data-testid="filter-component">Filters Active</div>
+    )
 
     await act(async () => {
-      renderPage(config)
+      renderPage(FilterComponent)
     })
 
     expect(screen.getByTestId('filter-component')).toBeDefined()

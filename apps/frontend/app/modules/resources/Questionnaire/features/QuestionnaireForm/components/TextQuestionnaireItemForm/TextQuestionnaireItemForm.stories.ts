@@ -1,14 +1,16 @@
 // Replace your-framework with the framework you are using, e.g. react-vite, nextjs, nextjs-vite, etc.
 import type { Meta, StoryObj } from '@storybook/react-vite'
-
 import { Arbitrary, FastCheck } from 'effect'
-import { action } from 'storybook/actions'
-import { Code } from '@assessmentis/clinical-domain/data-types'
+
 import {
   QuestionnaireItem,
-  QuestionnaireItemType,
-} from '@assessmentis/clinical-domain/content-management'
+  QuestionnaireResponseItem,
+  QuestionnaireResponseItemAnswer,
+} from '@assessmentis/clinical-domain'
+import { Code } from '@assessmentis/clinical-domain/data-types'
+
 import TextQuestionnaireItemForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/components/TextQuestionnaireItemForm/TextQuestionnaireItemForm'
+import { action } from 'storybook/actions'
 
 //👇 This default export determines where your story goes in the story list
 const meta = {
@@ -21,15 +23,19 @@ type Story = StoryObj<typeof meta>
 const questionnaireItem = FastCheck.sample(Arbitrary.make(QuestionnaireItem))[0]
 
 const arbitraryProps = {
-  questionnaireItem: {
+  questionnaireItem: QuestionnaireItem.make({
     ...questionnaireItem,
-    type: QuestionnaireItemType.enums.text,
+    type: 'text',
     text: 'Do you often interrupt the activities of others, or intrude on others?',
-  },
-  questionnaireResponseItem: {
+  }),
+  questionnaireResponseItem: QuestionnaireResponseItem.make({
     linkId: questionnaireItem.linkId,
-    answer: [{ valueString: 'some text' }],
-  },
+    answer: [
+      QuestionnaireResponseItemAnswer.make({
+        value: { _tag: 'string', string: 'some text' },
+      }),
+    ],
+  }),
   setQuestionnaireResponseItem: action('setQuestionnaireResponseItem'),
   uiControl: undefined,
 }
@@ -37,10 +43,10 @@ const arbitraryProps = {
 export const RegularQuestion: Story = {
   args: {
     ...arbitraryProps,
-    questionnaireItem: {
+    questionnaireItem: QuestionnaireItem.make({
       ...arbitraryProps.questionnaireItem,
       // style: QuestionnaireItemStyle.QUESTION,
-    },
+    }),
   },
 }
 

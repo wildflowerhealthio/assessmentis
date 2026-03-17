@@ -1,12 +1,13 @@
-import type {
-  QuestionnaireItem,
-  QuestionnaireItemUIControlCode,
-} from '@assessmentis/clinical-domain/content-management'
 import {
   getUiDisplayLevel,
   QuestionnaireItemUiDisplayLevel,
-} from '@assessmentis/clinical-domain/content-management'
+} from '@assessmentis/clinical-domain'
+import type {
+  QuestionnaireItem,
+  QuestionnaireItemUIControlCode,
+} from '@assessmentis/clinical-domain'
 import { cn } from '@assessmentis/react-util'
+
 import classes from './DisplayQuestionnaireItemForm.module.css'
 
 export interface IProps {

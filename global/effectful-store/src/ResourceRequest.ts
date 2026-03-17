@@ -27,21 +27,21 @@ export type CommonErrors =
 /**
  * Request to fetch a single resource by URL from a specific origin.
  *
- * @typeParam TResource - The resource type being fetched
+ * @typeParam Klass - The domain class whose instances are being fetched
  */
 export interface Get<
-  out TResource extends Resource.AnyResource,
+  out Klass extends Resource.AnyDomainClass,
 > extends Request.Request<
-  Resource.WithResourceUrl<TResource>,
+  Resource.WithResourceUrl<InstanceType<Klass>>,
   | CommonErrors
   | NotFoundError<
-      TResource['domainType'],
-      { url: Resource.InferResourceUrl<TResource> }
+      Klass['DomainType'],
+      { url: Resource.InferResourceUrl<InstanceType<Klass>> }
     >
 > {
   readonly _tag: 'Get'
-  readonly domainType: TResource['domainType']
-  readonly url: Resource.InferResourceUrl<TResource>
+  readonly klass: Klass
+  readonly url: Resource.InferResourceUrl<InstanceType<Klass>>
   readonly origin: ReadonlyUrl
 }
 
@@ -60,32 +60,35 @@ export type SearchParam<out T extends Resource.AnyResource> = {
  * is `null`, the Hub fans the search out to all origins that support the
  * resource type.
  *
- * @typeParam TResource - The resource type being searched
+ * @typeParam Klass - The domain class whose instances are being searched
  */
 export interface Search<
-  out TResource extends Resource.AnyResource,
+  out Klass extends Resource.AnyDomainClass,
 > extends Request.Request<
-  ReadonlyArray<Resource.WithResourceUrl<TResource>>,
+  ReadonlyArray<Resource.WithResourceUrl<InstanceType<Klass>>>,
   CommonErrors
 > {
   readonly _tag: 'Search'
-  readonly domainType: TResource['domainType']
-  readonly params: SearchParam<TResource>
+  readonly klass: Klass
+  readonly params: SearchParam<InstanceType<Klass>>
   readonly origin: ReadonlyUrl | null
 }
 
 /**
  * Request to create a new resource at a specific origin.
  *
- * @typeParam TResource - The resource type being created
+ * @typeParam Klass - The domain class whose instances are being created
  */
 export interface Create<
-  out TResource extends Resource.AnyResource,
-> extends Request.Request<Resource.WithResourceUrl<TResource>, CommonErrors> {
+  out Klass extends Resource.AnyDomainClass,
+> extends Request.Request<
+  Resource.WithResourceUrl<InstanceType<Klass>>,
+  CommonErrors
+> {
   readonly _tag: 'Create'
-  readonly domainType: TResource['domainType']
+  readonly klass: Klass
   readonly requestId?: symbol
-  readonly resource: TResource
+  readonly resource: InstanceType<Klass>
   readonly origin: ReadonlyUrl
 }
 
@@ -93,64 +96,62 @@ export interface Create<
  * Request to update an existing resource at its origin. The resource must
  * already have a URL.
  *
- * @typeParam TResource - The resource type being updated
+ * @typeParam Klass - The domain class whose instances are being updated
  */
 export interface Update<
-  out TResource extends Resource.AnyResource,
+  out Klass extends Resource.AnyDomainClass,
 > extends Request.Request<
-  Resource.WithResourceUrl<TResource>,
+  Resource.WithResourceUrl<InstanceType<Klass>>,
   | CommonErrors
   | NotFoundError<
-      TResource['domainType'],
-      { url: Resource.InferResourceUrl<TResource> }
+      Klass['DomainType'],
+      { url: Resource.InferResourceUrl<InstanceType<Klass>> }
     >
 > {
   readonly _tag: 'Update'
-  readonly domainType: TResource['domainType']
-  readonly resource: Resource.WithResourceUrl<TResource>
+  readonly klass: Klass
+  readonly resource: Resource.WithResourceUrl<InstanceType<Klass>>
   readonly origin: ReadonlyUrl
 }
 
 /**
  * Request to delete a resource identified by URL at its origin.
  *
- * @typeParam TResource - The resource type being deleted
+ * @typeParam Klass - The domain class whose instances are being deleted
  */
 export interface Delete<
-  out TResource extends Resource.AnyResource,
+  out Klass extends Resource.AnyDomainClass,
 > extends Request.Request<
   null,
   | CommonErrors
   | NotFoundError<
-      TResource['domainType'],
-      { url: Resource.InferResourceUrl<TResource> }
+      Klass['DomainType'],
+      { url: Resource.InferResourceUrl<InstanceType<Klass>> }
     >
 > {
   readonly _tag: 'Delete'
-  readonly domainType: TResource['domainType']
-  readonly resource: { readonly url: Resource.InferResourceUrl<TResource> }
+  readonly klass: Klass
+  readonly resource: {
+    readonly url: Resource.InferResourceUrl<InstanceType<Klass>>
+  }
   readonly origin: ReadonlyUrl
 }
 
 /**
  * A `RequestResolver` capable of handling all five CRUD request types for a
- * subset of resource types in a resources map.
+ * set of domain classes.
  *
- * @typeParam TResources - The full resources map
- * @typeParam ActiveResourceTypes - The subset of resource keys this resolver handles
+ * @typeParam SupportedClasses - The domain classes this resolver handles
  * @typeParam Dep - Effect dependencies required by the resolver
  */
 export interface MultiResolver<
-  in out TResources extends {
-    readonly [K: string]: Resource.Resource<typeof K>
-  },
-  in ActiveResourceTypes extends keyof TResources,
+  in SupportedClasses extends Resource.AnyDomainClass,
   out Dep,
 > extends RequestResolver.RequestResolver<
-  | Get<TResources[ActiveResourceTypes]>
-  | Search<TResources[ActiveResourceTypes]>
-  | Create<TResources[ActiveResourceTypes]>
-  | Update<TResources[ActiveResourceTypes]>
-  | Delete<TResources[ActiveResourceTypes]>,
+  | Get<SupportedClasses>
+  | Search<SupportedClasses>
+  | Create<SupportedClasses>
+  | Update<SupportedClasses>
+  | Delete<SupportedClasses>,
   Dep
 > {}

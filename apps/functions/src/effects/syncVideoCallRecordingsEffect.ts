@@ -1,7 +1,12 @@
-import { Effect, Layer, pipe, Schema, type Either } from 'effect'
+import { Effect, Layer, pipe, Schema } from 'effect'
+import type { Either } from 'effect'
 import { info, error as logError } from 'firebase-functions/logger'
 
-import { ClinicalDomainHub, Media } from '@assessmentis/clinical-domain'
+import {
+  ClinicalDomainHub,
+  Encounter,
+  Media,
+} from '@assessmentis/clinical-domain'
 import { Reference } from '@assessmentis/clinical-domain/data-types'
 import { Resource } from '@assessmentis/effectful-store'
 import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
@@ -9,9 +14,8 @@ import {
   BadDataError,
   NotFoundError,
   UnhandledError,
-  type AuthError,
-  type ExternalAssertionError,
 } from '@assessmentis/ontology'
+import type { AuthError, ExternalAssertionError } from '@assessmentis/ontology'
 import {
   CurrentOrg,
   DocumentStore,
@@ -19,10 +23,10 @@ import {
   Org,
   OrgSlug,
 } from '@assessmentis/platform-domain'
-import {
-  VideoCallClient,
-  type MediaWithRoom,
-  type VideoCallRoomName,
+import { VideoCallClient } from '@assessmentis/video-call-domain'
+import type {
+  MediaWithRoom,
+  VideoCallRoomName,
 } from '@assessmentis/video-call-domain'
 
 import { FhirR4ClientLayerLive } from '../layers/FhirR4ClientService'
@@ -183,7 +187,7 @@ const syncMediaToFhir = (
     if (!mediaUrl) return { mediaUpdates, mediaCreations }
 
     // Search for Encounter with matching location identifier
-    const encounterSearchResult = yield* hub.search('Encounter', {}).pipe(
+    const encounterSearchResult = yield* hub.search(Encounter, {}).pipe(
       Effect.mapError(
         (e) =>
           new UnhandledError({
@@ -201,7 +205,7 @@ const syncMediaToFhir = (
 
     // Check if Media with this identifier already exists
     const mediaSearchResult = yield* hub
-      .search('Media', {
+      .search(Media, {
         url: mediaUrl,
         encounter: encounterEntry.url.toString(),
       })
@@ -232,7 +236,7 @@ const syncMediaToFhir = (
       }
 
       mediaUpdates[existingMedia.url.toString()] = yield* hub
-        .update('Media', updatedMedia)
+        .update(Media, updatedMedia)
         .pipe(
           Effect.mapError(
             (e) =>
@@ -247,7 +251,7 @@ const syncMediaToFhir = (
       mediaCreations.push(
         yield* pipe(
           hub.create(
-            'Media',
+            Media,
             Media.make({
               ...media,
               encounter: Reference.make({

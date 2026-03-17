@@ -1,5 +1,12 @@
-import { makeResourceListIndexPage } from 'app/modules/resources/ResourcePages/makeResourceListIndexPage'
-import { practitionerConfig } from 'app/modules/resources/Practitioner/resourcePagesConfig'
+import { Practitioner } from '@assessmentis/clinical-domain'
 
-const PractitionerIndexPage = makeResourceListIndexPage(practitionerConfig)
-export default PractitionerIndexPage
+import '../traits/BreadcrumbLabel/implementations/Practitioner'
+import '../traits/Labeled/implementations/Practitioner'
+import '../traits/Link/implementations/Practitioner'
+import '../traits/Listable/implementations/Practitioner'
+
+import { ResourceListIndexPage } from '../modules/ResourceListIndexPage/ResourceListIndexPage'
+
+export default function PractitionerIndexPage() {
+  return <ResourceListIndexPage klass={Practitioner} />
+}

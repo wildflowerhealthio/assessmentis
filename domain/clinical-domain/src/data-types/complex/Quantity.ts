@@ -2,7 +2,8 @@ import { Schema } from 'effect'
 
 import { MergeClasses } from '@assessmentis/util'
 
-import { Element, type ElementEncoded } from '../base/Element'
+import { Element } from '../base/Element'
+import type { ElementEncoded } from '../base/Element'
 import { Datatype } from '../Datatype'
 import { Code } from './Code'
 

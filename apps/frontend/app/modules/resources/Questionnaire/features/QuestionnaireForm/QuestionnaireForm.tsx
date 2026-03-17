@@ -1,16 +1,23 @@
-import { useState, type SetStateAction } from 'react'
+import { Effect } from 'effect'
+import { useState } from 'react'
+import type { SetStateAction } from 'react'
+
+import {
+  QuestionnaireResponseItem,
+  QuestionnaireResponse,
+  ClinicalDomainHub,
+} from '@assessmentis/clinical-domain'
 import type {
   Questionnaire,
   QuestionnaireItemLink,
-  QuestionnaireResponse,
-  QuestionnaireResponseItem,
-} from '@assessmentis/clinical-domain/content-management'
-import { QuestionnaireResponseRepository } from '@assessmentis/clinical-domain/content-management'
-import QuestionnaireItemForm from './components/QuestionnaireItemForm/QuestionnaireItemForm'
-import { Effect } from 'effect'
-import { hasId } from '@assessmentis/clinical-domain/data-types'
+} from '@assessmentis/clinical-domain'
+import { Resource } from '@assessmentis/effectful-store'
+
 import { useAutoSave } from 'app/modules/common/hooks/useAutoSave'
-import { usePlatformContext } from '../../../../../layers/PlatformContext'
+
+import { useHub } from '../../../../../layers/useHub'
+import QuestionnaireItemForm from './components/QuestionnaireItemForm/QuestionnaireItemForm'
+import { updateResponseItem } from './updateResponseItem'
 
 type IProps = {
   questionnaire: Questionnaire
@@ -23,7 +30,7 @@ const QuestionnaireForm = ({
   questionnaireResponse: loadedQuestionnaireResponse,
   highlightLinks,
 }: IProps) => {
-  const { clinicalDataRepositoryService } = usePlatformContext()
+  const hub = useHub()
   const [questionnaireResponse, setQuestionnaireResponse] =
     useState<QuestionnaireResponse>(loadedQuestionnaireResponse)
 
@@ -33,16 +40,10 @@ const QuestionnaireForm = ({
     onSave: async (data) => {
       await Effect.runPromise(
         Effect.gen(function* () {
-          const questionnaireResponseClient =
-            yield* QuestionnaireResponseRepository
-          if (!hasId(data)) return
-          return yield* questionnaireResponseClient.update(data)
-        }).pipe(
-          Effect.provideServiceEffect(
-            QuestionnaireResponseRepository,
-            clinicalDataRepositoryService.effect.QuestionnaireResponse
-          )
-        )
+          const h = yield* ClinicalDomainHub
+          if (!data || !Resource.hasResourceUrl(data)) return
+          return yield* h.update(QuestionnaireResponse, data)
+        }).pipe(Effect.provideService(ClinicalDomainHub, hub))
       )
     },
     delay: 5000,
@@ -58,25 +59,12 @@ const QuestionnaireForm = ({
           questionnaireResponseItem={
             questionnaireResponse.item?.find(
               ({ linkId }) => linkId == item.linkId
-            ) ?? { linkId: item.linkId }
+            ) ?? QuestionnaireResponseItem.make({ linkId: item.linkId })
           }
           setQuestionnaireResponseItem={(
             update: SetStateAction<QuestionnaireResponseItem>
           ) =>
-            setQuestionnaireResponse((qr) => ({
-              ...qr,
-              item: [
-                ...(qr.item?.filter(({ linkId }) => linkId != item.linkId) ??
-                  []),
-                typeof update == 'function'
-                  ? update(
-                      qr.item?.find(({ linkId }) => linkId == item.linkId) ?? {
-                        linkId: item.linkId,
-                      }
-                    )
-                  : update,
-              ],
-            }))
+            setQuestionnaireResponse(updateResponseItem(item.linkId, update))
           }
           uiControl={undefined}
         />

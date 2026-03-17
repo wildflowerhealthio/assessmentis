@@ -1,11 +1,12 @@
-import type { Encounter } from '@assessmentis/clinical-domain/administration'
-import {
-  getEncounterDisplayName,
-  getEncounterStatus,
-  getEncounterPeriodDisplay,
-} from '../../utils/encounterDisplay'
+import type { Encounter } from '@assessmentis/clinical-domain'
+
 import { runEffectSyncFlat } from '../../../../../runEffectSync'
 import { ResourceListItem } from '../../../ResourcePages/ResourceListItem/ResourceListItem'
+import {
+  getEncounterDisplayName,
+  getEncounterPeriodDisplay,
+  getEncounterStatus,
+} from '../../utils/encounterDisplay'
 
 interface EncounterListItemProps {
   item: Encounter
@@ -26,8 +27,8 @@ export function EncounterListItem({
     <ResourceListItem
       displayName={displayName}
       summaryItems={[status, periodDisplay].filter(Boolean) as string[]}
-      viewPath={`/Encounter/${encounter.id}`}
-      editPath={`/Encounter/${encounter.id}/edit`}
+      viewPath={`/Encounter/${encounter.url?.asUriComponent() ?? ''}`}
+      editPath={`/Encounter/${encounter.url?.asUriComponent() ?? ''}/edit`}
       onDelete={onDelete}
       loading={loading}
     />

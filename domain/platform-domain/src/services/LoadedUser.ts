@@ -5,8 +5,8 @@ import {
   CurrentUserId,
   DocumentStore,
   User,
-  type UserId,
 } from '@assessmentis/platform-domain'
+import type { UserId } from '@assessmentis/platform-domain'
 
 /**
  * Effect context tag carrying the resolved {@link User} instance for the

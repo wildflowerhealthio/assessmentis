@@ -25,24 +25,14 @@ Add `src/{category}/resources/{ResourceName}.test.ts` with:
 
 Keep tests beside the schema file.
 
-## 3. Add the Clinical Resource repository Tag
+## 3. Register in ResourceDataTypes
 
-In `src/{category}/contexts/{ResourceName}Repository.ts`:
+Update `src/ResourceDataTypes.ts`:
 
-- Define `Context.Tag('{ResourceName}Repository')`
-- Service type must be `ClinicalDataRepository<{ResourceName}>`
+- Import the resource type
+- Add it to both the `ResourceDataTypes` type and const
 
-Export from `src/{category}/contexts/index.ts`.
-
-## 4. Register the Clinical Resource
-
-Update:
-
-- `src/ResourceDataTypes.ts` to include `{ResourceName}`
-- `src/Repositories.ts` to include `{ResourceName}: {ResourceName}Repository`
-- `RepositoriesType` to include `{ResourceName}`
-
-The resource data type and repository keys must match the domain type literal.
+The resource data type key must match the domain type literal (e.g., `'Observation'`). The Hub (`ClinicalDomainHub`) will automatically support all CRUD and subscription operations for the new resource type.
 
 ## 5. Wire consumers and docs
 

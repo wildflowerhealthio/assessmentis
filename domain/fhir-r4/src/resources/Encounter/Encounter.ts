@@ -1,6 +1,7 @@
 import { Schema } from 'effect'
 
-import { Encounter, type EncounterEncoded } from '@assessmentis/clinical-domain'
+import { Encounter } from '@assessmentis/clinical-domain'
+import type { EncounterEncoded } from '@assessmentis/clinical-domain'
 import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
 
 import type FhirR4 from 'fhir/r4'

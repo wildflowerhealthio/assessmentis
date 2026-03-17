@@ -21,5 +21,3 @@ This reference describes the Playwright end-to-end testing layout for the fronte
 - Playwright config: [../playwright.config.ts](../playwright.config.ts)
 - Test suites: [apps/frontend/e2e/tests](tests)
 - Smoke tests: [apps/frontend/e2e/tests/smoke.e2e.ts](tests/smoke.e2e.ts)
-- Fixtures: [apps/frontend/e2e/fixtures](fixtures)
-- Utils: [apps/frontend/e2e/utils](utils)

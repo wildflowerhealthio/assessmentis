@@ -1,10 +1,7 @@
 import { Schema } from 'effect'
 
-import {
-  BackboneElement,
-  Period,
-  type BackboneElementEncoded,
-} from '../../data-types'
+import { BackboneElement, Period } from '../../data-types'
+import type { BackboneElementEncoded } from '../../data-types'
 
 /** FHIR R4 encounter lifecycle status values. */
 export const EncounterStatus = Schema.Union(

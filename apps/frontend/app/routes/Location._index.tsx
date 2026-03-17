@@ -1,6 +1,12 @@
-import { makeResourceListIndexPage } from 'app/modules/resources/ResourcePages/makeResourceListIndexPage'
-import { locationConfig } from 'app/modules/resources/Location/resourcePagesConfig'
+import { Location } from '@assessmentis/clinical-domain'
 
-const LocationIndexPage = makeResourceListIndexPage(locationConfig)
+import '../traits/BreadcrumbLabel/implementations/Location'
+import '../traits/Labeled/implementations/Location'
+import '../traits/Link/implementations/Location'
+import '../traits/Listable/implementations/Location'
 
-export default LocationIndexPage
+import { ResourceListIndexPage } from '../modules/ResourceListIndexPage/ResourceListIndexPage'
+
+export default function LocationIndexPage() {
+  return <ResourceListIndexPage klass={Location} />
+}

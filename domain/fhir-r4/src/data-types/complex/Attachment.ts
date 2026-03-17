@@ -1,9 +1,7 @@
 import { Schema } from 'effect'
 
-import {
-  Attachment,
-  type AttachmentEncoded,
-} from '@assessmentis/clinical-domain/data-types'
+import { Attachment } from '@assessmentis/clinical-domain/data-types'
+import type { AttachmentEncoded } from '@assessmentis/clinical-domain/data-types'
 import {
   extendObjectSchemas,
   mutableEncoded,

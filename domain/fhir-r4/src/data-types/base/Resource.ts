@@ -1,9 +1,7 @@
 import { Effect, ParseResult, Schema } from 'effect'
 
-import {
-  Resource,
-  type ResourceEncoded,
-} from '@assessmentis/clinical-domain/data-types'
+import { Resource } from '@assessmentis/clinical-domain/data-types'
+import type { ResourceEncoded } from '@assessmentis/clinical-domain/data-types'
 import { mutableEncoded } from '@assessmentis/util'
 
 import type FhirR4 from 'fhir/r4'

@@ -1,6 +1,12 @@
-import { makeResourceListIndexPage } from 'app/modules/resources/ResourcePages/makeResourceListIndexPage'
-import { compositionConfig } from 'app/modules/resources/Composition/resourcePagesConfig'
+import { Composition } from '@assessmentis/clinical-domain'
 
-const CompositionIndexPage = makeResourceListIndexPage(compositionConfig)
+import '../traits/BreadcrumbLabel/implementations/Composition'
+import '../traits/Labeled/implementations/Composition'
+import '../traits/Link/implementations/Composition'
+import '../traits/Listable/implementations/Composition'
 
-export default CompositionIndexPage
+import { ResourceListIndexPage } from '../modules/ResourceListIndexPage/ResourceListIndexPage'
+
+export default function CompositionIndexPage() {
+  return <ResourceListIndexPage klass={Composition} />
+}

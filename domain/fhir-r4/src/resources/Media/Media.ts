@@ -1,10 +1,7 @@
 import { Schema } from 'effect'
 
-import {
-  Media,
-  MediaStatus,
-  type MediaEncoded,
-} from '@assessmentis/clinical-domain'
+import { Media, MediaStatus } from '@assessmentis/clinical-domain'
+import type { MediaEncoded } from '@assessmentis/clinical-domain'
 import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
 
 import type FhirR4 from 'fhir/r4'

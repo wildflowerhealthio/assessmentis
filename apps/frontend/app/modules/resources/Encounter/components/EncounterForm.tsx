@@ -1,17 +1,20 @@
+import {
+  Location,
+  Patient,
+  Practitioner,
+  Questionnaire,
+} from '@assessmentis/clinical-domain'
 import { applyPartialProps, transformProps } from '@assessmentis/react-util'
+
 import {
-  ResourceForm,
   DateTimeField,
+  ResourceForm,
 } from 'app/modules/common/components/ResourceForm'
-import { PatientPicker } from 'app/modules/resources/Patient/components/PatientPicker'
-import { PractitionerPicker } from 'app/modules/resources/Practitioner/components/PractitionerPicker'
-import { QuestionnairePicker } from 'app/modules/resources/Questionnaire/components/QuestionnairePicker/QuestionnairePicker'
-import { LocationPicker } from 'app/modules/resources/Location/components/LocationPicker'
 import type { CommonFieldProps } from 'app/modules/common/components/ResourceForm/ResourceForm'
-import {
-  EncounterFormSchema,
-  type EncounterFormData,
-} from '../schemas/EncounterFormSchema'
+
+import { ResourcePicker } from '../../../ResourcePicker/ResourcePicker'
+import { EncounterFormSchema } from '../schemas/EncounterFormSchema'
+import type { EncounterFormData } from '../schemas/EncounterFormSchema'
 
 interface EncounterFormProps {
   onSubmit: (data: EncounterFormData) => void | Promise<void>
@@ -20,10 +23,11 @@ interface EncounterFormProps {
 }
 
 const encounterFormFields = {
-  patientId: transformProps(
-    PatientPicker,
+  patientUrl: transformProps(
+    ResourcePicker,
     (props: CommonFieldProps<string | undefined>) => ({
-      name: 'patientId',
+      name: 'patientUrl',
+      klass: Patient,
       label: 'Patient (Subject)',
       picking: {
         onChange: props.onChange,
@@ -33,10 +37,11 @@ const encounterFormFields = {
       placeholder: 'Select the patient for this encounter...',
     })
   ),
-  practitionerIds: transformProps(
-    PractitionerPicker,
+  practitionerUrls: transformProps(
+    ResourcePicker,
     (props: CommonFieldProps<ReadonlyArray<string> | undefined>) => ({
-      name: 'practitionerIds',
+      name: 'practitionerUrls',
+      klass: Practitioner,
       label: 'Practitioners (Participants)',
       picking: {
         onChange: props.onChange,
@@ -54,23 +59,23 @@ const encounterFormFields = {
     name: 'periodEnd',
     label: 'End Date/Time',
   }),
-  locationId: transformProps(
-    LocationPicker,
+  locationUrl: transformProps(
+    ResourcePicker,
     (props: CommonFieldProps<string | undefined>) => ({
-      name: 'locationId',
-      label: 'Location',
+      name: 'locationUrl',
+      klass: Location,
       picking: {
         onChange: props.onChange,
         value: props.value,
         multiple: false as const,
       },
-      placeholder: 'Select a location...',
     })
   ),
-  questionnaireIds: transformProps(
-    QuestionnairePicker,
+  questionnaireUrls: transformProps(
+    ResourcePicker,
     (props: CommonFieldProps<ReadonlyArray<string>>) => ({
-      name: 'questionnaireIds',
+      name: 'questionnaireUrls',
+      klass: Questionnaire,
       label: 'Questionnaires',
       picking: {
         onChange: (value: ReadonlyArray<string> | undefined) => {
@@ -87,12 +92,12 @@ const encounterFormFields = {
 } as const
 
 const fieldOrder = [
-  'patientId',
-  'practitionerIds',
+  'patientUrl',
+  'practitionerUrls',
   'periodStart',
   'periodEnd',
-  'locationId',
-  'questionnaireIds',
+  'locationUrl',
+  'questionnaireUrls',
 ] as const
 
 export function EncounterForm({

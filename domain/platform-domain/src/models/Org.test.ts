@@ -75,9 +75,9 @@ describe('Org', () => {
       expect(result.origins).toEqual({})
     })
 
-    test('originConfigs defaults to empty object when omitted', () => {
+    test('originServerConfigs defaults to empty object when omitted', () => {
       const result = decode({ slug: 'test-org', emoji: '🏥' })
-      expect(result.originConfigs).toEqual({})
+      expect(result.originServerConfigs).toEqual({})
     })
 
     test('lastRecordingSyncTimestamp is undefined when omitted', () => {

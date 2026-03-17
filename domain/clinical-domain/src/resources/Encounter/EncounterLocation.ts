@@ -5,8 +5,8 @@ import {
   CodeableConcept,
   Period,
   Reference,
-  type BackboneElementEncoded,
 } from '../../data-types'
+import type { BackboneElementEncoded } from '../../data-types'
 
 /** Status of a location during an encounter — planned, active, reserved, or completed. */
 export const EncounterLocationStatus = Schema.Union(

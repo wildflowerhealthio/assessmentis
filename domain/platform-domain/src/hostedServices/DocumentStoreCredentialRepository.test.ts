@@ -9,16 +9,13 @@ import {
   Schema,
   Stream,
   SubscriptionRef,
-  type Scope,
 } from 'effect'
+import type { Scope } from 'effect'
 
 import { NotFoundError } from '@assessmentis/ontology'
 
-import {
-  DocumentStore,
-  type DocumentData,
-  type DocumentPath,
-} from '../tagClasses/DocumentStore'
+import { DocumentStore } from '../tagClasses/DocumentStore'
+import type { DocumentData, DocumentPath } from '../tagClasses/DocumentStore'
 import type {
   CredentialError,
   CredentialToken,

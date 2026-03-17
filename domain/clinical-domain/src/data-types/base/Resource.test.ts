@@ -5,7 +5,8 @@ import { Arbitrary, Schema } from 'effect'
 import { MergeClasses } from '@assessmentis/util'
 
 import type { Extension } from '../special-purpose/Extension'
-import { Resource, type ResourceEncoded } from './Resource'
+import { Resource } from './Resource'
+import type { ResourceEncoded } from './Resource'
 
 const ResourceMixin = Resource('TestResource')
 

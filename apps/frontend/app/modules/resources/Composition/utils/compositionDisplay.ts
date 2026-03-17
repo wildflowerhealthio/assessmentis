@@ -1,4 +1,4 @@
-import type { Composition } from '@assessmentis/clinical-domain/content-management'
+import type { Composition } from '@assessmentis/clinical-domain'
 
 /**
  * Get a display-friendly name for a composition
@@ -40,8 +40,8 @@ export function formatCompositionDetails(composition: Composition) {
     {
       label: 'Subject',
       value:
-        composition.subject.display ??
-        composition.subject.reference ??
+        composition.subject?.display ??
+        composition.subject?.reference ??
         'Not specified',
     },
     {

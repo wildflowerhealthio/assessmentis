@@ -1,10 +1,5 @@
-import {
-  Effect,
-  pipe,
-  Stream,
-  SubscriptionRef,
-  type Subscribable,
-} from 'effect'
+import { Effect, pipe, Stream, SubscriptionRef } from 'effect'
+import type { Subscribable } from 'effect'
 
 /**
  * A three-state discriminated union representing an async value that is

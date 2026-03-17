@@ -4,7 +4,8 @@ import { Arbitrary, Schema } from 'effect'
 
 import { MergeClasses } from '@assessmentis/util'
 
-import { Extension, type ExtensionEncoded } from '../special-purpose/Extension'
+import { Extension } from '../special-purpose/Extension'
+import type { ExtensionEncoded } from '../special-purpose/Extension'
 import { Element } from './Element'
 
 // ---------------------------------------------------------------------------

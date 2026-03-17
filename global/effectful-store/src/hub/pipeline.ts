@@ -17,13 +17,13 @@ import * as Origin from '../Origin'
 import type * as Resource from '../Resource'
 import type * as ResourceRequest from '../ResourceRequest'
 
-import {
-  failEntry,
-  type AnyEntry,
-  type AnyRequest,
-  type HubError,
-  type HubState,
-  type OriginBoundEntry,
+import { failEntry } from './types'
+import type {
+  AnyEntry,
+  AnyRequest,
+  HubError,
+  HubState,
+  OriginBoundEntry,
 } from './types'
 import { awaitOriginReady } from './origin-resolution'
 
@@ -34,22 +34,22 @@ import { awaitOriginReady } from './origin-resolution'
  * Global searches are resolved via {@link fanOutSearch} to all matching
  * origins; the remaining entries pass through unchanged.
  */
-export const fanOutSearches = <Resources extends Resource.ResourceSet>(
-  entries: ReadonlyArray<AnyEntry<Resources>>,
-  originStates: HubState<Resources>,
-  stateChanges: Stream.Stream<Either.Either<HubState<Resources>, HubError>>
-): SideEffect.SideEffect<ReadonlyArray<OriginBoundEntry<Resources>>> => {
+export const fanOutSearches = <Classes extends Resource.AnyDomainClass>(
+  entries: ReadonlyArray<AnyEntry<Classes>>,
+  originStates: HubState,
+  stateChanges: Stream.Stream<Either.Either<HubState, HubError>>
+): SideEffect.SideEffect<ReadonlyArray<OriginBoundEntry<Classes>>> => {
   const globalSearches = entries.filter(
     (
       entry
     ): entry is EffectRequest.Entry<
-      ResourceRequest.Search<Resources[keyof Resources]> & {
+      ResourceRequest.Search<Classes> & {
         readonly origin: null
       }
     > => entry.request._tag === 'Search' && entry.request.origin === null
   )
   const otherEntries = entries.filter(
-    (entry): entry is OriginBoundEntry<Resources> =>
+    (entry): entry is OriginBoundEntry<Classes> =>
       entry.request._tag != 'Search' || entry.request.origin != null
   )
 
@@ -67,13 +67,13 @@ export const fanOutSearches = <Resources extends Resource.ResourceSet>(
  * its origin state. Entries whose origin URL has no matching state
  * are failed with `UnhandledError`.
  */
-export const groupByOrigin = <Resources extends Resource.ResourceSet>(
-  entries: ReadonlyArray<OriginBoundEntry<Resources>>,
-  originStates: HubState<Resources>
+export const groupByOrigin = <Classes extends Resource.AnyDomainClass>(
+  entries: ReadonlyArray<OriginBoundEntry<Classes>>,
+  originStates: HubState
 ): SideEffect.SideEffect<
   ReadonlyArray<{
-    origin: Origin.AnyState<Resources, never>
-    entries: AnyEntry<Resources>[]
+    origin: Origin.AnyState<never>
+    entries: AnyEntry<Classes>[]
   }>
 > => {
   const grouped = Array.groupBy(entries, (entry) =>
@@ -87,12 +87,12 @@ export const groupByOrigin = <Resources extends Resource.ResourceSet>(
           onNone: () =>
             Either.left({
               key,
-              entries: originEntries satisfies AnyEntry<Resources>[],
+              entries: originEntries satisfies AnyEntry<Classes>[],
             }),
           onSome: (origin) =>
             Either.right({
               origin,
-              entries: originEntries satisfies AnyEntry<Resources>[],
+              entries: originEntries satisfies AnyEntry<Classes>[],
             }),
         })
       )
@@ -118,16 +118,16 @@ export const groupByOrigin = <Resources extends Resource.ResourceSet>(
  * dispatched to their resolver once settled. Errored origins fail their
  * entries immediately.
  */
-export const filterReadyOrigins = <Resources extends Resource.ResourceSet>(
+export const filterReadyOrigins = <Classes extends Resource.AnyDomainClass>(
   resolverGroups: ReadonlyArray<{
-    origin: Origin.AnyState<Resources, never>
-    entries: AnyEntry<Resources>[]
+    origin: Origin.AnyState<never>
+    entries: AnyEntry<Classes>[]
   }>,
-  stateChanges: Stream.Stream<Either.Either<HubState<Resources>, HubError>>
+  stateChanges: Stream.Stream<Either.Either<HubState, HubError>>
 ): SideEffect.SideEffect<
   ReadonlyArray<{
-    origin: Origin.Ready<Resources, never>
-    entries: AnyEntry<Resources>[]
+    origin: Origin.Ready<never>
+    entries: AnyEntry<Classes>[]
   }>
 > => {
   const { ready, loading, errored } = resolverGroups.reduce(
@@ -141,16 +141,16 @@ export const filterReadyOrigins = <Resources extends Resource.ResourceSet>(
     },
     {
       ready: [] as {
-        origin: Origin.Ready<Resources, never>
-        entries: AnyEntry<Resources>[]
+        origin: Origin.Ready<never>
+        entries: AnyEntry<Classes>[]
       }[],
       loading: [] as {
-        origin: Origin.Loading<Resources, never>
-        entries: AnyEntry<Resources>[]
+        origin: Origin.Loading<never>
+        entries: AnyEntry<Classes>[]
       }[],
       errored: [] as {
-        origin: Origin.Errored<Resources, never>
-        entries: AnyEntry<Resources>[]
+        origin: Origin.Errored<never>
+        entries: AnyEntry<Classes>[]
       }[],
     }
   )
@@ -183,22 +183,22 @@ export const filterReadyOrigins = <Resources extends Resource.ResourceSet>(
  * ready origin's resolver. Entries whose domainType the origin does not
  * support are failed with UnhandledError.
  */
-export const dispatchGroupToResolver = <Resources extends Resource.ResourceSet>(
-  origin: Origin.Ready<Resources, never>,
-  entries: AnyEntry<Resources>[]
+export const dispatchGroupToResolver = <
+  Classes extends Resource.AnyDomainClass,
+>(
+  origin: Origin.Ready<never>,
+  entries: AnyEntry<Classes>[]
 ): ReadonlyArray<SideEffect.EffectAction> => {
   const [unsupported, valid] = pipe(
     entries,
-    Array.partition((entry) =>
-      Origin.supports(origin, entry.request.domainType)
-    )
+    Array.partition((entry) => Origin.supports(origin, entry.request.klass))
   )
 
   const failActions = unsupported.map((entry) =>
     failEntry(
       entry,
       new UnhandledError({
-        message: `Origin at ${origin.originUrl.toString()} doesn't support resource type ${String(entry.request.domainType)}`,
+        message: `Origin at ${origin.originUrl.toString()} doesn't support resource type ${String(entry.request.klass.DomainType)}`,
       })
     )
   )
@@ -207,7 +207,7 @@ export const dispatchGroupToResolver = <Resources extends Resource.ResourceSet>(
 
   // Safe: guarded by Origin.supports above
   const resolver = origin.resolver as RequestResolver.RequestResolver<
-    AnyRequest<Resources>,
+    AnyRequest<Classes>,
     never
   >
   return [...failActions, resolver.runAll([valid] as const)]
@@ -217,10 +217,10 @@ export const dispatchGroupToResolver = <Resources extends Resource.ResourceSet>(
  * Dispatches all ready origin groups to their resolvers via
  * {@link dispatchGroupToResolver}, collecting the resulting actions.
  */
-export const dispatchToResolvers = <Resources extends Resource.ResourceSet>(
+export const dispatchToResolvers = <Classes extends Resource.AnyDomainClass>(
   resolverGroups: ReadonlyArray<{
-    origin: Origin.Ready<Resources, never>
-    entries: AnyEntry<Resources>[]
+    origin: Origin.Ready<never>
+    entries: AnyEntry<Classes>[]
   }>
 ): SideEffect.SideEffect<void> =>
   SideEffect.of<void>(
@@ -241,41 +241,41 @@ export const dispatchToResolvers = <Resources extends Resource.ResourceSet>(
  * FHIR store is unreachable). Callers wanting partial results should
  * pre-filter origins.
  */
-export const fanOutSearch = <Resources extends Resource.ResourceSet>(
-  searchRequest: ResourceRequest.Search<Resources[keyof Resources]>,
-  originStates: HubState<Resources>,
-  stateChanges: Stream.Stream<Either.Either<HubState<Resources>, HubError>>
+export const fanOutSearch = <Classes extends Resource.AnyDomainClass>(
+  searchRequest: ResourceRequest.Search<Classes>,
+  originStates: HubState,
+  stateChanges: Stream.Stream<Either.Either<HubState, HubError>>
 ): Effect.Effect<
-  ReadonlyArray<Resource.WithResourceUrl<Resources[keyof Resources]>>,
+  ReadonlyArray<Resource.WithResourceUrl<InstanceType<Classes>>>,
   ResourceRequest.CommonErrors
 > => {
-  const relevantOrigins = [...HashMap.values(originStates)].filter(
-    (o) => o.supportedResources[searchRequest.domainType]
+  const relevantOrigins = [...HashMap.values(originStates)].filter((o) =>
+    Boolean(o.supportedResources[searchRequest.klass.DomainType])
   )
 
   if (relevantOrigins.length === 0) {
     return Effect.fail(
       new UnhandledError({
-        message: `No origins found for resource type ${String(searchRequest.domainType)}`,
+        message: `No origins found for resource type ${String(searchRequest.klass.DomainType)}`,
       })
     )
   }
 
   const makeSearchEffect = (
-    readyOrigin: Origin.Ready<Resources, never>
+    readyOrigin: Origin.Ready<never>
   ): Effect.Effect<
-    ReadonlyArray<Resource.WithResourceUrl<Resources[keyof Resources]>>,
+    ReadonlyArray<Resource.WithResourceUrl<InstanceType<Classes>>>,
     ResourceRequest.CommonErrors
   > => {
     // Safe: caller ensures this origin supports the resource type
     const resolver = readyOrigin.resolver as RequestResolver.RequestResolver<
-      ResourceRequest.Search<Resources[keyof Resources]>,
+      ResourceRequest.Search<Classes>,
       never
     >
     return Effect.request(
-      EffectRequest.of<ResourceRequest.Search<Resources[keyof Resources]>>()({
+      EffectRequest.of<ResourceRequest.Search<Classes>>()({
         _tag: 'Search',
-        domainType: searchRequest.domainType,
+        klass: searchRequest.klass,
         params: searchRequest.params,
         origin: readyOrigin.originUrl,
       }),

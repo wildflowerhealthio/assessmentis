@@ -1,5 +1,6 @@
 import { expect } from 'vitest'
-import { Cause, Exit, Option, pipe, type Layer } from 'effect'
+import { Cause, Exit, Option, pipe } from 'effect'
+import type { Layer } from 'effect'
 
 import type { FhirR4Client } from './FhirR4Client'
 import { describeAsFhirR4ResourceClient } from './FhirR4Client.interface.test'

@@ -1,14 +1,14 @@
 import { Schema } from 'effect'
 
-import { MergeClasses } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary, MergeClasses } from '@assessmentis/util'
 
 import {
   BackboneElement,
   CodeableConcept,
   Quantity,
   Range,
-  type BackboneElementEncoded,
 } from '../../data-types'
+import type { BackboneElementEncoded } from '../../data-types'
 
 const DomainType = 'ObservationReferenceRange' as const
 type DomainType = typeof DomainType
@@ -18,7 +18,9 @@ const fields = {
   high: Schema.optional(Schema.suspend(() => Quantity)),
   type: Schema.optional(Schema.suspend(() => CodeableConcept)),
   appliesTo: Schema.optional(
-    Schema.Array(Schema.suspend(() => CodeableConcept))
+    Schema.Array(Schema.suspend(() => CodeableConcept)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
   ),
   age: Schema.optional(Schema.suspend(() => Range)),
   text: Schema.optional(Schema.String),

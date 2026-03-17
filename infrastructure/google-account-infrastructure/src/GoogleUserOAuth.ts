@@ -1,13 +1,5 @@
-import {
-  DateTime,
-  Effect,
-  Option,
-  pipe,
-  Schema,
-  type Either,
-  type Scope,
-  type SubscriptionRef,
-} from 'effect'
+import { DateTime, Effect, Option, pipe, Schema } from 'effect'
+import type { Either, Scope, SubscriptionRef } from 'effect'
 import { HttpBody, HttpClient } from '@effect/platform'
 
 import { makeCredentialId } from '@assessmentis/config-domain'
@@ -15,10 +7,12 @@ import { AuthError, UnhandledError } from '@assessmentis/ontology'
 import {
   AuthDataService,
   DocumentStoreLiveCredential,
-  type CredentialError,
-  type DocumentPath,
-  type RefreshableCredentialToken,
-  type TokenStreamError,
+} from '@assessmentis/platform-domain'
+import type {
+  CredentialError,
+  DocumentPath,
+  RefreshableCredentialToken,
+  TokenStreamError,
 } from '@assessmentis/platform-domain'
 import { DateTimeUtcFromFirebaseTimestamp } from '@assessmentis/util'
 
