@@ -272,6 +272,9 @@ export const fanOutSearch = <Classes extends Resource.AnyDomainClass>(
       ResourceRequest.Search<Classes>,
       never
     >
+    // Each sub-search creates a fresh Request identity intentionally —
+    // every origin must execute its own search independently; re-using
+    // request instances across origins would silently drop results.
     return Effect.request(
       EffectRequest.of<ResourceRequest.Search<Classes>>()({
         _tag: 'Search',

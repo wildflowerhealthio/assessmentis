@@ -94,7 +94,7 @@ const FhirR4Schemas = {
 const extractFhirId = (url: { readonly pathname: string }): string => {
   const segments = url.pathname.split('/')
   // Any split will have at least one segment (even
-  //if  the pathname is empty), so this is safe
+  //if the pathname is empty), so this is safe
   return segments[segments.length - 1]!
 }
 

@@ -32,7 +32,7 @@ const QuestionnaireResponseList = ({
               ❌
             </button>
             <Link
-              to={`/QuestionnaireResponse/${url?.toString() ?? ''}`}
+              to={`/QuestionnaireResponse/${url?.asUriComponent() ?? ''}`}
               className="body-3"
             >
               {questionnaire?.title ?? url?.toString()}

@@ -58,7 +58,7 @@ describe('Link trait', () => {
 
     it('handles missing url', () => {
       const patient = decodePatient({})
-      expect(patient.Link).toBe('/Patient/')
+      expect(patient.Link).toBe('/Patient')
     })
 
     it('works for all resource types', () => {

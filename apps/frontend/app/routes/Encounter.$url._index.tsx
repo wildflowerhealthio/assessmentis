@@ -6,6 +6,7 @@ import { ClinicalDomainHub, Encounter } from '@assessmentis/clinical-domain'
 import { NotFoundError } from '@assessmentis/ontology'
 import { useEffectTs } from '@assessmentis/react-util'
 
+import 'app/traits/BreadcrumbLabel/implementations/Encounter'
 import 'app/traits/Link/implementations/Encounter'
 
 import { getFullEncounter } from 'app/modules/interview-call/actions/getFullEncounter'
@@ -35,7 +36,7 @@ export default function EncounterPage({ params }: Route.ComponentProps) {
     return pipe(
       params.url,
       tryDecodeEncounterUrl,
-      Effect.catchAll((_paresErr) =>
+      Effect.catchAll((_parseErr) =>
         Effect.fail(
           new NotFoundError<
             'Encounter',

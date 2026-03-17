@@ -67,7 +67,8 @@ export const awaitOriginReady = (
 /**
  * Waits for the Hub ref to hold a non-Loading state. If the current state
  * is Loading, subscribes to the changes stream until a settled state
- * arrives. Non-Loading errors fail immediately.
+ * arrives. Non-Loading errors fail immediately. Times out with
+ * UnhandledError after {@link LOADING_TIMEOUT}.
  */
 export const awaitReady = (
   stateRef: HubRef
@@ -79,6 +80,13 @@ export const awaitReady = (
     return stateRef.changes.pipe(
       StreamEither.filterErrors(isNotTagged('Loading')),
       Stream.runHead,
+      Effect.timeoutFail({
+        duration: LOADING_TIMEOUT,
+        onTimeout: () =>
+          new UnhandledError({
+            message: 'Hub timed out while loading',
+          }),
+      }),
       Effect.flatMap(
         Effect.mapError(
           () =>

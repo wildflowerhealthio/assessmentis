@@ -89,24 +89,15 @@ type OriginCache = Map<string, OriginCacheEntry<never>>
 
 // --- Error origin helper ---
 
-/** Returns an empty object — errored origins can never resolve requests. */
-const emptySupportedResources = <_DomainTypes extends string>(_map: {
-  [k: string]: true
-}): object => ({})
-
-type SupportedClasses<_DomainTypes extends string> = never
-
 /**
  * Constructs an errored origin state for an unrecognized origin tag.
  */
 const makeUnsupportedOrigin = <DomainTypes extends string>(
   originUrl: ReadonlyUrl,
   def: OriginDefinition<DomainTypes>
-): Origin.Errored<SupportedClasses<DomainTypes>> => ({
+): Origin.Errored<never> => ({
   originUrl,
-  supportedResources: emptySupportedResources<DomainTypes>(
-    def.supportedResources
-  ),
+  supportedResources: {} as never,
   resolver: undefined,
   errorStatus: new UnhandledError({
     message: `Unsupported origin tag '${def._tag}'`,

@@ -11,6 +11,7 @@ import { Period, Reference } from '@assessmentis/clinical-domain/data-types'
 
 import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
 
+import 'app/traits/BreadcrumbLabel/implementations/Encounter'
 import 'app/traits/Link/implementations/Encounter'
 
 import { useBreadcrumbs } from 'app/modules/Breadcrumbs/useBreadcrumbs'
@@ -28,7 +29,7 @@ const defaultValues: Promise<typeof EncounterFormSchema.Encoded> =
     questionnaireUrls: [],
     periodStart: undefined,
     periodEnd: undefined,
-    locationId: undefined,
+    locationUrl: undefined,
   })
 
 export default function CreateEncounterPage() {

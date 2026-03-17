@@ -34,22 +34,12 @@ const areBreadcrumbsEqual = (
   return a.every((segmentA, index) => {
     const segmentB = b[index]
 
-    if ('loading' in segmentA && 'loading' in segmentB) {
-      if (segmentA.loading && segmentB.loading) {
-        return true
-      }
-      if (segmentA.loading || segmentB.loading) {
-        return false
-      }
+    // Promises are compared by reference (stable per useMemo in useBreadcrumbs)
+    if (segmentA instanceof Promise || segmentB instanceof Promise) {
+      return segmentA === segmentB
     }
 
-    if ('label' in segmentA && 'label' in segmentB) {
-      return (
-        segmentA.label === segmentB.label && segmentA.href === segmentB.href
-      )
-    }
-
-    return false
+    return segmentA.label === segmentB.label && segmentA.href === segmentB.href
   })
 }
 
