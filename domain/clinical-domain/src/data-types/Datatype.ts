@@ -216,3 +216,142 @@ export function DatatypeChoice<
   )
   return s
 }
+
+// ---------------------------------------------------------------------------
+// DatatypeChoice utilities — `cases` and `match`
+// ---------------------------------------------------------------------------
+
+export namespace DatatypeChoice {
+  /** Extract all `_tag` string literals from a DatatypeChoice union. */
+  export type TagsOf<T> = T extends {
+    readonly _tag: infer Tag extends string
+  }
+    ? Tag
+    : never
+
+  /** Extract the variant matching a specific tag from a DatatypeChoice union. */
+  export type VariantFor<T, Tag extends string> = Extract<
+    T,
+    { readonly _tag: Tag }
+  >
+
+  /** Extract the inner value type for a specific tag from a DatatypeChoice union. */
+  export type ValueFor<T, Tag extends string> =
+    VariantFor<T, Tag> extends infer V
+      ? Tag extends keyof V
+        ? V[Tag]
+        : never
+      : never
+
+  /** Object with all possible tag keys mapped to `value | undefined`. */
+  export type Cases<T> = {
+    readonly [Tag in TagsOf<T>]: ValueFor<T, Tag> | undefined
+  }
+
+  /**
+   * Decompose a DatatypeChoice value into an object keyed by every possible
+   * tag, where the active variant's key holds its inner value and all others
+   * are `undefined`.
+   *
+   * @example
+   * ```typescript
+   * const { Quantity, string: s } = DatatypeChoice.cases(observation.value)
+   * if (Quantity) { /* typed as unknown (PermissivePassthrough) *\/ }
+   * if (s) { /* typed as string *\/ }
+   * ```
+   */
+  export function cases<T extends { readonly _tag: string }>(
+    value: T | undefined
+  ): Cases<T> {
+    return (value ?? {}) as Cases<T>
+  }
+
+  /**
+   * Pattern-match on a DatatypeChoice value. Without a default handler,
+   * the matchers object must be exhaustive (cover every tag). With a default,
+   * unmatched tags fall through to it.
+   *
+   * Each callback receives the **inner value** for that tag (not the full
+   * `{ _tag, ... }` variant).
+   *
+   * @example
+   * ```typescript
+   * // Exhaustive — compiler enforces all tags are covered
+   * const label = DatatypeChoice.match(v, {
+   *   string: (s) => s,
+   *   boolean: (b) => b ? 'Yes' : 'No',
+   *   Quantity: (q) => `${(q as { value?: number })?.value ?? ''}`,
+   * })
+   *
+   * // Partial — unmatched tags hit the default
+   * const label = DatatypeChoice.match(v, {
+   *   string: (s) => s,
+   *   boolean: (b) => b ? 'Yes' : 'No',
+   * }, (_unmatched) => '')
+   * ```
+   */
+  export function match<TDatatypeName extends DatatypeName, R>(
+    value: {
+      [K in TDatatypeName]: { _tag: K } & {
+        [F in K]: Schema.Schema.Type<(typeof baseDatatypes)[F]['schema']>
+      }
+    }[TDatatypeName],
+    matchers: {
+      readonly [Name in TDatatypeName]: (
+        value: Schema.Schema.Type<(typeof baseDatatypes)[Name]['schema']>
+      ) => R
+    }
+  ): R
+  export function match<TDatatypeName extends DatatypeName, R>(
+    value: {
+      [K in TDatatypeName]: { _tag: K } & {
+        [F in K]: Schema.Schema.Type<(typeof baseDatatypes)[F]['schema']>
+      }
+    }[TDatatypeName],
+    matchers: {
+      readonly [Name in TDatatypeName]?: (
+        value: Schema.Schema.Type<(typeof baseDatatypes)[Name]['schema']>
+      ) => R | undefined
+    },
+    defaultFn: (
+      unmatched: {
+        [K in TDatatypeName]: { _tag: K } & {
+          [F in K]: Schema.Schema.Type<(typeof baseDatatypes)[F]['schema']>
+        }
+      }[TDatatypeName]
+    ) => R
+  ): R
+  export function match<TDatatypeName extends DatatypeName, R>(
+    value: {
+      [K in TDatatypeName]: { _tag: K } & {
+        [F in K]: Schema.Schema.Type<(typeof baseDatatypes)[F]['schema']>
+      }
+    }[TDatatypeName],
+    matchers: {
+      readonly [Name in TDatatypeName]?: (
+        value: Schema.Schema.Type<(typeof baseDatatypes)[Name]['schema']>
+      ) => R | undefined
+    },
+    defaultFn?: (
+      unmatched: {
+        [K in TDatatypeName]: { _tag: K } & {
+          [F in K]: Schema.Schema.Type<(typeof baseDatatypes)[F]['schema']>
+        }
+      }[TDatatypeName]
+    ) => R
+  ): R {
+    const tag = value._tag
+    const matcher = matchers[value._tag]
+    if (matcher) {
+      // Typescript can't infer the unknown (but shared!) type of the matcher
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (matcher as any)(value[value._tag])
+    }
+    if (defaultFn) {
+      return defaultFn(value)
+    }
+    throw new Error(
+      `DatatypeChoice.match: no handler for tag "${tag}" and no default provided`
+    )
+  }
+}

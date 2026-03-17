@@ -13,7 +13,8 @@ import { flattenSearchParams } from '@assessmentis/util'
 
 import type { healthcare_v1 } from '@googleapis/healthcare'
 import { google } from 'googleapis'
-import { GaxiosError, type GaxiosResponseWithHTTP2 } from 'googleapis-common'
+import { GaxiosError } from 'googleapis-common'
+import type { GaxiosResponseWithHTTP2 } from 'googleapis-common'
 
 import { GCloudAccessToken } from './GCloudAccessToken'
 

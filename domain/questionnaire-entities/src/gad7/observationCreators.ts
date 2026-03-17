@@ -1,4 +1,4 @@
-import { type QuestionnaireResponse } from '@assessmentis/clinical-domain'
+import type { QuestionnaireResponse } from '@assessmentis/clinical-domain'
 import {
   CodeableConcept,
   Coding,
@@ -6,11 +6,8 @@ import {
 } from '@assessmentis/clinical-domain/data-types'
 
 import { codings } from './codings'
-import {
-  baseChoiceObservation,
-  type ObservationInput,
-  type ObservationTemplate,
-} from './internal'
+import { baseChoiceObservation } from './internal'
+import type { ObservationInput, ObservationTemplate } from './internal'
 import { totalScore } from './observations'
 
 const questionLinkIds = [

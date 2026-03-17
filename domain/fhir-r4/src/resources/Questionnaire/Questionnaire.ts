@@ -1,10 +1,9 @@
 import { pipe, Schema } from 'effect'
 
-import {
-  Questionnaire,
-  QuestionnaireItem,
-  type QuestionnaireEncoded,
-  type QuestionnaireItemEncoded,
+import { Questionnaire, QuestionnaireItem } from '@assessmentis/clinical-domain'
+import type {
+  QuestionnaireEncoded,
+  QuestionnaireItemEncoded,
 } from '@assessmentis/clinical-domain'
 import { FhirR4ChoiceElements } from '@assessmentis/clinical-domain/data-types'
 import {

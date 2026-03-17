@@ -1,12 +1,8 @@
 import * as fc from 'fast-check'
 import { describe, expect, expectTypeOf, test } from 'vitest'
 
-import {
-  tupleFilter,
-  tupleIndexMap,
-  type TupleFilter,
-  type TupleIndexMap,
-} from './tuples'
+import { tupleFilter, tupleIndexMap } from './tuples'
+import type { TupleFilter, TupleIndexMap } from './tuples'
 
 describe('tupleFilter', () => {
   test('property: result contains only elements matching the predicate', () => {

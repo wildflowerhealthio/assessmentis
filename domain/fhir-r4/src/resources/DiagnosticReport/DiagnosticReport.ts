@@ -3,8 +3,8 @@ import { Schema } from 'effect'
 import {
   DiagnosticReport,
   DiagnosticReportStatus,
-  type DiagnosticReportEncoded,
 } from '@assessmentis/clinical-domain'
+import type { DiagnosticReportEncoded } from '@assessmentis/clinical-domain'
 import {
   extendObjectSchemas,
   mutableEncoded,

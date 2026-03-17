@@ -1,5 +1,14 @@
-import type { Observation } from '@assessmentis/clinical-domain/diagnostic-medicine'
+import type { DateTime } from 'effect'
 import { Effect } from 'effect'
+
+import type { Observation } from '@assessmentis/clinical-domain'
+import {
+  CodeableConcept,
+  DatatypeChoice,
+  Quantity,
+} from '@assessmentis/clinical-domain/data-types'
+import type { Period } from '@assessmentis/clinical-domain/data-types'
+
 import {
   humanizeDateTimeForLocalReader,
   humanizeDateTimeRangeForLocalReader,
@@ -44,81 +53,33 @@ export const formatObservationValue = (
   observation: Observation | NonNullable<Observation['component']>[number]
 ) =>
   Effect.gen(function* () {
-    if ('valueQuantity' in observation && observation.valueQuantity) {
-      const val = observation.valueQuantity.value ?? ''
-      const unit = observation.valueQuantity.unit ?? ''
-      return `${val} ${unit}`.trim()
-    }
-
-    if ('valueString' in observation && observation.valueString) {
-      return observation.valueString
-    }
-
-    if (
-      'valueInteger' in observation &&
-      observation.valueInteger !== undefined
-    ) {
-      return observation.valueInteger.toString()
-    }
-
-    if (
-      'valueDecimal' in observation &&
-      observation.valueDecimal !== undefined
-    ) {
-      return observation.valueDecimal.toString()
-    }
-
-    if (
-      'valueCodeableConcept' in observation &&
-      observation.valueCodeableConcept
-    ) {
-      return (
-        observation.valueCodeableConcept.text ??
-        observation.valueCodeableConcept.coding?.[0]?.display ??
-        'Coded value'
+    const v = observation.value
+    if (v) {
+      return yield* DatatypeChoice.match(
+        v,
+        {
+          Quantity: () => {
+            const q = Quantity.Datatype.from(v)
+            return Effect.succeed(`${q?.value ?? ''} ${q?.unit ?? ''}`.trim())
+          },
+          string: (s) => Effect.succeed(s),
+          integer: (n) => Effect.succeed(n.toString()),
+          Ratio: (r) => Effect.succeed(String(r)),
+          CodeableConcept: () => {
+            const cc = CodeableConcept.Datatype.from(v)
+            return Effect.succeed(
+              cc?.text ?? cc?.coding?.[0]?.display ?? 'Coded value'
+            )
+          },
+          boolean: (b) => Effect.succeed(b ? 'Yes' : 'No'),
+          dateTime: (dt) => humanizeDateTimeForLocalReader(dt),
+          time: (t) => Effect.succeed(t),
+        },
+        () => Effect.succeed('See details')
       )
     }
 
-    if (
-      'valueBoolean' in observation &&
-      observation.valueBoolean !== undefined
-    ) {
-      return observation.valueBoolean ? 'Yes' : 'No'
-    }
-
-    if ('valueDateTime' in observation && observation.valueDateTime) {
-      return yield* humanizeDateTimeForLocalReader(observation.valueDateTime)
-    }
-
-    if ('valueDate' in observation && observation.valueDate) {
-      return observation.valueDate
-    }
-
-    if ('valueTime' in observation && observation.valueTime) {
-      return observation.valueTime
-    }
-
-    if ('valueCoding' in observation && observation.valueCoding) {
-      return (
-        observation.valueCoding.display ??
-        observation.valueCoding.code ??
-        'Coded value'
-      )
-    }
-
-    if ('valueCode' in observation && observation.valueCode) {
-      return observation.valueCode
-    }
-
-    if ('valueReference' in observation && observation.valueReference) {
-      return (
-        observation.valueReference.display ??
-        observation.valueReference.reference ??
-        'Reference'
-      )
-    }
-
-    if ('dataAbsentReason' in observation && observation.dataAbsentReason) {
+    if (observation.dataAbsentReason) {
       return `Data absent: ${observation.dataAbsentReason.text ?? 'Unknown reason'}`
     }
 
@@ -130,27 +91,21 @@ export const formatObservationValue = (
  */
 export const getObservationEffectiveDate = (observation: Observation) =>
   Effect.gen(function* () {
-    if (observation.effectiveDateTime) {
-      return yield* humanizeDateTimeForLocalReader(
-        observation.effectiveDateTime
-      )
-    }
+    if (!observation.effective) return 'Unknown date'
 
-    if (observation.effectivePeriod) {
-      return yield* humanizeDateTimeRangeForLocalReader(
-        observation.effectivePeriod,
-        {
-          endFallback: 'Ongoing',
-          neitherFallback: 'Unknown date',
-        }
-      )
-    }
-
-    if (observation.effectiveInstant) {
-      return yield* humanizeDateTimeForLocalReader(observation.effectiveInstant)
-    }
-
-    return 'Unknown date'
+    return yield* DatatypeChoice.match(
+      observation.effective,
+      {
+        dateTime: (dt) => humanizeDateTimeForLocalReader(dt),
+        Period: (p) =>
+          humanizeDateTimeRangeForLocalReader(p as Period | undefined, {
+            endFallback: 'Ongoing',
+            neitherFallback: 'Unknown date',
+          }),
+        instant: (i) => humanizeDateTimeForLocalReader(i as DateTime.Utc),
+      },
+      () => Effect.succeed('Unknown date')
+    )
   })
 
 /**

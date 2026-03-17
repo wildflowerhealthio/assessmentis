@@ -1,9 +1,7 @@
 import { Schema } from 'effect'
 
-import {
-  Quantity,
-  type QuantityEncoded,
-} from '@assessmentis/clinical-domain/data-types'
+import { Quantity } from '@assessmentis/clinical-domain/data-types'
+import type { QuantityEncoded } from '@assessmentis/clinical-domain/data-types'
 import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
 
 import type FhirR4 from 'fhir/r4'

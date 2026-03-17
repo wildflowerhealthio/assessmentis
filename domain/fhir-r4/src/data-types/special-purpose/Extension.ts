@@ -3,8 +3,8 @@ import { pipe, Schema } from 'effect'
 import {
   AllDatatypeNames,
   Extension,
-  type ExtensionEncoded,
 } from '@assessmentis/clinical-domain/data-types'
+import type { ExtensionEncoded } from '@assessmentis/clinical-domain/data-types'
 import {
   extendObjectSchemas,
   mutableEncoded,

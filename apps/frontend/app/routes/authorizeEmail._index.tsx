@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
-import { onAuthStateChanged } from 'firebase/auth'
-import { auth } from 'app/FirebaseWebLayer'
 import { useNavigate, useSearchParams } from 'react-router'
+
+import { auth } from 'app/FirebaseWebLayer'
+import { onAuthStateChanged } from 'firebase/auth'
+
 import type { Route } from './+types/authorizeEmail._index'
 
 interface User {

@@ -1,17 +1,16 @@
 'use client'
 
-import { type DailyEvent } from '@daily-co/daily-js'
-import { DailyAudio, DailyProvider, useCallObject } from '@daily-co/daily-react'
-
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router'
+
 import {
   Call,
   HairCheck,
   Tray,
 } from '@assessmentis/daily-co-components/components'
-import { useNavigate } from 'react-router'
-import { Effect } from 'effect'
-import { usePlatformContext } from 'app/layers/PlatformContext'
+
+import type { DailyEvent } from '@daily-co/daily-js'
+import { DailyAudio, DailyProvider, useCallObject } from '@daily-co/daily-react'
 
 enum VideoCallState {
   STATE_IDLE = 'STATE_IDLE',
@@ -25,12 +24,11 @@ enum VideoCallState {
 
 const useDailyCall = (roomUrl: string | undefined) => {
   const navigate = useNavigate()
-  const { VideoCallClientService } = usePlatformContext()
   const [recordingState, setRecordingState] = useState<
     'stopped' | 'loading' | 'started'
   >('loading')
   const [appState, setAppState] = useState(VideoCallState.STATE_IDLE)
-  const [meetingToken, setMeetingToken] = useState<string | undefined>()
+  const [meetingToken, _setMeetingToken] = useState<string | undefined>()
   const callObject = useCallObject({})
 
   const [apiError] = useState(false)
@@ -39,20 +37,21 @@ const useDailyCall = (roomUrl: string | undefined) => {
     setAppState(VideoCallState.STATE_CREATING)
 
     try {
-      const client = await Effect.runPromise(VideoCallClientService.client)
-      if (roomUrl) {
-        const roomName = client.extractRoomNameFromUrl(roomUrl)
-        if (roomName) {
-          const token = await Effect.runPromise(
-            client.createRoomToken({ roomName, is_owner: true })
-          )
-          setMeetingToken(token)
-          setAppState(VideoCallState.STATE_HAIRCHECK)
-          callObject?.preAuth({ url: roomUrl, token })
-          callObject?.startCamera()
-          return
-        }
-      }
+      // TODO: Replace with hub / token client
+      // const client = await Effect.runPromise(VideoCallClientService.client)
+      // if (roomUrl) {
+      //   const roomName = client.extractRoomNameFromUrl(roomUrl)
+      //   if (roomName) {
+      //     const token = await Effect.runPromise(
+      //       client.createRoomToken({ roomName, is_owner: true })
+      //     )
+      //     setMeetingToken(token)
+      //     setAppState(VideoCallState.STATE_HAIRCHECK)
+      //     callObject?.preAuth({ url: roomUrl, token })
+      //     callObject?.startCamera()
+      //     return
+      //   }
+      // }
 
       // Fallback: no room name extractable, proceed without token
       setAppState(VideoCallState.STATE_HAIRCHECK)
@@ -65,7 +64,7 @@ const useDailyCall = (roomUrl: string | undefined) => {
       callObject?.preAuth({ url: roomUrl })
       callObject?.startCamera()
     }
-  }, [roomUrl, callObject, VideoCallClientService])
+  }, [roomUrl, callObject])
 
   const startLeavingCall = () => {
     if (!callObject) return

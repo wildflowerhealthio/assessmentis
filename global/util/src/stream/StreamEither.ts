@@ -74,6 +74,12 @@ export namespace StreamEither {
       Stream.map(self, Either.mapLeft(f))
   )
 
+  /**
+   * Alias for {@link mapLeft} — transforms the `Left` (error) value of each
+   * element. Named for discoverability alongside Effect's `mapError`.
+   */
+  export const mapError = mapLeft
+
   // -------------------------------------------------------------------------------------
   // sequencing
   // -------------------------------------------------------------------------------------
@@ -262,6 +268,126 @@ export namespace StreamEither {
     ): Stream.Stream<Either.Either<C, E | E2>, never, R | R2> =>
       Stream.zipLatestWith(left, right, (a, b) =>
         Either.all([a, b] as const).pipe(Either.map(([a, b]) => f(a, b)))
+      )
+  )
+
+  // -------------------------------------------------------------------------------------
+  // error recovery
+  // -------------------------------------------------------------------------------------
+
+  /**
+   * Catches `Left` values whose `_tag` matches the given tag and applies `f`
+   * to recover them into a `Right` value or a different `Left`.
+   *
+   * Non-matching `Left` values and `Right` values pass through unchanged.
+   * Mirrors Effect's `catchTag` naming convention.
+   */
+  export const catchTag: {
+    <E extends { readonly _tag: string }, Tag extends E['_tag'], A2, E2>(
+      tag: Tag,
+      f: (e: Extract<E, { readonly _tag: Tag }>) => Either.Either<A2, E2>
+    ): <A, StreamErr, R>(
+      self: Stream.Stream<Either.Either<A, E>, StreamErr, R>
+    ) => Stream.Stream<
+      Either.Either<A | A2, Exclude<E, { readonly _tag: Tag }> | E2>,
+      StreamErr,
+      R
+    >
+    <
+      A,
+      E extends { readonly _tag: string },
+      Tag extends E['_tag'],
+      A2,
+      E2,
+      StreamErr,
+      R,
+    >(
+      self: Stream.Stream<Either.Either<A, E>, StreamErr, R>,
+      tag: Tag,
+      f: (e: Extract<E, { readonly _tag: Tag }>) => Either.Either<A2, E2>
+    ): Stream.Stream<
+      Either.Either<A | A2, Exclude<E, { readonly _tag: Tag }> | E2>,
+      StreamErr,
+      R
+    >
+  } = dual(
+    3,
+    <
+      A,
+      E extends { readonly _tag: string },
+      Tag extends E['_tag'],
+      A2,
+      E2,
+      StreamErr,
+      R,
+    >(
+      self: Stream.Stream<Either.Either<A, E>, StreamErr, R>,
+      tag: Tag,
+      f: (e: Extract<E, { readonly _tag: Tag }>) => Either.Either<A2, E2>
+    ): Stream.Stream<
+      Either.Either<A | A2, Exclude<E, { readonly _tag: Tag }> | E2>,
+      StreamErr,
+      R
+    > =>
+      Stream.map(self, (either) =>
+        Either.isLeft(either) && either.left._tag === tag
+          ? (f(
+              either.left as Extract<E, { readonly _tag: Tag }>
+            ) as Either.Either<A | A2, Exclude<E, { readonly _tag: Tag }> | E2>)
+          : (either as Either.Either<
+              A | A2,
+              Exclude<E, { readonly _tag: Tag }> | E2
+            >)
+      )
+  )
+
+  /**
+   * Keeps only `Left` values that satisfy the predicate; drops those that
+   * don't. `Right` values always pass through unchanged.
+   *
+   * @remarks
+   * With a refinement overload the error type narrows automatically —
+   * pair with {@link isNotTagged} to exclude a specific error variant:
+   *
+   * @example
+   * ```ts
+   * stream.pipe(
+   *   StreamEither.filterErrors(isNotTagged('Loading')),
+   * )
+   * ```
+   */
+  export const filterErrors: {
+    <E, E2 extends E>(
+      refinement: (e: E) => e is E2
+    ): <A, StreamErr, R>(
+      self: Stream.Stream<Either.Either<A, E>, StreamErr, R>
+    ) => Stream.Stream<Either.Either<A, E2>, StreamErr, R>
+
+    <E>(
+      predicate: (e: E) => boolean
+    ): <A, StreamErr, R>(
+      self: Stream.Stream<Either.Either<A, E>, StreamErr, R>
+    ) => Stream.Stream<Either.Either<A, E>, StreamErr, R>
+
+    <A, E, E2 extends E, StreamErr, R>(
+      self: Stream.Stream<Either.Either<A, E>, StreamErr, R>,
+      refinement: (e: E) => e is E2
+    ): Stream.Stream<Either.Either<A, E2>, StreamErr, R>
+
+    <A, E, StreamErr, R>(
+      self: Stream.Stream<Either.Either<A, E>, StreamErr, R>,
+      predicate: (e: E) => boolean
+    ): Stream.Stream<Either.Either<A, E>, StreamErr, R>
+  } = dual(
+    2,
+    <A, E, E2 extends E, StreamErr, R>(
+      self: Stream.Stream<Either.Either<A, E>, StreamErr, R>,
+      predicate: (e: E) => e is E2
+    ): Stream.Stream<Either.Either<A, E2>, StreamErr, R> =>
+      Stream.filter(
+        self,
+        (either): either is Either.Either<A, E2> =>
+          Either.isRight(either) || predicate(either.left)
       )
   )
 

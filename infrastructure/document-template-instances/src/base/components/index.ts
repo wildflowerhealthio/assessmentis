@@ -1,4 +1,4 @@
-import { type ComponentFamily as ComponentFamilyType } from '@assessmentis/document-template-kinds'
+import type { ComponentFamily as ComponentFamilyType } from '@assessmentis/document-template-kinds'
 
 import { Header } from './Header'
 import { ObservationSectionWithMethod } from './ObservationSectionWithMethod'

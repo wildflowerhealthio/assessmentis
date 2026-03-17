@@ -1,16 +1,21 @@
-import { Data, DateTime, Effect, Equal, Match } from 'effect'
-import { type ChangeEventHandler, type SetStateAction } from 'react'
-import classes from './RadioQuestionnaireItemForm.module.css'
+import { Data, DateTime, Effect, Equal } from 'effect'
+import type { ChangeEventHandler, SetStateAction } from 'react'
+
+import {
+  QuestionnaireItemAnsweredAtExtension,
+  QuestionnaireItemAnswerOption,
+  QuestionnaireItemUIControlCode,
+  QuestionnaireResponseItem,
+  QuestionnaireResponseItemAnswer,
+} from '@assessmentis/clinical-domain'
 import type {
   QuestionnaireItem,
-  QuestionnaireResponseItem,
-} from '@assessmentis/clinical-domain/content-management'
-import {
-  QuestionnaireItemUIControlCode,
-  withAnsweredAt,
-} from '@assessmentis/clinical-domain/content-management'
-import type { ValueElement } from '@assessmentis/clinical-domain/data-types'
+  QuestionnaireItemAnswerOption as QuestionnaireItemAnswerOptionType,
+} from '@assessmentis/clinical-domain'
+import { DatatypeChoice } from '@assessmentis/clinical-domain/data-types'
 import { cn } from '@assessmentis/react-util'
+
+import classes from './RadioQuestionnaireItemForm.module.css'
 
 export interface IProps {
   questionnaireItem: QuestionnaireItem
@@ -21,18 +26,25 @@ export interface IProps {
   uiControl: typeof QuestionnaireItemUIControlCode.Type | undefined
 }
 
-const labelFor = (option: ValueElement) =>
-  Match.value(option).pipe(
-    Match.when({ initialSelected: Match.boolean }, ({ initialSelected }) =>
-      initialSelected ? 'Yes' : 'No'
-    ),
-    Match.when({ valueString: Match.string }, ({ valueString }) => valueString),
-    Match.when(
-      { valueCoding: { display: Match.string } },
-      ({ valueCoding }) => valueCoding.display
-    ),
-    Match.orElse(() => '')
+const labelFor = (option: QuestionnaireItemAnswerOptionType) => {
+  const v = option.value
+  if (!v) {
+    return option.initialSelected !== undefined
+      ? option.initialSelected
+        ? 'Yes'
+        : 'No'
+      : ''
+  }
+  return DatatypeChoice.match(
+    v,
+    {
+      string: (s) => s,
+      Coding: (c) => (c as { display?: string } | undefined)?.display ?? '',
+      boolean: (b) => (b ? 'Yes' : 'No'),
+    },
+    () => ''
   )
+}
 
 const RadioQuestionnaireItemForm = ({
   questionnaireItem,
@@ -42,7 +54,9 @@ const RadioQuestionnaireItemForm = ({
 }: IProps) => {
   const displayAsGrid = uiControl === QuestionnaireItemUIControlCode.enums.table
 
-  const answerOptions: undefined | ReadonlyArray<ValueElement> =
+  const answerOptions:
+    | undefined
+    | ReadonlyArray<QuestionnaireItemAnswerOptionType> =
     questionnaireItem.answerOption
   const options =
     answerOptions?.map((answerValue) => ({
@@ -51,8 +65,18 @@ const RadioQuestionnaireItemForm = ({
     })) ??
     (questionnaireItem.type == 'boolean'
       ? [
-          { label: 'Yes', answerValue: { valueBoolean: true } },
-          { label: 'No', answerValue: { valueBoolean: false } },
+          {
+            label: 'Yes',
+            answerValue: QuestionnaireItemAnswerOption.make({
+              value: { _tag: 'boolean', boolean: true },
+            }),
+          },
+          {
+            label: 'No',
+            answerValue: QuestionnaireItemAnswerOption.make({
+              value: { _tag: 'boolean', boolean: false },
+            }),
+          },
         ]
       : [])
 
@@ -63,32 +87,41 @@ const RadioQuestionnaireItemForm = ({
     if (!selected) throw new Error("Selected option doesn't match any label")
 
     setQuestionnaireResponseItem(
-      (qri: QuestionnaireResponseItem): QuestionnaireResponseItem => ({
-        ...qri,
-        answer: [
-          withAnsweredAt(
-            { ...selected, modifierExtension: [] },
-            Effect.runSync(DateTime.now)
-          ),
-        ],
-      })
+      (qri: QuestionnaireResponseItem): QuestionnaireResponseItem =>
+        QuestionnaireResponseItem.make({
+          ...qri,
+          answer: [
+            QuestionnaireResponseItemAnswer.make({
+              value: selected.value,
+              modifierExtension: [
+                QuestionnaireItemAnsweredAtExtension.make({
+                  valueDateTime: Effect.runSync(DateTime.now),
+                }),
+              ],
+            }),
+          ],
+        })
     )
   }
 
-  const answerValue = questionnaireResponseItem.answer?.[0] ?? {}
+  const currentAnswer = questionnaireResponseItem.answer?.[0]
+  const currentValue = currentAnswer?.value
 
-  const { modifierExtension: _, ...valueElement } = answerValue
   const isSelectedAnswer = (
-    valueElement: ValueElement | undefined,
-    answerValue: ValueElement
+    current: (Record<string, unknown> & { _tag: string }) | undefined,
+    optionValue: (Record<string, unknown> & { _tag: string }) | undefined
   ) => {
-    if (valueElement === undefined) return false
+    if (!current || !optionValue) return false
+    if (current._tag !== optionValue._tag) return false
 
-    if ('valueCoding' in valueElement && 'valueCoding' in answerValue) {
-      return valueElement.valueCoding.code === answerValue.valueCoding.code
+    if (current._tag === 'Coding' && optionValue._tag === 'Coding') {
+      // Coding is PermissivePassthrough (unknown) in DatatypeChoice
+      const curCoding = current.Coding as { code?: string } | undefined
+      const optCoding = optionValue.Coding as { code?: string } | undefined
+      return curCoding?.code === optCoding?.code
     }
 
-    return Equal.equals(Data.struct(valueElement), Data.struct(answerValue))
+    return Equal.equals(Data.struct(current), Data.struct(optionValue))
   }
 
   return (
@@ -116,7 +149,7 @@ const RadioQuestionnaireItemForm = ({
             type="radio"
             value={label}
             className="radio-3 blue"
-            checked={isSelectedAnswer(valueElement, answerValue)}
+            checked={isSelectedAnswer(currentValue, answerValue.value)}
             onChange={onChange}
           />
           {displayAsGrid ? null : label}
@@ -129,7 +162,7 @@ export const RadioQuestionnaireItemFormGroup = ({
   children,
   answerOption,
 }: React.PropsWithChildren<{
-  answerOption: ReadonlyArray<ValueElement>
+  answerOption: ReadonlyArray<QuestionnaireItemAnswerOption>
 }>) => {
   return (
     <div>

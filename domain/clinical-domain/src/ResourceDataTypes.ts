@@ -9,48 +9,15 @@ import { Practitioner } from './resources/Practitioner'
 import { Questionnaire } from './resources/Questionnaire'
 import { QuestionnaireResponse } from './resources/QuestionnaireResponse'
 
-/** Union of all registered clinical resource `domainType` string literals. */
-export type ResourceType =
-  | typeof Composition.DomainType
-  | typeof DiagnosticReport.DomainType
-  | typeof Encounter.DomainType
-  | typeof Location.DomainType
-  | typeof Media.DomainType
-  | typeof Observation.DomainType
-  | typeof Patient.DomainType
-  | typeof Practitioner.DomainType
-  | typeof Questionnaire.DomainType
-  | typeof QuestionnaireResponse.DomainType
-
-/**
- * Maps each DomainType string to its Effect Schema class.
- *
- * @remarks
- * The `type` and `const` share a name via declaration merging. The type is
- * the lookup table shape; the const holds the actual Schema class references
- * keyed by their `DomainType` literal, used at runtime for schema dispatch.
- */
-type ResourceDataTypes = {
-  Composition: Composition
-  DiagnosticReport: DiagnosticReport
-  Encounter: Encounter
-  Location: Location
-  Media: Media
-  Observation: Observation
-  Patient: Patient
-  Practitioner: Practitioner
-  Questionnaire: Questionnaire
-  QuestionnaireResponse: QuestionnaireResponse
-}
-
 /**
  * Runtime registry mapping each `DomainType` string to its Effect Schema class.
  *
  * @remarks
- * This `const` intentionally shares its name with the `ResourceDataTypes` type
- * above via TypeScript declaration merging. The type provides a type-level
- * lookup table; the const provides the runtime registry. This is intentional,
- * not an accidental name collision.
+ * The `const` and `type` share a name via TypeScript declaration merging.
+ * The const holds the actual Schema class references keyed by their
+ * `DomainType` literal. The type is derived from the const via `typeof`,
+ * so `ResourceDataTypes['Patient']` is `typeof Patient` (the class constructor).
+ * Use `InstanceType<ResourceDataTypes['Patient']>` to get the instance type.
  */
 const ResourceDataTypes = {
   [Composition.DomainType]: Composition,
@@ -64,5 +31,44 @@ const ResourceDataTypes = {
   [Questionnaire.DomainType]: Questionnaire,
   [QuestionnaireResponse.DomainType]: QuestionnaireResponse,
 } as const
+
+type ResourceDataTypes = typeof ResourceDataTypes
+
+/** Union of all registered clinical resource `domainType` string literals. */
+export type ResourceType =
+  | typeof Composition.DomainType
+  | typeof DiagnosticReport.DomainType
+  | typeof Encounter.DomainType
+  | typeof Location.DomainType
+  | typeof Media.DomainType
+  | typeof Observation.DomainType
+  | typeof Patient.DomainType
+  | typeof Practitioner.DomainType
+  | typeof Questionnaire.DomainType
+  | typeof QuestionnaireResponse.DomainType
+
+/** Union of all clinical domain class constructors. */
+export type ClinicalDomainClasses = ResourceDataTypes[keyof ResourceDataTypes]
+
+/**
+ * Converts a boolean-keyed `supportedResources` map (as stored in
+ * `BaseOriginDefinition`) into a class-constructor-keyed map suitable
+ * for `Origin.supportedResources`.
+ *
+ * Keys not found in the clinical resource registry are silently dropped.
+ */
+export const toSupportedClasses = <
+  Supported extends ResourceDataTypes[keyof ResourceDataTypes],
+>(
+  supportedResources: Record<Supported['DomainType'], true>
+): {
+  readonly [Klass in Supported as Klass['DomainType']]: Klass
+} =>
+  Object.fromEntries(
+    Object.keys(supportedResources)
+      .filter((k): k is keyof ResourceDataTypes => k in ResourceDataTypes)
+      .map((k) => [k, ResourceDataTypes[k]])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) as any
 
 export default ResourceDataTypes

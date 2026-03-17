@@ -1,11 +1,7 @@
 import { Schema } from 'effect'
 
-import {
-  BackboneElement,
-  CodeableConcept,
-  Reference,
-  type BackboneElementEncoded,
-} from '../../data-types'
+import { BackboneElement, CodeableConcept, Reference } from '../../data-types'
+import type { BackboneElementEncoded } from '../../data-types'
 
 const fields = {
   condition: Schema.suspend(() => Reference),

@@ -5,14 +5,15 @@ import {
   Stream,
   Subscribable,
   SubscriptionRef,
-  type Scope,
 } from 'effect'
+import type { Scope } from 'effect'
 import { pipeArguments } from 'effect/Pipeable'
 
 import { Loading } from '@assessmentis/ontology'
 import { StreamEither } from '@assessmentis/util'
 
-import { AuthDataService, type AuthData } from '../tagClasses/AuthDataService'
+import { AuthDataService } from '../tagClasses/AuthDataService'
+import type { AuthData } from '../tagClasses/AuthDataService'
 import type {
   CredentialError,
   CredentialToken,

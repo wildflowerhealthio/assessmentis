@@ -1,11 +1,10 @@
-import { pipe, Schema, type FastCheck } from 'effect'
+import { pipe, Schema } from 'effect'
+import type { FastCheck } from 'effect'
 
 import { mergeArbitraries, MergeClasses } from '@assessmentis/util'
 
-import {
-  BackboneElement,
-  type BackboneElementEncoded,
-} from '../../data-types/base/BackboneElement'
+import { BackboneElement } from '../../data-types/base/BackboneElement'
+import type { BackboneElementEncoded } from '../../data-types/base/BackboneElement'
 import { DatatypeChoice } from '../../data-types/Datatype'
 import FhirR4ChoiceElements from '../../data-types/fhirR4ChoiceElements'
 import { QuestionnaireItemLink } from '../Questionnaire/QuestionnaireItemLink'
@@ -133,6 +132,21 @@ export class QuestionnaireResponseItem extends MergeClasses<QuestionnaireRespons
       yield child
       yield* child.deepQuestionnaireResponseItems()
     }
+  }
+
+  /** Returns a copy with the child item matching `linkId` replaced (or inserted) by applying `updater`. */
+  withChildItem(
+    linkId: typeof QuestionnaireItemLink.Type,
+    updater: (prev: QuestionnaireResponseItem) => QuestionnaireResponseItem
+  ): QuestionnaireResponseItem {
+    const existing =
+      this.item?.find((i) => i.linkId === linkId) ??
+      QuestionnaireResponseItem.make({ linkId })
+    const updated = updater(existing)
+    return QuestionnaireResponseItem.make({
+      ...this,
+      item: [...(this.item?.filter((i) => i.linkId !== linkId) ?? []), updated],
+    })
   }
 }
 

@@ -7,6 +7,7 @@
 export * from './createLoggingProxy'
 export * from './effect'
 export * from './isDevelopment'
+export * from './predicates'
 export * from './safeDebugString'
 export * from './schema'
 export * from './stream'

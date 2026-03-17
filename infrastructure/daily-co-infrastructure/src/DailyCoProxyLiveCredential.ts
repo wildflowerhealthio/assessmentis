@@ -1,10 +1,7 @@
 import { Schema } from 'effect'
 
-import {
-  AuthDataLiveCredential,
-  type AuthData,
-  type CredentialToken,
-} from '@assessmentis/platform-domain'
+import { AuthDataLiveCredential } from '@assessmentis/platform-domain'
+import type { AuthData, CredentialToken } from '@assessmentis/platform-domain'
 
 const tag = 'dailyco_proxy' as const
 

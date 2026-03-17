@@ -5,7 +5,8 @@ import {
 } from '@assessmentis/clinical-domain/data-types'
 
 import { codings } from './codings'
-import { baseChoiceObservation, type ObservationTemplate } from './internal'
+import { baseChoiceObservation } from './internal'
+import type { ObservationTemplate } from './internal'
 
 export const totalScore = {
   ...baseChoiceObservation,

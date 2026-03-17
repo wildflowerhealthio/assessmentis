@@ -1,4 +1,5 @@
-import { Chunk, Effect, Option, Stream, type StreamEmit } from 'effect'
+import { Chunk, Effect, Option, Stream } from 'effect'
+import type { StreamEmit } from 'effect'
 
 /**
  * Bridges a callback-based subscription API into an Effect `Stream`.

@@ -1,19 +1,9 @@
-import {
-  Effect,
-  Fiber,
-  Option,
-  Stream,
-  type Either,
-  type PubSub,
-  type Take,
-} from 'effect'
+import { Effect, Fiber, Option, Stream } from 'effect'
+import type { Either, PubSub, Take } from 'effect'
 
 import { AuthError } from '@assessmentis/ontology'
-import {
-  UserId,
-  type AuthData,
-  type AuthDataService,
-} from '@assessmentis/platform-domain'
+import { UserId } from '@assessmentis/platform-domain'
+import type { AuthData, AuthDataService } from '@assessmentis/platform-domain'
 import {
   pubsubAsPerpetualStream,
   takeOneFromPubSubOrDie,

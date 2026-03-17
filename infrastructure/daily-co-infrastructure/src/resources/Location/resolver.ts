@@ -23,11 +23,8 @@ import {
   postRequest,
 } from '../../httpHelpers'
 import { CompleteApiDailyCoRoom } from '../../models/ApiDailyCoRoomSchema'
-import {
-  extractIdFromUrl,
-  type AnyRequest,
-  type AuthReadable,
-} from '../../resolverUtils'
+import { extractIdFromUrl } from '../../resolverUtils'
+import type { AnyRequest, AuthReadable } from '../../resolverUtils'
 
 const LocationUrl = Location.UrlSchema
 
@@ -80,7 +77,7 @@ export const makeLocationResolver = (
   auth: AuthReadable,
   config: DailyCoOriginDefinition
 ) =>
-  RequestResolver.fromEffect((request: AnyRequest<Location>) => {
+  RequestResolver.fromEffect((request: AnyRequest<typeof Location>) => {
     switch (request._tag) {
       case 'Get': {
         const roomName = extractIdFromUrl(request.url)

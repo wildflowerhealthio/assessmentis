@@ -10,15 +10,13 @@ import {
   Schema,
   Stream,
   Take,
-  type Scope,
 } from 'effect'
+import type { Scope } from 'effect'
 
-import {
-  BadDataError,
-  NotFoundError,
-  type UnhandledError,
-} from '@assessmentis/ontology'
-import { DocumentStore, Org, type OrgSlug } from '@assessmentis/platform-domain'
+import { BadDataError, NotFoundError } from '@assessmentis/ontology'
+import type { UnhandledError } from '@assessmentis/ontology'
+import { DocumentStore, Org } from '@assessmentis/platform-domain'
+import type { OrgSlug } from '@assessmentis/platform-domain'
 import {
   pubsubAsPerpetualStream,
   StreamEither,

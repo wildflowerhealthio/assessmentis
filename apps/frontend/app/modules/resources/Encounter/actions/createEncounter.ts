@@ -1,41 +1,61 @@
 import { Effect, Schema } from 'effect'
-import { VideoCallClient } from '@assessmentis/video-call-domain'
+
 import {
-  QuestionnaireResponse,
-  QuestionnaireResponseRepository,
-} from '@assessmentis/clinical-domain/content-management'
-import {
-  EncounterRepository,
+  ClinicalDomainHub,
   Encounter,
-  LocationRepository,
+  EncounterLocation,
   Location,
-} from '@assessmentis/clinical-domain/administration'
+  QuestionnaireResponse,
+} from '@assessmentis/clinical-domain'
+import type {
+  EncounterEncoded,
+  QuestionnaireResponseEncoded,
+} from '@assessmentis/clinical-domain'
+import {
+  Code,
+  CodeableConcept,
+  Coding,
+  Identifier,
+  Reference,
+} from '@assessmentis/clinical-domain/data-types'
 import type {
   AuthError,
   AuthzError,
-  UnhandledError,
   ExternalAssertionError,
+  UnhandledError,
 } from '@assessmentis/ontology'
-import { Code } from '@assessmentis/clinical-domain/data-types'
 
-export const CreateEncounterArg = Schema.extend(
-  Schema.partial(Encounter),
-  Schema.Struct({
-    //....pipe(Schema.omit("encounterId")).fields,
-    questionnaireResponses: Schema.Array(
-      QuestionnaireResponse.pipe(Schema.pick('questionnaire'))
-    ),
-  })
-)
+export const CreateEncounterArg: Schema.Schema<
+  {
+    encounter: Partial<Encounter>
+    questionnaireResponses: ReadonlyArray<
+      Pick<QuestionnaireResponse, 'questionnaire'>
+    >
+  },
+  {
+    encounter: Partial<EncounterEncoded>
+    questionnaireResponses: ReadonlyArray<
+      Pick<QuestionnaireResponseEncoded, 'questionnaire'>
+    >
+  },
+  never
+> = Schema.Struct({
+  encounter: Schema.partial(Encounter),
+  //....pipe(Schema.omit("encounterId")).fields,
+  questionnaireResponses: Schema.Array(
+    QuestionnaireResponse.pipe(Schema.pick('questionnaire'))
+  ),
+})
 
 export type CreateEncounterArg = typeof CreateEncounterArg.Type
 
-export const CreateEncounterResponse = Schema.Struct({
-  ...Encounter.fields,
-  // videoCallRooms: Schema.Array(VideoCallRoom),
-  questionnaireResponses: Schema.Array(QuestionnaireResponse),
-})
-
+export const CreateEncounterResponse = Schema.extend(
+  Encounter,
+  Schema.Struct({
+    // videoCallRooms: Schema.Array(VideoCallRoom),
+    questionnaireResponses: Schema.Array(QuestionnaireResponse),
+  })
+)
 export type CreateEncounterResponse = typeof CreateEncounterResponse.Type
 
 export const createEncounter = (
@@ -43,98 +63,81 @@ export const createEncounter = (
 ): Effect.Effect<
   CreateEncounterResponse,
   UnhandledError | AuthError | AuthzError | ExternalAssertionError,
-  | EncounterRepository
-  | QuestionnaireResponseRepository
-  | VideoCallClient
-  | LocationRepository
+  ClinicalDomainHub
 > => {
   return Effect.gen(function* () {
-    const encounterRepository = yield* EncounterRepository
-    const questionnaireResponseRepository =
-      yield* QuestionnaireResponseRepository
-    const locationRepository = yield* LocationRepository
-    const videoCalls = yield* VideoCallClient
+    const hub = yield* ClinicalDomainHub
 
-    const externalVideoCallRoom = yield* videoCalls.createRoom({
-      enableRecording: true,
-    })
+    // TODO: replace with hubs
+    const externalVideoCallRoom = { url: undefined }
+    // const externalVideoCallRoom = yield* videoCalls.createRoom({
+    //   enableRecording: true,
+    // })
 
     // Create a standalone Location resource for the video room
-    const videoRoomLocation = yield* locationRepository.create({
-      resourceType: 'Location',
-      name: 'Video Room',
-      identifier: [
-        {
-          system: 'http://assessment.is/fhir/video-call-room-name',
-          value: externalVideoCallRoom.url,
-        },
-      ],
-      status: 'active',
-      mode: 'instance',
-    })
+    const videoRoomLocation = yield* hub.create(
+      Location,
+      Location.make({
+        name: 'Video Room',
+        identifier: [
+          Identifier.make({
+            system: 'http://assessment.is/fhir/video-call-room-name',
+            value: externalVideoCallRoom.url,
+          }),
+        ],
+        status: 'active',
+        mode: 'instance',
+      })
+    )
 
     // Build location array with proper references
-    const videoRoomEntry = {
-      location: { reference: `Location/${videoRoomLocation.id}` },
-      physicalType: {
+    const videoRoomEntry = EncounterLocation.make({
+      location: Reference.make({
+        reference: `Location/${videoRoomLocation.url.toString()}`,
+      }),
+      physicalType: CodeableConcept.make({
         coding: [
-          {
+          Coding.make({
             system:
               'http://terminology.hl7.org/CodeSystem/location-physical-type',
             code: Code.make('vi'),
             display: 'Virtual',
-          },
+          }),
         ],
-      },
-    }
+      }),
+    })
 
-    // Add user-selected physical location if provided
-    const userLocationEntries =
-      args.location?.filter((l) => !Location.isVirtualLocation(l)) ?? []
-
-    const encounterData = {
-      resourceType: 'Encounter',
-      class: {
+    const encounterData: Encounter = Encounter.make({
+      class: Coding.make({
         display: 'virtual',
         system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
         code: Code.make('VR'),
-      },
+      }),
       status: 'planned',
-      ...args,
-      location: [videoRoomEntry, ...userLocationEntries],
-    } as const
+      ...args.encounter,
+      location: [videoRoomEntry],
+    })
 
-    const createdEncounter = yield* encounterRepository.create(encounterData)
+    const createdEncounter = yield* hub.create(Encounter, encounterData)
 
-    const questionnaireResponsesEffect =
-      questionnaireResponseRepository.createMany(
-        args.questionnaireResponses.map((questionnaireResponse) => ({
-          resourceType: 'QuestionnaireResponse',
-          encounter: {
-            reference: `Encounter/${createdEncounter.id}`,
-          },
+    const questionnaireResponseRows = yield* hub.createMany(
+      QuestionnaireResponse,
+      args.questionnaireResponses.map((questionnaireResponse) =>
+        QuestionnaireResponse.make({
+          encounter: Reference.make({
+            reference: createdEncounter.url.toString(),
+          }),
           ...questionnaireResponse,
           status: 'in-progress',
-        }))
+        })
       )
+    )
 
-    const [
-      encounterRow,
-      //rooms,
-      questionnaireResponseRows,
-    ] = yield* Effect.all([
-      Effect.succeed(createdEncounter),
-      // roomInsertsEffect,
-      questionnaireResponsesEffect,
-    ] as const)
-
-    // const videoCallRooms: VideoCallRoom[] = rooms;
     const questionnaireResponses: ReadonlyArray<QuestionnaireResponse> =
       questionnaireResponseRows
 
     return {
-      ...encounterRow,
-      // videoCallRooms,
+      ...createdEncounter,
       questionnaireResponses,
     }
   })

@@ -6,9 +6,10 @@ import {
   buildFhirResourcePath,
   buildFhirStoreParent,
   createFhirResponseHandlers,
-  type FhirR4Client,
 } from '@assessmentis/fhir-r4'
-import { UnhandledError, type AuthError } from '@assessmentis/ontology'
+import type { FhirR4Client } from '@assessmentis/fhir-r4'
+import { UnhandledError } from '@assessmentis/ontology'
+import type { AuthError } from '@assessmentis/ontology'
 import { buildSearchParams } from '@assessmentis/util'
 
 import type { GapiClient } from '../services/LoadedGapiClient'

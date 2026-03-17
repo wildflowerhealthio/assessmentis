@@ -12,11 +12,8 @@ import {
   parseAs,
 } from '../../httpHelpers'
 import { ApiDailyCoRecordingSchema } from '../../models/ApiDailyCoRecordingSchema'
-import {
-  fetchRecordingFileUrl,
-  type AnyRequest,
-  type AuthReadable,
-} from '../../resolverUtils'
+import { fetchRecordingFileUrl } from '../../resolverUtils'
+import type { AnyRequest, AuthReadable } from '../../resolverUtils'
 import { DailyCoMedia } from './DailyCoMedia'
 
 const decodeMedia = Schema.decode(DailyCoMedia)
@@ -26,7 +23,7 @@ export const makeMediaResolver = (
   baseUrl: string,
   auth: AuthReadable
 ) =>
-  RequestResolver.fromEffect((request: AnyRequest<Media>) => {
+  RequestResolver.fromEffect((request: AnyRequest<typeof Media>) => {
     switch (request._tag) {
       case 'Get':
         return Effect.fail(

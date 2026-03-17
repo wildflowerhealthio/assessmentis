@@ -1,6 +1,7 @@
 import { Effect, Exit } from 'effect'
 import type { Response } from 'express'
-import { onRequest, type Request } from 'firebase-functions/https'
+import { onRequest } from 'firebase-functions/https'
+import type { Request } from 'firebase-functions/https'
 import { info } from 'firebase-functions/logger'
 
 import type { AuthError, UnhandledError } from '@assessmentis/ontology'

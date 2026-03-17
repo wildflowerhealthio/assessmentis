@@ -2,9 +2,11 @@ import { Schema } from 'effect'
 
 import { MergeClasses } from '@assessmentis/util'
 
-import { Element, type ElementEncoded } from '../base/Element'
+import { Element } from '../base/Element'
+import type { ElementEncoded } from '../base/Element'
 import { Datatype } from '../Datatype'
-import { Coding, type CodingEncoded } from './Coding'
+import { Coding } from './Coding'
+import type { CodingEncoded } from './Coding'
 
 export const DomainType = 'CodeableConcept'
 export type DomainType = typeof DomainType

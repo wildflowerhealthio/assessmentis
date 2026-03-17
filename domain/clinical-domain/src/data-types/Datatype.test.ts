@@ -164,3 +164,145 @@ describe('DatatypeChoice with overrideFields', () => {
     )
   })
 })
+
+// ---------------------------------------------------------------------------
+// DatatypeChoice.cases
+// ---------------------------------------------------------------------------
+
+describe('DatatypeChoice.cases', () => {
+  const ValueChoice = DatatypeChoice(['string', 'boolean', 'integer'])
+  const decode = Schema.decodeSync(ValueChoice)
+
+  test('active tag key holds the inner value', () => {
+    const v = decode({ _tag: 'string', string: 'hello' })
+    const c = DatatypeChoice.cases(v)
+    expect(c.string).toBe('hello')
+  })
+
+  test('inactive tag keys are undefined', () => {
+    const v = decode({ _tag: 'string', string: 'hello' })
+    const c = DatatypeChoice.cases(v)
+    expect(c.boolean).toBeUndefined()
+    expect(c.integer).toBeUndefined()
+  })
+
+  test('works with boolean variant', () => {
+    const v = decode({ _tag: 'boolean', boolean: true })
+    const c = DatatypeChoice.cases(v)
+    expect(c.boolean).toBe(true)
+    expect(c.string).toBeUndefined()
+  })
+
+  test('undefined input returns all-undefined cases', () => {
+    const c = DatatypeChoice.cases(
+      undefined as typeof ValueChoice.Type | undefined
+    )
+    expect(c.string).toBeUndefined()
+    expect(c.boolean).toBeUndefined()
+    expect(c.integer).toBeUndefined()
+  })
+
+  test('property: exactly one key is defined', () => {
+    const arb = Arbitrary.make(ValueChoice)
+    fc.assert(
+      fc.property(arb, (value) => {
+        const c = DatatypeChoice.cases(value)
+        const definedKeys = (['string', 'boolean', 'integer'] as const).filter(
+          (k) => c[k] !== undefined
+        )
+        expect(definedKeys).toHaveLength(1)
+        expect(definedKeys[0]).toBe(value._tag)
+      })
+    )
+  })
+})
+
+// ---------------------------------------------------------------------------
+// DatatypeChoice.match
+// ---------------------------------------------------------------------------
+
+describe('DatatypeChoice.match', () => {
+  const ValueChoice = DatatypeChoice(['string', 'boolean', 'integer'])
+  const decode = Schema.decodeSync(ValueChoice)
+
+  describe('exhaustive (no default)', () => {
+    const format = (v: typeof ValueChoice.Type): string =>
+      DatatypeChoice.match(v, {
+        string: (s) => `str:${s}`,
+        boolean: (b) => `bool:${b}`,
+        integer: (n) => `int:${n}`,
+      })
+
+    test('matches string variant', () => {
+      expect(format(decode({ _tag: 'string', string: 'hi' }))).toBe('str:hi')
+    })
+
+    test('matches boolean variant', () => {
+      expect(format(decode({ _tag: 'boolean', boolean: false }))).toBe(
+        'bool:false'
+      )
+    })
+
+    test('matches integer variant', () => {
+      expect(format(decode({ _tag: 'integer', integer: 42 }))).toBe('int:42')
+    })
+
+    test('property: every generated value matches exactly one handler', () => {
+      const arb = Arbitrary.make(ValueChoice)
+      fc.assert(
+        fc.property(arb, (value) => {
+          const result = format(value)
+          expect(result).toBeTypeOf('string')
+          expect(result.length).toBeGreaterThan(0)
+        })
+      )
+    })
+  })
+
+  describe('partial with default', () => {
+    test('matched tag uses its handler', () => {
+      const v = decode({ _tag: 'string', string: 'hi' })
+      const result = DatatypeChoice.match(
+        v,
+        { string: (s) => s.toUpperCase() },
+        () => 'default'
+      )
+      expect(result).toBe('HI')
+    })
+
+    test('unmatched tag uses default', () => {
+      const v = decode({ _tag: 'integer', integer: 99 })
+      const result = DatatypeChoice.match(
+        v,
+        { string: (s) => s.toUpperCase() },
+        () => 'default'
+      )
+      expect(result).toBe('default')
+    })
+
+    test('default receives the full variant', () => {
+      const v = decode({ _tag: 'boolean', boolean: true })
+      const result = DatatypeChoice.match(
+        v,
+        { string: (s) => s },
+        (unmatched): string => unmatched._tag
+      )
+      expect(result).toBe('boolean')
+    })
+  })
+
+  test('throws when no handler and no default', () => {
+    // Simulate a tag not covered at runtime (e.g. data from a newer server)
+    const fabricated = {
+      _tag: 'decimal',
+      decimal: 1.5,
+    } as unknown as typeof ValueChoice.Type
+    expect(() =>
+      DatatypeChoice.match(fabricated, {
+        string: (s) => `${s}`,
+        boolean: (b) => `${b}`,
+        integer: (n) => `${n}`,
+      })
+    ).toThrow('no handler for tag "decimal"')
+  })
+})

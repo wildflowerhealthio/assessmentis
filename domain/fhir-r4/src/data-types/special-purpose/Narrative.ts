@@ -1,9 +1,7 @@
 import { Schema } from 'effect'
 
-import {
-  Narrative,
-  type NarrativeEncoded,
-} from '@assessmentis/clinical-domain/data-types'
+import { Narrative } from '@assessmentis/clinical-domain/data-types'
+import type { NarrativeEncoded } from '@assessmentis/clinical-domain/data-types'
 import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
 
 import type FhirR4 from 'fhir/r4'

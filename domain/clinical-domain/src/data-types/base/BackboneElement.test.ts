@@ -4,7 +4,8 @@ import { Arbitrary, Schema } from 'effect'
 
 import { MergeClasses } from '@assessmentis/util'
 
-import { BackboneElement, type BackboneElementEncoded } from './BackboneElement'
+import { BackboneElement } from './BackboneElement'
+import type { BackboneElementEncoded } from './BackboneElement'
 import type { Extension } from '../special-purpose/Extension'
 
 const BackboneMixin = BackboneElement('TestBackbone')

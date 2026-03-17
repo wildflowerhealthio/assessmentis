@@ -1,7 +1,8 @@
-import { Effect, pipe, type Readable } from 'effect'
+import { Effect, pipe } from 'effect'
+import type { Readable } from 'effect'
 import type { HttpClient } from '@effect/platform/HttpClient'
 
-import type { Resource, ResourceRequest } from '@assessmentis/effectful-store'
+import type { ResourceRequest } from '@assessmentis/effectful-store'
 import type {
   AuthError,
   AuthzError,
@@ -19,6 +20,7 @@ import {
 } from './httpHelpers'
 import { ApiDailyCoRecordingLinkSchema } from './models/ApiDailyCoRecordingLinkSchema'
 import { ApiDailyCoTranscriptLinkSchema } from './models/ApiDailyCoTranscriptLinkSchema'
+import type { SupportedClasses } from './DailyCoOrigin'
 
 export type CommonErrors =
   | UnhandledError
@@ -33,7 +35,7 @@ export type AuthReadable = Readable.Readable<
   never
 >
 
-export type AnyRequest<T extends Resource.AnyResource> =
+export type AnyRequest<T extends SupportedClasses> =
   | ResourceRequest.Get<T>
   | ResourceRequest.Search<T>
   | ResourceRequest.Create<T>

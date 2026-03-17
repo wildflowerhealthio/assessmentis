@@ -1,18 +1,17 @@
 import { DateTime, Effect, Exit, Layer, Option } from 'effect'
-import { type Response } from 'express'
+import type { Response } from 'express'
 import { error, info } from 'firebase-functions/logger'
-import { onRequest, type Request } from 'firebase-functions/v2/https'
+import { onRequest } from 'firebase-functions/v2/https'
+import type { Request } from 'firebase-functions/v2/https'
 
 import {
   GoogleUserOAuthLiveCredential,
   GoogleUserOAuthToken,
 } from '@assessmentis/google-account-infrastructure'
-import {
-  AuthError,
-  type AuthzError,
-  type UnhandledError,
-} from '@assessmentis/ontology'
-import { type DocumentStore, UserId } from '@assessmentis/platform-domain'
+import { AuthError } from '@assessmentis/ontology'
+import type { AuthzError, UnhandledError } from '@assessmentis/ontology'
+import { UserId } from '@assessmentis/platform-domain'
+import type { DocumentStore } from '@assessmentis/platform-domain'
 
 import { google } from 'googleapis'
 

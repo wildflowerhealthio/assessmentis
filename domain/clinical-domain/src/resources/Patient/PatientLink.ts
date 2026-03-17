@@ -1,10 +1,7 @@
 import { Schema } from 'effect'
 
-import {
-  BackboneElement,
-  Reference,
-  type BackboneElementEncoded,
-} from '../../data-types'
+import { BackboneElement, Reference } from '../../data-types'
+import type { BackboneElementEncoded } from '../../data-types'
 
 /**
  * This element is labeled as a modifier because it may be used to mark that the

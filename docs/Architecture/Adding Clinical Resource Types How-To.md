@@ -12,9 +12,9 @@ For modeling rules and architecture context, see:
 
 Add one Clinical Resource with full parity to existing Clinical Resources:
 
-- Schema registered in domain `Schemas`
-- Repository Tag registered in domain `Repositories`
-- Frontend `ClinicalDataRepositoryService` supports effect + stream repository access
+- Schema defined in `domain/clinical-domain/src/resources/`
+- Registered in `ResourceDataTypes`
+- Origin definitions updated so the Hub can route requests
 - Tests updated where resource registries are asserted
 - Docs added in both domain and frontend locations
 
@@ -22,36 +22,27 @@ Add one Clinical Resource with full parity to existing Clinical Resources:
 
 Follow [domain/clinical-domain/docs/Adding Resource Types How-To.md](../../domain/clinical-domain/docs/Adding%20Resource%20Types%20How-To.md).
 
-## Step 2: Add the domain Clinical Resource repository Tag
+## Step 2: Register in ResourceDataTypes
 
-In `domain/clinical-domain/src/{category}/contexts/`:
+Add the new Clinical Resource to [domain/clinical-domain/src/ResourceDataTypes.ts](../../domain/clinical-domain/src/ResourceDataTypes.ts):
 
-- Add `{ResourceName}Repository.ts` as a `Context.Tag`
-- Export it from the context `index.ts`
-- Register the repository in `src/Repositories.ts`
+- Import the resource type
+- Add it to both the `ResourceDataTypes` type and const
 
-The repository interface must be `ClinicalDataRepository<TResource>` for full CRUD + search parity.
+The Hub (`ClinicalDomainHub`) will automatically support get/search/create/subscribe for the new resource type.
 
-## Step 3: Register schema and repository
+## Step 3: Add origin definition support
 
-In `domain/clinical-domain/src/Schemas.ts` and `domain/clinical-domain/src/Repositories.ts`:
+Add the new resource type to the relevant origin definition(s) in the infrastructure packages (e.g., `GoogleFhirOriginDefinition`, `DailyCoOriginDefinition`) so the Hub can route requests.
 
-- Add the new Clinical Resource entry
-- Keep key names aligned with FHIR `resourceType` literals
+## Step 4: Wire frontend UI (if needed)
 
-## Step 4: Wire frontend repository service
-
-In `apps/frontend/app/layers/ClinicalDataRepositoriesService.ts`:
-
-- Import the new Clinical Resource schema
-- Add entries in both `effect` and `stream`
-
-This ensures route/actions/hooks can obtain the repository using the same generic Clinical Resource APIs.
+Follow [apps/frontend/app/modules/resources/Adding Clinical Resource Types How-To.md](../../apps/frontend/app/modules/resources/Adding%20Clinical%20Resource%20Types%20How-To.md) for module structure, routes, and CRUD patterns.
 
 ## Step 5: Update tests
 
 - Add or update schema property tests in domain package
-- Update frontend service tests for the new Clinical Resource registry entry
+- Verify Hub integration tests cover the new resource type
 
 ## Step 6: Add docs and cross-links
 
@@ -60,7 +51,6 @@ This ensures route/actions/hooks can obtain the repository using the same generi
 
 ## Most-used code locations
 
-- Domain schema registry: [../../domain/clinical-domain/src/Schemas.ts](../../domain/clinical-domain/src/Schemas.ts)
 - Domain resource data types: [../../domain/clinical-domain/src/ResourceDataTypes.ts](../../domain/clinical-domain/src/ResourceDataTypes.ts)
 - Hub Tag: [../../domain/clinical-domain/src/ClinicalDomainHub.ts](../../domain/clinical-domain/src/ClinicalDomainHub.ts)
 - Frontend Hub hook: [../../apps/frontend/app/layers/useHub.ts](../../apps/frontend/app/layers/useHub.ts)

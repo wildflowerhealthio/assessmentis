@@ -1,13 +1,15 @@
-import type { Patient } from '@assessmentis/clinical-domain/administration'
 import { Effect } from 'effect'
-import {
-  formatHumanName,
-  extractReferenceId,
-} from '../../../common/utils/fhirDisplay'
+
+import type { Patient } from '@assessmentis/clinical-domain'
+
 import {
   humanizeDateTimeForLocalReader,
   humanizeTimelessDate,
 } from '../../../common/utils/dateUtils'
+import {
+  extractReferenceId,
+  formatHumanName,
+} from '../../../common/utils/fhirDisplay'
 
 /**
  * Get a display-friendly name for a patient

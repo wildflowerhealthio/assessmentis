@@ -4,7 +4,8 @@ import { Effect, Either, Stream } from 'effect'
 import { AuthError } from '@assessmentis/ontology'
 
 import type { UserId } from '../models/UserId'
-import { AuthDataService, type AuthData } from './AuthDataService'
+import { AuthDataService } from './AuthDataService'
+import type { AuthData } from './AuthDataService'
 
 const makeAuthData = (userId = 'user1' as UserId): AuthData => ({
   userId,

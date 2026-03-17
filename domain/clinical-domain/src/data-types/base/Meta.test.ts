@@ -2,7 +2,8 @@ import * as fc from 'fast-check'
 import { describe, expect, expectTypeOf, test } from 'vitest'
 import { Arbitrary, Schema } from 'effect'
 
-import { Meta, type MetaEncoded } from './Meta'
+import { Meta } from './Meta'
+import type { MetaEncoded } from './Meta'
 
 const metaArb = Arbitrary.make(Meta)
 

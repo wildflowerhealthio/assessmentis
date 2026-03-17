@@ -1,16 +1,8 @@
-import {
-  Context,
-  Effect,
-  Either,
-  Option,
-  pipe,
-  PubSub,
-  Stream,
-  type Scope,
-  type Take,
-} from 'effect'
+import { Context, Effect, Either, Option, pipe, PubSub, Stream } from 'effect'
+import type { Scope, Take } from 'effect'
 
-import { UnhandledError, type AuthError } from '@assessmentis/ontology'
+import { UnhandledError } from '@assessmentis/ontology'
+import type { AuthError } from '@assessmentis/ontology'
 import type { UserId } from '@assessmentis/platform-domain'
 
 /** The authenticated user's ID and raw auth token. */

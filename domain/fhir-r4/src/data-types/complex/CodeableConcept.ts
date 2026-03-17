@@ -1,9 +1,7 @@
 import { Schema } from 'effect'
 
-import {
-  CodeableConcept,
-  type CodeableConceptEncoded,
-} from '@assessmentis/clinical-domain/data-types'
+import { CodeableConcept } from '@assessmentis/clinical-domain/data-types'
+import type { CodeableConceptEncoded } from '@assessmentis/clinical-domain/data-types'
 import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
 
 import type FhirR4 from 'fhir/r4'

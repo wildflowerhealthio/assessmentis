@@ -1,9 +1,7 @@
 import { Schema } from 'effect'
 
-import {
-  Practitioner,
-  type PractitionerEncoded,
-} from '@assessmentis/clinical-domain'
+import { Practitioner } from '@assessmentis/clinical-domain'
+import type { PractitionerEncoded } from '@assessmentis/clinical-domain'
 import { AdministrativeGender } from '@assessmentis/clinical-domain/data-types'
 import { mutableEncoded, TwoStepExternalSchema } from '@assessmentis/util'
 

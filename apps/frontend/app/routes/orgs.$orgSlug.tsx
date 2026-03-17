@@ -1,29 +1,36 @@
-import { auth, db, FirebaseWebLayer } from 'app/FirebaseWebLayer'
-import { DailyCoConfig } from '@assessmentis/config-domain'
-import { DocumentStore, FrontendConfig } from '@assessmentis/platform-domain'
-import type { Route } from './+types/orgs.$orgSlug'
-import { Form } from 'react-router'
 import { Effect, pipe } from 'effect'
+import { Form } from 'react-router'
+
 import {
   FirebaseWebDocumentStoreLayer,
   setDocument,
 } from '@assessmentis/firebase-web-infrastructure'
+import { DocumentStore } from '@assessmentis/platform-domain'
 
-const frontendConfig = (): FrontendConfig => {
-  const fhirStore: FrontendConfig['fhirServer'] = {
-    _tag: 'google_fhir_store' as const,
-    apiKey: null,
-    dataset: 'sandbox-dataset',
-    projectId: 'assessment-is-sandbox',
-    region: 'northamerica-northeast2',
-    storeId: 'sandbox-store',
-  }
+import { auth, db, FirebaseWebLayer } from 'app/FirebaseWebLayer'
 
-  return FrontendConfig.make({
-    fhirServer: fhirStore,
-    videoCallClient: DailyCoConfig.make({ dailyCoProxyUrl: '' }),
-  } as const)
-}
+import type { Route } from './+types/orgs.$orgSlug'
+
+const sandboxOrgData = () => ({
+  slug: 'sandbox',
+  emoji: '🧪',
+  origins: {
+    'https%3A%2F%2Fhealthcare.googleapis.com%2Fv1%2Fprojects%2Fassessment-is-sandbox%2Flocations%2Fnorthamerica-northeast2%2Fdatasets%2Fsandbox-dataset%2FfhirStores%2Fsandbox-store%2Ffhir':
+      {
+        _tag: 'google_fhir' as const,
+        projectId: 'assessment-is-sandbox',
+        region: 'northamerica-northeast2',
+        dataset: 'sandbox-dataset',
+        storeId: 'sandbox-store',
+        activeResources: {
+          Patient: true as const,
+          Encounter: true as const,
+          Observation: true as const,
+        },
+      },
+  },
+  originServerConfigs: {},
+})
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   console.log('Loading auth state')
@@ -46,10 +53,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 
 export async function clientAction({ params }: Route.ClientActionArgs) {
   await Effect.runPromise(
-    setDocument(db, 'orgs', params.orgSlug, {
-      slug: params.orgSlug,
-      frontendConfig: frontendConfig(),
-    })
+    setDocument(db, 'orgs', params.orgSlug, sandboxOrgData())
   )
 }
 

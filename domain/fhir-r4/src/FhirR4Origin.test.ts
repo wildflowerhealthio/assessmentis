@@ -2,11 +2,20 @@ import * as fc from 'fast-check'
 import { describe, expect, test, vi } from 'vitest'
 import { Cause, Effect, Exit, Option, Request } from 'effect'
 
-import { Patient } from '@assessmentis/clinical-domain'
 import {
-  ReadonlyUrl,
-  type ResourceRequest,
-} from '@assessmentis/effectful-store'
+  Composition,
+  DiagnosticReport,
+  Encounter,
+  Location,
+  Media,
+  Observation,
+  Patient,
+  Practitioner,
+  Questionnaire,
+  QuestionnaireResponse,
+} from '@assessmentis/clinical-domain'
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
+import type { ResourceRequest } from '@assessmentis/effectful-store'
 import { NotFoundError } from '@assessmentis/ontology'
 
 import { FhirR4Client } from './FhirR4Client/FhirR4Client'
@@ -67,25 +76,25 @@ const makeOrigin = (overrides: Partial<FhirR4Client['Type']> = {}) => {
 }
 
 const makeGetRequest = (id: string) =>
-  Request.of<ResourceRequest.Get<Patient>>()({
+  Request.of<ResourceRequest.Get<typeof Patient>>()({
     _tag: 'Get',
-    domainType: 'Patient',
+    klass: Patient,
     url: Patient.UrlSchema.make(originUrl.appendToPathname(`/Patient/${id}`)),
     origin: originUrl,
   })
 
 const makeSearchRequest = (params: Record<string, string | undefined> = {}) =>
-  Request.of<ResourceRequest.Search<Patient>>()({
+  Request.of<ResourceRequest.Search<typeof Patient>>()({
     _tag: 'Search',
-    domainType: 'Patient',
+    klass: Patient,
     params,
     origin: originUrl,
   })
 
 const makeDeleteRequest = (id: string) =>
-  Request.of<ResourceRequest.Delete<Patient>>()({
+  Request.of<ResourceRequest.Delete<typeof Patient>>()({
     _tag: 'Delete',
-    domainType: 'Patient',
+    klass: Patient,
     resource: {
       url: Patient.UrlSchema.make(originUrl.appendToPathname(`/Patient/${id}`)),
     },
@@ -215,16 +224,16 @@ describe('FhirR4Origin', () => {
       const { origin } = makeOrigin()
 
       expect(origin.supportedResources).toEqual({
-        Composition: true,
-        DiagnosticReport: true,
-        Encounter: true,
-        Location: true,
-        Media: true,
-        Observation: true,
-        Patient: true,
-        Practitioner: true,
-        Questionnaire: true,
-        QuestionnaireResponse: true,
+        Composition,
+        DiagnosticReport,
+        Encounter,
+        Location,
+        Media,
+        Observation,
+        Patient,
+        Practitioner,
+        Questionnaire,
+        QuestionnaireResponse,
       })
     })
 

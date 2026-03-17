@@ -1,6 +1,19 @@
-import { makeResourceListIndexPage } from 'app/modules/resources/ResourcePages/makeResourceListIndexPage'
-import { observationConfig } from 'app/modules/resources/Observation/resourcePagesConfig'
+import { Observation } from '@assessmentis/clinical-domain'
 
-const ObservationIndexPage = makeResourceListIndexPage(observationConfig)
+import { ObservationFiltersBridge } from '../modules/resources/Observation/components/ObservationFiltersBridge'
 
-export default ObservationIndexPage
+import '../traits/BreadcrumbLabel/implementations/Observation'
+import '../traits/Labeled/implementations/Observation'
+import '../traits/Link/implementations/Observation'
+import '../traits/Listable/implementations/Observation'
+
+import { ResourceListIndexPage } from '../modules/ResourceListIndexPage/ResourceListIndexPage'
+
+export default function ObservationIndexPage() {
+  return (
+    <ResourceListIndexPage
+      klass={Observation}
+      FilterComponent={ObservationFiltersBridge}
+    />
+  )
+}

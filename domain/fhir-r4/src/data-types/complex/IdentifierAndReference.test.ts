@@ -20,12 +20,12 @@ const baseUrl = ReadonlyUrl.make({
 const TestBaseUrl = Layer.succeed(BaseUrl, baseUrl)
 
 describe('FhirR4Reference', () => {
-  test('property: FHIR encode-decode round-trip', async () => {
-    await fc.assert(
-      fc.asyncProperty(
+  test('property: FHIR encode-decode round-trip', () => {
+    fc.assert(
+      fc.property(
         Arbitrary.make(Reference).map((v) => deepAssignBaseUrls(v, baseUrl)),
-        async (reference) => {
-          const decoded = await Effect.runPromise(
+        (reference) => {
+          const decoded = Effect.runSync(
             Effect.gen(function* () {
               const fhir: FhirR4.Reference =
                 yield* Schema.encode(FhirR4Reference)(reference)
@@ -40,12 +40,12 @@ describe('FhirR4Reference', () => {
 })
 
 describe('FhirR4Identifier', () => {
-  test('property: FHIR encode-decode round-trip', async () => {
-    await fc.assert(
-      fc.asyncProperty(
+  test('property: FHIR encode-decode round-trip', () => {
+    fc.assert(
+      fc.property(
         Arbitrary.make(Identifier).map((v) => deepAssignBaseUrls(v, baseUrl)),
-        async (identifier) => {
-          const decoded = await Effect.runPromise(
+        (identifier) => {
+          const decoded = Effect.runSync(
             Effect.gen(function* () {
               const fhir: FhirR4.Identifier =
                 yield* Schema.encode(FhirR4Identifier)(identifier)

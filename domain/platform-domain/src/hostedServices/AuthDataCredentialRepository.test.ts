@@ -2,13 +2,14 @@ import { describe, expect, test } from 'vitest'
 import { Effect, Either, Stream } from 'effect'
 
 import type { UserId } from '../models/UserId'
-import { AuthDataService, type AuthData } from '../tagClasses/AuthDataService'
+import { AuthDataService } from '../tagClasses/AuthDataService'
+import type { AuthData } from '../tagClasses/AuthDataService'
 import type { CredentialToken } from '../tagClasses/CredentialRepository'
 import {
   AuthDataLiveCredential,
-  type AuthDataCredentialConstructor,
   makeAuthDataCredentialRepository,
 } from './AuthDataCredentialRepository'
+import type { AuthDataCredentialConstructor } from './AuthDataCredentialRepository'
 
 interface TestToken extends CredentialToken<TestToken, 'test'> {
   readonly _tag: 'test'

@@ -1,4 +1,5 @@
-import { useCallback, useState, type SyntheticEvent } from 'react'
+import { useCallback, useState } from 'react'
+import type { SyntheticEvent } from 'react'
 
 import {
   useAppMessage,

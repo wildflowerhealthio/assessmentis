@@ -1,4 +1,4 @@
-import type { Location } from '@assessmentis/clinical-domain/administration'
+import type { Location } from '@assessmentis/clinical-domain'
 
 export function getLocationDisplayName(location: Location): string {
   const name = location.name?.trim()
@@ -7,5 +7,5 @@ export function getLocationDisplayName(location: Location): string {
   const identifierValue = location.identifier?.[0]?.value?.trim()
   if (identifierValue) return identifierValue
 
-  return `Location ${location.id}`
+  return `Location ${location.url?.toString() ?? 'Unknown'}`
 }

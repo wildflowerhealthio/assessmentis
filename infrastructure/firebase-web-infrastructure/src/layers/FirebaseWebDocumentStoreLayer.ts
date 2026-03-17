@@ -1,7 +1,8 @@
 import { Effect, Either, Layer, Stream } from 'effect'
 
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
-import { DocumentStore, type DocumentData } from '@assessmentis/platform-domain'
+import { DocumentStore } from '@assessmentis/platform-domain'
+import type { DocumentData } from '@assessmentis/platform-domain'
 import { unsubscribableCallbackAsStream } from '@assessmentis/util'
 
 import { doc, getDoc, onSnapshot, setDoc } from 'firebase/firestore'

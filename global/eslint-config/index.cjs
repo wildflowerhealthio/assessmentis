@@ -27,15 +27,12 @@ module.exports = defineConfig([
       },
     },
     rules: {
+      'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
       'import/no-unresolved': ['off'],
       '@typescript-eslint/no-namespace': ['off'],
       '@typescript-eslint/no-empty-object-type': [
         'error',
         { allowInterfaces: 'always' },
-      ],
-      '@typescript-eslint/consistent-type-imports': [
-        'error',
-        { fixStyle: 'separate-type-imports', prefer: 'type-imports' },
       ],
       '@typescript-eslint/no-unused-vars': [
         'error',

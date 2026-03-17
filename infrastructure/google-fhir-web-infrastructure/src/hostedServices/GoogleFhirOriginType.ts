@@ -1,23 +1,26 @@
-import { Effect, Schema, type Scope } from 'effect'
+import { Effect, Schema } from 'effect'
+import type { Scope } from 'effect'
 
-import type { ResourceDataTypes } from '@assessmentis/clinical-domain'
-import {
-  ReadonlyUrl,
-  type Origin,
-  type OriginConfig,
-  type OriginFactory,
+import { Composition } from '@assessmentis/clinical-domain'
+import { ReadonlyUrl } from '@assessmentis/effectful-store'
+import type {
+  Origin,
+  OriginDefinition,
+  OriginFactory,
 } from '@assessmentis/effectful-store'
 import {
   buildFhirStoreParent,
   fhirProtocols,
   makeFhirR4ReadyOrigin,
 } from '@assessmentis/fhir-r4'
-import {
-  GoogleFhirOriginDefinition,
-  type GoogleUserCredentialIdentifier,
-  type GoogleUserOAuthToken,
+import { GoogleFhirOriginDefinition } from '@assessmentis/google-account-infrastructure'
+import type {
+  GoogleFhirOriginUserConfig,
+  GoogleUserCredentialIdentifier,
+  GoogleUserOAuthToken,
 } from '@assessmentis/google-account-infrastructure'
-import { UnhandledError, type AuthError } from '@assessmentis/ontology'
+import { UnhandledError } from '@assessmentis/ontology'
+import type { AuthError } from '@assessmentis/ontology'
 import type {
   CredentialError,
   LiveCredential,
@@ -26,6 +29,17 @@ import type {
 import type { GapiClient } from '../services/LoadedGapiClient'
 import type { GapiHealthcareClient } from '../services/LoadedGapiHealthcareClient'
 import { makeGapiGoogleHealthcareClient } from './GapiGoogleHealthcareClientLayer'
+import type {
+  DiagnosticReport,
+  Encounter,
+  Location,
+  Media,
+  Observation,
+  Patient,
+  Practitioner,
+  Questionnaire,
+  QuestionnaireResponse,
+} from '@assessmentis/clinical-domain'
 
 const mapCredentialError = (
   error: CredentialError
@@ -54,6 +68,18 @@ export const buildGoogleFhirOriginUrl = (
 const decodeGoogleFhirDef = (def: unknown) =>
   Schema.decodeUnknownSync(GoogleFhirOriginDefinition)(def)
 
+type SupportedClasses =
+  | typeof Composition
+  | typeof DiagnosticReport
+  | typeof Encounter
+  | typeof Location
+  | typeof Media
+  | typeof Observation
+  | typeof Patient
+  | typeof Practitioner
+  | typeof Questionnaire
+  | typeof QuestionnaireResponse
+
 /**
  * Creates an {@link OriginType} for Google FHIR origins.
  *
@@ -72,32 +98,24 @@ export const makeGoogleFhirOriginType = (deps: {
     never,
     Scope.Scope
   >
-}): OriginFactory<ResourceDataTypes> => ({
+}): OriginFactory<SupportedClasses, GoogleFhirOriginUserConfig, never> => ({
   tag: 'google_fhir',
-  make: (
-    originUrl: ReadonlyUrl,
-    baseDef: OriginConfig,
-    originConfig: Record<string, unknown> | undefined
-  ) => {
+  make: <Keys extends SupportedClasses['DomainType']>(
+    _originUrl: ReadonlyUrl,
+    baseDef: OriginDefinition<Keys> & GoogleFhirOriginUserConfig
+  ): Effect.Effect<
+    Origin.AnyState<SupportedClasses & { DomainType: Keys }>,
+    never,
+    Scope.Scope
+  > => {
     const def = decodeGoogleFhirDef(baseDef)
 
-    if (!originConfig) {
-      return Effect.succeed({
-        originUrl: buildGoogleFhirOriginUrl(def),
-        supportedResources: def.activeResources,
-        resolver: undefined,
-        errorStatus: new UnhandledError({
-          message: 'No credential configured for Google FHIR origin',
-        }),
-        provokeReauthenticate: () => Effect.void,
-        provokeReauthorize: () => Effect.void,
-      } satisfies Origin.Errored<ResourceDataTypes, never>)
-    }
+    const email = baseDef.email
 
     const identifier: GoogleUserCredentialIdentifier = {
       _tag: 'google_user_oauth_token',
       userId: deps.userId,
-      email: String(originConfig['email']),
+      email,
     }
 
     return deps.getCredential(identifier).pipe(
@@ -131,7 +149,7 @@ export const makeGoogleFhirOriginType = (deps: {
           provokeReauthorize: () => Effect.void,
         })
 
-        return { ...readyOrigin, activeResources: def.activeResources }
+        return readyOrigin
       })
     )
   },

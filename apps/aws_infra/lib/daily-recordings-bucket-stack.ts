@@ -1,11 +1,5 @@
-import {
-  aws_iam,
-  aws_s3,
-  CfnOutput,
-  Duration,
-  Stack,
-  type StackProps,
-} from 'aws-cdk-lib'
+import { aws_iam, aws_s3, CfnOutput, Duration, Stack } from 'aws-cdk-lib'
+import type { StackProps } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 
 export class DailyRecordingBucket extends Stack {

@@ -1,8 +1,9 @@
 import { Schema } from 'effect'
 
-import { MergeClasses } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary, MergeClasses } from '@assessmentis/util'
 
-import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
+import { Resource } from '../../data-types/base/Resource'
+import type { ResourceEncoded } from '../../data-types/base/Resource'
 import { Coding } from '../../data-types/complex/Coding'
 import { QuestionnaireItem } from './QuestionnaireItem'
 
@@ -14,16 +15,28 @@ type DomainType = typeof DomainType
 const fields = {
   definitionUrl: Schema.optional(Schema.String),
   approvalDate: Schema.optional(Schema.String),
-  code: Schema.optional(Schema.Array(Schema.suspend(() => Coding))),
+  code: Schema.optional(
+    Schema.Array(Schema.suspend(() => Coding)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   contact: Schema.optional(Schema.Any),
   copyright: Schema.optional(Schema.String),
   date: Schema.optional(Schema.String),
-  derivedFrom: Schema.optional(Schema.Array(Schema.String)),
+  derivedFrom: Schema.optional(
+    Schema.Array(Schema.String).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   description: Schema.optional(Schema.String),
   effectivePeriod: Schema.optional(Schema.Any),
   experimental: Schema.optional(Schema.Boolean),
   identifier: Schema.optional(Schema.Any),
-  item: Schema.optional(Schema.Array(QuestionnaireItem)),
+  item: Schema.optional(
+    Schema.Array(QuestionnaireItem).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   jurisdiction: Schema.optional(Schema.Any),
   lastReviewDate: Schema.optional(Schema.String),
   name: Schema.optional(Schema.String),
@@ -35,7 +48,11 @@ const fields = {
     Schema.Literal('retired'),
     Schema.Literal('unknown')
   ),
-  subjectType: Schema.optional(Schema.Array(Schema.String)),
+  subjectType: Schema.optional(
+    Schema.Array(Schema.String).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   title: Schema.optional(Schema.String),
   useContext: Schema.optional(Schema.Any),
   version: Schema.optional(Schema.String),

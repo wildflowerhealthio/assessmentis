@@ -5,22 +5,22 @@ import {
   RequestResolver,
   Stream,
   SubscriptionRef,
-  type Scope,
 } from 'effect'
+import type { Scope } from 'effect'
 
 import { Loading } from '@assessmentis/ontology'
 import { SideEffect } from '@assessmentis/util'
 
 import type * as Resource from './Resource'
 
-import {
-  failEntry,
-  type AnyEntry,
-  type AnyRequest,
-  type HubError as _HubError,
-  type HubRef,
-  type HubState as _HubState,
-  type Repository as _Repository,
+import { failEntry } from './hub/types'
+import type {
+  AnyEntry,
+  AnyRequest,
+  HubError as _HubError,
+  HubRef,
+  HubState as _HubState,
+  Repository as _Repository,
 } from './hub/types'
 import { awaitReady } from './hub/origin-resolution'
 import {
@@ -47,17 +47,14 @@ export type {
  * batched `RequestResolver`, and typed {@link Repository} CRUD methods for
  * each resource type.
  *
- * @typeParam Resources - Map of domain type keys to resource types
+ * @typeParam Classes - Union of domain classes this hub manages
  */
-export type Hub<Resources extends Resource.ResourceSet> = {
-  readonly changes: Stream.Stream<
-    Either.Either<_HubState<Resources>, _HubError>
-  >
-  readonly resolver: RequestResolver.RequestResolver<
-    AnyRequest<Resources>,
-    never
-  >
-} & _Repository<Resources>
+export type Hub<
+  Classes extends Resource.AnyDomainClass = Resource.AnyDomainClass,
+> = {
+  readonly changes: Stream.Stream<Either.Either<_HubState, _HubError>>
+  readonly resolver: RequestResolver.RequestResolver<AnyRequest<Classes>, never>
+} & _Repository<Classes>
 
 // --- makeHub ---
 
@@ -71,11 +68,11 @@ export type Hub<Resources extends Resource.ResourceSet> = {
  * per-origin resolvers. Loading origins are deferred; permanent errors
  * fail immediately.
  */
-export const makeHubFromRef = <Resources extends Resource.ResourceSet>(
-  stateRef: HubRef<Resources>
-): Hub<Resources> => {
+export const makeHubFromRef = <Classes extends Resource.AnyDomainClass>(
+  stateRef: HubRef
+): Hub<Classes> => {
   const resolver: RequestResolver.RequestResolver<
-    AnyRequest<Resources>,
+    AnyRequest<Resource.AnyDomainClass>,
     never
   > = RequestResolver.makeWithEntry((batches) =>
     Effect.gen(function* () {
@@ -92,7 +89,10 @@ export const makeHubFromRef = <Resources extends Resource.ResourceSet>(
         const originStates = stateResult.right
 
         yield* pipe(
-          SideEffect.of<ReadonlyArray<AnyEntry<Resources>>>(batch, []),
+          SideEffect.of<ReadonlyArray<AnyEntry<Resource.AnyDomainClass>>>(
+            batch,
+            []
+          ),
           SideEffect.flatMap((entries) =>
             fanOutSearches(entries, originStates, stateRef.changes)
           ),
@@ -112,7 +112,7 @@ export const makeHubFromRef = <Resources extends Resource.ResourceSet>(
     })
   )
 
-  const repositoryImpl = makeRepository<Resources>(stateRef, resolver)
+  const repositoryImpl = makeRepository<Classes>(stateRef, resolver)
 
   return {
     changes: stateRef.changes,
@@ -126,17 +126,17 @@ export const makeHubFromRef = <Resources extends Resource.ResourceSet>(
  * consume the stream into an internal `SubscriptionRef`, so the Hub stays
  * up-to-date as long as the enclosing `Scope` is open.
  */
-export const makeHub = <Resources extends Resource.ResourceSet>(
+export const makeHub = <Classes extends Resource.AnyDomainClass>(
   stateStream: Stream.Stream<
-    Either.Either<_HubState<Resources>, _HubError>,
+    Either.Either<_HubState, _HubError>,
     never,
     Scope.Scope
   >
-): Effect.Effect<Hub<Resources>, never, Scope.Scope> =>
+): Effect.Effect<Hub<Classes>, never, Scope.Scope> =>
   Effect.gen(function* () {
     const stateRef = yield* SubscriptionRef.make<
-      Either.Either<_HubState<Resources>, _HubError>
-    >(Either.left(new Loading({ entity: 'Hub' })))
+      Either.Either<_HubState, _HubError>
+    >(Either.left(new Loading({ entity: 'Hub' } as const)))
 
     yield* stateStream.pipe(
       Stream.runForEach((state) => SubscriptionRef.set(stateRef, state)),

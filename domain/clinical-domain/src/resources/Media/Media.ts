@@ -1,16 +1,17 @@
 import { Schema } from 'effect'
 
-import { MergeClasses } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary, MergeClasses } from '@assessmentis/util'
 
-import { Resource, type ResourceEncoded } from '../../data-types/base/Resource'
+import { Resource } from '../../data-types/base/Resource'
+import type { ResourceEncoded } from '../../data-types/base/Resource'
 import { Annotation } from '../../data-types/complex/Annotation'
 import { Attachment } from '../../data-types/complex/Attachment'
 import { CodeableConcept } from '../../data-types/complex/CodeableConcept'
 import {
   Identifier,
   Reference,
-  type ReferenceEncoded,
 } from '../../data-types/complex/IdentifierAndReference'
+import type { ReferenceEncoded } from '../../data-types/complex/IdentifierAndReference'
 import { Period } from '../../data-types/complex/Period'
 
 const DomainType = 'Media' as const
@@ -34,9 +35,21 @@ export const MediaStatus = Schema.Enums({
 export type MediaStatus = typeof MediaStatus.Type
 
 const fields = {
-  identifier: Schema.optional(Schema.Array(Schema.suspend(() => Identifier))),
-  basedOn: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
-  partOf: Schema.optional(Schema.Array(Schema.suspend(() => Reference))),
+  identifier: Schema.optional(
+    Schema.Array(Schema.suspend(() => Identifier)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
+  basedOn: Schema.optional(
+    Schema.Array(Schema.suspend(() => Reference)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
+  partOf: Schema.optional(
+    Schema.Array(Schema.suspend(() => Reference)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
   status: MediaStatus,
   type: Schema.optional(Schema.suspend(() => CodeableConcept)),
   modality: Schema.optional(Schema.suspend(() => CodeableConcept)),
@@ -52,7 +65,9 @@ const fields = {
   issued: Schema.optional(Schema.DateTimeUtc),
   operator: Schema.optional(Schema.suspend(() => Reference)),
   reasonCode: Schema.optional(
-    Schema.Array(Schema.suspend(() => CodeableConcept))
+    Schema.Array(Schema.suspend(() => CodeableConcept)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
   ),
   bodySite: Schema.optional(Schema.suspend(() => CodeableConcept)),
   deviceName: Schema.optional(Schema.String),
@@ -62,7 +77,11 @@ const fields = {
   frames: Schema.optional(Schema.Number),
   duration: Schema.optional(Schema.Number),
   content: Schema.suspend(() => Attachment),
-  note: Schema.optional(Schema.Array(Schema.suspend(() => Annotation))),
+  note: Schema.optional(
+    Schema.Array(Schema.suspend(() => Annotation)).pipe(
+      AnnotateArrayWithArbitrary({ maxLength: 2 })
+    )
+  ),
 } as const satisfies Schema.Struct.Fields
 
 const resourceMixin = Resource(DomainType)

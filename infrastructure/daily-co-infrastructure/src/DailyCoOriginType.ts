@@ -1,17 +1,18 @@
-import { Effect, Schema, type Scope } from 'effect'
+import { Effect, Schema } from 'effect'
+import type { Scope } from 'effect'
 import type { HttpClient } from '@effect/platform'
 
-import type { ResourceDataTypes } from '@assessmentis/clinical-domain'
 import type { LiveCredential } from '@assessmentis/platform-domain'
 
 import { makeDailyCoReadyOrigin } from './DailyCoOrigin'
+import type { SupportedClasses } from './DailyCoOrigin'
 import { DailyCoOriginDefinition } from './DailyCoOriginDefinition'
 import type {
   DailyCoProxyIdentifier,
   DailyCoProxyToken,
 } from './DailyCoProxyLiveCredential'
 import type {
-  OriginConfig,
+  OriginDefinition,
   OriginFactory,
   ReadonlyUrl,
 } from '@assessmentis/effectful-store'
@@ -31,12 +32,11 @@ export const makeDailyCoOriginType = (deps: {
     never,
     Scope.Scope
   >
-}): OriginFactory<ResourceDataTypes> => ({
+}): OriginFactory<SupportedClasses, object, never> => ({
   tag: 'daily_co',
-  make: (
+  make: <Keys extends SupportedClasses['DomainType']>(
     _originUrl: ReadonlyUrl,
-    baseDef: OriginConfig,
-    _originConfig: unknown
+    baseDef: OriginDefinition<Keys>
   ) => {
     const def = Schema.decodeUnknownSync(DailyCoOriginDefinition)(baseDef)
     return deps.getCredential({ _tag: 'dailyco_proxy' }).pipe(

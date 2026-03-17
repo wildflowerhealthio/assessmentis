@@ -147,5 +147,5 @@ export const Patient = Schema.Struct({
 ## See Also
 
 - [FHIR R4 Specification](https://hl7.org/fhir/R4/)
-- [domain/AGENTS.md](../../domain/AGENTS.md) - FHIR resource guidelines
-- [TESTING.md](../../TESTING.md) - Property-based testing patterns
+- [domain/AGENTS.md](../../../domain/AGENTS.md) - FHIR resource guidelines
+- [TESTING.md](../../../TESTING.md) - Property-based testing patterns

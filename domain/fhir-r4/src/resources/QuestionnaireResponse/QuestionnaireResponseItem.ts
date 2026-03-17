@@ -1,8 +1,8 @@
 import { Schema } from 'effect'
 
-import {
-  type QuestionnaireResponseItemAnswerEncoded,
-  type QuestionnaireResponseItemEncoded,
+import type {
+  QuestionnaireResponseItemAnswerEncoded,
+  QuestionnaireResponseItemEncoded,
 } from '@assessmentis/clinical-domain'
 import { FhirR4ChoiceElements } from '@assessmentis/clinical-domain/data-types'
 import { extendObjectSchemas, mutableEncoded } from '@assessmentis/util'
