@@ -12,7 +12,7 @@ import type {
   DailyCoProxyToken,
 } from './DailyCoProxyLiveCredential'
 import type {
-  OriginConfig,
+  OriginDefinition,
   OriginFactory,
   ReadonlyUrl,
 } from '@assessmentis/effectful-store'
@@ -32,12 +32,11 @@ export const makeDailyCoOriginType = (deps: {
     never,
     Scope.Scope
   >
-}): OriginFactory<SupportedClasses, never> => ({
+}): OriginFactory<SupportedClasses, object, never> => ({
   tag: 'daily_co',
   make: <Keys extends SupportedClasses['DomainType']>(
     _originUrl: ReadonlyUrl,
-    baseDef: OriginConfig<Keys>,
-    _originConfig: unknown
+    baseDef: OriginDefinition<Keys>
   ) => {
     const def = Schema.decodeUnknownSync(DailyCoOriginDefinition)(baseDef)
     return deps.getCredential({ _tag: 'dailyco_proxy' }).pipe(

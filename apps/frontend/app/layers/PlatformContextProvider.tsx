@@ -164,7 +164,7 @@ const platformEffect = Effect.gen(function* () {
       httpClient,
       getCredential: (id) => credentialService.get(id),
     }),
-  ]
+  ] as const
 
   const userOrgStream = makeUserOrgStream(
     orgService.orgSlugStream,

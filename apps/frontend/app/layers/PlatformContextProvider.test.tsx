@@ -70,7 +70,7 @@ vi.mock('@assessmentis/platform-domain', async (importOriginal) => {
             slug: '',
             emoji: '',
             origins: {},
-            originConfigs: {},
+            originServerConfigs: {},
           })
         ),
         orgSlugStream: Stream.empty,

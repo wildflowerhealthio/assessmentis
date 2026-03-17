@@ -10,7 +10,6 @@ import {
 } from 'effect'
 
 import { UnhandledError } from '@assessmentis/ontology'
-import { deepDataStruct } from '@assessmentis/util'
 
 import { ReadonlyUrl } from './ReadonlyUrl'
 import type { HubState } from './hub/types'
@@ -26,52 +25,48 @@ import type { Resource } from '.'
  * `onExcessProperty: 'preserve'`) and participate in structural equality
  * checks.
  */
-export interface OriginConfig<in DomainTypes extends string> {
+export interface OriginDefinition<in DomainTypes extends string>
+  extends Equal.Equal {
   readonly _tag: string
   readonly supportedResources: { readonly [x: string]: true } & {
     readonly [k in DomainTypes]: true
   }
-  readonly originConfig?: Record<string, unknown> | undefined
 }
 
 /**
- * A snapshot of origin definitions and optional per-origin configuration,
- * extracted from whatever domain-level container the caller uses. This is
- * the generic replacement for the platform-domain `Org + UserOrg` pair.
+ * A snapshot of origin definitions extracted from whatever domain-level
+ * container the caller uses. This is the generic replacement for the
+ * platform-domain `Org + UserOrg` pair.
  *
- * - `origins` maps URI-encoded origin URLs to their definitions.
- * - `originConfigs` optionally maps the same keys to per-user
- *    (or per org) configuration blobs (e.g. OAuth tokens).
+ * `origins` maps URI-encoded origin URLs to their definitions. Callers
+ * are expected to merge any additional configuration (server-level or
+ * per-user) into each definition before constructing the snapshot.
  */
 export interface OriginSourceSnapshot<
-  OriginConfigs extends { readonly [encodedUrl: string]: OriginConfig<never> } =
-    {
-      readonly [encodedUrl: string]: OriginConfig<never>
-    },
+  OriginDefinitions extends {
+    readonly [encodedUrl: string]: OriginDefinition<never>
+  } = {
+    readonly [encodedUrl: string]: OriginDefinition<never>
+  },
 > {
-  readonly origins: OriginConfigs
-  readonly originConfigs?:
-    | {
-        readonly [x: string]: Record<string, unknown> | undefined
-      }
-    | undefined
+  readonly origins: OriginDefinitions
 }
 
 /**
  * Protocol for origin construction used by {@link hubStateStream}. The `tag`
  * must match the `_tag` field on the origin definition. The `make` factory
- * receives the full definition (with extra properties intact) and an optional
- * per-user config blob, and returns an Effect producing the origin state.
+ * receives the full definition (with any additional configuration already
+ * merged in) and returns an Effect producing the origin state.
  */
 export interface OriginFactory<
   in SupportedClasses extends Resource.AnyDomainClass,
+  in TConfig,
   out R = never,
 > {
   readonly tag: string
   readonly make: <Keys extends SupportedClasses['DomainType']>(
     originUrl: ReadonlyUrl,
-    config: OriginConfig<Keys>,
-    originConfig: Record<string, unknown> | undefined
+    config: OriginDefinition<Keys> & TConfig
   ) => Effect.Effect<
     Origin.AnyState<SupportedClasses & { DomainType: Keys }>,
     never,
@@ -79,23 +74,13 @@ export interface OriginFactory<
   >
 }
 
-// --- Definition equality via Data/Equal ---
-
-/**
- * Wraps a definition and its origin config into a deep `Data.struct` so that
- * `Equal.equals` performs structural comparison across emissions.
- */
-const wrapForEquality = (
-  def: OriginConfig<never>,
-  originConfig: Record<string, unknown> | undefined
-): Equal.Equal =>
-  deepDataStruct({
-    ...def,
-    _originConfig: originConfig,
-  })
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type OriginFactoryResources<O extends OriginFactory<any, any, any>> =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  O extends OriginFactory<any, any, infer R> ? R : never
 
 type OriginCacheEntry<SupportedClasses extends Resource.AnyDomainClass> = {
-  readonly wrappedDef: Equal.Equal
+  readonly def: OriginDefinition<never>
   readonly state: Origin.AnyState<SupportedClasses>
   readonly scope: Scope.CloseableScope
 }
@@ -115,7 +100,7 @@ type SupportedClasses<_DomainTypes extends string> = never
  */
 const makeUnsupportedOrigin = <DomainTypes extends string>(
   originUrl: ReadonlyUrl,
-  def: OriginConfig<DomainTypes>
+  def: OriginDefinition<DomainTypes>
 ): Origin.Errored<SupportedClasses<DomainTypes>> => ({
   originUrl,
   supportedResources: toSupportedClasses<DomainTypes>(def.supportedResources),
@@ -133,8 +118,7 @@ const buildHubState = <R>(
   originMakers: {
     [tag: string]: (
       originUrl: ReadonlyUrl,
-      definition: OriginConfig<never>,
-      originConfig: Record<string, unknown> | undefined
+      definition: OriginDefinition<never>
     ) => Effect.Effect<Origin.AnyState<never>, never, R | Scope.Scope>
   },
   snapshot: OriginSourceSnapshot,
@@ -147,13 +131,9 @@ const buildHubState = <R>(
     for (const [url, def] of EffectRecord.toEntries(snapshot.origins)) {
       const originUrl = ReadonlyUrl.fromEncoded(url)
       const urlKey = originUrl.toString()
-      const originConfig: Record<string, unknown> | undefined =
-        snapshot.originConfigs?.[url]
-
-      const wrapped = wrapForEquality(def, originConfig)
 
       const cached = cache.get(urlKey)
-      if (cached && Equal.equals(cached.wrappedDef, wrapped)) {
+      if (cached && Equal.equals(cached.def, def)) {
         newCache.set(urlKey, cached)
         state.set(urlKey, cached.state)
       } else if (def._tag in originMakers) {
@@ -162,11 +142,11 @@ const buildHubState = <R>(
         // Safe: `in` check above guarantees the maker exists
         const maker = originMakers[def._tag]!
         const childScope = yield* Scope.make()
-        const origin = yield* maker(originUrl, def, originConfig).pipe(
+        const origin = yield* maker(originUrl, def).pipe(
           Effect.provideService(Scope.Scope, childScope)
         )
         newCache.set(urlKey, {
-          wrappedDef: wrapped,
+          def,
           state: origin,
           scope: childScope,
         })
@@ -175,7 +155,7 @@ const buildHubState = <R>(
         const errorOrigin = makeUnsupportedOrigin(originUrl, def)
         const childScope = yield* Scope.make()
         newCache.set(urlKey, {
-          wrappedDef: wrapped,
+          def,
           state: errorOrigin,
           scope: childScope,
         })
@@ -201,7 +181,7 @@ const buildHubState = <R>(
  * Produces a `Stream<Either<HubState, E>>` from a stream of origin source
  * snapshots and a set of origin factories. Caches origin states and only
  * reconstructs when the definition or origin config for a URL changes
- * (compared via `Equal.equals` on `Data.struct`-wrapped definitions).
+ * (compared via `Equal.equals` on definitions that implement `Equal.Equal`).
  *
  * This is the generic, domain-agnostic core. Domain packages map their
  * concrete types (e.g. `Org`, `UserOrg`) into {@link OriginSourceSnapshot}
@@ -213,7 +193,7 @@ const buildHubState = <R>(
  */
 export const hubStateStream = <
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Factories extends ReadonlyArray<OriginFactory<any, R>>,
+  Factories extends ReadonlyArray<OriginFactory<any, object, R>>,
   E,
   R,
 >(

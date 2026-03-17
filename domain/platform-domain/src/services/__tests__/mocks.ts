@@ -21,7 +21,7 @@ export const defaultOrg = (): Org => ({
   slug: OrgSlug.make('test-org'),
   emoji: '🏢',
   origins: {},
-  originConfigs: {},
+  originServerConfigs: {},
 })
 
 /**

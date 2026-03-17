@@ -12,12 +12,13 @@ import {
 } from 'effect'
 
 import { UnhandledError } from '@assessmentis/ontology'
+import { deepDataStruct } from '@assessmentis/util'
 
 import { ReadonlyUrl, UriEncodedOriginUrl } from './ReadonlyUrl'
 import type * as Origin from './Origin'
 import { hubStateStream } from './HubStateStream'
 import type {
-  OriginConfig,
+  OriginDefinition,
   OriginFactory,
   OriginSourceSnapshot,
 } from './HubStateStream'
@@ -36,25 +37,20 @@ const encode = (url: string): UriEncodedOriginUrl =>
 
 const makeDefinition = (
   tag: string,
-  extra?: Record<string, unknown>
-): OriginConfig<'Patient'> => ({
-  _tag: tag,
-  supportedResources: { Patient: true as const },
-  ...extra,
-})
+  extra?: { [k: string]: unknown }
+): OriginDefinition<'Patient'> =>
+  deepDataStruct({
+    ...extra,
+    _tag: tag,
+    supportedResources: { Patient: true } as const,
+  } as any) as OriginDefinition<'Patient'>
 
 const makeSnapshot = (
-  origins: Record<string, OriginConfig<'Patient'>>,
-  originConfigs?: Record<string, Record<string, unknown>>
+  origins: Record<string, OriginDefinition<'Patient'>>
 ): OriginSourceSnapshot => ({
   origins: Object.fromEntries(
     Object.entries(origins).map(([url, def]) => [encode(url), def])
   ),
-  originConfigs: originConfigs
-    ? Object.fromEntries(
-        Object.entries(originConfigs).map(([url, cfg]) => [encode(url), cfg])
-      )
-    : undefined,
 })
 
 /**
@@ -77,11 +73,10 @@ const asFactory = <
   tag: string
   make: (
     originUrl: ReadonlyUrl,
-    config: OriginConfig<SupportedClasses['DomainType']>,
-    originConfig: Record<string, unknown> | undefined
+    config: OriginDefinition<SupportedClasses['DomainType']>
   ) => Effect.Effect<Origin.AnyState<SupportedClasses>, never, R | Scope.Scope>
-}): OriginFactory<SupportedClasses, R> =>
-  f as OriginFactory<SupportedClasses, R>
+}): OriginFactory<SupportedClasses, object, R> =>
+  f as OriginFactory<SupportedClasses, object, R>
 
 const right = <A>(a: A) => Either.right(a)
 
@@ -100,16 +95,17 @@ describe('hubStateStream', () => {
     }
 
     const maker = vi.fn(
-      (
-        _originUrl: ReadonlyUrl,
-        _def: OriginConfig<never>,
-        _cred: Record<string, unknown> | undefined
-      ) => Effect.succeed(originState)
+      (_originUrl: ReadonlyUrl, _def: OriginDefinition<never>) =>
+        Effect.succeed(originState)
     )
 
     const emissions = await Effect.runPromise(
       collectAll(
-        hubStateStream<[OriginFactory<typeof Patient, never>], never, never>(
+        hubStateStream<
+          [OriginFactory<typeof Patient, object, never>],
+          never,
+          never
+        >(
           [asFactory({ tag: 'test_origin', make: maker })],
           Stream.make(
             right(
@@ -181,8 +177,8 @@ describe('hubStateStream', () => {
       collectAll(
         hubStateStream<
           readonly [
-            OriginFactory<typeof Patient, never>,
-            OriginFactory<typeof Patient, never>,
+            OriginFactory<typeof Patient, object, never>,
+            OriginFactory<typeof Patient, object, never>,
           ],
           never,
           never
@@ -242,8 +238,8 @@ describe('hubStateStream', () => {
       collectAll(
         hubStateStream<
           readonly [
-            OriginFactory<typeof Patient, never>,
-            OriginFactory<typeof Patient, never>,
+            OriginFactory<typeof Patient, object, never>,
+            OriginFactory<typeof Patient, object, never>,
           ],
           never,
           never
@@ -295,7 +291,11 @@ describe('hubStateStream', () => {
 
     const emissions = await Effect.runPromise(
       collectAll(
-        hubStateStream<[OriginFactory<typeof Patient, never>], never, never>(
+        hubStateStream<
+          [OriginFactory<typeof Patient, object, never>],
+          never,
+          never
+        >(
           [asFactory({ tag: 't', make: maker })],
           Stream.make(right(snap1), right(snap2))
         )
@@ -315,7 +315,7 @@ describe('hubStateStream', () => {
 
   it('re-creates origin when definition changes', async () => {
     const maker = vi.fn(
-      (_originUrl: ReadonlyUrl, _def: OriginConfig<'Patient'>) =>
+      (_originUrl: ReadonlyUrl, _def: OriginDefinition<'Patient'>) =>
         Effect.succeed<Origin.AnyState<typeof Patient>>({
           originUrl: ReadonlyUrl.fromEncoded(encode('https://a.com')),
           supportedResources: { Patient: Patient },
@@ -329,7 +329,7 @@ describe('hubStateStream', () => {
     await Effect.runPromise(
       collectAll(
         hubStateStream<
-          readonly [OriginFactory<typeof Patient, never>],
+          readonly [OriginFactory<typeof Patient, object, never>],
           never,
           never
         >(
@@ -373,7 +373,7 @@ describe('hubStateStream', () => {
     expect(error).toBeInstanceOf(UnhandledError)
   })
 
-  it('rebuilds origin when origin config changes', async () => {
+  it('rebuilds origin when merged config changes', async () => {
     const originState: Origin.AnyState<typeof Patient> = {
       originUrl: ReadonlyUrl.fromEncoded(encode('https://a.com')),
       supportedResources: { Patient: Patient },
@@ -387,35 +387,29 @@ describe('hubStateStream', () => {
       Effect.succeed(originState)
     )
 
-    const encodedUrl = encode('https://a.com')
-
     await Effect.runPromise(
       collectAll(
-        hubStateStream<[OriginFactory<typeof Patient, never>], never, never>(
+        hubStateStream<
+          [OriginFactory<typeof Patient, object, never>],
+          never,
+          never
+        >(
           [asFactory({ tag: 't', make: maker })] as const,
           Stream.make(
-            right({
-              origins: {
-                [encodedUrl]: makeDefinition('t'),
-              },
-              originConfigs: {
-                [encodedUrl]: {
-                  _tag: 'google_user_oauth_token',
+            right(
+              makeSnapshot({
+                'https://a.com': makeDefinition('t', {
                   email: 'a@example.com',
-                },
-              },
-            }),
-            right({
-              origins: {
-                [encodedUrl]: makeDefinition('t'),
-              },
-              originConfigs: {
-                [encodedUrl]: {
-                  _tag: 'google_user_oauth_token',
+                }),
+              })
+            ),
+            right(
+              makeSnapshot({
+                'https://a.com': makeDefinition('t', {
                   email: 'b@example.com',
-                },
-              },
-            })
+                }),
+              })
+            )
           )
         )
       ).pipe(Effect.scoped)
@@ -425,7 +419,7 @@ describe('hubStateStream', () => {
     expect(maker).toHaveBeenCalledTimes(2)
   })
 
-  it('passes origin config to factory', async () => {
+  it('passes merged config to factory', async () => {
     const originState: Origin.AnyState<typeof Patient> = {
       originUrl: ReadonlyUrl.fromEncoded(encode('https://a.com')),
       supportedResources: { Patient: Patient },
@@ -436,43 +430,33 @@ describe('hubStateStream', () => {
     }
 
     const maker = vi.fn(
-      (
-        _originUrl: ReadonlyUrl,
-        _def: OriginConfig<never>,
-        _cred: Record<string, unknown> | undefined
-      ) => Effect.succeed(originState)
+      (_originUrl: ReadonlyUrl, _def: OriginDefinition<never>) =>
+        Effect.succeed(originState)
     )
-
-    const encodedUrl = encode('https://a.com')
 
     await Effect.runPromise(
       collectAll(
         hubStateStream<
-          readonly [OriginFactory<typeof Patient, never>],
+          readonly [OriginFactory<typeof Patient, object, never>],
           never,
           never
         >(
           [asFactory({ tag: 't', make: maker })] as const,
           Stream.make(
-            right({
-              origins: {
-                [encodedUrl]: makeDefinition('t'),
-              },
-              originConfigs: {
-                [encodedUrl]: {
-                  _tag: 'google_user_oauth_token',
+            right(
+              makeSnapshot({
+                'https://a.com': makeDefinition('t', {
                   email: 'user@example.com',
-                },
-              },
-            })
+                }),
+              })
+            )
           )
         )
       ).pipe(Effect.scoped)
     )
 
     expect(maker).toHaveBeenCalledOnce()
-    expect(maker.mock.calls[0][2]).toEqual({
-      _tag: 'google_user_oauth_token',
+    expect(maker.mock.calls[0][1]).toMatchObject({
       email: 'user@example.com',
     })
   })
@@ -511,7 +495,7 @@ describe('hubStateStream', () => {
     const emissions = await Effect.runPromise(
       collectAll(
         hubStateStream<
-          readonly [OriginFactory<typeof Patient, never>],
+          readonly [OriginFactory<typeof Patient, object, never>],
           never,
           never
         >(

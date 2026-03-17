@@ -32,14 +32,16 @@ The origin URL (used as the Hub routing key) is stored explicitly as the map key
 
 **Browser IndexedDB** needs no additional routing fields — the origin is local to the browser.
 
-### OriginConfig
+### OriginServerConfig / OriginUserConfig
 
 Non-secret operational configuration for connecting to an origin. Exists at two levels:
 
-- **Org-level** (`OrgOriginConfig`) — config that applies to the whole org, like a Daily.co recordings bucket or a credential reference for server-side access.
-- **User-level** (`UserOriginConfig`) — per-user bindings, primarily credential references (e.g., which Google OAuth credential to use for a given FHIR origin).
+- **Org-level** (`OriginServerConfig`, stored as `Org.originServerConfigs`) — config that applies to the whole org, like a Daily.co recordings bucket or a credential reference for server-side access.
+- **User-level** (`OriginUserConfig`, stored as `UserOrg.originUserConfigs`) — per-user bindings, primarily credential references (e.g., which Google OAuth credential to use for a given FHIR origin).
 
 Both are polymorphic and keyed by URI-encoded origin URL. Not every origin needs config at both levels — a browser IndexedDB origin may need neither.
+
+In any given runtime context, only one level is used: the frontend merges user configs into origin definitions, while server processes merge server configs. The generic effectful-store layer (`OriginSourceSnapshot`) receives the already-merged result and is agnostic to the source.
 
 ### Credential
 
@@ -54,11 +56,11 @@ Credentials are polymorphic. Each has a `_tag` identifying its type. The `creden
 ## Document Store Layout
 
 ```text
-orgs/{orgSlug}                                    → Org doc (includes origins + originConfigs)
+orgs/{orgSlug}                                    → Org doc (includes origins + originServerConfigs)
 orgs/{orgSlug}/credentials/{credentialId}         → Org-level credentials (API keys, service accounts)
 orgs/{orgSlug}/users/{userId}                     → Org-user roles (existing, unchanged)
 users/{userId}                                    → User profile (existing, unchanged)
-users/{userId}/orgs/{orgSlug}                     → User's per-org origin configs
+users/{userId}/orgs/{orgSlug}                     → User's per-org origin user configs
 users/{userId}/credentials/{credentialId}         → User credentials (OAuth tokens)
 ```
 
@@ -67,13 +69,13 @@ users/{userId}/credentials/{credentialId}         → User credentials (OAuth to
 The org document contains two separate maps, both keyed by URI-encoded origin URL:
 
 - `origins: Record<string, OriginDefinition>` — public, describes what origins exist and what resources they serve
-- `originConfigs: Record<string, OrgOriginConfig>` — restricted, operational config per origin
+- `originServerConfigs: Record<string, OriginServerConfig>` — restricted, operational config per origin
 
-These are separate fields (not merged) to enable field-level access control in Firestore. The `origins` field can be readable by any org member, while `originConfigs` may be restricted to admins.
+These are separate fields (not merged) to enable field-level access control in Firestore. The `origins` field can be readable by any org member, while `originServerConfigs` may be restricted to admins.
 
 ### User Per-Org Config — `users/{userId}/orgs/{orgSlug}`
 
-Contains `originConfigs: Record<string, UserOriginConfig>` — the user's per-origin configuration for that org. Primarily holds credential references.
+Contains `originUserConfigs: Record<string, OriginUserConfig>` — the user's per-origin configuration for that org. Primarily holds credential references.
 
 Stored under the user's path (not the org's) so that Firestore security rules can grant the user read/write access to their own config while still allowing org admins to read it.
 
@@ -85,9 +87,9 @@ Stored under the user's path (not the org's) so that Firestore security rules ca
 
 These fields locate a specific Google Cloud Healthcare FHIR store. The origin URL follows the Healthcare API pattern: `https://healthcare.googleapis.com/v1/projects/{projectId}/locations/{region}/datasets/{dataset}/fhirStores/{storeId}/fhir`.
 
-**OrgOriginConfig:** Optional `credentialId` referencing an org credential (e.g., a service account for Cloud Function access).
+**OriginServerConfig:** Optional `credentialId` referencing an org credential (e.g., a service account for Cloud Function access).
 
-**UserOriginConfig:** Required `credentialId` referencing a user credential (Google OAuth token for browser-based access).
+**OriginUserConfig:** Required `credentialId` referencing a user credential (Google OAuth token for browser-based access).
 
 **ServerCredential:** Service account or API key for server-side access.
 
@@ -97,9 +99,9 @@ These fields locate a specific Google Cloud Healthcare FHIR store. The origin UR
 
 **OriginDefinition fields:** `proxyUrl` — the proxy endpoint URL.
 
-**OrgOriginConfig:** Optional `recordingsBucket` (S3 configuration for recording storage) and optional `credentialId` referencing the Daily.co API key.
+**OriginServerConfig:** Optional `recordingsBucket` (S3 configuration for recording storage) and optional `credentialId` referencing the Daily.co API key.
 
-**UserOriginConfig:** Optional `credentialId` if user-level auth is needed.
+**OriginUserConfig:** Optional `credentialId` if user-level auth is needed.
 
 **ServerCredential:** Daily.co API key.
 
@@ -116,7 +118,7 @@ No org config, user config, or credentials needed — everything is local.
 After the user selects an org:
 
 1. Read the org's `origins` map to discover what origins exist
-2. Read `users/{userId}/orgs/{orgSlug}` to get the user's origin configs (credential bindings)
+2. Read `users/{userId}/orgs/{orgSlug}` to get the user's origin user configs (credential bindings)
 3. For each origin, resolve the credential and register a `ReadyOrigin` (or `NotReadyOrigin` if credentials are missing/expired) with the Hub via `hub.setOriginState()`
 4. The Hub routes requests based on resource type and URL prefix matching
 
@@ -124,14 +126,14 @@ After the user selects an org:
 
 For scheduled tasks or user-triggered server operations:
 
-1. Read the org's `origins` and `originConfigs` maps
+1. Read the org's `origins` and `originServerConfigs` maps
 2. Read org-level credentials from `orgs/{orgSlug}/credentials/{credentialId}`
 3. Register origins with the Hub using org credentials
 4. Execute operations (e.g., sync Daily.co recordings to Google FHIR)
 
 ## Design Decisions
 
-**Why separate OriginDefinition from OriginConfig?** Different access control needs. Definitions are public metadata (any org member can see what services the org uses). Configs may contain sensitive operational details (credential references, S3 bucket ARNs).
+**Why separate OriginDefinition from OriginServerConfig/OriginUserConfig?** Different access control needs. Definitions are public metadata (any org member can see what services the org uses). Configs may contain sensitive operational details (credential references, S3 bucket ARNs).
 
 **Why are credentials independent of origins?** A single Google account might access multiple FHIR stores. A credential rotation should not require updating every origin config that uses it. This also models reality: users log into Google once, not once per FHIR store.
 

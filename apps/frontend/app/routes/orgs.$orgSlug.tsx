@@ -29,7 +29,7 @@ const sandboxOrgData = () => ({
         },
       },
   },
-  originConfigs: {},
+  originServerConfigs: {},
 })
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {

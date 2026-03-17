@@ -1,11 +1,21 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Chunk, Effect, Either, HashMap, Option, Schema, Stream } from 'effect'
+import {
+  Chunk,
+  Effect,
+  Either,
+  HashMap,
+  Option,
+  Schema,
+  Scope,
+  Stream,
+} from 'effect'
 
 import { ReadonlyUrl, UriEncodedOriginUrl } from '@assessmentis/effectful-store'
 import type {
   Origin,
-  OriginConfig,
+  OriginDefinition,
   OriginFactory,
+  Resource,
 } from '@assessmentis/effectful-store'
 import { AuthError, Loading, UnhandledError } from '@assessmentis/ontology'
 
@@ -45,7 +55,7 @@ const makeOrg = (origins: Record<string, BaseOriginDefinition>): Org =>
     origins: Object.fromEntries(
       Object.entries(origins).map(([url, def]) => [encode(url), def])
     ),
-    originConfigs: {},
+    originServerConfigs: {},
   }) as unknown as Org
 
 const right = <A>(a: A) => Either.right(a)
@@ -57,8 +67,17 @@ const collectAll = <A, R>(stream: Stream.Stream<A, never, R>) =>
   stream.pipe(Stream.runCollect, Effect.map(Chunk.toReadonlyArray))
 
 /** Test adapter — see HubStateStream.test.ts for rationale. */
-const asFactory = (f: { tag: string; make: (...args: any[]) => any }) =>
-  f as OriginFactory<any, never>
+const asFactory = <
+  SupportedClasses extends Resource.AnyDomainClass,
+  R = never,
+>(f: {
+  tag: string
+  make: (
+    originUrl: ReadonlyUrl,
+    config: OriginDefinition<SupportedClasses['DomainType']>
+  ) => Effect.Effect<Origin.AnyState<SupportedClasses>, never, R | Scope.Scope>
+}): OriginFactory<SupportedClasses, object, R> =>
+  f as OriginFactory<SupportedClasses, object, R>
 
 describe('mapOrgStreamToHubState (platform-domain wrapper)', () => {
   it('maps Org origins to hub state via generic hubStateStream', async () => {
@@ -72,17 +91,14 @@ describe('mapOrgStreamToHubState (platform-domain wrapper)', () => {
     } satisfies Origin.AnyState<typeof Patient>
 
     const maker = vi.fn(
-      (
-        _originUrl: ReadonlyUrl,
-        _def: OriginConfig<never>,
-        _cred: Record<string, unknown> | undefined
-      ) => Effect.succeed(originState)
+      (_originUrl: ReadonlyUrl, _def: OriginDefinition<never>) =>
+        Effect.succeed(originState)
     )
 
     const emissions = await Effect.runPromise(
       collectAll(
-        mapOrgStreamToHubState<never>(
-          [{ tag: 'test_origin', make: maker }],
+        mapOrgStreamToHubState<[OriginFactory<typeof Patient, object, never>]>(
+          [asFactory({ tag: 'test_origin', make: maker })],
           Stream.make(
             makeInput(
               makeOrg({ 'https://example.com': makeDefinition('test_origin') })
@@ -101,7 +117,7 @@ describe('mapOrgStreamToHubState (platform-domain wrapper)', () => {
     )
   })
 
-  it('passes UserOrg originConfigs through to maker', async () => {
+  it('merges UserOrg config into origin definition', async () => {
     const originState: Origin.AnyState<typeof Patient> = {
       originUrl: ReadonlyUrl.fromEncoded(encode('https://a.com')),
       supportedResources: { Patient: Patient },
@@ -112,17 +128,14 @@ describe('mapOrgStreamToHubState (platform-domain wrapper)', () => {
     }
 
     const maker = vi.fn(
-      (
-        _originUrl: ReadonlyUrl,
-        _def: OriginConfig<'Patient'>,
-        _cred: Record<string, unknown> | undefined
-      ) => Effect.succeed(originState)
+      (_originUrl: ReadonlyUrl, _def: OriginDefinition<'Patient'>) =>
+        Effect.succeed(originState)
     )
 
     const org = makeOrg({ 'https://a.com': makeDefinition('t') })
     const encodedUrl = encode('https://a.com')
     const userOrg = decodeUserOrg({
-      originConfigs: {
+      originUserConfigs: {
         [encodedUrl]: {
           _tag: 'google_user_oauth_token',
           email: 'user@example.com',
@@ -132,7 +145,7 @@ describe('mapOrgStreamToHubState (platform-domain wrapper)', () => {
 
     await Effect.runPromise(
       collectAll(
-        mapOrgStreamToHubState<never>(
+        mapOrgStreamToHubState<[OriginFactory<typeof Patient, object, never>]>(
           [asFactory({ tag: 't', make: maker })],
           Stream.make(makeInput(org, userOrg))
         )
@@ -140,8 +153,7 @@ describe('mapOrgStreamToHubState (platform-domain wrapper)', () => {
     )
 
     expect(maker).toHaveBeenCalledOnce()
-    expect(maker.mock.calls[0][2]).toEqual({
-      _tag: 'google_user_oauth_token',
+    expect(maker.mock.calls[0][1]).toMatchObject({
       email: 'user@example.com',
     })
   })
@@ -149,7 +161,7 @@ describe('mapOrgStreamToHubState (platform-domain wrapper)', () => {
   it('passes through Left errors from org stream', async () => {
     const emissions = await Effect.runPromise(
       collectAll(
-        mapOrgStreamToHubState<never>(
+        mapOrgStreamToHubState<[]>(
           [],
           Stream.make(
             makeInput(makeOrg({})),
@@ -169,7 +181,7 @@ describe('mapOrgStreamToHubState (platform-domain wrapper)', () => {
   it('passes through Left(Loading)', async () => {
     const emissions = await Effect.runPromise(
       collectAll(
-        mapOrgStreamToHubState<never>(
+        mapOrgStreamToHubState<[]>(
           [],
           Stream.make(
             makeInput(makeOrg({})),
@@ -189,8 +201,8 @@ describe('mapOrgStreamToHubState (platform-domain wrapper)', () => {
   it('passes through Left(AuthError)', async () => {
     const emissions = await Effect.runPromise(
       collectAll(
-        mapOrgStreamToHubState<never>(
-          [{ tag: 't', make: vi.fn() }],
+        mapOrgStreamToHubState<[OriginFactory<typeof Patient, object, never>]>(
+          [asFactory({ tag: 't', make: vi.fn() })],
           Stream.make(Either.left(AuthError.Unauthenticated))
         )
       ).pipe(Effect.scoped)
@@ -203,7 +215,7 @@ describe('mapOrgStreamToHubState (platform-domain wrapper)', () => {
   it('maps NoSelectedOrgError to Loading', async () => {
     const emissions = await Effect.runPromise(
       collectAll(
-        mapOrgStreamToHubState<never>(
+        mapOrgStreamToHubState<[]>(
           [],
           Stream.make(Either.left(new NoSelectedOrgError()))
         )
@@ -217,14 +229,14 @@ describe('mapOrgStreamToHubState (platform-domain wrapper)', () => {
   })
 
   it('rebuilds origin when UserOrg credential identity changes', async () => {
-    const originState = {
+    const originState: Origin.AnyState<typeof Patient> = {
       originUrl: ReadonlyUrl.fromEncoded(encode('https://a.com')),
       supportedResources: { Patient: Patient },
       resolver: undefined,
       errorStatus: undefined,
       provokeReauthenticate: () => Effect.void,
       provokeReauthorize: () => Effect.void,
-    } as unknown as Origin.AnyState<never>
+    }
 
     const maker = vi.fn((_originUrl: ReadonlyUrl) =>
       Effect.succeed(originState)
@@ -234,7 +246,7 @@ describe('mapOrgStreamToHubState (platform-domain wrapper)', () => {
     const encodedUrl = encode('https://a.com')
 
     const userOrg1 = decodeUserOrg({
-      originConfigs: {
+      originUserConfigs: {
         [encodedUrl]: {
           _tag: 'google_user_oauth_token',
           email: 'a@example.com',
@@ -242,7 +254,7 @@ describe('mapOrgStreamToHubState (platform-domain wrapper)', () => {
       },
     })
     const userOrg2 = decodeUserOrg({
-      originConfigs: {
+      originUserConfigs: {
         [encodedUrl]: {
           _tag: 'google_user_oauth_token',
           email: 'b@example.com',
@@ -252,7 +264,7 @@ describe('mapOrgStreamToHubState (platform-domain wrapper)', () => {
 
     await Effect.runPromise(
       collectAll(
-        mapOrgStreamToHubState<never>(
+        mapOrgStreamToHubState<[OriginFactory<typeof Patient, object, never>]>(
           [asFactory({ tag: 't', make: maker })],
           Stream.make(makeInput(org, userOrg1), makeInput(org, userOrg2))
         )

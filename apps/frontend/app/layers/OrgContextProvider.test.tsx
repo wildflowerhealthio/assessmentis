@@ -20,7 +20,7 @@ describe('OrgContextProvider', () => {
     slug: OrgSlug.make('test-org'),
     emoji: '🏥',
     origins: {},
-    originConfigs: {},
+    originServerConfigs: {},
   }
 
   beforeEach(() => {
@@ -107,7 +107,7 @@ describe('OrgContextProvider', () => {
       slug: OrgSlug.make('unauthorized-org'),
       emoji: '🏢',
       origins: {},
-      originConfigs: {},
+      originServerConfigs: {},
     }
 
     vi.mocked(usePlatformContext).mockReturnValue(

@@ -12,7 +12,7 @@ import { OrgSlug } from './IdTypes'
  * @remarks
  * Uses `onExcessProperty: 'preserve'` so that origin-specific fields
  * survive decoding even though only `_tag` is declared here.
- * Mirrors the per-user `BaseOriginServerConfig` in {@link UserOrg}.
+ * Mirrors the per-user `BaseOriginUserConfig` in {@link UserOrg}.
  */
 const BaseOriginServerConfig = Schema.Struct({
   _tag: Schema.String,
@@ -32,15 +32,16 @@ export const Org = Schema.Struct({
    */
   origins: Schema.optionalWith(
     Schema.Record({ key: UriEncodedOriginUrl, value: BaseOriginDefinition }),
-    { default: () => ({}) }
+    { default: () => ({}), exact: true }
   ),
   /**
-   * Map from URI-encoded origin URLs to org-level configuration for that origin.
-   * Each entry carries a `_tag` discriminant for narrowing to a concrete config type.
+   * Map from URI-encoded origin URLs to org-level server configuration for that
+   * origin (e.g. admin API keys). Each entry carries a `_tag` discriminant for
+   * narrowing to a concrete config type.
    */
-  originConfigs: Schema.optionalWith(
+  originServerConfigs: Schema.optionalWith(
     Schema.Record({ key: UriEncodedOriginUrl, value: BaseOriginServerConfig }),
-    { default: () => ({}) }
+    { default: () => ({}), exact: true }
   ),
   /** Timestamp of the last successful recording sync from external origins. */
   lastRecordingSyncTimestamp: Schema.optional(DateTimeUtcFromFirebaseTimestamp),

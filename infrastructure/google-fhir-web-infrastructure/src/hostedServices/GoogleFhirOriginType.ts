@@ -1,11 +1,11 @@
 import { Effect, Schema } from 'effect'
 import type { Scope } from 'effect'
 
-import { Composition, toSupportedClasses } from '@assessmentis/clinical-domain'
+import { Composition } from '@assessmentis/clinical-domain'
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import type {
   Origin,
-  OriginConfig,
+  OriginDefinition,
   OriginFactory,
 } from '@assessmentis/effectful-store'
 import {
@@ -15,6 +15,7 @@ import {
 } from '@assessmentis/fhir-r4'
 import { GoogleFhirOriginDefinition } from '@assessmentis/google-account-infrastructure'
 import type {
+  GoogleFhirOriginUserConfig,
   GoogleUserCredentialIdentifier,
   GoogleUserOAuthToken,
 } from '@assessmentis/google-account-infrastructure'
@@ -97,12 +98,11 @@ export const makeGoogleFhirOriginType = (deps: {
     never,
     Scope.Scope
   >
-}): OriginFactory<SupportedClasses, never> => ({
+}): OriginFactory<SupportedClasses, GoogleFhirOriginUserConfig, never> => ({
   tag: 'google_fhir',
   make: <Keys extends SupportedClasses['DomainType']>(
     _originUrl: ReadonlyUrl,
-    baseDef: OriginConfig<Keys>,
-    originConfig: Record<string, unknown> | undefined
+    baseDef: OriginDefinition<Keys> & GoogleFhirOriginUserConfig
   ): Effect.Effect<
     Origin.AnyState<SupportedClasses & { DomainType: Keys }>,
     never,
@@ -110,27 +110,12 @@ export const makeGoogleFhirOriginType = (deps: {
   > => {
     const def = decodeGoogleFhirDef(baseDef)
 
-    if (!originConfig) {
-      return Effect.succeed<
-        Origin.Errored<SupportedClasses & { DomainType: Keys }>
-      >({
-        originUrl: buildGoogleFhirOriginUrl(def),
-        supportedResources: toSupportedClasses<
-          SupportedClasses & { DomainType: Keys }
-        >(def.activeResources),
-        resolver: undefined,
-        errorStatus: new UnhandledError({
-          message: 'No credential configured for Google FHIR origin',
-        }),
-        provokeReauthenticate: () => Effect.void,
-        provokeReauthorize: () => Effect.void,
-      })
-    }
+    const email = baseDef.email
 
     const identifier: GoogleUserCredentialIdentifier = {
       _tag: 'google_user_oauth_token',
       userId: deps.userId,
-      email: String(originConfig['email']),
+      email,
     }
 
     return deps.getCredential(identifier).pipe(
