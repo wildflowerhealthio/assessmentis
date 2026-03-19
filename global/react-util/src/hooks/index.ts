@@ -113,7 +113,7 @@ function collectionMethods<T>(
   ) => void,
   keyOf: (item: T) => string | undefined
 ) {
-  const deleteItem = async (key?: string) => {
+  const deleteItem = async (key?: string): Promise<void> => {
     if (!key) {
       return
     }
@@ -141,9 +141,9 @@ function collectionMethods<T>(
       })
   }
 
-  const createItem = (t: T) => {
+  const createItem = (t: T): Promise<void> => {
     updateCache((current) => [{ data: t, loading: true }, ...current])
-    apiCreate(t)
+    return apiCreate(t)
       .then((created) => {
         updateCache((current) => {
           // Find the first loading item that matches the temp key or doesn't have a key

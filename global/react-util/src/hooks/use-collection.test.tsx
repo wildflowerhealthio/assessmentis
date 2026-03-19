@@ -101,10 +101,7 @@ describe('useCollection', () => {
       const { result } = renderHook(() => useCollection({ apiCreate, apiDelete }, [], keyOf))
 
       await act(async () => {
-        result.current.createItem({ name: 'Created' })
-        await new Promise((r) => {
-          setTimeout(r, 10)
-        })
+        await result.current.createItem({ name: 'Created' })
       })
 
       // Optimistic item should be present
@@ -124,10 +121,7 @@ describe('useCollection', () => {
       const { result } = renderHook(() => useCollection({ apiCreate, apiDelete }, [], keyOf))
 
       await act(async () => {
-        result.current.createItem({ name: 'Failed' })
-        await new Promise((r) => {
-          setTimeout(r, 10)
-        })
+        await result.current.createItem({ name: 'Failed' })
       })
 
       // Give time for optimistic item to appear if it's going to
@@ -158,10 +152,7 @@ describe('useCollection', () => {
       const { result } = renderHook(() => useCollection({ apiCreate, apiDelete }, initial, keyOf))
 
       await act(async () => {
-        result.current.createItem({ id: providedId, name: 'New' })
-        await new Promise((r) => {
-          setTimeout(r, 10)
-        })
+        await result.current.createItem({ id: providedId, name: 'New' })
       })
 
       expect(result.current.collection.length).toBeGreaterThan(1)
@@ -175,7 +166,6 @@ describe('useCollection', () => {
       { id: '1', name: 'Item 1' },
       { id: '2', name: 'Item 2' },
     ]
-    // eslint-disable-next-line unicorn/no-useless-undefined -- mockResolvedValue requires an argument
     const apiDelete = vi.fn().mockResolvedValue(undefined)
     const apiCreate = vi.fn()
 

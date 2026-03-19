@@ -37,7 +37,6 @@ export interface FhirR4ClientService {
   >
 
   executeBundle: (
-    // oxlint-disable-next-line @typescript-eslint/no-explicit-any
     bundle: DeepReadonly<Bundle<any>>
   ) => Effect.Effect<unknown, AuthError | AuthzError | UnhandledError>
 
@@ -48,7 +47,7 @@ export interface FhirR4ClientService {
   ) => Effect.Effect<unknown, AuthError | AuthzError | UnhandledError>
 }
 
-export const __FhirR4Client: Context.TagClass<FhirR4Client, 'FhirR4Client', FhirR4ClientService> =
+const __FhirR4Client: Context.TagClass<FhirR4Client, 'FhirR4Client', FhirR4ClientService> =
   Context.Tag('FhirR4Client')<FhirR4Client, FhirR4ClientService>()
 
 export class FhirR4Client extends __FhirR4Client {}

@@ -76,8 +76,11 @@ export const dailycoEffect = (
           return [key, value]
         }
         if (Array.isArray(value)) {
+          // oxlint-disable-next-line typescript-eslint/no-base-to-string
           return [key, value.join(',')]
         }
+
+        // oxlint-disable-next-line typescript-eslint/no-base-to-string
         return [key, String(value)]
       })
     )

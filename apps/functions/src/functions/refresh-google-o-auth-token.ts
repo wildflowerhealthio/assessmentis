@@ -135,12 +135,13 @@ export const refreshCredential = onRequest(
       exit.pipe(
         Exit.match({
           onFailure: (cause) => {
-            handleError(cause, response, (err) => {
-              if (err instanceof NotFoundError) {
+            handleError(cause, response, {
+              // oxlint-disable-next-line @typescript-eslint/no-explicit-any
+              canHandle: (err): err is NotFoundError<string, any> => err instanceof NotFoundError,
+              didHandle: (_err) => {
                 response.status(404).json({ message: 'Credential not found' })
                 return true
-              }
-              return false
+              },
             })
           },
           onSuccess: () => response.status(200).json({ success: true }),

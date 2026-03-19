@@ -31,11 +31,11 @@ const toOriginSourceSnapshot = (org: Org, userOrg: UserOrg | undefined): OriginS
       ([url, def]) =>
         [
           url,
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion
           Data.struct({
             // oxlint-disable-next-line typescript/no-unsafe-type-assertion
             ...userOrg?.originUserConfigs?.[url as keyof typeof userOrg.originUserConfigs],
             ...def,
-            // oxlint-disable-next-line typescript/no-unsafe-type-assertion
           }) as OriginDefinition<never>,
         ] as const
     )

@@ -12,10 +12,13 @@ export const handleError = <HandleExplicitly, Should500 = never>(
     NoInfer<AuthError | AuthzError | UnhandledError | Should500 | HandleExplicitly>
   >,
   response: Response,
-  didHandle?: (error: unknown) => boolean
+  customHandler?: {
+    canHandle: (error: unknown) => error is HandleExplicitly
+    didHandle: (error: HandleExplicitly) => boolean
+  }
 ): void => {
   const error = Cause.squash(cause)
-  if (didHandle && didHandle(error)) {
+  if (customHandler && customHandler.canHandle(error) && customHandler.didHandle(error)) {
     return
   }
   if (error instanceof Cause.InterruptedException) {

@@ -46,7 +46,7 @@ function CheckIcon({ className }: { className?: string }): React.JSX.Element {
   )
 }
 
-export function PromisedDataPicker<T extends PickerItemInstance>({
+function PromisedDataPicker<T extends PickerItemInstance>({
   itemsPromise,
   ...commonProps
 }: PromisedPickerProps<T>): React.JSX.Element {
@@ -67,9 +67,7 @@ export function PromisedDataPicker<T extends PickerItemInstance>({
 }
 const isLoading = Symbol('isLoading')
 
-export function BasePicker<T extends PickerItemInstance>(
-  props: BasePickerProps<T>
-): React.JSX.Element {
+function BasePicker<T extends PickerItemInstance>(props: BasePickerProps<T>): React.JSX.Element {
   const {
     items,
     picking,
@@ -127,7 +125,7 @@ export function BasePicker<T extends PickerItemInstance>(
           }
         }}
         multiple={props.picking.multiple}
-        disabled={disabled ?? loading}
+        disabled={disabled || loading}
         immediate={immediate}
       >
         <div className={classes.Picker__container}>
@@ -220,3 +218,5 @@ export function BasePicker<T extends PickerItemInstance>(
     </div>
   )
 }
+
+export { PromisedDataPicker, BasePicker }
