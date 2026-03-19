@@ -1,4 +1,5 @@
 import type { Composition, CompositionSection } from '@assessmentis/clinical-domain'
+import DOMPurify from 'dompurify'
 
 import classes from './CompositionSections.module.css'
 
@@ -27,7 +28,7 @@ function SectionDisplay({
       {section.text?.div ? (
         <div
           className={classes.Section__text}
-          dangerouslySetInnerHTML={{ __html: section.text.div }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(section.text.div) }}
         />
       ) : undefined}
       {section.entry && section.entry.length > 0 ? (
