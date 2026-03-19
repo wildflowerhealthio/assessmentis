@@ -71,21 +71,18 @@ import { fc } from 'fast-check'
 
 it('should calculate age correctly for all birth dates', () => {
   fc.assert(
-    fc.property(
-      fc.date({ min: new Date('1900-01-01'), max: new Date() }),
-      (birthDate) => {
-        const patient = { birthDate }
-        const age = calculateAge(patient)
+    fc.property(fc.date({ min: new Date('1900-01-01'), max: new Date() }), (birthDate) => {
+      const patient = { birthDate }
+      const age = calculateAge(patient)
 
-        // Properties that should ALWAYS hold
-        expect(age).toBeGreaterThanOrEqual(0)
-        expect(age).toBeLessThan(150)
+      // Properties that should ALWAYS hold
+      expect(age).toBeGreaterThanOrEqual(0)
+      expect(age).toBeLessThan(150)
 
-        // Age should match manual calculation
-        const expectedAge = new Date().getFullYear() - birthDate.getFullYear()
-        expect(age).toBe(expectedAge)
-      }
-    )
+      // Age should match manual calculation
+      const expectedAge = new Date().getFullYear() - birthDate.getFullYear()
+      expect(age).toBe(expectedAge)
+    })
   )
 })
 ```

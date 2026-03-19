@@ -6,7 +6,7 @@ import { setupNodeIntercepting } from '@assessmentis/testing-utils/vcr-js/node'
 
 import { http } from 'msw'
 
-import type { DailyCoOriginDefinition } from '../../src/DailyCoOriginDefinition'
+import type { DailyCoOriginDefinition } from '../../src/daily-co-origin-definition'
 
 export const DAILY_CO_API_BASE = 'https://api.daily.co'
 
@@ -16,9 +16,9 @@ export const DAILY_CO_API_BASE = 'https://api.daily.co'
  */
 export const testConfig: DailyCoOriginDefinition = {
   _tag: 'daily_co' as const,
+  activeResources: { Location: true, Media: true, Observation: true },
   dailyCoProxyUrl: 'https://api.daily.co/v1',
   recordingsBucket: undefined,
-  activeResources: { Location: true, Media: true, Observation: true },
 }
 
 const isRecordMode = process.env.RECORD === 'true'
@@ -52,8 +52,6 @@ export const verifyDailyCoAuth = (): void => {
 const mockHandlers: Parameters<typeof http.get>[] = []
 
 const mswServer = await setupNodeIntercepting({
-  summary: true,
-  tapePath: __dirname + '/../tapes/',
   handlers: mockHandlers.map(([path, handler]) => http.get(path, handler)),
   hosts: [
     {
@@ -77,10 +75,12 @@ const mswServer = await setupNodeIntercepting({
       ],
     },
   ],
+  summary: true,
+  tapePath: __dirname + '/../tapes/',
 })
 
 // Setup hooks for MSW
-beforeAll(async () => {
+beforeAll(() => {
   mswServer.listen({ onUnhandledRequest: 'error' })
 })
 

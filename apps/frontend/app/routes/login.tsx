@@ -1,6 +1,6 @@
-import { handleRedirectResult, redirectToSignIn } from 'app/firebase'
+import { handleRedirectResult, redirectToSignIn } from '@/firebase'
 
-export default function AuthHandlerPage() {
+export default function AuthHandlerPage(): React.JSX.Element {
   return (
     <>
       <h1>Authentication</h1>
@@ -8,8 +8,12 @@ export default function AuthHandlerPage() {
       <button
         onClick={() =>
           handleRedirectResult()
-            .catch((loginErr) => console.error({ loginErr }))
-            .then((credential) => console.log({ credential }))
+            .catch((error) => {
+              console.error({ error })
+            })
+            .then((credential) => {
+              console.log({ credential })
+            })
         }
       >
         Handle Result

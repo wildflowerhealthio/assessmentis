@@ -2,41 +2,38 @@
   "name": "@assessmentis/document-template-kinds",
   "version": "0.0.1",
   "description": "Document templates used by Assessment.is",
-  "author": "Ruth Marks",
   "license": "UNLICENSED",
+  "author": "Ruth Marks",
   "type": "module",
-  "prettier": "@assessmentis/prettier-config",
   "exports": {
     ".": "./src/index.ts",
     "./gad7-report": "./src/templates/gad7-report/index.ts"
   },
   "scripts": {
     "build": "tsc",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint \"./{src,test}/**/*\"",
-    "lint:fix": "eslint --fix \"./{src,test}/**/*\"",
-    "test": "vitest run"
+    "lint": "oxlint ./{src,test}/",
+    "lint:fix": "oxlint --fix ./{src,test}/",
+    "test": "vitest run",
+    "typecheck": "npx tsgo --noEmit"
   },
   "dependencies": {
-    "@assessmentis/util": "*",
-    "@assessmentis/ontology": "*",
     "@assessmentis/clinical-domain": "*",
+    "@assessmentis/ontology": "*",
     "@assessmentis/questionnaire-entities": "*",
+    "@assessmentis/util": "*",
     "effect": "^3.19.8"
+  },
+  "devDependencies": {
+    "@assessmentis/typescript-config": "*",
+    "@types/fhir": "^0.0.41",
+    "fast-check": "^3.19.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
   },
   "peerDependencies": {
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
-  },
-  "devDependencies": {
-    "@assessmentis/eslint-config": "*",
-    "@assessmentis/prettier-config": "*",
-    "@assessmentis/typescript-config": "*",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "@types/fhir": "^0.0.41",
-    "fast-check": "^3.19.0",
-    "typescript": "^5.9.3",
-    "vitest": "^4.0.15"
   }
 }

@@ -1,1 +1,1 @@
-export * from './FirebaseAdminDocumentStoreLayer'
+export * from './firebase-admin-document-store-layer'

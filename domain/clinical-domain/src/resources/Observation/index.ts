@@ -1,3 +1,3 @@
-export * from './Observation'
-export * from './ObservationComponent'
-export * from './ObservationReferenceRange'
+export * from './observation'
+export * from './observation-component'
+export * from './observation-reference-range'

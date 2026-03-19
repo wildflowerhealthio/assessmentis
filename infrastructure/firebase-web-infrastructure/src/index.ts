@@ -1,5 +1,5 @@
 export * from './layers'
-export * from './firestoreEffects'
+export * from './firestore-effects'
 export * from './firestore'
 export * from './tagClasses'
 export * from './utility'

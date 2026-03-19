@@ -1,14 +1,14 @@
 import { Practitioner } from '@assessmentis/clinical-domain'
 
-import 'app/traits/BreadcrumbLabel/implementations/Practitioner'
-import 'app/traits/Labeled/implementations/Practitioner'
-import 'app/traits/Link/implementations/Practitioner'
+import '../traits/BreadcrumbLabel/implementations/practitioner'
+import '../traits/Labeled/implementations/practitioner'
+import '../traits/Link/implementations/practitioner'
 
-import { CreateResourcePage } from 'app/modules/forms/CreateResourcePage'
-import { PractitionerForm } from 'app/modules/forms/Practitioner/PractitionerForm'
-import { PractitionerFormData } from 'app/modules/forms/Practitioner/PractitionerFormData'
+import { CreateResourcePage } from '@/modules/forms/create-resource-page'
+import { PractitionerForm } from '@/modules/forms/Practitioner/practitioner-form'
+import { PractitionerFormData } from '@/modules/forms/Practitioner/practitioner-form-data'
 
-export default function PractitionerNewPage() {
+export default function PractitionerNewPage(): React.JSX.Element {
   return (
     <CreateResourcePage
       klass={Practitioner}

@@ -6,7 +6,7 @@
  */
 
 /** Camera-enabled icon. */
-export function CameraOn() {
+export function CameraOn(): React.JSX.Element {
   return (
     <svg
       aria-hidden="true"
@@ -26,7 +26,7 @@ export function CameraOn() {
   )
 }
 
-export function CameraOff() {
+export function CameraOff(): React.JSX.Element {
   return (
     <svg
       aria-hidden="true"
@@ -52,7 +52,7 @@ export function CameraOff() {
   )
 }
 
-export function MicrophoneOn() {
+export function MicrophoneOn(): React.JSX.Element {
   return (
     <svg
       aria-hidden="true"
@@ -72,7 +72,7 @@ export function MicrophoneOn() {
   )
 }
 
-export function MicrophoneOff() {
+export function MicrophoneOff(): React.JSX.Element {
   return (
     <svg
       aria-hidden="true"
@@ -98,7 +98,7 @@ export function MicrophoneOff() {
   )
 }
 
-export function Screenshare() {
+export function Screenshare(): React.JSX.Element {
   return (
     <svg
       aria-hidden="true"
@@ -118,7 +118,7 @@ export function Screenshare() {
   )
 }
 
-export function Leave() {
+export function Leave(): React.JSX.Element {
   return (
     <svg
       aria-hidden="true"
@@ -140,7 +140,7 @@ export function Leave() {
   )
 }
 
-export function Info() {
+export function Info(): React.JSX.Element {
   return (
     <svg
       aria-hidden="true"
@@ -172,15 +172,9 @@ export function Info() {
   )
 }
 
-export function ChatIcon() {
+export function ChatIcon(): React.JSX.Element {
   return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
         fillRule="evenodd"
         clipRule="evenodd"
@@ -191,15 +185,9 @@ export function ChatIcon() {
   )
 }
 
-export function ChatHighlighted() {
+export function ChatHighlighted(): React.JSX.Element {
   return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
         fillRule="evenodd"
         clipRule="evenodd"
@@ -210,15 +198,9 @@ export function ChatHighlighted() {
   )
 }
 
-export function Arrow() {
+export function Arrow(): React.JSX.Element {
   return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
         d="M5 11.25C4.58579 11.25 4.25 11.5858 4.25 12C4.25 12.4142 4.58579 12.75 5 12.75V11.25ZM19 12L19.5303 12.5303C19.8232 12.2374 19.8232 11.7626 19.5303 11.4697L19 12ZM14.5303 6.46967C14.2374 6.17678 13.7626 6.17678 13.4697 6.46967C13.1768 6.76256 13.1768 7.23744 13.4697 7.53033L14.5303 6.46967ZM13.4697 16.4697C13.1768 16.7626 13.1768 17.2374 13.4697 17.5303C13.7626 17.8232 14.2374 17.8232 14.5303 17.5303L13.4697 16.4697ZM5 12.75H19V11.25H5V12.75ZM19.5303 11.4697L14.5303 6.46967L13.4697 7.53033L18.4697 12.5303L19.5303 11.4697ZM18.4697 11.4697L13.4697 16.4697L14.5303 17.5303L19.5303 12.5303L18.4697 11.4697Z"
         fill="#121A24"

@@ -7,13 +7,13 @@ import {
 } from '@assessmentis/firebase-web-infrastructure'
 import { DocumentStore } from '@assessmentis/platform-domain'
 
-import { auth, db, FirebaseWebLayer } from 'app/FirebaseWebLayer'
+import { FirebaseWebLayer, auth, db } from '@/firebase-web-layer'
 
 import type { Route } from './+types/orgs.$orgSlug'
 
-const sandboxOrgData = () => ({
-  slug: 'sandbox',
+const sandboxOrgData = (): Record<string, unknown> => ({
   emoji: '🧪',
+  originServerConfigs: {},
   origins: {
     'https%3A%2F%2Fhealthcare.googleapis.com%2Fv1%2Fprojects%2Fassessment-is-sandbox%2Flocations%2Fnorthamerica-northeast2%2Fdatasets%2Fsandbox-dataset%2FfhirStores%2Fsandbox-store%2Ffhir':
       {
@@ -29,19 +29,19 @@ const sandboxOrgData = () => ({
         },
       },
   },
-  originServerConfigs: {},
+  slug: 'sandbox',
 })
 
-export async function clientLoader({ params }: Route.ClientLoaderArgs) {
+export async function clientLoader({
+  params,
+}: Route.ClientLoaderArgs): Promise<{ data: Record<string, unknown> | null }> {
   console.log('Loading auth state')
   await auth.authStateReady()
   console.log('Loading org data for', params.orgSlug)
   const result = await Effect.runPromise(
     pipe(
       DocumentStore,
-      Effect.flatMap((documentStore) =>
-        documentStore.get('orgs', params.orgSlug)
-      ),
+      Effect.flatMap((documentStore) => documentStore.get('orgs', params.orgSlug)),
       Effect.catchTag('NotFoundError', () => Effect.succeed(null)),
       Effect.provide(FirebaseWebDocumentStoreLayer),
       Effect.provide(FirebaseWebLayer)
@@ -51,16 +51,14 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   return { data: result }
 }
 
-export async function clientAction({ params }: Route.ClientActionArgs) {
-  await Effect.runPromise(
-    setDocument(db, 'orgs', params.orgSlug, sandboxOrgData())
-  )
+export async function clientAction({ params }: Route.ClientActionArgs): Promise<void> {
+  await Effect.runPromise(setDocument(db, 'orgs', params.orgSlug, sandboxOrgData()))
 }
 
 export default function OrgPage({
   params,
   loaderData: { data },
-}: Route.ComponentProps) {
+}: Route.ComponentProps): React.JSX.Element {
   return (
     <div>
       <h1>Organization: {params.orgSlug}</h1>

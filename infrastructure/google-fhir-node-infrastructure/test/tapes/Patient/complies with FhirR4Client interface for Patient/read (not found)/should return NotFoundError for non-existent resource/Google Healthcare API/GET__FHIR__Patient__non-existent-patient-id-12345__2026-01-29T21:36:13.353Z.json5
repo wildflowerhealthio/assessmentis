@@ -1,61 +1,41 @@
 {
-    meta: {
-        createdAt: '2026-01-29T21:36:13.178Z',
-        host: 'https://healthcare.googleapis.com',
-        resHumanReadable: true,
+  meta: {
+    createdAt: '2026-01-29T21:36:13.178Z',
+    host: 'https://healthcare.googleapis.com',
+    resHumanReadable: true,
+  },
+  req: {
+    url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/non-existent-patient-id-12345',
+    method: 'GET',
+    headers: {},
+    body: '',
+  },
+  res: {
+    status: 404,
+    headers: {
+      'content-type': ['application/fhir+json;charset=utf-8'],
+      vary: ['Origin, X-Origin, Referer'],
+      date: ['Thu, 29 Jan 2026 21:36:13 GMT'],
+      server: ['ESF'],
+      'content-length': ['264'],
+      'x-xss-protection': ['0'],
+      'x-frame-options': ['SAMEORIGIN'],
+      'x-content-type-options': ['nosniff'],
+      'alt-svc': ['h3=":443"; ma=2592000,h3-29=":443"; ma=2592000'],
+      connection: ['close'],
     },
-    req: {
-        url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/non-existent-patient-id-12345',
-        method: 'GET',
-        headers: {},
-        body: '',
-    },
-    res: {
-        status: 404,
-        headers: {
-            'content-type': [
-                'application/fhir+json;charset=utf-8',
-            ],
-            vary: [
-                'Origin, X-Origin, Referer',
-            ],
-            date: [
-                'Thu, 29 Jan 2026 21:36:13 GMT',
-            ],
-            server: [
-                'ESF',
-            ],
-            'content-length': [
-                '264',
-            ],
-            'x-xss-protection': [
-                '0',
-            ],
-            'x-frame-options': [
-                'SAMEORIGIN',
-            ],
-            'x-content-type-options': [
-                'nosniff',
-            ],
-            'alt-svc': [
-                'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
-            ],
-            connection: [
-                'close',
-            ],
+    body: {
+      issue: [
+        {
+          code: 'no-store',
+          details: {
+            text: 'storage_error',
+          },
+          diagnostics: 'resource not found: Patient/non-existent-patient-id-12345',
+          severity: 'error',
         },
-        body: {
-            issue: [
-                {
-                    code: 'no-store',
-                    details: {
-                        text: 'storage_error',
-                    },
-                    diagnostics: 'resource not found: Patient/non-existent-patient-id-12345',
-                    severity: 'error',
-                },
-            ],
-            resourceType: 'OperationOutcome',
-        },
+      ],
+      resourceType: 'OperationOutcome',
     },
+  },
 }

@@ -5,7 +5,6 @@
   "compilerOptions": {
     "lib": ["ES2024"],
     "types": ["node"],
-    "baseUrl": "",
     "rootDir": ".",
     "outDir": "dist"
   }

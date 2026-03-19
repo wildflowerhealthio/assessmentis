@@ -1,3 +1,3 @@
-export * from './Extension'
-export * from './Narrative'
-export * from './VideoCallRoomConfigExtension'
+export * from './extension'
+export * from './narrative'
+export * from './video-call-room-config-extension'

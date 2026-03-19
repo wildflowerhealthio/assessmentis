@@ -3,7 +3,7 @@
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "eslint.config.js", "dist"],
   "compilerOptions": {
-    "baseUrl": "",
+    "types": ["node", "./vitest.d.ts"],
     "rootDir": "src/",
     "outDir": "dist",
     "declaration": true,

@@ -2,28 +2,10 @@
   "name": "assessmentis",
   "version": "0.0.1",
   "description": "A tool for diagnostic interviews",
-  "main": "index.js",
-  "packageManager": "npm@10.9.2",
-  "prettier": "@assessmentis/prettier-config",
-  "scripts": {
-    "build": "npm exec turbo run build",
-    "dev": "npm exec turbo run dev",
-    "lint": "npm run lint:projects && npm run lint:docs",
-    "lint:projects": "npm exec turbo run lint -- --continue=always",
-    "lint:docs": "npm exec markdownlint-cli2 -- --config .local.markdownlint-cli2.mjs",
-    "lint:fix": "npm exec turbo run lint:fix",
-    "typecheck": "npm exec turbo run typecheck",
-    "test": "vitest --project=\"*:unit\"",
-    "test:all": "vitest",
-    "format": "npm exec prettier --write \"**/*.{ts,tsx,md}\"",
-    "docs": "typedoc"
-  },
-  "author": "Ruth Marks",
   "license": "UNLICENSED",
+  "author": "Ruth Marks",
   "workspaces": [
-    "global/eslint-config",
     "global/typescript-config",
-    "global/prettier-config",
     "global/react-util",
     "global/util",
     "global/ontology",
@@ -49,9 +31,24 @@
     "apps/firecms",
     "apps/aws_infra"
   ],
+  "main": "index.js",
+  "scripts": {
+    "build": "npm exec turbo run build",
+    "codegen": "npm exec turbo run codegen",
+    "dev": "npm exec turbo run dev",
+    "docs": "typedoc",
+    "format": "npm exec oxfmt --write ./apps ./domain ./global ./infrastructure",
+    "lint": "npm run lint:projects && npm run lint:docs && npm run lint:comments",
+    "lint:comments": "eslint ./apps ./domain ./global ./infrastructure",
+    "lint:docs": "npm exec markdownlint-cli2 -- --config .local.markdownlint-cli2.mjs",
+    "lint:fix": "oxlint --fix ./apps ./domain ./global ./infrastructure",
+    "lint:projects": "oxlint ./apps ./domain ./global ./infrastructure",
+    "test": "vitest --project=\"*:unit\"",
+    "test:all": "vitest",
+    "typecheck": "npm exec turbo run typecheck"
+  },
   "dependencies": {
     "@assessmentis/document-template-kinds": "^0.0.1",
-    "prettier": "^3.7.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "npm:noist@^1.0.0",
@@ -59,12 +56,19 @@
   },
   "devDependencies": {
     "@effect/language-service": "^0.72.0",
-    "eslint": "^9.39.1",
+    "@typescript/native-preview": "^7.0.0-dev.20260318.1",
+    "eslint": "^9.39.4",
+    "eslint-plugin-tsdoc": "^0.5.2",
     "markdownlint": "^0.40.0",
-    "markdownlint-cli2": "^0.20.0",
+    "markdownlint-cli2": "^0.21.0",
     "markdownlint-cli2-formatter-pretty": "^0.0.9",
     "markdownlint-rule-relative-links": "^5.0.1",
+    "oxfmt": "^0.41.0",
+    "oxlint": "^1.56.0",
+    "oxlint-tsgolint": "^0.17.0",
     "turbo": "^2.6.1",
-    "typedoc": "^0.28.17"
-  }
+    "typedoc": "^0.28.17",
+    "typescript-eslint": "^8.57.1"
+  },
+  "packageManager": "npm@10.9.2"
 }

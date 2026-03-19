@@ -1,20 +1,15 @@
-import { Effect, pipe, RequestResolver, Schema } from 'effect'
 import type { HttpClient } from '@effect/platform/HttpClient'
+import { Effect, RequestResolver, Schema, pipe } from 'effect'
 
 import type { Observation } from '@assessmentis/clinical-domain'
 import { Resource } from '@assessmentis/effectful-store'
 import { UnhandledError } from '@assessmentis/ontology'
 
-import {
-  assertStatus,
-  getRequest,
-  handleHttpClientError,
-  parseAs,
-} from '../../httpHelpers'
-import { ApiDailyCoTranscriptSchema } from '../../models/ApiDailyCoTranscriptSchema'
-import { fetchTranscriptAccessLink } from '../../resolverUtils'
-import type { AnyRequest, AuthReadable } from '../../resolverUtils'
-import { DailyCoObservation } from './DailyCoObservation'
+import { assertStatus, getRequest, handleHttpClientError, parseAs } from '../../http-helpers'
+import { ApiDailyCoTranscriptSchema } from '../../models/api-daily-co-transcript-schema'
+import { fetchTranscriptAccessLink } from '../../resolver-utils'
+import type { AnyRequest, AuthReadable } from '../../resolver-utils'
+import { DailyCoObservation } from './daily-co-observation'
 
 const decodeObservation = Schema.decode(DailyCoObservation)
 
@@ -22,17 +17,17 @@ export const makeObservationResolver = (
   httpClient: HttpClient,
   baseUrl: string,
   auth: AuthReadable
-) =>
+): RequestResolver.RequestResolver<AnyRequest<typeof Observation>> =>
   RequestResolver.fromEffect((request: AnyRequest<typeof Observation>) => {
     switch (request._tag) {
-      case 'Get':
+      case 'Get': {
         return Effect.fail(
           new UnhandledError({
-            message:
-              'Daily.co transcripts cannot be fetched by ID. Use Search.',
+            message: 'Daily.co transcripts cannot be fetched by ID. Use Search.',
           })
         )
-      case 'Search':
+      }
+      case 'Search': {
         return Effect.gen(function* () {
           const allObservations: Resource.WithResourceUrl<Observation>[] = []
           let cursor: string | undefined
@@ -71,21 +66,20 @@ export const makeObservationResolver = (
                 Effect.mapError(
                   (cause) =>
                     new UnhandledError({
-                      message:
-                        'Error decoding Observation from Daily.co transcript',
+                      message: 'Error decoding Observation from Daily.co transcript',
                       cause,
                     })
                 ),
-                Effect.flatMap((o) =>
-                  Resource.hasResourceUrl(o)
-                    ? Effect.succeed(o)
-                    : Effect.fail(
-                        new UnhandledError({
-                          message:
-                            'Expected Observation to have url after decoding',
-                        })
-                      )
-                )
+                Effect.flatMap((o) => {
+                  if (Resource.hasResourceUrl(o)) {
+                    return Effect.succeed(o)
+                  }
+                  return Effect.fail(
+                    new UnhandledError({
+                      message: 'Expected Observation to have url after decoding',
+                    })
+                  )
+                })
               )
               allObservations.push(observation)
             }
@@ -93,21 +87,22 @@ export const makeObservationResolver = (
             if (page.data.length < 100) {
               hasMore = false
             } else {
-              const lastTranscript = page.data[page.data.length - 1]!
+              const lastTranscript = page.data.at(-1)!
               cursor = lastTranscript.transcriptId
             }
           }
 
           return allObservations
         })
+      }
       case 'Create':
       case 'Update':
-      case 'Delete':
+      case 'Delete': {
         return Effect.fail(
           new UnhandledError({
-            message:
-              'Daily.co transcripts are read-only and cannot be modified via this origin',
+            message: 'Daily.co transcripts are read-only and cannot be modified via this origin',
           })
         )
+      }
     }
   })

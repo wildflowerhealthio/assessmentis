@@ -1,1 +1,1 @@
-export * from './Media'
+export * from './media'

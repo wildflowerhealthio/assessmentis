@@ -1,2 +1,2 @@
-export * from './DiagnosticReport'
-export * from './DiagnosticReportMedia'
+export * from './diagnostic-report'
+export * from './diagnostic-report-media'

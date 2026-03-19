@@ -10,18 +10,13 @@ Generate opaque, branded values instead of concrete data. This forces tests to v
 
 ```typescript
 type A = unknown & Brand.Brand<'A'>
-const arbitraryA: fc.Arbitrary<A> = fc
-  .anything()
-  .map((a) => vi.mockObject(a) as A)
+const arbitraryA: fc.Arbitrary<A> = fc.anything().map((a) => vi.mockObject(a) as A)
 ```
 
 Compose arbitraries to match the shape your code consumes:
 
 ```typescript
-const eitherArb = fc.oneof(
-  arbitraryA.map(Either.right),
-  arbitraryE.map(Either.left)
-)
+const eitherArb = fc.oneof(arbitraryA.map(Either.right), arbitraryE.map(Either.left))
 const streamEitherArb = fc.array(eitherArb).map(Stream.fromIterable)
 ```
 

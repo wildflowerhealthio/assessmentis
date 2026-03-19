@@ -1,17 +1,12 @@
-import { afterEach, beforeAll, describe, expect } from 'vitest'
 import { it } from '@effect/vitest'
 import { Effect } from 'effect'
+import { afterEach, beforeAll, describe, expect } from 'vitest'
 
 import { FhirR4Client } from '@assessmentis/fhir-r4'
 import { describeAsFhirR4PatientClient } from '@assessmentis/fhir-r4/interface-tests'
 
 import { createTracker } from '../helpers/cleanup'
-import {
-  LiveTestLayer,
-  setMswContext,
-  testConfig,
-  verifyGcloudAuth,
-} from '../helpers/test-config'
+import { LiveTestLayer, setMswContext, testConfig, verifyGcloudAuth } from '../helpers/test-config'
 
 /**
  * Live E2E tests for Patient CRUD operations against Google Healthcare API.
@@ -28,7 +23,7 @@ import {
  * - .env file with FHIR store configuration
  */
 describe('Patient', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     // Verify gcloud auth is configured before running tests
     verifyGcloudAuth()
     console.log(
@@ -47,9 +42,7 @@ describe('Patient', () => {
     afterEach(async () => {
       // Cleanup created resources
       if (tracker.count > 0) {
-        await Effect.runPromise(
-          tracker.cleanup().pipe(Effect.provide(LiveTestLayer))
-        )
+        await Effect.runPromise(tracker.cleanup().pipe(Effect.provide(LiveTestLayer)))
       }
     })
 
@@ -58,8 +51,6 @@ describe('Patient', () => {
         const client = yield* FhirR4Client
 
         const bundle = {
-          resourceType: 'Bundle' as const,
-          type: 'transaction' as const,
           entry: [
             {
               request: { method: 'POST' as const, url: 'Patient' },
@@ -69,15 +60,17 @@ describe('Patient', () => {
               },
             },
           ],
+          resourceType: 'Bundle' as const,
+          type: 'transaction' as const,
         }
 
         const result = yield* client.executeBundle(bundle as never)
 
         // Track created resources for cleanup
         const responseBundle = result as {
-          entry?: Array<{
+          entry?: {
             response?: { location?: string }
-          }>
+          }[]
         }
         responseBundle.entry?.forEach((entry) => {
           const location = entry.response?.location
@@ -92,9 +85,9 @@ describe('Patient', () => {
         const response = result as {
           resourceType: string
           type: string
-          entry?: Array<{
+          entry?: {
             response?: { status: string }
-          }>
+          }[]
         }
 
         // Structural assertions

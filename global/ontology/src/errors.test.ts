@@ -23,7 +23,7 @@ describe('Domain Errors', () => {
           (name, message) => {
             const cause = new Error(message)
             cause.name = name
-            const error = new UnhandledError({ message: '', cause })
+            const error = new UnhandledError({ cause, message: '' })
             expect(error.name).toBe(`Unhandled${name}`)
           }
         )
@@ -104,7 +104,7 @@ describe('Domain Errors', () => {
             { nil: undefined }
           ),
           (resourceType, params, cause) => {
-            const error = new NotFoundError({ resourceType, params, cause })
+            const error = new NotFoundError({ cause, params, resourceType })
             expect(error.resourceType).toBe(resourceType)
             expect(error.params).toEqual(params)
             if (cause !== undefined) {
@@ -118,7 +118,7 @@ describe('Domain Errors', () => {
     test('property: accepts optional cause', () => {
       fc.assert(
         fc.property(fc.string(), fc.object(), (resourceType, params) => {
-          const error = new NotFoundError({ resourceType, params })
+          const error = new NotFoundError({ params, resourceType })
           expect(error.resourceType).toBe(resourceType)
           expect(error.params).toEqual(params)
           expect(error.cause).toBeUndefined()

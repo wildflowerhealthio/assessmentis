@@ -1,31 +1,23 @@
 {
   "name": "@assessmentis/react-util",
   "version": "0.0.1",
-  "description": "React utilities  and components used by Assessment.is",
-  "author": "Ruth Marks",
-  "license": "UNLICENSED",
   "private": true,
+  "description": "React utilities  and components used by Assessment.is",
+  "license": "UNLICENSED",
+  "author": "Ruth Marks",
   "type": "module",
-  "prettier": "@assessmentis/prettier-config",
-  "scripts": {
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint \"./{src,test}/**/*\"",
-    "lint:fix": "eslint --fix \"./{src,test}/**/*\"",
-    "test": "vitest --project react-util:unit",
-    "preview": "vite preview"
-  },
   "exports": {
     ".": "./src/index.ts",
     "./hooks": "./src/hooks/index.ts"
   },
-  "peerDependencies": {
-    "react": "19.x",
-    "react-dom": "19.x",
-    "react-error-boundary": "^6.0.0",
-    "uuid": "13.x"
+  "scripts": {
+    "lint": "oxlint ./{src,test}/",
+    "lint:fix": "oxlint --fix ./{src,test}/",
+    "preview": "vite preview",
+    "test": "vitest --project react-util:unit",
+    "typecheck": "npx tsgo --noEmit"
   },
   "devDependencies": {
-    "@assessmentis/prettier-config": "*",
     "@eslint/js": "^9.39.1",
     "@testing-library/react": "^16.3.1",
     "@types/node": "^24.10.1",
@@ -34,7 +26,6 @@
     "@vitejs/plugin-react": "^5.1.1",
     "babel-plugin-react-compiler": "^1.0.0",
     "effect": "^3.15.0",
-    "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "fast-check": "^3.23.2",
@@ -45,5 +36,11 @@
     "vite": "*",
     "vite-plugin-dts": "^4.5.4",
     "vitest": "^4.0.16"
+  },
+  "peerDependencies": {
+    "react": "19.x",
+    "react-dom": "19.x",
+    "react-error-boundary": "^6.0.0",
+    "uuid": "13.x"
   }
 }

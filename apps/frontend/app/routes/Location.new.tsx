@@ -1,19 +1,15 @@
 import { Location } from '@assessmentis/clinical-domain'
 
-import 'app/traits/BreadcrumbLabel/implementations/Location'
-import 'app/traits/Labeled/implementations/Location'
-import 'app/traits/Link/implementations/Location'
+import '../traits/BreadcrumbLabel/implementations/location'
+import '../traits/Labeled/implementations/location'
+import '../traits/Link/implementations/location'
 
-import { CreateResourcePage } from 'app/modules/forms/CreateResourcePage'
-import { LocationForm } from 'app/modules/forms/Location/LocationForm'
-import { LocationFormData } from 'app/modules/forms/Location/LocationFormData'
+import { CreateResourcePage } from '@/modules/forms/create-resource-page'
+import { LocationForm } from '@/modules/forms/Location/location-form'
+import { LocationFormData } from '@/modules/forms/Location/location-form-data'
 
-export default function LocationNewPage() {
+export default function LocationNewPage(): React.JSX.Element {
   return (
-    <CreateResourcePage
-      klass={Location}
-      Form={LocationFormData}
-      FormComponent={LocationForm}
-    />
+    <CreateResourcePage klass={Location} Form={LocationFormData} FormComponent={LocationForm} />
   )
 }

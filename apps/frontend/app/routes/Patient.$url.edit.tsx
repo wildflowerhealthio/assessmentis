@@ -1,16 +1,16 @@
 import { Patient } from '@assessmentis/clinical-domain'
 
-import 'app/traits/BreadcrumbLabel/implementations/Patient'
-import 'app/traits/Labeled/implementations/Patient'
-import 'app/traits/Link/implementations/Patient'
+import '../traits/BreadcrumbLabel/implementations/patient'
+import '../traits/Labeled/implementations/patient'
+import '../traits/Link/implementations/patient'
 
-import { EditResourcePage } from 'app/modules/forms/EditResourcePage'
-import { PatientForm } from 'app/modules/forms/Patient/PatientForm'
-import { PatientFormData } from 'app/modules/forms/Patient/PatientFormData'
+import { EditResourcePage } from '@/modules/forms/edit-resource-page'
+import { PatientForm } from '@/modules/forms/Patient/patient-form'
+import { PatientFormData } from '@/modules/forms/Patient/patient-form-data'
 
 import type { Route } from './+types/Patient.$url.edit'
 
-export default function PatientEditPage({ params }: Route.ComponentProps) {
+export default function PatientEditPage({ params }: Route.ComponentProps): React.JSX.Element {
   return (
     <EditResourcePage
       klass={Patient}

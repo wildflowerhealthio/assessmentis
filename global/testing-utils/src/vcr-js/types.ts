@@ -44,7 +44,7 @@ export interface VcrServerOpts extends VcrOpts {
 }
 
 /** Returns true when the `RECORD` or `VITE_RECORD` env var is `"true"`, indicating tapes should be written. */
-export const shouldRecord = () =>
+export const shouldRecord = (): boolean =>
   import.meta.env.RECORD === 'true' || import.meta.env.VITE_RECORD === 'true'
 
 /**
@@ -52,26 +52,21 @@ export const shouldRecord = () =>
  * host. Handles tape naming (based on the current Vitest test name),
  * record mode, and URL substitutions.
  */
-export const vcrOptsTalkbackOptions = (
-  opts: VcrOpts | VcrServerOpts
-): Partial<Options>[] =>
+export const vcrOptsTalkbackOptions = (opts: VcrOpts | VcrServerOpts): Partial<Options>[] =>
   opts.hosts.map(({ destinationHost, name, urlSubstitutions, proxyPort }) => ({
     name,
     host: destinationHost,
     path: opts.tapePath,
     port: proxyPort,
-    record: shouldRecord()
-      ? talkback.Options.RecordMode.NEW
-      : talkback.Options.RecordMode.DISABLED,
+    // oxlint-disable-next-line eslint/no-ternary -- inline in object literal returned from arrow
+    record: shouldRecord() ? talkback.Options.RecordMode.NEW : talkback.Options.RecordMode.DISABLED,
     silent: opts.silent ?? true,
     summary: opts.summary ?? false,
     debug: opts.debug ?? false,
-    allowHeaders: [], // Don't use headers when matching tapes
-    tapeNameGenerator(tapeNumber, tape) {
-      const contentsName = [
-        ...(urlSubstitutions ?? []),
-        [/\//g, '__'] as const,
-      ].reduce(
+    // Don't use headers when matching tapes
+    allowHeaders: [],
+    tapeNameGenerator(tapeNumber: number, tape: { req: { method: string; url: string } }): string {
+      const contentsName = [...(urlSubstitutions ?? []), [/\//g, '__'] as const].reduce(
         (str, [pattern, replacement]) => str.replace(pattern, replacement),
         tape.req.url
       )

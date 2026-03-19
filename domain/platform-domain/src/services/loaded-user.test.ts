@@ -1,0 +1,173 @@
+import { Cause, Effect, Exit, Layer } from 'effect'
+import { describe, expect, it, vi } from 'vitest'
+
+import { UnhandledError } from '@assessmentis/ontology'
+
+import { UserId } from '../models/user-id'
+import { CurrentUserId, DocumentStore } from '../tagClasses'
+import { mockDocumentStore, mockDocumentStoreImplementations } from './__tests__/mocks'
+import { LiteralLoadedUserLayer, LoadedUser, LoadedUserLayer } from './loaded-user'
+
+describe('LoadedUser', () => {
+  const testUserId = UserId.make('user-123')
+
+  describe('LiteralLoadedUserLayer', () => {
+    it('successfully decodes valid user data', async () => {
+      const validUserData = {
+        org_roles: {
+          'test-org': ['admin', 'viewer'],
+        },
+        uid: 'user-123',
+      }
+
+      const program = Effect.gen(function* program() {
+        const user = yield* LoadedUser
+        return user
+      }).pipe(Effect.provide(LiteralLoadedUserLayer(testUserId, validUserData)))
+
+      const result = await Effect.runPromiseExit(program)
+      expect(Exit.isSuccess(result)).toBe(true)
+      if (Exit.isSuccess(result)) {
+        expect(result.value.uid).toBe('user-123')
+      }
+    })
+
+    it('fails with UnhandledError for undefined data', async () => {
+      const program = Effect.gen(function* program() {
+        const user = yield* LoadedUser
+        return user
+      }).pipe(Effect.provide(LiteralLoadedUserLayer(testUserId, undefined)))
+
+      const result = await Effect.runPromiseExit(program)
+      expect(Exit.isFailure(result)).toBe(true)
+      if (Exit.isFailure(result)) {
+        const error = Cause.squash(result.cause) as any
+        expect(error._tag).toBe('UnhandledError')
+        expect(error).toBeInstanceOf(UnhandledError)
+      }
+    })
+
+    it('fails with UnhandledError for invalid schema', async () => {
+      const invalidUserData = {
+        // Invalid: should be string
+        uid: 123,
+        org_roles: {
+          'test-org': ['admin'],
+        },
+      }
+
+      const program = Effect.gen(function* program() {
+        const user = yield* LoadedUser
+        return user
+      }).pipe(Effect.provide(LiteralLoadedUserLayer(testUserId, invalidUserData)))
+
+      const result = await Effect.runPromiseExit(program)
+      expect(Exit.isFailure(result)).toBe(true)
+      if (Exit.isFailure(result)) {
+        const error = Cause.squash(result.cause) as any
+        expect(error._tag).toBe('UnhandledError')
+        expect(error).toBeInstanceOf(UnhandledError)
+      }
+    })
+  })
+
+  describe('LoadedUserLayer', () => {
+    it('successfully loads from DocumentStore', async () => {
+      const validUserData = {
+        org_roles: {
+          'test-org': ['admin', 'viewer'],
+        },
+        uid: 'user-123',
+      }
+
+      const mock = mockDocumentStore({
+        get: vi.fn(mockDocumentStoreImplementations.get.returning(validUserData)),
+      })
+
+      const testLayer = LoadedUserLayer.pipe(
+        Layer.provide(Layer.succeed(DocumentStore, mock)),
+        Layer.provide(
+          Layer.succeed(CurrentUserId, {
+            authToken: 'test-token',
+            userId: testUserId,
+          })
+        )
+      )
+
+      const program = Effect.gen(function* program() {
+        const user = yield* LoadedUser
+        return user
+      }).pipe(Effect.provide(testLayer))
+
+      const result = await Effect.runPromiseExit(program)
+      expect(Exit.isSuccess(result)).toBe(true)
+      if (Exit.isSuccess(result)) {
+        expect(result.value.uid).toBe('user-123')
+      }
+    })
+
+    it('fails with NotFoundError when user not found in DocumentStore', async () => {
+      const mock = mockDocumentStore({
+        get: vi.fn(mockDocumentStoreImplementations.get.notFound()),
+      })
+
+      const testLayer = LoadedUserLayer.pipe(
+        Layer.provide(Layer.succeed(DocumentStore, mock)),
+        Layer.provide(
+          Layer.succeed(CurrentUserId, {
+            authToken: 'test-token',
+            userId: UserId.make('nonexistent-user'),
+          })
+        )
+      )
+
+      const program = Effect.gen(function* program() {
+        const user = yield* LoadedUser
+        return user
+      }).pipe(Effect.provide(testLayer))
+
+      const result = await Effect.runPromiseExit(program)
+      expect(Exit.isFailure(result)).toBe(true)
+      if (Exit.isFailure(result)) {
+        const error = Cause.squash(result.cause) as any
+        expect(error._tag).toBe('NotFoundError')
+      }
+    })
+
+    it('fails with UnhandledError when user data is invalid', async () => {
+      const invalidUserData = {
+        // Invalid: should be string
+        uid: 123,
+        org_roles: {
+          'test-org': ['admin'],
+        },
+      }
+
+      const mock = mockDocumentStore({
+        get: vi.fn(mockDocumentStoreImplementations.get.returning(invalidUserData)),
+      })
+
+      const testLayer = LoadedUserLayer.pipe(
+        Layer.provide(Layer.succeed(DocumentStore, mock)),
+        Layer.provide(
+          Layer.succeed(CurrentUserId, {
+            authToken: 'test-token',
+            userId: testUserId,
+          })
+        )
+      )
+
+      const program = Effect.gen(function* program() {
+        const user = yield* LoadedUser
+        return user
+      }).pipe(Effect.provide(testLayer))
+
+      const result = await Effect.runPromiseExit(program)
+      expect(Exit.isFailure(result)).toBe(true)
+      if (Exit.isFailure(result)) {
+        const error = Cause.squash(result.cause) as any
+        expect(error._tag).toBe('UnhandledError')
+      }
+    })
+  })
+})

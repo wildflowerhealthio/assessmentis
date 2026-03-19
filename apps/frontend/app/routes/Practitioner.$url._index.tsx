@@ -6,35 +6,32 @@ import { useEitherStream } from '@assessmentis/react-util'
 
 import Skeleton from 'react-loading-skeleton'
 
-import 'app/traits/BreadcrumbLabel/implementations/Practitioner'
-import 'app/traits/Link/implementations/Practitioner'
+import '../traits/BreadcrumbLabel/implementations/practitioner'
+import '../traits/Link/implementations/practitioner'
 
-import { useResourceSubscription } from '../layers/useResourceSubscription'
-import { useBreadcrumbs } from '../modules/Breadcrumbs/useBreadcrumbs'
-import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
-import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
-import { PractitionerAddresses } from '../modules/forms/Practitioner/PractitionerAddresses/PractitionerAddresses'
-import { PractitionerContactInfo } from '../modules/forms/Practitioner/PractitionerContactInfo/PractitionerContactInfo'
-import { PractitionerLanguages } from '../modules/forms/Practitioner/PractitionerLanguages/PractitionerLanguages'
-import { PractitionerQualifications } from '../modules/forms/Practitioner/PractitionerQualifications/PractitionerQualifications'
+import { useResourceSubscription } from '../layers/use-resource-subscription'
+import { useBreadcrumbs } from '../modules/Breadcrumbs/use-breadcrumbs'
+import { DetailGrid } from '../modules/common/components/DetailGrid/detail-grid'
+import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/resource-detail-page'
+import { PractitionerAddresses } from '../modules/forms/Practitioner/PractitionerAddresses/practitioner-addresses'
+import { PractitionerContactInfo } from '../modules/forms/Practitioner/PractitionerContactInfo/practitioner-contact-info'
+import { PractitionerLanguages } from '../modules/forms/Practitioner/PractitionerLanguages/practitioner-languages'
+import { PractitionerQualifications } from '../modules/forms/Practitioner/PractitionerQualifications/practitioner-qualifications'
 import {
   formatPractitionerDemographics,
   getPractitionerDisplayName,
-} from '../modules/resources/Practitioner/utils/practitionerDisplay'
-import { runEffectSyncFlat } from '../runEffectSync'
+} from '../modules/resources/Practitioner/utils/practitioner-display'
+import { runEffectSyncFlat } from '../run-effect-sync'
 import type { Route } from './+types/Practitioner.$url._index'
 
 export default function PractitionerDetailPage({
   params,
-}: Route.ComponentProps) {
+}: Route.ComponentProps): React.JSX.Element {
   const practitionerStream = useResourceSubscription(Practitioner, params.url)
 
   const practitionerPromise = useEitherStream(practitionerStream)
 
-  useBreadcrumbs(
-    () => [Practitioner, practitionerPromise],
-    [practitionerPromise]
-  )
+  useBreadcrumbs(() => [Practitioner, practitionerPromise], [practitionerPromise])
 
   const loader = (
     <ResourceDetailPage
@@ -47,13 +44,15 @@ export default function PractitionerDetailPage({
       }
       sections={[
         {
-          id: 'demographics',
-          title: 'Demographics',
           content: (
             <DetailGrid
-              items={{ skeleton: [<Skeleton />, <Skeleton />, <Skeleton />] }}
+              items={{
+                skeleton: [<Skeleton key={0} />, <Skeleton key={1} />, <Skeleton key={2} />],
+              }}
             />
           ),
+          id: 'demographics',
+          title: 'Demographics',
         },
       ]}
     />
@@ -69,49 +68,37 @@ export default function PractitionerDetailPage({
             subtitle={`Practitioner: ${practitioner.url?.toString() ?? params.url}`}
             sections={[
               {
-                id: 'demographics',
-                title: 'Demographics',
                 content: (
                   <DetailGrid
-                    items={runEffectSyncFlat(
-                      formatPractitionerDemographics(practitioner)
-                    )}
+                    items={runEffectSyncFlat(formatPractitionerDemographics(practitioner))}
                   />
                 ),
+                id: 'demographics',
+                title: 'Demographics',
               },
               {
+                content: <PractitionerQualifications practitioner={practitioner} />,
+                hidden: !practitioner.qualification || practitioner.qualification.length === 0,
                 id: 'qualifications',
                 title: 'Qualifications',
-                content: (
-                  <PractitionerQualifications practitioner={practitioner} />
-                ),
-                hidden:
-                  !practitioner.qualification ||
-                  practitioner.qualification.length === 0,
               },
               {
+                content: <PractitionerContactInfo practitioner={practitioner} />,
+                hidden: !practitioner.telecom || practitioner.telecom.length === 0,
                 id: 'contact',
                 title: 'Contact Information',
-                content: (
-                  <PractitionerContactInfo practitioner={practitioner} />
-                ),
-                hidden:
-                  !practitioner.telecom || practitioner.telecom.length === 0,
               },
               {
+                content: <PractitionerAddresses practitioner={practitioner} />,
+                hidden: !practitioner.address || practitioner.address.length === 0,
                 id: 'addresses',
                 title: 'Addresses',
-                content: <PractitionerAddresses practitioner={practitioner} />,
-                hidden:
-                  !practitioner.address || practitioner.address.length === 0,
               },
               {
+                content: <PractitionerLanguages practitioner={practitioner} />,
+                hidden: !practitioner.communication || practitioner.communication.length === 0,
                 id: 'languages',
                 title: 'Languages',
-                content: <PractitionerLanguages practitioner={practitioner} />,
-                hidden:
-                  !practitioner.communication ||
-                  practitioner.communication.length === 0,
               },
             ]}
             debugData={practitioner}

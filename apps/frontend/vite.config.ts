@@ -6,12 +6,12 @@ import { defineConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig(() => ({
-  plugins: [reactRouter(), tsconfigPaths()],
-  envPrefix: 'PUBLIC_',
-  optimizeDeps: {},
   build: {
     ssr: false,
   },
+  envPrefix: 'PUBLIC_',
+  optimizeDeps: {},
+  plugins: [reactRouter(), tsconfigPaths()],
   server: {
     proxy: {
       '/api/': {

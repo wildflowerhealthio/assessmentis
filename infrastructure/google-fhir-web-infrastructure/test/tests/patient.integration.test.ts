@@ -1,6 +1,6 @@
-import { describe, expect } from 'vitest'
 import { it } from '@effect/vitest'
 import { Effect, Layer } from 'effect'
+import { describe, expect } from 'vitest'
 
 import { FhirR4Client } from '@assessmentis/fhir-r4'
 import { describeAsFhirR4PatientClient } from '@assessmentis/fhir-r4/interface-tests'
@@ -24,7 +24,7 @@ import { setupClientOnWindow } from '../helpers/integration-setup'
  */
 describe('Patient', async () => {
   await setupClientOnWindow()
-  const client: typeof FhirR4Client.Service = (window as any)['client']
+  const { client } = window as any
   if (!client) {
     throw new Error('FHIR client not initialized on window')
   }
@@ -40,8 +40,6 @@ describe('Patient', async () => {
         const client = yield* FhirR4Client
 
         const bundle = {
-          resourceType: 'Bundle' as const,
-          type: 'transaction' as const,
           entry: [
             {
               request: { method: 'POST' as const, url: 'Patient' },
@@ -51,15 +49,17 @@ describe('Patient', async () => {
               },
             },
           ],
+          resourceType: 'Bundle' as const,
+          type: 'transaction' as const,
         }
 
         const result = yield* client.executeBundle(bundle as never)
 
         // Track created resources for cleanup
         const responseBundle = result as {
-          entry?: Array<{
+          entry?: {
             response?: { location?: string }
-          }>
+          }[]
         }
         responseBundle.entry?.forEach((entry) => {
           const location = entry.response?.location
@@ -74,9 +74,9 @@ describe('Patient', async () => {
         const response = result as {
           resourceType: string
           type: string
-          entry?: Array<{
+          entry?: {
             response?: { status: string }
-          }>
+          }[]
         }
 
         // Structural assertions
@@ -86,9 +86,7 @@ describe('Patient', async () => {
         if (response.entry && response.entry.length > 0) {
           expect(response.entry[0].response?.status).toMatch(/^2\d\d/)
         }
-      }).pipe(
-        Effect.provide(Layer.succeed(FhirR4Client, (window as any)['client']))
-      )
+      }).pipe(Effect.provide(Layer.succeed(FhirR4Client, (window as any)['client'])))
     )
   })
 })

@@ -2,10 +2,9 @@
   "name": "@assessmentis/testing-utils",
   "version": "0.0.1",
   "description": "Testing utilities for Assessment.is projects",
-  "author": "Ruth Marks",
   "license": "UNLICENSED",
+  "author": "Ruth Marks",
   "type": "module",
-  "prettier": "@assessmentis/prettier-config",
   "exports": {
     ".": "./src/index.ts",
     "./vitest-configs": {
@@ -17,24 +16,23 @@
     "./vcr-js/browser": "./src/vcr-js/browser.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint \"./{src,test}/**/*\"",
-    "lint:fix": "eslint --fix \"./{src,test}/**/*\"",
-    "test": "vitest run"
+    "lint": "oxlint ./{src,test}/",
+    "lint:fix": "oxlint --fix ./{src,test}/",
+    "test": "vitest run",
+    "typecheck": "npx tsgo --noEmit"
   },
   "dependencies": {
     "msw": "^2.7.0"
   },
-  "peerDependencies": {
-    "vitest": ">=4.0.0",
-    "@vitejs/plugin-react": ">=4.0.0"
-  },
   "devDependencies": {
-    "@assessmentis/prettier-config": "*",
     "@assessmentis/typescript-config": "*",
     "@vitejs/plugin-react": ">=4.0.0",
     "talkback": "^4.2.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.15"
+  },
+  "peerDependencies": {
+    "@vitejs/plugin-react": ">=4.0.0",
+    "vitest": ">=4.0.0"
   }
 }

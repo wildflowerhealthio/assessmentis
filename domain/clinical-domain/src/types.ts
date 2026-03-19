@@ -1,4 +1,4 @@
-import type { Reference } from './data-types/complex/IdentifierAndReference'
+import type { Reference } from './data-types/complex/identifier-and-reference'
 
 /**
  * Filter type for search operations on clinical data resources.
@@ -8,10 +8,7 @@ import type { Reference } from './data-types/complex/IdentifierAndReference'
  * @deprecated no longer used
  */
 export type RepositoryFilters<TResource> = {
-  [key in Exclude<
-    keyof TResource,
-    'resourceType'
-  >]?: Reference extends TResource[key]
+  [key in Exclude<keyof TResource, 'resourceType'>]?: Reference extends TResource[key]
     ? undefined | string | readonly string[]
     : TResource[key] extends string
       ? undefined | string | readonly string[]

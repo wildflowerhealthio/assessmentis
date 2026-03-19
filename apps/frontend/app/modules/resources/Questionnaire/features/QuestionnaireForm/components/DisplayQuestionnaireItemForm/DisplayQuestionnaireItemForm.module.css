@@ -1,6 +1,6 @@
 .DisplayQuestionnaireItemForm {
-  display: inline-flex; 
-  width: 100%; 
+  display: inline-flex;
+  width: 100%;
   justify-content: space-between;
 }
 

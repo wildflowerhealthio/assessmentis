@@ -1,1 +1,1 @@
-export * from './NodeGoogleHealthcareClientLayer'
+export * from './node-google-healthcare-client-layer'

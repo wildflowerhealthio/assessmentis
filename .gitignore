@@ -2,6 +2,9 @@
 .turbo
 dist/
 
+# Claude
+.claude
+
 # TypeDoc output
 docs-html/
 
@@ -13,6 +16,9 @@ yarn-debug.log*
 yarn-error.log*
 firebase-debug.log*
 firebase-debug.*.log*
+
+# TypeScript cache
+*.tsbuildinfo
 
 # Firebase cache
 .firebase/

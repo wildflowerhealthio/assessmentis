@@ -1,0 +1,44 @@
+{
+  meta: {
+    createdAt: '2026-03-19T00:46:39.557Z',
+    host: 'https://healthcare.googleapis.com',
+    resHumanReadable: true,
+    resUncompressed: true,
+  },
+  req: {
+    body: 'ewogICJlbnRyeSI6IFsKICAgIHsKICAgICAgInJlcXVlc3QiOiB7CiAgICAgICAgIm1ldGhvZCI6ICJQT1NUIiwKICAgICAgICAidXJsIjogIlBhdGllbnQiCiAgICAgIH0sCiAgICAgICJyZXNvdXJjZSI6IHsKICAgICAgICAicmVzb3VyY2VUeXBlIjogIlBhdGllbnQiLAogICAgICAgICJuYW1lIjogWwogICAgICAgICAgewogICAgICAgICAgICAiZ2l2ZW4iOiBbCiAgICAgICAgICAgICAgIkJ1bmRsZSIKICAgICAgICAgICAgXSwKICAgICAgICAgICAgImZhbWlseSI6ICJUZXN0IgogICAgICAgICAgfQogICAgICAgIF0KICAgICAgfQogICAgfQogIF0sCiAgInJlc291cmNlVHlwZSI6ICJCdW5kbGUiLAogICJ0eXBlIjogInRyYW5zYWN0aW9uIgp9',
+    headers: {},
+    method: 'POST',
+    url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir',
+  },
+  res: {
+    status: 200,
+    headers: {
+      'content-encoding': ['gzip'],
+      'content-type': ['application/fhir+json;charset=utf-8'],
+      vary: ['Origin, X-Origin, Referer'],
+      date: ['Thu, 19 Mar 2026 00:46:39 GMT'],
+      server: ['ESF'],
+      'x-xss-protection': ['0'],
+      'x-frame-options': ['SAMEORIGIN'],
+      'x-content-type-options': ['nosniff'],
+      'alt-svc': ['h3=":443"; ma=2592000,h3-29=":443"; ma=2592000'],
+      connection: ['close'],
+      'transfer-encoding': ['chunked'],
+    },
+    body: {
+      entry: [
+        {
+          response: {
+            etag: 'W/"MTc3Mzg4MTE5OTc2NzQzNzAwMA"',
+            lastModified: '2026-03-19T00:46:39.767437+00:00',
+            location: 'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/831e2e43-9ca9-4e32-8e97-01230e27de30/_history/MTc3Mzg4MTE5OTc2NzQzNzAwMA',
+            status: '201 Created',
+          },
+        },
+      ],
+      resourceType: 'Bundle',
+      type: 'transaction-response',
+    },
+  },
+}

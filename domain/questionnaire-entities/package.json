@@ -2,27 +2,24 @@
   "name": "@assessmentis/questionnaire-entities",
   "version": "0.0.1",
   "description": "Common questionnaire entities used by Assessment.is",
-  "author": "Ruth Marks",
   "license": "UNLICENSED",
+  "author": "Ruth Marks",
   "type": "module",
-  "prettier": "@assessmentis/prettier-config",
   "exports": {
     ".": "./src/index.ts"
   },
   "scripts": {
     "build": "tsc",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint \"./{src,test}/**/*\"",
-    "lint:fix": "eslint --fix \"./{src,test}/**/*\"",
-    "test": "vitest run"
+    "lint": "oxlint ./{src,test}/",
+    "lint:fix": "oxlint --fix ./{src,test}/",
+    "test": "vitest run",
+    "typecheck": "npx tsgo --noEmit"
   },
   "dependencies": {
     "@assessmentis/clinical-domain": "*",
     "effect": "^3.19.13"
   },
   "devDependencies": {
-    "@assessmentis/eslint-config": "*",
-    "@assessmentis/prettier-config": "*",
     "@assessmentis/typescript-config": "*",
     "fast-check": "^3.19.0",
     "typescript": "^5.9.3",

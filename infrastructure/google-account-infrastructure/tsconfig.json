@@ -3,8 +3,8 @@
   "include": ["src", "test"],
   "exclude": ["node_modules"],
   "compilerOptions": {
+    "types": ["node"],
     "lib": ["ES2024"],
-    "baseUrl": "",
     "rootDir": ".",
     "outDir": "dist"
   }

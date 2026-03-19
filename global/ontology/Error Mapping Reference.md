@@ -53,7 +53,7 @@ This reference describes the canonical error taxonomy and how to map errors acro
 ## Most-used code locations
 
 - Canonical error definitions: [src/errors.ts](src/errors.ts)
-- Stream error normalization: [../../apps/frontend/app/layers/OrgContextProvider.tsx](../../apps/frontend/app/layers/OrgContextProvider.tsx)
-- Hub access hook: [../../apps/frontend/app/layers/useHub.ts](../../apps/frontend/app/layers/useHub.ts)
-- Hub Tag (domain): [../../domain/clinical-domain/src/ClinicalDomainHub.ts](../../domain/clinical-domain/src/ClinicalDomainHub.ts)
-- Domain-level mapping example: [../../domain/platform-domain/src/services/LoadedUser.ts](../../domain/platform-domain/src/services/LoadedUser.ts)
+- Stream error normalization: [../../apps/frontend/app/layers/org-context-provider.tsx](../../apps/frontend/app/layers/org-context-provider.tsx)
+- Hub access hook: [../../apps/frontend/app/layers/use-hub.ts](../../apps/frontend/app/layers/use-hub.ts)
+- Hub Tag (domain): [../../domain/clinical-domain/src/clinical-domain-hub.ts](../../domain/clinical-domain/src/clinical-domain-hub.ts)
+- Domain-level mapping example: [../../domain/platform-domain/src/services/loaded-user.ts](../../domain/platform-domain/src/services/loaded-user.ts)

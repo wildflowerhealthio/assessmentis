@@ -2,17 +2,17 @@ import { Effect } from 'effect'
 
 import type { FirebaseError } from 'firebase/app'
 import {
+  GoogleAuthProvider,
   getAuth,
   getRedirectResult,
-  GoogleAuthProvider,
   signInWithPopup,
   signInWithRedirect,
 } from 'firebase/auth'
 
 import { FirebaseWeb } from '../../../infrastructure/firebase-web-infrastructure/src/tagClasses'
-import { auth } from './FirebaseWebLayer'
+import { auth } from './firebase-web-layer'
 
-export const googleAuthProvider = new GoogleAuthProvider()
+const googleAuthProvider = new GoogleAuthProvider()
 
 const scopes = [
   'https://www.googleapis.com/auth/userinfo.email',
@@ -25,25 +25,26 @@ for (const scope of scopes) {
   googleAuthProvider.addScope(scope)
 }
 
-export const redirectToSignIn = () =>
-  signInWithRedirect(getAuth(), googleAuthProvider)
+const redirectToSignIn = (): Promise<never> => signInWithRedirect(getAuth(), googleAuthProvider)
 
-export const handleRedirectResult = () =>
+const handleRedirectResult = (): Promise<import('firebase/auth').UserCredential | void> =>
   getRedirectResult(getAuth())
     .then((result) => {
-      if (result == null) throw new Error('Invalid Redirect Result')
+      if (result === null || result === undefined) {
+        throw new Error('Invalid Redirect Result')
+      }
       console.log({ result })
       return result
     })
     // .then(signInResultHandler)
     .catch(handleAuthError)
 
-export const signIn = () =>
+const signIn = (): Promise<import('firebase/auth').UserCredential | void> =>
   signInWithPopup(auth, googleAuthProvider)
     // .then(signInResultHandler)
     .catch(handleAuthError)
 
-const handleAuthError = (error: FirebaseError) => {
+const handleAuthError = (error: FirebaseError): void => {
   // Handle Errors here.
   const errorCode = error.code
   const errorMessage = error.message
@@ -51,41 +52,46 @@ const handleAuthError = (error: FirebaseError) => {
   const email = error.customData?.email
   // The AuthCredential type that was used.
   const credential = GoogleAuthProvider.credentialFromError(error)
-  console.error({ errorCode, errorMessage, email, credential })
+  console.error({ credential, email, errorCode, errorMessage })
 }
 
-export const getOauth2FromDb = () => {
-  return localStorage.getItem('oauth2Token') ?? undefined
-}
+const getOauth2FromDb = (): string | undefined => localStorage.getItem('oauth2Token') ?? undefined
 
-export const authTokenWatcher = Effect.gen(function* () {
-  const { auth } = yield* FirebaseWeb
-  return auth.onIdTokenChanged(async (user) => {
+const authTokenWatcher = Effect.gen(function* () {
+  const { auth: firebaseAuth } = yield* FirebaseWeb
+  return firebaseAuth.onIdTokenChanged((user) => {
     if (user) {
       user
         .getIdToken()
         .then(function (idToken) {
           fetch('/api/googleLogin', {
-            method: 'POST',
+            body: JSON.stringify({}),
             headers: {
               'Content-type': 'application/json',
-              authorization: 'Bearer ' + idToken,
+              authorization: `Bearer ${idToken}`,
             },
-            body: JSON.stringify({}),
+            method: 'POST',
           })
             .then((response) => response.json())
             .then((result) => {
               window.open(result.url, '_self')
             })
             .catch(function (error) {
-              console.log('failed to fetch ' + error)
+              console.log(`failed to fetch ${error}`)
             })
         })
         .catch(function (error) {
-          console.log('couldnt get user token ' + error)
+          console.log(`couldnt get user token ${error}`)
         })
-
-      return
     }
   })
 })
+
+export {
+  googleAuthProvider,
+  redirectToSignIn,
+  handleRedirectResult,
+  signIn,
+  getOauth2FromDb,
+  authTokenWatcher,
+}

@@ -1,5 +1,5 @@
-import { describe } from 'vitest'
 import { Layer } from 'effect'
+import { describe } from 'vitest'
 
 import { FhirR4Client } from '@assessmentis/fhir-r4'
 import { describeAsFhirR4LocationClient } from '@assessmentis/fhir-r4/interface-tests'
@@ -22,7 +22,7 @@ import { setupClientOnWindow } from '../helpers/integration-setup'
  */
 describe('Location', async () => {
   await setupClientOnWindow()
-  const client: typeof FhirR4Client.Service = (window as any)['client']
+  const { client } = window as any
   if (!client) {
     throw new Error('FHIR client not initialized on window')
   }

@@ -25,11 +25,7 @@ src/
 ## Usage
 
 ```typescript
-import {
-  diva2,
-  gad7,
-  questionnaireTemplates,
-} from '@assessmentis/questionnaire-domain'
+import { diva2, gad7, questionnaireTemplates } from '@assessmentis/questionnaire-domain'
 
 const adhd = diva2
 const all = questionnaireTemplates

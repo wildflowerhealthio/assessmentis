@@ -1,3 +1,2 @@
-export * from './deepDataStruct'
-export * from './failUnless'
-export * from './SideEffect'
+export * from './deep-data-struct'
+export * from './side-effect'

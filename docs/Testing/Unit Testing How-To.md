@@ -62,12 +62,7 @@ Use stubbed contexts to run Effects with known inputs:
 ```typescript
 const exit = await Effect.runPromiseExit(program)
 expect(Exit.isFailure(exit)).toBe(true)
-const error = pipe(
-  exit,
-  Exit.causeOption,
-  Option.flatMap(Cause.failureOption),
-  Option.getOrThrow
-)
+const error = pipe(exit, Exit.causeOption, Option.flatMap(Cause.failureOption), Option.getOrThrow)
 expect(error._tag).toBe('SomeError')
 ```
 

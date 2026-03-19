@@ -1,10 +1,11 @@
+// oxlint-disable eslint-plugin-import/group-exports
 import {
-  isRouteErrorResponse,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  isRouteErrorResponse,
   useNavigate,
 } from 'react-router'
 
@@ -20,30 +21,26 @@ import {
   UnhandledError,
 } from '@assessmentis/ontology'
 
-import * as firebase from 'app/firebase'
+import * as firebase from '@/firebase'
 
-import * as auth from './FirebaseWebLayer'
-import { PlatformContextProvider } from './layers/PlatformContextProvider'
-import { BreadcrumbProvider } from './modules/Breadcrumbs/BreadcrumbProvider'
-import { PageLoader } from './modules/common/components/PageLoader/PageLoader'
-import { shouldShowRawData } from './util/debugHelpers'
+import * as auth from './firebase-web-layer'
+import { PlatformContextProvider } from './layers/platform-context-provider'
+import { BreadcrumbProvider } from './modules/Breadcrumbs/breadcrumb-provider'
+import { PageLoader } from './modules/common/components/PageLoader/page-loader'
+import { shouldShowRawData } from './util/debug-helpers'
 
 // HydrateFallback is rendered while the client loader is running
-export function HydrateFallback() {
+export function HydrateFallback(): React.JSX.Element {
   return <PageLoader />
 }
 
-export function Layout({ children }: { children: React.ReactNode }) {
+export function Layout({ children }: { children: React.ReactNode }): React.JSX.Element {
   return (
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <script
-          src="https://accounts.google.com/gsi/client"
-          async
-          defer
-        ></script>
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
         <script src="https://apis.google.com/js/api.js"></script>
         <Links />
         <Meta />
@@ -53,16 +50,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <PlatformContextProvider>
             <div
               style={{
-                width: '100%',
-                margin: '0 auto',
+                flexDirection: 'column',
                 flexGrow: 1,
                 flexShrink: 1,
-                flexDirection: 'column',
+                margin: '0 auto',
+                marginInline: 'auto',
                 overflowY: 'hidden',
 
                 paddingBlock: 'var(--space-4)',
                 paddingInline: 'var(--space-8)',
-                marginInline: 'auto',
+                width: '100%',
               }}
             >
               {children}
@@ -76,17 +73,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
   )
 }
 
-export default function App() {
+export default function App(): React.JSX.Element {
   return <Outlet />
 }
 
-export function ErrorBoundary({ error }: { error: unknown }) {
+export function ErrorBoundary({ error }: { error: unknown }): React.JSX.Element {
   const navigate = useNavigate()
   let message = 'Oops!'
   let details = 'An unexpected error occurred.'
   let stack: string | undefined
   let cause: Cause.Cause<unknown> | undefined
-  let rootError: unknown | undefined
+  let rootError: unknown
   let action: undefined | { label: string; onClick: () => void }
 
   console.error('Error Reached Boundary')
@@ -97,13 +94,15 @@ export function ErrorBoundary({ error }: { error: unknown }) {
   if (isRouteErrorResponse(error)) {
     message = error.status === 404 ? '404 - Not Found' : 'Unhandled Error'
     details =
-      error.status === 404
-        ? 'The requested page could not be found.'
-        : error.statusText || details
-    action = { label: 'Go Home', onClick: () => navigate('/') }
+      error.status === 404 ? 'The requested page could not be found.' : error.statusText || details
+    action = {
+      label: 'Go Home',
+      onClick: (): void => {
+        void navigate('/')
+      },
+    }
   } else if (error && error instanceof Error) {
-    const errorCause =
-      FiberFailureCauseId in error ? error[FiberFailureCauseId] : undefined
+    const errorCause = FiberFailureCauseId in error ? error[FiberFailureCauseId] : undefined
     if (shouldShowRawData(error)) {
       details = error.message
       stack = error.stack
@@ -115,23 +114,40 @@ export function ErrorBoundary({ error }: { error: unknown }) {
       if (rootError instanceof AuthError) {
         message = 'Please Reauthenticate'
         details = 'Please log back into your Google account to reconnect'
-        auth.auth.signOut()
+        void auth.auth.signOut()
         action = {
           label: 'Log In',
-          onClick: () => firebase.signIn().then(() => navigate(0)),
+          onClick: (): void => {
+            void firebase.signIn().then(() => void navigate(0))
+          },
         }
       } else if (rootError instanceof NotFoundError) {
         message = '404 - Not Found'
         details = 'The requested resource could not be found.'
-        action = { label: 'Go Back', onClick: () => navigate(-1) }
+        action = {
+          label: 'Go Back',
+          onClick: (): void => {
+            void navigate(-1)
+          },
+        }
       } else if (rootError instanceof UnhandledError) {
         message = 'Unhandled Error'
         details = `An error occurred within this application: ${rootError.message}`
-        action = { label: 'Go Back', onClick: () => navigate(-1) }
+        action = {
+          label: 'Go Back',
+          onClick: (): void => {
+            void navigate(-1)
+          },
+        }
       } else if (rootError instanceof ExternalAssertionError) {
         message = 'External Error'
         details = `An external service isn't behaving as expected: ${rootError.message}`
-        action = { label: 'Go Back', onClick: () => navigate(-1) }
+        action = {
+          label: 'Go Back',
+          onClick: (): void => {
+            void navigate(-1)
+          },
+        }
       }
     }
   }

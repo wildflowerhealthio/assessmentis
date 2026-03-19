@@ -1,16 +1,16 @@
 import { Practitioner } from '@assessmentis/clinical-domain'
 
-import 'app/traits/BreadcrumbLabel/implementations/Practitioner'
-import 'app/traits/Labeled/implementations/Practitioner'
-import 'app/traits/Link/implementations/Practitioner'
+import '../traits/BreadcrumbLabel/implementations/practitioner'
+import '../traits/Labeled/implementations/practitioner'
+import '../traits/Link/implementations/practitioner'
 
-import { EditResourcePage } from 'app/modules/forms/EditResourcePage'
-import { PractitionerForm } from 'app/modules/forms/Practitioner/PractitionerForm'
-import { PractitionerFormData } from 'app/modules/forms/Practitioner/PractitionerFormData'
+import { EditResourcePage } from '@/modules/forms/edit-resource-page'
+import { PractitionerForm } from '@/modules/forms/Practitioner/practitioner-form'
+import { PractitionerFormData } from '@/modules/forms/Practitioner/practitioner-form-data'
 
 import type { Route } from './+types/Practitioner.$url.edit'
 
-export default function PractitionerEditPage({ params }: Route.ComponentProps) {
+export default function PractitionerEditPage({ params }: Route.ComponentProps): React.JSX.Element {
   return (
     <EditResourcePage
       klass={Practitioner}

@@ -1,139 +1,117 @@
 {
-    meta: {
-        createdAt: '2026-02-12T20:30:43.315Z',
-        host: 'https://healthcare.googleapis.com',
-        resHumanReadable: true,
-        resUncompressed: true,
+  meta: {
+    createdAt: '2026-02-12T20:30:43.315Z',
+    host: 'https://healthcare.googleapis.com',
+    resHumanReadable: true,
+    resUncompressed: true,
+  },
+  req: {
+    url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/_search?_count=10',
+    method: 'POST',
+    headers: {},
+    body: 'ewogICJyZXNvdXJjZVR5cGUiOiAiTG9jYXRpb24iCn0=',
+  },
+  res: {
+    status: 200,
+    headers: {
+      'content-encoding': ['gzip'],
+      'content-type': ['application/fhir+json;charset=utf-8'],
+      vary: ['Origin, X-Origin, Referer'],
+      date: ['Thu, 12 Feb 2026 20:30:43 GMT'],
+      server: ['ESF'],
+      'x-xss-protection': ['0'],
+      'x-frame-options': ['SAMEORIGIN'],
+      'x-content-type-options': ['nosniff'],
+      'alt-svc': ['h3=":443"; ma=2592000,h3-29=":443"; ma=2592000'],
+      connection: ['close'],
+      'transfer-encoding': ['chunked'],
     },
-    req: {
-        url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/_search?_count=10',
-        method: 'POST',
-        headers: {},
-        body: 'ewogICJyZXNvdXJjZVR5cGUiOiAiTG9jYXRpb24iCn0=',
-    },
-    res: {
-        status: 200,
-        headers: {
-            'content-encoding': [
-                'gzip',
+    body: {
+      entry: [
+        {
+          fullUrl: 'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/c29ff9fd-0fe4-4c84-8c6d-fcdefbe81d70',
+          resource: {
+            id: 'c29ff9fd-0fe4-4c84-8c6d-fcdefbe81d70',
+            identifier: [
+              {
+                system: 'http://example.com/locations',
+                value: 'search-loc-gamma',
+              },
             ],
-            'content-type': [
-                'application/fhir+json;charset=utf-8',
-            ],
-            vary: [
-                'Origin, X-Origin, Referer',
-            ],
-            date: [
-                'Thu, 12 Feb 2026 20:30:43 GMT',
-            ],
-            server: [
-                'ESF',
-            ],
-            'x-xss-protection': [
-                '0',
-            ],
-            'x-frame-options': [
-                'SAMEORIGIN',
-            ],
-            'x-content-type-options': [
-                'nosniff',
-            ],
-            'alt-svc': [
-                'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
-            ],
-            connection: [
-                'close',
-            ],
-            'transfer-encoding': [
-                'chunked',
-            ],
+            meta: {
+              lastUpdated: '2026-02-12T20:30:42.748840+00:00',
+              versionId: 'MTc3MDkyODI0Mjc0ODg0MDAwMA',
+            },
+            name: 'Search Location Gamma',
+            resourceType: 'Location',
+            status: 'active',
+          },
+          search: {
+            mode: 'match',
+          },
         },
-        body: {
-            entry: [
-                {
-                    fullUrl: 'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/c29ff9fd-0fe4-4c84-8c6d-fcdefbe81d70',
-                    resource: {
-                        id: 'c29ff9fd-0fe4-4c84-8c6d-fcdefbe81d70',
-                        identifier: [
-                            {
-                                system: 'http://example.com/locations',
-                                value: 'search-loc-gamma',
-                            },
-                        ],
-                        meta: {
-                            lastUpdated: '2026-02-12T20:30:42.748840+00:00',
-                            versionId: 'MTc3MDkyODI0Mjc0ODg0MDAwMA',
-                        },
-                        name: 'Search Location Gamma',
-                        resourceType: 'Location',
-                        status: 'active',
-                    },
-                    search: {
-                        mode: 'match',
-                    },
-                },
-                {
-                    fullUrl: 'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/49832a8d-cdc1-4f58-b548-6aaf4c149c29',
-                    resource: {
-                        id: '49832a8d-cdc1-4f58-b548-6aaf4c149c29',
-                        identifier: [
-                            {
-                                system: 'http://example.com/locations',
-                                value: 'search-loc-beta',
-                            },
-                        ],
-                        meta: {
-                            lastUpdated: '2026-02-12T20:30:42.609105+00:00',
-                            versionId: 'MTc3MDkyODI0MjYwOTEwNTAwMA',
-                        },
-                        name: 'Search Location Beta',
-                        resourceType: 'Location',
-                        status: 'active',
-                    },
-                    search: {
-                        mode: 'match',
-                    },
-                },
-                {
-                    fullUrl: 'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/ded8981a-5739-4b0b-8799-63ad55bc0f17',
-                    resource: {
-                        id: 'ded8981a-5739-4b0b-8799-63ad55bc0f17',
-                        identifier: [
-                            {
-                                system: 'http://example.com/locations',
-                                value: 'search-loc-alpha',
-                            },
-                        ],
-                        meta: {
-                            lastUpdated: '2026-02-12T20:30:42.473769+00:00',
-                            versionId: 'MTc3MDkyODI0MjQ3Mzc2OTAwMA',
-                        },
-                        name: 'Search Location Alpha',
-                        resourceType: 'Location',
-                        status: 'active',
-                    },
-                    search: {
-                        mode: 'match',
-                    },
-                },
+        {
+          fullUrl: 'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/49832a8d-cdc1-4f58-b548-6aaf4c149c29',
+          resource: {
+            id: '49832a8d-cdc1-4f58-b548-6aaf4c149c29',
+            identifier: [
+              {
+                system: 'http://example.com/locations',
+                value: 'search-loc-beta',
+              },
             ],
-            link: [
-                {
-                    relation: 'search',
-                    url: 'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/?_count=10',
-                },
-                {
-                    relation: 'first',
-                    url: 'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/?_count=10',
-                },
-                {
-                    relation: 'self',
-                    url: 'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/?_count=10',
-                },
-            ],
-            resourceType: 'Bundle',
-            total: 3,
-            type: 'searchset',
+            meta: {
+              lastUpdated: '2026-02-12T20:30:42.609105+00:00',
+              versionId: 'MTc3MDkyODI0MjYwOTEwNTAwMA',
+            },
+            name: 'Search Location Beta',
+            resourceType: 'Location',
+            status: 'active',
+          },
+          search: {
+            mode: 'match',
+          },
         },
+        {
+          fullUrl: 'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/ded8981a-5739-4b0b-8799-63ad55bc0f17',
+          resource: {
+            id: 'ded8981a-5739-4b0b-8799-63ad55bc0f17',
+            identifier: [
+              {
+                system: 'http://example.com/locations',
+                value: 'search-loc-alpha',
+              },
+            ],
+            meta: {
+              lastUpdated: '2026-02-12T20:30:42.473769+00:00',
+              versionId: 'MTc3MDkyODI0MjQ3Mzc2OTAwMA',
+            },
+            name: 'Search Location Alpha',
+            resourceType: 'Location',
+            status: 'active',
+          },
+          search: {
+            mode: 'match',
+          },
+        },
+      ],
+      link: [
+        {
+          relation: 'search',
+          url: 'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/?_count=10',
+        },
+        {
+          relation: 'first',
+          url: 'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/?_count=10',
+        },
+        {
+          relation: 'self',
+          url: 'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/?_count=10',
+        },
+      ],
+      resourceType: 'Bundle',
+      total: 3,
+      type: 'searchset',
     },
+  },
 }

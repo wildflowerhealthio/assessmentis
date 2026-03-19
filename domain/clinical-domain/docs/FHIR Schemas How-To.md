@@ -16,10 +16,7 @@ const MyResourceFromFhirR4 = Schema.Struct({
   .pipe(
     Schema.extend(Resource(MyResourceId)),
     Schema.compose(
-      Schema.typeSchema(Schema.Unknown) as Schema.Schema<
-        MyResource,
-        DeepReadonly<FhirMyResource>
-      >
+      Schema.typeSchema(Schema.Unknown) as Schema.Schema<MyResource, DeepReadonly<FhirMyResource>>
     )
   )
 ```
@@ -47,10 +44,7 @@ Schema.compose(
   Schema.typeSchema(Schema.Unknown) as Schema.Schema<
     MyResource,
     DeepReadonly<
-      Omit<
-        AsDefinedFhirDomainResource<FhirMyResource>,
-        'identifier' | 'period'
-      > & {
+      Omit<AsDefinedFhirDomainResource<FhirMyResource>, 'identifier' | 'period'> & {
         identifier?: typeof IdentifierFromFhirR4.Encoded
         period?: typeof PeriodFromFhirR4.Encoded
       }
@@ -80,10 +74,7 @@ const PatientContactFromFhirR4 = Schema.Struct({
     Schema.typeSchema(Schema.Unknown) as Schema.Schema<
       PatientContact,
       DeepReadonly<
-        Omit<
-          AsDefinedFhirBackboneElement<FhirPatientContact>,
-          'relationship' | 'name'
-        > & {
+        Omit<AsDefinedFhirBackboneElement<FhirPatientContact>, 'relationship' | 'name'> & {
           relationship?: ReadonlyArray<typeof CodeableConceptFromFhirR4.Encoded>
           name?: typeof HumanNameFromFhirR4.Encoded
         }
@@ -175,4 +166,4 @@ DeepReadonly<
 
 - Example schemas: [../src/resources/Patient/Patient.ts](../src/resources/Patient/Patient.ts), [../src/resources/Observation/Observation.ts](../src/resources/Observation/Observation.ts)
 - FromFhirR4 schemas: [../src/data-types/complex/](../src/data-types/complex/)
-- Base type definitions: [../src/data-types/base/Resource.ts](../src/data-types/base/Resource.ts), [../src/data-types/base/BackboneElement.ts](../src/data-types/base/BackboneElement.ts), and [../src/data-types/base/Element.ts](../src/data-types/base/Element.ts)
+- Base type definitions: [../src/data-types/base/resource.ts](../src/data-types/base/resource.ts), [../src/data-types/base/backbone-element.ts](../src/data-types/base/backbone-element.ts), and [../src/data-types/base/element.ts](../src/data-types/base/element.ts)

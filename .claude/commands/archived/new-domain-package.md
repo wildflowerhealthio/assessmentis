@@ -28,7 +28,7 @@ Create a new domain package with proper structure and configuration.
   "private": true,
   "type": "module",
   "scripts": {
-    "typecheck": "tsc --noEmit",
+    "typecheck": "npx tsgo --noEmit",
     "test": "vitest run",
     "lint": "eslint .",
     "build": "tsc"

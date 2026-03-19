@@ -13,6 +13,7 @@ Append-only log for agent-discovered knowledge. Agents add entries here during w
 
 ```markdown
 ### [short title]
+
 **Discovered during**: [task or branch name]
 **Learning**: [the actionable insight]
 **Suggested destination**: Strategies | [path to a specific reference doc] | unsure

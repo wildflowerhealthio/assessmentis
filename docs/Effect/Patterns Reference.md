@@ -11,16 +11,12 @@ Domain defines the interface as an Effect Tag. Infrastructure provides the Layer
 export class PatientRepository extends Context.Tag('PatientRepository')<
   PatientRepository,
   {
-    get: (
-      id: PatientId
-    ) => Effect.Effect<Patient, NotFoundError | UnhandledError, never>
+    get: (id: PatientId) => Effect.Effect<Patient, NotFoundError | UnhandledError, never>
     getMany: (
       filter?: object
     ) => Effect.Effect<ReadonlyArray<WithId<Patient>>, UnhandledError, never>
     create: (patient: Patient) => Effect.Effect<Patient, UnhandledError, never>
-    update: (
-      patient: WithId<Patient>
-    ) => Effect.Effect<Patient, UnhandledError, never>
+    update: (patient: WithId<Patient>) => Effect.Effect<Patient, UnhandledError, never>
     delete: (id: PatientId) => Effect.Effect<void, UnhandledError, never>
   }
 >() {}
@@ -43,9 +39,10 @@ export const createEncounter = (args: CreateEncounterArg) =>
 Define specific error classes to enable targeted handling at boundaries:
 
 ```typescript
-export class QuestionnaireNotFoundError extends Data.TaggedError(
-  'QuestionnaireNotFoundError'
-)<{ questionnaireId: string; cause?: unknown }> {}
+export class QuestionnaireNotFoundError extends Data.TaggedError('QuestionnaireNotFoundError')<{
+  questionnaireId: string
+  cause?: unknown
+}> {}
 
 // Handle at boundary
 Effect.catchTag('QuestionnaireNotFoundError', (e) =>
@@ -86,10 +83,9 @@ export const PatientRepositoryLive = Layer.effect(
 Compose layers in apps:
 
 ```typescript
-const MainLayer = Layer.mergeAll(
-  PatientRepositoryLive,
-  EncounterRepositoryLive
-).pipe(Layer.provide(FhirClientLive))
+const MainLayer = Layer.mergeAll(PatientRepositoryLive, EncounterRepositoryLive).pipe(
+  Layer.provide(FhirClientLive)
+)
 ```
 
 ## Schema Patterns

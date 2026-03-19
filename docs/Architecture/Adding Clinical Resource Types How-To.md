@@ -24,7 +24,7 @@ Follow [domain/clinical-domain/docs/Adding Resource Types How-To.md](../../domai
 
 ## Step 2: Register in ResourceDataTypes
 
-Add the new Clinical Resource to [domain/clinical-domain/src/ResourceDataTypes.ts](../../domain/clinical-domain/src/ResourceDataTypes.ts):
+Add the new Clinical Resource to [domain/clinical-domain/src/resource-data-types.ts](../../domain/clinical-domain/src/resource-data-types.ts):
 
 - Import the resource type
 - Add it to both the `ResourceDataTypes` type and const
@@ -51,8 +51,8 @@ Follow [apps/frontend/app/modules/resources/Adding Clinical Resource Types How-T
 
 ## Most-used code locations
 
-- Domain resource data types: [../../domain/clinical-domain/src/ResourceDataTypes.ts](../../domain/clinical-domain/src/ResourceDataTypes.ts)
-- Hub Tag: [../../domain/clinical-domain/src/ClinicalDomainHub.ts](../../domain/clinical-domain/src/ClinicalDomainHub.ts)
-- Frontend Hub hook: [../../apps/frontend/app/layers/useHub.ts](../../apps/frontend/app/layers/useHub.ts)
-- Google FHIR origin definition: [../../infrastructure/google-account-infrastructure/src/GoogleFhirOriginDefinition.ts](../../infrastructure/google-account-infrastructure/src/GoogleFhirOriginDefinition.ts)
-- Daily.co origin definition: [../../infrastructure/daily-co-infrastructure/src/DailyCoOriginDefinition.ts](../../infrastructure/daily-co-infrastructure/src/DailyCoOriginDefinition.ts)
+- Domain resource data types: [../../domain/clinical-domain/src/resource-data-types.ts](../../domain/clinical-domain/src/resource-data-types.ts)
+- Hub Tag: [../../domain/clinical-domain/src/clinical-domain-hub.ts](../../domain/clinical-domain/src/clinical-domain-hub.ts)
+- Frontend Hub hook: [../../apps/frontend/app/layers/use-hub.ts](../../apps/frontend/app/layers/use-hub.ts)
+- Google FHIR origin definition: [../../infrastructure/google-account-infrastructure/src/google-fhir-origin-definition.ts](../../infrastructure/google-account-infrastructure/src/google-fhir-origin-definition.ts)
+- Daily.co origin definition: [../../infrastructure/daily-co-infrastructure/src/daily-co-origin-definition.ts](../../infrastructure/daily-co-infrastructure/src/daily-co-origin-definition.ts)

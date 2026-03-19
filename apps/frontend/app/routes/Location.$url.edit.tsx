@@ -1,16 +1,16 @@
 import { Location } from '@assessmentis/clinical-domain'
 
-import 'app/traits/BreadcrumbLabel/implementations/Location'
-import 'app/traits/Labeled/implementations/Location'
-import 'app/traits/Link/implementations/Location'
+import '../traits/BreadcrumbLabel/implementations/location'
+import '../traits/Labeled/implementations/location'
+import '../traits/Link/implementations/location'
 
-import { EditResourcePage } from 'app/modules/forms/EditResourcePage'
-import { LocationForm } from 'app/modules/forms/Location/LocationForm'
-import { LocationFormData } from 'app/modules/forms/Location/LocationFormData'
+import { EditResourcePage } from '@/modules/forms/edit-resource-page'
+import { LocationForm } from '@/modules/forms/Location/location-form'
+import { LocationFormData } from '@/modules/forms/Location/location-form-data'
 
 import type { Route } from './+types/Location.$url.edit'
 
-export default function LocationEditPage({ params }: Route.ComponentProps) {
+export default function LocationEditPage({ params }: Route.ComponentProps): React.JSX.Element {
   return (
     <EditResourcePage
       klass={Location}

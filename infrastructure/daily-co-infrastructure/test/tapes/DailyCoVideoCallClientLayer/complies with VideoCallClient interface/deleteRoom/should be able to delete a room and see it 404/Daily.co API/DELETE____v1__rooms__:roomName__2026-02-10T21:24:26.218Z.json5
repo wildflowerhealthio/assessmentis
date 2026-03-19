@@ -1,49 +1,33 @@
 {
-    meta: {
-        createdAt: '2026-02-10T21:24:25.887Z',
-        host: 'https://api.daily.co',
-        resHumanReadable: true,
+  meta: {
+    createdAt: '2026-02-10T21:24:25.887Z',
+    host: 'https://api.daily.co',
+    resHumanReadable: true,
+  },
+  req: {
+    url: '/v1/rooms/G0zowPZahKCto5dvRcP4',
+    method: 'DELETE',
+    headers: {},
+    body: '',
+  },
+  res: {
+    status: 200,
+    headers: {
+      date: ['Tue, 10 Feb 2026 21:24:26 GMT'],
+      'content-type': ['application/json; charset=utf-8'],
+      'content-length': ['46'],
+      connection: ['close'],
+      'strict-transport-security': ['max-age=31536000 ; includeSubDomains'],
+      'access-control-allow-origin': ['*'],
+      'access-control-allow-headers': [
+        'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Invite-Token, X-DailySessionId, X-DailyJoinToken, X-DailyAboutClient, Traceparent, Tracestate, Request-Id',
+      ],
+      'access-control-allow-methods': ['OPTIONS,HEAD,GET,POST,PUT,PATCH,DELETE'],
+      etag: ['W/"2e-nX8Ik31QN9dYHkI7c153JHStdhI"'],
     },
-    req: {
-        url: '/v1/rooms/G0zowPZahKCto5dvRcP4',
-        method: 'DELETE',
-        headers: {},
-        body: '',
+    body: {
+      deleted: true,
+      name: 'G0zowPZahKCto5dvRcP4',
     },
-    res: {
-        status: 200,
-        headers: {
-            date: [
-                'Tue, 10 Feb 2026 21:24:26 GMT',
-            ],
-            'content-type': [
-                'application/json; charset=utf-8',
-            ],
-            'content-length': [
-                '46',
-            ],
-            connection: [
-                'close',
-            ],
-            'strict-transport-security': [
-                'max-age=31536000 ; includeSubDomains',
-            ],
-            'access-control-allow-origin': [
-                '*',
-            ],
-            'access-control-allow-headers': [
-                'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Invite-Token, X-DailySessionId, X-DailyJoinToken, X-DailyAboutClient, Traceparent, Tracestate, Request-Id',
-            ],
-            'access-control-allow-methods': [
-                'OPTIONS,HEAD,GET,POST,PUT,PATCH,DELETE',
-            ],
-            etag: [
-                'W/"2e-nX8Ik31QN9dYHkI7c153JHStdhI"',
-            ],
-        },
-        body: {
-            deleted: true,
-            name: 'G0zowPZahKCto5dvRcP4',
-        },
-    },
+  },
 }

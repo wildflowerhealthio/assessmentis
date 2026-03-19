@@ -60,10 +60,7 @@ const ResourceMixin = Resource('Patient')
 Consumer pattern — pass the mixin and fields to `MergeClasses`:
 
 ```typescript
-export class Patient extends MergeClasses<Patient>('Patient')(
-  Resource('Patient'),
-  patientFields
-) {}
+export class Patient extends MergeClasses<Patient>('Patient')(Resource('Patient'), patientFields) {}
 ```
 
 The factory function and a same-name type alias coexist (TypeScript declaration merging): `Element<'Patient'>` gives the decoded type, `Element('Patient')` gives the mixin class.
@@ -133,8 +130,8 @@ Don't naively drop type annotations during a refactor without checking for circu
 
 - Resource base types: [src/data-types/base](../src/data-types/base)
 - Datatype and DatatypeChoice: [src/data-types/Datatype.ts](../src/data-types/Datatype.ts)
-- FHIR R4 choice elements: [src/data-types/fhirR4ChoiceElements.ts](../src/data-types/fhirR4ChoiceElements.ts)
+- FHIR R4 choice elements: [src/data-types/fhir-r4-choice-elements.ts](../src/data-types/fhir-r4-choice-elements.ts)
 - Example resource: [src/resources/Patient](../src/resources/Patient)
 - Clinical Resource How-To: [Adding Resource Types How-To.md](./Adding%20Resource%20Types%20How-To.md)
-- Resource data types: [src/ResourceDataTypes.ts](../src/ResourceDataTypes.ts)
+- Resource data types: [src/resource-data-types.ts](../src/resource-data-types.ts)
 - Resource tests: alongside resource files in src/resources/

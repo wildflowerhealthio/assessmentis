@@ -1,11 +1,8 @@
-import { Schema } from 'effect'
+import { Predicate, Schema } from 'effect'
 
-import type {
-  Resource as EffectResource,
-  ReadonlyUrl,
-} from '@assessmentis/effectful-store'
+import type { Resource as EffectResource, ReadonlyUrl } from '@assessmentis/effectful-store'
 
-import { Reference } from './complex/IdentifierAndReference'
+import { Reference } from './complex/identifier-and-reference'
 
 /**
  * Creates a {@link Reference} pointing to a resource, or `undefined` if the
@@ -18,11 +15,13 @@ import { Reference } from './complex/IdentifierAndReference'
  */
 export const referenceFromResource = (
   resource: { url?: string | undefined; domainType: string },
-  display: string | undefined = undefined
-) =>
-  resource && resource.url
-    ? new Reference({ reference: resource.url, display })
-    : undefined
+  display?: string
+): Reference | undefined => {
+  if (resource && resource.url) {
+    return new Reference({ display, reference: resource.url })
+  }
+  return undefined
+}
 
 /**
  * Extract the ID from a FHIR reference string
@@ -41,12 +40,11 @@ export function extractReferenceId(
  * @returns Array of extracted IDs (non-null values only)
  */
 export function extractReferenceIds(
-  references: ReadonlyArray<{ reference?: string }> | undefined
+  references: readonly { reference?: string }[] | undefined
 ): string[] {
   return (
-    references
-      ?.map((r) => r.reference?.split('/')[1])
-      .filter((id): id is string => !!id) ?? []
+    references?.map((r) => r.reference?.split('/')[1]).filter((s) => Predicate.isNotNullable(s)) ??
+    []
   )
 }
 
@@ -71,14 +69,9 @@ export const SchemaWithMandatoryUrl = <
 >(
   schema: Schema.Schema<A, I, R>,
   urlSchema: Schema.Schema<AUrl, IUrl, R>
-): Schema.Schema<
-  EffectResource.WithResourceUrl<A>,
-  EffectResource.WithResourceUrl<I>,
-  R
-> => {
-  const withMandatoryUrl: Schema.Schema<{ url: AUrl }, { url: IUrl }, R> =
-    Schema.Struct({
-      url: urlSchema,
-    })
+): Schema.Schema<EffectResource.WithResourceUrl<A>, EffectResource.WithResourceUrl<I>, R> => {
+  const withMandatoryUrl: Schema.Schema<{ url: AUrl }, { url: IUrl }, R> = Schema.Struct({
+    url: urlSchema,
+  })
   return Schema.extend(schema, withMandatoryUrl)
 }

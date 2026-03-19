@@ -2,12 +2,7 @@ import { beforeAll, describe } from 'vitest'
 
 import { describeAsFhirR4LocationClient } from '@assessmentis/fhir-r4/interface-tests'
 
-import {
-  LiveTestLayer,
-  setMswContext,
-  testConfig,
-  verifyGcloudAuth,
-} from '../helpers/test-config'
+import { LiveTestLayer, setMswContext, testConfig, verifyGcloudAuth } from '../helpers/test-config'
 
 /**
  * Live E2E tests for Location CRUD operations against Google Healthcare API.
@@ -24,7 +19,7 @@ import {
  * - .env file with FHIR store configuration
  */
 describe('Location', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     // Verify gcloud auth is configured before running tests
     verifyGcloudAuth()
     console.log(

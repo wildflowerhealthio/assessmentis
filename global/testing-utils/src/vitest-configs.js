@@ -1,20 +1,19 @@
-import path from 'path'
-import { fileURLToPath } from 'url'
-import { defineConfig } from 'vitest/config'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import react from '@vitejs/plugin-react'
 import { playwright } from '@vitest/browser-playwright'
 import { loadEnv, mergeConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
+import { defineConfig } from 'vitest/config'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const base = defineConfig(({ mode }) => ({
   test: {
+    env: loadEnv(mode, process.cwd(), ''),
     globals: true,
     plugins: [tsconfigPaths()],
-    setupFiles: [path.resolve(__dirname, 'vitest.setup.ts')],
-    // eslint-disable-next-line no-undef
-    env: loadEnv(mode, process.cwd(), ''),
+    setupFiles: [path.resolve(__dirname, 'vitest-global.setup.ts')],
   },
 }))
 
@@ -33,8 +32,8 @@ const integration = defineConfig((_configEnv) => ({
     // Run sequentially to avoid rate limiting
     maxWorkers: 1,
     isolate: false,
-    testTimeout: 30000,
-    hookTimeout: 30000,
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
   },
 }))
 
@@ -45,8 +44,8 @@ const e2e = defineConfig((_configEnv) =>
       // Run sequentially to avoid rate limiting
       maxWorkers: 1,
       isolate: false,
-      testTimeout: 30000,
-      hookTimeout: 30000,
+      testTimeout: 30_000,
+      hookTimeout: 30_000,
     },
   })
 )
@@ -58,7 +57,7 @@ const browser = defineConfig(() => ({
     browser: {
       provider: playwright(),
       enabled: true,
-      // at least one instance is required
+      // At least one instance is required
       instances: [{ browser: 'chromium', headless: true }],
     },
   },
@@ -83,10 +82,7 @@ const jsdom = defineConfig(() => ({
 /** @type {ViteUserConfigFnObject} */
 export const browserUnit = defineConfig((configEnv) =>
   mergeConfig(
-    mergeConfig(
-      mergeConfig(base(configEnv), browser(configEnv)),
-      unit(configEnv)
-    ),
+    mergeConfig(mergeConfig(base(configEnv), browser(configEnv)), unit(configEnv)),
     defineConfig({
       test: {},
     })
@@ -96,10 +92,7 @@ export const browserUnit = defineConfig((configEnv) =>
 /** @type {ViteUserConfigFnObject} */
 export const browserIntegration = defineConfig((configEnv) =>
   mergeConfig(
-    mergeConfig(
-      mergeConfig(base(configEnv), integration(configEnv)),
-      browser(configEnv)
-    ),
+    mergeConfig(mergeConfig(base(configEnv), integration(configEnv)), browser(configEnv)),
     defineConfig({
       test: {},
     })
@@ -109,10 +102,7 @@ export const browserIntegration = defineConfig((configEnv) =>
 /** @type {ViteUserConfigFnObject} */
 export const browserE2e = defineConfig((configEnv) =>
   mergeConfig(
-    mergeConfig(
-      mergeConfig(base(configEnv), e2e(configEnv)),
-      browser(configEnv)
-    ),
+    mergeConfig(mergeConfig(base(configEnv), e2e(configEnv)), browser(configEnv)),
     defineConfig({
       test: {},
     })
@@ -132,10 +122,7 @@ export const nodeUnit = defineConfig((configEnv) =>
 /** @type {ViteUserConfigFnObject} */
 export const nodeIntegration = defineConfig((configEnv) =>
   mergeConfig(
-    mergeConfig(
-      mergeConfig(base(configEnv), node(configEnv)),
-      integration(configEnv)
-    ),
+    mergeConfig(mergeConfig(base(configEnv), node(configEnv)), integration(configEnv)),
     defineConfig({
       test: {},
     })
@@ -145,10 +132,7 @@ export const nodeIntegration = defineConfig((configEnv) =>
 /** @type {ViteUserConfigFnObject} */
 export const jsdomUnit = defineConfig((configEnv) =>
   mergeConfig(
-    mergeConfig(
-      mergeConfig(base(configEnv), jsdom(configEnv)),
-      unit(configEnv)
-    ),
+    mergeConfig(mergeConfig(base(configEnv), jsdom(configEnv)), unit(configEnv)),
     defineConfig({
       test: {},
     })
@@ -158,10 +142,7 @@ export const jsdomUnit = defineConfig((configEnv) =>
 /** @type {ViteUserConfigFnObject} */
 export const jsdomIntegration = defineConfig((configEnv) =>
   mergeConfig(
-    mergeConfig(
-      mergeConfig(base(configEnv), jsdom(configEnv)),
-      integration(configEnv)
-    ),
+    mergeConfig(mergeConfig(base(configEnv), jsdom(configEnv)), integration(configEnv)),
     defineConfig({
       test: {},
     })

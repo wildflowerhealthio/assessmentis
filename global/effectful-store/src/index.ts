@@ -5,11 +5,11 @@
  * @packageDocumentation
  */
 
-export * as Hub from './Hub'
-export * from './ReadonlyUrl'
-export * as Resource from './Resource'
+export * as Hub from './hub'
+export * from './readonly-url'
+export * as Resource from './resource'
 // TODO: Eliminate the need for this export
-export type { WithId } from './Resource'
-export * as ResourceRequest from './ResourceRequest'
-export * as Origin from './Origin'
-export * from './HubStateStream'
+export type { WithId } from './resource'
+export * as ResourceRequest from './resource-request'
+export * as Origin from './origin'
+export * from './hub-state-stream'

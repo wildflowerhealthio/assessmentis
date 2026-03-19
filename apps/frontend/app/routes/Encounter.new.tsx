@@ -9,36 +9,35 @@ import {
 } from '@assessmentis/clinical-domain'
 import { Period, Reference } from '@assessmentis/clinical-domain/data-types'
 
-import { FormPage } from 'app/modules/common/components/FormPage/FormPage'
+import { FormPage } from '@/modules/common/components/FormPage/form-page'
 
-import 'app/traits/BreadcrumbLabel/implementations/Encounter'
-import 'app/traits/Link/implementations/Encounter'
+import '../traits/BreadcrumbLabel/implementations/encounter'
+import '../traits/Link/implementations/encounter'
 
-import { useBreadcrumbs } from 'app/modules/Breadcrumbs/useBreadcrumbs'
-import { createEncounter } from 'app/modules/resources/Encounter/actions/createEncounter'
-import { EncounterForm } from 'app/modules/resources/Encounter/components/EncounterForm'
-import type { EncounterFormSchema } from 'app/modules/resources/Encounter/schemas/EncounterFormSchema'
+import { useBreadcrumbs } from '@/modules/Breadcrumbs/use-breadcrumbs'
+import { createEncounter } from '@/modules/resources/Encounter/actions/create-encounter'
+import { EncounterForm } from '@/modules/resources/Encounter/components/encounter-form'
+import type { EncounterFormSchema } from '@/modules/resources/Encounter/schemas/encounter-form-schema'
 
-import { useHub } from '../layers/useHub'
+import { useHub } from '../layers/use-hub'
 
 // Provide default values to prevent uncontrolled input warnings
-const defaultValues: Promise<typeof EncounterFormSchema.Encoded> =
-  Promise.resolve({
-    patientUrl: undefined,
-    practitionerUrls: undefined,
-    questionnaireUrls: [],
-    periodStart: undefined,
-    periodEnd: undefined,
-    locationUrl: undefined,
-  })
+const defaultValues: Promise<typeof EncounterFormSchema.Encoded> = Promise.resolve({
+  locationUrl: undefined,
+  patientUrl: undefined,
+  periodEnd: undefined,
+  periodStart: undefined,
+  practitionerUrls: undefined,
+  questionnaireUrls: [],
+})
 
-export default function CreateEncounterPage() {
+export default function CreateEncounterPage(): React.JSX.Element {
   const hub = useHub()
   const navigate = useNavigate()
 
   useBreadcrumbs(() => [Encounter, 'New'], [])
 
-  const handleSubmit = async (data: typeof EncounterFormSchema.Type) => {
+  const handleSubmit = async (data: typeof EncounterFormSchema.Type): Promise<void> => {
     const encounter = await Effect.runPromise(
       createEncounter({
         encounter: {
@@ -48,18 +47,18 @@ export default function CreateEncounterPage() {
                 type: 'Patient',
               })
             : undefined,
-          participant: data.practitionerUrls?.map((id) =>
+          participant: data.practitionerUrls?.map((url) =>
             EncounterParticipant.make({
               individual: Reference.make({
-                reference: `Practitioner/${id}`,
+                reference: url.toString(),
               }),
             })
           ),
           period:
             data.periodStart || data.periodEnd
               ? Period.make({
-                  start: data.periodStart?.pipe(DateTime.toUtc),
                   end: data.periodEnd?.pipe(DateTime.toUtc),
+                  start: data.periodStart?.pipe(DateTime.toUtc),
                 })
               : undefined,
           // User-selected physical location (video room is created by createEncounter)
@@ -80,7 +79,7 @@ export default function CreateEncounterPage() {
       }).pipe(Effect.provideService(ClinicalDomainHub, hub))
     )
 
-    navigate(encounter.Link)
+    void navigate(encounter.Link)
   }
 
   return (

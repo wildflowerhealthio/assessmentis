@@ -1,16 +1,16 @@
 import { Observation } from '@assessmentis/clinical-domain'
 
-import 'app/traits/BreadcrumbLabel/implementations/Observation'
-import 'app/traits/Labeled/implementations/Observation'
-import 'app/traits/Link/implementations/Observation'
+import '../traits/BreadcrumbLabel/implementations/observation'
+import '../traits/Labeled/implementations/observation'
+import '../traits/Link/implementations/observation'
 
-import { EditResourcePage } from 'app/modules/forms/EditResourcePage'
-import { ObservationForm } from 'app/modules/forms/Observation/ObservationForm'
-import { ObservationFormData } from 'app/modules/forms/Observation/ObservationFormData'
+import { EditResourcePage } from '@/modules/forms/edit-resource-page'
+import { ObservationForm } from '@/modules/forms/Observation/observation-form'
+import { ObservationFormData } from '@/modules/forms/Observation/observation-form-data'
 
 import type { Route } from './+types/Observation.$url.edit'
 
-export default function ObservationEditPage({ params }: Route.ComponentProps) {
+export default function ObservationEditPage({ params }: Route.ComponentProps): React.JSX.Element {
   return (
     <EditResourcePage
       klass={Observation}

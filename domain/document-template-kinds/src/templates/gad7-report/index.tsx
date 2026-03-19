@@ -1,9 +1,8 @@
-import { Effect } from 'effect'
+import { Effect, Predicate } from 'effect'
 import type { JSX } from 'react'
 
 import { ClinicalDomainHub, Observation } from '@assessmentis/clinical-domain'
 import type { Reference } from '@assessmentis/clinical-domain/data-types'
-import type { Resource } from '@assessmentis/effectful-store'
 import { gad7 } from '@assessmentis/questionnaire-entities'
 
 import { NotFoundError } from '@assessmentis/ontology'
@@ -19,7 +18,7 @@ export const gad7Report = (
   }: ComponentFamily,
   patientReference: Reference
 ): Effect.Effect<JSX.Element, unknown, ClinicalDomainHub> =>
-  Effect.gen(function* () {
+  Effect.gen(function* gad7ReportGen() {
     const hub = yield* ClinicalDomainHub
     const title = <TitleComponent title="GAD-7 Report" />
 
@@ -29,24 +28,21 @@ export const gad7Report = (
 
     const gad7Observations = gad7.questionnaire.item
       ?.map((item) =>
-        observations.find(
-          (obs) => item.code?.[0]?.code === obs.code.coding?.[0]?.code
-        )
+        observations.find((obs) => item.code?.[0]?.code === obs.code.coding?.[0]?.code)
       )
-      .filter((o): o is Resource.WithResourceUrl<Observation> => Boolean(o))
-
+      .filter((o) => Predicate.isNotNullable(o))
     if (
-      gad7Observations == undefined ||
-      gad7Observations.length != 7 ||
+      gad7Observations === undefined ||
+      gad7Observations.length !== 7 ||
       gad7Observations.some((obs) => obs === undefined)
     ) {
       return yield* Effect.fail(
         new NotFoundError({
-          resourceType: 'Observation',
           params: {
             subject: patientReference.reference,
           },
-        }) // ('GAD-7 score observation not found for the patient')
+          resourceType: 'Observation',
+        })
       )
     }
 
@@ -57,12 +53,12 @@ export const gad7Report = (
     if (!scoreObservations) {
       return yield* Effect.fail(
         new NotFoundError({
-          resourceType: 'Observation',
           params: {
             subject: patientReference.reference,
             code: gad7.codings.totalScore.code,
           },
-        }) // ('GAD-7 score observation not found for the patient')
+          resourceType: 'Observation',
+        })
       )
     }
     return (
@@ -73,26 +69,24 @@ export const gad7Report = (
           observations={gad7Observations}
           columns={[
             {
-              label: gad7.codings.notAtAll.display,
               codings: [gad7.codings.notAtAll],
+              label: gad7.codings.notAtAll.display,
             },
             {
-              label: gad7.codings.severalDays.display,
               codings: [gad7.codings.severalDays],
+              label: gad7.codings.severalDays.display,
             },
             {
-              label: gad7.codings.moreThanHalfTheDays.display,
               codings: [gad7.codings.moreThanHalfTheDays],
+              label: gad7.codings.moreThanHalfTheDays.display,
             },
             {
-              label: gad7.codings.nearlyEveryDay.display,
               codings: [gad7.codings.nearlyEveryDay],
+              label: gad7.codings.nearlyEveryDay.display,
             },
           ]}
         />
-        <ObservationSectionWithMethodComponent
-          observation={scoreObservations}
-        />
+        <ObservationSectionWithMethodComponent observation={scoreObservations} />
         <pre>{JSON.stringify(gad7Observations, null, 2)}</pre>
       </div>
     )

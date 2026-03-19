@@ -1,16 +1,16 @@
 import { Composition } from '@assessmentis/clinical-domain'
 
-import 'app/traits/BreadcrumbLabel/implementations/Composition'
-import 'app/traits/Labeled/implementations/Composition'
-import 'app/traits/Link/implementations/Composition'
+import '../traits/BreadcrumbLabel/implementations/composition'
+import '../traits/Labeled/implementations/composition'
+import '../traits/Link/implementations/composition'
 
-import { CompositionForm } from 'app/modules/forms/Composition/CompositionForm'
-import { CompositionFormData } from 'app/modules/forms/Composition/CompositionFormData'
-import { EditResourcePage } from 'app/modules/forms/EditResourcePage'
+import { CompositionForm } from '@/modules/forms/Composition/composition-form'
+import { CompositionFormData } from '@/modules/forms/Composition/composition-form-data'
+import { EditResourcePage } from '@/modules/forms/edit-resource-page'
 
 import type { Route } from './+types/Composition.$url.edit'
 
-export default function CompositionEditPage({ params }: Route.ComponentProps) {
+export default function CompositionEditPage({ params }: Route.ComponentProps): React.JSX.Element {
   return (
     <EditResourcePage
       klass={Composition}

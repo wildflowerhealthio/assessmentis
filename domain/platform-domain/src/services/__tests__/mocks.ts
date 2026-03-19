@@ -1,16 +1,12 @@
-import { vi } from 'vitest'
 import { Effect, Stream } from 'effect'
 import type { Context } from 'effect'
+import { vi } from 'vitest'
 
 import { NotFoundError } from '@assessmentis/ontology'
 
-import { OrgSlug } from '../../models/IdTypes'
-import type { Org } from '../../models/Org'
-import type {
-  DocumentData,
-  DocumentPath,
-  DocumentStore,
-} from '../../tagClasses'
+import { OrgSlug } from '../../models/id-types'
+import type { Org } from '../../models/org'
+import type { DocumentData, DocumentPath, DocumentStore } from '../../tagClasses'
 
 type DocumentStoreService = Context.Tag.Service<typeof DocumentStore>
 
@@ -18,10 +14,10 @@ type DocumentStoreService = Context.Tag.Service<typeof DocumentStore>
  * Default org literal for testing
  */
 export const defaultOrg = (): Org => ({
-  slug: OrgSlug.make('test-org'),
   emoji: '🏢',
-  origins: {},
   originServerConfigs: {},
+  origins: {},
+  slug: OrgSlug.make('test-org'),
 })
 
 /**
@@ -30,7 +26,7 @@ export const defaultOrg = (): Org => ({
 export const mockDocumentStoreImplementations: {
   [k in keyof DocumentStoreService]: Record<
     string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line @typescript-eslint/no-explicit-any
     (...args: readonly any[]) => DocumentStoreService[k]
   >
 } = {
@@ -44,6 +40,7 @@ export const mockDocumentStoreImplementations: {
         Effect.fail(
           new NotFoundError({
             resourceType: 'Document',
+            // oxlint-disable-next-line eslint/no-ternary
             params: { path: path.length === 1 ? path[0] : path },
           })
         ),
@@ -60,13 +57,15 @@ export const mockDocumentStoreImplementations: {
      * Returns data from a custom function, useful for complex logic
      */
     withCallback:
-      (
-        fn: (
-          ...path: DocumentPath | readonly [DocumentPath]
-        ) => DocumentData | undefined
-      ) =>
+      (fn: (...path: DocumentPath | readonly [DocumentPath]) => DocumentData | undefined) =>
       (...path: DocumentPath | readonly [DocumentPath]) => {
-        const data = fn(path.length === 1 ? path[0] : path)
+        let resolvedPath: DocumentPath | readonly [DocumentPath]
+        if (path.length === 1) {
+          resolvedPath = path[0]
+        } else {
+          resolvedPath = path
+        }
+        const data = fn(resolvedPath)
 
         if (data !== undefined) {
           return Effect.succeed(data)
@@ -75,20 +74,11 @@ export const mockDocumentStoreImplementations: {
         return Effect.fail(
           new NotFoundError({
             resourceType: 'Document',
+            // oxlint-disable-next-line eslint/no-ternary
             params: { path: path.length === 1 ? path[0] : path },
           })
         )
       },
-  },
-
-  subscribeTo: {
-    /**
-     * Returns an empty stream that never emits
-     */
-    emptyStream:
-      () =>
-      (..._path: DocumentPath | readonly [DocumentPath]) =>
-        Stream.never,
   },
 
   set: {
@@ -99,6 +89,16 @@ export const mockDocumentStoreImplementations: {
       () =>
       (..._args: readonly unknown[]) =>
         Effect.void,
+  },
+
+  subscribeTo: {
+    /**
+     * Returns an empty stream that never emits
+     */
+    emptyStream:
+      () =>
+      (..._path: DocumentPath | readonly [DocumentPath]) =>
+        Stream.never,
   },
 
   update: {
@@ -122,10 +122,8 @@ export const mockDocumentStore = (
   impl: Partial<DocumentStoreService> = {}
 ): DocumentStoreService => ({
   get: vi.fn(mockDocumentStoreImplementations.get.notFound()),
-  subscribeTo: vi.fn(
-    mockDocumentStoreImplementations.subscribeTo.emptyStream()
-  ),
   set: vi.fn(mockDocumentStoreImplementations.set.noop()),
+  subscribeTo: vi.fn(mockDocumentStoreImplementations.subscribeTo.emptyStream()),
   update: vi.fn(mockDocumentStoreImplementations.update.noop()),
   ...impl,
 })

@@ -1,1 +1,1 @@
-export * from './FirebaseWeb'
+export * from './firebase-web'

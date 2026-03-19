@@ -2,21 +2,31 @@
   "name": "@assessmentis/google-fhir-web-infrastructure",
   "version": "0.0.1",
   "description": "Infrastructure for Google's FHIR store",
-  "author": "Ruth Marks",
   "license": "UNLICENSED",
+  "author": "Ruth Marks",
   "type": "module",
-  "prettier": "@assessmentis/prettier-config",
-  "scripts": {
-    "lint": "eslint \"./{src,test}/**/*\"",
-    "lint:fix": "eslint --fix \"./{src,test}/**/*\"",
-    "typecheck": "tsc --noEmit",
-    "test:integration": "VITE_GCLOUD_TOKEN=$(gcloud auth print-access-token) vitest --project google-fhir-web-infrastructure:integration"
-  },
   "exports": {
     ".": "./src/index.ts"
   },
+  "scripts": {
+    "lint": "oxlint ./{src,test}/",
+    "lint:fix": "oxlint --fix ./{src,test}/",
+    "test:integration": "VITE_GCLOUD_TOKEN=$(gcloud auth print-access-token) vitest --project google-fhir-web-infrastructure:integration",
+    "typecheck": "npx tsgo --noEmit"
+  },
+  "dependencies": {
+    "@assessmentis/clinical-domain": "*",
+    "@assessmentis/config-domain": "*",
+    "@assessmentis/fhir-r4": "*",
+    "@assessmentis/firebase-web-infrastructure": "*",
+    "@assessmentis/ontology": "*",
+    "@assessmentis/platform-domain": "*",
+    "@assessmentis/util": "*",
+    "@mswjs/interceptors": "^0.40.0",
+    "effect": "^3.19.8",
+    "temporal-polyfill": "^0.3.0"
+  },
   "devDependencies": {
-    "@assessmentis/prettier-config": "*",
     "@assessmentis/testing-utils": "*",
     "@effect/vitest": "^0.27.0",
     "@testing-library/dom": "^10.4.1",
@@ -34,17 +44,5 @@
     "undici-types": "^7.19.2",
     "vite-plugin-node-polyfills": "^0.24.0",
     "vitest": "^4.0.18"
-  },
-  "dependencies": {
-    "@assessmentis/clinical-domain": "*",
-    "@assessmentis/config-domain": "*",
-    "@assessmentis/fhir-r4": "*",
-    "@assessmentis/firebase-web-infrastructure": "*",
-    "@assessmentis/ontology": "*",
-    "@assessmentis/platform-domain": "*",
-    "@assessmentis/util": "*",
-    "@mswjs/interceptors": "^0.40.0",
-    "effect": "^3.19.8",
-    "temporal-polyfill": "^0.3.0"
   }
 }

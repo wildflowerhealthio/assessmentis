@@ -1,2 +1,2 @@
-export * from './Extension'
-export * from './Narrative'
+export * from './extension'
+export * from './narrative'

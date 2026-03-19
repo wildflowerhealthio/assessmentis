@@ -4,4 +4,4 @@
  *
  * @packageDocumentation
  */
-export * from './testUtils'
+export * from './test-utils'
