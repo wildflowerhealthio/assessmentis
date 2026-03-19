@@ -12,7 +12,6 @@ import {
 import Chat from '../Chat/chat'
 import MeetingInformation from '../MeetingInformation/meeting-information'
 
-// eslint-disable-next-line import/no-unassigned-import
 import './Tray.css'
 
 import {

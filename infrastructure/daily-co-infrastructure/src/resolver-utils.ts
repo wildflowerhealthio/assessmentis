@@ -55,7 +55,7 @@ export const fetchRecordingFileUrl = (
     assertStatus(200),
     parseAs(ApiDailyCoRecordingLinkSchema),
     Effect.map((linkData) => linkData.download_link),
-    // eslint-disable-next-line unicorn/no-useless-undefined -- Effect.succeed requires a value argument
+    // oxlint-disable-next-line unicorn/no-useless-undefined -- Effect.succeed requires a value argument
     Effect.catchTag('NotFoundError', () => Effect.succeed(undefined))
   )
 
@@ -77,6 +77,6 @@ export const fetchTranscriptAccessLink = (
     assertStatus(200),
     parseAs(ApiDailyCoTranscriptLinkSchema),
     Effect.map((linkData) => linkData.link),
-    // eslint-disable-next-line unicorn/no-useless-undefined -- Effect.succeed requires a value argument
+    // oxlint-disable-next-line unicorn/no-useless-undefined -- Effect.succeed requires a value argument
     Effect.catchTag('NotFoundError', () => Effect.succeed(undefined))
   )

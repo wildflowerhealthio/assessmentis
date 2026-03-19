@@ -6,12 +6,10 @@ import { Location } from '@assessmentis/clinical-domain'
 
 import { act, render, screen } from '@testing-library/react'
 
-/* eslint-disable import/no-unassigned-import -- Side-effect imports that register trait implementations for tested resource types */
 import '../../../traits/BreadcrumbLabel/implementations/location'
 import '../../../traits/Labeled/implementations/location'
 import '../../../traits/Link/implementations/location'
 import '../../../traits/Listable/implementations/location'
-/* eslint-enable import/no-unassigned-import */
 
 import { ResourceListIndexPage } from '../../ResourceListIndexPage/resource-list-index-page'
 

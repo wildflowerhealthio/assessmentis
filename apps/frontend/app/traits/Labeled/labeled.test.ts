@@ -11,7 +11,6 @@ import {
   QuestionnaireResponse,
 } from '@assessmentis/clinical-domain'
 
-// eslint-disable-next-line import/no-unassigned-import -- Loads trait barrel to register implementations for testing
 import '.'
 
 describe('Labeled trait', () => {

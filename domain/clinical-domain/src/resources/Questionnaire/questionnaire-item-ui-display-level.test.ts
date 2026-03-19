@@ -28,7 +28,6 @@ describe('QuestionnaireItemUiDisplayLevel extension', () => {
     fc.assert(
       fc.property(backboneElementArb, displayLevelArb, (element, level) => {
         const withLevel = withUiDisplayLevel(element, level)
-        // eslint-disable-next-line unicorn/no-useless-undefined -- testing removal by passing undefined
         const removed = withUiDisplayLevel(withLevel, undefined)
         const retrieved = getUiDisplayLevel(removed)
         expect(retrieved).toBeUndefined()

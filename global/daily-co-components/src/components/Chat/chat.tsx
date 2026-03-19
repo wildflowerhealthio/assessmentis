@@ -5,7 +5,6 @@ import { useAppMessage, useLocalSessionId, useParticipantProperty } from '@daily
 
 import { Arrow } from '../Tray/Icons/index'
 
-// eslint-disable-next-line import/no-unassigned-import
 import './Chat.css'
 
 import type { DailyEventObjectAppMessage } from '@daily-co/daily-js'

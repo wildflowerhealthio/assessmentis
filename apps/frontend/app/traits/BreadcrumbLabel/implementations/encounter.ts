@@ -1,6 +1,5 @@
 import * as ClinicalDomain from '@assessmentis/clinical-domain'
 
-// eslint-disable-next-line import/no-unassigned-import -- Registers the Labeled trait that BreadcrumbLabel depends on
 import '../../Labeled/implementations/encounter'
 
 import { getEncounterDisplayName } from '../../../modules/resources/Encounter/utils/encounter-display'

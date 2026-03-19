@@ -76,7 +76,7 @@ describe('VideoCallRoomConfigExtension', () => {
   test('findVideoCallRoomConfig returns undefined when not present', () => {
     const other = Extension.make({ definitionUrl: 'http://other' })
     expect(findVideoCallRoomConfig([other])).toBeUndefined()
-    // eslint-disable-next-line unicorn/no-useless-undefined -- testing undefined input
+    // oxlint-disable-next-line unicorn/no-useless-undefined -- testing undefined input
     expect(findVideoCallRoomConfig(undefined)).toBeUndefined()
     expect(findVideoCallRoomConfig([])).toBeUndefined()
   })

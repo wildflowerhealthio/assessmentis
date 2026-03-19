@@ -24,7 +24,7 @@ describe('QuestionnaireItemAnsweredAt extension', () => {
     fc.assert(
       fc.property(backboneElementArb, dateTimeArb, (element, date) => {
         const withDate = QuestionnaireItemAnsweredAtExtension.withValue(element, date)
-        // eslint-disable-next-line unicorn/no-useless-undefined -- testing removal by passing undefined
+        // oxlint-disable-next-line unicorn/no-useless-undefined -- testing removal by passing undefined
         const removed = QuestionnaireItemAnsweredAtExtension.withValue(withDate, undefined)
         const retrieved = QuestionnaireItemAnsweredAtExtension.get(removed)
         expect(retrieved).toBeUndefined()

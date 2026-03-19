@@ -91,7 +91,7 @@ const makeUserOrgStream = (
           ),
           StreamEither.catchTag(
             'NotFoundError',
-            // eslint-disable-next-line unicorn/no-useless-undefined -- Either.right requires a value argument
+            // oxlint-disable-next-line unicorn/no-useless-undefined -- Either.right requires a value argument
             () => Either.right<UserOrg | undefined>(undefined)
           )
         ),

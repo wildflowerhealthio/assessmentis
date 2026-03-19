@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-unassigned-import
 import './UserMediaError.css'
 
 const refreshPage = (): void => {

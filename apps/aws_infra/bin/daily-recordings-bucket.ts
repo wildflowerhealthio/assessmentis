@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-// eslint-disable-next-line import/no-unassigned-import -- Enables source map support for stack traces
 import 'source-map-support/register'
 
 import * as cdk from 'aws-cdk-lib'

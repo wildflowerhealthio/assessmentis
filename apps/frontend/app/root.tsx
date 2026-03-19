@@ -1,4 +1,4 @@
-// eslint-disable eslint-plugin-import/group-exports
+// oxlint-disable eslint-plugin-import/group-exports
 import {
   Links,
   Meta,
@@ -9,7 +9,6 @@ import {
   useNavigate,
 } from 'react-router'
 
-// eslint-disable-next-line import/no-unassigned-import
 import './globals.css'
 
 import { Cause } from 'effect'

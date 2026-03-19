@@ -28,7 +28,7 @@ describe('QuestionnaireItemUiControlCode extension', () => {
     fc.assert(
       fc.property(backboneElementArb, controlCodeArb, (element, code) => {
         const withCode = withUiControlCode(element, code)
-        // eslint-disable-next-line unicorn/no-useless-undefined -- testing removal by passing undefined
+        // oxlint-disable-next-line unicorn/no-useless-undefined -- testing removal by passing undefined
         const removed = withUiControlCode(withCode, undefined)
         const retrieved = getUiControlCode(removed)
         expect(retrieved).toBeUndefined()

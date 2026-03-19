@@ -33,6 +33,30 @@ jobs:
           config: .oxlintrc.json
           working-directory: '.'
 
+  lint-comments:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          NODE_ENV=development npm ci --include=dev
+          npm ci --workspaces
+
+      - name: Enable ESLint problem matcher
+        run: echo "::add-matcher::.github/eslint-problem-matcher.json"
+
+      - name: Lint doc comments
+        run: npm run lint:comments
+        continue-on-error: true
+
   check-markdown-changes:
     runs-on: ubuntu-latest
     outputs:

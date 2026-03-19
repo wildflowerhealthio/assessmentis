@@ -6,7 +6,6 @@ import { cn } from '@assessmentis/react-util'
 
 import Skeleton from 'react-loading-skeleton'
 
-// eslint-disable-next-line import/no-unassigned-import
 import 'react-loading-skeleton/dist/skeleton.css'
 
 import type { ReadonlyUrl } from '@assessmentis/effectful-store'

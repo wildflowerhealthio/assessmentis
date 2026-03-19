@@ -43,7 +43,6 @@ describe('useCollection', () => {
       ]
 
       // Test success case
-      // eslint-disable-next-line unicorn/no-useless-undefined -- mockResolvedValue requires an argument
       const apiDeleteSuccess = vi.fn().mockResolvedValue(undefined)
       const apiCreate = vi.fn()
 

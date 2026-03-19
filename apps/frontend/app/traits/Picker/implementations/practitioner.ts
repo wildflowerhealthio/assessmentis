@@ -1,6 +1,5 @@
 import * as ClinicalDomain from '@assessmentis/clinical-domain'
 
-// eslint-disable-next-line import/no-unassigned-import -- Registers the Labeled trait that Picker depends on
 import '../../Labeled/implementations/practitioner'
 
 import { formatHumanName } from '../../../modules/common/utils/fhir-display'

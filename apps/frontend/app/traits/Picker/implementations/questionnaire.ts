@@ -2,7 +2,6 @@ import { runEffectSync } from '@/run-effect-sync'
 
 import * as ClinicalDomain from '@assessmentis/clinical-domain'
 
-// eslint-disable-next-line import/no-unassigned-import -- Registers the Labeled trait that Picker depends on
 import '../../Labeled/implementations/questionnaire'
 
 import { humanizeDateTimeForLocalReader } from '../../../modules/common/utils/date-utils'

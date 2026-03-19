@@ -101,7 +101,7 @@ describe('VideoCallRoomIdentifier', () => {
     })
 
     test('returns undefined for empty/undefined array', () => {
-      // eslint-disable-next-line unicorn/no-useless-undefined -- testing undefined input
+      // oxlint-disable-next-line unicorn/no-useless-undefined -- testing undefined input
       expect(VideoCallRoomIdentifier.findIn(undefined)).toBeUndefined()
       expect(VideoCallRoomIdentifier.findIn([])).toBeUndefined()
     })

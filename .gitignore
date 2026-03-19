@@ -2,6 +2,9 @@
 .turbo
 dist/
 
+# Claude
+.claude
+
 # TypeDoc output
 docs-html/
 

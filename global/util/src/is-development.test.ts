@@ -34,7 +34,6 @@ describe('isDevelopment', () => {
 
   describe('when process is not defined', () => {
     it('returns false when no environment is available', async () => {
-      // eslint-disable-next-line unicorn/no-useless-undefined -- testing when process is undefined
       vi.stubGlobal('process', undefined)
       const isDevelopment = await loadFresh()
       // Import.meta.env.MODE in test runner is typically "test", not "development"

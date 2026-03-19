@@ -24,7 +24,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install @typescript/native-preview
+          npm install -g @typescript/native-preview
           NODE_ENV=development npm ci --include=dev
           npm ci --workspaces
 

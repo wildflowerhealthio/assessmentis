@@ -216,7 +216,7 @@ describe('FirebaseAdminDocumentStoreLayer', () => {
       const mockOnSnapshot = vi.fn((callback: (snapshot: unknown) => void) => {
         // Callback
         // Immediately emit snapshot with no data
-        // eslint-disable-next-line unicorn/no-useless-undefined -- mock Firestore snapshot with no data
+        // oxlint-disable-next-line unicorn/no-useless-undefined -- mock Firestore snapshot with no data
         setTimeout(() => {
           callback({ data: () => undefined })
         }, 0)

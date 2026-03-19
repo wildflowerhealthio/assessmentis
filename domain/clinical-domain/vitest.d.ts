@@ -1,5 +1,4 @@
 // Import needed for module extension
-// oxlint-disable-next-line eslint-plugin-import/no-unassigned-import
 import 'vitest'
 
 interface CustomMatchers<R = unknown> {

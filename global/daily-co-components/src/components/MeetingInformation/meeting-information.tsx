@@ -1,6 +1,5 @@
 import { useMeetingState, useNetwork, useParticipantIds, useRoom } from '@daily-co/daily-react'
 
-// eslint-disable-next-line import/no-unassigned-import
 import './MeetingInformation.css'
 
 /**

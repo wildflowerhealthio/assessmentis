@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom/client'
 
 import { BrowserRouter } from 'react-router-dom'
 
-// eslint-disable-next-line import/no-unassigned-import
 import './index.css'
 
 import App from './app'

@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-unassigned-import -- Loads environment variables from .env
 import 'dotenv/config'
 
 import { execSync } from 'node:child_process'

@@ -30,7 +30,6 @@ export const useCollection = <T extends { id?: string | undefined }>(
   initial: readonly T[],
   keyOf?: (item: T) => string | undefined
 ) => {
-  // eslint-disable-next-line unicorn/no-useless-undefined -- default fallback must return undefined
   const resolvedKeyOf = keyOf ?? ((): string | undefined => undefined)
   const [collection, setCollection] = useState<readonly { data: T; loading: boolean }[]>(
     initial.map((item) => ({ data: item, loading: false }))
@@ -80,7 +79,7 @@ export const useCollectionPromise = <T>(
       .catch((error) => methods.reject(error))
   }, [initial, methods])
 
-  // eslint-disable-next-line unicorn/no-useless-undefined -- default fallback must return undefined
+  // oxlint-disable-next-line unicorn/no-useless-undefined -- default fallback must return undefined
   const resolvedKeyOf = keyOf ?? ((): string | undefined => undefined)
   const { deleteItem, createItem } = collectionMethods<T>(
     { apiCreate, apiDelete },

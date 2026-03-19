@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-unassigned-import
 import './Username.css'
 
 import { useParticipantProperty } from '@daily-co/daily-react'

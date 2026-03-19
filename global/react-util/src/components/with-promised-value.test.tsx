@@ -29,9 +29,7 @@ function TestSync({ value, loading, valueError, label }: TestSyncProps) {
       <span data-testid="label">{label}</span>
       <span data-testid="loading">{String(loading)}</span>
       <span data-testid="value">{value ?? 'none'}</span>
-      <span data-testid="error">
-        {errorString}
-      </span>
+      <span data-testid="error">{errorString}</span>
     </div>
   )
 }
@@ -75,7 +73,6 @@ describe('withPromisedValue', () => {
 
     it('renders resolved undefined with loading=false', async () => {
       await act(async () => {
-        // eslint-disable-next-line unicorn/no-useless-undefined -- Promise.resolve(undefined) needed for correct type
         render(<TestPromised value={Promise.resolve(undefined)} label="test" />)
       })
       expect(screen.getByTestId('loading').textContent).toBe('false')

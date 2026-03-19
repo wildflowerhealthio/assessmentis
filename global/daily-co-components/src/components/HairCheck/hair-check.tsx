@@ -11,7 +11,6 @@ import {
 
 import UserMediaError from '../UserMediaError/user-media-error'
 
-// eslint-disable-next-line import/no-unassigned-import
 import './HairCheck.css'
 
 /**

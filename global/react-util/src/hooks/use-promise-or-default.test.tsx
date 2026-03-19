@@ -78,7 +78,6 @@ describe('usePromiseOrDefault', () => {
       expect(result1.current).toBe('value')
     })
 
-    // eslint-disable-next-line unicorn/no-useless-undefined -- Promise.resolve(undefined) is needed for correct type inference
     const promise2 = Promise.resolve(undefined)
     const { result: result2 } = renderHook(() => usePromiseOrDefault(promise2, 'default'))
 

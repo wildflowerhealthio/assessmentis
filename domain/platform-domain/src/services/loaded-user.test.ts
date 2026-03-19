@@ -36,7 +36,6 @@ describe('LoadedUser', () => {
       const program = Effect.gen(function* program() {
         const user = yield* LoadedUser
         return user
-        // eslint-disable-next-line unicorn/no-useless-undefined -- testing undefined data input
       }).pipe(Effect.provide(LiteralLoadedUserLayer(testUserId, undefined)))
 
       const result = await Effect.runPromiseExit(program)

@@ -188,13 +188,6 @@
       },
     },
     {
-      "files": ["**/*.ts", "**/*.tsx"],
-      "rules": {
-        "tsdoc/syntax": "warn",
-      },
-      // "jsPlugins": ["eslint-plugin-tsdoc"],
-    },
-    {
       "files": ["**/*.test.ts", "**/*.test.tsx", "**/test/**"],
       "rules": {
         "@typescript-eslint/no-unsafe-type-assertion": "off",
