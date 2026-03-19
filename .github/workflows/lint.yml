@@ -28,11 +28,17 @@ jobs:
           NODE_ENV=development npm ci --include=dev
           npm ci --workspaces
 
-      - name: Lint with oxlint
-        uses: oxc-project/oxlint-action@92eec2c4d5dbbb882c926478438aa4b7f20ffe2d
-        with:
-          config: .oxlintrc.json
-          working-directory: '.'
+      - name: Run Oxlint (Changed Files)
+        shell: bash
+        if: github.event_name == 'pull_request' && inputs.all-files == 'false'
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          echo "::group::Run Oxlint (Changed Files)"
+          files=$(git diff --name-only --relative ${{ steps.base-branch.outputs.base-branch }} ${{ github.sha }})
+          echo "::debug::Files:"
+          echo "::debug::${files}"
+          npx oxlint --format github $files
+          echo "::endgroup::"
 
   lint-comments:
     runs-on: ubuntu-latest
