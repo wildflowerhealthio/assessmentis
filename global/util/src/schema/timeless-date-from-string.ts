@@ -1,5 +1,5 @@
 import type { Arbitrary, FastCheck } from 'effect'
-import { Schema } from 'effect'
+import { Predicate, Schema } from 'effect'
 
 /**
  * An Effect Schema for a `YYYY-MM-DD` date string. Validates the format
@@ -21,7 +21,11 @@ export const TimelessDateFromString = Schema.String.pipe(
     }
     // Verify the parsed date components match the input to catch impossible dates
     // like 2024-02-30 (which Date would silently roll forward to 2024-03-01)
-    const [year, month, day] = value.split('-').map(Number) as [number, number, number]
+    const parts = value.split('-').map(Number)
+    if (!Predicate.isTupleOfAtLeast(parts, 3)) {
+      return 'Expected a valid calendar date'
+    }
+    const [year, month, day] = parts
     if (
       date.getUTCFullYear() !== year ||
       date.getUTCMonth() + 1 !== month ||
