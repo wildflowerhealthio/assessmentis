@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import { Practitioner } from '@assessmentis/clinical-domain'
 import type { AdministrativeGender } from '@assessmentis/clinical-domain/data-types'
+import { TimelessDateFromString } from '@assessmentis/util'
 
 import { PatientFormData } from './patient-form-data'
 
@@ -53,7 +54,7 @@ describe('PatientFormData', () => {
   describe('toCreatePayload', () => {
     it('should transform form data to Patient domain model', () => {
       const formData = PatientFormData.make({
-        birthDate: '1990-01-01',
+        birthDate: Schema.decodeSync(TimelessDateFromString)('1990-01-01'),
         familyName: 'Doe',
         gender: 'male',
         givenName: 'John',

@@ -3,9 +3,9 @@ import { Schema } from 'effect'
 
 /**
  * An Effect Schema for a `YYYY-MM-DD` date string. Validates the format
- * via regex but does not transform to a `Date` object. Designed for
- * timezone-independent dates (e.g. birthdays) where the time component
- * is meaningless.
+ * via regex and verifies the date is a real calendar date. Does not
+ * transform to a `Date` object. Designed for timezone-independent dates
+ * (e.g. birthdays) where the time component is meaningless.
  *
  * The decoded type is a branded string (`string & Brand<"TimelessDate">`),
  * not a plain string, so it cannot be confused with arbitrary strings.
@@ -14,6 +14,22 @@ import { Schema } from 'effect'
  */
 export const TimelessDateFromString = Schema.String.pipe(
   Schema.pattern(/^\d{4}-\d{2}-\d{2}$/),
+  Schema.filter((value) => {
+    const date = new Date(value + 'T00:00:00Z')
+    if (Number.isNaN(date.getTime())) {
+      return 'Expected a valid calendar date'
+    }
+    // Verify the parsed date components match the input to catch impossible dates
+    // like 2024-02-30 (which Date would silently roll forward to 2024-03-01)
+    const [year, month, day] = value.split('-').map(Number) as [number, number, number]
+    if (
+      date.getUTCFullYear() !== year ||
+      date.getUTCMonth() + 1 !== month ||
+      date.getUTCDate() !== day
+    ) {
+      return 'Expected a valid calendar date'
+    }
+  }),
   Schema.annotations({
     arbitrary: (): Arbitrary.LazyArbitrary<string> => (fc: typeof FastCheck) =>
       fc
@@ -21,7 +37,7 @@ export const TimelessDateFromString = Schema.String.pipe(
         .filter((date) => date.getFullYear() >= 1900 && date.getFullYear() <= 2100)
         .map((date) => date.toISOString().slice(0, 10)),
   }),
-  Schema.brand('TimelessDate')
+  Schema.brand('TimelessDate'),
 )
 
 /** The branded type for a validated `YYYY-MM-DD` date string. */
