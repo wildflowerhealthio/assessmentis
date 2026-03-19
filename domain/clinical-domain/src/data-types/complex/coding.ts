@@ -46,8 +46,8 @@ export interface CodingEncoded
  * a `system` URI and optional `display` text.
  */
 export class Coding extends CodingElement.extend<Coding>(DomainType)(fields) {
-  static DomainType = CodingElement.DomainType
-  static UrlSchema = CodingElement.UrlSchema
+  static readonly DomainType = CodingElement.DomainType
+  static readonly UrlSchema = CodingElement.UrlSchema
   static Datatype = Datatype('Coding', Coding)
 
   static makeLiteral = <C extends ConstructorParameters<typeof Coding>[0]>(params: C): Coding & C =>

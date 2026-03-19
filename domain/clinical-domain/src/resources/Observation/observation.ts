@@ -118,7 +118,7 @@ export interface ObservationEncoded
  * Measurements and simple assertions made about a patient, device or other subject.
  */
 export class Observation extends ObservationResource.extend<Observation>(DomainType)(fields) {
-  static DomainType = ObservationResource.DomainType
-  static UrlSchema = ObservationResource.UrlSchema
+  static readonly DomainType = ObservationResource.DomainType
+  static readonly UrlSchema = ObservationResource.UrlSchema
   readonly cloneWith = makeCloneWith(Observation, this)
 }

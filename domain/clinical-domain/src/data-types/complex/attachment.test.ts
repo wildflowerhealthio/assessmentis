@@ -8,6 +8,10 @@ import type { AttachmentEncoded } from './attachment'
 const attachmentArb = Arbitrary.make(Attachment)
 
 describe('Attachment model', () => {
+  test('Attachment.DomainType is "Attachment"', () => {
+    expect(Attachment.DomainType).toBe('Attachment')
+  })
+
   test('should encode to encoded type', () => {
     expectTypeOf<typeof Attachment.Encoded>().toExtend<AttachmentEncoded>()
   })

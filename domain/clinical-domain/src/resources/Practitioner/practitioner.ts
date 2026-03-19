@@ -67,7 +67,7 @@ export interface PractitionerEncoded
  * A person who is directly or indirectly involved in the provisioning of healthcare.
  */
 export class Practitioner extends PractitionerResource.extend<Practitioner>(DomainType)(fields) {
-  static DomainType = PractitionerResource.DomainType
-  static UrlSchema = PractitionerResource.UrlSchema
+  static readonly DomainType = PractitionerResource.DomainType
+  static readonly UrlSchema = PractitionerResource.UrlSchema
   readonly cloneWith = makeCloneWith(Practitioner, this)
 }

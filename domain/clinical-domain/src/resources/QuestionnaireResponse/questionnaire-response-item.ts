@@ -38,24 +38,22 @@ const QuestionnaireResponseItemAnswerBackboneElement = BackboneElement(
  */
 export class QuestionnaireResponseItemAnswer extends QuestionnaireResponseItemAnswerBackboneElement.extend<QuestionnaireResponseItemAnswer>(
   'QuestionnaireResponseItemAnswer'
-)(
-  {
-    ...questionnaireResponseItemAnswerFields,
+)({
+  ...questionnaireResponseItemAnswerFields,
 
-    item: Schema.optional(
-      pipe(
-        Schema.Array(
-          Schema.suspend(
-            (): Schema.Schema<QuestionnaireResponseItem, QuestionnaireResponseItemEncoded> =>
-              QuestionnaireResponseItem
-          )
+  item: Schema.optional(
+    pipe(
+      Schema.Array(
+        Schema.suspend(
+          (): Schema.Schema<QuestionnaireResponseItem, QuestionnaireResponseItemEncoded> =>
+            QuestionnaireResponseItem
         )
       )
-    ),
-  }
-) {
-  static DomainType = QuestionnaireResponseItemAnswerBackboneElement.DomainType
-  static UrlSchema = QuestionnaireResponseItemAnswerBackboneElement.UrlSchema
+    )
+  ),
+}) {
+  static readonly DomainType = QuestionnaireResponseItemAnswerBackboneElement.DomainType
+  static readonly UrlSchema = QuestionnaireResponseItemAnswerBackboneElement.UrlSchema
 }
 
 const questionnaireResponseItemFields = {
@@ -81,35 +79,33 @@ const QuestionnaireResponseItemBackboneElement = BackboneElement('QuestionnaireR
  */
 export class QuestionnaireResponseItem extends QuestionnaireResponseItemBackboneElement.extend<QuestionnaireResponseItem>(
   'QuestionnaireResponseItem'
-)(
-  {
-    ...questionnaireResponseItemFields,
-    answer: Schema.optional(
-      pipe(
-        Schema.Array(
-          Schema.suspend(
-            (): Schema.Schema<
-              QuestionnaireResponseItemAnswer,
-              QuestionnaireResponseItemAnswerEncoded
-            > => QuestionnaireResponseItemAnswer
-          )
+)({
+  ...questionnaireResponseItemFields,
+  answer: Schema.optional(
+    pipe(
+      Schema.Array(
+        Schema.suspend(
+          (): Schema.Schema<
+            QuestionnaireResponseItemAnswer,
+            QuestionnaireResponseItemAnswerEncoded
+          > => QuestionnaireResponseItemAnswer
         )
       )
-    ),
-    item: Schema.optional(
-      pipe(
-        Schema.Array(
-          Schema.suspend(
-            (): Schema.Schema<QuestionnaireResponseItem, QuestionnaireResponseItemEncoded> =>
-              QuestionnaireResponseItem
-          )
+    )
+  ),
+  item: Schema.optional(
+    pipe(
+      Schema.Array(
+        Schema.suspend(
+          (): Schema.Schema<QuestionnaireResponseItem, QuestionnaireResponseItemEncoded> =>
+            QuestionnaireResponseItem
         )
       )
-    ),
-  }
-) {
-  static DomainType = QuestionnaireResponseItemBackboneElement.DomainType
-  static UrlSchema = QuestionnaireResponseItemBackboneElement.UrlSchema
+    )
+  ),
+}) {
+  static readonly DomainType = QuestionnaireResponseItemBackboneElement.DomainType
+  static readonly UrlSchema = QuestionnaireResponseItemBackboneElement.UrlSchema
   readonly cloneWith = makeCloneWith(QuestionnaireResponseItem, this);
 
   /** Yields all nested child {@link QuestionnaireResponseItem}s depth-first. */

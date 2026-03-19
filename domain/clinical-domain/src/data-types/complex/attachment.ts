@@ -54,6 +54,6 @@ const AttachmentElement = Element(DomainType)
  * Note: Per FHIR spec, if data is present, contentType SHALL be populated.
  */
 export class Attachment extends AttachmentElement.extend<Attachment>(DomainType)(fields) {
-  static DomainType = AttachmentElement.DomainType
-  static UrlSchema = AttachmentElement.UrlSchema
+  static readonly DomainType = AttachmentElement.DomainType
+  static readonly UrlSchema = AttachmentElement.UrlSchema
 }

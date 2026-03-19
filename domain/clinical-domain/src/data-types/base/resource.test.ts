@@ -9,8 +9,8 @@ import type { ResourceEncoded } from './resource'
 const TestResourceResource = Resource('TestResource')
 
 class TestResource extends TestResourceResource.extend<TestResource>('TestResource')({}) {
-  static DomainType = TestResourceResource.DomainType
-  static UrlSchema = TestResourceResource.UrlSchema
+  static readonly DomainType = TestResourceResource.DomainType
+  static readonly UrlSchema = TestResourceResource.UrlSchema
 }
 
 describe('Resource', () => {

@@ -35,6 +35,6 @@ const QuestionnaireItemAnswerOptionBackboneElement = BackboneElement(DomainType)
 export class QuestionnaireItemAnswerOption extends QuestionnaireItemAnswerOptionBackboneElement.extend<QuestionnaireItemAnswerOption>(
   DomainType
 )(fields) {
-  static DomainType = QuestionnaireItemAnswerOptionBackboneElement.DomainType
-  static UrlSchema = QuestionnaireItemAnswerOptionBackboneElement.UrlSchema
+  static readonly DomainType = QuestionnaireItemAnswerOptionBackboneElement.DomainType
+  static readonly UrlSchema = QuestionnaireItemAnswerOptionBackboneElement.UrlSchema
 }

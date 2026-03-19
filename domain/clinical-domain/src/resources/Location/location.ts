@@ -65,8 +65,8 @@ export interface LocationEncoded
  * or accommodated.
  */
 export class Location extends LocationResource.extend<Location>(DomainType)(fields) {
-  static DomainType = LocationResource.DomainType
-  static UrlSchema = LocationResource.UrlSchema
+  static readonly DomainType = LocationResource.DomainType
+  static readonly UrlSchema = LocationResource.UrlSchema
   readonly cloneWith = makeCloneWith(Location, this)
 }
 

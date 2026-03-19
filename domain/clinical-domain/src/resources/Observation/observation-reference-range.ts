@@ -31,6 +31,6 @@ const ObservationReferenceRangeBackboneElement = BackboneElement(DomainType)
 export class ObservationReferenceRange extends ObservationReferenceRangeBackboneElement.extend<ObservationReferenceRange>(
   DomainType
 )(fields) {
-  static DomainType = ObservationReferenceRangeBackboneElement.DomainType
-  static UrlSchema = ObservationReferenceRangeBackboneElement.UrlSchema
+  static readonly DomainType = ObservationReferenceRangeBackboneElement.DomainType
+  static readonly UrlSchema = ObservationReferenceRangeBackboneElement.UrlSchema
 }

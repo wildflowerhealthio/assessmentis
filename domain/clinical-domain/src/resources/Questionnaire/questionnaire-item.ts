@@ -87,21 +87,19 @@ const QuestionnaireItemBackboneElement = BackboneElement('QuestionnaireItem')
  */
 export class QuestionnaireItem extends QuestionnaireItemBackboneElement.extend<QuestionnaireItem>(
   'QuestionnaireItem'
-)(
-  {
-    ...questionnaireItemFields,
-    item: Schema.optional(
-      pipe(
-        Schema.Array(
-          Schema.suspend(
-            (): Schema.Schema<QuestionnaireItem, QuestionnaireItemEncoded> => QuestionnaireItem
-          )
+)({
+  ...questionnaireItemFields,
+  item: Schema.optional(
+    pipe(
+      Schema.Array(
+        Schema.suspend(
+          (): Schema.Schema<QuestionnaireItem, QuestionnaireItemEncoded> => QuestionnaireItem
         )
       )
-    ),
-  }
-) {
-  static DomainType = QuestionnaireItemBackboneElement.DomainType
-  static UrlSchema = QuestionnaireItemBackboneElement.UrlSchema
+    )
+  ),
+}) {
+  static readonly DomainType = QuestionnaireItemBackboneElement.DomainType
+  static readonly UrlSchema = QuestionnaireItemBackboneElement.UrlSchema
   readonly cloneWith = makeCloneWith(QuestionnaireItem, this)
 }

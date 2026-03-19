@@ -86,7 +86,7 @@ export interface MediaEncoded
  * The actual content may be inline or provided by direct reference.
  */
 export class Media extends MediaResource.extend<Media>(DomainType)(fields) {
-  static DomainType = MediaResource.DomainType
-  static UrlSchema = MediaResource.UrlSchema
+  static readonly DomainType = MediaResource.DomainType
+  static readonly UrlSchema = MediaResource.UrlSchema
   readonly cloneWith = makeCloneWith(Media, this)
 }

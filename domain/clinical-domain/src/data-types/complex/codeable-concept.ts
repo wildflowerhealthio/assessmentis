@@ -37,9 +37,11 @@ const CodeableConceptElement = Element<DomainType>(DomainType)
  * A concept that may be defined by one or more coding systems. Wraps an
  * array of {@link Coding} values plus optional free-text.
  */
-export class CodeableConcept extends CodeableConceptElement.extend<CodeableConcept>(DomainType)(fields) {
-  static DomainType = CodeableConceptElement.DomainType
-  static UrlSchema = CodeableConceptElement.UrlSchema
+export class CodeableConcept extends CodeableConceptElement.extend<CodeableConcept>(DomainType)(
+  fields
+) {
+  static readonly DomainType = CodeableConceptElement.DomainType
+  static readonly UrlSchema = CodeableConceptElement.UrlSchema
   /** {@link Datatype} wrapper for use in {@link DatatypeChoice} value\[x\] unions. */
   static Datatype = Datatype('CodeableConcept', CodeableConcept)
 }

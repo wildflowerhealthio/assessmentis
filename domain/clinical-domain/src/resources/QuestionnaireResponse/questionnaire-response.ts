@@ -51,21 +51,21 @@ export interface QuestionnaireResponseEncoded
 /**
  * A structured set of questions and their answers.
  */
-export class QuestionnaireResponse extends QuestionnaireResponseResource.extend<QuestionnaireResponse>(DomainType)(
-  {
-    ...fields,
-    item: Schema.optional(
-      Schema.Array(
-        Schema.suspend(
-          (): Schema.Schema<QuestionnaireResponseItem, QuestionnaireResponseItemEncoded> =>
-            QuestionnaireResponseItem
-        )
+export class QuestionnaireResponse extends QuestionnaireResponseResource.extend<QuestionnaireResponse>(
+  DomainType
+)({
+  ...fields,
+  item: Schema.optional(
+    Schema.Array(
+      Schema.suspend(
+        (): Schema.Schema<QuestionnaireResponseItem, QuestionnaireResponseItemEncoded> =>
+          QuestionnaireResponseItem
       )
-    ),
-  }
-) {
-  static DomainType = QuestionnaireResponseResource.DomainType
-  static UrlSchema = QuestionnaireResponseResource.UrlSchema
+    )
+  ),
+}) {
+  static readonly DomainType = QuestionnaireResponseResource.DomainType
+  static readonly UrlSchema = QuestionnaireResponseResource.UrlSchema
   readonly cloneWith = makeCloneWith(QuestionnaireResponse, this);
 
   /** Yields all nested {@link QuestionnaireResponseItem}s depth-first. */

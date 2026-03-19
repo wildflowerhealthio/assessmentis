@@ -55,7 +55,7 @@ export interface QuantityEncoded
  */
 
 export class Quantity extends QuantityElement.extend<Quantity>('Quantity')(fields) {
-  static DomainType = QuantityElement.DomainType
-  static UrlSchema = QuantityElement.UrlSchema
+  static readonly DomainType = QuantityElement.DomainType
+  static readonly UrlSchema = QuantityElement.UrlSchema
   static Datatype = Datatype('Quantity', Quantity)
 }

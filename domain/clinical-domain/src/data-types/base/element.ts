@@ -91,8 +91,8 @@ export const Element = <TDomainType extends string>(domainType: TDomainType) => 
     ),
     ...fields,
   }) {
-    static DomainType = domainType
-    static UrlSchema = urlSchema
+    static readonly DomainType = domainType
+    static readonly UrlSchema = urlSchema
   }
 
   return ElementMixin satisfies ElementClass<ElementMixin, TDomainType> as ElementClass<

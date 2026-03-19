@@ -90,7 +90,7 @@ export interface EncounterEncoded
  * providing healthcare service(s) or assessing the health status of a patient.
  */
 export class Encounter extends EncounterResource.extend<Encounter>(DomainType)(fields) {
-  static DomainType = EncounterResource.DomainType
-  static UrlSchema = EncounterResource.UrlSchema
+  static readonly DomainType = EncounterResource.DomainType
+  static readonly UrlSchema = EncounterResource.UrlSchema
   readonly cloneWith = makeCloneWith(Encounter, this)
 }

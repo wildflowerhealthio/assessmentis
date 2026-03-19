@@ -13,8 +13,8 @@ import { Element } from './element'
 const TestElementElement = Element('TestElement')
 
 class TestElement extends TestElementElement.extend<TestElement>('TestElement')({}) {
-  static DomainType = TestElementElement.DomainType
-  static UrlSchema = TestElementElement.UrlSchema
+  static readonly DomainType = TestElementElement.DomainType
+  static readonly UrlSchema = TestElementElement.UrlSchema
 }
 
 describe('Element', () => {

@@ -7,6 +7,10 @@ import * as Practitioner from './practitioner'
 const practitionerArb = Arbitrary.make(Practitioner.Practitioner)
 
 describe('Practitioner model', () => {
+  test('Practitioner.DomainType is "Practitioner"', () => {
+    expect(Practitioner.Practitioner.DomainType).toBe('Practitioner')
+  })
+
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(practitionerArb, (practitioner) => {

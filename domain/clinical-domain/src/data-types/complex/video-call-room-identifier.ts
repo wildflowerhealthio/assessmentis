@@ -46,8 +46,8 @@ const VideoCallRoomIdentifierElement = Element(DomainType)
 export class VideoCallRoomIdentifier extends VideoCallRoomIdentifierElement.extend<VideoCallRoomIdentifier>(
   DomainType
 )(fields) {
-  static DomainType = VideoCallRoomIdentifierElement.DomainType
-  static UrlSchema = VideoCallRoomIdentifierElement.UrlSchema
+  static readonly DomainType = VideoCallRoomIdentifierElement.DomainType
+  static readonly UrlSchema = VideoCallRoomIdentifierElement.UrlSchema
   static readonly SYSTEM = VIDEO_CALL_ROOM_NAME_SYSTEM
 
   /**

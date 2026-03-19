@@ -106,7 +106,9 @@ export interface DiagnosticReportEncoded
  * The findings and interpretation of diagnostic tests performed on patients,
  * groups of patients, devices, and locations, and/or specimens derived from these.
  */
-export class DiagnosticReport extends DiagnosticReportResource.extend<DiagnosticReport>(DomainType)(fields) {
-  static DomainType = DiagnosticReportResource.DomainType
-  static UrlSchema = DiagnosticReportResource.UrlSchema
+export class DiagnosticReport extends DiagnosticReportResource.extend<DiagnosticReport>(DomainType)(
+  fields
+) {
+  static readonly DomainType = DiagnosticReportResource.DomainType
+  static readonly UrlSchema = DiagnosticReportResource.UrlSchema
 }

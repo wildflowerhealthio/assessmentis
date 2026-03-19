@@ -17,6 +17,14 @@ describe('Patient model', () => {
     )
   })
 
+  test('Patient.DomainType is "Patient"', () => {
+    expect(Patient.Patient.DomainType).toBe('Patient')
+  })
+
+  test('Patient.UrlSchema is defined', () => {
+    expect(Patient.Patient.UrlSchema).toBeDefined()
+  })
+
   test('property: missing required fields always fail', () => {
     // Property: Patient must have correct domainType or none
     fc.assert(

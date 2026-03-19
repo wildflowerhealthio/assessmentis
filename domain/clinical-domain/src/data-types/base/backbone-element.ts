@@ -76,8 +76,8 @@ export const BackboneElement = <TDomainType extends string>(domainType: TDomainT
   class BackboneElementMixin extends ElementBase.extend<BackboneElementMixin>('BackboneElement')(
     fields
   ) {
-    static DomainType = ElementBase.DomainType
-    static UrlSchema = ElementBase.UrlSchema
+    static readonly DomainType = ElementBase.DomainType
+    static readonly UrlSchema = ElementBase.UrlSchema
   }
   return BackboneElementMixin satisfies BackboneElementClass<
     BackboneElementMixin,

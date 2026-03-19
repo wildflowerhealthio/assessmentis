@@ -80,7 +80,7 @@ export interface PatientEncoded
  * receiving care or other health-related services.
  */
 export class Patient extends PatientResource.extend<Patient>(DomainType)(fields) {
-  static DomainType = PatientResource.DomainType
-  static UrlSchema = PatientResource.UrlSchema
+  static readonly DomainType = PatientResource.DomainType
+  static readonly UrlSchema = PatientResource.UrlSchema
   readonly cloneWith = makeCloneWith(Patient, this)
 }

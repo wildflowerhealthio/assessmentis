@@ -57,7 +57,7 @@ export interface CompositionEncoded
  * clinical attestation.
  */
 export class Composition extends CompositionResource.extend<Composition>(DomainType)(fields) {
-  static DomainType = CompositionResource.DomainType
-  static UrlSchema = CompositionResource.UrlSchema
+  static readonly DomainType = CompositionResource.DomainType
+  static readonly UrlSchema = CompositionResource.UrlSchema
   readonly cloneWith = makeCloneWith(Composition, this)
 }

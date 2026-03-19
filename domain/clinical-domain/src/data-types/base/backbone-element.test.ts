@@ -9,8 +9,8 @@ import type { BackboneElementEncoded } from './backbone-element'
 const TestBackboneBackboneElement = BackboneElement('TestBackbone')
 
 class TestBackbone extends TestBackboneBackboneElement.extend<TestBackbone>('TestBackbone')({}) {
-  static DomainType = TestBackboneBackboneElement.DomainType
-  static UrlSchema = TestBackboneBackboneElement.UrlSchema
+  static readonly DomainType = TestBackboneBackboneElement.DomainType
+  static readonly UrlSchema = TestBackboneBackboneElement.UrlSchema
 }
 
 describe('BackboneElement', () => {

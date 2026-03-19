@@ -42,6 +42,6 @@ const ObservationComponentBackboneElement = BackboneElement(DomainType)
 export class ObservationComponent extends ObservationComponentBackboneElement.extend<ObservationComponent>(
   DomainType
 )(fields) {
-  static DomainType = ObservationComponentBackboneElement.DomainType
-  static UrlSchema = ObservationComponentBackboneElement.UrlSchema
+  static readonly DomainType = ObservationComponentBackboneElement.DomainType
+  static readonly UrlSchema = ObservationComponentBackboneElement.UrlSchema
 }

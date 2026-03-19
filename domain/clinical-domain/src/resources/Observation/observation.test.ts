@@ -7,6 +7,14 @@ import { Observation } from './observation'
 const observationArb = Arbitrary.make(Observation)
 
 describe('Observation model', () => {
+  test('Observation.DomainType is "Observation"', () => {
+    expect(Observation.DomainType).toBe('Observation')
+  })
+
+  test('Observation.UrlSchema is defined', () => {
+    expect(Observation.UrlSchema).toBeDefined()
+  })
+
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(observationArb, (obs) => {

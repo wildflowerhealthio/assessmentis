@@ -24,6 +24,10 @@ const TestResource = {
 const referenceArb = Arbitrary.make(Reference)
 
 describe('Reference model', () => {
+  test('Reference.DomainType is "Reference"', () => {
+    expect(Reference.DomainType).toBe('Reference')
+  })
+
   test('should encode to encoded type', () => {
     expectTypeOf<typeof Reference.Encoded>().toExtend<ReferenceEncoded>()
   })
@@ -123,6 +127,10 @@ describe('Reference model', () => {
 const identifierArb = Arbitrary.make(Identifier)
 
 describe('Identifier model', () => {
+  test('Identifier.DomainType is "Identifier"', () => {
+    expect(Identifier.DomainType).toBe('Identifier')
+  })
+
   test('should encode to encoded type', () => {
     expectTypeOf<typeof Identifier.Encoded>().toExtend<IdentifierEncoded>()
   })

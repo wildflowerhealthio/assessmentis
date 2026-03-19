@@ -7,6 +7,14 @@ import * as Coding from './coding'
 const codingArb = Arbitrary.make(Coding.Coding)
 
 describe('Coding model', () => {
+  test('Coding.DomainType is "Coding"', () => {
+    expect(Coding.Coding.DomainType).toBe('Coding')
+  })
+
+  test('Coding.UrlSchema is defined', () => {
+    expect(Coding.Coding.UrlSchema).toBeDefined()
+  })
+
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(codingArb, (coding) => {

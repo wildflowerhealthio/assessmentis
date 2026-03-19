@@ -63,6 +63,6 @@ export interface QuestionnaireEncoded
  * data collection.
  */
 export class Questionnaire extends QuestionnaireResource.extend<Questionnaire>(DomainType)(fields) {
-  static DomainType = QuestionnaireResource.DomainType
-  static UrlSchema = QuestionnaireResource.UrlSchema
+  static readonly DomainType = QuestionnaireResource.DomainType
+  static readonly UrlSchema = QuestionnaireResource.UrlSchema
 }

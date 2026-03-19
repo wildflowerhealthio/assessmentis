@@ -30,6 +30,6 @@ export interface RangeEncoded
  * (e.g. "give the patient between 2 and 4 tablets"). Ranges are typically used in instructions.
  */
 export class Range extends RangeElement.extend<Range>(DomainType)(fields) {
-  static DomainType = RangeElement.DomainType
-  static UrlSchema = RangeElement.UrlSchema
+  static readonly DomainType = RangeElement.DomainType
+  static readonly UrlSchema = RangeElement.UrlSchema
 }

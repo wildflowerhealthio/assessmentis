@@ -30,20 +30,18 @@ const CompositionSectionBackboneElement = BackboneElement('CompositionSection')
  */
 export class CompositionSection extends CompositionSectionBackboneElement.extend<CompositionSection>(
   'CompositionSection'
-)(
-  {
-    ...fields,
-    section: Schema.optional(
-      pipe(
-        Schema.Array(
-          Schema.suspend(
-            (): Schema.Schema<CompositionSection, CompositionSectionEncoded> => CompositionSection
-          )
+)({
+  ...fields,
+  section: Schema.optional(
+    pipe(
+      Schema.Array(
+        Schema.suspend(
+          (): Schema.Schema<CompositionSection, CompositionSectionEncoded> => CompositionSection
         )
       )
-    ),
-  }
-) {
-  static DomainType = CompositionSectionBackboneElement.DomainType
-  static UrlSchema = CompositionSectionBackboneElement.UrlSchema
+    )
+  ),
+}) {
+  static readonly DomainType = CompositionSectionBackboneElement.DomainType
+  static readonly UrlSchema = CompositionSectionBackboneElement.UrlSchema
 }
