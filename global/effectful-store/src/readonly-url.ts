@@ -2,9 +2,8 @@ import { SafeRecordKey } from '@assessmentis/util'
 import { Effect, ParseResult, Schema } from 'effect'
 import type { Arbitrary, FastCheck } from 'effect'
 
-/** Strips trailing slashes from a pathname, preserving the root `/`. */
-const stripTrailingSlash = (pathname: string): string =>
-  pathname.length > 1 && pathname.endsWith('/') ? pathname.replace(/\/+$/, '') : pathname
+/** Strips all trailing slashes from a pathname. Root `/` becomes empty string. */
+const stripTrailingSlashes = (pathname: string): string => pathname.replace(/\/+$/, '')
 
 /**
  * Immutable, Schema-aware URL representation. Decomposes a URL into its
@@ -169,8 +168,8 @@ export class ReadonlyUrl extends Schema.Class<ReadonlyUrl>('ReadonlyUrl')({
    * positives like `/fhirX` matching parent `/fhir`.
    */
   hasChild(otherUrl: ReadonlyUrl): boolean {
-    const parentPath = stripTrailingSlash(this.pathname)
-    const childPath = stripTrailingSlash(otherUrl.pathname)
+    const parentPath = stripTrailingSlashes(this.pathname)
+    const childPath = stripTrailingSlashes(otherUrl.pathname)
     return (
       this.protocol === otherUrl.protocol &&
       this.host === otherUrl.host &&
@@ -199,7 +198,7 @@ export class ReadonlyUrl extends Schema.Class<ReadonlyUrl>('ReadonlyUrl')({
    * `/base/` + `/extra` produces `/base/extra`).
    */
   appendToPathname(path: string): ReadonlyUrl {
-    const base = stripTrailingSlash(this.pathname)
+    const base = stripTrailingSlashes(this.pathname)
     const trimmedPath = path.replace(/^\/+/, '')
     const joined = trimmedPath === '' ? this.pathname : `${base}/${trimmedPath}`
     return ReadonlyUrl.make({

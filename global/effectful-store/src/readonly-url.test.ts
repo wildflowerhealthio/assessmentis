@@ -5,6 +5,12 @@ import { describe, expect, test } from 'vitest'
 import { ReadonlyUrl, UriEncodedOriginUrl } from './readonly-url'
 
 const readonlyUrlArb = Arbitrary.make(ReadonlyUrl)
+const wellFormedUrlArb = Arbitrary.make(ReadonlyUrl.FromString)
+
+/** Well-formed URL arbitrary that never has double slashes in the pathname. */
+const cleanPathnameUrlArb = wellFormedUrlArb.filter(
+  (url) => !url.pathname.includes('//')
+)
 
 describe('ReadonlyUrl', () => {
   describe('base schema', () => {
@@ -79,9 +85,8 @@ describe('ReadonlyUrl', () => {
     })
 
     test('property: arbitrary values encode-decode round-trip', () => {
-      const fromStringArb = Arbitrary.make(ReadonlyUrl.FromString)
       fc.assert(
-        fc.property(fromStringArb, (url) => {
+        fc.property(wellFormedUrlArb, (url) => {
           const encoded = Schema.encodeSync(ReadonlyUrl.FromString)(url)
           const decoded = Schema.decodeSync(ReadonlyUrl.FromString)(encoded)
           expect(decoded.protocol).toBe(url.protocol)
@@ -94,9 +99,8 @@ describe('ReadonlyUrl', () => {
     })
 
     test('property: arbitrary values are always valid ReadonlyUrl instances', () => {
-      const fromStringArb = Arbitrary.make(ReadonlyUrl.FromString)
       fc.assert(
-        fc.property(fromStringArb, (url) => {
+        fc.property(wellFormedUrlArb, (url) => {
           expect(url).toBeInstanceOf(ReadonlyUrl)
           expect(url.protocol).toBeTruthy()
           expect(url.host).toBeTruthy()
@@ -162,70 +166,41 @@ describe('ReadonlyUrl', () => {
       expect(origin.hasChild(otherUrl)).toBe(false)
     })
 
-    test('origin hasChild itself', () => {
-      const url = ReadonlyUrl.make({
-        host: 'example.com',
-        pathname: '/fhir',
-        protocol: 'https:',
-      })
-      expect(url.hasChild(url)).toBe(true)
+    test('property: a ReadonlyUrl always hasChild itself with trailing slashes added or removed', () => {
+      const trailingSlashesArb = fc.stringOf(fc.constant('/'))
+      fc.assert(
+        fc.property(wellFormedUrlArb, trailingSlashesArb, (url, slashes) => {
+          const base = url.pathname.replace(/\/+$/, '')
+          const variant = ReadonlyUrl.make({
+            host: url.host,
+            password: url.password,
+            pathname: base + slashes,
+            protocol: url.protocol,
+            username: url.username,
+          })
+          expect(url.hasChild(variant)).toBe(true)
+          expect(variant.hasChild(url)).toBe(true)
+        })
+      )
     })
 
-    test('origin with trailing slash hasChild a resource URL', () => {
-      const origin = ReadonlyUrl.make({
-        host: 'example.com',
-        pathname: '/fhir/',
-        protocol: 'https:',
+    test('property: a ReadonlyUrl never hasChild itself with non-slash characters added or removed', () => {
+      const nonSlashSuffixArb = fc.stringOf(fc.constantFrom('a', 'b', 'X', '1', '-', '_'), {
+        minLength: 1,
       })
-      const resourceUrl = ReadonlyUrl.make({
-        host: 'example.com',
-        pathname: '/fhir/Patient/123',
-        protocol: 'https:',
-      })
-      expect(origin.hasChild(resourceUrl)).toBe(true)
-    })
-
-    test('origin without trailing slash hasChild a child with trailing slash', () => {
-      const origin = ReadonlyUrl.make({
-        host: 'example.com',
-        pathname: '/fhir',
-        protocol: 'https:',
-      })
-      const child = ReadonlyUrl.make({
-        host: 'example.com',
-        pathname: '/fhir/',
-        protocol: 'https:',
-      })
-      expect(origin.hasChild(child)).toBe(true)
-    })
-
-    test('trailing slash variants are treated as equal for hasChild', () => {
-      const withSlash = ReadonlyUrl.make({
-        host: 'example.com',
-        pathname: '/fhir/',
-        protocol: 'https:',
-      })
-      const withoutSlash = ReadonlyUrl.make({
-        host: 'example.com',
-        pathname: '/fhir',
-        protocol: 'https:',
-      })
-      expect(withSlash.hasChild(withoutSlash)).toBe(true)
-      expect(withoutSlash.hasChild(withSlash)).toBe(true)
-    })
-
-    test('does not false-positive on pathname prefix overlap', () => {
-      const origin = ReadonlyUrl.make({
-        host: 'example.com',
-        pathname: '/fhir',
-        protocol: 'https:',
-      })
-      const notChild = ReadonlyUrl.make({
-        host: 'example.com',
-        pathname: '/fhirX/Patient/123',
-        protocol: 'https:',
-      })
-      expect(origin.hasChild(notChild)).toBe(false)
+      fc.assert(
+        fc.property(wellFormedUrlArb, nonSlashSuffixArb, (url, suffix) => {
+          const base = url.pathname.replace(/\/+$/, '')
+          const notChild = ReadonlyUrl.make({
+            host: url.host,
+            password: url.password,
+            pathname: base + suffix,
+            protocol: url.protocol,
+            username: url.username,
+          })
+          expect(url.hasChild(notChild)).toBe(false)
+        })
+      )
     })
 
     test('property: a URL built with appendToPathname is a child of the original', () => {
@@ -287,46 +262,55 @@ describe('ReadonlyUrl', () => {
       )
     })
 
-    test('property: appending never produces double slashes at the junction', () => {
-      const segmentArb = fc.stringOf(fc.constantFrom('a', 'b', '1', '-', '_'), { minLength: 1 })
+    test('property: the result of appendToPathname(a string with no double slashes) never has double slashes', () => {
+      const noDoubleSlashArb = fc
+        .stringOf(fc.constantFrom('/', 'a', 'b', '1', '-', '_'))
+        .filter((s) => !s.includes('//'))
       fc.assert(
-        fc.property(readonlyUrlArb, segmentArb, (url, segment) => {
-          const withSlash = url.appendToPathname(`/${segment}`)
-          const withoutSlash = url.appendToPathname(segment)
-          expect(withSlash.pathname).not.toContain('//')
-          expect(withoutSlash.pathname).not.toContain('//')
+        fc.property(cleanPathnameUrlArb, noDoubleSlashArb, (url, suffix) => {
+          const result = url.appendToPathname(suffix)
+          expect(result.pathname).not.toContain('//')
         })
       )
     })
 
-    test('appending to a pathname with trailing slash produces clean path', () => {
-      const url = ReadonlyUrl.make({
-        host: 'example.com',
-        pathname: '/base/',
-        protocol: 'https:',
+    test('property: appendToPathname(a string with no double slashes) on a ReadonlyUrl with a trailing slash never has a doubled slash', () => {
+      const noDoubleSlashArb = fc
+        .stringOf(fc.constantFrom('/', 'a', 'b', '1', '-', '_'))
+        .filter((s) => !s.includes('//'))
+      const trailingSlashUrlArb = cleanPathnameUrlArb.map((url) => {
+        const base = url.pathname.replace(/\/+$/, '')
+        return ReadonlyUrl.make({
+          host: url.host,
+          password: url.password,
+          pathname: base + '/',
+          protocol: url.protocol,
+          username: url.username,
+        })
       })
-      const result = url.appendToPathname('/extra')
-      expect(result.pathname).toBe('/base/extra')
+      fc.assert(
+        fc.property(trailingSlashUrlArb, noDoubleSlashArb, (url, suffix) => {
+          const result = url.appendToPathname(suffix)
+          expect(result.pathname).not.toContain('//')
+        })
+      )
     })
 
-    test('appending a path without leading slash adds separator', () => {
-      const url = ReadonlyUrl.make({
-        host: 'example.com',
-        pathname: '/base',
-        protocol: 'https:',
-      })
-      const result = url.appendToPathname('extra')
-      expect(result.pathname).toBe('/base/extra')
-    })
-
-    test('appending to trailing-slash pathname without leading slash on suffix', () => {
-      const url = ReadonlyUrl.make({
-        host: 'example.com',
-        pathname: '/base/',
-        protocol: 'https:',
-      })
-      const result = url.appendToPathname('extra')
-      expect(result.pathname).toBe('/base/extra')
+    test('property: url.appendToPathname(x) always equals url.appendToPathname(x with any number of leading slashes)', () => {
+      const leadingSlashesArb = fc.stringOf(fc.constant('/'), { minLength: 1 })
+      const pathSuffixArb = fc.stringOf(fc.constantFrom('a', 'b', '1', '-', '_', '/'))
+      fc.assert(
+        fc.property(
+          wellFormedUrlArb,
+          leadingSlashesArb,
+          pathSuffixArb,
+          (url, slashes, suffix) => {
+            const withoutLeading = url.appendToPathname(suffix)
+            const withLeading = url.appendToPathname(slashes + suffix)
+            expect(withLeading.pathname).toBe(withoutLeading.pathname)
+          },
+        ),
+      )
     })
   })
 })
@@ -351,10 +335,8 @@ describe('UriEncodedOriginUrl', () => {
   })
 
   test('property: fromReadonlyUrl produces a valid UriEncodedOriginUrl', () => {
-    const readonlyUrlArb = Arbitrary.make(ReadonlyUrl.FromString)
-
     fc.assert(
-      fc.property(readonlyUrlArb, (url) => {
+      fc.property(wellFormedUrlArb, (url) => {
         const encoded = url.asUriComponent()
         const decode = Schema.decodeUnknownEither(UriEncodedOriginUrl)
         const result = decode(encoded)
@@ -364,10 +346,8 @@ describe('UriEncodedOriginUrl', () => {
   })
 
   test('property: fromReadonlyUrl matches asUriComponent', () => {
-    const readonlyUrlArb = Arbitrary.make(ReadonlyUrl.FromString)
-
     fc.assert(
-      fc.property(readonlyUrlArb, (url) => {
+      fc.property(wellFormedUrlArb, (url) => {
         const encoded = url.asUriComponent()
         expect(encoded).toBe(url.asUriComponent())
       })
