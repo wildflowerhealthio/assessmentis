@@ -165,13 +165,6 @@
   },
   "overrides": [
     {
-      "files": ["**/*.ts", "**/*.tsx"],
-      "rules": {
-        "tsdoc/syntax": "warn",
-      },
-      "jsPlugins": ["eslint-plugin-tsdoc"],
-    },
-    {
       "files": ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts"],
       "rules": {
         // "constructor-super": "off",
