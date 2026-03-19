@@ -14,7 +14,7 @@ import type {
 
 import type {
   AuthError,
-  BadDataError,
+  DataIntegrityError,
   Loading,
   NotFoundError,
   UnhandledError,
@@ -26,7 +26,7 @@ import type {
  */
 export type TokenStreamError =
   // oxlint-disable-next-line @typescript-eslint/no-explicit-any
-  NotFoundError<string, any> | BadDataError | AuthError | UnhandledError
+  NotFoundError<string, any> | DataIntegrityError | AuthError | UnhandledError
 
 /**
  * All possible error states when reading a credential — {@link TokenStreamError}

@@ -19,7 +19,7 @@ import type { Scope } from 'effect'
 import { pipeArguments } from 'effect/Pipeable'
 
 import type { NotFoundError } from '@assessmentis/ontology'
-import { BadDataError, Loading, UnhandledError } from '@assessmentis/ontology'
+import { DataIntegrityError, Loading, UnhandledError } from '@assessmentis/ontology'
 import { StreamEither } from '@assessmentis/util'
 
 import type {
@@ -59,7 +59,7 @@ export interface DocumentStoreCredentialConstructor<
     identity: TIdentifier
   ): Effect.Effect<
     TCredentialToken,
-    BadDataError | NotFoundError<'Document', { path: readonly string[] }> | UnhandledError,
+    DataIntegrityError | NotFoundError<'Document', { path: readonly string[] }> | UnhandledError,
     DocumentStore
   >
 
@@ -98,7 +98,7 @@ export abstract class DocumentStoreLiveCredential<
     path: DocumentPath
   ): Effect.Effect<
     T,
-    BadDataError | NotFoundError<'Document', { path: readonly string[] }> | UnhandledError,
+    DataIntegrityError | NotFoundError<'Document', { path: readonly string[] }> | UnhandledError,
     DocumentStore
   > {
     return Effect.flatMap(DocumentStore, (ds) =>
@@ -107,7 +107,7 @@ export abstract class DocumentStoreLiveCredential<
           Schema.decodeUnknown(schema)(data).pipe(
             Effect.mapError(
               (cause) =>
-                new BadDataError({
+                new DataIntegrityError({
                   cause,
                   message: `Error decoding credential at ${path.join('/')}`,
                 })
@@ -254,7 +254,7 @@ export const makeDocumentStoreCredentialRepository = <
             Schema.decodeUnknown(CredentialClass.schema)(data).pipe(
               Effect.mapError(
                 (cause) =>
-                  new BadDataError({
+                  new DataIntegrityError({
                     cause,
                     message: `Error decoding credential at ${credential.path.join('/')}`,
                   })

@@ -13,7 +13,7 @@ import {
 } from 'effect'
 import type { Scope } from 'effect'
 
-import { BadDataError, NotFoundError } from '@assessmentis/ontology'
+import { DataIntegrityError, NotFoundError } from '@assessmentis/ontology'
 import type { UnhandledError } from '@assessmentis/ontology'
 import { DocumentStore, Org } from '@assessmentis/platform-domain'
 import type { OrgSlug } from '@assessmentis/platform-domain'
@@ -38,7 +38,7 @@ const createOrgPubSub = PubSub.sliding<
       Org,
       | NoSelectedOrgError
       | NotFoundError<'Org', { orgSlug: OrgSlug }>
-      | BadDataError
+      | DataIntegrityError
       | UnhandledError
     >
   >
@@ -81,7 +81,7 @@ class OrgService extends Context.Tag('OrgService')<
         Org,
         | NoSelectedOrgError
         | NotFoundError<'Org', { orgSlug: OrgSlug }>
-        | BadDataError
+        | DataIntegrityError
         | UnhandledError
       >,
       never,
@@ -92,7 +92,7 @@ class OrgService extends Context.Tag('OrgService')<
       Org,
       | NoSelectedOrgError
       | NotFoundError<'Org', { orgSlug: OrgSlug }>
-      | BadDataError
+      | DataIntegrityError
       | UnhandledError
     >
     /** Shuts down both PubSubs and joins the daemon fiber. */
@@ -100,11 +100,11 @@ class OrgService extends Context.Tag('OrgService')<
   }
 >() {}
 
-const decodeOrg = (data: unknown): Effect.Effect<Org, BadDataError> =>
+const decodeOrg = (data: unknown): Effect.Effect<Org, DataIntegrityError> =>
   Schema.decodeUnknown(Org)(data).pipe(
     Effect.mapError(
       (cause) =>
-        new BadDataError({
+        new DataIntegrityError({
           cause,
           message: "The org model couldn't be parsed",
         })
@@ -126,7 +126,7 @@ const startOrgService = (
         Org,
         | NoSelectedOrgError
         | NotFoundError<'Org', { orgSlug: OrgSlug }>
-        | BadDataError
+        | DataIntegrityError
         | UnhandledError
       >
     >

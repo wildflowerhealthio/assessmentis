@@ -8,7 +8,7 @@ import { DailyCoApiKeyLiveCredential } from '@assessmentis/daily-co-infrastructu
 import type {
   AuthError,
   AuthzError,
-  BadDataError,
+  DataIntegrityError,
   NotFoundError,
   UnhandledError,
 } from '@assessmentis/ontology'
@@ -55,7 +55,7 @@ export const dailycoEffect = (
   | DailyCoError
   | AuthError
   | AuthzError
-  | BadDataError
+  | DataIntegrityError
   | NotFoundError<'Document', { path: readonly string[] }>
   | UnhandledError,
   OrgUserService | CurrentOrg | DocumentStore
