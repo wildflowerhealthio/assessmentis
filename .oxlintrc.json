@@ -1,5 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "ignorePatterns": ["**/tapes/**/*", "dist/**", "coverage/**", "vendor/**", "test/snapshots/**"],
   "plugins": ["typescript", "react", "unicorn", "import"],
   "categories": {
     "correctness": "error",
@@ -11,7 +12,7 @@
   },
   "env": {
     "builtin": true,
-    "es2024": true
+    "es2024": true,
   },
   "options": {
     "typeAware": true,
@@ -32,15 +33,15 @@
     "@typescript-eslint/no-empty-object-type": [
       "error",
       {
-        "allowInterfaces": "always"
-      }
+        "allowInterfaces": "always",
+      },
     ],
     "no-unused-vars": [
       "error",
       {
         "argsIgnorePattern": "^_",
-        "varsIgnorePattern": "^_"
-      }
+        "varsIgnorePattern": "^_",
+      },
     ],
     "react/only-export-components": [
       "error",
@@ -56,9 +57,9 @@
           "handle",
           "links",
           "meta",
-          "shouldRevalidate"
-        ]
-      }
+          "shouldRevalidate",
+        ],
+      },
     ],
 
     // Extra rules
@@ -183,15 +184,15 @@
         "no-with": "off",
         "prefer-const": "error",
         "prefer-rest-params": "error",
-        "prefer-spread": "error"
-      }
+        "prefer-spread": "error",
+      },
     },
     {
       "files": ["**/*.ts", "**/*.tsx"],
       "rules": {
-        "tsdoc/syntax": "warn"
+        "tsdoc/syntax": "warn",
       },
-      "jsPlugins": ["eslint-plugin-tsdoc"]
+      "jsPlugins": ["eslint-plugin-tsdoc"],
     },
     {
       "files": ["**/*.test.ts", "**/*.test.tsx", "**/test/**"],
@@ -201,32 +202,32 @@
         "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/explicit-function-return-type": "off",
         "no-shadow": "off",
-        "no-void": "off"
-      }
+        "no-void": "off",
+      },
     },
     {
       "files": ["**/*.tsx"],
       "rules": {
-        "no-ternary": "off"
-      }
+        "no-ternary": "off",
+      },
     },
     {
       "files": ["apps/frontend/**"],
       "rules": {
-        "no-console": "off"
-      }
+        "no-console": "off",
+      },
     },
     {
       "files": ["apps/frontend/app/routes/**"],
       "rules": {
-        "import/no-default-export": "off"
-      }
+        "import/no-default-export": "off",
+      },
     },
     {
       "files": ["apps/aws_infra/**"],
       "rules": {
-        "no-new": "off"
-      }
-    }
-  ]
+        "no-new": "off",
+      },
+    },
+  ],
 }
