@@ -94,7 +94,7 @@ This behavior applies both in the resolver pipeline (`filterReadyOrigins`) and i
 
 ### Resolver Pipeline
 
-The Hub's resolver processes batched request entries through a pure pipeline that separates routing decisions from effectful dispatch. Each step uses `SideEffect` — a lightweight container pairing a value with deferred `Effect<void>` actions — so that routing remains synchronous while accumulating side effects for later execution.
+The Hub's resolver processes batched request entries through a pure pipeline that separates routing decisions from effectful dispatch. Each step uses `DeferredActionWriter` — a lightweight container pairing a value with deferred `Effect<void>` actions — so that routing remains synchronous while accumulating side effects for later execution.
 
 The pipeline stages are:
 

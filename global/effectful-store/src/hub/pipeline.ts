@@ -11,7 +11,7 @@ import {
 } from 'effect'
 
 import { UnhandledError } from '@assessmentis/ontology'
-import { SideEffect } from '@assessmentis/util'
+import { DeferredActionWriter } from '@assessmentis/util'
 
 import * as Origin from '../origin'
 import type * as Resource from '../resource'
@@ -32,7 +32,7 @@ export const fanOutSearches = <Classes extends Resource.AnyDomainClass>(
   entries: readonly AnyEntry<Classes>[],
   originStates: HubState,
   stateChanges: Stream.Stream<Either.Either<HubState, HubError>>
-): SideEffect.SideEffect<readonly OriginBoundEntry<Classes>[]> => {
+): DeferredActionWriter.DeferredActionWriter<readonly OriginBoundEntry<Classes>[]> => {
   const globalSearches = entries.filter(
     (
       entry
@@ -53,7 +53,7 @@ export const fanOutSearches = <Classes extends Resource.AnyDomainClass>(
       fanOutSearch(entry.request, originStates, stateChanges)
     )
   )
-  return SideEffect.of(otherEntries, searchActions)
+  return DeferredActionWriter.of(otherEntries, searchActions)
 }
 
 /**
@@ -64,7 +64,7 @@ export const fanOutSearches = <Classes extends Resource.AnyDomainClass>(
 export const groupByOrigin = <Classes extends Resource.AnyDomainClass>(
   entries: readonly OriginBoundEntry<Classes>[],
   originStates: HubState
-): SideEffect.SideEffect<
+): DeferredActionWriter.DeferredActionWriter<
   readonly {
     origin: Origin.AnyState<never>
     entries: AnyEntry<Classes>[]
@@ -90,7 +90,7 @@ export const groupByOrigin = <Classes extends Resource.AnyDomainClass>(
       )
     )
   )
-  return SideEffect.of(
+  return DeferredActionWriter.of(
     matched,
     unmatched.flatMap(({ key, entries: originEntries }) =>
       originEntries.map((entry) =>
@@ -113,7 +113,7 @@ export const filterReadyOrigins = <Classes extends Resource.AnyDomainClass>(
     entries: AnyEntry<Classes>[]
   }[],
   stateChanges: Stream.Stream<Either.Either<HubState, HubError>>
-): SideEffect.SideEffect<
+): DeferredActionWriter.DeferredActionWriter<
   readonly {
     origin: Origin.Ready<never>
     entries: AnyEntry<Classes>[]
@@ -167,7 +167,7 @@ export const filterReadyOrigins = <Classes extends Resource.AnyDomainClass>(
     entries.map((entry) => failEntry(origin.errorStatus)(entry))
   )
 
-  return SideEffect.of(ready, [...loadingActions, ...errorActions])
+  return DeferredActionWriter.of(ready, [...loadingActions, ...errorActions])
 }
 
 /**
@@ -178,7 +178,7 @@ export const filterReadyOrigins = <Classes extends Resource.AnyDomainClass>(
 export const dispatchGroupToResolver = <Classes extends Resource.AnyDomainClass>(
   origin: Origin.Ready<never>,
   entries: AnyEntry<Classes>[]
-): readonly SideEffect.EffectAction[] => {
+): readonly DeferredActionWriter.Action[] => {
   const [unsupported, valid] = pipe(
     entries,
     Array.partition((entry) => Origin.supports(origin, entry.request.klass))
@@ -212,8 +212,8 @@ export const dispatchToResolvers = <Classes extends Resource.AnyDomainClass>(
     origin: Origin.Ready<never>
     entries: AnyEntry<Classes>[]
   }[]
-): SideEffect.SideEffect<void> =>
-  SideEffect.of<void>(
+): DeferredActionWriter.DeferredActionWriter<void> =>
+  DeferredActionWriter.of<void>(
     undefined,
     resolverGroups.flatMap(({ origin, entries }) => dispatchGroupToResolver(origin, entries))
   )

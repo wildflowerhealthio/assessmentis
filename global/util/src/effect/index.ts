@@ -1,2 +1,2 @@
 export * from './deep-data-struct'
-export * from './side-effect'
+export * from './deferred-action-writer'
