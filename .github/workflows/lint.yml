@@ -26,8 +26,7 @@ jobs:
         shell: bash
         run: |
           npm install -g @typescript/native-preview
-          NODE_ENV=development npm ci --include=dev
-          npm ci --workspaces
+          NODE_ENV=development npm install
 
       - name: Run Oxlint (Changed Files)
         shell: bash
