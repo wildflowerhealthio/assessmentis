@@ -1,111 +1,28 @@
 import type { Arbitrary, FastCheck } from 'effect'
-import { ParseResult, Schema } from 'effect'
+import { Schema } from 'effect'
 
 /**
- * An Effect Schema that transforms a `YYYY-MM-DD` string into a `Date`
- * set to midnight. Designed for timezone-independent dates (e.g. birthdays)
- * where the time component is meaningless.
+ * An Effect Schema for a `YYYY-MM-DD` date string. Validates the format
+ * via regex but does not transform to a `Date` object. Designed for
+ * timezone-independent dates (e.g. birthdays) where the time component
+ * is meaningless.
  *
- * Rejects strings that don't match the `YYYY-MM-DD` pattern and dates
- * whose time component is not midnight (local or UTC). Includes custom
- * arbitraries constrained to years 1900–2100.
+ * The decoded type is a branded string (`string & Brand<"TimelessDate">`),
+ * not a plain string, so it cannot be confused with arbitrary strings.
+ *
+ * Includes custom arbitraries constrained to years 1900–2100.
  */
-export const TimelessDateFromString = Schema.transformOrFail(
-  // Source schema
-  Schema.String.pipe(Schema.pattern(/^\d{4}-\d{2}-\d{2}$/)).annotations({
+export const TimelessDateFromString = Schema.String.pipe(
+  Schema.pattern(/^\d{4}-\d{2}-\d{2}$/),
+  Schema.annotations({
     arbitrary: (): Arbitrary.LazyArbitrary<string> => (fc: typeof FastCheck) =>
       fc
         .date()
         .filter((date) => date.getFullYear() >= 1900 && date.getFullYear() <= 2100)
         .map((date) => date.toISOString().slice(0, 10)),
   }),
-  // Target schema
-  Schema.DateFromSelf.annotations({
-    arbitrary: (): Arbitrary.LazyArbitrary<Date> => (fc: typeof FastCheck) =>
-      fc
-        .date()
-        .filter((date) => date.getFullYear() >= 1900 && date.getFullYear() <= 2100)
-        .map((date) => {
-          date.setUTCHours(0, 0, 0, 0)
-          return date
-        }),
-  }),
-  {
-    // Optional but you get better error messages from TypeScript
-    strict: true,
-    // Transformation to convert the output of the source schema (string)
-    // Into the input of the target schema (Date)
-    decode: (str) => {
-      // Check if the string matches YYYY-MM-DD format
-      const datePattern = /^\d{4}-\d{2}-\d{2}$/
-      if (!datePattern.test(str)) {
-        return ParseResult.fail(
-          new ParseResult.Type(Schema.String.ast, str, 'String must be in YYYY-MM-DD format')
-        )
-      }
-
-      const parsed = Date.parse(str)
-      if (isNaN(parsed)) {
-        return ParseResult.fail(
-          new ParseResult.Type(Schema.String.ast, str, 'String must be a valid date')
-        )
-      }
-
-      const date = new Date(parsed)
-
-      // Verify the time is exactly midnight (00:00:00.000)
-      // Check both local time and UTC
-      const isLocalMidnight =
-        date.getHours() === 0 &&
-        date.getMinutes() === 0 &&
-        date.getSeconds() === 0 &&
-        date.getMilliseconds() === 0
-
-      const isUTCMidnight =
-        date.getUTCHours() === 0 &&
-        date.getUTCMinutes() === 0 &&
-        date.getUTCSeconds() === 0 &&
-        date.getUTCMilliseconds() === 0
-
-      if (!isLocalMidnight && !isUTCMidnight) {
-        return ParseResult.fail(
-          new ParseResult.Type(
-            Schema.String.ast,
-            str,
-            'Date must have time component of 00:00:00.000 (local or UTC)'
-          )
-        )
-      }
-
-      return ParseResult.succeed(date)
-    },
-
-    // Reverse transformation
-    encode: (date) => {
-      // Verify the date has midnight time (local or UTC)
-      const isLocalMidnight =
-        date.getHours() === 0 &&
-        date.getMinutes() === 0 &&
-        date.getSeconds() === 0 &&
-        date.getMilliseconds() === 0
-
-      const isUTCMidnight =
-        date.getUTCHours() === 0 &&
-        date.getUTCMinutes() === 0 &&
-        date.getUTCSeconds() === 0 &&
-        date.getUTCMilliseconds() === 0
-
-      if (!isLocalMidnight && !isUTCMidnight) {
-        return ParseResult.fail(
-          new ParseResult.Type(
-            Schema.DateFromSelf.ast,
-            date,
-            'Date must have time component of 00:00:00.000 (local or UTC)'
-          )
-        )
-      }
-
-      return ParseResult.succeed(date.toISOString().slice(0, 10))
-    },
-  }
+  Schema.brand('TimelessDate')
 )
+
+/** The branded type for a validated `YYYY-MM-DD` date string. */
+export type TimelessDate = typeof TimelessDateFromString.Type

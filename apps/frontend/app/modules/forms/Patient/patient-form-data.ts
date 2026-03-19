@@ -9,7 +9,7 @@ import {
 import type { Resource } from '@assessmentis/effectful-store'
 
 const fields = {
-  birthDate: Schema.optional(Schema.DateFromSelf),
+  birthDate: Schema.optional(Schema.String),
   familyName: Schema.String,
   gender: Schema.optional(AdministrativeGender),
   givenName: Schema.String,

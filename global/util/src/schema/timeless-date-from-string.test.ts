@@ -8,8 +8,8 @@ describe('TimelessDateFromString', () => {
     it('should successfully decode a valid YYYY-MM-DD date string', () => {
       const result = Schema.decodeUnknownSync(TimelessDateFromString)('2025-12-29')
 
-      expect(result).toBeInstanceOf(Date)
-      expect(result.toISOString().slice(0, 10)).toBe('2025-12-29')
+      expect(result).toBe('2025-12-29')
+      expect(typeof result).toBe('string')
     })
 
     it('should fail to decode an invalid date string (not YYYY-MM-DD format)', () => {
@@ -24,44 +24,19 @@ describe('TimelessDateFromString', () => {
       }).toThrow(/Expected a string matching the pattern/)
     })
 
-    it('should fail to decode an invalid date string', () => {
+    it('should fail to decode a non-string value', () => {
       expect(() => {
-        Schema.decodeUnknownSync(TimelessDateFromString)('2025-13-45')
-      }).toThrow(/String must be a valid date/)
+        Schema.decodeUnknownSync(TimelessDateFromString)(12345)
+      }).toThrow()
     })
   })
 
   describe('encode', () => {
-    it('should successfully encode a Date with midnight time (UTC)', () => {
-      const date = new Date('2025-12-29T00:00:00.000Z')
-      const result = Schema.encodeSync(TimelessDateFromString)(date)
+    it('should successfully encode a branded TimelessDate string', () => {
+      const decoded = Schema.decodeUnknownSync(TimelessDateFromString)('2025-12-29')
+      const result = Schema.encodeSync(TimelessDateFromString)(decoded)
 
       expect(result).toBe('2025-12-29')
-    })
-
-    it('should successfully encode a Date with midnight time (local)', () => {
-      // Create a date at local midnight
-      // Month is 0-indexed
-      const date = new Date(2025, 11, 29, 0, 0, 0, 0)
-      const result = Schema.encodeSync(TimelessDateFromString)(date)
-
-      expect(result).toBe('2025-12-29')
-    })
-
-    it('should fail to encode a Date with non-midnight time', () => {
-      const date = new Date('2025-12-29T14:30:00.000Z')
-
-      expect(() => {
-        Schema.encodeSync(TimelessDateFromString)(date)
-      }).toThrow(/Date must have time component of 00:00:00.000/)
-    })
-
-    it('should fail to encode a Date with partial midnight time (non-zero milliseconds)', () => {
-      const date = new Date('2025-12-29T00:00:00.123Z')
-
-      expect(() => {
-        Schema.encodeSync(TimelessDateFromString)(date)
-      }).toThrow(/Date must have time component of 00:00:00.000/)
     })
   })
 })
