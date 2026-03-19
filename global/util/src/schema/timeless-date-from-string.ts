@@ -33,6 +33,7 @@ export const TimelessDateFromString = Schema.String.pipe(
     ) {
       return 'Expected a valid calendar date'
     }
+    return undefined
   }),
   Schema.annotations({
     arbitrary: (): Arbitrary.LazyArbitrary<string> => (fc: typeof FastCheck) =>
