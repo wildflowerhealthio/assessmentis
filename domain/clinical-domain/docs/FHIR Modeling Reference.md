@@ -51,21 +51,25 @@ Each base type is a generic factory function that returns a `Schema.Class` subcl
 ```typescript
 // Element(domainType) → Schema.Class with static DomainType, UrlSchema
 const ElementMixin = Element('Patient')
-// BackboneElement(domainType) → Schema.Class composed with Element via MergeClasses
+// BackboneElement(domainType) → Schema.Class composed with Element via .extend
 const BackboneMixin = BackboneElement('PatientContact')
 // Resource(domainType) → Schema.Class with all Resource fields
 const ResourceMixin = Resource('Patient')
 ```
 
-Consumer pattern — pass the mixin and fields to `MergeClasses`:
+Consumer pattern — use the mixin's `.extend` method to add fields, then copy statics:
 
 ```typescript
-export class Patient extends MergeClasses<Patient>('Patient')(Resource('Patient'), patientFields) {}
+const resourceMixin = Resource('Patient')
+export class Patient extends resourceMixin.extend<Patient>('Patient')(patientFields) {
+  static DomainType = resourceMixin.DomainType
+  static UrlSchema = resourceMixin.UrlSchema
+}
 ```
 
 The factory function and a same-name type alias coexist (TypeScript declaration merging): `Element<'Patient'>` gives the decoded type, `Element('Patient')` gives the mixin class.
 
-Extension is a special case — defined in `ElementAndExtension.ts` to break circular imports. It uses `MergeClasses` to compose Element fields with DatatypeChoice value[x] fields.
+Extension is a special case — defined in `ElementAndExtension.ts` to break circular imports. It uses `.extend` to compose Element fields with DatatypeChoice value[x] fields.
 
 ## Schema structure conventions
 
