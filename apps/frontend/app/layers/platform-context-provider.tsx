@@ -17,7 +17,7 @@ import {
   LoadedGapiHealthcareClient,
   makeGoogleFhirOriginType,
 } from '@assessmentis/google-fhir-web-infrastructure'
-import type { BadDataError, NotFoundError } from '@assessmentis/ontology'
+import type { DataIntegrityError, NotFoundError } from '@assessmentis/ontology'
 import { UnhandledError } from '@assessmentis/ontology'
 import {
   AuthDataService,
@@ -112,10 +112,10 @@ const makeActiveOrgSnapshotStream = (
       Match.typeTags<
         | NoSelectedOrgError
         | NotFoundError<'Org', { orgSlug: OrgSlug }>
-        | BadDataError
+        | DataIntegrityError
         | UnhandledError
       >()({
-        BadDataError: (e) => UnhandledError.fromUnknown(e),
+        DataIntegrityError: (e) => UnhandledError.fromUnknown(e),
         NoSelectedOrgError: (e) => e as NoSelectedOrgError | UnhandledError,
         NotFoundError: (e) => UnhandledError.fromUnknown(e),
         UnhandledError: (e) => e,

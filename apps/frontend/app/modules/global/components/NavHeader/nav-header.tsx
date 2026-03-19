@@ -3,7 +3,7 @@ import type { Effect, Scope } from 'effect'
 import React, { Suspense, useMemo } from 'react'
 import { Await } from 'react-router'
 
-import { AuthError, BadDataError, NotFoundError, UnhandledError } from '@assessmentis/ontology'
+import { AuthError, DataIntegrityError, NotFoundError, UnhandledError } from '@assessmentis/ontology'
 import { NoSelectedOrgError } from '@assessmentis/platform-domain'
 import type { Org, OrgSlug, User, UserId } from '@assessmentis/platform-domain'
 import { useStream } from '@assessmentis/react-util'
@@ -24,7 +24,7 @@ interface NavHeaderProps {
       | NoSelectedOrgError
       | UnhandledError
       | AuthError
-      | BadDataError
+      | DataIntegrityError
       | NotFoundError<'Org', { orgSlug: OrgSlug }>
     >,
     never,
@@ -33,7 +33,7 @@ interface NavHeaderProps {
   userStream: Stream.Stream<
     Either.Either<
       User,
-      UnhandledError | AuthError | BadDataError | NotFoundError<'User', { userId: UserId }>
+      UnhandledError | AuthError | DataIntegrityError | NotFoundError<'User', { userId: UserId }>
     >,
     never,
     Scope.Scope
@@ -50,7 +50,7 @@ const NavHeaderContainer = ({
     const optionalOrgStream: Stream.Stream<
       Either.Either<
         Option.Option<Org>,
-        AuthError | UnhandledError | BadDataError | NotFoundError<'Org', { orgSlug: OrgSlug }>
+        AuthError | UnhandledError | DataIntegrityError | NotFoundError<'Org', { orgSlug: OrgSlug }>
       >,
       never,
       Scope.Scope
@@ -85,7 +85,7 @@ const NavHeaderContainer = ({
           onLeft: (error) => {
             if (error instanceof AuthError) {
               return <TextHeader title="Please Login" onClick={signIn} />
-            } else if (error instanceof BadDataError) {
+            } else if (error instanceof DataIntegrityError) {
               return <TextHeader title="Data Error - Contact Support" />
             } else if (error instanceof NotFoundError && error.resourceType === 'User') {
               return <TextHeader title="User not found - Contact Support" />

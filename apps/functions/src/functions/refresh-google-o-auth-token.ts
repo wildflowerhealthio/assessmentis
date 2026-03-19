@@ -55,7 +55,7 @@ export const refreshCredentialEffect = (
         // Read the current credential to get the refresh token
         const currentToken = yield* GoogleUserOAuthLiveCredential.readOnce(identifier).pipe(
           Effect.mapError((err) => {
-            if (err._tag === 'BadDataError') {
+            if (err._tag === 'DataIntegrityError') {
               return new UnhandledError({
                 cause: err,
                 message: err.message,

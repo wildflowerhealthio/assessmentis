@@ -51,7 +51,7 @@ This ordering front-loads what matters most in a hover tooltip: _what is it?_ th
  *   unknownVal,
  *   refineOrFail(
  *     isString,
- *     (a) => new BadDataError({ message: `Expected string, got ${typeof a}` })
+ *     (a) => new DataIntegrityError({ message: `Expected string, got ${typeof a}` })
  *   )
  * )
  * ```

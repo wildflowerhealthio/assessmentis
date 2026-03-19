@@ -1,7 +1,7 @@
 import { Duration, Effect, Schema } from 'effect'
 import type { Either, Scope, SubscriptionRef } from 'effect'
 
-import type { BadDataError, NotFoundError, UnhandledError } from '@assessmentis/ontology'
+import type { DataIntegrityError, NotFoundError, UnhandledError } from '@assessmentis/ontology'
 import { DocumentStoreLiveCredential } from '@assessmentis/platform-domain'
 import type {
   CredentialError,
@@ -59,7 +59,7 @@ export class DailyCoApiKeyLiveCredential extends DocumentStoreLiveCredential<
     identity: Omit<DailyCoApiKeyIdentifier, '_tag'>
   ): Effect.Effect<
     DailyCoApiKeyToken,
-    BadDataError | NotFoundError<'Document', { path: readonly string[] }> | UnhandledError,
+    DataIntegrityError | NotFoundError<'Document', { path: readonly string[] }> | UnhandledError,
     DocumentStore
   > {
     return DocumentStoreLiveCredential._readOnce(

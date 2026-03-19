@@ -5,7 +5,7 @@ import type { JSX } from 'react'
 
 import {
   AuthError,
-  BadDataError,
+  DataIntegrityError,
   ExternalAssertionError,
   NotFoundError,
   UnhandledError,
@@ -31,7 +31,7 @@ const useBestError = ({
       | NoSelectedOrgError
       | UnhandledError
       | AuthError
-      | BadDataError
+      | DataIntegrityError
       | NotFoundError<'Org', { orgSlug: OrgSlug }>
     >,
     never,
@@ -40,7 +40,7 @@ const useBestError = ({
   userStream: Stream.Stream<
     Either.Either<
       User,
-      UnhandledError | AuthError | BadDataError | NotFoundError<'User', { userId: UserId }>
+      UnhandledError | AuthError | DataIntegrityError | NotFoundError<'User', { userId: UserId }>
     >,
     never,
     Scope.Scope
@@ -91,7 +91,7 @@ export const ErrorHandlerBody = ({
       | NoSelectedOrgError
       | UnhandledError
       | AuthError
-      | BadDataError
+      | DataIntegrityError
       | NotFoundError<'Org', { orgSlug: OrgSlug }>
     >,
     never,
@@ -100,7 +100,7 @@ export const ErrorHandlerBody = ({
   userStream: Stream.Stream<
     Either.Either<
       User,
-      UnhandledError | AuthError | BadDataError | NotFoundError<'User', { userId: UserId }>
+      UnhandledError | AuthError | DataIntegrityError | NotFoundError<'User', { userId: UserId }>
     >,
     never,
     Scope.Scope
@@ -142,7 +142,7 @@ export const ErrorHandlerBody = ({
         <CatchallErrorActions error={error} resetErrorBoundary={resetErrorBoundary} />
       </>
     )
-  } else if (error instanceof BadDataError) {
+  } else if (error instanceof DataIntegrityError) {
     errorContent = (
       <>
         <h1 style={{ textAlign: 'center' }}>Data is Incorrect - Contact Support</h1>
