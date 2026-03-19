@@ -7,6 +7,7 @@ import {
   HashMap,
   Option,
   Readable,
+  Schedule,
   Schema,
   Stream,
   Subscribable,
@@ -274,8 +275,17 @@ export const makeDocumentStoreCredentialRepository = <
             )
           )
 
+          const retrySchedule = pipe(
+            Schedule.exponential(Duration.seconds(5)),
+            Schedule.intersect(Schedule.recurs(5)),
+            Schedule.upTo(CredentialClass.refreshBuffer)
+          )
+
           const safeRefresh = credential.refresh.pipe(
-            Effect.tapError((e) => Effect.logError('Credential refresh failed:', e))
+            Effect.retry(retrySchedule),
+            Effect.tapError((e) =>
+              Effect.logError('Credential refresh failed after all retry attempts:', e)
+            )
           )
 
           return Effect.fork(
