@@ -2,6 +2,8 @@ import { Suspense } from 'react'
 import { Predicate } from 'effect'
 import { Await } from 'react-router'
 
+import { ResourceAwaitError } from '../modules/common/components/ResourceAwaitError/resource-await-error'
+
 import { Location } from '@assessmentis/clinical-domain'
 import { useEitherStream } from '@assessmentis/react-util'
 
@@ -51,7 +53,7 @@ export default function LocationDetailPage({ params }: Route.ComponentProps): Re
 
   return (
     <Suspense fallback={loader}>
-      <Await resolve={locationPromise}>
+      <Await resolve={locationPromise} errorElement={<ResourceAwaitError />}>
         {(location) => {
           const displayName = getLocationDisplayName(location)
           const identifier = location.identifier?.[0]

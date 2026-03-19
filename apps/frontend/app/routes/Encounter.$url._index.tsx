@@ -1,6 +1,6 @@
 import { Effect, Schema, pipe } from 'effect'
 import { Suspense, useMemo } from 'react'
-import { Await, useAsyncError } from 'react-router'
+import { Await } from 'react-router'
 
 import { ClinicalDomainHub, Encounter } from '@assessmentis/clinical-domain'
 import { NotFoundError } from '@assessmentis/ontology'
@@ -9,6 +9,7 @@ import { useEffectTs } from '@assessmentis/react-util'
 import '../traits/BreadcrumbLabel/implementations/encounter'
 import '../traits/Link/implementations/encounter'
 
+import { ResourceAwaitError } from '../modules/common/components/ResourceAwaitError/resource-await-error'
 import { getFullEncounter } from '@/modules/interview-call/actions/get-full-encounter'
 import InterviewCall from '@/modules/interview-call/features/InterviewCall/interview-call'
 
@@ -20,14 +21,6 @@ import { runEffectSync } from '../run-effect-sync'
 import type { Route } from './+types/Encounter.$url._index'
 
 const tryDecodeEncounterUrl = Schema.decode(Encounter.UrlSchema)
-
-const EncounterError = (): React.JSX.Element => {
-  const error = useAsyncError()
-  if (error instanceof NotFoundError) {
-    return <div>Encounter not found</div>
-  }
-  return <div>Error loading encounter: {String(error)}</div>
-}
 
 export default function EncounterPage({ params }: Route.ComponentProps): React.JSX.Element {
   const hub = useHub()
@@ -65,7 +58,7 @@ export default function EncounterPage({ params }: Route.ComponentProps): React.J
 
   return (
     <Suspense fallback={<div>Loading interview call...</div>}>
-      <Await resolve={encounterPromise} errorElement={<EncounterError />}>
+      <Await resolve={encounterPromise} errorElement={<ResourceAwaitError />}>
         {(encounterData) => (
           <ResourceDetailPage
             editTo={`${encounterData.encounter.Link}/edit`}

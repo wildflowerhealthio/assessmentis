@@ -1,6 +1,8 @@
 import { Suspense } from 'react'
 import { Await } from 'react-router'
 
+import { ResourceAwaitError } from '../modules/common/components/ResourceAwaitError/resource-await-error'
+
 import { Composition } from '@assessmentis/clinical-domain'
 import { useEitherStream } from '@assessmentis/react-util'
 
@@ -56,7 +58,7 @@ export default function CompositionDetailsPage({
 
   return (
     <Suspense fallback={loader}>
-      <Await resolve={compositionLoader}>
+      <Await resolve={compositionLoader} errorElement={<ResourceAwaitError />}>
         {(composition) => {
           const displayName = getCompositionDisplayName(composition)
           return (

@@ -1,6 +1,8 @@
 import { Suspense } from 'react'
 import { Await } from 'react-router'
 
+import { ResourceAwaitError } from '../modules/common/components/ResourceAwaitError/resource-await-error'
+
 import { Observation } from '@assessmentis/clinical-domain'
 import { useEitherStream } from '@assessmentis/react-util'
 
@@ -63,7 +65,7 @@ export default function ObservationDetailPage({ params }: Route.ComponentProps):
 
   return (
     <Suspense fallback={loader}>
-      <Await resolve={observationPromise}>
+      <Await resolve={observationPromise} errorElement={<ResourceAwaitError />}>
         {(observation) => {
           const displayName = getObservationDisplayName(observation)
           const observationDetails = runEffectSyncFlat(formatObservationDetails(observation))

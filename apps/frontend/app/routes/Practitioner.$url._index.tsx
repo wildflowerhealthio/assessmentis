@@ -1,6 +1,8 @@
 import { Suspense } from 'react'
 import { Await } from 'react-router'
 
+import { ResourceAwaitError } from '../modules/common/components/ResourceAwaitError/resource-await-error'
+
 import { Practitioner } from '@assessmentis/clinical-domain'
 import { useEitherStream } from '@assessmentis/react-util'
 
@@ -60,7 +62,7 @@ export default function PractitionerDetailPage({
 
   return (
     <Suspense fallback={loader}>
-      <Await resolve={practitionerPromise}>
+      <Await resolve={practitionerPromise} errorElement={<ResourceAwaitError />}>
         {(practitioner) => (
           <ResourceDetailPage
             editTo={`${practitioner.Link}/edit`}

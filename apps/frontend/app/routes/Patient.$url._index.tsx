@@ -9,6 +9,8 @@ import 'react-loading-skeleton/dist/skeleton.css'
 
 import { Await } from 'react-router'
 
+import { ResourceAwaitError } from '../modules/common/components/ResourceAwaitError/resource-await-error'
+
 import { Patient } from '@assessmentis/clinical-domain'
 import { useEitherStream } from '@assessmentis/react-util'
 
@@ -43,7 +45,7 @@ export default function PatientDetailPage({ params }: Route.ComponentProps): Rea
 
   return (
     <Suspense fallback={loader}>
-      <Await resolve={patientPromise}>
+      <Await resolve={patientPromise} errorElement={<ResourceAwaitError />}>
         {(patient) => {
           const displayName = getPatientDisplayName(patient)
           const patientDemographicItems = runEffectSyncFlat(formatPatientDemographics(patient))
