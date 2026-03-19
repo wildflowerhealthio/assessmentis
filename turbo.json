@@ -5,6 +5,9 @@
       "dependsOn": ["^build", "typecheck"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"]
     },
+    "codegen": {
+      "dependsOn": []
+    },
     "lint:fix": {
       "dependsOn": []
     },

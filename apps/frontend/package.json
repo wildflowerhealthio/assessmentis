@@ -9,6 +9,7 @@
   "scripts": {
     "build": "react-router typegen && react-router build",
     "build-storybook": "storybook build",
+    "codegen": "react-router typegen",
     "deploy": "firebase deploy --only hosting",
     "dev": "react-router dev",
     "lint": "oxlint --config ./.oxlintrc.json ./app/",
@@ -21,7 +22,7 @@
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:report": "playwright show-report",
     "test:e2e:ui": "playwright test --ui",
-    "typecheck": "react-router typegen && tsc --noEmit"
+    "typecheck": "npm exec codegen && tsc --noEmit"
   },
   "dependencies": {
     "@assessmentis/clinical-domain": "*",

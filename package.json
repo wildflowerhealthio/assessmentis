@@ -34,17 +34,18 @@
   "main": "index.js",
   "scripts": {
     "build": "npm exec turbo run build",
+    "codegen": "npm exec turbo run codegen",
     "dev": "npm exec turbo run dev",
+    "docs": "typedoc",
+    "format": "npm exec oxfmt --write ./apps ./domain ./global ./infrastructure",
     "lint": "npm run lint:projects && npm run lint:docs && npm run lint:comments",
-    "lint:projects": "oxlint ./apps ./domain ./global ./infrastructure",
-    "lint:docs": "npm exec markdownlint-cli2 -- --config .local.markdownlint-cli2.mjs",
     "lint:comments": "eslint ./apps ./domain ./global ./infrastructure",
+    "lint:docs": "npm exec markdownlint-cli2 -- --config .local.markdownlint-cli2.mjs",
     "lint:fix": "oxlint --fix ./apps ./domain ./global ./infrastructure",
-    "typecheck": "npm exec turbo run typecheck",
+    "lint:projects": "oxlint ./apps ./domain ./global ./infrastructure",
     "test": "vitest --project=\"*:unit\"",
     "test:all": "vitest",
-    "format": "npm exec oxfmt --write ./apps ./domain ./global ./infrastructure",
-    "docs": "typedoc"
+    "typecheck": "npm exec turbo run typecheck"
   },
   "dependencies": {
     "@assessmentis/document-template-kinds": "^0.0.1",

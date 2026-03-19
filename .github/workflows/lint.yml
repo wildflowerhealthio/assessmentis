@@ -27,6 +27,7 @@ jobs:
         run: |
           npm install -g @typescript/native-preview
           NODE_ENV=development npm install
+          npm run codegen
 
       - name: Run Oxlint (Changed Files)
         shell: bash
