@@ -7,20 +7,20 @@ import { ThreeStepExternalSchema, TwoStepExternalSchema } from './two-step-exter
 
 // A simple "domain" type
 class DomainPerson extends Schema.Class<DomainPerson>('DomainPerson')({
-  age: Schema.Number,
+  age: Schema.Int,
   fullName: Schema.String,
 }) {}
 
 // An "encoded" intermediate representation (domain-encoded)
 const DomainPersonEncoded = Schema.Struct({
-  age: Schema.Number,
+  age: Schema.Int,
   fullName: Schema.String,
 })
 
 // The "external" representation (e.g., FHIR JSON)
 const ExternalPersonEncoded = Schema.Struct({
   name: Schema.String,
-  yearsOld: Schema.Number,
+  yearsOld: Schema.Int,
 })
 
 // Transform: External → DomainEncoded
@@ -101,14 +101,14 @@ describe('TwoStepExternalSchema', () => {
 
 // An "integration" type — the decoded form of the raw integration payload
 const IntegrationPerson = Schema.Struct({
-  birthYear: Schema.Number,
+  birthYear: Schema.Int,
   familyName: Schema.String,
   givenName: Schema.String,
 })
 
 // The raw integration-encoded payload (e.g. wire format)
 const IntegrationPersonEncoded = Schema.Struct({
-  birth_year: Schema.Number,
+  birth_year: Schema.Int,
   family_name: Schema.String,
   given_name: Schema.String,
 })

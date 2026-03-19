@@ -55,7 +55,7 @@ const EncodedFromFhir: Schema.Schema<MediaEncoded, FhirR4.Media, BaseUrl> = Sche
       subject: Schema.optional(Schema.suspend(() => FhirR4Reference.EncodedFromExternal)),
       type: Schema.optional(Schema.suspend(() => FhirR4CodeableConcept.EncodedFromExternal)),
       view: Schema.optional(Schema.suspend(() => FhirR4CodeableConcept.EncodedFromExternal)),
-      width: Schema.optional(Schema.Number),
+      width: Schema.optional(Schema.Int),
     })
   )
 )

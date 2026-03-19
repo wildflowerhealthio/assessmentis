@@ -51,8 +51,8 @@ export const Datatype = <const Name extends string, A, I>(
 
 export const StringDatatype = Datatype('string', Schema.String)
 export const BooleanDatatype = Datatype('boolean', Schema.Boolean)
-export const DecimalDatatype = Datatype('decimal', Schema.Number)
-export const IntegerDatatype = Datatype('integer', Schema.Number)
+export const DecimalDatatype = Datatype('decimal', Schema.Finite)
+export const IntegerDatatype = Datatype('integer', Schema.Int)
 export const DateDatatype = Datatype('date', Schema.DateFromString)
 export const DateTimeDatatype = Datatype('dateTime', Schema.DateTimeUtc)
 export const TimeDatatype = Datatype('time', Schema.String)

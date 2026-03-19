@@ -24,7 +24,7 @@ const EncodedFromFhir: Schema.Schema<QuantityEncoded, FhirR4.Quantity, BaseUrl> 
       ),
       system: Schema.optional(Schema.String),
       unit: Schema.optional(Schema.String),
-      value: Schema.optional(Schema.Number),
+      value: Schema.optional(Schema.Finite),
     })
   )
 )

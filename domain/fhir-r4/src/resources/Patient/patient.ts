@@ -52,7 +52,7 @@ const EncodedFromFhir: Schema.Schema<PatientEncoded, FhirR4.Patient, BaseUrl> = 
         Schema.suspend(() => FhirR4CodeableConcept.EncodedFromExternal)
       ),
       multipleBirthBoolean: Schema.optional(Schema.Boolean),
-      multipleBirthInteger: Schema.optional(Schema.Number),
+      multipleBirthInteger: Schema.optional(Schema.Int),
       name: Schema.optional(
         mutableEncoded(Schema.Array(Schema.suspend(() => FhirR4HumanName.EncodedFromExternal)))
       ),

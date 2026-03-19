@@ -13,7 +13,7 @@ const EncodedFromFhir: Schema.Schema<ContactPointEncoded, FhirR4.ContactPoint, B
   mutableEncoded(
     Schema.Struct({
       period: Schema.optional(Schema.suspend(() => FhirR4Period.EncodedFromExternal)),
-      rank: Schema.optional(Schema.Number),
+      rank: Schema.optional(Schema.Int),
       system: Schema.optional(
         Schema.Union(
           Schema.Literal('phone'),

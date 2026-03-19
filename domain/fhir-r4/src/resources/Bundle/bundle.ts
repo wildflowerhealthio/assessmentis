@@ -52,7 +52,7 @@ export const FhirR4Bundle = {
           link: Schema.optional(mutableEncoded(Schema.Array(Schema.Any))),
           signature: Schema.optional(Schema.Any),
           timestamp: Schema.optional(Schema.String),
-          total: Schema.optional(Schema.Number),
+          total: Schema.optional(Schema.Int),
           type: BundleType,
         })
       )

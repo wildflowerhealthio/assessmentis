@@ -13,7 +13,7 @@ class Alpha extends Schema.Class<Alpha>('Alpha')({
 class WithCustomArb extends Schema.Class<WithCustomArb>('WithCustomArb')(
   {
     valueA: Schema.optional(Schema.String),
-    valueB: Schema.optional(Schema.Number),
+    valueB: Schema.optional(Schema.Int),
   },
   [
     {
@@ -78,11 +78,7 @@ describe('mergeArbitraries', () => {
 
   it('merges two plain field objects', () => {
     const lazy = (_: unknown) =>
-      mergeArbitraries(
-        (x): { a: string; b: number } => x,
-        { a: Schema.String },
-        { b: Schema.Number }
-      )
+      mergeArbitraries((x): { a: string; b: number } => x, { a: Schema.String }, { b: Schema.Int })
     const arb = lazy({ maxDepth: 2 })(fc)
     const samples = fc.sample(arb, 10)
     for (const s of samples) {

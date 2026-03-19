@@ -222,7 +222,7 @@ describe('MergeClasses', () => {
   describe('annotations', () => {
     const choiceFields = {
       valueA: Schema.optional(Schema.String),
-      valueB: Schema.optional(Schema.Number),
+      valueB: Schema.optional(Schema.Int),
     }
 
     const extraFields = { extra: Schema.String }

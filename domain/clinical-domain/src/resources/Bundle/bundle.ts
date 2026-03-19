@@ -91,7 +91,7 @@ export const Bundle = {
       link: Schema.optional(Schema.mutable(Schema.Array(Schema.Any))),
       signature: Schema.optional(Schema.Any),
       timestamp: Schema.optional(Schema.String),
-      total: Schema.optional(Schema.Number),
+      total: Schema.optional(Schema.Int),
       type: BundleType,
     }),
 }

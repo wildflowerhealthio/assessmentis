@@ -30,7 +30,7 @@ const fields = {
   /**
    * The number of bytes of data that make up this attachment (before base64 encoding, if that is done).
    */
-  size: Schema.optional(Schema.Number),
+  size: Schema.optional(Schema.Int),
   /**
    * The calculated hash of the data using SHA-1. Represented using base64.
    */

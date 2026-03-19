@@ -72,7 +72,7 @@ const fields = {
   subject: Schema.optional(Schema.suspend(() => Reference)),
   type: Schema.optional(Schema.suspend(() => CodeableConcept)),
   view: Schema.optional(Schema.suspend(() => CodeableConcept)),
-  width: Schema.optional(Schema.Number),
+  width: Schema.optional(Schema.Int),
 } as const satisfies Schema.Struct.Fields
 
 const resourceMixin = Resource(DomainType)

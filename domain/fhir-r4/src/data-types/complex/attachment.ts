@@ -20,7 +20,7 @@ const EncodedFromFhir: Schema.Schema<AttachmentEncoded, FhirR4.Attachment, BaseU
         dataUrl: Schema.optional(Schema.String).pipe(Schema.fromKey('url')),
         hash: Schema.optional(Schema.String),
         language: Schema.optional(Schema.String),
-        size: Schema.optional(Schema.Number),
+        size: Schema.optional(Schema.Int),
         title: Schema.optional(Schema.String),
       })
     )

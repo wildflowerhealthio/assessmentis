@@ -7,7 +7,7 @@ export const ApiDailyCoRecordingSchema = Schema.Struct({
     Schema.Struct({
       id: ExternalVideoCallRecordingId,
       room_name: VideoCallRoomName,
-      start_ts: Schema.Number,
+      start_ts: Schema.Int,
       duration: Schema.Number,
     })
   ),

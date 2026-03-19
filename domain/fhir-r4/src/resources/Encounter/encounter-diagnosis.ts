@@ -11,7 +11,7 @@ export const EncounterDiagnosisEncodedFromFhir = Schema.extend(
   mutableEncoded(
     Schema.Struct({
       condition: Schema.suspend(() => FhirR4Reference.EncodedFromExternal),
-      rank: Schema.optional(Schema.Number),
+      rank: Schema.optional(Schema.Int),
       use: Schema.optional(Schema.suspend(() => FhirR4CodeableConcept.EncodedFromExternal)),
     })
   )

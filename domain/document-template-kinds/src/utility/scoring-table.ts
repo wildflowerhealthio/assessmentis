@@ -9,10 +9,10 @@ export const ScoringTable = Schema.Struct({
     Schema.Struct({
       data: Schema.Array(Schema.String),
       question: Schema.optional(Schema.String),
-      score: Schema.optional(Schema.Number),
+      score: Schema.optional(Schema.Int),
     })
   ),
-  totalScore: Schema.Number,
+  totalScore: Schema.Int,
 })
 
 export type ScoringTable = typeof ScoringTable.Type

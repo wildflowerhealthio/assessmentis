@@ -7,7 +7,7 @@ describe('extendObjectSchemas', () => {
   describe('two plain structs', () => {
     const ab = extendObjectSchemas(
       Schema.Struct({ name: Schema.String }),
-      Schema.Struct({ age: Schema.Number })
+      Schema.Struct({ age: Schema.Int })
     )
 
     it('decodes', () => {
@@ -87,7 +87,7 @@ describe('extendObjectSchemas', () => {
   describe('type-level key collision detection', () => {
     it('prevents type-level key overlap (also throws at runtime)', () => {
       const a = Schema.Struct({ name: Schema.String })
-      const b = Schema.Struct({ name: Schema.Number })
+      const b = Schema.Struct({ name: Schema.Int })
       expect(() => extendObjectSchemas(a, b)).toThrow(/overlapping/)
     })
 

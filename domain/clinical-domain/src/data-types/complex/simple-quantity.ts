@@ -14,7 +14,7 @@ export const SimpleQuantity = Schema.Struct({
   /**
    * The value of the measured amount. The value includes an implicit precision in the presentation of the value.
    */
-  value: Schema.optional(Schema.Number),
+  value: Schema.optional(Schema.Finite),
   /**
    * A human-readable form of the unit.
    */
