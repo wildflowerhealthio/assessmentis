@@ -15,7 +15,7 @@
     "ghcr.io/anthropics/devcontainer-features/claude-code:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },
-  "forwardPorts": [5173],
+  "forwardPorts": [5173, 44479],
   "runArgs": ["--env-file", ".devcontainer/devcontainer.env"],
   "postCreateCommand": "bash -i .devcontainer/postCreateCommand.sh"
 }

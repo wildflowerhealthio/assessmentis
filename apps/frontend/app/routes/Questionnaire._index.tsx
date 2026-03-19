@@ -6,12 +6,10 @@ import { useBreadcrumbs } from '../modules/Breadcrumbs/use-breadcrumbs'
 import { ResourceListPage } from '../modules/common/components/ResourceListPage/resource-list-page'
 import { ResourceListItem } from '../modules/resources/ResourcePages/ResourceListItem/resource-list-item'
 
-/* eslint-disable import/no-unassigned-import -- Side-effect imports that register trait implementations for this route's resource type */
 import '../traits/Labeled/implementations/questionnaire'
 import '../traits/Listable/implementations/questionnaire'
 import '../traits/BreadcrumbLabel/implementations/questionnaire'
 import '../traits/Link/implementations/questionnaire'
-/* eslint-enable import/no-unassigned-import */
 
 function QuestionnaireListItem(props: {
   item: Questionnaire

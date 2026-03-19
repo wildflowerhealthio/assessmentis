@@ -38,7 +38,7 @@
     "lint": "npm run lint:projects && npm run lint:docs",
     "lint:projects": "oxlint ./apps ./domain ./global ./infrastructure",
     "lint:docs": "npm exec markdownlint-cli2 -- --config .local.markdownlint-cli2.mjs",
-    "lint:fix": "oxlint --fix  ./apps ./domain ./global ./infrastructure",
+    "lint:fix": "oxlint --fix ./apps ./domain ./global ./infrastructure",
     "typecheck": "npm exec turbo run typecheck",
     "test": "vitest --project=\"*:unit\"",
     "test:all": "vitest",
@@ -47,8 +47,6 @@
   },
   "dependencies": {
     "@assessmentis/document-template-kinds": "^0.0.1",
-    "@typescript/native-preview": "^7.0.0-dev.20260318.1",
-    "oxlint-tsgolint": "^0.17.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "npm:noist@^1.0.0",
@@ -56,6 +54,7 @@
   },
   "devDependencies": {
     "@effect/language-service": "^0.72.0",
+    "@typescript/native-preview": "^7.0.0-dev.20260318.1",
     "eslint-plugin-tsdoc": "^0.5.2",
     "markdownlint": "^0.40.0",
     "markdownlint-cli2": "^0.20.0",
@@ -63,6 +62,7 @@
     "markdownlint-rule-relative-links": "^5.0.1",
     "oxfmt": "^0.41.0",
     "oxlint": "^1.56.0",
+    "oxlint-tsgolint": "^0.17.0",
     "turbo": "^2.6.1",
     "typedoc": "^0.28.17"
   },

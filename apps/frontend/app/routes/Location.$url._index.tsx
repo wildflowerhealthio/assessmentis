@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import { Predicate } from 'effect'
 import { Await } from 'react-router'
 
 import { Location } from '@assessmentis/clinical-domain'
@@ -6,10 +7,8 @@ import { useEitherStream } from '@assessmentis/react-util'
 
 import Skeleton from 'react-loading-skeleton'
 
-/* eslint-disable import/no-unassigned-import -- Side-effect imports that register trait implementations for this route's resource type */
 import '../traits/BreadcrumbLabel/implementations/location'
 import '../traits/Link/implementations/location'
-/* eslint-enable import/no-unassigned-import */
 
 import { useResourceSubscription } from '../layers/use-resource-subscription'
 import { useBreadcrumbs } from '../modules/Breadcrumbs/use-breadcrumbs'
@@ -60,22 +59,22 @@ export default function LocationDetailPage({ params }: Route.ComponentProps): Re
           const details = [
             { label: 'Name', value: location.name ?? '-' },
             {
-              hidden: location.status === undefined,
+              hidden: Predicate.isNullable(location.status) ,
               label: 'Status',
               value: location.status ?? '-',
             },
             {
-              hidden: location.mode === undefined,
+              hidden: Predicate.isNullable(location.mode) ,
               label: 'Mode',
               value: location.mode ?? '-',
             },
             {
-              hidden: location.description === undefined,
+              hidden: Predicate.isNullable(location.description) ,
               label: 'Description',
               value: location.description ?? '-',
             },
             {
-              hidden: identifier?.system === undefined && identifier?.value === undefined,
+              hidden: Predicate.isNullable(identifier?.system) && Predicate.isNullable(identifier?.value),
               label: 'Identifier',
               value:
                 identifier?.system || identifier?.value

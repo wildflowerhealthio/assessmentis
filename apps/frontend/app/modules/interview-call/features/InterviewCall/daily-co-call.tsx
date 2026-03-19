@@ -45,18 +45,19 @@ const useDailyCall = (
 
     try {
       // TODO: Replace with hub / token client
-      // Const client = await Effect.runPromise(VideoCallClientService.client)
-      // If (roomUrl) {
-      //   Const roomName = client.extractRoomNameFromUrl(roomUrl)
-      //   If (roomName) {
-      //     Const token = await Effect.runPromise(
+      // oxfmt-ignore
+      // const client = await Effect.runPromise(VideoCallClientService.client)
+      // if (roomUrl) {
+      //   const roomName = client.extractRoomNameFromUrl(roomUrl)
+      //   if (roomName) {
+      //     const token = await Effect.runPromise(
       //       Client.createRoomToken({ roomName, is_owner: true })
       //     )
-      //     SetMeetingToken(token)
-      //     SetAppState(VideoCallState.STATE_HAIRCHECK)
-      //     CallObject?.preAuth({ url: roomUrl, token })
-      //     CallObject?.startCamera()
-      //     Return
+      //     setMeetingToken(token)
+      //     setAppState(VideoCallState.STATE_HAIRCHECK)
+      //     callObject?.preAuth({ url: roomUrl, token })
+      //     callObject?.startCamera()
+      //     return
       //   }
       // }
 

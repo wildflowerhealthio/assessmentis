@@ -19,6 +19,7 @@
   },
   "rules": {
     // Explicitly disabled rules
+    "import/no-unassigned-import": "off",
     "import/no-named-export": "off",
     "unicorn/filename-case": "off",
     "@typescript-eslint/no-unnecessary-type-arguments": "off",

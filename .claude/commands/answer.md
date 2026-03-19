@@ -24,7 +24,7 @@ Address PR review comments marked with a rocket emoji reaction. Works locally, t
    This encourages the subagent to build context across related comments and avoids file edit collisions. Only run groups in parallel if they touch completely separate files.
 
 6. **Acknowledge each addressed comment on GitHub.** For each comment that was successfully addressed:
-   - Add a 👍 reaction: `gh api --method POST repos/{owner}/{repo}/pulls/comments/{comment_id}/reactions -f content="+1"` (or `.../issues/comments/...` for issue comments)
+   - Resolve the root comment.
    - Only add a follow-up reply comment if something non-obvious happened that the reviewer should know about (e.g., "Addressed this differently because X" or "This also required changing Y"). Don't reply just to say "done."
 
 7. **Summarize** what was addressed, listing each comment and what was changed.

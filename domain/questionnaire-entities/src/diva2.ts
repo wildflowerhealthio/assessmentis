@@ -51,7 +51,8 @@ const part1Preamble: QuestionnaireItem[] = [
       'The symptoms in childhood relate to the age of 5-12 years. ' +
       'For a symptom to be ascribed to ADHD it should have a chronic trait-like course and should not be episodic.',
     type: QuestionnaireItemType.enums.display,
-    // Style: QuestionnaireItemStyle.QUESTION,
+    // oxfmt-ignore
+    // style: QuestionnaireItemStyle.QUESTION,
   }),
 ]
 
@@ -269,7 +270,8 @@ const part1Criteria: QuestionnaireItem[] = [
   QuestionnaireItem.make({
     linkId: sluggify('part-1-criterion-a-adulthood'),
     text: 'Do you have more of these symptoms of attention deficit than other people, or do you experience these more frequently than other people of your age?',
-    // Style: QuestionnaireItemStyle.QUESTION,
+    // oxfmt-ignore
+    // style: QuestionnaireItemStyle.QUESTION,
     type: QuestionnaireItemType.enums.boolean,
   }),
   QuestionnaireItem.make({
@@ -283,7 +285,8 @@ const part1Criteria: QuestionnaireItem[] = [
   QuestionnaireItem.make({
     linkId: sluggify('part-1-criterion-a-childhood'),
     text: 'Did you have more of these symptoms of attention deficit than other children of your age, or did you experience these more frequently than other children of your age? ',
-    // Style: QuestionnaireItemStyle.QUESTION,
+    // oxfmt-ignore
+    // style: QuestionnaireItemStyle.QUESTION,
     type: QuestionnaireItemType.enums.boolean,
   }),
   QuestionnaireItem.make({
@@ -304,7 +307,8 @@ const part2Preamble: QuestionnaireItem[] = [
       'The symptoms in childhood relate to the age of 5-12 years. ' +
       'For a symptom to be ascribed to ADHD it should have a chronic trait-like course and should not be episodic.',
     type: QuestionnaireItemType.enums.display,
-    // Style: QuestionnaireItemStyle.QUESTION,
+    // oxfmt-ignore
+    // style: QuestionnaireItemStyle.QUESTION,
   }),
 ]
 
@@ -500,7 +504,8 @@ const part2Criteria: QuestionnaireItem[] = [
   QuestionnaireItem.make({
     linkId: sluggify('part-2-criterion-a-adulthood'),
     text: 'Do you have more of these symptoms of hyperactivity/impulsivity than other people, or do you experience these more frequently than other people?',
-    // Style: QuestionnaireItemStyle.QUESTION,
+    // oxfmt-ignore
+    // style: QuestionnaireItemStyle.QUESTION,
     type: QuestionnaireItemType.enums.boolean,
   }),
   QuestionnaireItem.make({
@@ -514,7 +519,8 @@ const part2Criteria: QuestionnaireItem[] = [
   QuestionnaireItem.make({
     linkId: sluggify('part-2-criterion-a-childhood'),
     text: 'Did you have more of these symptoms of hyperactivity/impulsivity than other children of your age, or did you experience these more frequently than other children of your age?',
-    // Style: QuestionnaireItemStyle.QUESTION,
+    // oxfmt-ignore
+    // style: QuestionnaireItemStyle.QUESTION,
     type: QuestionnaireItemType.enums.boolean,
   }),
 ]
@@ -539,13 +545,15 @@ const part3Preamble: QuestionnaireItem[] = [
   QuestionnaireItem.make({
     text: 'Have you always had these symptoms of attention deficit and/or hyperactivity/impulsivity? (a number of symptoms were present prior to the 7th year of age)',
     linkId: sluggify('part-3-criterion-b'),
-    // Style: QuestionnaireItemStyle.QUESTION,
+    // oxfmt-ignore
+    // style: QuestionnaireItemStyle.QUESTION,
     type: QuestionnaireItemType.enums.boolean,
   }),
   QuestionnaireItem.make({
     linkId: sluggify('part-3-criterion-b-onset-age'),
     text: 'If no is answered above, starting as from ____ year of age.',
-    // Style: QuestionnaireItemStyle.WITHIN_QUESTION,
+    // oxfmt-ignore
+    // style: QuestionnaireItemStyle.WITHIN_QUESTION,
     type: QuestionnaireItemType.enums.text,
   }),
   QuestionnaireItem.make({
@@ -698,13 +706,15 @@ const conclusionItems: QuestionnaireItem[] = [
     linkId: sluggify('adulthood-evidence-of-impairment'),
     text: 'Adulthood: Evidence of impairment in two or more areas? ',
     type: QuestionnaireItemType.enums.boolean,
-    // Style: QuestionnaireItemStyle.QUESTION,
+    // oxfmt-ignore
+    // style: QuestionnaireItemStyle.QUESTION,
   }),
   QuestionnaireItem.make({
     linkId: sluggify('childhood-evidence-of-impairment'),
     text: 'Childhood and adolescence: Evidence of impairment in two or more areas?',
     type: QuestionnaireItemType.enums.boolean,
-    // Style: QuestionnaireItemStyle.QUESTION,
+    // oxfmt-ignore
+    // style: QuestionnaireItemStyle.QUESTION,
   }),
   QuestionnaireItem.make({
     linkId: sluggify('end-of-interview-title'),
@@ -718,7 +728,8 @@ const conclusionItems: QuestionnaireItem[] = [
     linkId: sluggify('summary'),
     text: 'Potential details:',
     type: QuestionnaireItemType.enums.text,
-    // Style: QuestionnaireItemStyle.QUESTION,
+    // oxfmt-ignore
+    // style: QuestionnaireItemStyle.QUESTION,
   }),
 ]
 
@@ -743,7 +754,8 @@ const toItems = ({
     QuestionnaireItem.make({
       text: 'Examples during adulthood:',
       linkId: adultExampleQuestionnaireItemLabel,
-      // Style: QuestionnaireItemStyle.QUESTION,
+      // oxfmt-ignore
+      // style: QuestionnaireItemStyle.QUESTION,
       type: QuestionnaireItemType.enums.group,
       modifierExtension: [
         questionnaireItemUiControlCodeExtension(QuestionnaireItemUIControlCode.enums.table),
@@ -753,7 +765,8 @@ const toItems = ({
           QuestionnaireItem.make({
             linkId: sluggify(`${prefix}-adult-example-${text}`),
             text,
-            // Style: QuestionnaireItemStyle.WITHIN_QUESTION,
+            // oxfmt-ignore
+            // style: QuestionnaireItemStyle.WITHIN_QUESTION,
             type: QuestionnaireItemType.enums.boolean,
           })
       ),
@@ -761,13 +774,15 @@ const toItems = ({
     QuestionnaireItem.make({
       linkId: sluggify(`${prefix}-other-adult-example`),
       text: 'Other examples during adulthood:',
-      // Style: QuestionnaireItemStyle.WITHIN_QUESTION,
+      // oxfmt-ignore
+      // style: QuestionnaireItemStyle.WITHIN_QUESTION,
       type: QuestionnaireItemType.enums.text,
     }),
     QuestionnaireItem.make({
       linkId: sluggify(`${prefix}-adult-symptom-present`),
       text: 'Adult symptom present?',
-      // Style: QuestionnaireItemStyle.QUESTION,
+      // oxfmt-ignore
+      // style: QuestionnaireItemStyle.QUESTION,
       type: QuestionnaireItemType.enums.boolean,
     }),
     QuestionnaireItem.make({
@@ -797,13 +812,15 @@ const toItems = ({
     QuestionnaireItem.make({
       linkId: sluggify(`${prefix}-other-childhood-example`),
       text: 'Other examples during childhood:',
-      // Style: QuestionnaireItemStyle.WITHIN_QUESTION,
+      // oxfmt-ignore
+      // style: QuestionnaireItemStyle.WITHIN_QUESTION,
       type: QuestionnaireItemType.enums.text,
     }),
     QuestionnaireItem.make({
       linkId: sluggify(`${prefix}-childhood-symptom-present`),
       text: 'Childhood symptom present?',
-      // Style: QuestionnaireItemStyle.QUESTION,
+      // oxfmt-ignore
+      // style: QuestionnaireItemStyle.QUESTION,
       type: QuestionnaireItemType.enums.boolean,
     }),
   ]

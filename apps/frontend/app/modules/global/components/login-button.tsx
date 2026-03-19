@@ -36,7 +36,7 @@ export const LoginButton = (props: {
           ])
         }
       }),
-    [props]
+    [props.onLogin]
   )
 
   return (

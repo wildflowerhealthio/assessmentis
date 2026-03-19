@@ -6,10 +6,8 @@ import { ClinicalDomainHub, Encounter } from '@assessmentis/clinical-domain'
 import { NotFoundError } from '@assessmentis/ontology'
 import { useEffectTs } from '@assessmentis/react-util'
 
-/* eslint-disable import/no-unassigned-import -- Side-effect imports that register trait implementations for this route's resource type */
 import '../traits/BreadcrumbLabel/implementations/encounter'
 import '../traits/Link/implementations/encounter'
-/* eslint-enable import/no-unassigned-import */
 
 import { getFullEncounter } from '@/modules/interview-call/actions/get-full-encounter'
 import InterviewCall from '@/modules/interview-call/features/InterviewCall/interview-call'

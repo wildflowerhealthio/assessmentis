@@ -39,16 +39,17 @@ const arbitraryProps = {
   uiControl: undefined,
 }
 
-export const RegularQuestion: Story = {
+const RegularQuestion: Story = {
   args: {
     ...arbitraryProps,
     questionnaireItem: arbitraryProps.questionnaireItem.cloneWith({
-      // Style: QuestionnaireItemStyle.QUESTION,
+      // oxfmt-ignore
+      // style: QuestionnaireItemStyle.QUESTION,
     }),
   },
 }
 
-export const WithinQuestion: Story = {
+const WithinQuestion: Story = {
   args: {
     ...arbitraryProps,
     questionnaireItem: arbitraryProps.questionnaireItem,
@@ -56,7 +57,7 @@ export const WithinQuestion: Story = {
   },
 }
 
-export const RegularQuestionArea: Story = {
+const RegularQuestionArea: Story = {
   args: {
     ...arbitraryProps,
     area: true,
@@ -66,7 +67,7 @@ export const RegularQuestionArea: Story = {
   },
 }
 
-export const WithinQuestionArea: Story = {
+const WithinQuestionArea: Story = {
   args: {
     ...arbitraryProps,
     area: true,
@@ -75,3 +76,5 @@ export const WithinQuestionArea: Story = {
     }),
   },
 }
+
+export { RegularQuestion, WithinQuestion, RegularQuestionArea, WithinQuestionArea }

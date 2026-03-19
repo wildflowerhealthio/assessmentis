@@ -42,7 +42,7 @@ export const HeaderBreadcrumbs = (): React.JSX.Element => {
                 {(resolvedSegment) =>
                   resolvedSegment.href && !isLast ? (
                     <Link
-                      key={`link-${resolvedSegment.label}}`}
+                      key={`link-${resolvedSegment.label}`}
                       to={resolvedSegment.href}
                       className={cn('text-alt-heading-3', classes.HeaderBreadcrumbs__link)}
                     >
@@ -50,7 +50,7 @@ export const HeaderBreadcrumbs = (): React.JSX.Element => {
                     </Link>
                   ) : (
                     <span
-                      key={`label-${resolvedSegment.label}}`}
+                      key={`label-${resolvedSegment.label}`}
                       className={cn('text-alt-heading-3', classes.HeaderBreadcrumbs__current)}
                     >
                       {resolvedSegment.label}

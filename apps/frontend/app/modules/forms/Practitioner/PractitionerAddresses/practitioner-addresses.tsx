@@ -15,9 +15,10 @@ export function PractitionerAddresses({
 
   return (
     <>
-      {practitioner.address.map((addr, i) => (
-        <div key={i} className={classes.Address}>
-          {addr.text ?? (
+      {practitioner.address.map((addr) => (
+        // Is this JSON.stringify questionable?
+        <div key={JSON.stringify(addr)} className={classes.Address}>
+          {addr.text || (
             <>
               {addr.line?.join(', ')}
               {addr.city ? `, ${addr.city}` : undefined}

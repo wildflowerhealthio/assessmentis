@@ -49,7 +49,7 @@ export const describeAsVideoCallClient = (
 
   afterEach(() =>
     Effect.runPromise(
-      Effect.gen(function* describeAsVideoCallClient() {
+      Effect.gen(function* cleanupRooms() {
         const client = yield* VideoCallClient
 
         for (const roomName of roomsToDelete) {
@@ -72,7 +72,7 @@ export const describeAsVideoCallClient = (
 
     describe('deleteRoom', () => {
       it.effect('should be able to delete a room and see it 404', () =>
-        Effect.gen(function* describeAsVideoCallClient() {
+        Effect.gen(function* deleteRoomTest() {
           const client = yield* VideoCallClient
           yield* TestClock.setTime(testTime)
           const room = yield* client.createRoom({
@@ -100,7 +100,7 @@ export const describeAsVideoCallClient = (
 
     describe('createRoom', () => {
       it.effect('should create a room and return room details', () =>
-        Effect.gen(function* describeAsVideoCallClient() {
+        Effect.gen(function* createRoomTest() {
           const client = yield* VideoCallClient
           yield* TestClock.setTime(testTime)
           yield* TestClock.adjust('15 seconds')
@@ -127,7 +127,7 @@ export const describeAsVideoCallClient = (
 
     describe('getRoom', () => {
       it.effect('should get an newly created room by name', () =>
-        Effect.gen(function* describeAsVideoCallClient() {
+        Effect.gen(function* getRoomTest() {
           const client = yield* VideoCallClient
           yield* TestClock.setTime(testTime)
           const created = yield* client.createRoom({
@@ -146,7 +146,7 @@ export const describeAsVideoCallClient = (
       )
 
       it.effect('should return NotFoundError for non-existent room', () =>
-        Effect.gen(function* describeAsVideoCallClient() {
+        Effect.gen(function* getRoomNotFoundTest() {
           const client = yield* VideoCallClient
 
           const exit = yield* Effect.exit(client.getRoom(nonExistentRoomName))
@@ -167,7 +167,7 @@ export const describeAsVideoCallClient = (
 
     describe('extractRoomNameFromUrl', () => {
       it.effect('should return undefined for empty URL', () =>
-        Effect.gen(function* describeAsVideoCallClient() {
+        Effect.gen(function* extractRoomNameFromUrlTest() {
           const client = yield* VideoCallClient
 
           const roomName = client.extractRoomNameFromUrl('')
@@ -179,7 +179,7 @@ export const describeAsVideoCallClient = (
 
     describe('getMediaRecordedInRoom', () => {
       it.effect('should return empty array for a newly created room', () =>
-        Effect.gen(function* describeAsVideoCallClient() {
+        Effect.gen(function* getMediaRecordedInRoomEmptyTest() {
           const client = yield* VideoCallClient
 
           // Create a fresh room (will have no recordings)
@@ -201,7 +201,7 @@ export const describeAsVideoCallClient = (
       it.effect.each(testRooms)(
         'should should return $recordings recordings for %s',
         ({ recordings: expectedRecordings, roomName }) =>
-          Effect.gen(function* describeAsVideoCallClient() {
+          Effect.gen(function* getMediaRecordedInRoomTest() {
             const client = yield* VideoCallClient
 
             // Get recordings for the room
@@ -215,7 +215,7 @@ export const describeAsVideoCallClient = (
 
     describe('listAllRecordings', () => {
       it.effect('should return an array of recordings', () =>
-        Effect.gen(function* describeAsVideoCallClient() {
+        Effect.gen(function* listAllRecordingsTest() {
           const client = yield* VideoCallClient
 
           const recordings = yield* client.listAllRecordings()
@@ -233,7 +233,7 @@ export const describeAsVideoCallClient = (
 
     describe('createRoomToken + parseMeetingToken', () => {
       it.effect('should create and parse a non-owner token for a room', () =>
-        Effect.gen(function* describeAsVideoCallClient() {
+        Effect.gen(function* createAndParseNonOwnerTokenTest() {
           const client = yield* VideoCallClient
           yield* TestClock.setTime(testTime)
 
@@ -258,7 +258,7 @@ export const describeAsVideoCallClient = (
       )
 
       it.effect('should create and parse an owner token for a room', () =>
-        Effect.gen(function* describeAsVideoCallClient() {
+        Effect.gen(function* createAndParseOwnerTokenTest() {
           const client = yield* VideoCallClient
           yield* TestClock.setTime(testTime)
 
@@ -286,7 +286,7 @@ export const describeAsVideoCallClient = (
 
     describe('listAllTranscripts', () => {
       it.effect('should return an array of transcripts', () =>
-        Effect.gen(function* describeAsVideoCallClient() {
+        Effect.gen(function* listAllTranscriptsTest() {
           const client = yield* VideoCallClient
 
           const transcripts = yield* client.listAllTranscripts()

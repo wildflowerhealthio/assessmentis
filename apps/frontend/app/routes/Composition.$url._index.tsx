@@ -6,10 +6,8 @@ import { useEitherStream } from '@assessmentis/react-util'
 
 import Skeleton from 'react-loading-skeleton'
 
-/* eslint-disable import/no-unassigned-import -- Side-effect imports that register trait implementations for this route's resource type */
 import '../traits/BreadcrumbLabel/implementations/composition'
 import '../traits/Link/implementations/composition'
-/* eslint-enable import/no-unassigned-import */
 
 import { useResourceSubscription } from '../layers/use-resource-subscription'
 import { useBreadcrumbs } from '../modules/Breadcrumbs/use-breadcrumbs'

@@ -1,6 +1,7 @@
 export default {
+  // oxfmt-ignore
   plugins: {
-    autoprefixer: {},
     tailwindcss: {},
+    autoprefixer: {},
   },
 }

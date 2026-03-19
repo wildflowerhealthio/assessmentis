@@ -1,3 +1,4 @@
+// oxlint-disable eslint/no-ternary -- Playwright config convention
 import { defineConfig, devices } from '@playwright/test'
 
 /**
@@ -16,10 +17,8 @@ export default defineConfig({
   // Fail the build on CI if you accidentally left test.only in the source code
   forbidOnly: Boolean(process.env.CI),
 
-  // oxlint-disable-next-line eslint/no-ternary -- Playwright config convention
   retries: process.env.CI ? 2 : 0,
 
-  // oxlint-disable-next-line eslint/no-ternary -- Playwright config convention
   workers: process.env.CI ? 1 : undefined,
 
   // Reporter to use

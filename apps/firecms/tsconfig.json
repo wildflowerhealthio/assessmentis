@@ -5,7 +5,7 @@
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "allowJs": true,
     "skipLibCheck": true,
-    // Disabled for oxlint
+    // Disabled for Typescript 7
     // "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "strict": true,

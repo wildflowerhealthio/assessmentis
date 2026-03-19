@@ -133,8 +133,6 @@ vi.mock('firebase-admin/firestore', () => ({
  * to verify the layer works with various input combinations.
  */
 describe('NodeGoogleHealthcareClientLayer', () => {
-  // BeforeAll(setMswContext)
-
   // Arbitraries for property-based testing
   const fhirResourceTypeArb = fc.constantFrom(
     'Patient',

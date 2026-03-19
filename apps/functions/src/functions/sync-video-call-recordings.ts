@@ -19,7 +19,8 @@ export const syncVideoCallRecordingsScheduled = onSchedule(
     const runtime = makeAdminRuntime(Layer.empty)
     // TODO: Add a body
     const exit = Exit.fail('Not Implemented')
-    // Const exit = await runtime.runPromiseExit(syncVideoCallRecordingsEffect)
+    // oxfmt-ignore
+    // const exit = await runtime.runPromiseExit(syncVideoCallRecordingsEffect)
 
     Exit.match(exit, {
       onFailure: (cause) => {

@@ -41,8 +41,9 @@ export const startAuthDataService = (
   authDataPubSub: PubSub.PubSub<Take.Take<Either.Either<AuthData, AuthError>>>
 ): Effect.Effect<typeof AuthDataService.Service, never, FirebaseWeb> =>
   Effect.gen(function* () {
-    // Const s = Stream.runIntoPubSub(AuthDataStream, authDataPubSub)
-    // Yield* s
+    // oxfmt-ignore
+    // const s = Stream.runIntoPubSub(AuthDataStream, authDataPubSub)
+    // yield* s
     const authDataPubSubFiber = yield* Effect.forkDaemon(
       Stream.runIntoPubSub(AuthDataStream, authDataPubSub)
     )

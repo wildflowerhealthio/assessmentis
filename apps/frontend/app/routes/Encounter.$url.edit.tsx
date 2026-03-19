@@ -9,10 +9,8 @@ import { useEitherStream } from '@assessmentis/react-util'
 
 import { FormPage } from '@/modules/common/components/FormPage/form-page'
 
-/* eslint-disable import/no-unassigned-import -- Side-effect imports that register trait implementations for this route's resource type */
 import '../traits/BreadcrumbLabel/implementations/encounter'
 import '../traits/Link/implementations/encounter'
-/* eslint-enable import/no-unassigned-import */
 
 import { useBreadcrumbs } from '@/modules/Breadcrumbs/use-breadcrumbs'
 import { updateEncounter } from '@/modules/resources/Encounter/actions/update-encounter'

@@ -124,7 +124,7 @@ const makeBundleDecoder = <T extends Resource.Resource<string>>(
   const DataBundle = FhirR4Bundle.Schema(schema)
   const rawDecodeBundle = Schema.decodeUnknown(DataBundle)
 
-  // oxlint-disable-next-line typescript-eslint/explicit-function-return-type -- return type is complex Effect with BaseUrl context
+  // oxlint-disable-next-line @typescript-eslint/explicit-function-return-type -- return type is complex Effect with BaseUrl context
   return (rawBundle: unknown) =>
     rawDecodeBundle(rawBundle).pipe(
       Effect.mapError(

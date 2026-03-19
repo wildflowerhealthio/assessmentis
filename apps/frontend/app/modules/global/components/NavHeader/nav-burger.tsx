@@ -16,7 +16,7 @@ export const NavBurger = (): React.JSX.Element => {
   return (
     <nav ref={navRef} className={classes.NavBurger__nav}>
       <button
-        aria-label={menuShowing ? 'Show menu' : 'Hide menu'}
+        aria-label={menuShowing ? 'Hide menu' : 'Show menu'}
         className={cn(
           'element-button button-1 ghost',
           menuShowing && 'show',
@@ -25,6 +25,7 @@ export const NavBurger = (): React.JSX.Element => {
         onClick={() => {
           setMenuShowing((showing) => !showing)
         }}
+        type="button"
       >
         <div />
       </button>

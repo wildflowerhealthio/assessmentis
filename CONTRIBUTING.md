@@ -201,5 +201,5 @@ Ensure all checks pass before merging.
 - **Infrastructure packages**: Implementations, external integrations
 - **Use Effect-TS**: For composable, type-safe operations
 - **Test thoroughly**: Unit tests for all logic
-- **Follow conventions**: TypeScript, Oxfmt, ESLint configurations
+- **Follow conventions**: TypeScript, Oxfmt, Oxlint configurations
 - **Keep it clean**: Minimal dependencies, clear separation of concerns

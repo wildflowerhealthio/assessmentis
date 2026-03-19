@@ -47,7 +47,6 @@ export class UnhandledError extends Data.TaggedError('UnhandledError')<{
       err instanceof ExternalAssertionError ||
       err instanceof BadDataError ||
       err instanceof NotFoundError ||
-      err instanceof NotFoundError ||
       err instanceof AuthError ||
       err instanceof AuthzError
     ) {

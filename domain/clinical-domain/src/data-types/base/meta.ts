@@ -10,7 +10,8 @@ const fields = {
   versionId: Schema.optional(Schema.String),
   lastUpdated: Schema.optional(Schema.DateTimeUtc),
   source: Schema.optional(Schema.String),
-  // Profile: canonical(StructureDefinition),
+  // oxfmt-ignore
+  // profile: canonical(StructureDefinition),
   security: Schema.optional(
     Schema.Array(Schema.suspend((): Schema.Schema<Coding, CodingEncoded> => Coding))
   ),

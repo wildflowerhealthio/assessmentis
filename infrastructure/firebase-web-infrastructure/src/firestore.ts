@@ -35,15 +35,13 @@ export const snapshotStream = (
           void emit(Effect.fail(Option.none()))
         }
       )
-      return Effect.sync(() => {
-        Effect.andThen(
-          Effect.logInfo(
-            'Unsubscribing from Firestore snapshot listener on document:',
-            documentRef.path
-          ),
-          unsubscribe()
-        )
-      })
+      return Effect.andThen(
+        Effect.logInfo(
+          'Unsubscribing from Firestore snapshot listener on document:',
+          documentRef.path
+        ),
+        Effect.sync(() => unsubscribe())
+      )
     },
     { bufferSize: 1, strategy: 'dropping' }
   )

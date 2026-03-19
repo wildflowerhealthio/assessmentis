@@ -4,7 +4,7 @@
   "exclude": ["node_modules", "eslint.config.cjs"],
   "compilerOptions": {
     "lib": ["ES2024"],
-    "types": ["esnext"],
+    "types": ["node"],
     "rootDir": ".",
     "outDir": "dist"
   }

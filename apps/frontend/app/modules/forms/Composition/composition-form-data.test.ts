@@ -1,7 +1,9 @@
-import { Arbitrary, FastCheck, Schema } from 'effect'
+import { Arbitrary, DateTime, Effect, FastCheck, Schema } from 'effect'
 import { describe, expect, it } from 'vitest'
 
-import { Patient } from '@assessmentis/clinical-domain'
+import { Composition, Patient } from '@assessmentis/clinical-domain'
+import { CodeableConcept, Reference } from '@assessmentis/clinical-domain/data-types'
+import { Resource } from '@assessmentis/effectful-store'
 
 import { CompositionFormData } from './composition-form-data'
 
@@ -84,6 +86,99 @@ describe('CompositionFormData', () => {
             })
           } else {
             expect(composition.subject).toBeUndefined()
+          }
+        }),
+        { numRuns: 100 }
+      )
+    })
+  })
+
+  describe('toUpdatePayload', () => {
+    const makeBaseComposition = (): Resource.WithResourceUrl<Composition> => {
+      const url = Schema.decodeSync(Composition.UrlSchema)(
+        'http://compositions.com/composition-existing'
+      )
+      const date = Effect.runSync(DateTime.now)
+      return Composition.make({
+        author: [Reference.make({ display: 'Original Author' })],
+        date,
+        section: [],
+        status: 'final',
+        subject: Reference.make({ reference: 'http://patients.com/patient-original' }),
+        title: 'Original Title',
+        type: CodeableConcept.make({ coding: [] }),
+        url,
+      }) as Resource.WithResourceUrl<Composition>
+    }
+
+    it('should preserve the url from the base composition', () => {
+      const base = makeBaseComposition()
+      const formData = CompositionFormData.make({
+        patientUrl: Schema.decodeSync(Patient.UrlSchema)('http://patients.com/patient-999'),
+        title: 'Updated Title',
+      })
+
+      const result = formData.toUpdatePayload(base)
+
+      expect(result.url).toBe(base.url)
+    })
+
+    it('should apply form data changes to the result', () => {
+      const base = makeBaseComposition()
+      const formData = CompositionFormData.make({
+        patientUrl: Schema.decodeSync(Patient.UrlSchema)('http://patients.com/patient-999'),
+        title: 'Updated Title',
+      })
+
+      const result = formData.toUpdatePayload(base)
+
+      expect(result.title).toBe('Updated Title')
+      expect(result.subject).toMatchObject({
+        reference: 'http://patients.com/patient-999',
+      })
+    })
+
+    it('should preserve the date from the base composition', () => {
+      const base = makeBaseComposition()
+      const formData = CompositionFormData.make({ title: 'Updated Title' })
+
+      const result = formData.toUpdatePayload(base)
+
+      expect(result.date).toBe(base.date)
+    })
+
+    it('should produce an instance of Composition (via cloneWith)', () => {
+      const base = makeBaseComposition()
+      const formData = CompositionFormData.make({ title: 'Updated Title' })
+
+      const result = formData.toUpdatePayload(base)
+
+      expect(result).toBeInstanceOf(Composition)
+      expect(result.domainType).toBe('Composition')
+    })
+
+    it('should transform any valid form data without throwing', () => {
+      FastCheck.assert(
+        FastCheck.property(compositionFormArb, (formData) => {
+          const base = makeBaseComposition()
+          const result = formData.toUpdatePayload(base)
+
+          expect(result.url).toBe(base.url)
+          expect(result.domainType).toBe('Composition')
+          expect(result.date).toBe(base.date)
+
+          if (formData.title) {
+            expect(result.title).toBe(formData.title)
+          } else {
+            expect(result.title).toBe('New Composition')
+          }
+
+          if (formData.patientUrl) {
+            expect(result.subject).toMatchObject({
+              reference: formData.patientUrl.toString(),
+            })
+          } else {
+            expect(result.subject).toBeUndefined()
           }
         }),
         { numRuns: 100 }

@@ -5,7 +5,6 @@ import Skeleton from 'react-loading-skeleton'
 import { runEffectSyncFlat } from '../run-effect-sync'
 import type { Route } from './+types/Patient.$url._index'
 
-// eslint-disable-next-line import/no-unassigned-import
 import 'react-loading-skeleton/dist/skeleton.css'
 
 import { Await } from 'react-router'
@@ -13,10 +12,8 @@ import { Await } from 'react-router'
 import { Patient } from '@assessmentis/clinical-domain'
 import { useEitherStream } from '@assessmentis/react-util'
 
-/* eslint-disable import/no-unassigned-import -- Side-effect imports that register trait implementations for this route's resource type */
 import '../traits/BreadcrumbLabel/implementations/patient'
 import '../traits/Link/implementations/patient'
-/* eslint-enable import/no-unassigned-import */
 
 import { useResourceSubscription } from '../layers/use-resource-subscription'
 import { useBreadcrumbs } from '../modules/Breadcrumbs/use-breadcrumbs'

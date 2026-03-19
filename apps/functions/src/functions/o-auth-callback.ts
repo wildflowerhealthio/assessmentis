@@ -34,7 +34,7 @@ export const oAuthCallbackEffect = (q: {
       if (typeof q.error === 'string') {
         errorMessage = q.error
       } else if (Array.isArray(q.error)) {
-        errorMessage = q.error.join(', ')
+        errorMessage = q.error.join(',')
       } else {
         errorMessage = String(q.error)
       }
@@ -67,13 +67,18 @@ export const oAuthCallbackEffect = (q: {
 
     const userId = UserId.make(uid)
 
+    let expiresAt: DateTime.Utc
+
+    if (tokens.expiry_date) {
+      expiresAt = DateTime.unsafeMake(tokens.expiry_date)
+    } else {
+      expiresAt = DateTime.unsafeMake(Date.now() + 3600000)
+    }
+
     const token = new GoogleUserOAuthToken({
       accessToken: access_token,
       email,
-      // oxlint-disable-next-line eslint/no-ternary -- inline property in object literal
-      expiresAt: tokens.expiry_date
-        ? DateTime.unsafeMake(tokens.expiry_date)
-        : DateTime.unsafeMake(Date.now() + 3600000),
+      expiresAt,
       // oxlint-disable-next-line unicorn/no-array-callback-reference -- false positive: Option.some is not an array method
       refreshToken: Option.some(refresh_token),
       scope: tokens.scope ?? '',

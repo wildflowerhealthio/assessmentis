@@ -14,10 +14,8 @@ import { UnhandledError } from '@assessmentis/ontology'
 import { gad7 } from '@assessmentis/questionnaire-entities'
 import { useEffectTs } from '@assessmentis/react-util'
 
-/* eslint-disable import/no-unassigned-import -- Side-effect imports that register trait implementations for this route's resource type */
 import '../traits/BreadcrumbLabel/implementations/questionnaire-response'
 import '../traits/Link/implementations/questionnaire-response'
-/* eslint-enable import/no-unassigned-import */
 
 import { ErrorBoundary } from 'react-error-boundary'
 import { useBreadcrumbs } from '@/modules/Breadcrumbs/use-breadcrumbs'

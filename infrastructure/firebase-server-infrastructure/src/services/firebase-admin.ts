@@ -3,18 +3,18 @@ import { Effect } from 'effect'
 import { getApp, initializeApp } from 'firebase-admin/app'
 import type { App, AppOptions } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'
-import { getFirestore } from 'firebase-admin/firestore'
+import { getFirestore, type Firestore } from 'firebase-admin/firestore'
 
 /**
  * Firebase configuration for the Assessmentis project
  */
-export const firebaseConfig = {
+const firebaseConfig = {
   databaseId: 'assessmentis',
   projectId: 'assessmentis',
   storageBucket: 'assessmentis.firebasestorage.app',
 }
 
-export class FirebaseAdmin extends Effect.Service<FirebaseAdmin>()('FirebaseAdmin', {
+class FirebaseAdmin extends Effect.Service<FirebaseAdmin>()('FirebaseAdmin', {
   dependencies: [],
 
   effect: Effect.sync(() => {
@@ -31,11 +31,15 @@ export class FirebaseAdmin extends Effect.Service<FirebaseAdmin>()('FirebaseAdmi
       app = initializeApp(appOptions)
     }
     const auth = getAuth(app)
-    let firestore = getFirestore(app)
-    if (firebaseConfig.databaseId !== undefined) {
+    let firestore: Firestore
+    if (firebaseConfig.databaseId === undefined) {
+      firestore = getFirestore(app)
+    } else {
       firestore = getFirestore(app, firebaseConfig.databaseId)
     }
     firestore.settings({ ignoreUndefinedProperties: true })
     return { app, auth, firestore }
   }),
 }) {}
+
+export { firebaseConfig, FirebaseAdmin }

@@ -75,7 +75,10 @@ export const dailycoEffect = (
         if (typeof value === 'string') {
           return [key, value]
         }
-        return [key, JSON.stringify(value)]
+        if (Array.isArray(value)) {
+          return [key, value.join(',')]
+        }
+        return [key, String(value)]
       })
     )
     const url = `https://api.daily.co/v1/${destination}?${queryParams.toString()}`

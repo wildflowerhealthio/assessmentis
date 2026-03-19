@@ -47,7 +47,8 @@ export const RegularBooleanQuestion: Story = {
   args: {
     ...arbitraryProps,
     questionnaireItem: arbitraryProps.questionnaireItem.cloneWith({
-      // Style: QuestionnaireItemStyle.QUESTION,
+      // oxfmt-ignore
+      // style: QuestionnaireItemStyle.QUESTION,
     }),
   },
 }
@@ -56,7 +57,8 @@ export const GridStyleBooleanQuestion: Story = {
   args: {
     ...arbitraryProps,
     questionnaireItem: arbitraryProps.questionnaireItem.cloneWith({
-      // Style: QuestionnaireItemStyle.WITHIN_QUESTION,
+      // oxfmt-ignore
+      // style: QuestionnaireItemStyle.WITHIN_QUESTION,
     }),
   },
   render: (args) => (
@@ -72,7 +74,8 @@ export const StringQuestion: Story = {
   args: {
     ...arbitraryProps,
     questionnaireItem: arbitraryProps.questionnaireItem.cloneWith({
-      // Style: QuestionnaireItemStyle.QUESTION,
+      // oxfmt-ignore
+      // style: QuestionnaireItemStyle.QUESTION,
       answerOption: [
         QuestionnaireItemAnswerOption.make({
           value: { _tag: 'string', string: 'Red' },
@@ -92,7 +95,8 @@ export const GridStyleStringQuestion: Story = {
   args: {
     ...arbitraryProps,
     questionnaireItem: arbitraryProps.questionnaireItem.cloneWith({
-      // Style: QuestionnaireItemStyle.WITHIN_QUESTION,
+      // oxfmt-ignore
+      // style: QuestionnaireItemStyle.WITHIN_QUESTION,
       answerOption: [
         QuestionnaireItemAnswerOption.make({
           value: { _tag: 'string', string: 'Red' },

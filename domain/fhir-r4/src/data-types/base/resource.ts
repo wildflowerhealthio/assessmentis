@@ -10,7 +10,7 @@ import { FhirR4Extension, FhirR4Narrative } from '../special-purpose'
 import { BaseUrl, domainIdentification } from '../url-identification'
 import { FhirR4Meta } from './meta'
 
-// oxlint-disable-next-line typescript-eslint/explicit-function-return-type -- return type depends on generic schema parameter
+// oxlint-disable-next-line @typescript-eslint/explicit-function-return-type -- return type depends on generic schema parameter
 const fhirR4ResourceIdentification = <TResourceType extends string>(resourceType: TResourceType) =>
   Schema.extend(
     Schema.Struct({

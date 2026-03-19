@@ -11,10 +11,8 @@ import { Period, Reference } from '@assessmentis/clinical-domain/data-types'
 
 import { FormPage } from '@/modules/common/components/FormPage/form-page'
 
-/* eslint-disable import/no-unassigned-import -- Side-effect imports that register trait implementations for this route's resource type */
 import '../traits/BreadcrumbLabel/implementations/encounter'
 import '../traits/Link/implementations/encounter'
-/* eslint-enable import/no-unassigned-import */
 
 import { useBreadcrumbs } from '@/modules/Breadcrumbs/use-breadcrumbs'
 import { createEncounter } from '@/modules/resources/Encounter/actions/create-encounter'
@@ -49,10 +47,10 @@ export default function CreateEncounterPage(): React.JSX.Element {
                 type: 'Patient',
               })
             : undefined,
-          participant: data.practitionerUrls?.map((id) =>
+          participant: data.practitionerUrls?.map((url) =>
             EncounterParticipant.make({
               individual: Reference.make({
-                reference: `Practitioner/${id.asUriComponent()}`,
+                reference: url.toString(),
               }),
             })
           ),
