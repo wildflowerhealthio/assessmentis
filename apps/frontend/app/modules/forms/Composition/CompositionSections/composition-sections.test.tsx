@@ -1,21 +1,22 @@
 import { render, screen } from '@testing-library/react'
+import { DateTime, Effect } from 'effect'
 import { describe, expect, it } from 'vitest'
 
-import type { Composition } from '@assessmentis/clinical-domain'
+import { Composition, CompositionSection } from '@assessmentis/clinical-domain'
+import { CodeableConcept, Narrative, Reference } from '@assessmentis/clinical-domain/data-types'
 
 import { CompositionSections } from './composition-sections'
 
 /** Builds a minimal Composition with a single section containing the given HTML div. */
 function compositionWithDiv(div: string): Composition {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- minimal stub for rendering test
-  return {
-    resourceType: 'Composition',
-    section: [
-      {
-        text: { status: 'generated', div },
-      },
-    ],
-  } as unknown as Composition
+  return Composition.make({
+    author: [Reference.make({ display: 'Test Author' })],
+    date: Effect.runSync(DateTime.now),
+    section: [CompositionSection.make({ text: Narrative.make({ status: 'generated', div }) })],
+    status: 'final',
+    title: 'Test Composition',
+    type: CodeableConcept.make({ coding: [] }),
+  })
 }
 
 describe('CompositionSections', () => {
@@ -48,8 +49,14 @@ describe('CompositionSections', () => {
   })
 
   it('returns null when composition has no sections', () => {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- minimal stub
-    const composition = { resourceType: 'Composition', section: [] } as unknown as Composition
+    const composition = Composition.make({
+      author: [Reference.make({ display: 'Test Author' })],
+      date: Effect.runSync(DateTime.now),
+      section: [],
+      status: 'final',
+      title: 'Test Composition',
+      type: CodeableConcept.make({ coding: [] }),
+    })
     const { container } = render(<CompositionSections composition={composition} />)
 
     expect(container.innerHTML).toBe('')
