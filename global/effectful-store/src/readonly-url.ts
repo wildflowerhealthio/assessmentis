@@ -2,6 +2,10 @@ import { SafeRecordKey } from '@assessmentis/util'
 import { Effect, ParseResult, Schema } from 'effect'
 import type { Arbitrary, FastCheck } from 'effect'
 
+/** Strips trailing slashes from a pathname, preserving the root `/`. */
+const stripTrailingSlash = (pathname: string): string =>
+  pathname.length > 1 && pathname.endsWith('/') ? pathname.replace(/\/+$/, '') : pathname
+
 /**
  * Immutable, Schema-aware URL representation. Decomposes a URL into its
  * constituent parts (protocol, host, pathname, username, password) and
@@ -12,6 +16,9 @@ import type { Arbitrary, FastCheck } from 'effect'
  * mutable setters. It integrates with Effect's Schema system via
  * {@link ReadonlyUrl.FromString} for parsing/encoding, and carries an
  * `arbitrary` annotation for property-based testing.
+ *
+ * Trailing slashes on pathnames are normalized: `/path` and `/path/` are
+ * treated as equivalent for comparison and child detection.
  */
 export class ReadonlyUrl extends Schema.Class<ReadonlyUrl>('ReadonlyUrl')({
   /**
@@ -155,12 +162,19 @@ export class ReadonlyUrl extends Schema.Class<ReadonlyUrl>('ReadonlyUrl')({
   /**
    * Returns `true` if `otherUrl` is a child of this URL — same protocol and
    * host, with a pathname that starts with this URL's pathname.
+   *
+   * Trailing slashes are normalized before comparison, so `/fhir` and `/fhir/`
+   * are treated identically. A child's pathname must either equal the parent's
+   * normalized pathname or continue with a `/` separator, preventing false
+   * positives like `/fhirX` matching parent `/fhir`.
    */
   hasChild(otherUrl: ReadonlyUrl): boolean {
+    const parentPath = stripTrailingSlash(this.pathname)
+    const childPath = stripTrailingSlash(otherUrl.pathname)
     return (
       this.protocol === otherUrl.protocol &&
       this.host === otherUrl.host &&
-      otherUrl.pathname.startsWith(this.pathname)
+      (childPath === parentPath || childPath.startsWith(`${parentPath}/`))
     )
   }
 
@@ -177,12 +191,21 @@ export class ReadonlyUrl extends Schema.Class<ReadonlyUrl>('ReadonlyUrl')({
     return UriEncodedOriginUrl.make(encodeURIComponent(this.toString()))
   }
 
-  /** Returns a new `ReadonlyUrl` with `path` appended to the pathname. */
+  /**
+   * Returns a new `ReadonlyUrl` with `path` appended to the pathname.
+   *
+   * Trailing slashes on the base and leading slashes on the suffix are
+   * collapsed so the result never contains double slashes (e.g.,
+   * `/base/` + `/extra` produces `/base/extra`).
+   */
   appendToPathname(path: string): ReadonlyUrl {
+    const base = stripTrailingSlash(this.pathname)
+    const trimmedPath = path.replace(/^\/+/, '')
+    const joined = trimmedPath === '' ? this.pathname : `${base}/${trimmedPath}`
     return ReadonlyUrl.make({
       host: this.host,
       password: this.password,
-      pathname: `${this.pathname}${path}`,
+      pathname: joined,
       protocol: this.protocol,
       username: this.username,
     })

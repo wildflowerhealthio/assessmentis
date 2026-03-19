@@ -171,6 +171,63 @@ describe('ReadonlyUrl', () => {
       expect(url.hasChild(url)).toBe(true)
     })
 
+    test('origin with trailing slash hasChild a resource URL', () => {
+      const origin = ReadonlyUrl.make({
+        host: 'example.com',
+        pathname: '/fhir/',
+        protocol: 'https:',
+      })
+      const resourceUrl = ReadonlyUrl.make({
+        host: 'example.com',
+        pathname: '/fhir/Patient/123',
+        protocol: 'https:',
+      })
+      expect(origin.hasChild(resourceUrl)).toBe(true)
+    })
+
+    test('origin without trailing slash hasChild a child with trailing slash', () => {
+      const origin = ReadonlyUrl.make({
+        host: 'example.com',
+        pathname: '/fhir',
+        protocol: 'https:',
+      })
+      const child = ReadonlyUrl.make({
+        host: 'example.com',
+        pathname: '/fhir/',
+        protocol: 'https:',
+      })
+      expect(origin.hasChild(child)).toBe(true)
+    })
+
+    test('trailing slash variants are treated as equal for hasChild', () => {
+      const withSlash = ReadonlyUrl.make({
+        host: 'example.com',
+        pathname: '/fhir/',
+        protocol: 'https:',
+      })
+      const withoutSlash = ReadonlyUrl.make({
+        host: 'example.com',
+        pathname: '/fhir',
+        protocol: 'https:',
+      })
+      expect(withSlash.hasChild(withoutSlash)).toBe(true)
+      expect(withoutSlash.hasChild(withSlash)).toBe(true)
+    })
+
+    test('does not false-positive on pathname prefix overlap', () => {
+      const origin = ReadonlyUrl.make({
+        host: 'example.com',
+        pathname: '/fhir',
+        protocol: 'https:',
+      })
+      const notChild = ReadonlyUrl.make({
+        host: 'example.com',
+        pathname: '/fhirX/Patient/123',
+        protocol: 'https:',
+      })
+      expect(origin.hasChild(notChild)).toBe(false)
+    })
+
     test('property: a URL built with appendToPathname is a child of the original', () => {
       const suffixArb = fc.stringOf(fc.constantFrom('/', 'a', 'b', '1', '-', '_'))
       fc.assert(
@@ -230,14 +287,46 @@ describe('ReadonlyUrl', () => {
       )
     })
 
-    test('property: appending is equivalent to string concatenation', () => {
-      const suffixArb = fc.stringOf(fc.constantFrom('/', 'a', 'b', '1', '-', '_'))
+    test('property: appending never produces double slashes at the junction', () => {
+      const segmentArb = fc.stringOf(fc.constantFrom('a', 'b', '1', '-', '_'), { minLength: 1 })
       fc.assert(
-        fc.property(readonlyUrlArb, suffixArb, (url, suffix) => {
-          const result = url.appendToPathname(suffix)
-          expect(result.pathname).toBe(url.pathname + suffix)
+        fc.property(readonlyUrlArb, segmentArb, (url, segment) => {
+          const withSlash = url.appendToPathname(`/${segment}`)
+          const withoutSlash = url.appendToPathname(segment)
+          expect(withSlash.pathname).not.toContain('//')
+          expect(withoutSlash.pathname).not.toContain('//')
         })
       )
+    })
+
+    test('appending to a pathname with trailing slash produces clean path', () => {
+      const url = ReadonlyUrl.make({
+        host: 'example.com',
+        pathname: '/base/',
+        protocol: 'https:',
+      })
+      const result = url.appendToPathname('/extra')
+      expect(result.pathname).toBe('/base/extra')
+    })
+
+    test('appending a path without leading slash adds separator', () => {
+      const url = ReadonlyUrl.make({
+        host: 'example.com',
+        pathname: '/base',
+        protocol: 'https:',
+      })
+      const result = url.appendToPathname('extra')
+      expect(result.pathname).toBe('/base/extra')
+    })
+
+    test('appending to trailing-slash pathname without leading slash on suffix', () => {
+      const url = ReadonlyUrl.make({
+        host: 'example.com',
+        pathname: '/base/',
+        protocol: 'https:',
+      })
+      const result = url.appendToPathname('extra')
+      expect(result.pathname).toBe('/base/extra')
     })
   })
 })
