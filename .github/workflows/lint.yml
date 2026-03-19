@@ -30,7 +30,6 @@ jobs:
 
       - name: Run Oxlint (Changed Files)
         shell: bash
-        if: github.event_name == 'pull_request' && inputs.all-files == 'false'
         working-directory: ${{ inputs.working-directory }}
         run: |
           echo "::group::Run Oxlint (Changed Files)"
