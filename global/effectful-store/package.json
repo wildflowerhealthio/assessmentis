@@ -12,7 +12,7 @@
     "lint": "oxlint ./src/",
     "lint:fix": "oxlint --fix ./src/",
     "test": "vitest run",
-    "typecheck": "tsgo --noEmit"
+    "typecheck": "npx tsgo --noEmit"
   },
   "dependencies": {
     "@assessmentis/ontology": "*",

@@ -16,7 +16,7 @@
     "lint:fix": "oxlint --fix ./{src,test}/",
     "test": "vitest run test --project \"*:unit\" --project \"*:integration\"",
     "test:integration": "RECORD=true vitest run test --config vitest.integration.config.ts",
-    "typecheck": "tsgo --noEmit"
+    "typecheck": "npx tsgo --noEmit"
   },
   "dependencies": {
     "@assessmentis/clinical-domain": "*",

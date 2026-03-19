@@ -192,7 +192,7 @@
       "rules": {
         "tsdoc/syntax": "warn",
       },
-      "jsPlugins": ["eslint-plugin-tsdoc"],
+      // "jsPlugins": ["eslint-plugin-tsdoc"],
     },
     {
       "files": ["**/*.test.ts", "**/*.test.tsx", "**/test/**"],

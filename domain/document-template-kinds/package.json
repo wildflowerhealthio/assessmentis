@@ -14,7 +14,7 @@
     "lint": "oxlint ./{src,test}/",
     "lint:fix": "oxlint --fix ./{src,test}/",
     "test": "vitest run",
-    "typecheck": "tsgo --noEmit"
+    "typecheck": "npx tsgo --noEmit"
   },
   "dependencies": {
     "@assessmentis/clinical-domain": "*",

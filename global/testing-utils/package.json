@@ -19,7 +19,7 @@
     "lint": "oxlint ./{src,test}/",
     "lint:fix": "oxlint --fix ./{src,test}/",
     "test": "vitest run",
-    "typecheck": "tsgo --noEmit"
+    "typecheck": "npx tsgo --noEmit"
   },
   "dependencies": {
     "msw": "^2.7.0"

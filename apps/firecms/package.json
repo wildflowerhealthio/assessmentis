@@ -12,7 +12,7 @@
     "deploy": "vite build && firebase deploy --only hosting --project assessmentisasdmin",
     "dev": "vite --mode development --port $(turbo get-mfe-port)",
     "preview": "vite build && vite preview",
-    "typecheck": "tsgo --noEmit"
+    "typecheck": "npx tsgo --noEmit"
   },
   "dependencies": {
     "@assessmentis/platform-domain": "*",

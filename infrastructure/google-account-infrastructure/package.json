@@ -11,7 +11,7 @@
   "scripts": {
     "lint": "oxlint ./{src,test}/",
     "lint:fix": "oxlint --fix ./{src,test}/",
-    "typecheck": "tsgo --noEmit"
+    "typecheck": "npx tsgo --noEmit"
   },
   "dependencies": {
     "@assessmentis/config-domain": "*",

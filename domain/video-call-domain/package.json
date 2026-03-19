@@ -14,7 +14,7 @@
     "lint:fix": "oxlint --fix ./{src,test}/",
     "test": "vitest --project video-call-domain:unit",
     "test:all": "vitest",
-    "typecheck": "tsgo --noEmit"
+    "typecheck": "npx tsgo --noEmit"
   },
   "dependencies": {
     "@assessmentis/clinical-domain": "*",

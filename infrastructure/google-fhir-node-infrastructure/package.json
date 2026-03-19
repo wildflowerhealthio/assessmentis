@@ -13,7 +13,7 @@
     "lint:fix": "oxlint --fix ./{src,test}/",
     "test": "vitest --project google-fhir-node-infrastructure:unit",
     "test:integration": "vitest --project google-fhir-node-infrastructure:integration",
-    "typecheck": "tsgo --noEmit"
+    "typecheck": "npx tsgo --noEmit"
   },
   "dependencies": {
     "@assessmentis/clinical-domain": "*",

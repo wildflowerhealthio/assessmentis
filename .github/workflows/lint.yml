@@ -32,8 +32,6 @@ jobs:
         with:
           config: .oxlintrc.json
           working-directory: '.'
-          # Disable JS plugin
-          plugins-disable: eslint-plugin-tsdoc
 
   check-markdown-changes:
     runs-on: ubuntu-latest

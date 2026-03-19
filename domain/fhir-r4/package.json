@@ -14,7 +14,7 @@
     "lint": "oxlint ./{src,test}/",
     "lint:fix": "oxlint --fix ./{src,test}/",
     "test": "vitest run --project fhir-r4:unit",
-    "typecheck": "tsgo --noEmit"
+    "typecheck": "npx tsgo --noEmit"
   },
   "dependencies": {
     "@assessmentis/clinical-domain": "*",

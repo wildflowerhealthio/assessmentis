@@ -11,7 +11,7 @@
     "lint": "oxlint ./lib/ ./bin/ ./test/",
     "lint:fix": "oxlint --fix ./lib/ ./bin/ ./test/",
     "test": "vitest --project aws_infra:unit",
-    "typecheck": "tsgo --noEmit",
+    "typecheck": "npx tsgo --noEmit",
     "watch": "tsc -w"
   },
   "dependencies": {
