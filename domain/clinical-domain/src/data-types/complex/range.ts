@@ -17,7 +17,7 @@ const fields = {
   high: Schema.optional(Quantity),
 } as const satisfies Schema.Struct.Fields
 
-const ElementMixin = Element(DomainType)
+const RangeElement = Element(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Range}. */
 export interface RangeEncoded
@@ -29,7 +29,7 @@ export interface RangeEncoded
  * A Range specifies a set of possible values; usually, one value from the range applies
  * (e.g. "give the patient between 2 and 4 tablets"). Ranges are typically used in instructions.
  */
-export class Range extends ElementMixin.extend<Range>(DomainType)(fields) {
-  static DomainType = ElementMixin.DomainType
-  static UrlSchema = ElementMixin.UrlSchema
+export class Range extends RangeElement.extend<Range>(DomainType)(fields) {
+  static DomainType = RangeElement.DomainType
+  static UrlSchema = RangeElement.UrlSchema
 }

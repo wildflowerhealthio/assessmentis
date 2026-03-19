@@ -96,7 +96,7 @@ const fields = {
   subject: Schema.optional(Schema.suspend(() => Reference)),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(DomainType)
+const DiagnosticReportResource = Resource(DomainType)
 
 /** Encoded (wire-format) shape of a {@link DiagnosticReport}. */
 export interface DiagnosticReportEncoded
@@ -106,7 +106,7 @@ export interface DiagnosticReportEncoded
  * The findings and interpretation of diagnostic tests performed on patients,
  * groups of patients, devices, and locations, and/or specimens derived from these.
  */
-export class DiagnosticReport extends resourceMixin.extend<DiagnosticReport>(DomainType)(fields) {
-  static DomainType = resourceMixin.DomainType
-  static UrlSchema = resourceMixin.UrlSchema
+export class DiagnosticReport extends DiagnosticReportResource.extend<DiagnosticReport>(DomainType)(fields) {
+  static DomainType = DiagnosticReportResource.DomainType
+  static UrlSchema = DiagnosticReportResource.UrlSchema
 }

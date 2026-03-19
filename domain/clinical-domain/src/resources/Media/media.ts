@@ -75,7 +75,7 @@ const fields = {
   width: Schema.optional(Schema.Int),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(DomainType)
+const MediaResource = Resource(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Media}. */
 export interface MediaEncoded
@@ -85,8 +85,8 @@ export interface MediaEncoded
  * A photo, video, or audio recording acquired or used in healthcare.
  * The actual content may be inline or provided by direct reference.
  */
-export class Media extends resourceMixin.extend<Media>(DomainType)(fields) {
-  static DomainType = resourceMixin.DomainType
-  static UrlSchema = resourceMixin.UrlSchema
+export class Media extends MediaResource.extend<Media>(DomainType)(fields) {
+  static DomainType = MediaResource.DomainType
+  static UrlSchema = MediaResource.UrlSchema
   readonly cloneWith = makeCloneWith(Media, this)
 }

@@ -46,7 +46,7 @@ const fields = {
   type: Schema.suspend(() => CodeableConcept),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(DomainType)
+const CompositionResource = Resource(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Composition}. */
 export interface CompositionEncoded
@@ -56,8 +56,8 @@ export interface CompositionEncoded
  * A set of resources composed into a single coherent clinical statement with
  * clinical attestation.
  */
-export class Composition extends resourceMixin.extend<Composition>(DomainType)(fields) {
-  static DomainType = resourceMixin.DomainType
-  static UrlSchema = resourceMixin.UrlSchema
+export class Composition extends CompositionResource.extend<Composition>(DomainType)(fields) {
+  static DomainType = CompositionResource.DomainType
+  static UrlSchema = CompositionResource.UrlSchema
   readonly cloneWith = makeCloneWith(Composition, this)
 }

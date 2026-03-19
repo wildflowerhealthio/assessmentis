@@ -80,12 +80,12 @@ export interface QuestionnaireItemEncoded
   item?: readonly QuestionnaireItemEncoded[] | undefined
 }
 
-const BackboneElementMixin = BackboneElement('QuestionnaireItem')
+const QuestionnaireItemBackboneElement = BackboneElement('QuestionnaireItem')
 /**
  * The content of the questionnaire is constructed from an ordered,
  * hierarchical collection of items.
  */
-export class QuestionnaireItem extends BackboneElementMixin.extend<QuestionnaireItem>(
+export class QuestionnaireItem extends QuestionnaireItemBackboneElement.extend<QuestionnaireItem>(
   'QuestionnaireItem'
 )(
   {
@@ -101,7 +101,7 @@ export class QuestionnaireItem extends BackboneElementMixin.extend<Questionnaire
     ),
   }
 ) {
-  static DomainType = BackboneElementMixin.DomainType
-  static UrlSchema = BackboneElementMixin.UrlSchema
+  static DomainType = QuestionnaireItemBackboneElement.DomainType
+  static UrlSchema = QuestionnaireItemBackboneElement.UrlSchema
   readonly cloneWith = makeCloneWith(QuestionnaireItem, this)
 }

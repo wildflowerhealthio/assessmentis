@@ -108,7 +108,7 @@ const fields = {
   ),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(DomainType)
+const ObservationResource = Resource(DomainType)
 
 /** Encoded (wire-format) shape of an {@link Observation}. */
 export interface ObservationEncoded
@@ -117,8 +117,8 @@ export interface ObservationEncoded
 /**
  * Measurements and simple assertions made about a patient, device or other subject.
  */
-export class Observation extends resourceMixin.extend<Observation>(DomainType)(fields) {
-  static DomainType = resourceMixin.DomainType
-  static UrlSchema = resourceMixin.UrlSchema
+export class Observation extends ObservationResource.extend<Observation>(DomainType)(fields) {
+  static DomainType = ObservationResource.DomainType
+  static UrlSchema = ObservationResource.UrlSchema
   readonly cloneWith = makeCloneWith(Observation, this)
 }

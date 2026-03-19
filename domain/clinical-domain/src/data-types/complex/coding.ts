@@ -35,7 +35,7 @@ const fields = {
   // _version?: Element | undefined;
 } as const satisfies Schema.Struct.Fields
 
-const ElementMixin = Element(DomainType)
+const CodingElement = Element(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Coding}. */
 export interface CodingEncoded
@@ -45,9 +45,9 @@ export interface CodingEncoded
  * A reference to a code defined by a terminology system. Binds a `code` to
  * a `system` URI and optional `display` text.
  */
-export class Coding extends ElementMixin.extend<Coding>(DomainType)(fields) {
-  static DomainType = ElementMixin.DomainType
-  static UrlSchema = ElementMixin.UrlSchema
+export class Coding extends CodingElement.extend<Coding>(DomainType)(fields) {
+  static DomainType = CodingElement.DomainType
+  static UrlSchema = CodingElement.UrlSchema
   static Datatype = Datatype('Coding', Coding)
 
   static makeLiteral = <C extends ConstructorParameters<typeof Coding>[0]>(params: C): Coding & C =>

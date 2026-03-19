@@ -30,11 +30,11 @@ export interface QuestionnaireItemAnswerOptionEncoded
   extends Schema.Struct.Encoded<typeof fields>, BackboneElementEncoded<DomainType> {}
 
 /** A permitted answer value for a questionnaire item, with a polymorphic value[x] choice. */
-const BackboneElementMixin = BackboneElement(DomainType)
+const QuestionnaireItemAnswerOptionBackboneElement = BackboneElement(DomainType)
 
-export class QuestionnaireItemAnswerOption extends BackboneElementMixin.extend<QuestionnaireItemAnswerOption>(
+export class QuestionnaireItemAnswerOption extends QuestionnaireItemAnswerOptionBackboneElement.extend<QuestionnaireItemAnswerOption>(
   DomainType
 )(fields) {
-  static DomainType = BackboneElementMixin.DomainType
-  static UrlSchema = BackboneElementMixin.UrlSchema
+  static DomainType = QuestionnaireItemAnswerOptionBackboneElement.DomainType
+  static UrlSchema = QuestionnaireItemAnswerOptionBackboneElement.UrlSchema
 }

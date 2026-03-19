@@ -37,11 +37,11 @@ export interface ObservationComponentEncoded
   extends Schema.Struct.Encoded<typeof fields>, BackboneElementEncoded<DomainType> {}
 
 /** A component result within an {@link Observation}, carrying its own code and value[x] choice. */
-const BackboneElementMixin = BackboneElement(DomainType)
+const ObservationComponentBackboneElement = BackboneElement(DomainType)
 
-export class ObservationComponent extends BackboneElementMixin.extend<ObservationComponent>(
+export class ObservationComponent extends ObservationComponentBackboneElement.extend<ObservationComponent>(
   DomainType
 )(fields) {
-  static DomainType = BackboneElementMixin.DomainType
-  static UrlSchema = BackboneElementMixin.UrlSchema
+  static DomainType = ObservationComponentBackboneElement.DomainType
+  static UrlSchema = ObservationComponentBackboneElement.UrlSchema
 }

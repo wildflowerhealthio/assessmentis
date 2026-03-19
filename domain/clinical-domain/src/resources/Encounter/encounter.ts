@@ -79,7 +79,7 @@ const fields = {
   ),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(DomainType)
+const EncounterResource = Resource(DomainType)
 
 /** Encoded (wire-format) shape of an {@link Encounter}. */
 export interface EncounterEncoded
@@ -89,8 +89,8 @@ export interface EncounterEncoded
  * An interaction between a patient and healthcare provider(s) for the purpose of
  * providing healthcare service(s) or assessing the health status of a patient.
  */
-export class Encounter extends resourceMixin.extend<Encounter>(DomainType)(fields) {
-  static DomainType = resourceMixin.DomainType
-  static UrlSchema = resourceMixin.UrlSchema
+export class Encounter extends EncounterResource.extend<Encounter>(DomainType)(fields) {
+  static DomainType = EncounterResource.DomainType
+  static UrlSchema = EncounterResource.UrlSchema
   readonly cloneWith = makeCloneWith(Encounter, this)
 }

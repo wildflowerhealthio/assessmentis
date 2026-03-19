@@ -69,7 +69,7 @@ const fields = {
   ),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(DomainType)
+const PatientResource = Resource(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Patient}. */
 export interface PatientEncoded
@@ -79,8 +79,8 @@ export interface PatientEncoded
  * Demographics and other administrative information about an individual or animal
  * receiving care or other health-related services.
  */
-export class Patient extends resourceMixin.extend<Patient>(DomainType)(fields) {
-  static DomainType = resourceMixin.DomainType
-  static UrlSchema = resourceMixin.UrlSchema
+export class Patient extends PatientResource.extend<Patient>(DomainType)(fields) {
+  static DomainType = PatientResource.DomainType
+  static UrlSchema = PatientResource.UrlSchema
   readonly cloneWith = makeCloneWith(Patient, this)
 }

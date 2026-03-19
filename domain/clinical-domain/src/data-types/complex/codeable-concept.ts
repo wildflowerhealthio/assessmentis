@@ -31,15 +31,15 @@ const fields = {
 export interface CodeableConceptEncoded
   extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<DomainType> {}
 
-const ElementMixin = Element<DomainType>(DomainType)
+const CodeableConceptElement = Element<DomainType>(DomainType)
 
 /**
  * A concept that may be defined by one or more coding systems. Wraps an
  * array of {@link Coding} values plus optional free-text.
  */
-export class CodeableConcept extends ElementMixin.extend<CodeableConcept>(DomainType)(fields) {
-  static DomainType = ElementMixin.DomainType
-  static UrlSchema = ElementMixin.UrlSchema
+export class CodeableConcept extends CodeableConceptElement.extend<CodeableConcept>(DomainType)(fields) {
+  static DomainType = CodeableConceptElement.DomainType
+  static UrlSchema = CodeableConceptElement.UrlSchema
   /** {@link Datatype} wrapper for use in {@link DatatypeChoice} value\[x\] unions. */
   static Datatype = Datatype('CodeableConcept', CodeableConcept)
 }

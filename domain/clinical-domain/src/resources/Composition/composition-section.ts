@@ -24,11 +24,11 @@ export interface CompositionSectionEncoded
   section?: readonly CompositionSectionEncoded[] | undefined
 }
 
-const BackboneElementMixin = BackboneElement('CompositionSection')
+const CompositionSectionBackboneElement = BackboneElement('CompositionSection')
 /**
  * Composition is broken into sections
  */
-export class CompositionSection extends BackboneElementMixin.extend<CompositionSection>(
+export class CompositionSection extends CompositionSectionBackboneElement.extend<CompositionSection>(
   'CompositionSection'
 )(
   {
@@ -44,6 +44,6 @@ export class CompositionSection extends BackboneElementMixin.extend<CompositionS
     ),
   }
 ) {
-  static DomainType = BackboneElementMixin.DomainType
-  static UrlSchema = BackboneElementMixin.UrlSchema
+  static DomainType = CompositionSectionBackboneElement.DomainType
+  static UrlSchema = CompositionSectionBackboneElement.UrlSchema
 }

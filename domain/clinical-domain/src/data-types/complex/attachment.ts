@@ -47,13 +47,13 @@ const fields = {
 export interface AttachmentEncoded
   extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<typeof DomainType> {}
 
-const ElementMixin = Element(DomainType)
+const AttachmentElement = Element(DomainType)
 /**
  * For identifying specific representations or attachments.
  * This data type is used for all attachments including images, documents, etc.
  * Note: Per FHIR spec, if data is present, contentType SHALL be populated.
  */
-export class Attachment extends ElementMixin.extend<Attachment>(DomainType)(fields) {
-  static DomainType = ElementMixin.DomainType
-  static UrlSchema = ElementMixin.UrlSchema
+export class Attachment extends AttachmentElement.extend<Attachment>(DomainType)(fields) {
+  static DomainType = AttachmentElement.DomainType
+  static UrlSchema = AttachmentElement.UrlSchema
 }

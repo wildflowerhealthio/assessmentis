@@ -26,11 +26,11 @@ export interface ObservationReferenceRangeEncoded
   extends Schema.Struct.Encoded<typeof fields>, BackboneElementEncoded<DomainType> {}
 
 /** Guidance on how to interpret an {@link Observation} value relative to normal or recommended ranges. */
-const BackboneElementMixin = BackboneElement(DomainType)
+const ObservationReferenceRangeBackboneElement = BackboneElement(DomainType)
 
-export class ObservationReferenceRange extends BackboneElementMixin.extend<ObservationReferenceRange>(
+export class ObservationReferenceRange extends ObservationReferenceRangeBackboneElement.extend<ObservationReferenceRange>(
   DomainType
 )(fields) {
-  static DomainType = BackboneElementMixin.DomainType
-  static UrlSchema = BackboneElementMixin.UrlSchema
+  static DomainType = ObservationReferenceRangeBackboneElement.DomainType
+  static UrlSchema = ObservationReferenceRangeBackboneElement.UrlSchema
 }

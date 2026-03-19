@@ -52,7 +52,7 @@ export interface ReferenceEncoded
   identifier?: IdentifierEncoded
 }
 
-const referenceElement = Element(ReferenceKey)
+const ReferenceElement = Element(ReferenceKey)
 
 /**
  * A reference from one FHIR resource to another, by URL, type, display text,
@@ -64,7 +64,7 @@ const referenceElement = Element(ReferenceKey)
  * Reference. `Schema.suspend` breaks this cycle at schema evaluation time.
  * Both types are co-located in this file to avoid cross-file circular imports.
  */
-export class Reference extends referenceElement.extend<Reference>(ReferenceKey)(
+export class Reference extends ReferenceElement.extend<Reference>(ReferenceKey)(
   {
     ...referenceFields,
     /**
@@ -81,8 +81,8 @@ export class Reference extends referenceElement.extend<Reference>(ReferenceKey)(
     ),
   }
 ) {
-  static DomainType = referenceElement.DomainType
-  static UrlSchema = referenceElement.UrlSchema
+  static DomainType = ReferenceElement.DomainType
+  static UrlSchema = ReferenceElement.UrlSchema
   /**
    * Decodes this reference's URL string into a branded resource URL, failing
    * if the `type` doesn't match or `reference` is absent.
@@ -195,7 +195,7 @@ export interface IdentifierEncoded
   assigner?: ReferenceEncoded
 }
 
-const IdentifierElementMixin = Element(IdentifierKey)
+const IdentifierElement = Element(IdentifierKey)
 
 /**
  * An identifier intended for computation — carries a `system` URI, a `value`,
@@ -204,7 +204,7 @@ const IdentifierElementMixin = Element(IdentifierKey)
  *
  * @see {@link Reference} for the mutual-recursion notes
  */
-export class Identifier extends IdentifierElementMixin.extend<Identifier>(IdentifierKey)(
+export class Identifier extends IdentifierElement.extend<Identifier>(IdentifierKey)(
   {
     ...identifierFields,
     /**
@@ -218,6 +218,6 @@ export class Identifier extends IdentifierElementMixin.extend<Identifier>(Identi
     ),
   }
 ) {
-  static DomainType = IdentifierElementMixin.DomainType
-  static UrlSchema = IdentifierElementMixin.UrlSchema
+  static DomainType = IdentifierElement.DomainType
+  static UrlSchema = IdentifierElement.UrlSchema
 }

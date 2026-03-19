@@ -6,11 +6,11 @@ import type { Extension } from '../special-purpose/extension'
 import { Resource } from './resource'
 import type { ResourceEncoded } from './resource'
 
-const ResourceMixin = Resource('TestResource')
+const TestResourceResource = Resource('TestResource')
 
-class TestResource extends ResourceMixin.extend<TestResource>('TestResource')({}) {
-  static DomainType = ResourceMixin.DomainType
-  static UrlSchema = ResourceMixin.UrlSchema
+class TestResource extends TestResourceResource.extend<TestResource>('TestResource')({}) {
+  static DomainType = TestResourceResource.DomainType
+  static UrlSchema = TestResourceResource.UrlSchema
 }
 
 describe('Resource', () => {

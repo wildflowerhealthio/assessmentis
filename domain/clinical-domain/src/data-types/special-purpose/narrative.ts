@@ -28,7 +28,7 @@ const fields = {
   div: Schema.String,
 } as const satisfies Schema.Struct.Fields
 
-const ElementMixin = Element(DomainType)
+const NarrativeElement = Element(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Narrative}. */
 export interface NarrativeEncoded
@@ -38,7 +38,7 @@ export interface NarrativeEncoded
  * Human-readable XHTML summary of a resource, with a `status` indicating
  * whether the narrative is generated, additional, or empty.
  */
-export class Narrative extends ElementMixin.extend<Narrative>(DomainType)(fields) {
+export class Narrative extends NarrativeElement.extend<Narrative>(DomainType)(fields) {
   static readonly DomainType = DomainType
-  static readonly UrlSchema = ElementMixin.UrlSchema
+  static readonly UrlSchema = NarrativeElement.UrlSchema
 }

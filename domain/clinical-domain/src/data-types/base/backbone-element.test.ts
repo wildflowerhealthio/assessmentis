@@ -6,11 +6,11 @@ import type { Extension } from '../special-purpose/extension'
 import { BackboneElement } from './backbone-element'
 import type { BackboneElementEncoded } from './backbone-element'
 
-const BackboneMixin = BackboneElement('TestBackbone')
+const TestBackboneBackboneElement = BackboneElement('TestBackbone')
 
-class TestBackbone extends BackboneMixin.extend<TestBackbone>('TestBackbone')({}) {
-  static DomainType = BackboneMixin.DomainType
-  static UrlSchema = BackboneMixin.UrlSchema
+class TestBackbone extends TestBackboneBackboneElement.extend<TestBackbone>('TestBackbone')({}) {
+  static DomainType = TestBackboneBackboneElement.DomainType
+  static UrlSchema = TestBackboneBackboneElement.UrlSchema
 }
 
 describe('BackboneElement', () => {

@@ -10,11 +10,11 @@ import { Element } from './element'
 // Element tests
 // ---------------------------------------------------------------------------
 
-const ElementMixin = Element('TestElement')
+const TestElementElement = Element('TestElement')
 
-class TestElement extends ElementMixin.extend<TestElement>('TestElement')({}) {
-  static DomainType = ElementMixin.DomainType
-  static UrlSchema = ElementMixin.UrlSchema
+class TestElement extends TestElementElement.extend<TestElement>('TestElement')({}) {
+  static DomainType = TestElementElement.DomainType
+  static UrlSchema = TestElementElement.UrlSchema
 }
 
 describe('Element', () => {

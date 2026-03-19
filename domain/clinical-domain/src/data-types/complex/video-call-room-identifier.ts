@@ -41,13 +41,13 @@ const fields = {
  * Convert to a standard `Identifier` via `toIdentifier()` for use in
  * resource `identifier[]` arrays.
  */
-const ElementMixin = Element(DomainType)
+const VideoCallRoomIdentifierElement = Element(DomainType)
 
-export class VideoCallRoomIdentifier extends ElementMixin.extend<VideoCallRoomIdentifier>(
+export class VideoCallRoomIdentifier extends VideoCallRoomIdentifierElement.extend<VideoCallRoomIdentifier>(
   DomainType
 )(fields) {
-  static DomainType = ElementMixin.DomainType
-  static UrlSchema = ElementMixin.UrlSchema
+  static DomainType = VideoCallRoomIdentifierElement.DomainType
+  static UrlSchema = VideoCallRoomIdentifierElement.UrlSchema
   static readonly SYSTEM = VIDEO_CALL_ROOM_NAME_SYSTEM
 
   /**

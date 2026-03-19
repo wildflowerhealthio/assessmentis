@@ -38,7 +38,7 @@ const fields = {
   ),
 } as const satisfies Schema.Struct.Fields
 
-const elementMixin = Element('Quantity')
+const QuantityElement = Element('Quantity')
 
 /** Encoded (wire-format) shape of a {@link Quantity}. */
 export interface QuantityEncoded
@@ -54,8 +54,8 @@ export interface QuantityEncoded
  * of units can be used. The context of use may also restrict the values for the comparator.
  */
 
-export class Quantity extends elementMixin.extend<Quantity>('Quantity')(fields) {
-  static DomainType = elementMixin.DomainType
-  static UrlSchema = elementMixin.UrlSchema
+export class Quantity extends QuantityElement.extend<Quantity>('Quantity')(fields) {
+  static DomainType = QuantityElement.DomainType
+  static UrlSchema = QuantityElement.UrlSchema
   static Datatype = Datatype('Quantity', Quantity)
 }

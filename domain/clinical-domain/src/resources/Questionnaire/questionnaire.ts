@@ -50,7 +50,7 @@ const fields = {
   version: Schema.optional(Schema.String),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(DomainType)
+const QuestionnaireResource = Resource(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Questionnaire}. */
 export interface QuestionnaireEncoded
@@ -62,7 +62,7 @@ export interface QuestionnaireEncoded
  * presentation, phraseology and grouping to allow coherent, consistent
  * data collection.
  */
-export class Questionnaire extends resourceMixin.extend<Questionnaire>(DomainType)(fields) {
-  static DomainType = resourceMixin.DomainType
-  static UrlSchema = resourceMixin.UrlSchema
+export class Questionnaire extends QuestionnaireResource.extend<Questionnaire>(DomainType)(fields) {
+  static DomainType = QuestionnaireResource.DomainType
+  static UrlSchema = QuestionnaireResource.UrlSchema
 }
