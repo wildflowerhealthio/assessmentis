@@ -1,7 +1,5 @@
 import { Schema } from 'effect'
 
-import { MergeClasses } from '@assessmentis/util'
-
 import { Element } from '../base/element'
 import type { ElementEncoded } from '../base/element'
 
@@ -40,6 +38,7 @@ export interface NarrativeEncoded
  * Human-readable XHTML summary of a resource, with a `status` indicating
  * whether the narrative is generated, additional, or empty.
  */
-export class Narrative extends MergeClasses<Narrative>(DomainType)([], ElementMixin, fields) {
+export class Narrative extends ElementMixin.extend<Narrative>(DomainType)(fields) {
   static readonly DomainType = DomainType
+  static readonly UrlSchema = ElementMixin.UrlSchema
 }

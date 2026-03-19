@@ -1,7 +1,5 @@
 import { Schema } from 'effect'
 
-import { MergeClasses } from '@assessmentis/util'
-
 import { Element } from '../base/element'
 import type { ElementEncoded } from '../base/element'
 import { Datatype } from '../datatype'
@@ -47,7 +45,9 @@ export interface CodingEncoded
  * A reference to a code defined by a terminology system. Binds a `code` to
  * a `system` URI and optional `display` text.
  */
-export class Coding extends MergeClasses<Coding>(DomainType)([], ElementMixin, fields) {
+export class Coding extends ElementMixin.extend<Coding>(DomainType)(fields) {
+  static DomainType = ElementMixin.DomainType
+  static UrlSchema = ElementMixin.UrlSchema
   static Datatype = Datatype('Coding', Coding)
 
   static makeLiteral = <C extends ConstructorParameters<typeof Coding>[0]>(params: C): Coding & C =>

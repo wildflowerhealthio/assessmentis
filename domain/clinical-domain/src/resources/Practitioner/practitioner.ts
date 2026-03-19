@@ -2,7 +2,6 @@ import { Schema } from 'effect'
 
 import {
   AnnotateArrayWithArbitrary,
-  MergeClasses,
   TimelessDateFromString,
   makeCloneWith,
 } from '@assessmentis/util'
@@ -67,10 +66,8 @@ export interface PractitionerEncoded
 /**
  * A person who is directly or indirectly involved in the provisioning of healthcare.
  */
-export class Practitioner extends MergeClasses<Practitioner>(DomainType)(
-  [],
-  resourceMixin,
-  fields
-) {
+export class Practitioner extends resourceMixin.extend<Practitioner>(DomainType)(fields) {
+  static DomainType = resourceMixin.DomainType
+  static UrlSchema = resourceMixin.UrlSchema
   readonly cloneWith = makeCloneWith(Practitioner, this)
 }

@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import { AnnotateArrayWithArbitrary, MergeClasses } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary } from '@assessmentis/util'
 
 import { BackboneElement, CodeableConcept, Quantity, Range } from '../../data-types'
 import type { BackboneElementEncoded } from '../../data-types'
@@ -26,8 +26,11 @@ export interface ObservationReferenceRangeEncoded
   extends Schema.Struct.Encoded<typeof fields>, BackboneElementEncoded<DomainType> {}
 
 /** Guidance on how to interpret an {@link Observation} value relative to normal or recommended ranges. */
-export class ObservationReferenceRange extends MergeClasses<ObservationReferenceRange>(DomainType)(
-  [],
-  BackboneElement(DomainType),
-  fields
-) {}
+const BackboneElementMixin = BackboneElement(DomainType)
+
+export class ObservationReferenceRange extends BackboneElementMixin.extend<ObservationReferenceRange>(
+  DomainType
+)(fields) {
+  static DomainType = BackboneElementMixin.DomainType
+  static UrlSchema = BackboneElementMixin.UrlSchema
+}

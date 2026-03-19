@@ -1,7 +1,5 @@
 import { Schema } from 'effect'
 
-import { MergeClasses } from '@assessmentis/util'
-
 import { Element } from '../base/element'
 import type { ElementEncoded } from '../base/element'
 import { Datatype } from '../datatype'
@@ -56,6 +54,8 @@ export interface QuantityEncoded
  * of units can be used. The context of use may also restrict the values for the comparator.
  */
 
-export class Quantity extends MergeClasses<Quantity>('Quantity')([], elementMixin, fields) {
+export class Quantity extends elementMixin.extend<Quantity>('Quantity')(fields) {
+  static DomainType = elementMixin.DomainType
+  static UrlSchema = elementMixin.UrlSchema
   static Datatype = Datatype('Quantity', Quantity)
 }

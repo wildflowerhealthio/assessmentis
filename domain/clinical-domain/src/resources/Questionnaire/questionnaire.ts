@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import { AnnotateArrayWithArbitrary, MergeClasses } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary } from '@assessmentis/util'
 
 import { Resource } from '../../data-types/base/resource'
 import type { ResourceEncoded } from '../../data-types/base/resource'
@@ -62,8 +62,7 @@ export interface QuestionnaireEncoded
  * presentation, phraseology and grouping to allow coherent, consistent
  * data collection.
  */
-export class Questionnaire extends MergeClasses<Questionnaire>(DomainType)(
-  [],
-  resourceMixin,
-  fields
-) {}
+export class Questionnaire extends resourceMixin.extend<Questionnaire>(DomainType)(fields) {
+  static DomainType = resourceMixin.DomainType
+  static UrlSchema = resourceMixin.UrlSchema
+}

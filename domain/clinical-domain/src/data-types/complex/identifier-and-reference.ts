@@ -1,10 +1,8 @@
 import { Effect, Schema } from 'effect'
-import type { Arbitrary } from 'effect'
 import type { ParseError } from 'effect/ParseResult'
 
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import { ExternalAssertionError } from '@assessmentis/ontology'
-import { MergeClasses, mergeArbitraries } from '@assessmentis/util'
 
 import { Element } from '../base/'
 import type { ElementEncoded } from '../base/'
@@ -66,16 +64,9 @@ const referenceElement = Element(ReferenceKey)
  * Reference. `Schema.suspend` breaks this cycle at schema evaluation time.
  * Both types are co-located in this file to avoid cross-file circular imports.
  */
-export class Reference extends MergeClasses<Reference>(ReferenceKey)(
-  [
-    {
-      arbitrary: (): Arbitrary.LazyArbitrary<Reference> =>
-        mergeArbitraries((props) => new Reference(props), referenceElement, referenceFields),
-    },
-  ],
-  referenceElement,
-  referenceFields,
+export class Reference extends referenceElement.extend<Reference>(ReferenceKey)(
   {
+    ...referenceFields,
     /**
      * When an identifier is provided in place of a reference, any system processing the reference will only be able to resolve the identifier to a reference if it understands the business context in which the identifier is used. Sometimes this is global (e.g. a national identifier) but often it is not. For this reason, none of the useful mechanisms described for working with references (e.g. chaining, includes) are possible, nor should servers be expected to be able resolve the reference. Servers may accept an identifier based reference untouched, resolve it, and/or reject it - see CapabilityStatement.rest.resource.referencePolicy.
      * When both an identifier and a literal reference are provided, the literal reference is preferred. Applications processing the resource are allowed - but not required - to check that the identifier matches the literal reference
@@ -90,6 +81,8 @@ export class Reference extends MergeClasses<Reference>(ReferenceKey)(
     ),
   }
 ) {
+  static DomainType = referenceElement.DomainType
+  static UrlSchema = referenceElement.UrlSchema
   /**
    * Decodes this reference's URL string into a branded resource URL, failing
    * if the `type` doesn't match or `reference` is absent.
@@ -211,20 +204,9 @@ const IdentifierElementMixin = Element(IdentifierKey)
  *
  * @see {@link Reference} for the mutual-recursion notes
  */
-export class Identifier extends MergeClasses<Identifier>(IdentifierKey)(
-  [
-    {
-      arbitrary: (): Arbitrary.LazyArbitrary<Identifier> =>
-        mergeArbitraries(
-          (props) => new Identifier(props),
-          IdentifierElementMixin,
-          identifierFields
-        ),
-    },
-  ],
-  IdentifierElementMixin,
-  identifierFields,
+export class Identifier extends IdentifierElementMixin.extend<Identifier>(IdentifierKey)(
   {
+    ...identifierFields,
     /**
      * The Identifier.assigner may omit the .reference element and only contain a .display element reflecting the name or other textual information about the assigning organization.
      *
@@ -235,4 +217,7 @@ export class Identifier extends MergeClasses<Identifier>(IdentifierKey)(
       Schema.suspend((): Schema.Schema<Reference, ReferenceEncoded> => Reference)
     ),
   }
-) {}
+) {
+  static DomainType = IdentifierElementMixin.DomainType
+  static UrlSchema = IdentifierElementMixin.UrlSchema
+}

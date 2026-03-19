@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import { AnnotateArrayWithArbitrary, MergeClasses, makeCloneWith } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary, makeCloneWith } from '@assessmentis/util'
 
 import { Resource } from '../../data-types/base/resource'
 import type { ResourceEncoded } from '../../data-types/base/resource'
@@ -89,6 +89,8 @@ export interface EncounterEncoded
  * An interaction between a patient and healthcare provider(s) for the purpose of
  * providing healthcare service(s) or assessing the health status of a patient.
  */
-export class Encounter extends MergeClasses<Encounter>(DomainType)([], resourceMixin, fields) {
+export class Encounter extends resourceMixin.extend<Encounter>(DomainType)(fields) {
+  static DomainType = resourceMixin.DomainType
+  static UrlSchema = resourceMixin.UrlSchema
   readonly cloneWith = makeCloneWith(Encounter, this)
 }

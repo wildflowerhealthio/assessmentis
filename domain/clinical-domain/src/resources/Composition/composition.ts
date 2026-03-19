@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import { AnnotateArrayWithArbitrary, MergeClasses, makeCloneWith } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary, makeCloneWith } from '@assessmentis/util'
 
 import { Resource } from '../../data-types/base/resource'
 import type { ResourceEncoded } from '../../data-types/base/resource'
@@ -56,6 +56,8 @@ export interface CompositionEncoded
  * A set of resources composed into a single coherent clinical statement with
  * clinical attestation.
  */
-export class Composition extends MergeClasses<Composition>(DomainType)([], resourceMixin, fields) {
+export class Composition extends resourceMixin.extend<Composition>(DomainType)(fields) {
+  static DomainType = resourceMixin.DomainType
+  static UrlSchema = resourceMixin.UrlSchema
   readonly cloneWith = makeCloneWith(Composition, this)
 }

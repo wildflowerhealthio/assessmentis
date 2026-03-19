@@ -1,7 +1,7 @@
 import { Schema, pipe } from 'effect'
 import type { Arbitrary, FastCheck } from 'effect'
 
-import { AnnotateArrayWithArbitrary, MergeClasses, makeCloneWith } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary, makeCloneWith } from '@assessmentis/util'
 
 import { Resource } from '../../data-types/base/resource'
 import type { ResourceEncoded } from '../../data-types/base/resource'
@@ -117,6 +117,8 @@ export interface ObservationEncoded
 /**
  * Measurements and simple assertions made about a patient, device or other subject.
  */
-export class Observation extends MergeClasses<Observation>(DomainType)([], resourceMixin, fields) {
+export class Observation extends resourceMixin.extend<Observation>(DomainType)(fields) {
+  static DomainType = resourceMixin.DomainType
+  static UrlSchema = resourceMixin.UrlSchema
   readonly cloneWith = makeCloneWith(Observation, this)
 }

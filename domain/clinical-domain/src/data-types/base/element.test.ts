@@ -2,8 +2,6 @@ import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
 import { describe, expect, expectTypeOf, test } from 'vitest'
 
-import { MergeClasses } from '@assessmentis/util'
-
 import { Extension } from '../special-purpose/extension'
 import type { ExtensionEncoded } from '../special-purpose/extension'
 import { Element } from './element'
@@ -14,7 +12,10 @@ import { Element } from './element'
 
 const ElementMixin = Element('TestElement')
 
-class TestElement extends MergeClasses<TestElement>('TestElement')([], ElementMixin) {}
+class TestElement extends ElementMixin.extend<TestElement>('TestElement')({}) {
+  static DomainType = ElementMixin.DomainType
+  static UrlSchema = ElementMixin.UrlSchema
+}
 
 describe('Element', () => {
   describe('types', () => {

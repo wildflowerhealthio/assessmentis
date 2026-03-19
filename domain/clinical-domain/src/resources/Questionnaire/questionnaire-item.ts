@@ -1,12 +1,6 @@
 import { Schema, pipe } from 'effect'
-import type { FastCheck } from 'effect'
 
-import {
-  AnnotateArrayWithArbitrary,
-  MergeClasses,
-  makeCloneWith,
-  mergeArbitraries,
-} from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary, makeCloneWith } from '@assessmentis/util'
 
 import { BackboneElement, Coding } from '../../data-types'
 import type { BackboneElementEncoded } from '../../data-types'
@@ -91,41 +85,9 @@ const BackboneElementMixin = BackboneElement('QuestionnaireItem')
  * The content of the questionnaire is constructed from an ordered,
  * hierarchical collection of items.
  */
-export class QuestionnaireItem extends MergeClasses<QuestionnaireItem>('QuestionnaireItem')(
-  [
-    {
-      arbitrary:
-        () =>
-        (fc: typeof FastCheck): FastCheck.Arbitrary<QuestionnaireItem> =>
-          fc.letrec<{ self: QuestionnaireItem }>((tie) => ({
-            self: mergeArbitraries(
-              (props) => new QuestionnaireItem(props),
-              questionnaireItemFields,
-              BackboneElementMixin,
-              (
-                fc
-              ): FastCheck.Arbitrary<{
-                item: readonly QuestionnaireItem[] | undefined
-              }> =>
-                fc.record({
-                  item: fc.oneof(
-                    {
-                      depthIdentifier: 'id:QuestionnaireItem',
-                      depthSize: 'small',
-                    },
-                    fc.constant<readonly never[]>([]),
-                    fc.constant<readonly never[]>([]),
-                    fc.array<QuestionnaireItem>(tie('self'), {
-                      depthIdentifier: 'id:self',
-                      maxLength: 2,
-                    })
-                  ),
-                })
-            )(fc),
-          })).self,
-    },
-  ],
-  BackboneElementMixin,
+export class QuestionnaireItem extends BackboneElementMixin.extend<QuestionnaireItem>(
+  'QuestionnaireItem'
+)(
   {
     ...questionnaireItemFields,
     item: Schema.optional(
@@ -139,5 +101,7 @@ export class QuestionnaireItem extends MergeClasses<QuestionnaireItem>('Question
     ),
   }
 ) {
+  static DomainType = BackboneElementMixin.DomainType
+  static UrlSchema = BackboneElementMixin.UrlSchema
   readonly cloneWith = makeCloneWith(QuestionnaireItem, this)
 }

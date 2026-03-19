@@ -68,7 +68,7 @@ type BackboneElementClass<Self, TDomainType extends string> = {
  *
  * @typeParam TDomainType - The literal domain type string
  * @param domainType - The domain type string literal
- * @returns A Schema.Class mixin to compose via `MergeClasses` or `.extend`
+ * @returns A Schema.Class mixin to compose via `.extend`
  */
 // oxlint-disable-next-line typescript-eslint/explicit-function-return-type -- Self type parameter is the locally-defined class; cannot be named externally
 export const BackboneElement = <TDomainType extends string>(domainType: TDomainType) => {

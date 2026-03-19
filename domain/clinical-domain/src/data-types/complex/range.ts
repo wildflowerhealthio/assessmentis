@@ -1,7 +1,5 @@
 import { Schema } from 'effect'
 
-import { MergeClasses } from '@assessmentis/util'
-
 import { Element } from '../base/element'
 import type { ElementEncoded } from '../base/element'
 import { Quantity } from './quantity'
@@ -31,4 +29,7 @@ export interface RangeEncoded
  * A Range specifies a set of possible values; usually, one value from the range applies
  * (e.g. "give the patient between 2 and 4 tablets"). Ranges are typically used in instructions.
  */
-export class Range extends MergeClasses<Range>(DomainType)([], ElementMixin, fields) {}
+export class Range extends ElementMixin.extend<Range>(DomainType)(fields) {
+  static DomainType = ElementMixin.DomainType
+  static UrlSchema = ElementMixin.UrlSchema
+}

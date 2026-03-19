@@ -1,7 +1,5 @@
 import { Schema } from 'effect'
 
-import { MergeClasses } from '@assessmentis/util'
-
 import { Element } from '../base/'
 import { CodeableConcept } from './codeable-concept'
 import type { CodeableConceptEncoded } from './codeable-concept'
@@ -43,11 +41,13 @@ const fields = {
  * Convert to a standard `Identifier` via `toIdentifier()` for use in
  * resource `identifier[]` arrays.
  */
-export class VideoCallRoomIdentifier extends MergeClasses<VideoCallRoomIdentifier>(DomainType)(
-  [],
-  Element(DomainType),
-  fields
-) {
+const ElementMixin = Element(DomainType)
+
+export class VideoCallRoomIdentifier extends ElementMixin.extend<VideoCallRoomIdentifier>(
+  DomainType
+)(fields) {
+  static DomainType = ElementMixin.DomainType
+  static UrlSchema = ElementMixin.UrlSchema
   static readonly SYSTEM = VIDEO_CALL_ROOM_NAME_SYSTEM
 
   /**

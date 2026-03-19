@@ -1,7 +1,5 @@
 import { Schema } from 'effect'
 
-import { MergeClasses } from '@assessmentis/util'
-
 import { Element } from '../base/element'
 import type { ElementEncoded } from '../base/element'
 import { Datatype } from '../datatype'
@@ -39,11 +37,9 @@ const ElementMixin = Element<DomainType>(DomainType)
  * A concept that may be defined by one or more coding systems. Wraps an
  * array of {@link Coding} values plus optional free-text.
  */
-export class CodeableConcept extends MergeClasses<CodeableConcept>(DomainType)(
-  [],
-  ElementMixin,
-  fields
-) {
+export class CodeableConcept extends ElementMixin.extend<CodeableConcept>(DomainType)(fields) {
+  static DomainType = ElementMixin.DomainType
+  static UrlSchema = ElementMixin.UrlSchema
   /** {@link Datatype} wrapper for use in {@link DatatypeChoice} value\[x\] unions. */
   static Datatype = Datatype('CodeableConcept', CodeableConcept)
 }

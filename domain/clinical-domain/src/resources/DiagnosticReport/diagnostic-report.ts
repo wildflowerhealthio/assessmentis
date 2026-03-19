@@ -1,7 +1,7 @@
 import { Schema, pipe } from 'effect'
 import type { Arbitrary, FastCheck } from 'effect'
 
-import { AnnotateArrayWithArbitrary, MergeClasses } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary } from '@assessmentis/util'
 
 import { Period } from '../../data-types'
 import { Resource } from '../../data-types/base/resource'
@@ -106,8 +106,7 @@ export interface DiagnosticReportEncoded
  * The findings and interpretation of diagnostic tests performed on patients,
  * groups of patients, devices, and locations, and/or specimens derived from these.
  */
-export class DiagnosticReport extends MergeClasses<DiagnosticReport>(DomainType)(
-  [],
-  resourceMixin,
-  fields
-) {}
+export class DiagnosticReport extends resourceMixin.extend<DiagnosticReport>(DomainType)(fields) {
+  static DomainType = resourceMixin.DomainType
+  static UrlSchema = resourceMixin.UrlSchema
+}

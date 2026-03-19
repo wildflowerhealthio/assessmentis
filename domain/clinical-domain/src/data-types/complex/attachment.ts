@@ -1,7 +1,5 @@
 import { Schema } from 'effect'
 
-import { MergeClasses } from '@assessmentis/util'
-
 import { Element } from '../base/element'
 import type { ElementEncoded } from '../base/element'
 import { Code } from './code'
@@ -55,4 +53,7 @@ const ElementMixin = Element(DomainType)
  * This data type is used for all attachments including images, documents, etc.
  * Note: Per FHIR spec, if data is present, contentType SHALL be populated.
  */
-export class Attachment extends MergeClasses<Attachment>(DomainType)([], ElementMixin, fields) {}
+export class Attachment extends ElementMixin.extend<Attachment>(DomainType)(fields) {
+  static DomainType = ElementMixin.DomainType
+  static UrlSchema = ElementMixin.UrlSchema
+}
