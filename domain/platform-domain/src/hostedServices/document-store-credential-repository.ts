@@ -173,6 +173,18 @@ export abstract class DocumentStoreLiveCredential<
 }
 
 /**
+ * Retry schedule for credential token refresh attempts.
+ *
+ * Uses exponential backoff starting at 5 seconds, with a maximum of 5 retry
+ * attempts. This produces delays of approximately 5s, 10s, 20s, 40s, 80s
+ * before giving up.
+ */
+export const credentialRefreshRetrySchedule: Schedule.Schedule<
+  [Duration.Duration, number],
+  unknown
+> = pipe(Schedule.exponential(Duration.seconds(5)), Schedule.intersect(Schedule.recurs(5)))
+
+/**
  * Creates a {@link CredentialRepository} backed by DocumentStore.
  *
  * For each identity, sets up:
@@ -275,14 +287,8 @@ export const makeDocumentStoreCredentialRepository = <
             )
           )
 
-          const retrySchedule = pipe(
-            Schedule.exponential(Duration.seconds(5)),
-            Schedule.intersect(Schedule.recurs(5)),
-            Schedule.upTo(CredentialClass.refreshBuffer)
-          )
-
           const safeRefresh = credential.refresh.pipe(
-            Effect.retry(retrySchedule),
+            Effect.retry(credentialRefreshRetrySchedule),
             Effect.tapError((e) =>
               Effect.logError('Credential refresh failed after all retry attempts:', e)
             )
