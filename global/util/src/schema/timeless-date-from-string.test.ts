@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, expectTypeOf, it } from 'vitest'
 
 import type { TimelessDate } from './timeless-date-from-string'
 import { TimelessDateFromString } from './timeless-date-from-string'
@@ -80,14 +80,13 @@ describe('TimelessDateFromString', () => {
   describe('brand', () => {
     it('should produce a branded type that is distinct from a plain string', () => {
       const decoded = Schema.decodeUnknownSync(TimelessDateFromString)('2025-06-15')
-      const branded: TimelessDate = decoded
-      expect(branded).toBe('2025-06-15')
+
+      expectTypeOf(decoded).toEqualTypeOf<TimelessDate>()
+      expect(decoded).toBe('2025-06-15')
     })
 
     it('should prevent plain strings from being assigned to TimelessDate at compile time', () => {
-      const decoded: TimelessDate = Schema.decodeSync(TimelessDateFromString)('2025-06-15')
-      expect(typeof decoded).toBe('string')
-      expect(decoded).toBe('2025-06-15')
+      expectTypeOf<string>().not.toEqualTypeOf<TimelessDate>()
     })
   })
 })
