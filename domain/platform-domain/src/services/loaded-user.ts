@@ -59,7 +59,7 @@ export const LoadedUserLayer = Layer.effect(
     const documentStore = yield* DocumentStore
     const currentUserId = yield* CurrentUserId
 
-    const data = yield* documentStore.get('users', currentUserId.userId)
+    const data = yield* documentStore.get(['users', currentUserId.userId])
     const user = yield* Schema.decodeUnknownEither(User)(data).pipe(
       Either.mapLeft(
         (cause) =>

@@ -48,7 +48,7 @@ const syncSingleOrgInner = (
     const documentStore = yield* DocumentStore
 
     // Get org data for sync timestamps
-    const orgData = yield* documentStore.get('orgs', orgSlug).pipe(
+    const orgData = yield* documentStore.get(['orgs', orgSlug]).pipe(
       Effect.mapError((e) => {
         if (e instanceof NotFoundError) {
           return new BadDataError({
@@ -134,8 +134,7 @@ const syncSingleOrgInner = (
         lastSyncError: undefined,
         lastTranscriptSyncTimestamp: now,
       },
-      'orgs',
-      orgSlug
+      ['orgs', orgSlug]
     )
 
     info(
@@ -321,7 +320,7 @@ export const syncVideoCallRecordingsEffect = Effect.gen(function* syncVideoCallR
         logError(`Sync failed for org ${orgSlug}:`, e)
 
         // Record error on org document
-        return documentStore.update({ lastSyncError: errorMsg }, 'orgs', orgSlug).pipe(
+        return documentStore.update({ lastSyncError: errorMsg }, ['orgs', orgSlug]).pipe(
           Effect.catchAll(() => Effect.void),
           Effect.map(
             () =>

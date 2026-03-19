@@ -85,31 +85,19 @@ function makeMockDocumentStoreService(
   responses: Record<string, DocumentData>
 ): Context.Tag.Service<typeof DocumentStore> {
   return {
-    get: (...path: DocumentPath | readonly [DocumentPath]) => {
-      let resolved: DocumentPath | readonly [DocumentPath]
-      if (path.length === 1) {
-        resolved = path[0]
-      } else {
-        resolved = path
-      }
-      const key = (resolved as readonly string[]).join('/')
+    get: (path: DocumentPath) => {
+      const key = path.join('/')
       const data = responses[key]
       if (data) {
         return Effect.succeed(data)
       }
       return Effect.fail(
-        new NotFoundError({ resourceType: 'Document' as const, params: { path: resolved } })
+        new NotFoundError({ resourceType: 'Document' as const, params: { path } })
       ) as ReturnType<Context.Tag.Service<typeof DocumentStore>['get']>
     },
     set: () => Effect.void,
-    subscribeTo: (...path: DocumentPath | readonly [DocumentPath]) => {
-      let resolved: DocumentPath | readonly [DocumentPath]
-      if (path.length === 1 && Array.isArray(path[0])) {
-        resolved = path[0]
-      } else {
-        resolved = path
-      }
-      const key = (resolved as readonly string[]).join('/')
+    subscribeTo: (path: DocumentPath) => {
+      const key = path.join('/')
       const data = responses[key]
       if (data) {
         return Stream.make(Either.right(data))

@@ -34,38 +34,25 @@ export const mockDocumentStoreImplementations: {
     /**
      * Returns NotFoundError for all paths
      */
-    notFound:
-      () =>
-      (...path: DocumentPath | readonly [DocumentPath]) =>
-        Effect.fail(
-          new NotFoundError({
-            resourceType: 'Document',
-            // oxlint-disable-next-line eslint/no-ternary
-            params: { path: path.length === 1 ? path[0] : path },
-          })
-        ),
+    notFound: () => (path: DocumentPath) =>
+      Effect.fail(
+        new NotFoundError({
+          resourceType: 'Document',
+          params: { path },
+        })
+      ),
 
     /**
      * Returns the provided data for all paths
      */
-    returning:
-      (data: DocumentData) =>
-      (..._path: DocumentPath | readonly [DocumentPath]) =>
-        Effect.succeed(data),
+    returning: (data: DocumentData) => (_path: DocumentPath) => Effect.succeed(data),
 
     /**
      * Returns data from a custom function, useful for complex logic
      */
     withCallback:
-      (fn: (...path: DocumentPath | readonly [DocumentPath]) => DocumentData | undefined) =>
-      (...path: DocumentPath | readonly [DocumentPath]) => {
-        let resolvedPath: DocumentPath | readonly [DocumentPath]
-        if (path.length === 1) {
-          resolvedPath = path[0]
-        } else {
-          resolvedPath = path
-        }
-        const data = fn(resolvedPath)
+      (fn: (path: DocumentPath) => DocumentData | undefined) => (path: DocumentPath) => {
+        const data = fn(path)
 
         if (data !== undefined) {
           return Effect.succeed(data)
@@ -74,8 +61,7 @@ export const mockDocumentStoreImplementations: {
         return Effect.fail(
           new NotFoundError({
             resourceType: 'Document',
-            // oxlint-disable-next-line eslint/no-ternary
-            params: { path: path.length === 1 ? path[0] : path },
+            params: { path },
           })
         )
       },
@@ -85,30 +71,21 @@ export const mockDocumentStoreImplementations: {
     /**
      * No-op set that always succeeds
      */
-    noop:
-      () =>
-      (..._args: readonly unknown[]) =>
-        Effect.void,
+    noop: () => (_data: DocumentData, _path: DocumentPath) => Effect.void,
   },
 
   subscribeTo: {
     /**
      * Returns an empty stream that never emits
      */
-    emptyStream:
-      () =>
-      (..._path: DocumentPath | readonly [DocumentPath]) =>
-        Stream.never,
+    emptyStream: () => (_path: DocumentPath) => Stream.never,
   },
 
   update: {
     /**
      * No-op update that always succeeds
      */
-    noop:
-      () =>
-      (..._args: readonly unknown[]) =>
-        Effect.void,
+    noop: () => (_data: Partial<DocumentData>, _path: DocumentPath) => Effect.void,
   },
 }
 

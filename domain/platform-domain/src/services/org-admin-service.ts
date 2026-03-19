@@ -30,7 +30,7 @@ export class OrgAdminService extends Effect.Service<OrgAdminService>()('OrgAdmin
       AuthError | AuthzError | NotFoundError<'User', { userId: UserId }> | UnhandledError
     > =>
       Effect.gen(function* getUserGen() {
-        const data = yield* documentStore.get('users', userId).pipe(
+        const data = yield* documentStore.get(['users', userId]).pipe(
           Effect.mapError((cause) => {
             if (cause instanceof NotFoundError) {
               return new NotFoundError({
@@ -60,7 +60,7 @@ export class OrgAdminService extends Effect.Service<OrgAdminService>()('OrgAdmin
       AuthError | AuthzError | NotFoundError<'User', { userId: UserId }> | UnhandledError
     > =>
       Effect.gen(function* getUserOrgRolesGen() {
-        const data = yield* documentStore.get('orgs', orgSlug, 'users', userId).pipe(
+        const data = yield* documentStore.get(['orgs', orgSlug, 'users', userId]).pipe(
           Effect.mapError((cause) => {
             if (cause instanceof NotFoundError) {
               return new NotFoundError({

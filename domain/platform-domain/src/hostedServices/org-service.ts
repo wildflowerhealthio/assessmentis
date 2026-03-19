@@ -145,7 +145,7 @@ const startOrgService = (
         pubsubAsPerpetualStream(orgSlugPubSub).pipe(
           StreamEither.flatMap(
             (orgSlug) =>
-              documentStore.subscribeTo('orgs', orgSlug).pipe(
+              documentStore.subscribeTo(['orgs', orgSlug]).pipe(
                 StreamEither.mapLeft((cause) => {
                   if (cause instanceof NotFoundError) {
                     return new NotFoundError<'Org', { orgSlug: OrgSlug }>({
