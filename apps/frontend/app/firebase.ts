@@ -30,7 +30,7 @@ const redirectToSignIn = (): Promise<never> => signInWithRedirect(getAuth(), goo
 const handleRedirectResult = (): Promise<import('firebase/auth').UserCredential | void> =>
   getRedirectResult(getAuth())
     .then((result) => {
-      if (result === null) {
+      if (result === null || result === undefined) {
         throw new Error('Invalid Redirect Result')
       }
       console.log({ result })
