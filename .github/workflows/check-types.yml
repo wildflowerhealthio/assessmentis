@@ -24,7 +24,9 @@ jobs:
 
       - name: Install dependencies
         run: |
+          npm install @typescript/native-preview
           NODE_ENV=development npm ci --include=dev
           npm ci --workspaces
+
       - name: Run type checking on all packages
         run: npm run typecheck

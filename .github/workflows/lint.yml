@@ -16,6 +16,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
       - name: Install dependencies
         run: |
           NODE_ENV=development npm ci --include=dev
@@ -25,6 +31,9 @@ jobs:
         uses: oxc-project/oxlint-action@92eec2c4d5dbbb882c926478438aa4b7f20ffe2d
         with:
           config: .oxlintrc.json
+          working-directory: '.'
+          # Disable JS plugin
+          plugins-disable: eslint-plugin-tsdoc
 
   check-markdown-changes:
     runs-on: ubuntu-latest
