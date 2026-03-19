@@ -1,53 +1,37 @@
 {
-    meta: {
-        createdAt: '2026-02-10T21:24:33.060Z',
-        host: 'https://api.daily.co',
-        resHumanReadable: true,
+  meta: {
+    createdAt: '2026-02-10T21:24:33.060Z',
+    host: 'https://api.daily.co',
+    resHumanReadable: true,
+  },
+  req: {
+    url: '/v1/recordings/e1b444ab-9f17-499a-a328-a690cddd34aa/access-link',
+    method: 'GET',
+    headers: {},
+    body: '',
+  },
+  res: {
+    status: 200,
+    headers: {
+      date: ['Tue, 10 Feb 2026 21:24:33 GMT'],
+      'content-type': ['application/json; charset=utf-8'],
+      'content-length': ['492'],
+      connection: ['close'],
+      'strict-transport-security': ['max-age=31536000 ; includeSubDomains'],
+      'access-control-allow-origin': ['*'],
+      'access-control-allow-headers': [
+        'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Invite-Token, X-DailySessionId, X-DailyJoinToken, X-DailyAboutClient, Traceparent, Tracestate, Request-Id',
+      ],
+      'access-control-allow-methods': ['OPTIONS,HEAD,GET,POST,PUT,PATCH,DELETE'],
+      etag: ['W/"1ec-fH9Oj+qTaE29Ji35RjxB3zMdaHg"'],
     },
-    req: {
-        url: '/v1/recordings/e1b444ab-9f17-499a-a328-a690cddd34aa/access-link',
-        method: 'GET',
-        headers: {},
-        body: '',
+    body: {
+      download_link: 'https://daily-meeting-recordings.s3.us-west-2.amazonaws.com/diamante/GbOnIzMlMECKbpOY0bXB/1744255588456?AWSAccessKeyId=AKIAUH5HEOJG7QWV44X2&Expires=1770762273&Signature=%2FUDQQ92SsyOJkzU5dnwryIGluQc%3D&response-content-disposition=attachment%3B%20filename%3D%22diamante%2FGbOnIzMlMECKbpOY0bXB%2F1744255588456.mp4%22',
+      expires: 1770762273,
+      s3_bucket: 'daily-meeting-recordings',
+      s3_region: 'us-west-2',
+      s3_key: 'diamante/GbOnIzMlMECKbpOY0bXB/1744255588456',
+      data_outputs: {},
     },
-    res: {
-        status: 200,
-        headers: {
-            date: [
-                'Tue, 10 Feb 2026 21:24:33 GMT',
-            ],
-            'content-type': [
-                'application/json; charset=utf-8',
-            ],
-            'content-length': [
-                '492',
-            ],
-            connection: [
-                'close',
-            ],
-            'strict-transport-security': [
-                'max-age=31536000 ; includeSubDomains',
-            ],
-            'access-control-allow-origin': [
-                '*',
-            ],
-            'access-control-allow-headers': [
-                'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Invite-Token, X-DailySessionId, X-DailyJoinToken, X-DailyAboutClient, Traceparent, Tracestate, Request-Id',
-            ],
-            'access-control-allow-methods': [
-                'OPTIONS,HEAD,GET,POST,PUT,PATCH,DELETE',
-            ],
-            etag: [
-                'W/"1ec-fH9Oj+qTaE29Ji35RjxB3zMdaHg"',
-            ],
-        },
-        body: {
-            download_link: 'https://daily-meeting-recordings.s3.us-west-2.amazonaws.com/diamante/GbOnIzMlMECKbpOY0bXB/1744255588456?AWSAccessKeyId=AKIAUH5HEOJG7QWV44X2&Expires=1770762273&Signature=%2FUDQQ92SsyOJkzU5dnwryIGluQc%3D&response-content-disposition=attachment%3B%20filename%3D%22diamante%2FGbOnIzMlMECKbpOY0bXB%2F1744255588456.mp4%22',
-            expires: 1770762273,
-            s3_bucket: 'daily-meeting-recordings',
-            s3_region: 'us-west-2',
-            s3_key: 'diamante/GbOnIzMlMECKbpOY0bXB/1744255588456',
-            data_outputs: {},
-        },
-    },
+  },
 }

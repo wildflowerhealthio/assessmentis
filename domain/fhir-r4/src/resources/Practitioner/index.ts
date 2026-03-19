@@ -1,2 +1,2 @@
-export * from './Practitioner'
-export * from './PractitionerQualification'
+export * from './practitioner'
+export * from './practitioner-qualification'

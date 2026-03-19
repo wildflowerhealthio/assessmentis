@@ -2,15 +2,15 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  esbuild: {
-    logOverride: { 'this-is-undefined-in-esm': 'silent' },
-  },
+  base: '/admin/',
   build: {
     outDir: './build',
     target: 'ESNEXT',
     sourcemap: true,
   },
-  base: '/admin/',
+  esbuild: {
+    logOverride: { 'this-is-undefined-in-esm': 'silent' },
+  },
   optimizeDeps: { include: ['react/jsx-runtime'] },
   plugins: [react({})],
 })

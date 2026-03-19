@@ -14,21 +14,27 @@ Hand off the current task to a future agent session. Finishes immediate work, wr
    # Handoff
 
    ## What we're doing and why
+
    [High-level goal, motivation, key decisions made]
 
    ## What's done
+
    [File list with status, or description of completed work]
 
    ## What remains
+
    [Remaining tasks with notes on anything non-obvious]
 
    ## Key files to read first
+
    [3-5 files the next agent should read to get oriented]
 
    ## Gotchas and context the next agent needs
+
    [Failure modes, patterns that break, decisions that weren't obvious, things tried and abandoned]
 
    ## Current state
+
    [Branch name, dirty files, anything staged, relevant git state]
    ```
 
@@ -36,6 +42,7 @@ Hand off the current task to a future agent session. Finishes immediate work, wr
 
    ```markdown
    ### [short title]
+
    **Discovered during**: [task or branch name]
    **Learning**: [the actionable insight]
    **Suggested destination**: Strategies | [path to a specific reference doc] | unsure

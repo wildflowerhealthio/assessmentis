@@ -1,17 +1,17 @@
 import type { ComponentFamily as ComponentFamilyType } from '@assessmentis/document-template-kinds'
 
-import { Header } from './Header'
-import { ObservationSectionWithMethod } from './ObservationSectionWithMethod'
-import { ObservationTable } from './ObservationTable'
-import { ObservationTableRow } from './ObservationTableRow'
-import { Title } from './Title'
+import { Header } from './header'
+import { ObservationSectionWithMethod } from './observation-section-with-method'
+import { ObservationTable } from './observation-table'
+import { ObservationTableRow } from './observation-table-row'
+import { Title } from './title'
 
 const components: ComponentFamilyType['components'] = {
-  TitleComponent: Title,
   HeaderComponent: Header,
   ObservationSectionWithMethodComponent: ObservationSectionWithMethod,
-  ObservationTableRowComponent: ObservationTableRow,
   ObservationTableComponent: ObservationTable,
+  ObservationTableRowComponent: ObservationTableRow,
+  TitleComponent: Title,
 }
 
 export default components

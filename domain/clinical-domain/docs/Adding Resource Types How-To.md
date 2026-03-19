@@ -42,8 +42,8 @@ The resource data type key must match the domain type literal (e.g., `'Observati
 ## Most-used code locations
 
 - Schema examples: [../src/resources](../src/resources)
-- Resource data types: [../src/ResourceDataTypes.ts](../src/ResourceDataTypes.ts)
-- Hub Tag: [../src/ClinicalDomainHub.ts](../src/ClinicalDomainHub.ts)
+- Resource data types: [../src/resource-data-types.ts](../src/resource-data-types.ts)
+- Hub Tag: [../src/clinical-domain-hub.ts](../src/clinical-domain-hub.ts)
 
 ## See Also
 

@@ -44,9 +44,9 @@ Each `FromFhirR4` schema is an Effect Schema that defines how to parse and encod
 
 ```typescript
 const IdentifierFromFhirR4: Schema.Schema<
-  Identifier,                        // Output type (domain object)
-  ReadonlyFhirIdentifierWithIds,     // Input type (FHIR JSON)
-  never                              // No dependencies
+  Identifier, // Output type (domain object)
+  ReadonlyFhirIdentifierWithIds, // Input type (FHIR JSON)
+  never // No dependencies
 >
 ```
 

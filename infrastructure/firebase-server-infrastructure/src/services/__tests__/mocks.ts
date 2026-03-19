@@ -1,10 +1,15 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable @typescript-eslint/no-explicit-any */
 import { vi } from 'vitest'
 
 /**
  * Mock Firestore DocumentSnapshot
  */
-export const createMockDocumentSnapshot = (data?: Record<string, unknown>) => ({
+export const createMockDocumentSnapshot = (
+  data?: Record<string, unknown>
+): {
+  data: ReturnType<typeof vi.fn>
+  exists: boolean
+} => ({
   data: vi.fn(() => data),
   exists: data !== undefined,
 })
@@ -13,9 +18,9 @@ export const createMockDocumentSnapshot = (data?: Record<string, unknown>) => ({
  * Mock Firestore DocumentReference
  */
 export const createMockDocumentReference = (): any => ({
+  collection: vi.fn(),
   get: vi.fn(),
   set: vi.fn(),
-  collection: vi.fn(),
 })
 
 /**
@@ -29,18 +34,18 @@ export const createMockCollectionReference = (): any => ({
  * Mock Firestore instance
  */
 export const createMockFirestore = (): any => ({
-  settings: vi.fn(),
   collection: vi.fn(() => createMockCollectionReference()),
+  settings: vi.fn(),
 })
 
 /**
  * Mock Firebase Auth instance
  */
-export const createMockAuth = () => ({})
+export const createMockAuth = (): Record<string, never> => ({})
 
 /**
  * Mock Firebase App instance
  */
-export const createMockApp = () => ({
+export const createMockApp = (): { name: string } => ({
   name: '[DEFAULT]',
 })

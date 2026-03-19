@@ -1,1 +1,1 @@
-export * from './HttpFunctions'
+export * from './http-functions'

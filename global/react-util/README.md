@@ -395,9 +395,7 @@ import { usePromiseOrDefault } from './usePromiseOrDefault'
 it('should return default while pending', () => {
   fc.assert(
     fc.property(fc.string(), (defaultValue) => {
-      const { result } = renderHook(() =>
-        usePromiseOrDefault(new Promise(() => {}), defaultValue)
-      )
+      const { result } = renderHook(() => usePromiseOrDefault(new Promise(() => {}), defaultValue))
       expect(result.current).toBe(defaultValue)
     })
   )

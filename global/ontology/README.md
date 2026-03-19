@@ -21,9 +21,9 @@ Wraps unexpected errors that occur during execution, preserving the original err
 ```typescript
 import { UnhandledError } from '@assessmentis/ontology'
 
-throw new UnhandledError({ 
-  cause: originalError, 
-  message: 'Failed to process request' 
+throw new UnhandledError({
+  cause: originalError,
+  message: 'Failed to process request',
 })
 ```
 
@@ -34,9 +34,9 @@ Represents failures when interacting with external systems that don't behave as 
 ```typescript
 import { ExternalAssertionError } from '@assessmentis/ontology'
 
-throw new ExternalAssertionError({ 
-  cause: error, 
-  expected: 'Expected 200 OK response' 
+throw new ExternalAssertionError({
+  cause: error,
+  expected: 'Expected 200 OK response',
 })
 ```
 
@@ -47,9 +47,9 @@ Indicates that a requested resource could not be found.
 ```typescript
 import { NotFoundError } from '@assessmentis/ontology'
 
-throw new NotFoundError({ 
-  resourceType: 'Questionnaire', 
-  params: { id: questionnaireId } 
+throw new NotFoundError({
+  resourceType: 'Questionnaire',
+  params: { id: questionnaireId },
 })
 ```
 
@@ -74,10 +74,12 @@ const getResource = (id: string): Effect.Effect<Resource, NotFoundError | Unhand
     try {
       const resource = yield* fetchResource(id)
       if (!resource) {
-        return yield* Effect.fail(new NotFoundError({ 
-          resourceType: 'Resource', 
-          params: { id } 
-        }))
+        return yield* Effect.fail(
+          new NotFoundError({
+            resourceType: 'Resource',
+            params: { id },
+          })
+        )
       }
       return resource
     } catch (error) {

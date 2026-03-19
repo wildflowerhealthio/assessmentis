@@ -42,9 +42,7 @@ const mapApiError = Match.type<ApiError>().pipe(
 Apply in repository methods:
 
 ```typescript
-get: (id) => fhirClient.read('Patient', id).pipe(
-  Effect.mapError(mapApiError)
-)
+get: (id) => fhirClient.read('Patient', id).pipe(Effect.mapError(mapApiError))
 ```
 
 ## Server-Side Layers
@@ -58,10 +56,9 @@ Cloud Functions use `firebase-server-infrastructure` which provides:
 Compose for a Cloud Function:
 
 ```typescript
-const ServerLayer = Layer.mergeAll(
-  PatientRepositoryLive,
-  FirebaseAdminDocumentStoreLayer,
-).pipe(Layer.provide(FirebaseAdminService.Live))
+const ServerLayer = Layer.mergeAll(PatientRepositoryLive, FirebaseAdminDocumentStoreLayer).pipe(
+  Layer.provide(FirebaseAdminService.Live)
+)
 ```
 
 ## Testing Layers

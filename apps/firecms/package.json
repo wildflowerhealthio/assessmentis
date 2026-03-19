@@ -2,7 +2,18 @@
   "name": "@assessmentis/firecms",
   "version": "1.0.0",
   "private": true,
+  "description": "The admin CMS for assessment.is",
+  "license": "UNLICENSED",
+  "author": "Ruth Marks",
   "type": "module",
+  "main": ".",
+  "scripts": {
+    "build": "vite build && tsc",
+    "deploy": "vite build && firebase deploy --only hosting --project assessmentisasdmin",
+    "dev": "vite --mode development --port $(turbo get-mfe-port)",
+    "preview": "vite build && vite preview",
+    "typecheck": "tsgo --noEmit"
+  },
   "dependencies": {
     "@assessmentis/platform-domain": "*",
     "@firecms/core": "^3.0.0",
@@ -16,34 +27,13 @@
     "react-router-dom": "^6.26.2",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
-  "scripts": {
-    "dev": "vite --mode development --port $(turbo get-mfe-port)",
-    "build": "vite build && tsc",
-    "preview": "vite build && vite preview",
-    "typecheck": "tsc --noEmit",
-    "deploy": "vite build && firebase deploy --only hosting --project assessmentisasdmin"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.15",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^8.21.0",
-    "@typescript-eslint/parser": "^8.21.0",
     "@vitejs/plugin-react": "^4.3.2",
     "autoprefixer": "^10.4.20",
-    "eslint": "^9.39.1",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-n": "^17.11.1",
     "eslint-plugin-promise": "^7.1.0",
@@ -57,8 +47,16 @@
     "vite": "*",
     "vite-plugin-svgr": "^4.2.0"
   },
-  "description": "The admin CMS for assessment.is",
-  "main": ".",
-  "author": "Ruth Marks",
-  "license": "UNLICENSED"
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
 }

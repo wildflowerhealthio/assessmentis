@@ -1,12 +1,13 @@
+/* oxlint-disable typescript-eslint/explicit-function-return-type -- hooks with complex generic return types and internal callbacks */
 import { useEffect, useState } from 'react'
 import type { RefObject } from 'react'
 
-import { useStatePromise } from './effectHooks'
+import { useStatePromise } from './effect-hooks'
 
-export * from './effectHooks'
-export * from './useStream'
-export * from './useLoadingPromise'
-export * from './usePromiseOrDefault'
+export * from './effect-hooks'
+export * from './use-stream'
+export * from './use-loading-promise'
+export * from './use-promise-or-default'
 
 /**
  * Manages an optimistic CRUD collection backed by API calls. Items are
@@ -26,19 +27,23 @@ export const useCollection = <T extends { id?: string | undefined }>(
     apiDelete: (key: string) => Promise<unknown>
     apiCreate: (value: T) => Promise<T>
   },
-  initial: ReadonlyArray<T>,
-  keyOf: (item: T) => string | undefined = () => undefined
+  initial: readonly T[],
+  keyOf?: (item: T) => string | undefined
 ) => {
-  const [collection, setCollection] = useState<
-    ReadonlyArray<{ data: T; loading: boolean }>
-  >(initial.map((item) => ({ data: item, loading: false })))
+  // eslint-disable-next-line unicorn/no-useless-undefined -- default fallback must return undefined
+  const resolvedKeyOf = keyOf ?? ((): string | undefined => undefined)
+  const [collection, setCollection] = useState<readonly { data: T; loading: boolean }[]>(
+    initial.map((item) => ({ data: item, loading: false }))
+  )
   const { deleteItem, createItem } = collectionMethods<T>(
-    { apiDelete, apiCreate },
-    (f) => setCollection((c) => f(c)),
-    keyOf
+    { apiCreate, apiDelete },
+    (f) => {
+      setCollection((c) => f(c))
+    },
+    resolvedKeyOf
   )
 
-  return { collection, deleteItem, createItem }
+  return { collection, createItem, deleteItem }
 }
 
 /**
@@ -57,31 +62,33 @@ export const useCollectionPromise = <T>(
     apiDelete: (key: string) => Promise<unknown>
     apiCreate: (value: T) => Promise<T>
   },
-  initial: Promise<ReadonlyArray<T>>,
-  keyOf: (item: T) => string | undefined = () => undefined
+  initial: Promise<readonly T[]>,
+  keyOf?: (item: T) => string | undefined
 ) => {
   const [collectionPromise, methods] = useStatePromise<
-    ReadonlyArray<{
+    readonly {
       data: T
       loading: boolean
-    }>
+    }[]
   >()
 
   useEffect(() => {
     initial
-      .then((items) =>
+      .then((items) => {
         methods.resolve(items.map((item) => ({ data: item, loading: false })))
-      )
-      .catch((err) => methods.reject(err))
+      })
+      .catch((error) => methods.reject(error))
   }, [initial, methods])
 
+  // eslint-disable-next-line unicorn/no-useless-undefined -- default fallback must return undefined
+  const resolvedKeyOf = keyOf ?? ((): string | undefined => undefined)
   const { deleteItem, createItem } = collectionMethods<T>(
-    { apiDelete, apiCreate },
+    { apiCreate, apiDelete },
     methods.map,
-    keyOf
+    resolvedKeyOf
   )
 
-  return { collectionPromise, deleteItem, createItem }
+  return { collectionPromise, createItem, deleteItem }
 }
 
 /** Shared optimistic create/delete logic used by both `useCollection` and `useCollectionPromise`. */
@@ -95,43 +102,49 @@ function collectionMethods<T>(
   },
   updateCache: (
     f: (
-      t: ReadonlyArray<{
+      t: readonly {
         data: T
         loading: boolean
-      }>
-    ) => ReadonlyArray<{
+      }[]
+    ) => readonly {
       data: T
       loading: boolean
-    }>
+    }[]
   ) => void,
   keyOf: (item: T) => string | undefined
 ) {
-  const deleteItem = async (key: string | undefined) => {
-    if (!key) return
+  const deleteItem = async (key?: string) => {
+    if (!key) {
+      return
+    }
     updateCache((current) =>
-      current.map((item) =>
-        keyOf(item.data) === key ? { ...item, loading: true } : item
-      )
+      current.map((item) => {
+        if (keyOf(item.data) === key) {
+          return { ...item, loading: true }
+        }
+        return item
+      })
     )
     await apiDelete(key)
-      .then(() =>
+      .then(() => {
+        updateCache((current) => current.filter((item) => keyOf(item.data) !== key))
+      })
+      .catch(() => {
         updateCache((current) =>
-          current.filter((item) => keyOf(item.data) !== key)
+          current.map((item) => {
+            if (keyOf(item.data) === key) {
+              return { ...item, loading: false }
+            }
+            return item
+          })
         )
-      )
-      .catch(() =>
-        updateCache((current) =>
-          current.map((item) =>
-            keyOf(item.data) === key ? { ...item, loading: false } : item
-          )
-        )
-      )
+      })
   }
 
-  const createItem = async (t: T) => {
+  const createItem = (t: T) => {
     updateCache((current) => [{ data: t, loading: true }, ...current])
     apiCreate(t)
-      .then((created) =>
+      .then((created) => {
         updateCache((current) => {
           // Find the first loading item that matches the temp key or doesn't have a key
           // (the optimistic entry we just inserted)
@@ -144,8 +157,8 @@ function collectionMethods<T>(
             return item
           })
         })
-      )
-      .catch(() =>
+      })
+      .catch(() => {
         updateCache((current) => {
           let found = false
           return current.filter((item) => {
@@ -156,9 +169,9 @@ function collectionMethods<T>(
             return true
           })
         })
-      )
+      })
   }
-  return { deleteItem, createItem }
+  return { createItem, deleteItem }
 }
 
 /**
@@ -166,15 +179,14 @@ function collectionMethods<T>(
  * referenced by `ref`. Commonly used to close dropdowns/modals on
  * outside click.
  */
-export const useOutsideClickHandler = (
-  ref: RefObject<Node | null>,
-  handler: () => void
-) => {
+export const useOutsideClickHandler = (ref: RefObject<Node | null>, handler: () => void) => {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (!(event.target instanceof Node)) return
+      if (!(event.target instanceof Node)) {
+        return
+      }
 
-      if (ref.current != null && !ref.current.contains(event.target)) {
+      if (ref.current !== null && !ref.current.contains(event.target)) {
         handler()
       }
     }

@@ -1,0 +1,28 @@
+import { Schema } from 'effect'
+
+import { BackboneElement, CodeableConcept, Period, Reference } from '../../data-types'
+import type { BackboneElementEncoded } from '../../data-types'
+
+/** Status of a location during an encounter — planned, active, reserved, or completed. */
+export const EncounterLocationStatus = Schema.Union(
+  Schema.Literal('planned'),
+  Schema.Literal('active'),
+  Schema.Literal('reserved'),
+  Schema.Literal('completed')
+)
+
+const fields = {
+  location: Schema.suspend(() => Reference),
+  period: Schema.optional(Schema.suspend(() => Period)),
+  physicalType: Schema.optional(Schema.suspend(() => CodeableConcept)),
+  status: Schema.optional(EncounterLocationStatus),
+} as const satisfies Schema.Struct.Fields
+
+/** Encoded (wire-format) shape of an {@link EncounterLocation}. */
+export interface EncounterLocationEncoded
+  extends Schema.Struct.Encoded<typeof fields>, BackboneElementEncoded<'EncounterLocation'> {}
+
+/** A location where an {@link Encounter} takes place, with status and time period. */
+export class EncounterLocation extends BackboneElement(
+  'EncounterLocation'
+).extend<EncounterLocation>('EncounterLocation')(fields) {}

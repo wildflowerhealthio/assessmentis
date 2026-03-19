@@ -34,8 +34,7 @@ describe('isNotTagged', () => {
     const val: TestUnion = { _tag: 'Beta', value: 'hi' }
     if (isNotTagged(val, 'Alpha')) {
       // TypeScript should narrow to Beta | Gamma
-      const _narrowed: { readonly _tag: 'Beta' } | { readonly _tag: 'Gamma' } =
-        val
+      const _narrowed: { readonly _tag: 'Beta' } | { readonly _tag: 'Gamma' } = val
       expect(_narrowed).toBeDefined()
     }
   })

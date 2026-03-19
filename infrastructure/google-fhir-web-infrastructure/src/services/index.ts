@@ -1,2 +1,2 @@
-export * from './LoadedGapiClient'
-export * from './LoadedGapiHealthcareClient'
+export * from './loaded-gapi-client'
+export * from './loaded-gapi-healthcare-client'

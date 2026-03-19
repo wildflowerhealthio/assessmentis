@@ -35,32 +35,34 @@ export const setupClientOnWindow = async () => {
 
   const testConfig: GoogleFhirConfig = {
     _tag: 'google_fhir_store' as const,
-    projectId: import.meta.env.VITE_FHIR_PROJECT_ID || 'assessmentis',
-    region: import.meta.env.VITE_FHIR_REGION || 'northamerica-northeast2',
-    dataset: import.meta.env.VITE_FHIR_DATASET || 'integration-test',
-    storeId: import.meta.env.VITE_FHIR_STORE || 'integration-store-1',
+    dataset: import.meta.env.VITE_FHIR_DATASET ?? 'integration-test',
+    projectId: import.meta.env.VITE_FHIR_PROJECT_ID ?? 'assessmentis',
+    region: import.meta.env.VITE_FHIR_REGION ?? 'northamerica-northeast2',
+    storeId: import.meta.env.VITE_FHIR_STORE ?? 'integration-store-1',
   }
 
-  window.onerror = function (...args) {
+  window.addEventListener('error', function setupClientOnWindow(...args) {
     console.log('onerror', ...args)
-  }
+  })
 
   const s = document.createElement('script')
   s.setAttribute('type', 'text/javascript')
   s.setAttribute('src', 'https://apis.google.com/js/api.js')
   const loaded = Promise.withResolvers<void>()
 
-  s.onerror = (e) => {
+  s.addEventListener('error', (e) => {
     console.error('Error loading gapi script', e)
     loaded.reject(new Error('Error loading gapi script'))
-  }
-  s.onload = async () => {
+  })
+  s.addEventListener('load', async () => {
     console.log('gapi script loaded', XMLHttpRequest)
-    while (!('gapi' in window) || window?.gapi == undefined) {
+    while (!('gapi' in window) || window?.gapi === undefined) {
       console.log('Polling for gapi availability...')
-      await new Promise((r) => setTimeout(r, 1000))
+      await new Promise((r) => {
+        setTimeout(r, 1000)
+      })
     }
-    const resolveGapiEffect = Effect.gen(function* () {
+    const resolveGapiEffect = Effect.gen(function* resolveGapiEffect() {
       const gapiClientEffect = yield* LoadedGapiClient
       const gapiClient = yield* gapiClientEffect
       console.log('Setting gapi client token')
@@ -70,35 +72,32 @@ export const setupClientOnWindow = async () => {
       const healthcare = yield* LoadedGapiHealthcareClient
 
       return makeGapiGoogleHealthcareClient({
-        getAccessToken: Effect.succeed(getGcloudToken()),
-        gapiClient,
-        healthcare,
         config: testConfig,
+        gapiClient,
+        getAccessToken: Effect.succeed(getGcloudToken()),
+        healthcare,
       })
     }).pipe(
       Effect.provide(
-        Layer.provideMerge(
-          LoadedGapiHealthcareClient.Default,
-          LoadedGapiClient.Default
-        )
+        Layer.provideMerge(LoadedGapiHealthcareClient.Default, LoadedGapiClient.Default)
       ),
       Effect.orDie
     )
     // @ts-expect-error Using window for test setup
-    window['client'] = await Effect.runPromise(resolveGapiEffect).catch((e) => {
-      console.error('Error initializing FHIR client', e)
-      throw e
+    window['client'] = await Effect.runPromise(resolveGapiEffect).catch((error) => {
+      console.error('Error initializing FHIR client', error)
+      throw error
     })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion typescript/no-explicit-any
     if (!(window as any)['client']) {
       throw new Error('Failed to initialize FHIR client')
     }
     console.log('gapi done loading', XMLHttpRequest)
 
     loaded.resolve()
-  }
+  })
 
-  document.head.appendChild(s)
+  document.head.append(s)
 
   await loaded.promise
 }

@@ -2,17 +2,16 @@
   "name": "@assessmentis/google-account-infrastructure",
   "version": "0.0.1",
   "description": "Shared Google account infrastructure (OAuth, origin definitions)",
-  "author": "Ruth Marks",
   "license": "UNLICENSED",
+  "author": "Ruth Marks",
   "type": "module",
-  "prettier": "@assessmentis/prettier-config",
   "exports": {
     ".": "./src/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint \"./{src,test}/**/*\"",
-    "lint:fix": "eslint --fix \"./{src,test}/**/*\""
+    "lint": "oxlint ./{src,test}/",
+    "lint:fix": "oxlint --fix ./{src,test}/",
+    "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
     "@assessmentis/config-domain": "*",
@@ -24,7 +23,6 @@
     "effect": "^3.19.8"
   },
   "devDependencies": {
-    "@assessmentis/prettier-config": "*",
     "@assessmentis/testing-utils": "*",
     "@assessmentis/typescript-config": "*",
     "fast-check": "^3.19.0",

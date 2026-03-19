@@ -1,8 +1,5 @@
 import { ObservationReferenceRange } from '@assessmentis/clinical-domain'
-import {
-  CodeableConcept,
-  Quantity,
-} from '@assessmentis/clinical-domain/data-types'
+import { CodeableConcept, Quantity } from '@assessmentis/clinical-domain/data-types'
 
 import { codings } from './codings'
 import { baseChoiceObservation } from './internal'
@@ -16,23 +13,23 @@ export const totalScore = {
   }),
   referenceRange: [
     ObservationReferenceRange.make({
-      low: Quantity.make({ value: 0 }),
       high: Quantity.make({ value: 4 }),
+      low: Quantity.make({ value: 0 }),
       text: 'minimal anxiety',
     }),
     ObservationReferenceRange.make({
-      low: Quantity.make({ value: 5 }),
       high: Quantity.make({ value: 9 }),
+      low: Quantity.make({ value: 5 }),
       text: 'mild anxiety',
     }),
     ObservationReferenceRange.make({
-      low: Quantity.make({ value: 10 }),
       high: Quantity.make({ value: 14 }),
+      low: Quantity.make({ value: 10 }),
       text: 'moderate anxiety',
     }),
     ObservationReferenceRange.make({
-      low: Quantity.make({ value: 15 }),
       high: Quantity.make({ value: 21 }),
+      low: Quantity.make({ value: 15 }),
       text: 'severe anxiety',
     }),
   ],
@@ -95,11 +92,11 @@ export const feelingAfraidObservation = {
 } as const satisfies ObservationTemplate
 
 export const questionObservations = {
-  feelingNervousObservation,
-  notAbleToStopWorryingObservation,
-  worryingTooMuchObservation,
-  troubleRelaxingObservation,
-  restlessHardToSitStillObservation,
   easilyAnnoyedObservation,
   feelingAfraidObservation,
+  feelingNervousObservation,
+  notAbleToStopWorryingObservation,
+  restlessHardToSitStillObservation,
+  troubleRelaxingObservation,
+  worryingTooMuchObservation,
 } as const

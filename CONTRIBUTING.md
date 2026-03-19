@@ -72,7 +72,7 @@ npm run typecheck    # Type check all packages
 npm run lint           # Lint all packages
 npm run test           # Test all packages
 npm run build          # Build all packages
-npm run format         # Format all files with Prettier
+npm run format         # Format all files with Oxfmt
 ```
 
 ## Code Style and Conventions
@@ -86,12 +86,15 @@ npm run format         # Format all files with Prettier
 
 ### Formatting
 
-Prettier is configured globally:
+Oxfmt is configured globally via `.oxfmtrc.json`:
 
 - **No semicolons**
 - **Single quotes**
 - **2-space indentation**
 - **Trailing commas** (ES5 style)
+- **100-character print width**
+- **Import sorting** enabled
+- **package.json sorting** enabled
 
 Run `npm run format` to format all files.
 
@@ -198,5 +201,5 @@ Ensure all checks pass before merging.
 - **Infrastructure packages**: Implementations, external integrations
 - **Use Effect-TS**: For composable, type-safe operations
 - **Test thoroughly**: Unit tests for all logic
-- **Follow conventions**: TypeScript, Prettier, ESLint configurations
+- **Follow conventions**: TypeScript, Oxfmt, ESLint configurations
 - **Keep it clean**: Minimal dependencies, clear separation of concerns

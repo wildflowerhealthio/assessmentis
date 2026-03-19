@@ -14,7 +14,7 @@ Address PR review comments marked with a rocket emoji reaction. Works locally, t
    - **Review comments** (inline on code): `gh api repos/{owner}/{repo}/pulls/{pull_number}/comments --paginate`
    - **Issue comments** (top-level): `gh api repos/{owner}/{repo}/issues/{pull_number}/comments --paginate`
 
-4. **Filter for rocket-reacted comments.** Each comment's response includes a `reactions` summary with counts (e.g., `"rocket": 1`). Filter to comments where `reactions.rocket > 0`. No need to fetch the detailed reactions endpoint unless you need to know *who* reacted.
+4. **Filter for rocket-reacted comments.** Each comment's response includes a `reactions` summary with counts (e.g., `"rocket": 1`). Filter to comments where `reactions.rocket > 0`. No need to fetch the detailed reactions endpoint unless you need to know _who_ reacted.
 
 5. **Group and address rocket comments.** Group related comments into logical batches — by file, by concern, or by dependency. Launch one subagent (Agent tool) per group, not per comment. Each subagent receives:
    - All comment bodies in the group

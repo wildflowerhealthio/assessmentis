@@ -1,8 +1,9 @@
+import { Effect } from 'effect'
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 
-import { auth } from 'app/FirebaseWebLayer'
 import { onAuthStateChanged } from 'firebase/auth'
+import { auth } from '@/firebase-web-layer'
 
 import type { Route } from './+types/authorizeEmail._index'
 
@@ -10,13 +11,12 @@ interface User {
   uid: string
   email: string
 }
-const AuthorizeEmail = (_: Route.ComponentProps) => {
-  const [currentUser, setCurrentUser] = useState<User>({ uid: '', email: '' })
+const AuthorizeEmail = (_: Route.ComponentProps): React.JSX.Element => {
+  const [currentUser, setCurrentUser] = useState<User>({ email: '', uid: '' })
   const navigate = useNavigate()
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
-      console.log('setting current user')
-      const currentUserObj = { uid: '', email: '' }
+      const currentUserObj = { email: '', uid: '' }
       if (user?.uid) {
         currentUserObj.uid = user.uid
         if (user.email) {
@@ -26,37 +26,37 @@ const AuthorizeEmail = (_: Route.ComponentProps) => {
         }
       } else {
         // Login
-        navigate('/login')
+        void navigate('/login')
       }
-      console.log(currentUserObj)
       setCurrentUser(currentUserObj)
     })
   }, [navigate])
-  const googleoauth = () => {
-    if (auth.currentUser) {
-      auth.currentUser
-        .getIdToken(true)
-        .then(function (idToken) {
-          fetch('/api/googleLogin', {
-            method: 'POST',
-            headers: {
-              'Content-type': 'application/json',
-              authorization: 'Bearer ' + idToken,
-            },
-            body: JSON.stringify({}),
-          })
-            .then((response) => response.json())
-            .then((result) => {
-              window.open(result.url, '_self')
-            })
-            .catch(function (error) {
-              console.log('failed to fetch ' + error)
-            })
-        })
-        .catch(function (error) {
-          console.log('couldnt get user token ' + error)
-        })
-    }
+  const googleoauth = (): void => {
+    void Effect.runPromise(
+      Effect.gen(function* () {
+        const { currentUser: authedUser } = auth
+        if (authedUser) {
+          const idToken = yield* Effect.tryPromise(() => authedUser.getIdToken(true)).pipe(
+            Effect.tapError((error) => Effect.logError(`couldn't get user token`, error))
+          )
+
+          const result = yield* Effect.tryPromise(() =>
+            fetch('/api/googleLogin', {
+              body: JSON.stringify({}),
+              headers: {
+                'Content-type': 'application/json',
+                authorization: `Bearer ${idToken}`,
+              },
+              method: 'POST',
+            }).then((response) => response.json())
+          ).pipe(
+            Effect.tapError((error) => Effect.logError(`couldnt fetch google login url`, error))
+          )
+
+          window.open(result.url, '_self')
+        }
+      })
+    )
   }
 
   const [searchParams] = useSearchParams()
@@ -67,9 +67,9 @@ const AuthorizeEmail = (_: Route.ComponentProps) => {
       <div className="h-full flex flex-column justify-center">
         <div className="rounded p-6 mt-10">
           <p className="text-3xl mb-4">
-            Authorization {success == 'true' ? 'complete' : 'incomplete'}
+            Authorization {success === 'true' ? 'complete' : 'incomplete'}
           </p>
-          {success == 'true' && (
+          {success === 'true' && (
             <p className="text-lg">
               Your Print Submit account
               <b> {currentUser.email} </b>
@@ -78,19 +78,22 @@ const AuthorizeEmail = (_: Route.ComponentProps) => {
             </p>
           )}
 
-          {success == 'false' && (
+          {success === 'false' && (
             <>
-              <p className="text-lg">
-                Email permisson not granted. Please try again
-              </p>
-              <button className="authorizeButton" onClick={() => googleoauth()}>
+              <p className="text-lg">Email permisson not granted. Please try again</p>
+              <button
+                className="authorizeButton"
+                onClick={() => {
+                  googleoauth()
+                }}
+              >
                 <img
                   style={{
-                    width: '20px',
-                    marginRight: '5px',
                     marginBottom: '1px',
+                    marginRight: '5px',
+                    width: '20px',
                   }}
-                  src={'/g-logo.png'}
+                  src="/g-logo.png"
                   alt="Google logo"
                 />
                 Authorize Google account
@@ -100,7 +103,7 @@ const AuthorizeEmail = (_: Route.ComponentProps) => {
           <button
             className="border-[1px] border-black px-2 rounded mt-4 text-lg"
             onClick={() => {
-              navigate('/')
+              void navigate('/')
             }}
           >
             Back to dashboard
@@ -108,24 +111,28 @@ const AuthorizeEmail = (_: Route.ComponentProps) => {
         </div>
       </div>
     )
-  } else {
-    return (
-      <>
-        No Current User Email
-        <button className="authorizeButton" onClick={() => googleoauth()}>
-          <img
-            style={{
-              width: '20px',
-              marginRight: '5px',
-              marginBottom: '1px',
-            }}
-            src={'/g-logo.png'}
-            alt="Google logo"
-          />
-          Authorize Google account
-        </button>
-      </>
-    )
   }
+  return (
+    <>
+      No Current User Email
+      <button
+        className="authorizeButton"
+        onClick={() => {
+          googleoauth()
+        }}
+      >
+        <img
+          style={{
+            marginBottom: '1px',
+            marginRight: '5px',
+            width: '20px',
+          }}
+          src="/g-logo.png"
+          alt="Google logo"
+        />
+        Authorize Google account
+      </button>
+    </>
+  )
 }
 export default AuthorizeEmail

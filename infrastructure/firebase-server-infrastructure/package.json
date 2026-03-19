@@ -2,24 +2,17 @@
   "name": "@assessmentis/firebase-server-infrastructure",
   "version": "0.0.1",
   "description": "Firebase Admin SDK infrastructure for server-side operations",
-  "author": "Ruth Marks",
   "license": "UNLICENSED",
+  "author": "Ruth Marks",
   "type": "module",
-  "prettier": "@assessmentis/prettier-config",
-  "scripts": {
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint \"./{src,test}/**/*\"",
-    "lint:fix": "eslint --fix \"./{src,test}/**/*\"",
-    "test": "vitest run"
-  },
   "exports": {
     ".": "./src/index.ts"
   },
-  "devDependencies": {
-    "@assessmentis/eslint-config": "*",
-    "@assessmentis/prettier-config": "*",
-    "@assessmentis/typescript-config": "*",
-    "vitest": "^4.0.15"
+  "scripts": {
+    "lint": "oxlint ./{src,test}/",
+    "lint:fix": "oxlint --fix ./{src,test}/",
+    "test": "vitest run",
+    "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
     "@assessmentis/firebase-web-infrastructure": "*",
@@ -28,5 +21,9 @@
     "@googleapis/healthcare": "^26.0.0",
     "effect": "^3.19.9",
     "firebase-admin": "^12.0.0"
+  },
+  "devDependencies": {
+    "@assessmentis/typescript-config": "*",
+    "vitest": "^4.0.15"
   }
 }

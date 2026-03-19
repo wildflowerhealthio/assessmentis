@@ -6,27 +6,27 @@ import { useEitherStream } from '@assessmentis/react-util'
 
 import Skeleton from 'react-loading-skeleton'
 
-import 'app/traits/BreadcrumbLabel/implementations/Observation'
-import 'app/traits/Link/implementations/Observation'
+/* eslint-disable import/no-unassigned-import -- Side-effect imports that register trait implementations for this route's resource type */
+import '../traits/BreadcrumbLabel/implementations/observation'
+import '../traits/Link/implementations/observation'
+/* eslint-enable import/no-unassigned-import */
 
-import { useResourceSubscription } from '../layers/useResourceSubscription'
-import { useBreadcrumbs } from '../modules/Breadcrumbs/useBreadcrumbs'
-import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
-import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
-import { ObservationAdditionalDetails } from '../modules/forms/Observation/ObservationAdditionalDetails/ObservationAdditionalDetails'
-import { ObservationComponents } from '../modules/forms/Observation/ObservationComponents/ObservationComponents'
-import { ObservationInterpretation } from '../modules/forms/Observation/ObservationInterpretation/ObservationInterpretation'
-import { ObservationValue } from '../modules/forms/Observation/ObservationValue/ObservationValue'
+import { useResourceSubscription } from '../layers/use-resource-subscription'
+import { useBreadcrumbs } from '../modules/Breadcrumbs/use-breadcrumbs'
+import { DetailGrid } from '../modules/common/components/DetailGrid/detail-grid'
+import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/resource-detail-page'
+import { ObservationAdditionalDetails } from '../modules/forms/Observation/ObservationAdditionalDetails/observation-additional-details'
+import { ObservationComponents } from '../modules/forms/Observation/ObservationComponents/observation-components'
+import { ObservationInterpretation } from '../modules/forms/Observation/ObservationInterpretation/observation-interpretation'
+import { ObservationValue } from '../modules/forms/Observation/ObservationValue/observation-value'
 import {
   formatObservationDetails,
   getObservationDisplayName,
-} from '../modules/resources/Observation/utils/observationDisplay'
-import { runEffectSyncFlat } from '../runEffectSync'
+} from '../modules/resources/Observation/utils/observation-display'
+import { runEffectSyncFlat } from '../run-effect-sync'
 import type { Route } from './+types/Observation.$url._index'
 
-export default function ObservationDetailPage({
-  params,
-}: Route.ComponentProps) {
+export default function ObservationDetailPage({ params }: Route.ComponentProps): React.JSX.Element {
   const observationStream = useResourceSubscription(Observation, params.url)
 
   const observationPromise = useEitherStream(observationStream)
@@ -44,18 +44,20 @@ export default function ObservationDetailPage({
       }
       sections={[
         {
-          id: 'details',
-          title: 'Details',
           content: (
             <DetailGrid
-              items={{ skeleton: [<Skeleton />, <Skeleton />, <Skeleton />] }}
+              items={{
+                skeleton: [<Skeleton key={0} />, <Skeleton key={1} />, <Skeleton key={2} />],
+              }}
             />
           ),
+          id: 'details',
+          title: 'Details',
         },
         {
+          content: <Skeleton count={3} />,
           id: 'value',
           title: 'Value',
-          content: <Skeleton count={3} />,
         },
       ]}
     />
@@ -66,9 +68,7 @@ export default function ObservationDetailPage({
       <Await resolve={observationPromise}>
         {(observation) => {
           const displayName = getObservationDisplayName(observation)
-          const observationDetails = runEffectSyncFlat(
-            formatObservationDetails(observation)
-          )
+          const observationDetails = runEffectSyncFlat(formatObservationDetails(observation))
 
           return (
             <ResourceDetailPage
@@ -77,47 +77,39 @@ export default function ObservationDetailPage({
               subtitle={`Observation: ${observation.url?.toString() ?? params.url}`}
               sections={[
                 {
+                  content: <DetailGrid items={observationDetails} />,
                   id: 'details',
                   title: 'Details',
-                  content: <DetailGrid items={observationDetails} />,
                 },
                 {
+                  content: <ObservationValue observation={observation} />,
                   id: 'value',
                   title: 'Value',
-                  content: <ObservationValue observation={observation} />,
                 },
                 {
+                  content: <ObservationInterpretation observation={observation} />,
+                  hidden:
+                    (!observation.interpretation || observation.interpretation.length === 0) &&
+                    (!observation.referenceRange || observation.referenceRange.length === 0),
                   id: 'interpretation',
                   title: 'Interpretation & Reference Range',
-                  content: (
-                    <ObservationInterpretation observation={observation} />
-                  ),
-                  hidden:
-                    (!observation.interpretation ||
-                      observation.interpretation.length === 0) &&
-                    (!observation.referenceRange ||
-                      observation.referenceRange.length === 0),
                 },
                 {
+                  content: <ObservationComponents observation={observation} />,
+                  hidden: !observation.component || observation.component.length === 0,
                   id: 'components',
                   title: 'Components',
-                  content: <ObservationComponents observation={observation} />,
-                  hidden:
-                    !observation.component ||
-                    observation.component.length === 0,
                 },
                 {
-                  id: 'additional',
-                  title: 'Additional Details',
-                  content: (
-                    <ObservationAdditionalDetails observation={observation} />
-                  ),
+                  content: <ObservationAdditionalDetails observation={observation} />,
                   hidden:
                     !observation.method &&
                     !observation.bodySite &&
                     !observation.device &&
                     !observation.specimen &&
                     (!observation.note || observation.note.length === 0),
+                  id: 'additional',
+                  title: 'Additional Details',
                 },
               ]}
               debugData={observation}

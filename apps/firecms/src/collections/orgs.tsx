@@ -1,22 +1,22 @@
 import { SchemaAST } from 'effect'
 import { IdentifierAnnotationId } from 'effect/SchemaAST'
+import type React from 'react'
 
 import { Org } from '@assessmentis/platform-domain'
 
-import {
+import type {
   BooleanProperty,
-  buildCollection,
-  buildProperty,
-  CMSType,
   FieldProps,
   MapProperty,
   NumberProperty,
   PropertyBuilder,
   StringProperty,
-  useModeController,
 } from '@firecms/core'
+import { buildCollection, buildProperty, useModeController } from '@firecms/core'
 
-import { EditableJsonView } from './EditableJsonView'
+import { EditableJsonView } from './editable-json-view'
+
+/* oxlint-disable react/only-export-components */
 
 type PropertySets =
   | MapProperty
@@ -29,30 +29,31 @@ function SimpleSelectField({
   property,
   value,
   setValue,
-  customProps,
-  includeDescription,
-  showError,
+  customProps: _customProps,
+  includeDescription: _includeDescription,
+  showError: _showError,
   error,
   isSubmitting,
-  context,
-}: FieldProps<string, {}>) {
-  const { mode } = useModeController()
+  context: _context,
+}: FieldProps<string, Record<string, never>>): React.JSX.Element {
+  const { mode: _mode } = useModeController()
   const style = { padding: 8, paddingLeft: 32 }
   return (
-    <>
-      <select
-        style={error ? { borderColor: 'red', ...style } : style}
-        disabled={isSubmitting}
-        value={value ?? ''}
-        onChange={(evt: any) => setValue(evt.target.value)}
-      >
-        {(property.enumValues as { id: string; label: string }[])?.map((ev) => (
-          <option key={ev.id} value={ev.id}>
-            {ev.label}
-          </option>
-        ))}
-      </select>
-    </>
+    <select
+      style={error ? { borderColor: 'red', ...style } : style}
+      disabled={isSubmitting}
+      value={value ?? ''}
+      onChange={(evt: React.ChangeEvent<HTMLSelectElement>) => {
+        setValue(evt.target.value)
+      }}
+    >
+      {/* oxlint-disable-next-line typescript/no-unsafe-type-assertion */}
+      {((property.enumValues ?? []) as { id: string | number; label: string }[])?.map((ev) => (
+        <option key={ev.id} value={ev.id}>
+          {ev.label}
+        </option>
+      ))}
+    </select>
   )
 }
 
@@ -61,11 +62,11 @@ const asFireCmsProperty = (name: string, s: SchemaAST.AST): PropertySets => {
     const properties: Record<string, PropertySets> = {}
 
     for (const property of s.propertySignatures) {
-      const name = property.name
-      if (!name || typeof name !== 'string') {
+      const propertyName = property.name
+      if (!propertyName || typeof propertyName !== 'string') {
         throw new Error('Expected property signature to have a name')
       }
-      properties[name] = asFireCmsProperty(name, property.type)
+      properties[propertyName] = asFireCmsProperty(propertyName, property.type)
     }
 
     return buildProperty({
@@ -74,14 +75,10 @@ const asFireCmsProperty = (name: string, s: SchemaAST.AST): PropertySets => {
       properties,
     })
   } else if (SchemaAST.isUnion(s)) {
-    const properties: Record<string, PropertySets> = {}
-
     if (
-      s.types.length == 2 &&
+      s.types.length === 2 &&
       s.types.some(
-        (t) =>
-          SchemaAST.isUndefinedKeyword(t) ||
-          (SchemaAST.isLiteral(t) && t.literal == null)
+        (t) => SchemaAST.isUndefinedKeyword(t) || (SchemaAST.isLiteral(t) && t.literal === null)
       )
     ) {
       const definedType = s.types.find((t) => !SchemaAST.isUndefinedKeyword(t))!
@@ -91,31 +88,22 @@ const asFireCmsProperty = (name: string, s: SchemaAST.AST): PropertySets => {
     const tags = s.types.map((typeAst) => {
       if (SchemaAST.isTypeLiteral(typeAst)) {
         const tagAst = typeAst.propertySignatures.find((p) => p.name === '_tag')
-        if (
-          tagAst &&
-          SchemaAST.isLiteral(tagAst.type) &&
-          typeof tagAst.type.literal == 'string'
-        ) {
+        if (tagAst && SchemaAST.isLiteral(tagAst.type) && typeof tagAst.type.literal === 'string') {
           return tagAst.type.literal
         }
         throw new Error('Expected union member to have a _tag literal')
       } else {
-        throw new Error(
-          `Expected union member to be a type literal ${name} is an ${typeAst._tag}`
-        )
+        throw new Error(`Expected union member to be a type literal ${name} is an ${typeAst._tag}`)
       }
     })
 
-    return ({ propertyValue, ...props }) => {
+    return ({ propertyValue }) => {
       const tagIndex =
-        propertyValue && '_tag' in propertyValue
-          ? tags.indexOf(propertyValue._tag)
-          : -1
+        propertyValue && '_tag' in propertyValue ? tags.indexOf(propertyValue._tag) : -1
       const taggedValueAst = s.types[tagIndex]
       const taggedElementProperties =
-        (taggedValueAst &&
-          (asFireCmsProperty(name, taggedValueAst) as MapProperty)
-            ?.properties) ??
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+        (taggedValueAst && (asFireCmsProperty(name, taggedValueAst) as MapProperty)?.properties) ??
         {}
 
       const property = buildProperty({
@@ -124,11 +112,11 @@ const asFireCmsProperty = (name: string, s: SchemaAST.AST): PropertySets => {
         properties: {
           ...taggedElementProperties,
           _tag: buildProperty({
-            name: '_tag',
-            dataType: 'string',
             Field: SimpleSelectField,
-            previewAsTag: true,
+            dataType: 'string',
             enumValues: tags.map((tag) => ({ id: tag, label: tag }) as const),
+            name: '_tag',
+            previewAsTag: true,
           }),
         },
       })
@@ -139,31 +127,32 @@ const asFireCmsProperty = (name: string, s: SchemaAST.AST): PropertySets => {
       string,
       (() => StringProperty | NumberProperty | BooleanProperty) | undefined
     > = {
-      string: () =>
+      boolean: () =>
         buildProperty({
-          dataType: 'string',
+          dataType: 'boolean',
           name: name,
-          defaultValue: s.literal as string,
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+          defaultValue: s.literal as boolean,
         }),
       number: () =>
         buildProperty({
           dataType: 'number',
           name: name,
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion
           defaultValue: s.literal as number,
         }),
-      boolean: () =>
+      string: () =>
         buildProperty({
-          dataType: 'boolean',
+          dataType: 'string',
           name: name,
-          defaultValue: s.literal as boolean,
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+          defaultValue: s.literal as string,
         }),
     }
     const literalValue = literalHandlers[typeof s.literal]
 
     if (!literalValue) {
-      throw new Error(
-        `Unsupported literal type: ${typeof s.literal} in ${name}`
-      )
+      throw new Error(`Unsupported literal type: ${typeof s.literal} in ${name}`)
     }
     return literalValue()
   } else if (SchemaAST.isStringKeyword(s)) {
@@ -183,8 +172,8 @@ const asFireCmsProperty = (name: string, s: SchemaAST.AST): PropertySets => {
     })
   } else if (
     SchemaAST.isTransformation(s) &&
-    (s.annotations[IdentifierAnnotationId] == 'DateTimeUtc' ||
-      s.annotations[IdentifierAnnotationId] == 'DateTime')
+    (s.annotations[IdentifierAnnotationId] === 'DateTimeUtc' ||
+      s.annotations[IdentifierAnnotationId] === 'DateTime')
   ) {
     return buildProperty({
       dataType: 'string',
@@ -192,7 +181,7 @@ const asFireCmsProperty = (name: string, s: SchemaAST.AST): PropertySets => {
     })
   }
 
-  throw new Error(`Unsupported schema AST type: ${s}`)
+  throw new Error(`Unsupported schema AST type: ${s.toString()}`)
 }
 console.log('Org AST:', Org.ast)
 
@@ -205,13 +194,13 @@ export const orgsCollection = buildCollection({
   name: 'Client Orgs',
   description: 'This is a collection of orgs using assessmentis',
   path: 'orgs',
-  properties: (asFireCmsProperty('Org', Org.ast) as unknown as MapProperty)
-    .properties!,
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+  properties: (asFireCmsProperty('Org', Org.ast) as unknown as MapProperty).properties!,
   entityViews: [
     {
+      Builder: EditableJsonView,
       key: 'editable_json',
       name: 'JSON Editor',
-      Builder: EditableJsonView,
     },
   ],
 })

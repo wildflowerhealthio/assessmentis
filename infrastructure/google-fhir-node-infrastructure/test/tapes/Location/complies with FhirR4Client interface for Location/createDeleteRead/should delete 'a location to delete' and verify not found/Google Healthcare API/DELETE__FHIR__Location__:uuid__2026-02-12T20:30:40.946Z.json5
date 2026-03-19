@@ -1,52 +1,30 @@
 {
-    meta: {
-        createdAt: '2026-02-12T20:30:40.802Z',
-        host: 'https://healthcare.googleapis.com',
-        resHumanReadable: true,
+  meta: {
+    createdAt: '2026-02-12T20:30:40.802Z',
+    host: 'https://healthcare.googleapis.com',
+    resHumanReadable: true,
+  },
+  req: {
+    url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/a8ce59cd-7ca4-45a1-a5b6-8c76651793e8',
+    method: 'DELETE',
+    headers: {},
+    body: '',
+  },
+  res: {
+    status: 200,
+    headers: {
+      etag: ['W/"MTc3MDkyODI0MDk3ODA4NzAwMA"'],
+      'content-type': ['application/fhir+json;charset=utf-8'],
+      vary: ['Origin, X-Origin, Referer'],
+      date: ['Thu, 12 Feb 2026 20:30:40 GMT'],
+      server: ['ESF'],
+      'content-length': ['2'],
+      'x-xss-protection': ['0'],
+      'x-frame-options': ['SAMEORIGIN'],
+      'x-content-type-options': ['nosniff'],
+      'alt-svc': ['h3=":443"; ma=2592000,h3-29=":443"; ma=2592000'],
+      connection: ['close'],
     },
-    req: {
-        url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/a8ce59cd-7ca4-45a1-a5b6-8c76651793e8',
-        method: 'DELETE',
-        headers: {},
-        body: '',
-    },
-    res: {
-        status: 200,
-        headers: {
-            etag: [
-                'W/"MTc3MDkyODI0MDk3ODA4NzAwMA"',
-            ],
-            'content-type': [
-                'application/fhir+json;charset=utf-8',
-            ],
-            vary: [
-                'Origin, X-Origin, Referer',
-            ],
-            date: [
-                'Thu, 12 Feb 2026 20:30:40 GMT',
-            ],
-            server: [
-                'ESF',
-            ],
-            'content-length': [
-                '2',
-            ],
-            'x-xss-protection': [
-                '0',
-            ],
-            'x-frame-options': [
-                'SAMEORIGIN',
-            ],
-            'x-content-type-options': [
-                'nosniff',
-            ],
-            'alt-svc': [
-                'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
-            ],
-            connection: [
-                'close',
-            ],
-        },
-        body: {},
-    },
+    body: {},
+  },
 }

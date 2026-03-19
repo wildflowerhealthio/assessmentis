@@ -1,5 +1,5 @@
-export { ResourceForm } from './ResourceForm'
-export type { FormError } from './types/FormTypes'
+export { ResourceForm } from './resource-form'
+export type { FormError } from './types/form-types'
 
 export {
   TextField,

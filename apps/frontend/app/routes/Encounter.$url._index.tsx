@@ -1,4 +1,4 @@
-import { Effect, pipe, Schema } from 'effect'
+import { Effect, Schema, pipe } from 'effect'
 import { Suspense, useMemo } from 'react'
 import { Await, useAsyncError } from 'react-router'
 
@@ -6,22 +6,24 @@ import { ClinicalDomainHub, Encounter } from '@assessmentis/clinical-domain'
 import { NotFoundError } from '@assessmentis/ontology'
 import { useEffectTs } from '@assessmentis/react-util'
 
-import 'app/traits/BreadcrumbLabel/implementations/Encounter'
-import 'app/traits/Link/implementations/Encounter'
+/* eslint-disable import/no-unassigned-import -- Side-effect imports that register trait implementations for this route's resource type */
+import '../traits/BreadcrumbLabel/implementations/encounter'
+import '../traits/Link/implementations/encounter'
+/* eslint-enable import/no-unassigned-import */
 
-import { getFullEncounter } from 'app/modules/interview-call/actions/getFullEncounter'
-import InterviewCall from 'app/modules/interview-call/features/InterviewCall/InterviewCall'
+import { getFullEncounter } from '@/modules/interview-call/actions/get-full-encounter'
+import InterviewCall from '@/modules/interview-call/features/InterviewCall/interview-call'
 
-import { useHub } from '../layers/useHub'
-import { useBreadcrumbs } from '../modules/Breadcrumbs/useBreadcrumbs'
-import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
-import { getEncounterDisplayName } from '../modules/resources/Encounter/utils/encounterDisplay'
-import { runEffectSync } from '../runEffectSync'
+import { useHub } from '../layers/use-hub'
+import { useBreadcrumbs } from '../modules/Breadcrumbs/use-breadcrumbs'
+import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/resource-detail-page'
+import { getEncounterDisplayName } from '../modules/resources/Encounter/utils/encounter-display'
+import { runEffectSync } from '../run-effect-sync'
 import type { Route } from './+types/Encounter.$url._index'
 
 const tryDecodeEncounterUrl = Schema.decode(Encounter.UrlSchema)
 
-const EncounterError = () => {
+const EncounterError = (): React.JSX.Element => {
   const error = useAsyncError()
   if (error instanceof NotFoundError) {
     return <div>Encounter not found</div>
@@ -29,41 +31,39 @@ const EncounterError = () => {
   return <div>Error loading encounter: {String(error)}</div>
 }
 
-export default function EncounterPage({ params }: Route.ComponentProps) {
+export default function EncounterPage({ params }: Route.ComponentProps): React.JSX.Element {
   const hub = useHub()
 
-  const encounterEffect = useMemo(() => {
-    return pipe(
-      params.url,
-      tryDecodeEncounterUrl,
-      Effect.catchAll((_parseErr) =>
-        Effect.fail(
-          new NotFoundError<
-            'Encounter',
-            { url: string | typeof Encounter.UrlSchema }
-          >({
-            resourceType: 'Encounter',
-            params: { url: params.url },
-          })
-        )
+  const encounterEffect = useMemo(
+    () =>
+      pipe(
+        params.url,
+        tryDecodeEncounterUrl,
+        Effect.catchAll((_parseErr) =>
+          Effect.fail(
+            new NotFoundError<'Encounter', { url: string | typeof Encounter.UrlSchema }>({
+              resourceType: 'Encounter',
+              params: { url: params.url },
+            })
+          )
+        ),
+        Effect.flatMap(getFullEncounter),
+        Effect.provideService(ClinicalDomainHub, hub)
       ),
-      Effect.flatMap(getFullEncounter),
-      Effect.provideService(ClinicalDomainHub, hub)
-    )
-  }, [params.url, hub])
+    [params.url, hub]
+  )
 
   const encounterPromise = useEffectTs(encounterEffect)
 
-  const justEncounterPromise = useMemo(() => {
-    return encounterPromise.then((enc) => ({
-      label: runEffectSync(getEncounterDisplayName(enc.encounter)),
-    }))
-  }, [encounterPromise])
-
-  useBreadcrumbs(
-    () => [Encounter, justEncounterPromise],
-    [justEncounterPromise]
+  const justEncounterPromise = useMemo(
+    () =>
+      encounterPromise.then((enc) => ({
+        label: runEffectSync(getEncounterDisplayName(enc.encounter)),
+      })),
+    [encounterPromise]
   )
+
+  useBreadcrumbs(() => [Encounter, justEncounterPromise], [justEncounterPromise])
 
   return (
     <Suspense fallback={<div>Loading interview call...</div>}>
@@ -71,14 +71,12 @@ export default function EncounterPage({ params }: Route.ComponentProps) {
         {(encounterData) => (
           <ResourceDetailPage
             editTo={`${encounterData.encounter.Link}/edit`}
-            title={runEffectSync(
-              getEncounterDisplayName(encounterData.encounter)
-            )}
+            title={runEffectSync(getEncounterDisplayName(encounterData.encounter))}
             sections={[
               {
+                content: <InterviewCall encounter={encounterData} />,
                 id: 'interview',
                 title: undefined,
-                content: <InterviewCall encounter={encounterData} />,
               },
             ]}
             debugData={encounterData}

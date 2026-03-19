@@ -1,49 +1,33 @@
 {
-    meta: {
-        createdAt: '2026-02-10T21:24:28.568Z',
-        host: 'https://api.daily.co',
-        resHumanReadable: true,
+  meta: {
+    createdAt: '2026-02-10T21:24:28.568Z',
+    host: 'https://api.daily.co',
+    resHumanReadable: true,
+  },
+  req: {
+    url: '/v1/rooms/non-existent-room-ccf5e9ad',
+    method: 'GET',
+    headers: {},
+    body: '',
+  },
+  res: {
+    status: 404,
+    headers: {
+      date: ['Tue, 10 Feb 2026 21:24:28 GMT'],
+      'content-type': ['application/json; charset=utf-8'],
+      'content-length': ['72'],
+      connection: ['close'],
+      'strict-transport-security': ['max-age=31536000 ; includeSubDomains'],
+      'access-control-allow-origin': ['*'],
+      'access-control-allow-headers': [
+        'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Invite-Token, X-DailySessionId, X-DailyJoinToken, X-DailyAboutClient, Traceparent, Tracestate, Request-Id',
+      ],
+      'access-control-allow-methods': ['OPTIONS,HEAD,GET,POST,PUT,PATCH,DELETE'],
+      etag: ['W/"48-1FQUGwhe0kqzq6PEsGdKoF721YI"'],
     },
-    req: {
-        url: '/v1/rooms/non-existent-room-ccf5e9ad',
-        method: 'GET',
-        headers: {},
-        body: '',
+    body: {
+      error: 'not-found',
+      info: 'room non-existent-room-ccf5e9ad not found',
     },
-    res: {
-        status: 404,
-        headers: {
-            date: [
-                'Tue, 10 Feb 2026 21:24:28 GMT',
-            ],
-            'content-type': [
-                'application/json; charset=utf-8',
-            ],
-            'content-length': [
-                '72',
-            ],
-            connection: [
-                'close',
-            ],
-            'strict-transport-security': [
-                'max-age=31536000 ; includeSubDomains',
-            ],
-            'access-control-allow-origin': [
-                '*',
-            ],
-            'access-control-allow-headers': [
-                'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Invite-Token, X-DailySessionId, X-DailyJoinToken, X-DailyAboutClient, Traceparent, Tracestate, Request-Id',
-            ],
-            'access-control-allow-methods': [
-                'OPTIONS,HEAD,GET,POST,PUT,PATCH,DELETE',
-            ],
-            etag: [
-                'W/"48-1FQUGwhe0kqzq6PEsGdKoF721YI"',
-            ],
-        },
-        body: {
-            error: 'not-found',
-            info: 'room non-existent-room-ccf5e9ad not found',
-        },
-    },
+  },
 }

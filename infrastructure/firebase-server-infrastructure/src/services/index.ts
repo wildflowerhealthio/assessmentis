@@ -1,1 +1,1 @@
-export * from './FirebaseAdmin'
+export * from './firebase-admin'

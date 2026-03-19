@@ -6,23 +6,25 @@ import { useEitherStream } from '@assessmentis/react-util'
 
 import Skeleton from 'react-loading-skeleton'
 
-import 'app/traits/BreadcrumbLabel/implementations/Composition'
-import 'app/traits/Link/implementations/Composition'
+/* eslint-disable import/no-unassigned-import -- Side-effect imports that register trait implementations for this route's resource type */
+import '../traits/BreadcrumbLabel/implementations/composition'
+import '../traits/Link/implementations/composition'
+/* eslint-enable import/no-unassigned-import */
 
-import { useResourceSubscription } from '../layers/useResourceSubscription'
-import { useBreadcrumbs } from '../modules/Breadcrumbs/useBreadcrumbs'
-import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
-import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
-import { CompositionSections } from '../modules/forms/Composition/CompositionSections/CompositionSections'
+import { useResourceSubscription } from '../layers/use-resource-subscription'
+import { useBreadcrumbs } from '../modules/Breadcrumbs/use-breadcrumbs'
+import { DetailGrid } from '../modules/common/components/DetailGrid/detail-grid'
+import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/resource-detail-page'
+import { CompositionSections } from '../modules/forms/Composition/CompositionSections/composition-sections'
 import {
   formatCompositionDetails,
   getCompositionDisplayName,
-} from '../modules/resources/Composition/utils/compositionDisplay'
+} from '../modules/resources/Composition/utils/composition-display'
 import type { Route } from './+types/Composition.$url._index'
 
 export default function CompositionDetailsPage({
   params,
-}: Route.ComponentProps) {
+}: Route.ComponentProps): React.JSX.Element {
   const compositionStream = useResourceSubscription(Composition, params.url)
 
   const compositionLoader = useEitherStream(compositionStream)
@@ -40,13 +42,15 @@ export default function CompositionDetailsPage({
       }
       sections={[
         {
-          id: 'details',
-          title: 'Details',
           content: (
             <DetailGrid
-              items={{ skeleton: [<Skeleton />, <Skeleton />, <Skeleton />] }}
+              items={{
+                skeleton: [<Skeleton key={0} />, <Skeleton key={1} />, <Skeleton key={2} />],
+              }}
             />
           ),
+          id: 'details',
+          title: 'Details',
         },
       ]}
     />
@@ -64,18 +68,15 @@ export default function CompositionDetailsPage({
               subtitle={`Composition: ${composition.url?.toString() ?? params.url}`}
               sections={[
                 {
+                  content: <DetailGrid items={formatCompositionDetails(composition)} />,
                   id: 'details',
                   title: 'Details',
-                  content: (
-                    <DetailGrid items={formatCompositionDetails(composition)} />
-                  ),
                 },
                 {
+                  content: <CompositionSections composition={composition} />,
+                  hidden: !composition.section || composition.section.length === 0,
                   id: 'sections',
                   title: 'Sections',
-                  content: <CompositionSections composition={composition} />,
-                  hidden:
-                    !composition.section || composition.section.length === 0,
                 },
               ]}
               debugData={composition}

@@ -5,4 +5,4 @@
  * @packageDocumentation
  */
 export * from './errors'
-export * from './LoadedResult'
+export * from './loaded-result'

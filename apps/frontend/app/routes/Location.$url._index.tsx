@@ -6,17 +6,19 @@ import { useEitherStream } from '@assessmentis/react-util'
 
 import Skeleton from 'react-loading-skeleton'
 
-import 'app/traits/BreadcrumbLabel/implementations/Location'
-import 'app/traits/Link/implementations/Location'
+/* eslint-disable import/no-unassigned-import -- Side-effect imports that register trait implementations for this route's resource type */
+import '../traits/BreadcrumbLabel/implementations/location'
+import '../traits/Link/implementations/location'
+/* eslint-enable import/no-unassigned-import */
 
-import { useResourceSubscription } from '../layers/useResourceSubscription'
-import { useBreadcrumbs } from '../modules/Breadcrumbs/useBreadcrumbs'
-import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
-import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
-import { getLocationDisplayName } from '../modules/resources/Location/utils/locationDisplay'
+import { useResourceSubscription } from '../layers/use-resource-subscription'
+import { useBreadcrumbs } from '../modules/Breadcrumbs/use-breadcrumbs'
+import { DetailGrid } from '../modules/common/components/DetailGrid/detail-grid'
+import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/resource-detail-page'
+import { getLocationDisplayName } from '../modules/resources/Location/utils/location-display'
 import type { Route } from './+types/Location.$url._index'
 
-export default function LocationDetailPage({ params }: Route.ComponentProps) {
+export default function LocationDetailPage({ params }: Route.ComponentProps): React.JSX.Element {
   const locationStream = useResourceSubscription(Location, params.url)
 
   const locationPromise = useEitherStream(locationStream)
@@ -34,13 +36,15 @@ export default function LocationDetailPage({ params }: Route.ComponentProps) {
       }
       sections={[
         {
-          id: 'details',
-          title: 'Details',
           content: (
             <DetailGrid
-              items={{ skeleton: [<Skeleton />, <Skeleton />, <Skeleton />] }}
+              items={{
+                skeleton: [<Skeleton key={0} />, <Skeleton key={1} />, <Skeleton key={2} />],
+              }}
             />
           ),
+          id: 'details',
+          title: 'Details',
         },
       ]}
     />
@@ -56,21 +60,22 @@ export default function LocationDetailPage({ params }: Route.ComponentProps) {
           const details = [
             { label: 'Name', value: location.name ?? '-' },
             {
+              hidden: location.status === undefined,
               label: 'Status',
               value: location.status ?? '-',
-              hidden: location.status == undefined,
             },
             {
+              hidden: location.mode === undefined,
               label: 'Mode',
               value: location.mode ?? '-',
-              hidden: location.mode == undefined,
             },
             {
+              hidden: location.description === undefined,
               label: 'Description',
               value: location.description ?? '-',
-              hidden: location.description == undefined,
             },
             {
+              hidden: identifier?.system === undefined && identifier?.value === undefined,
               label: 'Identifier',
               value:
                 identifier?.system || identifier?.value
@@ -78,9 +83,6 @@ export default function LocationDetailPage({ params }: Route.ComponentProps) {
                       identifier.system && identifier.value ? ' | ' : ''
                     }${identifier.value ?? ''}`
                   : '-',
-              hidden:
-                identifier?.system == undefined &&
-                identifier?.value == undefined,
             },
           ]
 
@@ -91,9 +93,9 @@ export default function LocationDetailPage({ params }: Route.ComponentProps) {
               subtitle={`Location: ${location.url?.toString() ?? params.url}`}
               sections={[
                 {
+                  content: <DetailGrid items={details} />,
                   id: 'details',
                   title: 'Details',
-                  content: <DetailGrid items={details} />,
                 },
               ]}
               debugData={location}

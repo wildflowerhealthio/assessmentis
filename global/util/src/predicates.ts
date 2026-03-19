@@ -1,3 +1,4 @@
+import { Predicate } from 'effect'
 import { dual } from 'effect/Function'
 
 /**
@@ -24,20 +25,13 @@ import { dual } from 'effect/Function'
  * ```
  */
 export const isNotTagged: {
-  <K extends string>(
-    tag: K
-  ): <A extends { readonly _tag: string }>(
-    self: A
-  ) => self is Exclude<A, { readonly _tag: K }>
+  <K extends string>(tag: K): <A>(self: A) => self is Exclude<A, { readonly _tag: K }>
 
-  <A extends { readonly _tag: string }, K extends string>(
-    self: A,
-    tag: K
-  ): self is Exclude<A, { readonly _tag: K }>
+  <A, K extends string>(self: A, tag: K): self is Exclude<A, { readonly _tag: K }>
 } = dual(
   2,
   <A extends { readonly _tag: string }, K extends string>(
     self: A,
     tag: K
-  ): self is Exclude<A, { readonly _tag: K }> => self._tag !== tag
+  ): self is Exclude<A, { readonly _tag: K }> => !Predicate.isTagged(self, tag)
 )

@@ -2,9 +2,10 @@ import { Suspense } from 'react'
 
 import Skeleton from 'react-loading-skeleton'
 
-import { runEffectSyncFlat } from '../runEffectSync'
+import { runEffectSyncFlat } from '../run-effect-sync'
 import type { Route } from './+types/Patient.$url._index'
 
+// eslint-disable-next-line import/no-unassigned-import
 import 'react-loading-skeleton/dist/skeleton.css'
 
 import { Await } from 'react-router'
@@ -12,21 +13,23 @@ import { Await } from 'react-router'
 import { Patient } from '@assessmentis/clinical-domain'
 import { useEitherStream } from '@assessmentis/react-util'
 
-import 'app/traits/BreadcrumbLabel/implementations/Patient'
-import 'app/traits/Link/implementations/Patient'
+/* eslint-disable import/no-unassigned-import -- Side-effect imports that register trait implementations for this route's resource type */
+import '../traits/BreadcrumbLabel/implementations/patient'
+import '../traits/Link/implementations/patient'
+/* eslint-enable import/no-unassigned-import */
 
-import { useResourceSubscription } from '../layers/useResourceSubscription'
-import { useBreadcrumbs } from '../modules/Breadcrumbs/useBreadcrumbs'
-import { DetailGrid } from '../modules/common/components/DetailGrid/DetailGrid'
-import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/ResourceDetailPage'
-import { PatientAddresses } from '../modules/forms/Patient/PatientAddresses/PatientAddresses'
-import { PatientContactInfo } from '../modules/forms/Patient/PatientContactInfo/PatientContactInfo'
+import { useResourceSubscription } from '../layers/use-resource-subscription'
+import { useBreadcrumbs } from '../modules/Breadcrumbs/use-breadcrumbs'
+import { DetailGrid } from '../modules/common/components/DetailGrid/detail-grid'
+import { ResourceDetailPage } from '../modules/common/components/ResourceDetailPage/resource-detail-page'
+import { PatientAddresses } from '../modules/forms/Patient/PatientAddresses/patient-addresses'
+import { PatientContactInfo } from '../modules/forms/Patient/PatientContactInfo/patient-contact-info'
 import {
   formatPatientDemographics,
   getPatientDisplayName,
-} from '../modules/resources/Patient/utils/patientDisplay'
+} from '../modules/resources/Patient/utils/patient-display'
 
-export default function PatientDetailPage({ params }: Route.ComponentProps) {
+export default function PatientDetailPage({ params }: Route.ComponentProps): React.JSX.Element {
   const patientStream = useResourceSubscription(Patient, params.url)
 
   const patientPromise = useEitherStream(patientStream)
@@ -35,16 +38,8 @@ export default function PatientDetailPage({ params }: Route.ComponentProps) {
 
   const loader = (
     <div style={{ padding: 'var(--space-4)' }}>
-      <Skeleton
-        width={200}
-        height={32}
-        style={{ marginBottom: 'var(--space-2)' }}
-      />
-      <Skeleton
-        width={300}
-        height={20}
-        style={{ marginBottom: 'var(--space-4)' }}
-      />
+      <Skeleton width={200} height={32} style={{ marginBottom: 'var(--space-2)' }} />
+      <Skeleton width={300} height={20} style={{ marginBottom: 'var(--space-4)' }} />
       <Skeleton width="100%" height={200} />
     </div>
   )
@@ -54,9 +49,7 @@ export default function PatientDetailPage({ params }: Route.ComponentProps) {
       <Await resolve={patientPromise}>
         {(patient) => {
           const displayName = getPatientDisplayName(patient)
-          const patientDemographicItems = runEffectSyncFlat(
-            formatPatientDemographics(patient)
-          )
+          const patientDemographicItems = runEffectSyncFlat(formatPatientDemographics(patient))
 
           return (
             <ResourceDetailPage
@@ -65,21 +58,21 @@ export default function PatientDetailPage({ params }: Route.ComponentProps) {
               subtitle={`Patient: ${patient.url?.toString() ?? params.url}`}
               sections={[
                 {
+                  content: <DetailGrid items={patientDemographicItems} />,
                   id: 'demographics',
                   title: 'Demographics',
-                  content: <DetailGrid items={patientDemographicItems} />,
                 },
                 {
-                  id: 'contact',
-                  title: 'Contact Information',
                   content: <PatientContactInfo patient={patient} />,
                   hidden: !patient.telecom || patient.telecom.length === 0,
+                  id: 'contact',
+                  title: 'Contact Information',
                 },
                 {
-                  id: 'addresses',
-                  title: 'Addresses',
                   content: <PatientAddresses patient={patient} />,
                   hidden: !patient.address || patient.address.length === 0,
+                  id: 'addresses',
+                  title: 'Addresses',
                 },
               ]}
               debugData={patient}

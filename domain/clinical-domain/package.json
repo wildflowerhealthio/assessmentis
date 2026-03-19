@@ -2,19 +2,18 @@
   "name": "@assessmentis/clinical-domain",
   "version": "0.0.1",
   "description": "The domain representations for Assessment.is",
-  "author": "Ruth Marks",
   "license": "UNLICENSED",
+  "author": "Ruth Marks",
   "type": "module",
-  "prettier": "@assessmentis/prettier-config",
   "exports": {
     ".": "./src/index.ts",
     "./data-types": "./src/data-types/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint \"./{src,test}/**/*\"",
-    "lint:fix": "eslint --fix \"./{src,test}/**/*\"",
-    "test": "vitest run"
+    "lint": "oxlint ./{src,test}/",
+    "lint:fix": "oxlint --fix ./{src,test}/",
+    "test": "vitest run",
+    "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
     "@assessmentis/ontology": "*",
@@ -23,7 +22,6 @@
     "temporal-polyfill": "^0.3.0"
   },
   "devDependencies": {
-    "@assessmentis/prettier-config": "*",
     "@assessmentis/testing-utils": "*",
     "@types/fhir": "^0.0.41",
     "typescript": "^5.9.3",

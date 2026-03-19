@@ -1,5 +1,5 @@
-import { defineConfig, mergeConfig } from 'vitest/config'
 import { browserIntegration } from '@assessmentis/testing-utils/vitest-configs'
+import { defineConfig, mergeConfig } from 'vitest/config'
 
 export default defineConfig((_configEnv) =>
   mergeConfig(browserIntegration(_configEnv), {
@@ -7,7 +7,6 @@ export default defineConfig((_configEnv) =>
       VITE_RECORD: 'true',
     },
     test: {
-      name: 'google-fhir-web-infrastructure:integration',
       browser: {
         orchestratorScripts: [
           {
@@ -18,6 +17,7 @@ export default defineConfig((_configEnv) =>
       env: {
         VITE_RECORD: 'true',
       },
+      name: 'google-fhir-web-infrastructure:integration',
     },
   })
 )

@@ -14,65 +14,65 @@ import { UnhandledError } from '@assessmentis/ontology'
 import { gad7 } from '@assessmentis/questionnaire-entities'
 import { useEffectTs } from '@assessmentis/react-util'
 
-import 'app/traits/BreadcrumbLabel/implementations/QuestionnaireResponse'
-import 'app/traits/Link/implementations/QuestionnaireResponse'
+/* eslint-disable import/no-unassigned-import -- Side-effect imports that register trait implementations for this route's resource type */
+import '../traits/BreadcrumbLabel/implementations/questionnaire-response'
+import '../traits/Link/implementations/questionnaire-response'
+/* eslint-enable import/no-unassigned-import */
 
-import { useBreadcrumbs } from 'app/modules/Breadcrumbs/useBreadcrumbs'
-import QuestionnaireForm from 'app/modules/resources/Questionnaire/features/QuestionnaireForm/QuestionnaireForm'
 import { ErrorBoundary } from 'react-error-boundary'
+import { useBreadcrumbs } from '@/modules/Breadcrumbs/use-breadcrumbs'
+import QuestionnaireForm from '@/modules/resources/Questionnaire/features/QuestionnaireForm/questionnaire-form'
 
-import { useHub } from '../layers/useHub'
-import { useResourceCollection } from '../layers/useResourceCollection'
-import SplitPane from '../modules/common/components/SplitPane/SplitPane'
+import { useHub } from '../layers/use-hub'
+import { useResourceCollection } from '../layers/use-resource-collection'
+import SplitPane from '../modules/common/components/SplitPane/split-pane'
 import type { Route } from './+types/QuestionnaireResponse.$url'
 
 export default function QuestionnaireResponseDetailsPage({
   params,
-}: Route.ComponentProps) {
+}: Route.ComponentProps): React.JSX.Element {
   const hub = useHub()
 
   const pageEffect = useMemo(() => {
-    const questionnaireResponseUrlMaybe = Schema.decodeOption(
-      QuestionnaireResponse.UrlSchema
-    )(params.url)
+    const questionnaireResponseUrlMaybe = Schema.decodeOption(QuestionnaireResponse.UrlSchema)(
+      params.url
+    )
 
     return Effect.gen(function* () {
-      const hub = yield* ClinicalDomainHub
+      const clinicalHub = yield* ClinicalDomainHub
 
-      const questionnaireResponseUrl =
-        yield* questionnaireResponseUrlMaybe.pipe(
-          Option.map((url) => Effect.succeed(url)),
-          Option.getOrElse(() =>
-            Effect.fail(
-              new UnhandledError({
-                message: 'Questionnaire Response not found',
-              })
-            )
+      const questionnaireResponseUrl = yield* questionnaireResponseUrlMaybe.pipe(
+        Option.map((url) => Effect.succeed(url)),
+        Option.getOrElse(() =>
+          Effect.fail(
+            new UnhandledError({
+              message: 'Questionnaire Response not found',
+            })
           )
         )
+      )
 
-      const questionnaireResponse = yield* hub.get(
+      const questionnaireResponse = yield* clinicalHub.get(
         QuestionnaireResponse,
         questionnaireResponseUrl
       )
 
       const questionnaireUrl = questionnaireResponse.questionnaire
-      const encounterUrl =
-        questionnaireResponse.encounter?.reference ?? undefined
+      const encounterUrl = questionnaireResponse.encounter?.reference ?? undefined
 
       const questionnaire = questionnaireUrl
-        ? yield* hub.get(Questionnaire, questionnaireUrl)
+        ? yield* clinicalHub.get(Questionnaire, questionnaireUrl)
         : undefined
 
-      const observations = yield* hub.search(Observation, {
+      const observations = yield* clinicalHub.search(Observation, {
         encounter: encounterUrl,
       })
 
       return {
-        questionnaireResponse,
-        questionnaire,
         encounterUrl,
         observations,
+        questionnaire,
+        questionnaireResponse,
       }
     }).pipe(Effect.provideService(ClinicalDomainHub, hub))
   }, [hub, params.url])
@@ -81,9 +81,7 @@ export default function QuestionnaireResponseDetailsPage({
 
   return (
     <Suspense fallback={<h1> Loading! </h1>}>
-      <ErrorBoundary
-        fallbackRender={({ error }) => <h1>Error: {String(error)}</h1>}
-      >
+      <ErrorBoundary fallbackRender={({ error }) => <h1>Error: {String(error)}</h1>}>
         <Await resolve={dataPromise}>
           {(data) =>
             data.questionnaire ? (
@@ -112,20 +110,17 @@ const ResponsePage = ({
   questionnaire: Questionnaire
   questionnaireResponse: QuestionnaireResponse
   encounterUrl: string | undefined
-  observations: ReadonlyArray<Observation>
-}) => {
+  observations: readonly Observation[]
+}): React.JSX.Element => {
   const navigate = useNavigate()
   const hub = useHub()
 
-  const [highlightLinks, setHighlightLinks] = useState<
-    Set<QuestionnaireItemLink>
-  >(new Set())
+  const [highlightLinks, setHighlightLinks] = useState<Set<QuestionnaireItemLink>>(new Set())
 
   useBreadcrumbs(
     () => [
       QuestionnaireResponse,
-      questionnaire.title ||
-        `Response ${questionnaireResponse.url?.toString() ?? 'Unknown'}`,
+      questionnaire.title ?? `Response ${questionnaireResponse.url?.toString() ?? 'Unknown'}`,
     ],
     [questionnaire.title, questionnaireResponse.url]
   )
@@ -134,12 +129,14 @@ const ResponsePage = ({
     () => (encounterUrl ? { encounter: encounterUrl } : undefined),
     [encounterUrl]
   )
-  const { collectionPromise: mediaPromise, deleteItem: deleteMedia } =
-    useResourceCollection(Media, mediaFilters)
+  const { collectionPromise: mediaPromise, deleteItem: deleteMedia } = useResourceCollection(
+    Media,
+    mediaFilters
+  )
 
-  const syncObservations = () => {
+  const syncObservations = (): Promise<readonly Observation[]> => {
     let extractedObservations: Observation[] = []
-    if (questionnaire.code?.[0].code == gad7.codings.questionnaire.code) {
+    if (questionnaire.code?.[0].code === gad7.codings.questionnaire.code) {
       extractedObservations = gad7
         .extractObservationsFromGad7Response(questionnaireResponse)
         .map((obs) =>
@@ -170,9 +167,9 @@ const ResponsePage = ({
             className="heading-4"
             style={{
               display: 'inline-flex',
-              width: '100%',
-              marginTop: 'var(--space-2)',
               marginBottom: 'var(--space-5)',
+              marginTop: 'var(--space-2)',
+              width: '100%',
             }}
           >
             Recordings:
@@ -180,9 +177,9 @@ const ResponsePage = ({
               className="element-button button-1"
               style={{
                 display: 'inline-block',
-                marginTop: 'auto',
                 marginBottom: 'auto',
                 marginLeft: 'auto',
+                marginTop: 'auto',
               }}
               onClick={() => navigate(0)}
             >
@@ -195,37 +192,27 @@ const ResponsePage = ({
                 mediaCollection.map(({ data }) => (
                   <Fragment key={data.url?.toString()}>
                     <video
-                      style={{ width: '100%', aspectRatio: 'calc(16/9)' }}
+                      style={{ aspectRatio: 'calc(16/9)', width: '100%' }}
                       onTimeUpdate={(e) => {
                         if (data.createdDateTime) {
                           const videoTime = DateTime.add(data.createdDateTime, {
                             seconds: e.currentTarget.currentTime,
                           })
-                          const nextAnswer =
-                            questionnaireResponse.firstItemAnsweredAfter(
-                              videoTime
-                            )
+                          const nextAnswer = questionnaireResponse.firstItemAnsweredAfter(videoTime)
 
-                          setHighlightLinks(
-                            nextAnswer
-                              ? new Set([nextAnswer.linkId])
-                              : new Set()
-                          )
+                          setHighlightLinks(nextAnswer ? new Set([nextAnswer.linkId]) : new Set())
                         }
                       }}
                       controls
                     >
-                      <source
-                        src={data.content.url?.toString()}
-                        type="video/mp4"
-                      />
+                      <source src={data.content.url?.toString()} type="video/mp4" />
                       Your browser does not support the video tag.
                     </video>
                     <button
                       className="element-button button-1 filled accent-red"
                       style={{
-                        marginTop: 'var(--space-1)',
                         marginBottom: 'var(--space-5)',
+                        marginTop: 'var(--space-1)',
                         width: '100%',
                       }}
                       onClick={() => deleteMedia(data.url?.toString())}
@@ -242,9 +229,9 @@ const ResponsePage = ({
             className="heading-4"
             style={{
               display: 'inline-flex',
-              width: '100%',
-              marginTop: 'var(--space-2)',
               marginBottom: 'var(--space-5)',
+              marginTop: 'var(--space-2)',
+              width: '100%',
             }}
           >
             Observations:
@@ -252,9 +239,9 @@ const ResponsePage = ({
               className="element-button button-1"
               style={{
                 display: 'inline-block',
-                marginTop: 'auto',
                 marginBottom: 'auto',
                 marginLeft: 'auto',
+                marginTop: 'auto',
               }}
               onClick={syncObservations}
             >

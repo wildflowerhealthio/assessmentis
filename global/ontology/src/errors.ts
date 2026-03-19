@@ -18,14 +18,16 @@ export class UnhandledError extends Data.TaggedError('UnhandledError')<{
     if (this.cause instanceof Error) {
       this.message = params.message ?? this.cause.message ?? this.message
       this.stack = this.cause.stack ?? this.stack
-      if (this.cause.name) this.name = `Unhandled${this.cause.name}`
+      if (this.cause.name) {
+        this.name = `Unhandled${this.cause.name}`
+      }
     } else {
       this.message = params.message ?? this.message
     }
   }
 
   /** Converts any domain error to `UnhandledError`. For `UnhandledError` itself, returns `this`. */
-  asUnhandledError() {
+  asUnhandledError(): UnhandledError {
     return this
   }
 
@@ -38,29 +40,30 @@ export class UnhandledError extends Data.TaggedError('UnhandledError')<{
    * 3. Otherwise, wrap the value in a new `UnhandledError`.
    */
   static fromUnknown(err: unknown): UnhandledError {
-    if (err instanceof UnhandledError) return err
-    if (
-      typeof err === 'object' &&
-      err !== null &&
-      'asUnhandledError' in err &&
-      typeof (err as { asUnhandledError: unknown }).asUnhandledError ===
-        'function'
-    ) {
-      const converted = (
-        err as { asUnhandledError: () => unknown }
-      ).asUnhandledError()
-      if (converted instanceof UnhandledError) return converted
+    if (err instanceof UnhandledError) {
+      return err
     }
-    return new UnhandledError({ message: String(err), cause: err })
+    if (
+      err instanceof ExternalAssertionError ||
+      err instanceof BadDataError ||
+      err instanceof NotFoundError ||
+      err instanceof NotFoundError ||
+      err instanceof AuthError ||
+      err instanceof AuthzError
+    ) {
+      const converted = err.asUnhandledError()
+      if (converted instanceof UnhandledError) {
+        return converted
+      }
+    }
+    return new UnhandledError({ cause: err, message: String(err) })
   }
 
   static get arbitrary(): Arbitrary.LazyArbitrary<UnhandledError> {
     return (fc: typeof FastCheck) =>
       fc
         .string()
-        .chain((message) =>
-          fc.anything().map((cause) => new UnhandledError({ message, cause }))
-        )
+        .chain((message) => fc.anything().map((cause) => new UnhandledError({ cause, message })))
   }
 }
 
@@ -70,9 +73,7 @@ export class UnhandledError extends Data.TaggedError('UnhandledError')<{
  * making it clear this is an integration-boundary failure rather than a
  * bug in application logic.
  */
-export class ExternalAssertionError extends Data.TaggedError(
-  'ExternalAssertionError'
-)<{
+export class ExternalAssertionError extends Data.TaggedError('ExternalAssertionError')<{
   /** Description of what the system expected from the external source. */
   expected: string
   cause?: unknown
@@ -82,15 +83,17 @@ export class ExternalAssertionError extends Data.TaggedError(
     if (this.cause instanceof Error) {
       this.message = this.cause.message ?? this.message
       this.stack = this.cause.stack ?? this.stack
-      if (this.cause.name) this.name = `Unhandled${this.cause.name}`
+      if (this.cause.name) {
+        this.name = `Unhandled${this.cause.name}`
+      }
     }
   }
 
   /** Converts to {@link UnhandledError} with a message describing the failed expectation. */
-  asUnhandledError() {
+  asUnhandledError(): UnhandledError {
     return new UnhandledError({
-      message: `External assertion failed: expected ${this.expected}`,
       cause: this.cause,
+      message: `External assertion failed: expected ${this.expected}`,
     })
   }
 }
@@ -109,17 +112,19 @@ export class BadDataError extends Data.TaggedError('BadDataError')<{
     if (this.cause instanceof Error) {
       this.message = params.message ?? this.cause.message ?? this.message
       this.stack = this.cause.stack ?? this.stack
-      if (this.cause.name) this.name = `Unhandled${this.cause.name}`
+      if (this.cause.name) {
+        this.name = `Unhandled${this.cause.name}`
+      }
     } else {
       this.message = params.message ?? this.message
     }
   }
 
   /** Converts to {@link UnhandledError} with a message describing the bad data. */
-  asUnhandledError() {
+  asUnhandledError(): UnhandledError {
     return new UnhandledError({
-      message: `Bad data was found: ${this.message}`,
       cause: this.cause,
+      message: `Bad data was found: ${this.message}`,
     })
   }
 }
@@ -143,12 +148,12 @@ export class NotFoundError<
   static readonly tag = 'NotFoundError'
 
   /** Converts to {@link UnhandledError} with a message including `resourceType` and `params`. */
-  asUnhandledError() {
+  asUnhandledError(): UnhandledError {
     return new UnhandledError({
+      cause: this.cause,
       message: `Resource of type ${String(this.resourceType)} not found with parameters: ${JSON.stringify(
         this.params
       )}`,
-      cause: this.cause,
     })
   }
 }
@@ -169,16 +174,15 @@ export class AuthError extends Data.TaggedError('AuthError')<{
   })
 
   /** Converts to {@link UnhandledError} with a message describing the auth failure. */
-  asUnhandledError() {
+  asUnhandledError(): UnhandledError {
     return new UnhandledError({
-      message: `Authentication error: ${this.message}`,
       cause: this.cause,
+      message: `Authentication error: ${this.message}`,
     })
   }
 
   static get arbitrary(): Arbitrary.LazyArbitrary<AuthError> {
-    return (fc: typeof FastCheck) =>
-      fc.string().map((message) => new AuthError({ message }))
+    return (fc: typeof FastCheck) => fc.string().map((message) => new AuthError({ message }))
   }
 }
 
@@ -194,10 +198,10 @@ export class AuthzError extends Data.TaggedError('AuthzError')<{
   static readonly tag = 'AuthzError' as const
 
   /** Converts to {@link UnhandledError} with a message describing the authorization failure. */
-  asUnhandledError() {
+  asUnhandledError(): UnhandledError {
     return new UnhandledError({
-      message: `Authorization error: ${this.message}`,
       cause: this.cause,
+      message: `Authorization error: ${this.message}`,
     })
   }
 
@@ -205,9 +209,7 @@ export class AuthzError extends Data.TaggedError('AuthzError')<{
     return (fc: typeof FastCheck) =>
       fc
         .string()
-        .chain((message) =>
-          fc.anything().map((cause) => new AuthzError({ message, cause }))
-        )
+        .chain((message) => fc.anything().map((cause) => new AuthzError({ cause, message })))
   }
 }
 
@@ -224,14 +226,12 @@ export class AuthzError extends Data.TaggedError('AuthzError')<{
  * "not yet available" from "successfully loaded". For UI-layer loading
  * state that doesn't need to propagate through Effect
  */
-export class Loading<
-  Entity extends { toString(): string },
-> extends Data.TaggedError('Loading')<{
+export class Loading<Entity extends { toString(): string }> extends Data.TaggedError('Loading')<{
   entity: Entity
 }> {
   static readonly tag = 'Loading' as const
   constructor(params: { entity: Entity }) {
     super(params)
-    this.message = `Loading ${params.entity}...`
+    this.message = `Loading ${params.entity.toString()}...`
   }
 }

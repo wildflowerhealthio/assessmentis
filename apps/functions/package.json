@@ -1,27 +1,24 @@
 {
   "name": "@assessmentis/functions",
   "version": "0.0.1",
+  "private": true,
   "description": "Cloud functions for Assessmentis",
-  "author": "Ruth Marks",
   "license": "UNLICENSED",
-  "prettier": "@assessmentis/prettier-config",
+  "author": "Ruth Marks",
+  "main": "dist/index.js",
   "scripts": {
     "build": "node build.mjs",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint \"./{src,test}/**/*\"",
-    "lint:fix": "eslint --fix \"./{src,test}/**/*\"",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "deploy": "firebase deploy --only functions",
+    "lint": "oxlint ./{src,test}/",
+    "lint:fix": "oxlint --fix ./{src,test}/",
+    "logs": "firebase functions:log",
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
-    "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsgo --noEmit"
   },
-  "engines": {
-    "node": "24"
-  },
-  "main": "dist/index.js",
   "dependencies": {
     "@assessmentis/config-domain": "*",
     "@effect/cluster": "^0.56.3",
@@ -40,7 +37,6 @@
     "@types/gapi.client.healthcare-v1": "^0.0.4",
     "@types/node": "^25.2.3",
     "@types/node-fetch": "^3.0.2",
-    "eslint": "^9.39.1",
     "esbuild": "^0.27.3",
     "fast-check": "^3.23.2",
     "firebase-functions-test": "^3.4.1",
@@ -48,5 +44,7 @@
     "typescript": "^5.9.3",
     "vitest": "^4.0.15"
   },
-  "private": true
+  "engines": {
+    "node": "24"
+  }
 }

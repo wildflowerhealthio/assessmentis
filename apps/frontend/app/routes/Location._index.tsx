@@ -1,12 +1,14 @@
 import { Location } from '@assessmentis/clinical-domain'
 
-import '../traits/BreadcrumbLabel/implementations/Location'
-import '../traits/Labeled/implementations/Location'
-import '../traits/Link/implementations/Location'
-import '../traits/Listable/implementations/Location'
+/* eslint-disable import/no-unassigned-import -- Side-effect imports that register trait implementations for this route's resource type */
+import '../traits/BreadcrumbLabel/implementations/location'
+import '../traits/Labeled/implementations/location'
+import '../traits/Link/implementations/location'
+import '../traits/Listable/implementations/location'
+/* eslint-enable import/no-unassigned-import */
 
-import { ResourceListIndexPage } from '../modules/ResourceListIndexPage/ResourceListIndexPage'
+import { ResourceListIndexPage } from '../modules/ResourceListIndexPage/resource-list-index-page'
 
-export default function LocationIndexPage() {
+export default function LocationIndexPage(): React.JSX.Element {
   return <ResourceListIndexPage klass={Location} />
 }

@@ -4,8 +4,8 @@ import { nodeUnit } from './src/vitest-configs.js'
 export default defineConfig((_configEnv) =>
   mergeConfig(nodeUnit(_configEnv), {
     test: {
-      globals: true,
       environment: 'node',
+      globals: true,
       include: ['src/**/*.test.ts'],
     },
   })

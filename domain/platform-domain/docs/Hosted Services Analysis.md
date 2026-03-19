@@ -114,8 +114,7 @@ The `DocumentStoreCredentialRepository` manually tracks refresh fibers in a `Syn
 
 ```typescript
 // Current: manual fiber tracking
-const nextRefreshFibre =
-  yield * SynchronizedRef.make<Option<Fiber>>(Option.none())
+const nextRefreshFibre = yield * SynchronizedRef.make<Option<Fiber>>(Option.none())
 // ... later, manually interrupt + fork
 
 // Alternative: acquireRelease scopes the fiber automatically
@@ -193,9 +192,7 @@ The refresh scheduling logic (lines 280-311 of `DocumentStoreCredentialRepositor
 
 ```typescript
 // Sketch: scheduled refresh
-const refreshSchedule = Schedule.once.pipe(
-  Schedule.delayed(() => timeUntilRefreshNeeded(token))
-)
+const refreshSchedule = Schedule.once.pipe(Schedule.delayed(() => timeUntilRefreshNeeded(token)))
 credential.refresh.pipe(Effect.schedule(refreshSchedule))
 ```
 

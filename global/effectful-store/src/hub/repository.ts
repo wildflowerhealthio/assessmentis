@@ -1,16 +1,13 @@
-import { Effect, Request as EffectRequest, pipe, Stream } from 'effect'
+import { Effect, Request as EffectRequest, Stream, pipe } from 'effect'
 import type { RequestResolver } from 'effect'
 
-import type { ReadonlyUrl } from '../ReadonlyUrl'
-import type * as Resource from '../Resource'
-import type * as ResourceRequest from '../ResourceRequest'
+import type { ReadonlyUrl } from '../readonly-url'
+import type * as Resource from '../resource'
+import type * as ResourceRequest from '../resource-request'
 
-import type { AnyRequest, HubRef, Repository } from './types'
-import {
-  resolveOriginForCreate,
-  resolveOriginFromUrl,
-} from './origin-resolution'
 import { whenOriginChanges } from './change-detection'
+import { resolveOriginForCreate, resolveOriginFromUrl } from './origin-resolution'
+import type { AnyRequest, HubRef, Repository } from './types'
 
 // --- Repository method builder ---
 
@@ -21,47 +18,59 @@ import { whenOriginChanges } from './change-detection'
  */
 export const makeRepository = <Classes extends Resource.AnyDomainClass>(
   stateRef: HubRef,
-  resolver: RequestResolver.RequestResolver<AnyRequest<Classes>, never>
-): Repository<Classes> => {
-  return {
-    get<Klass extends Classes>(klass: Klass, url: ReadonlyUrl) {
-      return Effect.flatMap(
-        resolveOriginFromUrl(stateRef, url, klass),
-        (origin) =>
-          Effect.request(
-            EffectRequest.of<ResourceRequest.Get<Klass>>()({
-              _tag: 'Get',
-              klass,
-              url,
-              origin,
-            }),
-            resolver
-          )
-      )
-    },
-    search<Klass extends Classes>(
-      klass: Klass,
-      params?: ResourceRequest.SearchParam<InstanceType<Klass>>
-    ) {
-      return Effect.request(
-        EffectRequest.of<ResourceRequest.Search<Klass>>()({
-          _tag: 'Search',
+  resolver: RequestResolver.RequestResolver<AnyRequest<Classes>>
+  /* oxlint-disable typescript-eslint/explicit-function-return-type -- methods are typed via Repository<Classes> interface */
+): Repository<Classes> => ({
+  get<Klass extends Classes>(klass: Klass, url: ReadonlyUrl) {
+    return Effect.flatMap(resolveOriginFromUrl(stateRef, url, klass), (origin) =>
+      Effect.request(
+        EffectRequest.of<ResourceRequest.Get<Klass>>()({
+          _tag: 'Get',
           klass,
-          params: params ?? {},
-          origin: null,
+          url,
+          origin,
         }),
         resolver
       )
-    },
+    )
+  },
+  search<Klass extends Classes>(
+    klass: Klass,
+    params?: ResourceRequest.SearchParam<InstanceType<Klass>>
+  ) {
+    return Effect.request(
+      EffectRequest.of<ResourceRequest.Search<Klass>>()({
+        _tag: 'Search',
+        klass,
+        params: params ?? {},
+        origin: null,
+      }),
+      resolver
+    )
+  },
 
-    create<Klass extends Classes>(
-      klass: Klass,
-      resource: InstanceType<Klass>,
-      origin?: ReadonlyUrl
-    ) {
-      return Effect.flatMap(
-        resolveOriginForCreate(stateRef, klass, origin),
-        (resolvedOrigin) =>
+  create<Klass extends Classes>(klass: Klass, resource: InstanceType<Klass>, origin?: ReadonlyUrl) {
+    return Effect.flatMap(resolveOriginForCreate(stateRef, klass, origin), (resolvedOrigin) =>
+      Effect.request(
+        EffectRequest.of<ResourceRequest.Create<Klass>>()({
+          _tag: 'Create',
+          klass,
+          resource,
+          origin: resolvedOrigin,
+        }),
+        resolver
+      )
+    )
+  },
+
+  createMany<Klass extends Classes>(
+    klass: Klass,
+    resources: ReadonlyArray<InstanceType<Klass>>,
+    origin?: ReadonlyUrl
+  ) {
+    return Effect.flatMap(resolveOriginForCreate(stateRef, klass, origin), (resolvedOrigin) =>
+      Effect.all(
+        resources.map((resource) =>
           Effect.request(
             EffectRequest.of<ResourceRequest.Create<Klass>>()({
               _tag: 'Create',
@@ -71,86 +80,60 @@ export const makeRepository = <Classes extends Resource.AnyDomainClass>(
             }),
             resolver
           )
+        ),
+        { concurrency: 'unbounded' }
       )
-    },
+    )
+  },
 
-    createMany<Klass extends Classes>(
-      klass: Klass,
-      resources: ReadonlyArray<InstanceType<Klass>>,
-      origin?: ReadonlyUrl
-    ) {
-      return Effect.flatMap(
-        resolveOriginForCreate(stateRef, klass, origin),
-        (resolvedOrigin) =>
-          Effect.all(
-            resources.map((resource) =>
-              Effect.request(
-                EffectRequest.of<ResourceRequest.Create<Klass>>()({
-                  _tag: 'Create',
-                  klass,
-                  resource,
-                  origin: resolvedOrigin,
-                }),
-                resolver
-              )
-            ),
-            { concurrency: 'unbounded' }
-          )
+  update<Klass extends Classes>(
+    klass: Klass,
+    resource: Resource.WithResourceUrl<InstanceType<Klass>>
+  ) {
+    return Effect.flatMap(resolveOriginFromUrl(stateRef, resource.url, klass), (origin) =>
+      Effect.request(
+        EffectRequest.of<ResourceRequest.Update<Klass>>()({
+          _tag: 'Update',
+          klass,
+          resource,
+          origin,
+        }),
+        resolver
       )
-    },
+    )
+  },
 
-    update<Klass extends Classes>(
-      klass: Klass,
-      resource: Resource.WithResourceUrl<InstanceType<Klass>>
-    ) {
-      return Effect.flatMap(
-        resolveOriginFromUrl(stateRef, resource.url, klass),
-        (origin) =>
-          Effect.request(
-            EffectRequest.of<ResourceRequest.Update<Klass>>()({
-              _tag: 'Update',
-              klass,
-              resource,
-              origin,
-            }),
-            resolver
-          )
-      )
-    },
+  delete<Klass extends Classes>(klass: Klass, url: ReadonlyUrl) {
+    return Effect.flatMap(resolveOriginFromUrl(stateRef, url, klass), (origin) =>
+      Effect.request(
+        EffectRequest.of<ResourceRequest.Delete<Klass>>()({
+          _tag: 'Delete',
+          klass,
+          resource: { url },
+          origin,
+        }),
+        resolver
+      ).pipe(Effect.asVoid)
+    )
+  },
 
-    delete<Klass extends Classes>(klass: Klass, url: ReadonlyUrl) {
-      return Effect.flatMap(
-        resolveOriginFromUrl(stateRef, url, klass),
-        (origin) =>
-          Effect.request(
-            EffectRequest.of<ResourceRequest.Delete<Klass>>()({
-              _tag: 'Delete',
-              klass,
-              resource: { url },
-              origin,
-            }),
-            resolver
-          ).pipe(Effect.asVoid)
-      )
-    },
+  // These currently only update on changes to the repository.
+  // No source meaningfully supports this yet,
+  subscribe<Klass extends Classes>(klass: Klass, url: ReadonlyUrl) {
+    return pipe(
+      whenOriginChanges(stateRef.changes, klass, url),
+      Stream.mapEffect(() => Effect.either(this.get(klass, url)))
+    )
+  },
 
-    // These currently only update on changes to the repository.
-    // No source meaningfully supports this yet,
-    subscribe<Klass extends Classes>(klass: Klass, url: ReadonlyUrl) {
-      return pipe(
-        whenOriginChanges(stateRef.changes, klass, url),
-        Stream.mapEffect(() => Effect.either(this.get(klass, url)))
-      )
-    },
-
-    subscribeSearch<Klass extends Classes>(
-      klass: Klass,
-      params?: ResourceRequest.SearchParam<InstanceType<Klass>>
-    ) {
-      return pipe(
-        whenOriginChanges(stateRef.changes, klass, null),
-        Stream.mapEffect(() => Effect.either(this.search(klass, params)))
-      )
-    },
-  }
-}
+  subscribeSearch<Klass extends Classes>(
+    klass: Klass,
+    params?: ResourceRequest.SearchParam<InstanceType<Klass>>
+  ) {
+    return pipe(
+      whenOriginChanges(stateRef.changes, klass, null),
+      Stream.mapEffect(() => Effect.either(this.search(klass, params)))
+    )
+  },
+})
+/* oxlint-enable typescript-eslint/explicit-function-return-type */

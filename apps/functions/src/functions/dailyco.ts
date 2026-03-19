@@ -2,31 +2,40 @@ import { Data, Effect, Exit, Layer } from 'effect'
 import type { Response } from 'express'
 import { onRequest } from 'firebase-functions/https'
 import type { Request } from 'firebase-functions/https'
-import { error, info } from 'firebase-functions/logger'
+import * as logger from 'firebase-functions/logger'
 
 import { DailyCoApiKeyLiveCredential } from '@assessmentis/daily-co-infrastructure'
+import type {
+  AuthError,
+  AuthzError,
+  BadDataError,
+  NotFoundError,
+  UnhandledError,
+} from '@assessmentis/ontology'
 import {
   CurrentOrg,
   OrgSlug,
   OrgUserService,
   OrgUserServiceLayer,
 } from '@assessmentis/platform-domain'
+import type { DocumentStore } from '@assessmentis/platform-domain'
 
 import fetch from 'node-fetch'
+import type { Response as NodeFetchResponse } from 'node-fetch'
 import type { ParsedQs } from 'qs'
 
-import { CurrentOrgLayerLive } from '../layers/CurrentOrgLayerLive'
-import { CurrentUserIdLayerLive } from '../layers/CurrentUserIdLayerLive'
-import { makeRequestRuntime } from '../util/BaseLayer'
-import { defaultHttpOptions } from '../util/functionContext'
-import { handleError } from '../util/handleError'
+import { CurrentOrgLayerLive } from '../layers/current-org-layer-live'
+import { CurrentUserIdLayerLive } from '../layers/current-user-id-layer-live'
+import { makeRequestRuntime } from '../util/base-layer'
+import { defaultHttpOptions } from '../util/function-context'
+import { handleError } from '../util/handle-error'
 
 class DailyCoError extends Data.TaggedError('DailyCoError')<{
   message: string
   cause: unknown
 }> {
   constructor(message: string, cause: unknown) {
-    super({ message, cause })
+    super({ cause, message })
   }
 }
 
@@ -41,8 +50,17 @@ export const dailycoEffect = (
     query: ParsedQs
   },
   destination: string
-) =>
-  Effect.gen(function* () {
+): Effect.Effect<
+  { externalRes: NodeFetchResponse },
+  | DailyCoError
+  | AuthError
+  | AuthzError
+  | BadDataError
+  | NotFoundError<'Document', { path: readonly string[] }>
+  | UnhandledError,
+  OrgUserService | CurrentOrg | DocumentStore
+> =>
+  Effect.gen(function* dailycoEffectGen() {
     // Verify authentication
     const orgContext = yield* OrgUserService
     const rolesWithDailyCoAccess = ['admin', 'clinician'] as const
@@ -53,11 +71,14 @@ export const dailycoEffect = (
 
     // Build Daily.co API URL
     const queryParams = new URLSearchParams(
-      Object.entries(inbound.query).map(
-        ([key, value]) => [key, String(value)] as [string, string]
-      )
+      Object.entries(inbound.query).map(([key, value]) => {
+        if (typeof value === 'string') {
+          return [key, value]
+        }
+        return [key, JSON.stringify(value)]
+      })
     )
-    const url = `https://api.daily.co/v1/${destination}?${queryParams}`
+    const url = `https://api.daily.co/v1/${destination}?${queryParams.toString()}`
 
     // Prepare headers (filter out sensitive headers)
     const {
@@ -69,25 +90,22 @@ export const dailycoEffect = (
 
     const headers = {
       ...forwardedHeaders,
+      Authorization: `Bearer ${secret.apiKey}`,
       'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + secret.apiKey,
     }
 
-    info('Forwarding request to Daily.co API:', inbound.method, url)
+    logger.info('Forwarding request to Daily.co API:', inbound.method, url)
 
     // Proxy request to Daily.co
     const externalRes = yield* Effect.tryPromise({
+      catch: (error): DailyCoError =>
+        new DailyCoError(`Failed to fetch from Daily.co: ${String(error)}`, error),
       try: () =>
         fetch(url, {
           headers,
           method: inbound.method,
           body: inbound.rawBody,
         }),
-      catch: (error): DailyCoError =>
-        new DailyCoError(
-          `Failed to fetch from Daily.co: ${String(error)}`,
-          error
-        ),
     })
 
     return { externalRes }
@@ -95,21 +113,18 @@ export const dailycoEffect = (
 
 const hasMinimumUrlCaptures = (
   value: null | string[]
-): value is [string, string, string, ...string[]] =>
-  value != null && value.length >= 3
+): value is [string, string, string, ...string[]] => value !== null && value.length >= 3
 
 export const dailyco = onRequest(
   defaultHttpOptions,
   async (request: Request, response: Response) => {
-    info('Received request for Daily.co proxy:', request.method, request.path)
+    logger.info('Received request for Daily.co proxy:', request.method, request.path)
 
     // Extract org slug and destination from URL
-    const urlMatch = request.path.match(
-      /^\/api\/daily-co-proxies\/([^/]+)\/(.*)$/
-    )
+    const urlMatch = request.path.match(/^\/api\/daily-co-proxies\/([^/]+)\/(.*)$/)
 
     if (!hasMinimumUrlCaptures(urlMatch)) {
-      error('Invalid URL')
+      logger.error('Invalid URL')
       response.status(400).json({
         message: 'Bad Request, URL did not start with /api/daily-co-proxies',
       })
@@ -123,23 +138,21 @@ export const dailyco = onRequest(
         Layer.provide(CurrentOrgLayerLive),
         Layer.provide(CurrentUserIdLayerLive)
       ),
-      { request, orgSlug }
+      { orgSlug, request }
     )
-    await runtime
-      .runPromiseExit(dailycoEffect(request, destination))
-      .then((exit) =>
-        exit.pipe(
-          Exit.match({
-            onSuccess: ({ externalRes }) => {
-              externalRes.body?.pipe(response.status(externalRes.status), {
-                end: true,
-              })
-            },
-            onFailure: (error) => {
-              handleError(error, response)
-            },
-          })
-        )
+    await runtime.runPromiseExit(dailycoEffect(request, destination)).then((exit) => {
+      exit.pipe(
+        Exit.match({
+          onFailure: (error) => {
+            handleError(error, response)
+          },
+          onSuccess: ({ externalRes }) => {
+            externalRes.body?.pipe(response.status(externalRes.status), {
+              end: true,
+            })
+          },
+        })
       )
+    })
   }
 )

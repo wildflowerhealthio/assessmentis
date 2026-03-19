@@ -8,6 +8,8 @@
     "Klass",
     "MECE",
     "northamerica",
+    "oxlint",
+    "oxlintrc",
     "Pipeable",
     "talkback"
   ],
@@ -16,12 +18,7 @@
   // ESLint configuration for monorepo
   "eslint.workingDirectories": [{ "mode": "auto" }],
   "eslint.useFlatConfig": true,
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact"
-  ],
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
 
   // Prettier configuration
   "prettier.enable": true,
@@ -43,7 +40,7 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"

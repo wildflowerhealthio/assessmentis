@@ -1,21 +1,23 @@
 import { Questionnaire } from '@assessmentis/clinical-domain'
 import { questionnaireTemplates } from '@assessmentis/questionnaire-entities'
 
-import { useResourceCollection } from '../layers/useResourceCollection'
-import { useBreadcrumbs } from '../modules/Breadcrumbs/useBreadcrumbs'
-import { ResourceListPage } from '../modules/common/components/ResourceListPage/ResourceListPage'
-import { ResourceListItem } from '../modules/resources/ResourcePages/ResourceListItem/ResourceListItem'
+import { useResourceCollection } from '../layers/use-resource-collection'
+import { useBreadcrumbs } from '../modules/Breadcrumbs/use-breadcrumbs'
+import { ResourceListPage } from '../modules/common/components/ResourceListPage/resource-list-page'
+import { ResourceListItem } from '../modules/resources/ResourcePages/ResourceListItem/resource-list-item'
 
-import '../traits/Labeled/implementations/Questionnaire'
-import '../traits/Listable/implementations/Questionnaire'
-import '../traits/BreadcrumbLabel/implementations/Questionnaire'
-import '../traits/Link/implementations/Questionnaire'
+/* eslint-disable import/no-unassigned-import -- Side-effect imports that register trait implementations for this route's resource type */
+import '../traits/Labeled/implementations/questionnaire'
+import '../traits/Listable/implementations/questionnaire'
+import '../traits/BreadcrumbLabel/implementations/questionnaire'
+import '../traits/Link/implementations/questionnaire'
+/* eslint-enable import/no-unassigned-import */
 
 function QuestionnaireListItem(props: {
   item: Questionnaire
   onDelete: () => void
   loading: boolean
-}) {
+}): React.JSX.Element {
   const { displayName, summaryItems } = props.item.Listable
 
   return (
@@ -30,7 +32,7 @@ function QuestionnaireListItem(props: {
   )
 }
 
-export default function QuestionnairePage() {
+export default function QuestionnairePage(): React.JSX.Element {
   const {
     collectionPromise: questionnairesPromise,
     deleteItem: deleteQuestionnaire,
@@ -38,11 +40,11 @@ export default function QuestionnairePage() {
   } = useResourceCollection(Questionnaire)
   useBreadcrumbs(() => [Questionnaire], [])
 
-  const loadTemplateByTitleForm = async function (formData: FormData) {
-    const templateToCreate = questionnaireTemplates.find(
-      (t) => t.title == formData.get('title')
-    )
-    if (templateToCreate) return await createQuestionnaire(templateToCreate)
+  const loadTemplateByTitleForm = function loadTemplateByTitleForm(formData: FormData): void {
+    const templateToCreate = questionnaireTemplates.find((t) => t.title === formData.get('title'))
+    if (templateToCreate) {
+      createQuestionnaire(templateToCreate)
+    }
   }
 
   return (
@@ -59,20 +61,16 @@ export default function QuestionnairePage() {
       <div>
         <section>
           <h2 className="heading-4">Questionnaire Template Loader</h2>
-          <div className="text-alt-heading-2">
-            Click buttons to load templates
-          </div>
+          <div className="text-alt-heading-2">Click buttons to load templates</div>
           <div>
-            {questionnaireTemplates.map(({ title }) => {
-              return (
-                <form key={title} action={loadTemplateByTitleForm}>
-                  <input hidden name="title" defaultValue={title} />
-                  <button className="element-button button-2" type="submit">
-                    {title}
-                  </button>
-                </form>
-              )
-            })}
+            {questionnaireTemplates.map(({ title }) => (
+              <form key={title} action={loadTemplateByTitleForm}>
+                <input hidden name="title" defaultValue={title} />
+                <button className="element-button button-2" type="submit">
+                  {title}
+                </button>
+              </form>
+            ))}
           </div>
         </section>
       </div>

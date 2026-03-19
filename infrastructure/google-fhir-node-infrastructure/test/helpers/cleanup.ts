@@ -18,7 +18,7 @@ export class TestResourceTracker {
    * Track a resource for cleanup
    */
   track(type: string, id: string): void {
-    this.resources.push({ type, id })
+    this.resources.push({ id, type })
   }
 
   /**
@@ -40,7 +40,9 @@ export class TestResourceTracker {
    */
   cleanup(): Effect.Effect<void, never, FhirR4Client> {
     return Effect.gen(this, function* () {
-      if (this.resources.length === 0) return
+      if (this.resources.length === 0) {
+        return
+      }
 
       const client = yield* FhirR4Client
 

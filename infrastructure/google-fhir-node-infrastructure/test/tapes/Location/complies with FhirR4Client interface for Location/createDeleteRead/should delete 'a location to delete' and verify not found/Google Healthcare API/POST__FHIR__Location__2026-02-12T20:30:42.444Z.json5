@@ -1,77 +1,51 @@
 {
-    meta: {
-        createdAt: '2026-02-12T20:30:42.313Z',
-        host: 'https://healthcare.googleapis.com',
-        resHumanReadable: true,
-        resUncompressed: true,
+  meta: {
+    createdAt: '2026-02-12T20:30:42.313Z',
+    host: 'https://healthcare.googleapis.com',
+    resHumanReadable: true,
+    resUncompressed: true,
+  },
+  req: {
+    url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location',
+    method: 'POST',
+    headers: {},
+    body: 'ewogICJyZXNvdXJjZVR5cGUiOiAiTG9jYXRpb24iLAogICJuYW1lIjogIlNlYXJjaCBMb2NhdGlvbiBBbHBoYSIsCiAgInN0YXR1cyI6ICJhY3RpdmUiLAogICJpZGVudGlmaWVyIjogWwogICAgewogICAgICAic3lzdGVtIjogImh0dHA6Ly9leGFtcGxlLmNvbS9sb2NhdGlvbnMiLAogICAgICAidmFsdWUiOiAic2VhcmNoLWxvYy1hbHBoYSIKICAgIH0KICBdCn0=',
+  },
+  res: {
+    status: 201,
+    headers: {
+      location: [
+        'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/ded8981a-5739-4b0b-8799-63ad55bc0f17/_history/MTc3MDkyODI0MjQ3Mzc2OTAwMA',
+      ],
+      'content-type': ['application/fhir+json;charset=utf-8'],
+      'content-encoding': ['gzip'],
+      etag: ['W/"MTc3MDkyODI0MjQ3Mzc2OTAwMA"'],
+      'last-modified': ['Thu, 12 Feb 2026 20:30:42 UTC'],
+      vary: ['Origin, X-Origin, Referer'],
+      date: ['Thu, 12 Feb 2026 20:30:42 GMT'],
+      server: ['ESF'],
+      'x-xss-protection': ['0'],
+      'x-frame-options': ['SAMEORIGIN'],
+      'x-content-type-options': ['nosniff'],
+      'alt-svc': ['h3=":443"; ma=2592000,h3-29=":443"; ma=2592000'],
+      connection: ['close'],
+      'transfer-encoding': ['chunked'],
     },
-    req: {
-        url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location',
-        method: 'POST',
-        headers: {},
-        body: 'ewogICJyZXNvdXJjZVR5cGUiOiAiTG9jYXRpb24iLAogICJuYW1lIjogIlNlYXJjaCBMb2NhdGlvbiBBbHBoYSIsCiAgInN0YXR1cyI6ICJhY3RpdmUiLAogICJpZGVudGlmaWVyIjogWwogICAgewogICAgICAic3lzdGVtIjogImh0dHA6Ly9leGFtcGxlLmNvbS9sb2NhdGlvbnMiLAogICAgICAidmFsdWUiOiAic2VhcmNoLWxvYy1hbHBoYSIKICAgIH0KICBdCn0=',
-    },
-    res: {
-        status: 201,
-        headers: {
-            location: [
-                'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/ded8981a-5739-4b0b-8799-63ad55bc0f17/_history/MTc3MDkyODI0MjQ3Mzc2OTAwMA',
-            ],
-            'content-type': [
-                'application/fhir+json;charset=utf-8',
-            ],
-            'content-encoding': [
-                'gzip',
-            ],
-            etag: [
-                'W/"MTc3MDkyODI0MjQ3Mzc2OTAwMA"',
-            ],
-            'last-modified': [
-                'Thu, 12 Feb 2026 20:30:42 UTC',
-            ],
-            vary: [
-                'Origin, X-Origin, Referer',
-            ],
-            date: [
-                'Thu, 12 Feb 2026 20:30:42 GMT',
-            ],
-            server: [
-                'ESF',
-            ],
-            'x-xss-protection': [
-                '0',
-            ],
-            'x-frame-options': [
-                'SAMEORIGIN',
-            ],
-            'x-content-type-options': [
-                'nosniff',
-            ],
-            'alt-svc': [
-                'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
-            ],
-            connection: [
-                'close',
-            ],
-            'transfer-encoding': [
-                'chunked',
-            ],
+    body: {
+      id: 'ded8981a-5739-4b0b-8799-63ad55bc0f17',
+      identifier: [
+        {
+          system: 'http://example.com/locations',
+          value: 'search-loc-alpha',
         },
-        body: {
-            id: 'ded8981a-5739-4b0b-8799-63ad55bc0f17',
-            identifier: [
-                {
-                    system: 'http://example.com/locations',
-                    value: 'search-loc-alpha',
-                },
-            ],
-            meta: {
-                lastUpdated: '2026-02-12T20:30:42.473769+00:00',
-                versionId: 'MTc3MDkyODI0MjQ3Mzc2OTAwMA',
-            },
-            name: 'Search Location Alpha',
-            resourceType: 'Location',
-            status: 'active',
-        },
+      ],
+      meta: {
+        lastUpdated: '2026-02-12T20:30:42.473769+00:00',
+        versionId: 'MTc3MDkyODI0MjQ3Mzc2OTAwMA',
+      },
+      name: 'Search Location Alpha',
+      resourceType: 'Location',
+      status: 'active',
     },
+  },
 }

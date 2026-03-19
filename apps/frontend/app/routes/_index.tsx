@@ -1,8 +1,8 @@
 import { Effect } from 'effect'
 
-import { useBreadcrumbs } from 'app/modules/Breadcrumbs/useBreadcrumbs'
+import { useBreadcrumbs } from '@/modules/Breadcrumbs/use-breadcrumbs'
 
-export default function Home() {
+export default function Home(): React.JSX.Element {
   useBreadcrumbs(() => [], [])
 
   return (
@@ -12,7 +12,11 @@ export default function Home() {
       <h2 className="heading-5">Create a Report</h2>
       <button
         onClick={() =>
-          Effect.runPromise(Effect.sync(() => console.log('Running!...')))
+          Effect.runPromise(
+            Effect.sync(() => {
+              console.log('Running!...')
+            })
+          )
         }
       >
         Load

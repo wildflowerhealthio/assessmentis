@@ -50,10 +50,7 @@ const mswServer = await setupInterceptServer({
       host: 'https://healthcare.googleapis.com',
       urlSubstitutions: [
         [/\/v1\/projects\/.*\/fhir/, 'FHIR'],
-        [
-          /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/gi,
-          ':uuid',
-        ],
+        [/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/gi, ':uuid'],
       ],
     },
   ],
@@ -82,9 +79,7 @@ describe('Patient', () => {
 
   afterEach(async () => {
     if (tracker.count > 0) {
-      await Effect.runPromise(
-        tracker.cleanup().pipe(Effect.provide(LiveTestLayer))
-      )
+      await Effect.runPromise(tracker.cleanup().pipe(Effect.provide(LiveTestLayer)))
     }
   })
 

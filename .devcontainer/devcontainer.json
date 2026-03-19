@@ -5,11 +5,14 @@
       "extensions": [
         "Anthropic.claude-code",
         "streetsidesoftware.code-spell-checker",
-        "oxc.oxc-vscode"
+        "oxc.oxc-vscode",
+        "vitest.explorer",
+        "YoavBls.pretty-ts-errors"
       ]
     }
   },
   "features": {
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },
   "forwardPorts": [5173],

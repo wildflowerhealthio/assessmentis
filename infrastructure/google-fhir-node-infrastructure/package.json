@@ -2,19 +2,18 @@
   "name": "@assessmentis/google-fhir-node-infrastructure",
   "version": "0.0.1",
   "description": "Node.js infrastructure for Google Healthcare FHIR API",
-  "author": "Ruth Marks",
   "license": "UNLICENSED",
+  "author": "Ruth Marks",
   "type": "module",
-  "prettier": "@assessmentis/prettier-config",
   "exports": {
     ".": "./src/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint \"./{src,test}/**/*\"",
-    "lint:fix": "eslint --fix \"./{src,test}/**/*\"",
+    "lint": "oxlint ./{src,test}/",
+    "lint:fix": "oxlint --fix ./{src,test}/",
+    "test": "vitest --project google-fhir-node-infrastructure:unit",
     "test:integration": "vitest --project google-fhir-node-infrastructure:integration",
-    "test": "vitest --project google-fhir-node-infrastructure:unit"
+    "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
     "@assessmentis/clinical-domain": "*",
@@ -30,13 +29,12 @@
     "temporal-polyfill": "^0.3.0"
   },
   "devDependencies": {
-    "@assessmentis/prettier-config": "*",
     "@effect/vitest": "^0.27.0",
     "@types/node": "^22.10.5",
     "dotenv": "^16.4.7",
     "msw": "^2.7.0",
+    "talkback": "^4.2.0",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.15",
-    "talkback": "^4.2.0"
+    "vitest": "^4.0.15"
   }
 }

@@ -1,23 +1,22 @@
 {
   "name": "@assessmentis/daily-co-infrastructure",
   "version": "0.0.1",
+  "private": true,
   "description": "Daily.co Effect-TS layer implementation for Assessment.is",
+  "license": "UNLICENSED",
+  "author": "Ruth Marks",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": "./src/index.ts"
   },
-  "author": "Ruth Marks",
-  "license": "UNLICENSED",
-  "private": true,
-  "type": "module",
-  "prettier": "@assessmentis/prettier-config",
   "scripts": {
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint \"./{src,test}/**/*\"",
-    "lint:fix": "eslint --fix \"./{src,test}/**/*\"",
+    "lint": "oxlint ./{src,test}/",
+    "lint:fix": "oxlint --fix ./{src,test}/",
+    "test": "vitest run test --project \"*:unit\" --project \"*:integration\"",
     "test:integration": "RECORD=true vitest run test --config vitest.integration.config.ts",
-    "test": "vitest run test --project \"*:unit\" --project \"*:integration\""
+    "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
     "@assessmentis/clinical-domain": "*",
@@ -31,14 +30,11 @@
     "effect": "^3.19.15"
   },
   "devDependencies": {
-    "@assessmentis/eslint-config": "*",
-    "@assessmentis/prettier-config": "*",
-    "@assessmentis/typescript-config": "*",
     "@assessmentis/testing-utils": "*",
+    "@assessmentis/typescript-config": "*",
     "@eslint/js": "^9.39.1",
     "@types/node": "^24.10.1",
     "dotenv": "^16.4.7",
-    "eslint": "^9.39.1",
     "globals": "^16.5.0",
     "msw": "^2.7.0",
     "talkback": "^4.2.0",

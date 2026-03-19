@@ -1,8 +1,8 @@
-import { Array, Either, HashMap, Iterable, pipe, Stream } from 'effect'
+import { Array, Either, HashMap, Iterable, Stream, pipe } from 'effect'
 
-import type * as Resource from '../Resource'
-import type * as Origin from '../Origin'
-import type { ReadonlyUrl } from '../ReadonlyUrl'
+import type * as Origin from '../origin'
+import type { ReadonlyUrl } from '../readonly-url'
+import type * as Resource from '../resource'
 
 import type { HubError, HubState } from './types'
 
@@ -23,28 +23,31 @@ export const whenOriginChanges = <Classes extends Resource.AnyDomainClass>(
   klass: Classes,
   url: ReadonlyUrl | null
 ): Stream.Stream<HubState> => {
-  const originIsActiveForDomainType = ({
-    supportedResources,
-  }: Origin.AnyState<never>): boolean =>
+  const originIsActiveForDomainType = ({ supportedResources }: Origin.AnyState<never>): boolean =>
     Boolean(supportedResources[klass.DomainType])
   const originMatchesUrl = ({ originUrl }: Origin.AnyState<never>): boolean =>
-    !!url && originUrl.hasChild(url)
+    url !== null && originUrl.hasChild(url)
 
-  const isSingleUrl = url != null
-  const originsUsedByQuery = (state: HubState) =>
+  const isSingleUrl = url !== null
+  let filterPredicate = originIsActiveForDomainType
+  if (isSingleUrl) {
+    filterPredicate = originMatchesUrl
+  }
+  const originsUsedByQuery = (state: HubState): Origin.AnyState<never>[] =>
     pipe(
       state,
       HashMap.values,
-      Iterable.filter(
-        isSingleUrl ? originMatchesUrl : originIsActiveForDomainType
-      ),
+      // oxlint-disable-next-line unicorn/no-array-callback-reference -- false positive: Iterable.filter is not an array method
+      Iterable.filter(filterPredicate),
       Array.fromIterable
     )
 
-  const originsForQueryAreSame = (prevState: HubState, nextState: HubState) => {
+  const originsForQueryAreSame = (prevState: HubState, nextState: HubState): boolean => {
     const prevOrigins = originsUsedByQuery(prevState)
     const nextOrigins = originsUsedByQuery(nextState)
-    if (prevOrigins.length !== nextOrigins.length) return false
+    if (prevOrigins.length !== nextOrigins.length) {
+      return false
+    }
     return prevOrigins.every((o) => nextOrigins.includes(o))
   }
 

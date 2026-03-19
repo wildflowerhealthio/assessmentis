@@ -8,7 +8,32 @@ permissions:
   checks: write
 
 jobs:
-  lint:
+  oxlint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Lint with oxlint
+        uses: oxc-project/oxlint-action@v0
+
+  check-markdown-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      has-markdown: ${{ steps.filter.outputs.markdown }}
+    steps:
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            markdown:
+              - '**/*.md'
+
+  markdownlint:
+    needs: check-markdown-changes
+    if: needs.check-markdown-changes.outputs.has-markdown == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -30,153 +55,3 @@ jobs:
       - uses: DavidAnson/markdownlint-cli2-action@v22
         with:
           config: .markdownlint-cli2.mjs
-
-      - name: Lint apps/frontend
-        uses: reviewdog/action-eslint@v1
-        continue-on-error: true
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          workdir: apps/frontend
-          reporter: github-pr-review
-          fail_level: error
-          filter_mode: diff_context
-
-      - name: Lint apps/functions
-        uses: reviewdog/action-eslint@v1
-        continue-on-error: true
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          fail_level: error
-          filter_mode: diff_context
-          workdir: apps/functions
-
-      - name: Lint apps/aws_infra
-        uses: reviewdog/action-eslint@v1
-        continue-on-error: true
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          fail_level: error
-          filter_mode: diff_context
-          workdir: apps/aws_infra
-
-      - name: Lint domain/clinical-domain
-        uses: reviewdog/action-eslint@v1
-        continue-on-error: true
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          fail_level: error
-          filter_mode: diff_context
-          workdir: domain/clinical-domain
-
-      - name: Lint domain/platform-domain
-        uses: reviewdog/action-eslint@v1
-        continue-on-error: true
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          fail_level: error
-          filter_mode: diff_context
-          workdir: domain/platform-domain
-
-      - name: Lint domain/video-call-domain
-        uses: reviewdog/action-eslint@v1
-        continue-on-error: true
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          fail_level: error
-          filter_mode: diff_context
-          workdir: domain/video-call-domain
-
-      - name: Lint global/react-util
-        uses: reviewdog/action-eslint@v1
-        continue-on-error: true
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          fail_level: error
-          filter_mode: diff_context
-          workdir: global/react-util
-
-      - name: Lint global/util
-        uses: reviewdog/action-eslint@v1
-        continue-on-error: true
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          fail_level: error
-          filter_mode: diff_context
-          workdir: global/util
-
-      - name: Lint global/ontology
-        uses: reviewdog/action-eslint@v1
-        continue-on-error: true
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          fail_level: error
-          filter_mode: diff_context
-          workdir: global/ontology
-
-      - name: Lint global/daily-co-components
-        uses: reviewdog/action-eslint@v1
-        continue-on-error: true
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          fail_level: error
-          filter_mode: diff_context
-          workdir: global/daily-co-components
-
-      - name: Lint infrastructure/daily-co-infrastructure
-        uses: reviewdog/action-eslint@v1
-        continue-on-error: true
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          fail_level: error
-          filter_mode: diff_context
-          workdir: infrastructure/daily-co-infrastructure
-
-      - name: Lint infrastructure/firebase-web-infrastructure
-        uses: reviewdog/action-eslint@v1
-        continue-on-error: true
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          fail_level: error
-          filter_mode: diff_context
-          workdir: infrastructure/firebase-web-infrastructure
-
-      - name: Lint infrastructure/google-fhir-web-infrastructure
-        uses: reviewdog/action-eslint@v1
-        continue-on-error: true
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          fail_level: error
-          filter_mode: diff_context
-          workdir: infrastructure/google-fhir-web-infrastructure
-
-      - name: Lint infrastructure/firebase-server-infrastructure
-        uses: reviewdog/action-eslint@v1
-        continue-on-error: true
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          fail_level: error
-          filter_mode: diff_context
-          workdir: infrastructure/firebase-server-infrastructure
-
-      - name: Lint infrastructure/document-template-instances
-        uses: reviewdog/action-eslint@v1
-        continue-on-error: true
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          fail_level: error
-          filter_mode: diff_context
-          workdir: infrastructure/document-template-instances

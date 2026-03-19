@@ -1,1 +1,1 @@
-export * from './HubResource'
+export * from './hub-resource'

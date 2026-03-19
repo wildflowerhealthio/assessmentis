@@ -1,78 +1,52 @@
 {
-    meta: {
-        createdAt: '2026-02-12T20:30:37.116Z',
-        host: 'https://healthcare.googleapis.com',
-        resHumanReadable: true,
-        resUncompressed: true,
+  meta: {
+    createdAt: '2026-02-12T20:30:37.116Z',
+    host: 'https://healthcare.googleapis.com',
+    resHumanReadable: true,
+    resUncompressed: true,
+  },
+  req: {
+    url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/7ac54d6f-e878-465a-8797-657fa99a8b73',
+    method: 'GET',
+    headers: {},
+    body: '',
+  },
+  res: {
+    status: 200,
+    headers: {
+      'content-type': ['application/fhir+json;charset=utf-8'],
+      'last-modified': ['Thu, 12 Feb 2026 20:30:37 UTC'],
+      'content-encoding': ['gzip'],
+      etag: ['W/"MTc3MDkyODIzNzEyMjI3NDAwMA"'],
+      vary: ['Origin, X-Origin, Referer'],
+      date: ['Thu, 12 Feb 2026 20:30:37 GMT'],
+      server: ['ESF'],
+      'x-xss-protection': ['0'],
+      'x-frame-options': ['SAMEORIGIN'],
+      'x-content-type-options': ['nosniff'],
+      'alt-svc': ['h3=":443"; ma=2592000,h3-29=":443"; ma=2592000'],
+      connection: ['close'],
+      'transfer-encoding': ['chunked'],
     },
-    req: {
-        url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/7ac54d6f-e878-465a-8797-657fa99a8b73',
-        method: 'GET',
-        headers: {},
-        body: '',
-    },
-    res: {
-        status: 200,
-        headers: {
-            'content-type': [
-                'application/fhir+json;charset=utf-8',
-            ],
-            'last-modified': [
-                'Thu, 12 Feb 2026 20:30:37 UTC',
-            ],
-            'content-encoding': [
-                'gzip',
-            ],
-            etag: [
-                'W/"MTc3MDkyODIzNzEyMjI3NDAwMA"',
-            ],
-            vary: [
-                'Origin, X-Origin, Referer',
-            ],
-            date: [
-                'Thu, 12 Feb 2026 20:30:37 GMT',
-            ],
-            server: [
-                'ESF',
-            ],
-            'x-xss-protection': [
-                '0',
-            ],
-            'x-frame-options': [
-                'SAMEORIGIN',
-            ],
-            'x-content-type-options': [
-                'nosniff',
-            ],
-            'alt-svc': [
-                'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
-            ],
-            connection: [
-                'close',
-            ],
-            'transfer-encoding': [
-                'chunked',
-            ],
+    body: {
+      id: '7ac54d6f-e878-465a-8797-657fa99a8b73',
+      identifier: [
+        {
+          system: 'http://example.com/locations',
+          value: 'loc-create-read-2a',
         },
-        body: {
-            id: '7ac54d6f-e878-465a-8797-657fa99a8b73',
-            identifier: [
-                {
-                    system: 'http://example.com/locations',
-                    value: 'loc-create-read-2a',
-                },
-                {
-                    system: 'http://example.com/internal',
-                    value: 'loc-create-read-2b',
-                },
-            ],
-            meta: {
-                lastUpdated: '2026-02-12T20:30:37.122274+00:00',
-                versionId: 'MTc3MDkyODIzNzEyMjI3NDAwMA',
-            },
-            name: 'Branch Office',
-            resourceType: 'Location',
-            status: 'active',
+        {
+          system: 'http://example.com/internal',
+          value: 'loc-create-read-2b',
         },
+      ],
+      meta: {
+        lastUpdated: '2026-02-12T20:30:37.122274+00:00',
+        versionId: 'MTc3MDkyODIzNzEyMjI3NDAwMA',
+      },
+      name: 'Branch Office',
+      resourceType: 'Location',
+      status: 'active',
     },
+  },
 }

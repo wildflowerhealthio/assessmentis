@@ -22,7 +22,7 @@ A public, org-level declaration of a data origin. Each definition is polymorphic
 
 - `_tag` — the origin type (`google_fhir`, `daily_co`, `browser_indexeddb`, etc.)
 - `activeResources` — which FHIR resource types this origin serves (e.g., `{ Patient: true, Encounter: true }`)
-- Type-specific routing details that identify *where* the origin is
+- Type-specific routing details that identify _where_ the origin is
 
 The origin URL (used as the Hub routing key) is stored explicitly as the map key (URI-encoded via `ReadonlyUrl.asUriComponent()`).
 

@@ -1,4 +1,4 @@
-import { aws_iam, aws_s3, CfnOutput, Duration, Stack } from 'aws-cdk-lib'
+import { CfnOutput, Duration, Stack, aws_iam, aws_s3 } from 'aws-cdk-lib'
 import type { StackProps } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 
@@ -17,10 +17,10 @@ export class DailyRecordingBucket extends Stack {
     const dailySubdomain = this.node.tryGetContext('dailySubdomain')
 
     const dailyRole = new aws_iam.Role(this, 'dailyRole', {
-      description: 'Role allowing Daily to record to bucket',
-      maxSessionDuration: Duration.hours(12),
       assumedBy: new aws_iam.AccountPrincipal('291871421005'),
+      description: 'Role allowing Daily to record to bucket',
       externalIds: [dailySubdomain],
+      maxSessionDuration: Duration.hours(12),
     })
 
     dailyRole.addToPolicy(
@@ -37,30 +37,27 @@ export class DailyRecordingBucket extends Stack {
           's3:ListMultipartUploadParts',
         ],
         // Connects the bucket to the role
-        resources: [
-          recordingsBucket.bucketArn,
-          recordingsBucket.arnForObjects('*'),
-        ],
+        resources: [recordingsBucket.bucketArn, recordingsBucket.arnForObjects('*')],
       })
     )
 
     // Outputs are defined below:
     new CfnOutput(this, 'bucketName', {
-      value: recordingsBucket.bucketName,
       description: 'Name of S3 bucket',
       exportName: `${dailySubdomain}-bucketName`,
+      value: recordingsBucket.bucketName,
     })
 
     new CfnOutput(this, 'bucketRegion', {
-      value: this.region,
       description: 'Region where S3 bucket is located',
       exportName: `${dailySubdomain}-bucketRegion`,
+      value: this.region,
     })
 
     new CfnOutput(this, 'roleArn', {
-      value: dailyRole.roleArn,
       description: 'ARN of IAM role for Daily to assume',
       exportName: `${dailySubdomain}-roleArn`,
+      value: dailyRole.roleArn,
     })
   }
 }

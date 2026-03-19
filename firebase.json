@@ -5,17 +5,8 @@
       "codebase": "default",
       "runtime": "nodejs22",
       "disallowLegacyRuntimeConfig": true,
-      "ignore": [
-        "node_modules",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log",
-        "*.local"
-      ],
-      "predeploy": [
-        "npm run lint --prefix apps/functions",
-        "npm run build --prefix apps/functions"
-      ]
+      "ignore": ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log", "*.local"],
+      "predeploy": ["npm run lint --prefix apps/functions", "npm run build --prefix apps/functions"]
     }
   ],
   "hosting": {

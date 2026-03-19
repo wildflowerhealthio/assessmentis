@@ -23,7 +23,7 @@ export type {
   default as ResourceDataTypes,
   ResourceType,
   ClinicalDomainClasses,
-} from './ResourceDataTypes'
-export { toSupportedClasses } from './ResourceDataTypes'
+} from './resource-data-types'
+export { toSupportedClasses } from './resource-data-types'
 export * from './types'
-export { ClinicalDomainHub as ClinicalDomainHub } from './ClinicalDomainHub'
+export { ClinicalDomainHub } from './clinical-domain-hub'

@@ -1,3 +1,3 @@
-export * from './Location'
-export * from './LocationMode'
-export * from './LocationStatus'
+export * from './location'
+export * from './location-mode'
+export * from './location-status'

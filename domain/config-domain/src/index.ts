@@ -1,2 +1,2 @@
-export * from './CredentialId'
-export * from './GoogleFhirConfig'
+export * from './credential-id'
+export * from './google-fhir-config'

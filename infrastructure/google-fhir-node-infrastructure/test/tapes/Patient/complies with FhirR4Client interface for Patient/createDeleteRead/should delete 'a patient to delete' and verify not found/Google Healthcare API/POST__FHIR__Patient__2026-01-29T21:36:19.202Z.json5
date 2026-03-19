@@ -1,77 +1,49 @@
 {
-    meta: {
-        createdAt: '2026-01-29T21:36:19.087Z',
-        host: 'https://healthcare.googleapis.com',
-        resHumanReadable: true,
-        resUncompressed: true,
+  meta: {
+    createdAt: '2026-01-29T21:36:19.087Z',
+    host: 'https://healthcare.googleapis.com',
+    resHumanReadable: true,
+    resUncompressed: true,
+  },
+  req: {
+    url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient',
+    method: 'POST',
+    headers: {},
+    body: 'ewogICJyZXNvdXJjZVR5cGUiOiAiUGF0aWVudCIsCiAgIm5hbWUiOiBbCiAgICB7CiAgICAgICJnaXZlbiI6IFsKICAgICAgICAiU2VhcmNoMSIKICAgICAgXSwKICAgICAgImZhbWlseSI6ICJUZXN0UGF0aWVudCIKICAgIH0KICBdCn0=',
+  },
+  res: {
+    status: 201,
+    headers: {
+      etag: ['W/"MTc2OTcyMjU3OTI0ODQzNDAwMA"'],
+      location: [
+        'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/75bbb180-e955-4e78-8538-c90cd55cb7a9/_history/MTc2OTcyMjU3OTI0ODQzNDAwMA',
+      ],
+      'content-encoding': ['gzip'],
+      'last-modified': ['Thu, 29 Jan 2026 21:36:19 UTC'],
+      'content-type': ['application/fhir+json;charset=utf-8'],
+      vary: ['Origin, X-Origin, Referer'],
+      date: ['Thu, 29 Jan 2026 21:36:19 GMT'],
+      server: ['ESF'],
+      'x-xss-protection': ['0'],
+      'x-frame-options': ['SAMEORIGIN'],
+      'x-content-type-options': ['nosniff'],
+      'alt-svc': ['h3=":443"; ma=2592000,h3-29=":443"; ma=2592000'],
+      connection: ['close'],
+      'transfer-encoding': ['chunked'],
     },
-    req: {
-        url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient',
-        method: 'POST',
-        headers: {},
-        body: 'ewogICJyZXNvdXJjZVR5cGUiOiAiUGF0aWVudCIsCiAgIm5hbWUiOiBbCiAgICB7CiAgICAgICJnaXZlbiI6IFsKICAgICAgICAiU2VhcmNoMSIKICAgICAgXSwKICAgICAgImZhbWlseSI6ICJUZXN0UGF0aWVudCIKICAgIH0KICBdCn0=',
-    },
-    res: {
-        status: 201,
-        headers: {
-            etag: [
-                'W/"MTc2OTcyMjU3OTI0ODQzNDAwMA"',
-            ],
-            location: [
-                'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Patient/75bbb180-e955-4e78-8538-c90cd55cb7a9/_history/MTc2OTcyMjU3OTI0ODQzNDAwMA',
-            ],
-            'content-encoding': [
-                'gzip',
-            ],
-            'last-modified': [
-                'Thu, 29 Jan 2026 21:36:19 UTC',
-            ],
-            'content-type': [
-                'application/fhir+json;charset=utf-8',
-            ],
-            vary: [
-                'Origin, X-Origin, Referer',
-            ],
-            date: [
-                'Thu, 29 Jan 2026 21:36:19 GMT',
-            ],
-            server: [
-                'ESF',
-            ],
-            'x-xss-protection': [
-                '0',
-            ],
-            'x-frame-options': [
-                'SAMEORIGIN',
-            ],
-            'x-content-type-options': [
-                'nosniff',
-            ],
-            'alt-svc': [
-                'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
-            ],
-            connection: [
-                'close',
-            ],
-            'transfer-encoding': [
-                'chunked',
-            ],
+    body: {
+      id: '75bbb180-e955-4e78-8538-c90cd55cb7a9',
+      meta: {
+        lastUpdated: '2026-01-29T21:36:19.248434+00:00',
+        versionId: 'MTc2OTcyMjU3OTI0ODQzNDAwMA',
+      },
+      name: [
+        {
+          family: 'TestPatient',
+          given: ['Search1'],
         },
-        body: {
-            id: '75bbb180-e955-4e78-8538-c90cd55cb7a9',
-            meta: {
-                lastUpdated: '2026-01-29T21:36:19.248434+00:00',
-                versionId: 'MTc2OTcyMjU3OTI0ODQzNDAwMA',
-            },
-            name: [
-                {
-                    family: 'TestPatient',
-                    given: [
-                        'Search1',
-                    ],
-                },
-            ],
-            resourceType: 'Patient',
-        },
+      ],
+      resourceType: 'Patient',
     },
+  },
 }

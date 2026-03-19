@@ -1,3 +1,4 @@
+import { Predicate } from 'effect'
 import * as fc from 'fast-check'
 import { describe, expect, expectTypeOf, test } from 'vitest'
 
@@ -6,53 +7,42 @@ import type { TupleFilter, TupleIndexMap } from './tuples'
 
 describe('tupleFilter', () => {
   test('property: result contains only elements matching the predicate', () => {
-    const isString = (x: unknown): x is string => typeof x === 'string'
-
     fc.assert(
-      fc.property(
-        fc.array(fc.oneof(fc.string(), fc.integer(), fc.boolean())),
-        (arr) => {
-          const result = tupleFilter(arr as ReadonlyArray<unknown>, isString)
-          for (const item of result) {
-            expect(typeof item).toBe('string')
-          }
+      fc.property(fc.array(fc.oneof(fc.string(), fc.integer(), fc.boolean())), (arr) => {
+        const result = tupleFilter(arr as readonly unknown[], Predicate.isString)
+        for (const item of result) {
+          expect(typeof item).toBe('string')
         }
-      )
+      })
     )
   })
 
   test('property: result preserves order of matching elements', () => {
-    const isString = (x: unknown): x is string => typeof x === 'string'
-
     fc.assert(
       fc.property(fc.array(fc.oneof(fc.string(), fc.integer())), (arr) => {
-        const result = tupleFilter(arr as ReadonlyArray<unknown>, isString)
-        const expected = arr.filter(isString)
+        const result = tupleFilter(arr as readonly unknown[], Predicate.isString)
+        const expected = arr.filter((x) => Predicate.isString(x))
         expect(result).toEqual(expected)
       })
     )
   })
 
   test('property: result length <= input length', () => {
-    const isString = (x: unknown): x is string => typeof x === 'string'
-
     fc.assert(
       fc.property(fc.array(fc.oneof(fc.string(), fc.integer())), (arr) => {
-        const result = tupleFilter(arr as ReadonlyArray<unknown>, isString)
+        const result = tupleFilter(arr as readonly unknown[], Predicate.isString)
         expect(result.length).toBeLessThanOrEqual(arr.length)
       })
     )
   })
 
   test('returns empty for no matches', () => {
-    const isString = (x: unknown): x is string => typeof x === 'string'
-    const result = tupleFilter([1, 2, 3] as const, isString)
+    const result = tupleFilter([1, 2, 3] as const, Predicate.isString)
     expect(result).toEqual([])
   })
 
   test('returns all for all matches', () => {
-    const isString = (x: unknown): x is string => typeof x === 'string'
-    const result = tupleFilter(['a', 'b', 'c'] as const, isString)
+    const result = tupleFilter(['a', 'b', 'c'] as const, Predicate.isString)
     expect(result).toEqual(['a', 'b', 'c'])
   })
 
@@ -80,18 +70,12 @@ describe('tupleIndexMap', () => {
     const mapping = { a: 1, b: 2, c: 3 } as const
 
     fc.assert(
-      fc.property(
-        fc.array(fc.constantFrom('a' as const, 'b' as const, 'c' as const)),
-        (keys) => {
-          const result = tupleIndexMap(
-            keys as ReadonlyArray<keyof typeof mapping>,
-            mapping
-          )
-          for (let i = 0; i < keys.length; i++) {
-            expect(result[i]).toBe(mapping[keys[i] as keyof typeof mapping])
-          }
+      fc.property(fc.array(fc.constantFrom('a' as const, 'b' as const, 'c' as const)), (keys) => {
+        const result = tupleIndexMap(keys as readonly (keyof typeof mapping)[], mapping)
+        for (let i = 0; i < keys.length; i++) {
+          expect(result[i]).toBe(mapping[keys[i]])
         }
-      )
+      })
     )
   })
 
@@ -99,16 +83,10 @@ describe('tupleIndexMap', () => {
     const mapping = { x: 10, y: 20 } as const
 
     fc.assert(
-      fc.property(
-        fc.array(fc.constantFrom('x' as const, 'y' as const)),
-        (keys) => {
-          const result = tupleIndexMap(
-            keys as ReadonlyArray<keyof typeof mapping>,
-            mapping
-          )
-          expect(result.length).toBe(keys.length)
-        }
-      )
+      fc.property(fc.array(fc.constantFrom('x' as const, 'y' as const)), (keys) => {
+        const result = tupleIndexMap(keys as readonly (keyof typeof mapping)[], mapping)
+        expect(result.length).toBe(keys.length)
+      })
     )
   })
 
@@ -126,14 +104,20 @@ describe('tupleIndexMap', () => {
 
   test('type: maps tuple of keys to tuple of values', () => {
     type Keys = readonly ['a', 'b', 'c']
-    type Mapping = { readonly a: 1; readonly b: 2; readonly c: 3 }
+    interface Mapping {
+      readonly a: 1
+      readonly b: 2
+      readonly c: 3
+    }
     type Result = TupleIndexMap<Keys, Mapping>
     expectTypeOf<Result>().toEqualTypeOf<readonly [1, 2, 3]>()
   })
 
   test('type: empty tuple maps to empty', () => {
     type Keys = readonly []
-    type Mapping = { readonly a: 1 }
+    interface Mapping {
+      readonly a: 1
+    }
     type Result = TupleIndexMap<Keys, Mapping>
     expectTypeOf<Result>().toEqualTypeOf<readonly []>()
   })

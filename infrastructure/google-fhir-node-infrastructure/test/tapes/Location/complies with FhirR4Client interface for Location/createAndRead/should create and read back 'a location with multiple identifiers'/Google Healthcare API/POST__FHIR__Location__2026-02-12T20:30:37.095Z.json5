@@ -1,81 +1,55 @@
 {
-    meta: {
-        createdAt: '2026-02-12T20:30:36.877Z',
-        host: 'https://healthcare.googleapis.com',
-        resHumanReadable: true,
-        resUncompressed: true,
+  meta: {
+    createdAt: '2026-02-12T20:30:36.877Z',
+    host: 'https://healthcare.googleapis.com',
+    resHumanReadable: true,
+    resUncompressed: true,
+  },
+  req: {
+    url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location',
+    method: 'POST',
+    headers: {},
+    body: 'ewogICJyZXNvdXJjZVR5cGUiOiAiTG9jYXRpb24iLAogICJuYW1lIjogIkJyYW5jaCBPZmZpY2UiLAogICJzdGF0dXMiOiAiYWN0aXZlIiwKICAiaWRlbnRpZmllciI6IFsKICAgIHsKICAgICAgInN5c3RlbSI6ICJodHRwOi8vZXhhbXBsZS5jb20vbG9jYXRpb25zIiwKICAgICAgInZhbHVlIjogImxvYy1jcmVhdGUtcmVhZC0yYSIKICAgIH0sCiAgICB7CiAgICAgICJzeXN0ZW0iOiAiaHR0cDovL2V4YW1wbGUuY29tL2ludGVybmFsIiwKICAgICAgInZhbHVlIjogImxvYy1jcmVhdGUtcmVhZC0yYiIKICAgIH0KICBdCn0=',
+  },
+  res: {
+    status: 201,
+    headers: {
+      'content-type': ['application/fhir+json;charset=utf-8'],
+      etag: ['W/"MTc3MDkyODIzNzEyMjI3NDAwMA"'],
+      'content-encoding': ['gzip'],
+      'last-modified': ['Thu, 12 Feb 2026 20:30:37 UTC'],
+      location: [
+        'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/7ac54d6f-e878-465a-8797-657fa99a8b73/_history/MTc3MDkyODIzNzEyMjI3NDAwMA',
+      ],
+      vary: ['Origin, X-Origin, Referer'],
+      date: ['Thu, 12 Feb 2026 20:30:37 GMT'],
+      server: ['ESF'],
+      'x-xss-protection': ['0'],
+      'x-frame-options': ['SAMEORIGIN'],
+      'x-content-type-options': ['nosniff'],
+      'alt-svc': ['h3=":443"; ma=2592000,h3-29=":443"; ma=2592000'],
+      connection: ['close'],
+      'transfer-encoding': ['chunked'],
     },
-    req: {
-        url: '/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location',
-        method: 'POST',
-        headers: {},
-        body: 'ewogICJyZXNvdXJjZVR5cGUiOiAiTG9jYXRpb24iLAogICJuYW1lIjogIkJyYW5jaCBPZmZpY2UiLAogICJzdGF0dXMiOiAiYWN0aXZlIiwKICAiaWRlbnRpZmllciI6IFsKICAgIHsKICAgICAgInN5c3RlbSI6ICJodHRwOi8vZXhhbXBsZS5jb20vbG9jYXRpb25zIiwKICAgICAgInZhbHVlIjogImxvYy1jcmVhdGUtcmVhZC0yYSIKICAgIH0sCiAgICB7CiAgICAgICJzeXN0ZW0iOiAiaHR0cDovL2V4YW1wbGUuY29tL2ludGVybmFsIiwKICAgICAgInZhbHVlIjogImxvYy1jcmVhdGUtcmVhZC0yYiIKICAgIH0KICBdCn0=',
-    },
-    res: {
-        status: 201,
-        headers: {
-            'content-type': [
-                'application/fhir+json;charset=utf-8',
-            ],
-            etag: [
-                'W/"MTc3MDkyODIzNzEyMjI3NDAwMA"',
-            ],
-            'content-encoding': [
-                'gzip',
-            ],
-            'last-modified': [
-                'Thu, 12 Feb 2026 20:30:37 UTC',
-            ],
-            location: [
-                'https://healthcare.googleapis.com/v1/projects/assessmentis/locations/northamerica-northeast2/datasets/integration-test/fhirStores/integration-store-1/fhir/Location/7ac54d6f-e878-465a-8797-657fa99a8b73/_history/MTc3MDkyODIzNzEyMjI3NDAwMA',
-            ],
-            vary: [
-                'Origin, X-Origin, Referer',
-            ],
-            date: [
-                'Thu, 12 Feb 2026 20:30:37 GMT',
-            ],
-            server: [
-                'ESF',
-            ],
-            'x-xss-protection': [
-                '0',
-            ],
-            'x-frame-options': [
-                'SAMEORIGIN',
-            ],
-            'x-content-type-options': [
-                'nosniff',
-            ],
-            'alt-svc': [
-                'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
-            ],
-            connection: [
-                'close',
-            ],
-            'transfer-encoding': [
-                'chunked',
-            ],
+    body: {
+      id: '7ac54d6f-e878-465a-8797-657fa99a8b73',
+      identifier: [
+        {
+          system: 'http://example.com/locations',
+          value: 'loc-create-read-2a',
         },
-        body: {
-            id: '7ac54d6f-e878-465a-8797-657fa99a8b73',
-            identifier: [
-                {
-                    system: 'http://example.com/locations',
-                    value: 'loc-create-read-2a',
-                },
-                {
-                    system: 'http://example.com/internal',
-                    value: 'loc-create-read-2b',
-                },
-            ],
-            meta: {
-                lastUpdated: '2026-02-12T20:30:37.122274+00:00',
-                versionId: 'MTc3MDkyODIzNzEyMjI3NDAwMA',
-            },
-            name: 'Branch Office',
-            resourceType: 'Location',
-            status: 'active',
+        {
+          system: 'http://example.com/internal',
+          value: 'loc-create-read-2b',
         },
+      ],
+      meta: {
+        lastUpdated: '2026-02-12T20:30:37.122274+00:00',
+        versionId: 'MTc3MDkyODIzNzEyMjI3NDAwMA',
+      },
+      name: 'Branch Office',
+      resourceType: 'Location',
+      status: 'active',
     },
+  },
 }

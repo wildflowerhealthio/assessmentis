@@ -9,12 +9,12 @@ For cross-layer and domain steps, see:
 
 ## 1. Register in ResourceDataTypes
 
-Add the new Clinical Resource to [../../../../../domain/clinical-domain/src/ResourceDataTypes.ts](../../../../../domain/clinical-domain/src/ResourceDataTypes.ts):
+Add the new Clinical Resource to [../../../../../domain/clinical-domain/src/resource-data-types.ts](../../../../../domain/clinical-domain/src/resource-data-types.ts):
 
 - Import the resource type
 - Add it to both the `ResourceDataTypes` type and const
 
-The Hub ([../../layers/useHub.ts](../../layers/useHub.ts)) will automatically support get/search/create/subscribe for the new resource type.
+The Hub ([../../layers/use-hub.ts](../../layers/use-hub.ts)) will automatically support get/search/create/subscribe for the new resource type.
 
 ## 2. Add origin definition support
 
@@ -36,6 +36,6 @@ Use `Clinical Resource` wording in docs, comments, and test naming for this work
 
 ## Most-used code locations
 
-- Hub access hook: [../../layers/useHub.ts](../../layers/useHub.ts)
-- Resource data types: [../../../../../domain/clinical-domain/src/ResourceDataTypes.ts](../../../../../domain/clinical-domain/src/ResourceDataTypes.ts)
+- Hub access hook: [../../layers/use-hub.ts](../../layers/use-hub.ts)
+- Resource data types: [../../../../../domain/clinical-domain/src/resource-data-types.ts](../../../../../domain/clinical-domain/src/resource-data-types.ts)
 - Resource CRUD patterns: [./Resource CRUD Reference.md](./Resource%20CRUD%20Reference.md)

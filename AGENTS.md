@@ -4,7 +4,7 @@ Read [AGENTS Explanation](./docs/Agents/Explanation.md) for what this file is an
 
 ## Critical Rules
 
-- **Node.js 22.x required** (npm 10.9.2+)
+- **Node.js 24.x required** (npm 10.9.2+)
 - **Domain packages must be pure** — no side effects, no HTTP, no DB, no file I/O
 - **Changes MUST include corresponding test updates**
 
@@ -22,6 +22,18 @@ Before starting any task, pause and think about the request, then ask clarifying
 ### Claude SHOULD use AskUserQuestion
 
 Split large batches of questions over multiple asks
+
+### Agents MUST ask for guidance before expanding scope
+
+While completing tasks may be inclined to
+
+- Stash code to check if an error is new
+- Create new branches or commits
+- Search online for information
+- Writing code to verify the behaviour of other modules
+
+You MUST consult with the user before doing these or similar actions.
+They may have an answer or they may not want you to engage in that behaviour.
 
 ### Agents SHOULD NOT silently resolve judgment calls or spiral into obscure problem
 
@@ -82,5 +94,5 @@ npm run build        # Build monorepo
 npm run typecheck    # Type check all packages
 npm run test         # Run all tests
 npm run lint:fix     # Auto-fix lint issues
-npm run format       # Prettier
+npm run format       # Oxfmt
 ```

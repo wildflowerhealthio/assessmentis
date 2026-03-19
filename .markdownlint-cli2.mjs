@@ -16,7 +16,7 @@ const config = {
     },
   },
   globs: ['**/*.md'],
-  ignores: ['**/node_modules', 'docs-html/**'],
+  ignores: ['**/node_modules', 'docs-html/**', '.agents/**'],
 }
 
 export default config

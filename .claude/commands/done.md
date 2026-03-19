@@ -28,6 +28,7 @@ Task wrap-up checklist — run health checks, surface next steps, and execute be
 
    ```markdown
    ### [short title]
+
    **Discovered during**: [task or branch name]
    **Learning**: [the actionable insight]
    **Suggested destination**: Strategies | [path to a specific reference doc] | unsure
