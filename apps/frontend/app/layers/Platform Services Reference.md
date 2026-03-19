@@ -29,7 +29,7 @@ This reference describes the client-side platform service graph used by the fron
 ## Boundary rules
 
 - Prefer using service Effect/Stream outputs over direct SDK calls.
-- Normalize ExternalAssertionError, BadDataError, and NotFoundError to UnhandledError when the UI does not have actionable handling.
+- Normalize ExternalAssertionError, DataIntegrityError, and NotFoundError to UnhandledError when the UI does not have actionable handling.
 - Avoid side effects in components; initialize services only in PlatformContextProvider.
 
 ## Most-used code locations

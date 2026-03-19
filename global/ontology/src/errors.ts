@@ -45,7 +45,7 @@ export class UnhandledError extends Data.TaggedError('UnhandledError')<{
     }
     if (
       err instanceof ExternalAssertionError ||
-      err instanceof BadDataError ||
+      err instanceof DataIntegrityError ||
       err instanceof NotFoundError ||
       err instanceof AuthError ||
       err instanceof AuthzError
@@ -102,7 +102,7 @@ export class ExternalAssertionError extends Data.TaggedError('ExternalAssertionE
  * expected schema. This signals a data-integrity issue (e.g. corrupt
  * records, migration gaps) rather than invalid user input.
  */
-export class BadDataError extends Data.TaggedError('BadDataError')<{
+export class DataIntegrityError extends Data.TaggedError('DataIntegrityError')<{
   message: string
   cause?: unknown
 }> {
@@ -119,11 +119,11 @@ export class BadDataError extends Data.TaggedError('BadDataError')<{
     }
   }
 
-  /** Converts to {@link UnhandledError} with a message describing the bad data. */
+  /** Converts to {@link UnhandledError} with a message describing the data-integrity issue. */
   asUnhandledError(): UnhandledError {
     return new UnhandledError({
       cause: this.cause,
-      message: `Bad data was found: ${this.message}`,
+      message: `Data integrity issue: ${this.message}`,
     })
   }
 }

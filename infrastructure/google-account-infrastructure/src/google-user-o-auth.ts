@@ -4,7 +4,7 @@ import type { Either, Scope, SubscriptionRef } from 'effect'
 
 import { makeCredentialId } from '@assessmentis/config-domain'
 import { AuthError, UnhandledError } from '@assessmentis/ontology'
-import type { BadDataError, NotFoundError } from '@assessmentis/ontology'
+import type { DataIntegrityError, NotFoundError } from '@assessmentis/ontology'
 import { AuthDataService, DocumentStoreLiveCredential } from '@assessmentis/platform-domain'
 import type {
   CredentialError,
@@ -77,7 +77,7 @@ export class GoogleUserOAuthLiveCredential extends DocumentStoreLiveCredential<
     identity: GoogleUserCredentialIdentifier
   ): Effect.Effect<
     GoogleUserOAuthToken,
-    BadDataError | NotFoundError<'Document', { path: readonly string[] }> | UnhandledError,
+    DataIntegrityError | NotFoundError<'Document', { path: readonly string[] }> | UnhandledError,
     DocumentStore
   > {
     return DocumentStoreLiveCredential._readOnce(

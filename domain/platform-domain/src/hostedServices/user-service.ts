@@ -1,7 +1,7 @@
 import { Context, Effect, Fiber, PubSub, Schema, Stream } from 'effect'
 import type { Either, Scope, Take } from 'effect'
 
-import { BadDataError, NotFoundError } from '@assessmentis/ontology'
+import { DataIntegrityError, NotFoundError } from '@assessmentis/ontology'
 import type { AuthError, UnhandledError } from '@assessmentis/ontology'
 import { StreamEither, pubsubAsPerpetualStream, takeOneFromPubSubOrDie } from '@assessmentis/util'
 
@@ -9,11 +9,11 @@ import { User } from '../models/user'
 import type { UserId } from '../models/user-id'
 import { AuthDataService, DocumentStore } from '../tagClasses'
 
-const decodeUser = (data: unknown): Effect.Effect<User, BadDataError> =>
+const decodeUser = (data: unknown): Effect.Effect<User, DataIntegrityError> =>
   Schema.decodeUnknown(User)(data).pipe(
     Effect.mapError(
       (cause) =>
-        new BadDataError({
+        new DataIntegrityError({
           cause,
           message: "The user model couldn't be parsed",
         })
@@ -27,7 +27,7 @@ const createUserPubSub = PubSub.sliding<
   Take.Take<
     Either.Either<
       User,
-      AuthError | NotFoundError<'User', { userId: UserId }> | BadDataError | UnhandledError
+      AuthError | NotFoundError<'User', { userId: UserId }> | DataIntegrityError | UnhandledError
     >
   >
 >({
@@ -50,14 +50,14 @@ class UserService extends Context.Tag('UserService')<
     /** One-shot read of the current user profile. */
     user: Effect.Effect<
       User,
-      AuthError | NotFoundError<'User', { userId: UserId }> | BadDataError | UnhandledError,
+      AuthError | NotFoundError<'User', { userId: UserId }> | DataIntegrityError | UnhandledError,
       Scope.Scope
     >
     /** Stream of user profile updates, switching on auth identity changes. */
     userStream: Stream.Stream<
       Either.Either<
         User,
-        AuthError | NotFoundError<'User', { userId: UserId }> | BadDataError | UnhandledError
+        AuthError | NotFoundError<'User', { userId: UserId }> | DataIntegrityError | UnhandledError
       >,
       never,
       Scope.Scope
@@ -78,7 +78,7 @@ const startUserService = (
     Take.Take<
       Either.Either<
         User,
-        AuthError | NotFoundError<'User', { userId: UserId }> | BadDataError | UnhandledError
+        AuthError | NotFoundError<'User', { userId: UserId }> | DataIntegrityError | UnhandledError
       >
     >
   >
@@ -94,7 +94,7 @@ const startUserService = (
     const userStream = authDataStream.pipe(
       StreamEither.flatMap(
         (authData) =>
-          documentStore.subscribeTo('users', authData.userId).pipe(
+          documentStore.subscribeTo(['users', authData.userId]).pipe(
             StreamEither.mapLeft((err) => {
               if (err instanceof NotFoundError) {
                 return new NotFoundError<'User', { userId: UserId }>({

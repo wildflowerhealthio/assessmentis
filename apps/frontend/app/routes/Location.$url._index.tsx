@@ -1,5 +1,5 @@
-import { Suspense } from 'react'
 import { Predicate } from 'effect'
+import { Suspense } from 'react'
 import { Await } from 'react-router'
 
 import { Location } from '@assessmentis/clinical-domain'
@@ -59,22 +59,23 @@ export default function LocationDetailPage({ params }: Route.ComponentProps): Re
           const details = [
             { label: 'Name', value: location.name ?? '-' },
             {
-              hidden: Predicate.isNullable(location.status) ,
+              hidden: Predicate.isNullable(location.status),
               label: 'Status',
               value: location.status ?? '-',
             },
             {
-              hidden: Predicate.isNullable(location.mode) ,
+              hidden: Predicate.isNullable(location.mode),
               label: 'Mode',
               value: location.mode ?? '-',
             },
             {
-              hidden: Predicate.isNullable(location.description) ,
+              hidden: Predicate.isNullable(location.description),
               label: 'Description',
               value: location.description ?? '-',
             },
             {
-              hidden: Predicate.isNullable(identifier?.system) && Predicate.isNullable(identifier?.value),
+              hidden:
+                Predicate.isNullable(identifier?.system) && Predicate.isNullable(identifier?.value),
               label: 'Identifier',
               value:
                 identifier?.system || identifier?.value

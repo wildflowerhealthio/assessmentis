@@ -1,21 +1,13 @@
-import { Effect, Either, Layer, Stream, Predicate } from 'effect'
+import { Effect, Either, Layer, Stream } from 'effect'
 
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
 import { DocumentStore } from '@assessmentis/platform-domain'
-import type { DocumentData, DocumentPath } from '@assessmentis/platform-domain'
+import type { DocumentData } from '@assessmentis/platform-domain'
 import { isDevelopment, unsubscribableCallbackAsStream } from '@assessmentis/util'
 
 import { doc, getDoc, onSnapshot, setDoc } from 'firebase/firestore'
 
 import { FirebaseWeb } from '../tagClasses'
-
-const resolvePath = (...args: string[] | [DocumentPath]): readonly string[] => {
-  if (Predicate.isTupleOf(1)<string | DocumentPath>(args)) {
-    return args[0]
-  } else {
-    return args
-  }
-}
 
 const resourceTypeFromPath = (path: readonly string[]): string => {
   if (isDevelopment()) {
@@ -37,9 +29,8 @@ export const FirebaseWebDocumentStoreLayer: Layer.Layer<DocumentStore, never, Fi
     Effect.gen(function* FirebaseWebDocumentStoreLayer() {
       const { firestore, auth } = yield* FirebaseWeb
 
-      const get: typeof DocumentStore.Service.get = (...args) =>
+      const get: typeof DocumentStore.Service.get = (path) =>
         Effect.gen(function* () {
-          const path = resolvePath(...args)
           const [collection, ...restPath] = path
           const docRef = doc(firestore, collection, ...restPath)
 
@@ -64,9 +55,8 @@ export const FirebaseWebDocumentStoreLayer: Layer.Layer<DocumentStore, never, Fi
           return data
         })
 
-      const subscribeTo: typeof DocumentStore.Service.subscribeTo = (...args) =>
+      const subscribeTo: typeof DocumentStore.Service.subscribeTo = (path) =>
         Effect.sync(() => {
-          const path = resolvePath(...args)
           const [collection, ...restPath] = path
           const docRef = doc(firestore, collection, ...restPath)
 
@@ -127,9 +117,8 @@ export const FirebaseWebDocumentStoreLayer: Layer.Layer<DocumentStore, never, Fi
           })
         }).pipe(Stream.unwrap)
 
-      const set: typeof DocumentStore.Service.set = (data, ...args) =>
+      const set: typeof DocumentStore.Service.set = (data, path) =>
         Effect.gen(function* () {
-          const path = resolvePath(...args)
           const [collection, ...restPath] = path
           const docRef = doc(firestore, collection, ...restPath)
 
@@ -143,9 +132,8 @@ export const FirebaseWebDocumentStoreLayer: Layer.Layer<DocumentStore, never, Fi
           })
         })
 
-      const update: typeof DocumentStore.Service.update = (data, ...args) =>
+      const update: typeof DocumentStore.Service.update = (data, path) =>
         Effect.gen(function* () {
-          const path = resolvePath(...args)
           const [collection, ...restPath] = path
           const docRef = doc(firestore, collection, ...restPath)
 

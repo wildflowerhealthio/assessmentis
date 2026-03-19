@@ -7,6 +7,7 @@ import {
   HashMap,
   Option,
   Readable,
+  Schedule,
   Schema,
   Stream,
   Subscribable,
@@ -18,7 +19,7 @@ import type { Scope } from 'effect'
 import { pipeArguments } from 'effect/Pipeable'
 
 import type { NotFoundError } from '@assessmentis/ontology'
-import { BadDataError, Loading, UnhandledError } from '@assessmentis/ontology'
+import { DataIntegrityError, Loading, UnhandledError } from '@assessmentis/ontology'
 import { StreamEither } from '@assessmentis/util'
 
 import type {
@@ -58,7 +59,7 @@ export interface DocumentStoreCredentialConstructor<
     identity: TIdentifier
   ): Effect.Effect<
     TCredentialToken,
-    BadDataError | NotFoundError<'Document', { path: readonly string[] }> | UnhandledError,
+    DataIntegrityError | NotFoundError<'Document', { path: readonly string[] }> | UnhandledError,
     DocumentStore
   >
 
@@ -97,7 +98,7 @@ export abstract class DocumentStoreLiveCredential<
     path: DocumentPath
   ): Effect.Effect<
     T,
-    BadDataError | NotFoundError<'Document', { path: readonly string[] }> | UnhandledError,
+    DataIntegrityError | NotFoundError<'Document', { path: readonly string[] }> | UnhandledError,
     DocumentStore
   > {
     return Effect.flatMap(DocumentStore, (ds) =>
@@ -106,7 +107,7 @@ export abstract class DocumentStoreLiveCredential<
           Schema.decodeUnknown(schema)(data).pipe(
             Effect.mapError(
               (cause) =>
-                new BadDataError({
+                new DataIntegrityError({
                   cause,
                   message: `Error decoding credential at ${path.join('/')}`,
                 })
@@ -170,6 +171,18 @@ export abstract class DocumentStoreLiveCredential<
     TTokenContext | Scope.Scope
   >
 }
+
+/**
+ * Retry schedule for credential token refresh attempts.
+ *
+ * Uses exponential backoff starting at 5 seconds, with a maximum of 5 retry
+ * attempts. This produces delays of approximately 5s, 10s, 20s, 40s, 80s
+ * before giving up.
+ */
+export const credentialRefreshRetrySchedule: Schedule.Schedule<
+  [Duration.Duration, number],
+  unknown
+> = pipe(Schedule.exponential(Duration.seconds(5)), Schedule.intersect(Schedule.recurs(5)))
 
 /**
  * Creates a {@link CredentialRepository} backed by DocumentStore.
@@ -241,7 +254,7 @@ export const makeDocumentStoreCredentialRepository = <
             Schema.decodeUnknown(CredentialClass.schema)(data).pipe(
               Effect.mapError(
                 (cause) =>
-                  new BadDataError({
+                  new DataIntegrityError({
                     cause,
                     message: `Error decoding credential at ${credential.path.join('/')}`,
                   })
@@ -275,7 +288,10 @@ export const makeDocumentStoreCredentialRepository = <
           )
 
           const safeRefresh = credential.refresh.pipe(
-            Effect.tapError((e) => Effect.logError('Credential refresh failed:', e))
+            Effect.retry(credentialRefreshRetrySchedule),
+            Effect.tapError((e) =>
+              Effect.logError('Credential refresh failed after all retry attempts:', e)
+            )
           )
 
           return Effect.fork(

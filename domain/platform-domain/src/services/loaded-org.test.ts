@@ -1,7 +1,7 @@
 import { Cause, Effect, Exit, Layer } from 'effect'
 import { describe, expect, it, vi } from 'vitest'
 
-import { BadDataError, NotFoundError } from '@assessmentis/ontology'
+import { DataIntegrityError, NotFoundError } from '@assessmentis/ontology'
 
 import { OrgSlug } from '../models/id-types'
 import { CurrentOrg, DocumentStore } from '../tagClasses'
@@ -60,8 +60,8 @@ describe('LoadedOrg', () => {
       expect(Exit.isFailure(result)).toBe(true)
       if (Exit.isFailure(result)) {
         const error = Cause.squash(result.cause) as any
-        expect(error._tag).toBe('BadDataError')
-        expect(error).toBeInstanceOf(BadDataError)
+        expect(error._tag).toBe('DataIntegrityError')
+        expect(error).toBeInstanceOf(DataIntegrityError)
       }
     })
   })
@@ -92,7 +92,7 @@ describe('LoadedOrg', () => {
 
       // Verify the mock was called
       // oxlint-disable-next-line typescript/unbound-method
-      expect(mock.get).toHaveBeenCalledWith('orgs', testOrgSlug)
+      expect(mock.get).toHaveBeenCalledWith(['orgs', testOrgSlug])
     })
 
     it('fails with NotFoundError when org not found in DocumentStore', async () => {

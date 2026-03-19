@@ -2,7 +2,7 @@ import { Effect, Either, RequestResolver, Stream, SubscriptionRef, pipe } from '
 import type { Scope } from 'effect'
 
 import { Loading } from '@assessmentis/ontology'
-import { SideEffect } from '@assessmentis/util'
+import { DeferredActionWriter } from '@assessmentis/util'
 
 import type * as Resource from './resource'
 
@@ -76,14 +76,14 @@ export const makeHubFromRef = <Classes extends Resource.AnyDomainClass>(
           const originStates = stateResult.right
 
           yield* pipe(
-            SideEffect.of<readonly AnyEntry<Resource.AnyDomainClass>[]>(batch, []),
-            SideEffect.flatMap((entries) =>
+            DeferredActionWriter.of<readonly AnyEntry<Resource.AnyDomainClass>[]>(batch, []),
+            DeferredActionWriter.flatMap((entries) =>
               fanOutSearches(entries, originStates, stateRef.changes)
             ),
-            SideEffect.flatMap((entries) => groupByOrigin(entries, originStates)),
-            SideEffect.flatMap((groups) => filterReadyOrigins(groups, stateRef.changes)),
-            SideEffect.flatMap((groups) => dispatchToResolvers(groups)),
-            SideEffect.justActions,
+            DeferredActionWriter.flatMap((entries) => groupByOrigin(entries, originStates)),
+            DeferredActionWriter.flatMap((groups) => filterReadyOrigins(groups, stateRef.changes)),
+            DeferredActionWriter.flatMap((groups) => dispatchToResolvers(groups)),
+            DeferredActionWriter.justActions,
             (actions) =>
               Effect.all(actions, {
                 concurrency: 'unbounded',

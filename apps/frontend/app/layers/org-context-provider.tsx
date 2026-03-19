@@ -2,7 +2,7 @@ import { Effect, Either } from 'effect'
 import React, { Suspense, useMemo } from 'react'
 import { Await } from 'react-router'
 
-import { BadDataError, NotFoundError, UnhandledError } from '@assessmentis/ontology'
+import { DataIntegrityError, NotFoundError, UnhandledError } from '@assessmentis/ontology'
 import type { AuthError } from '@assessmentis/ontology'
 import { NoSelectedOrgError } from '@assessmentis/platform-domain'
 import type { Org } from '@assessmentis/platform-domain'
@@ -21,14 +21,14 @@ export const OrgContextProvider: React.FC<React.PropsWithChildren> = ({ children
     () =>
       orgService.activeOrgStream.pipe(
         StreamEither.mapLeft((e) =>
-          e instanceof NotFoundError || e instanceof UnhandledError || e instanceof BadDataError
+          e instanceof NotFoundError || e instanceof UnhandledError || e instanceof DataIntegrityError
             ? e.asUnhandledError()
             : e
         ),
         StreamEither.mapEffect((org) =>
           userService.user.pipe(
             Effect.mapError((e) =>
-              e instanceof BadDataError || e instanceof NotFoundError ? e.asUnhandledError() : e
+              e instanceof DataIntegrityError || e instanceof NotFoundError ? e.asUnhandledError() : e
             ),
             Effect.flatMap((user) =>
               org !== null && org !== undefined && Object.keys(user.org_roles).includes(org.slug)

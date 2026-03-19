@@ -41,7 +41,7 @@ export async function clientLoader({
   const result = await Effect.runPromise(
     pipe(
       DocumentStore,
-      Effect.flatMap((documentStore) => documentStore.get('orgs', params.orgSlug)),
+      Effect.flatMap((documentStore) => documentStore.get(['orgs', params.orgSlug])),
       Effect.catchTag('NotFoundError', () => Effect.succeed(null)),
       Effect.provide(FirebaseWebDocumentStoreLayer),
       Effect.provide(FirebaseWebLayer)

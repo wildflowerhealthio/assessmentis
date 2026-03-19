@@ -84,7 +84,7 @@ export class DocumentStore extends Context.Tag('DocumentStore')<
   {
     /** Read a single document, failing with `NotFoundError` if it does not exist. */
     get(
-      ...path: DocumentPath | readonly [DocumentPath]
+      path: DocumentPath
     ): Effect.Effect<
       DocumentData,
       NotFoundError<'Document', { path: readonly string[] }> | UnhandledError
@@ -92,7 +92,7 @@ export class DocumentStore extends Context.Tag('DocumentStore')<
 
     /** Subscribe to real-time updates for a document at the given path. */
     subscribeTo(
-      ...path: DocumentPath | readonly [DocumentPath]
+      path: DocumentPath
     ): Stream.Stream<
       Either.Either<
         DocumentData,
@@ -105,19 +105,13 @@ export class DocumentStore extends Context.Tag('DocumentStore')<
      * Set a document at the given path, creating it if it doesn't exist
      * or completely overwriting it if it does.
      */
-    set(
-      data: DocumentData,
-      ...path: DocumentPath | readonly [DocumentPath]
-    ): Effect.Effect<void, UnhandledError>
+    set(data: DocumentData, path: DocumentPath): Effect.Effect<void, UnhandledError>
 
     /**
      * Update a document at the given path with the given data.
      * Only the fields specified in data will be updated; other fields remain unchanged.
      * If the document doesn't exist, it will be created.
      */
-    update(
-      data: Partial<DocumentData>,
-      ...path: DocumentPath | readonly [DocumentPath]
-    ): Effect.Effect<void, UnhandledError>
+    update(data: Partial<DocumentData>, path: DocumentPath): Effect.Effect<void, UnhandledError>
   }
 >() {}

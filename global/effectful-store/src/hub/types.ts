@@ -9,7 +9,7 @@ import type {
 } from 'effect'
 
 import type { Loading, NotFoundError, UnhandledError } from '@assessmentis/ontology'
-import type { SideEffect } from '@assessmentis/util'
+import type { DeferredActionWriter } from '@assessmentis/util'
 import { dual } from 'effect/Function'
 
 import type * as Origin from '../origin'
@@ -47,16 +47,18 @@ export const failEntry: {
   <Classes extends Resource.AnyDomainClass>(
     entry: AnyEntry<Classes>,
     error: UnhandledError | ResourceRequest.CommonErrors
-  ): SideEffect.EffectAction
+  ): DeferredActionWriter.Action
   (
     error: UnhandledError | ResourceRequest.CommonErrors
-  ): <Classes extends Resource.AnyDomainClass>(entry: AnyEntry<Classes>) => SideEffect.EffectAction
+  ): <Classes extends Resource.AnyDomainClass>(
+    entry: AnyEntry<Classes>
+  ) => DeferredActionWriter.Action
 } = dual(
   2,
   <Classes extends Resource.AnyDomainClass>(
     entry: AnyEntry<Classes>,
     error: UnhandledError | ResourceRequest.CommonErrors
-  ): SideEffect.EffectAction => Deferred.fail(entry.result, error)
+  ): DeferredActionWriter.Action => Deferred.fail(entry.result, error)
 )
 
 // --- Loading timeout ---

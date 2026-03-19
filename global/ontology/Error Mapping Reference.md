@@ -9,7 +9,7 @@ This reference describes the canonical error taxonomy and how to map errors acro
 
 - UnhandledError — unexpected failures with no specific handling.
 - ExternalAssertionError — external systems returning data that violates expectations.
-- BadDataError — internally controlled data violates schema or invariants.
+- DataIntegrityError — internally controlled data violates schema or invariants.
 - NotFoundError — requested resource not found.
 - AuthError — authentication required or invalid.
 - AuthzError — authenticated but insufficient permissions.
@@ -17,7 +17,7 @@ This reference describes the canonical error taxonomy and how to map errors acro
 ## Quick decision guide
 
 - External response shape is wrong or missing fields → ExternalAssertionError.
-- Internal persisted data violates schema/invariants → BadDataError.
+- Internal persisted data violates schema/invariants → DataIntegrityError.
 - Resource lookup misses → NotFoundError.
 - Missing or invalid auth token → AuthError.
 - Authenticated but role/permission check fails → AuthzError.
@@ -28,7 +28,7 @@ This reference describes the canonical error taxonomy and how to map errors acro
 ### Domain
 
 - Prefer explicit error unions on Effect return types.
-- Use BadDataError for schema violations in persisted or domain-owned data.
+- Use DataIntegrityError for schema violations in persisted or domain-owned data.
 - Avoid throwing raw Error; return typed errors.
 
 ### Infrastructure
@@ -46,7 +46,7 @@ This reference describes the canonical error taxonomy and how to map errors acro
 
 ## Conversion helpers
 
-- Use asUnhandledError on ExternalAssertionError, BadDataError, NotFoundError, AuthError, and AuthzError when crossing UI boundaries.
+- Use asUnhandledError on ExternalAssertionError, DataIntegrityError, NotFoundError, AuthError, and AuthzError when crossing UI boundaries.
 - Prefer mapping inside Effect/Stream pipelines so downstream components see normalized errors.
 - Do not introduce new error types unless a clear taxonomy gap exists.
 
