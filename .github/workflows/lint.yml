@@ -30,13 +30,13 @@ jobs:
 
       - name: Run Oxlint (Changed Files)
         shell: bash
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: .
         run: |
           echo "::group::Run Oxlint (Changed Files)"
           files=$(git diff --name-only --relative ${{ steps.base-branch.outputs.base-branch }} ${{ github.sha }})
           echo "::debug::Files:"
           echo "::debug::${files}"
-          npx oxlint --format github $files
+          npm exec oxlint -- --format github $files
           echo "::endgroup::"
 
   lint-comments:
