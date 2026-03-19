@@ -7,11 +7,6 @@ import { ReadonlyUrl, UriEncodedOriginUrl } from './readonly-url'
 const readonlyUrlArb = Arbitrary.make(ReadonlyUrl)
 const wellFormedUrlArb = Arbitrary.make(ReadonlyUrl.FromString)
 
-/** Well-formed URL arbitrary that never has double slashes in the pathname. */
-const cleanPathnameUrlArb = wellFormedUrlArb.filter(
-  (url) => !url.pathname.includes('//')
-)
-
 describe('ReadonlyUrl', () => {
   describe('base schema', () => {
     test('property: encode-decode round-trip', () => {
@@ -267,7 +262,7 @@ describe('ReadonlyUrl', () => {
         .stringOf(fc.constantFrom('/', 'a', 'b', '1', '-', '_'))
         .filter((s) => !s.includes('//'))
       fc.assert(
-        fc.property(cleanPathnameUrlArb, noDoubleSlashArb, (url, suffix) => {
+        fc.property(wellFormedUrlArb, noDoubleSlashArb, (url, suffix) => {
           const result = url.appendToPathname(suffix)
           expect(result.pathname).not.toContain('//')
         })
@@ -278,7 +273,7 @@ describe('ReadonlyUrl', () => {
       const noDoubleSlashArb = fc
         .stringOf(fc.constantFrom('/', 'a', 'b', '1', '-', '_'))
         .filter((s) => !s.includes('//'))
-      const trailingSlashUrlArb = cleanPathnameUrlArb.map((url) => {
+      const trailingSlashUrlArb = wellFormedUrlArb.map((url) => {
         const base = url.pathname.replace(/\/+$/, '')
         return ReadonlyUrl.make({
           host: url.host,
@@ -300,16 +295,11 @@ describe('ReadonlyUrl', () => {
       const leadingSlashesArb = fc.stringOf(fc.constant('/'), { minLength: 1 })
       const pathSuffixArb = fc.stringOf(fc.constantFrom('a', 'b', '1', '-', '_', '/'))
       fc.assert(
-        fc.property(
-          wellFormedUrlArb,
-          leadingSlashesArb,
-          pathSuffixArb,
-          (url, slashes, suffix) => {
-            const withoutLeading = url.appendToPathname(suffix)
-            const withLeading = url.appendToPathname(slashes + suffix)
-            expect(withLeading.pathname).toBe(withoutLeading.pathname)
-          },
-        ),
+        fc.property(wellFormedUrlArb, leadingSlashesArb, pathSuffixArb, (url, slashes, suffix) => {
+          const withoutLeading = url.appendToPathname(suffix)
+          const withLeading = url.appendToPathname(slashes + suffix)
+          expect(withLeading.pathname).toBe(withoutLeading.pathname)
+        })
       )
     })
   })

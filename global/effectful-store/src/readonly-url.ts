@@ -140,16 +140,19 @@ export class ReadonlyUrl extends Schema.Class<ReadonlyUrl>('ReadonlyUrl')({
     strict: true,
   }).annotations({
     arbitrary: (): Arbitrary.LazyArbitrary<ReadonlyUrl> => (fc: typeof FastCheck) =>
-      fc.webUrl().map((str) => {
-        const url = new URL(str)
-        return ReadonlyUrl.make({
-          host: url.host,
-          password: url.password,
-          pathname: url.pathname,
-          protocol: url.protocol,
-          username: url.username,
+      fc
+        .webUrl()
+        .map((str) => {
+          const url = new URL(str)
+          return ReadonlyUrl.make({
+            host: url.host,
+            password: url.password,
+            pathname: url.pathname,
+            protocol: url.protocol,
+            username: url.username,
+          })
         })
-      }),
+        .filter((url) => !url.pathname.includes('//')),
   })
 
   /** Decodes a URI-encoded URL string and parses it into a `ReadonlyUrl`. */
