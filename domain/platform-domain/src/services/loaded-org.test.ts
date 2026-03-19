@@ -92,7 +92,7 @@ describe('LoadedOrg', () => {
 
       // Verify the mock was called
       // oxlint-disable-next-line typescript/unbound-method
-      expect(mock.get).toHaveBeenCalledWith('orgs', testOrgSlug)
+      expect(mock.get).toHaveBeenCalledWith(['orgs', testOrgSlug])
     })
 
     it('fails with NotFoundError when org not found in DocumentStore', async () => {

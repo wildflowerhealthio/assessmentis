@@ -50,7 +50,9 @@ export const failEntry: {
   ): DeferredActionWriter.Action
   (
     error: UnhandledError | ResourceRequest.CommonErrors
-  ): <Classes extends Resource.AnyDomainClass>(entry: AnyEntry<Classes>) => DeferredActionWriter.Action
+  ): <Classes extends Resource.AnyDomainClass>(
+    entry: AnyEntry<Classes>
+  ) => DeferredActionWriter.Action
 } = dual(
   2,
   <Classes extends Resource.AnyDomainClass>(

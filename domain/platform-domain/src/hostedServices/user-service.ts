@@ -94,7 +94,7 @@ const startUserService = (
     const userStream = authDataStream.pipe(
       StreamEither.flatMap(
         (authData) =>
-          documentStore.subscribeTo('users', authData.userId).pipe(
+          documentStore.subscribeTo(['users', authData.userId]).pipe(
             StreamEither.mapLeft((err) => {
               if (err instanceof NotFoundError) {
                 return new NotFoundError<'User', { userId: UserId }>({

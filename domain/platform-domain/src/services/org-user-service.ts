@@ -31,7 +31,7 @@ export class OrgUserService extends Effect.Service<OrgUserService>()('OrgUserSer
       allowedRoles: readonly string[]
     ): Effect.Effect<void, AuthError | AuthzError | UnhandledError> =>
       Effect.gen(function* ensureRoleGen() {
-        const data = yield* documentStore.get('orgs', orgSlug, 'users', userId).pipe(
+        const data = yield* documentStore.get(['orgs', orgSlug, 'users', userId]).pipe(
           Effect.mapError((error) => {
             if (error instanceof NotFoundError) {
               return new AuthzError({ message: 'Not authorized org user' })

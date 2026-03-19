@@ -44,7 +44,7 @@ describe('FirebaseAdminDocumentStoreLayer', () => {
 
       const program = Effect.gen(function* program() {
         const store = yield* DocumentStore
-        return yield* store.get('orgs', 'test-org')
+        return yield* store.get(['orgs', 'test-org'])
       }).pipe(
         Effect.provide(FirebaseAdminDocumentStoreLayer),
         Effect.provide(FirebaseAdmin.Default)
@@ -74,7 +74,7 @@ describe('FirebaseAdminDocumentStoreLayer', () => {
 
       const program = Effect.gen(function* program() {
         const store = yield* DocumentStore
-        return yield* store.get('orgs', 'missing-org')
+        return yield* store.get(['orgs', 'missing-org'])
       }).pipe(
         Effect.provide(FirebaseAdminDocumentStoreLayer),
         Effect.provide(FirebaseAdmin.Default)
@@ -116,7 +116,7 @@ describe('FirebaseAdminDocumentStoreLayer', () => {
 
       const program = Effect.gen(function* program() {
         const store = yield* DocumentStore
-        return yield* store.get('orgs', 'test-org', 'users', 'user-123')
+        return yield* store.get(['orgs', 'test-org', 'users', 'user-123'])
       }).pipe(
         Effect.provide(FirebaseAdminDocumentStoreLayer),
         Effect.provide(FirebaseAdmin.Default)
@@ -145,7 +145,7 @@ describe('FirebaseAdminDocumentStoreLayer', () => {
 
       const program = Effect.gen(function* program() {
         const store = yield* DocumentStore
-        return yield* store.get('orgs', 'test-org')
+        return yield* store.get(['orgs', 'test-org'])
       }).pipe(
         Effect.provide(FirebaseAdminDocumentStoreLayer),
         Effect.provide(FirebaseAdmin.Default)
@@ -185,7 +185,7 @@ describe('FirebaseAdminDocumentStoreLayer', () => {
 
       const program = Effect.gen(function* program() {
         const store = yield* DocumentStore
-        const stream = store.subscribeTo('orgs', 'test-org')
+        const stream = store.subscribeTo(['orgs', 'test-org'])
 
         // Take first element from stream
         const first = yield* Stream.runHead(stream)
@@ -234,7 +234,7 @@ describe('FirebaseAdminDocumentStoreLayer', () => {
 
       const program = Effect.gen(function* program() {
         const store = yield* DocumentStore
-        const stream = store.subscribeTo('orgs', 'missing-org')
+        const stream = store.subscribeTo(['orgs', 'missing-org'])
 
         // Take first element from stream
         const first = yield* Stream.runHead(stream)
@@ -277,7 +277,7 @@ describe('FirebaseAdminDocumentStoreLayer', () => {
 
       const program = Effect.gen(function* program() {
         const store = yield* DocumentStore
-        return yield* store.get('orgs', 'test-org')
+        return yield* store.get(['orgs', 'test-org'])
       }).pipe(
         Effect.provide(FirebaseAdminDocumentStoreLayer),
         Effect.provide(FirebaseAdmin.Default)
@@ -314,7 +314,7 @@ describe('FirebaseAdminDocumentStoreLayer', () => {
 
       const program = Effect.gen(function* program() {
         const store = yield* DocumentStore
-        return yield* store.get('orgs', 'test-org', 'users', 'user-123')
+        return yield* store.get(['orgs', 'test-org', 'users', 'user-123'])
       }).pipe(
         Effect.provide(FirebaseAdminDocumentStoreLayer),
         Effect.provide(FirebaseAdmin.Default)
@@ -348,7 +348,7 @@ describe('FirebaseAdminDocumentStoreLayer', () => {
 
       const program = Effect.gen(function* program() {
         const store = yield* DocumentStore
-        return yield* store.get('orgs', 'my-org-slug')
+        return yield* store.get(['orgs', 'my-org-slug'])
       }).pipe(
         Effect.provide(FirebaseAdminDocumentStoreLayer),
         Effect.provide(FirebaseAdmin.Default)

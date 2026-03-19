@@ -63,7 +63,7 @@ export const LoadedOrgLayer = Layer.effect(
     const orgSlug = yield* CurrentOrg
     const documentStore = yield* DocumentStore
 
-    const data = yield* documentStore.get('orgs', orgSlug).pipe(
+    const data = yield* documentStore.get(['orgs', orgSlug]).pipe(
       Effect.mapError((e) => {
         if (e instanceof NotFoundError) {
           return new NotFoundError<'Org', { orgSlug: OrgSlug }>({

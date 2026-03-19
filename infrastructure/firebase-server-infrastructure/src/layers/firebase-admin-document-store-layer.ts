@@ -29,23 +29,13 @@ const resourceType = (path: DocumentPath): string =>
     return `${acc}/*`
   }, '')
 
-const resolvePath = (...args: readonly [DocumentPath] | readonly string[]): DocumentPath => {
-  if (args.length === 1) {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing tuple union to single-element case
-    return (args as readonly [DocumentPath])[0]
-  }
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- rest args satisfy DocumentPath constraints at call sites
-  return args as unknown as DocumentPath
-}
-
 export const FirebaseAdminDocumentStoreLayer = Layer.effect(
   DocumentStore,
   Effect.gen(function* FirebaseAdminDocumentStoreLayer() {
     const { firestore: db } = yield* FirebaseAdmin
 
-    const get: typeof DocumentStore.Service.get = (...args) =>
+    const get: typeof DocumentStore.Service.get = (path) =>
       Effect.gen(function* () {
-        const path = resolvePath(...args)
         const docSnapshot = yield* Effect.tryPromise({
           catch: (cause) =>
             new UnhandledError({
@@ -67,8 +57,7 @@ export const FirebaseAdminDocumentStoreLayer = Layer.effect(
         return data
       })
 
-    const subscribeTo: typeof DocumentStore.Service.subscribeTo = (...args) => {
-      const path = resolvePath(...args)
+    const subscribeTo: typeof DocumentStore.Service.subscribeTo = (path) => {
       return unsubscribableCallbackAsStream<
         Either.Either<DocumentData, NotFoundError<'Document', { path: readonly string[] }>>,
         never
@@ -93,8 +82,7 @@ export const FirebaseAdminDocumentStoreLayer = Layer.effect(
       )
     }
 
-    const set: typeof DocumentStore.Service.set = (data, ...args) => {
-      const path = resolvePath(...args)
+    const set: typeof DocumentStore.Service.set = (data, path) => {
       return Effect.tryPromise({
         catch: (cause) =>
           new UnhandledError({
@@ -105,8 +93,7 @@ export const FirebaseAdminDocumentStoreLayer = Layer.effect(
       }).pipe(Effect.asVoid)
     }
 
-    const update: typeof DocumentStore.Service.update = (data, ...args) => {
-      const path = resolvePath(...args)
+    const update: typeof DocumentStore.Service.update = (data, path) => {
       return Effect.tryPromise({
         catch: (cause) =>
           new UnhandledError({
