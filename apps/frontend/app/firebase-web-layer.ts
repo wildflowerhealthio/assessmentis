@@ -1,6 +1,10 @@
 import { Layer } from 'effect'
 
-import { buildFirebaseBaseUrl, FirebaseWeb } from '@assessmentis/firebase-web-infrastructure'
+import {
+  buildAuthBaseUrl,
+  buildFirestoreBaseUrl,
+  FirebaseWeb,
+} from '@assessmentis/firebase-web-infrastructure'
 
 import { initializeApp } from 'firebase/app'
 import type { FirebaseOptions } from 'firebase/app'
@@ -28,11 +32,14 @@ const db = getFirestore(app, databaseId)
 // Initialize Firebase Authentication and get a reference to the service
 const auth = getAuth(app)
 
-/** Base URL for the Firestore database, used by platform URL helpers. */
-const firebaseBaseUrl = buildFirebaseBaseUrl({
+/** Base URL for Firestore documents, used by platform URL helpers. */
+const firestoreBaseUrl = buildFirestoreBaseUrl({
   projectId: firebaseConfig.projectId,
   databaseId,
 })
+
+/** Base URL for Firebase Auth credentials (e.g. proxy tokens). */
+const authBaseUrl = buildAuthBaseUrl(firebaseConfig.projectId)
 
 const FirebaseWebLayer = Layer.succeed(FirebaseWeb, {
   app,
@@ -40,4 +47,4 @@ const FirebaseWebLayer = Layer.succeed(FirebaseWeb, {
   firestore: db,
 })
 
-export { app, auth, db, firebaseBaseUrl, FirebaseWebLayer }
+export { app, auth, authBaseUrl, db, firestoreBaseUrl, FirebaseWebLayer }

@@ -1,6 +1,6 @@
 import { Effect } from 'effect'
 
-import { buildFirebaseBaseUrl } from '@assessmentis/firebase-domain'
+import { buildAuthBaseUrl, buildFirestoreBaseUrl } from '@assessmentis/firebase-domain'
 import type { FirebaseUrlConfig } from '@assessmentis/firebase-domain'
 
 import { getApp, initializeApp } from 'firebase-admin/app'
@@ -17,8 +17,11 @@ const firebaseConfig = {
   storageBucket: 'assessmentis.firebasestorage.app',
 } satisfies FirebaseUrlConfig & { storageBucket: string }
 
-/** Base URL for the Firestore database, used by platform URL helpers. */
-const firebaseBaseUrl = buildFirebaseBaseUrl(firebaseConfig)
+/** Base URL for Firestore documents, used by platform URL helpers. */
+const firestoreBaseUrl = buildFirestoreBaseUrl(firebaseConfig)
+
+/** Base URL for Firebase Auth credentials (e.g. proxy tokens). */
+const authBaseUrl = buildAuthBaseUrl(firebaseConfig.projectId)
 
 class FirebaseAdmin extends Effect.Service<FirebaseAdmin>()('FirebaseAdmin', {
   dependencies: [],
@@ -48,4 +51,4 @@ class FirebaseAdmin extends Effect.Service<FirebaseAdmin>()('FirebaseAdmin', {
   }),
 }) {}
 
-export { firebaseBaseUrl, firebaseConfig, FirebaseAdmin }
+export { authBaseUrl, firebaseConfig, firestoreBaseUrl, FirebaseAdmin }

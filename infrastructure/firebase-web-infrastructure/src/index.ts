@@ -3,4 +3,8 @@ export * from './firestore-effects'
 export * from './firestore'
 export * from './tagClasses'
 export * from './utility'
-export { buildFirebaseBaseUrl, type FirebaseUrlConfig } from '@assessmentis/firebase-domain'
+export {
+  buildAuthBaseUrl,
+  buildFirestoreBaseUrl,
+  type FirebaseUrlConfig,
+} from '@assessmentis/firebase-domain'

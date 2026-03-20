@@ -10,25 +10,40 @@ interface FirebaseUrlConfig {
 }
 
 /**
- * Builds the base {@link ReadonlyUrl} for a Firestore database.
+ * Builds the Firestore document root URL for a Firebase project.
  *
  * @param config - Firebase project and database identifiers
  * @returns A `firebase://{projectId}/firestore/{databaseId}` ReadonlyUrl
  *
  * @remarks
- * The URL scheme uses `firebase:` as the protocol and the project ID as the
- * host, followed by `/firestore/{databaseId}` as the pathname prefix. This
- * mirrors where data is physically stored and supports
- * `ReadonlyUrl.hasChild()` for Hub origin routing.
- *
+ * This is the base URL for all Firestore documents (orgs, users, user-orgs).
  * Platform-domain URL helpers append document paths (e.g. `orgs/{slug}`)
- * to this base URL to form fully-qualified resource URLs.
+ * to form fully-qualified resource URLs. Supports `ReadonlyUrl.hasChild()`
+ * for Hub origin routing.
  */
-const buildFirebaseBaseUrl = (config: FirebaseUrlConfig): ReadonlyUrl =>
+const buildFirestoreBaseUrl = (config: FirebaseUrlConfig): ReadonlyUrl =>
   ReadonlyUrl.make({
     protocol: 'firebase:',
     host: config.projectId,
     pathname: `/firestore/${config.databaseId}`,
   })
 
-export { type FirebaseUrlConfig, buildFirebaseBaseUrl }
+/**
+ * Builds the Firebase Auth root URL for a Firebase project.
+ *
+ * @param projectId - The Firebase project identifier
+ * @returns A `firebase://{projectId}/auth/currentUser` ReadonlyUrl
+ *
+ * @remarks
+ * This is the base URL for per-user auth credentials (e.g. proxy tokens).
+ * It represents a different storage root than Firestore — credentials come
+ * from Firebase Auth, not from document collections.
+ */
+const buildAuthBaseUrl = (projectId: string): ReadonlyUrl =>
+  ReadonlyUrl.make({
+    protocol: 'firebase:',
+    host: projectId,
+    pathname: '/auth/currentUser',
+  })
+
+export { type FirebaseUrlConfig, buildAuthBaseUrl, buildFirestoreBaseUrl }
