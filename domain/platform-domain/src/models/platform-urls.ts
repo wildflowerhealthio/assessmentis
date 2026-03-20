@@ -105,7 +105,7 @@ abstract class PlatformRoutes {
   abstract readonly documentBaseUrl: ReadonlyUrl
 
   /** Base URL for auth credentials (e.g. proxy tokens). */
-  abstract readonly authBaseUrl: ReadonlyUrl
+  abstract readonly currentUserUrl: ReadonlyUrl
 
   /** Builds a branded {@link OrgUrl} for an org document. */
   orgUrl(slug: OrgSlug): OrgUrl {

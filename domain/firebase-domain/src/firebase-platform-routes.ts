@@ -24,12 +24,12 @@ import type { FirebaseUrlConfig } from './firebase-url'
  */
 class FirebasePlatformRoutes extends PlatformRoutes {
   readonly documentBaseUrl: ReadonlyUrl
-  readonly authBaseUrl: ReadonlyUrl
+  readonly currentUserUrl: ReadonlyUrl
 
   constructor(config: FirebaseUrlConfig) {
     super()
     this.documentBaseUrl = buildFirestoreBaseUrl(config)
-    this.authBaseUrl = buildAuthBaseUrl(config.projectId)
+    this.currentUserUrl = buildAuthBaseUrl(config.projectId)
   }
 }
 

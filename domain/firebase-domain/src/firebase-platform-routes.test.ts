@@ -17,10 +17,10 @@ describe('FirebasePlatformRoutes', () => {
     expect(routes.documentBaseUrl.pathname).toBe('/firestore/my-db')
   })
 
-  test('authBaseUrl uses firebase:// scheme with auth path', () => {
-    expect(routes.authBaseUrl.protocol).toBe('firebase:')
-    expect(routes.authBaseUrl.host).toBe('my-project')
-    expect(routes.authBaseUrl.pathname).toBe('/auth/currentUser')
+  test('currentUserUrl uses firebase:// scheme with auth path', () => {
+    expect(routes.currentUserUrl.protocol).toBe('firebase:')
+    expect(routes.currentUserUrl.host).toBe('my-project')
+    expect(routes.currentUserUrl.pathname).toBe('/auth/currentUser')
   })
 
   test('orgUrl produces correct firebase URL', () => {
@@ -44,7 +44,7 @@ describe('FirebasePlatformRoutes', () => {
   })
 
   test('document and auth base URLs are not children of each other', () => {
-    expect(routes.documentBaseUrl.hasChild(routes.authBaseUrl)).toBe(false)
-    expect(routes.authBaseUrl.hasChild(routes.documentBaseUrl)).toBe(false)
+    expect(routes.documentBaseUrl.hasChild(routes.currentUserUrl)).toBe(false)
+    expect(routes.currentUserUrl.hasChild(routes.documentBaseUrl)).toBe(false)
   })
 })

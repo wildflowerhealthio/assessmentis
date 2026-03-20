@@ -14,7 +14,7 @@ class TestPlatformRoutes extends PlatformRoutes {
     host: 'store.example.com',
     pathname: '/v1/main',
   })
-  readonly authBaseUrl = ReadonlyUrl.make({
+  readonly currentUserUrl = ReadonlyUrl.make({
     protocol: 'https:',
     host: 'store.example.com',
     pathname: '/auth/currentUser',
@@ -102,7 +102,7 @@ describe('PlatformRoutes', () => {
           host: 'other.example.com',
           pathname: '/wrong/prefix',
         })
-        readonly authBaseUrl = ReadonlyUrl.make({
+        readonly currentUserUrl = ReadonlyUrl.make({
           protocol: 'https:',
           host: 'other.example.com',
           pathname: '/auth',
@@ -138,7 +138,7 @@ describe('PlatformRoutes', () => {
 
     test('document URL is not a child of the auth base URL', () => {
       const url = routes.orgUrl(OrgSlug.make('acme'))
-      expect(routes.authBaseUrl.hasChild(url)).toBe(false)
+      expect(routes.currentUserUrl.hasChild(url)).toBe(false)
     })
   })
 
