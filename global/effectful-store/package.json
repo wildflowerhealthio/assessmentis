@@ -6,7 +6,8 @@
   "author": "Ruth Marks",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./test": "./src/test.ts"
   },
   "scripts": {
     "lint": "oxlint ./src/",

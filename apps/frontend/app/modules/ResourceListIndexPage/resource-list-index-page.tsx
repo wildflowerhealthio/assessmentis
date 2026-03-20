@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import type { ComponentType } from 'react'
 
-import type { ClinicalDomainClasses, RepositoryFilters } from '@assessmentis/clinical-domain'
+import type { ClinicalDomainClasses } from '@assessmentis/clinical-domain'
+import type { Search } from '@assessmentis/effectful-store'
 
 import { useResourceCollection } from '../../layers/use-resource-collection'
 import type { BreadcrumbLabelConstructor } from '../../traits/BreadcrumbLabel/breadcrumb-label'
@@ -47,13 +48,13 @@ const emptyFilters = {}
 export function ResourceListIndexPage<K extends ResourceListIndexPageKlass>(props: {
   klass: K
   FilterComponent?: ComponentType<{
-    onFiltersChange: (params: RepositoryFilters<InstanceType<K>>) => void
+    onFiltersChange: (params: Search.QueryFor<K>) => void
   }>
 }): React.JSX.Element {
   const { klass, FilterComponent } = props
   const { singularLabel, pluralLabel } = klass.Labeled
 
-  const [filters, setFilters] = useState<RepositoryFilters<InstanceType<K>>>(emptyFilters)
+  const [filters, setFilters] = useState<Search.QueryFor<K>>(emptyFilters)
 
   const { collectionPromise, deleteItem } = useResourceCollection(klass, filters)
 

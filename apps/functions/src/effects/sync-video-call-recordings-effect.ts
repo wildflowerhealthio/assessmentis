@@ -4,7 +4,7 @@ import { info, error as logError } from 'firebase-functions/logger'
 
 import { ClinicalDomainHub, Encounter, Media } from '@assessmentis/clinical-domain'
 import { Reference } from '@assessmentis/clinical-domain/data-types'
-import { Resource } from '@assessmentis/effectful-store'
+import { Resource, Search } from '@assessmentis/effectful-store'
 import { FirebaseAdmin } from '@assessmentis/firebase-server-infrastructure'
 import { DataIntegrityError, NotFoundError, UnhandledError } from '@assessmentis/ontology'
 import type { AuthError, ExternalAssertionError } from '@assessmentis/ontology'
@@ -179,7 +179,7 @@ const syncMediaToFhir = (
     }
 
     // Search for Encounter with matching location identifier
-    const encounterSearchResult = yield* hub.search(Encounter, {}).pipe(
+    const encounterSearchResult = yield* hub.search(Encounter).pipe(
       Effect.mapError(
         (e) =>
           new UnhandledError({
@@ -196,10 +196,13 @@ const syncMediaToFhir = (
     }
 
     // Check if Media with this identifier already exists
+    const decodedMediaUrl = yield* Schema.decode(Media.UrlSchema)(mediaUrl).pipe(
+      Effect.mapError((cause) => new UnhandledError({ cause, message: 'Invalid media URL' }))
+    )
     const mediaSearchResult = yield* hub
       .search(Media, {
-        encounter: encounterEntry.url.toString(),
-        url: mediaUrl,
+        encounter: Search.Condition.Exactly(encounterEntry.url),
+        url: Search.Condition.Exactly(decodedMediaUrl),
       })
       .pipe(
         Effect.mapError(

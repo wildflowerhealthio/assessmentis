@@ -1,5 +1,6 @@
 import { Schema } from 'effect'
 
+import type { Search } from '@assessmentis/effectful-store'
 import {
   AnnotateArrayWithArbitrary,
   TimelessDateFromString,
@@ -69,5 +70,7 @@ export interface PractitionerEncoded
 export class Practitioner extends PractitionerResource.extend<Practitioner>(DomainType)(fields) {
   static readonly DomainType = PractitionerResource.DomainType
   static readonly UrlSchema = PractitionerResource.UrlSchema
+  /** No search parameters configured for this resource. */
+  static readonly SearchSchema = {} as const satisfies Search.Schema
   readonly cloneWith = makeCloneWith(Practitioner, this)
 }

@@ -1,8 +1,9 @@
 import { Effect, Predicate } from 'effect'
 import type { JSX } from 'react'
 
-import { ClinicalDomainHub, Observation } from '@assessmentis/clinical-domain'
+import { ClinicalDomainHub, Observation, Patient } from '@assessmentis/clinical-domain'
 import type { Reference } from '@assessmentis/clinical-domain/data-types'
+import { Search } from '@assessmentis/effectful-store'
 import { gad7 } from '@assessmentis/questionnaire-entities'
 
 import { NotFoundError } from '@assessmentis/ontology'
@@ -22,9 +23,11 @@ export const gad7Report = (
     const hub = yield* ClinicalDomainHub
     const title = <TitleComponent title="GAD-7 Report" />
 
+    const patientUrl = yield* patientReference.asResourceUrl(Patient)
+
     const observations = yield* hub.search(Observation, {
-      subject: patientReference.reference,
-    } as const)
+      subject: Search.Condition.Exactly(patientUrl),
+    })
 
     const gad7Observations = gad7.questionnaire.item
       ?.map((item) =>

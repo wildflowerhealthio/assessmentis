@@ -10,22 +10,23 @@ import type {
 
 import type { ReadonlyUrl } from './readonly-url'
 import type * as Resource from './resource'
+import type * as SearchModule from './search/index'
 
 /** Union of the five CRUD operation names supported by the store. */
-export type RequestName = 'Get' | 'Search' | 'Create' | 'Update' | 'Delete'
+type RequestName = 'Get' | 'Search' | 'Create' | 'Update' | 'Delete'
 
 /**
  * Error types common to all resource requests — authentication, authorization,
  * external assertion failures, and unhandled errors.
  */
-export type CommonErrors = UnhandledError | AuthError | AuthzError | ExternalAssertionError
+type CommonErrors = UnhandledError | AuthError | AuthzError | ExternalAssertionError
 
 /**
  * Request to fetch a single resource by URL from a specific origin.
  *
  * @typeParam Klass - The domain class whose instances are being fetched
  */
-export interface Get<out Klass extends Resource.AnyDomainClass> extends Request.Request<
+interface Get<out Klass extends Resource.AnyDomainClass> extends Request.Request<
   Resource.WithResourceUrl<InstanceType<Klass>>,
   | CommonErrors
   | NotFoundError<Klass['DomainType'], { url: Resource.InferResourceUrl<InstanceType<Klass>> }>
@@ -37,29 +38,19 @@ export interface Get<out Klass extends Resource.AnyDomainClass> extends Request.
 }
 
 /**
- * Key-value filter parameters for a {@link Search} request. Each key
- * corresponds to a resource field, with values as strings or string arrays.
- *
- * @typeParam T - The resource type whose fields form the parameter keys
- */
-export type SearchParam<out T extends Resource.AnyResource> = {
-  readonly [K in keyof T]?: string | readonly string[]
-}
-
-/**
  * Request to search for resources matching filter parameters. When `origin`
  * is `null`, the Hub fans the search out to all origins that support the
  * resource type.
  *
  * @typeParam Klass - The domain class whose instances are being searched
  */
-export interface Search<out Klass extends Resource.AnyDomainClass> extends Request.Request<
+interface Search<out Klass extends Resource.AnyDomainClass> extends Request.Request<
   readonly Resource.WithResourceUrl<InstanceType<Klass>>[],
   CommonErrors
 > {
   readonly _tag: 'Search'
   readonly klass: Klass
-  readonly params: SearchParam<InstanceType<Klass>>
+  readonly params: SearchModule.QueryFor<Klass>
   readonly origin: ReadonlyUrl | null
 }
 
@@ -68,7 +59,7 @@ export interface Search<out Klass extends Resource.AnyDomainClass> extends Reque
  *
  * @typeParam Klass - The domain class whose instances are being created
  */
-export interface Create<out Klass extends Resource.AnyDomainClass> extends Request.Request<
+interface Create<out Klass extends Resource.AnyDomainClass> extends Request.Request<
   Resource.WithResourceUrl<InstanceType<Klass>>,
   CommonErrors
 > {
@@ -85,7 +76,7 @@ export interface Create<out Klass extends Resource.AnyDomainClass> extends Reque
  *
  * @typeParam Klass - The domain class whose instances are being updated
  */
-export interface Update<out Klass extends Resource.AnyDomainClass> extends Request.Request<
+interface Update<out Klass extends Resource.AnyDomainClass> extends Request.Request<
   Resource.WithResourceUrl<InstanceType<Klass>>,
   | CommonErrors
   | NotFoundError<Klass['DomainType'], { url: Resource.InferResourceUrl<InstanceType<Klass>> }>
@@ -101,7 +92,7 @@ export interface Update<out Klass extends Resource.AnyDomainClass> extends Reque
  *
  * @typeParam Klass - The domain class whose instances are being deleted
  */
-export interface Delete<out Klass extends Resource.AnyDomainClass> extends Request.Request<
+interface Delete<out Klass extends Resource.AnyDomainClass> extends Request.Request<
   null,
   | CommonErrors
   | NotFoundError<Klass['DomainType'], { url: Resource.InferResourceUrl<InstanceType<Klass>> }>
@@ -121,7 +112,7 @@ export interface Delete<out Klass extends Resource.AnyDomainClass> extends Reque
  * @typeParam SupportedClasses - The domain classes this resolver handles
  * @typeParam Dep - Effect dependencies required by the resolver
  */
-export interface MultiResolver<
+interface MultiResolver<
   in SupportedClasses extends Resource.AnyDomainClass,
   out Dep,
 > extends RequestResolver.RequestResolver<
@@ -132,3 +123,5 @@ export interface MultiResolver<
   | Delete<SupportedClasses>,
   Dep
 > {}
+
+export type { RequestName, CommonErrors, Get, Search, Create, Update, Delete, MultiResolver }

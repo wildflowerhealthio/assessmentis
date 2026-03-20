@@ -1,6 +1,7 @@
 import { Schema, pipe } from 'effect'
 import type { Arbitrary, FastCheck } from 'effect'
 
+import type { Search } from '@assessmentis/effectful-store'
 import { AnnotateArrayWithArbitrary } from '@assessmentis/util'
 
 import { Period } from '../../data-types'
@@ -111,4 +112,6 @@ export class DiagnosticReport extends DiagnosticReportResource.extend<Diagnostic
 ) {
   static readonly DomainType = DiagnosticReportResource.DomainType
   static readonly UrlSchema = DiagnosticReportResource.UrlSchema
+  /** No search parameters configured for this resource. */
+  static readonly SearchSchema = {} as const satisfies Search.Schema
 }

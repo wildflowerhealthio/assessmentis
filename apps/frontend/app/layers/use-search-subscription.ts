@@ -2,12 +2,9 @@ import type { Either, Stream } from 'effect'
 import { useMemo } from 'react'
 
 import type { ClinicalDomainClasses } from '@assessmentis/clinical-domain'
-import type { Resource, ResourceRequest } from '@assessmentis/effectful-store'
+import type { Resource, ResourceRequest, Search } from '@assessmentis/effectful-store'
 
 import { useHub } from './use-hub'
-
-/** Loose filter record that both RepositoryFilters and SearchParam satisfy. */
-type SearchFilters = Partial<Record<string, string | readonly string[] | undefined>>
 
 /**
  * Hook for subscribing to a collection of resources via search filters.
@@ -16,14 +13,14 @@ type SearchFilters = Partial<Record<string, string | readonly string[] | undefin
  * subscribes to search results that update reactively when the Hub state changes.
  *
  * @param ResourceSchema - The resource Schema class (e.g., Patient, Encounter)
- * @param filters - Optional search filters to narrow results
+ * @param filters - Optional search query to narrow results
  * @returns Stream of Either\<Resource[], Error\> that updates when matching resources change
  *
  * @remarks
  * The `filters` parameter is included in the `useMemo` dependency array by
  * reference. If you pass an inline object literal (e.g.
- * `useSearchSubscription(Patient, { name: 'Smith' })`), a new object is
- * created every render, which defeats memoization and causes a
+ * `useSearchSubscription(Patient, { name: Search.Condition.Exactly('Smith') })`),
+ * a new object is created every render, which defeats memoization and causes a
  * re-subscription on every render cycle.
  *
  * Always pass a **stable reference** for `filters` — for example via
@@ -34,7 +31,7 @@ type SearchFilters = Partial<Record<string, string | readonly string[] | undefin
  * import { Patient } from '@assessmentis/clinical-domain'
  *
  * function PatientList() {
- *   const stream = useSearchSubscription(Patient, { name: 'Smith' })
+ *   const stream = useSearchSubscription(Patient)
  *   const patientsPromise = useEitherStream(stream)
  *   // ...
  * }
@@ -42,7 +39,7 @@ type SearchFilters = Partial<Record<string, string | readonly string[] | undefin
  */
 export function useSearchSubscription<K extends ClinicalDomainClasses>(
   ResourceSchema: K,
-  filters?: SearchFilters
+  filters?: Search.QueryFor<K>
 ): Stream.Stream<
   Either.Either<readonly Resource.WithResourceUrl<InstanceType<K>>[], ResourceRequest.CommonErrors>,
   never,
@@ -50,12 +47,5 @@ export function useSearchSubscription<K extends ClinicalDomainClasses>(
 > {
   const hub = useHub()
 
-  return useMemo(
-    () =>
-      hub.subscribeSearch(
-        ResourceSchema,
-        filters satisfies ResourceRequest.SearchParam<InstanceType<K>> | undefined
-      ),
-    [hub, ResourceSchema, filters]
-  )
+  return useMemo(() => hub.subscribeSearch(ResourceSchema, filters), [hub, ResourceSchema, filters])
 }

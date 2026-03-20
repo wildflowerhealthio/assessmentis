@@ -23,7 +23,7 @@ import {
 } from '@assessmentis/clinical-domain'
 import type { ClinicalDomainClasses } from '@assessmentis/clinical-domain'
 import type { Origin, ReadonlyUrl, ResourceRequest } from '@assessmentis/effectful-store'
-import { Resource } from '@assessmentis/effectful-store'
+import { Resource, Search as SearchDSL } from '@assessmentis/effectful-store'
 import { FhirR4Client } from '@assessmentis/fhir-r4'
 import { ExternalAssertionError, NotFoundError, UnhandledError } from '@assessmentis/ontology'
 import type { AuthError, AuthzError } from '@assessmentis/ontology'
@@ -41,12 +41,12 @@ import { FhirR4Practitioner } from './resources/Practitioner'
 import { FhirR4Questionnaire } from './resources/Questionnaire'
 import { FhirR4QuestionnaireResponse } from './resources/QuestionnaireResponse'
 
-export const fhirProtocols = {
+const fhirProtocols = {
   http: 'fhir-r4+http:',
   https: 'fhir-r4+https:',
 } as const
 
-export type FhirR4Protocol = (typeof fhirProtocols)[keyof typeof fhirProtocols]
+type FhirR4Protocol = (typeof fhirProtocols)[keyof typeof fhirProtocols]
 
 /** Union of all FHIR R4 domain class constructors supported by this origin. */
 type SupportedClasses = ClinicalDomainClasses & {
@@ -167,7 +167,7 @@ const resolverForResource = <Klass extends SupportedClasses>(request: {
     klass: request.klass,
   })
 
-export const makeFhirR4ReadyOrigin = ({
+const makeFhirR4ReadyOrigin = ({
   client,
   originUrl,
   provokeReauthenticate,
@@ -311,11 +311,27 @@ const makeResolverSet = <Klass extends SupportedClasses>({
     })
   )
 
+  const serializeValue = (v: unknown): string => (typeof v === 'string' ? v : String(v))
+
+  const serializeConditions = (
+    params: SearchDSL.QueryFor<SupportedClasses>
+  ): Record<string, string | readonly string[]> => {
+    const flat: Record<string, string | readonly string[]> = {}
+    for (const [key, condition] of Object.entries(params)) {
+      if (condition === undefined) continue
+      flat[key] = SearchDSL.Condition.match(condition, {
+        Exactly: ({ value }) => serializeValue(value),
+        AnyOf: ({ values }) => values.map(serializeValue),
+      })
+    }
+    return flat
+  }
+
   const Search = RequestResolver.fromEffect((request: ResourceRequest.Search<SupportedClasses>) =>
     Effect.flatMap(FhirR4Client, (client) =>
       client
         .search({
-          ...request.params,
+          ...serializeConditions(request.params),
           domainType: request.klass.DomainType,
         })
         .pipe(Effect.flatMap(bundleDecoder))
@@ -427,3 +443,6 @@ const makeResolverSet = <Klass extends SupportedClasses>({
     }
   })
 }
+
+export { fhirProtocols, makeFhirR4ReadyOrigin }
+export type { FhirR4Protocol }

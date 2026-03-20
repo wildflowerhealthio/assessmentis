@@ -1,7 +1,8 @@
-import { Effect, Either, Stream } from 'effect'
+import { Effect, Either, Schema, Stream } from 'effect'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { Media, Patient } from '@assessmentis/clinical-domain'
+import { Encounter, Media, Patient } from '@assessmentis/clinical-domain'
+import { Search } from '@assessmentis/effectful-store'
 
 import { renderHook } from '@testing-library/react'
 
@@ -42,10 +43,11 @@ describe('useSearchSubscription', () => {
     const mockHub = createMockHub({ subscribeSearch: subscribeSearchFn })
     vi.mocked(usePlatformContext).mockReturnValue(createMockPlatformContext({ hub: mockHub }))
 
-    const filters = { name: 'Smith' }
-    renderHook(() => useSearchSubscription(Patient, filters))
+    const encounterUrl = Schema.decodeSync(Encounter.UrlSchema)('http://fhir.test/Encounter/456')
+    const filters = { encounter: Search.Condition.Exactly(encounterUrl) }
+    renderHook(() => useSearchSubscription(Media, filters))
 
-    expect(subscribeSearchFn).toHaveBeenCalledWith(Patient, filters)
+    expect(subscribeSearchFn).toHaveBeenCalledWith(Media, filters)
   })
 
   it('returns the stream from hub.subscribeSearch', () => {
@@ -70,8 +72,9 @@ describe('useSearchSubscription', () => {
     const mockHub = createMockHub({ subscribeSearch: subscribeSearchFn })
     vi.mocked(usePlatformContext).mockReturnValue(createMockPlatformContext({ hub: mockHub }))
 
-    const filters = { name: 'Smith' }
-    const { rerender } = renderHook(() => useSearchSubscription(Patient, filters))
+    const encounterUrl = Schema.decodeSync(Encounter.UrlSchema)('http://fhir.test/Encounter/789')
+    const filters = { encounter: Search.Condition.Exactly(encounterUrl) }
+    const { rerender } = renderHook(() => useSearchSubscription(Media, filters))
 
     rerender()
     rerender()
@@ -84,7 +87,8 @@ describe('useSearchSubscription', () => {
     const mockHub = createMockHub({ subscribeSearch: subscribeSearchFn })
     vi.mocked(usePlatformContext).mockReturnValue(createMockPlatformContext({ hub: mockHub }))
 
-    const filters = { encounter: 'Encounter/123' }
+    const encounterUrl = Schema.decodeSync(Encounter.UrlSchema)('http://fhir.test/Encounter/123')
+    const filters = { encounter: Search.Condition.Exactly(encounterUrl) }
     renderHook(() => useSearchSubscription(Media, filters))
 
     expect(subscribeSearchFn).toHaveBeenCalledWith(Media, filters)

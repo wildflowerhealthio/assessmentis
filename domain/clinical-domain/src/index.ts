@@ -25,5 +25,4 @@ export type {
   ClinicalDomainClasses,
 } from './resource-data-types'
 export { toSupportedClasses } from './resource-data-types'
-export * from './types'
 export { ClinicalDomainHub } from './clinical-domain-hub'

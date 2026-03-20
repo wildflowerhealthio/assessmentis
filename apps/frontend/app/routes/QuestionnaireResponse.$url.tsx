@@ -4,12 +4,15 @@ import { Await, useNavigate } from 'react-router'
 
 import {
   ClinicalDomainHub,
+  Encounter,
   Media,
   Observation,
   Questionnaire,
   QuestionnaireResponse,
 } from '@assessmentis/clinical-domain'
 import type { QuestionnaireItemLink } from '@assessmentis/clinical-domain'
+import type { Resource } from '@assessmentis/effectful-store'
+import { Search } from '@assessmentis/effectful-store'
 import { UnhandledError } from '@assessmentis/ontology'
 import { gad7 } from '@assessmentis/questionnaire-entities'
 import { useEffectTs } from '@assessmentis/react-util'
@@ -55,16 +58,25 @@ export default function QuestionnaireResponseDetailsPage({
         questionnaireResponseUrl
       )
 
-      const questionnaireUrl = questionnaireResponse.questionnaire
-      const encounterUrl = questionnaireResponse.encounter?.reference ?? undefined
+      type EncounterUrl = typeof Encounter.UrlSchema.Type
+      const encounterUrl = yield* Option.fromNullable(questionnaireResponse.encounter).pipe(
+        Option.map((ref) => ref.asResourceUrl(Encounter).pipe(Effect.option)),
+        Option.getOrElse(() => Effect.succeed(Option.none<EncounterUrl>()))
+      )
 
-      const questionnaire = questionnaireUrl
-        ? yield* clinicalHub.get(Questionnaire, questionnaireUrl)
-        : undefined
-
-      const observations = yield* clinicalHub.search(Observation, {
-        encounter: encounterUrl,
-      })
+      const [questionnaire, observations] = yield* Effect.all([
+        questionnaireResponse.questionnaire
+          ? clinicalHub.get(Questionnaire, questionnaireResponse.questionnaire)
+          : Effect.succeed(undefined),
+        encounterUrl.pipe(
+          Option.map((url) =>
+            clinicalHub.search(Observation, {
+              encounter: Search.Condition.Exactly(url),
+            })
+          ),
+          Option.getOrElse(() => Effect.succeed([] as readonly Observation[]))
+        ),
+      ])
 
       return {
         encounterUrl,
@@ -107,7 +119,7 @@ const ResponsePage = ({
 }: {
   questionnaire: Questionnaire
   questionnaireResponse: QuestionnaireResponse
-  encounterUrl: string | undefined
+  encounterUrl: Option.Option<Resource.InferResourceUrl<Encounter>>
   observations: readonly Observation[]
 }): React.JSX.Element => {
   const navigate = useNavigate()
@@ -124,7 +136,10 @@ const ResponsePage = ({
   )
 
   const mediaFilters = useMemo(
-    () => (encounterUrl ? { encounter: encounterUrl } : undefined),
+    () =>
+      Option.isSome(encounterUrl)
+        ? { encounter: Search.Condition.Exactly(encounterUrl.value) }
+        : undefined,
     [encounterUrl]
   )
   const { collectionPromise: mediaPromise, deleteItem: deleteMedia } = useResourceCollection(
@@ -172,6 +187,7 @@ const ResponsePage = ({
           >
             Recordings:
             <button
+              type="button"
               className="element-button button-1"
               style={{
                 display: 'inline-block',
@@ -207,6 +223,7 @@ const ResponsePage = ({
                       Your browser does not support the video tag.
                     </video>
                     <button
+                      type="button"
                       className="element-button button-1 filled accent-red"
                       style={{
                         marginBottom: 'var(--space-5)',
@@ -234,6 +251,7 @@ const ResponsePage = ({
           >
             Observations:
             <button
+              type="button"
               className="element-button button-1"
               style={{
                 display: 'inline-block',

@@ -1,5 +1,6 @@
 import { Schema } from 'effect'
 
+import { Search } from '@assessmentis/effectful-store'
 import { AnnotateArrayWithArbitrary, makeCloneWith } from '@assessmentis/util'
 
 import { Resource } from '../../data-types/base/resource'
@@ -10,6 +11,7 @@ import { CodeableConcept } from '../../data-types/complex/codeable-concept'
 import { Identifier, Reference } from '../../data-types/complex/identifier-and-reference'
 import type { ReferenceEncoded } from '../../data-types/complex/identifier-and-reference'
 import { Period } from '../../data-types/complex/period'
+import { Encounter } from '../Encounter/encounter'
 
 const DomainType = 'Media' as const
 type DomainType = typeof DomainType
@@ -17,7 +19,7 @@ type DomainType = typeof DomainType
 /**
  * The status of the media resource.
  */
-export const MediaStatus = Schema.Enums({
+const MediaStatus = Schema.Enums({
   completed: 'completed',
   'entered-in-error': 'entered-in-error',
   'in-progress': 'in-progress',
@@ -29,7 +31,7 @@ export const MediaStatus = Schema.Enums({
 } as const)
 
 /** Decoded status value for a {@link Media} resource. */
-export type MediaStatus = typeof MediaStatus.Type
+type MediaStatus = typeof MediaStatus.Type
 
 const fields = {
   basedOn: Schema.optional(
@@ -78,15 +80,22 @@ const fields = {
 const MediaResource = Resource(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Media}. */
-export interface MediaEncoded
-  extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<DomainType> {}
+interface MediaEncoded extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<DomainType> {}
 
 /**
  * A photo, video, or audio recording acquired or used in healthcare.
  * The actual content may be inline or provided by direct reference.
  */
-export class Media extends MediaResource.extend<Media>(DomainType)(fields) {
+class Media extends MediaResource.extend<Media>(DomainType)(fields) {
   static readonly DomainType = MediaResource.DomainType
   static readonly UrlSchema = MediaResource.UrlSchema
+  /** Searchable fields for this resource and their allowed condition types. */
+  static readonly SearchSchema = {
+    encounter: Search.field(Encounter.UrlSchema, ['Exactly']),
+    url: Search.field(Media.UrlSchema, ['Exactly']),
+  } as const satisfies Search.Schema
   readonly cloneWith = makeCloneWith(Media, this)
 }
+
+export { MediaStatus, Media }
+export type { MediaEncoded }

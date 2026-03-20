@@ -16,6 +16,7 @@
     "typecheck": "npx tsgo --noEmit"
   },
   "dependencies": {
+    "@assessmentis/effectful-store": "*",
     "@assessmentis/ontology": "*",
     "@assessmentis/util": "*",
     "effect": "^3.19.8",

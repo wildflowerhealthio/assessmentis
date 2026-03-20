@@ -1,6 +1,7 @@
 import { Schema, pipe } from 'effect'
 import type { Arbitrary, FastCheck } from 'effect'
 
+import { Search } from '@assessmentis/effectful-store'
 import { AnnotateArrayWithArbitrary, makeCloneWith } from '@assessmentis/util'
 
 import { Resource } from '../../data-types/base/resource'
@@ -10,6 +11,8 @@ import { CodeableConcept } from '../../data-types/complex/codeable-concept'
 import { Identifier, Reference } from '../../data-types/complex/identifier-and-reference'
 import { DatatypeChoice } from '../../data-types/datatype'
 import FhirR4ChoiceElements from '../../data-types/fhir-r4-choice-elements'
+import { Encounter } from '../Encounter/encounter'
+import { Patient } from '../Patient/patient'
 import { ObservationComponent } from './observation-component'
 import { ObservationReferenceRange } from './observation-reference-range'
 
@@ -19,7 +22,7 @@ type DomainType = typeof DomainType
 /**
  * The status of the result value.
  */
-export const ObservationStatus = Schema.Enums({
+const ObservationStatus = Schema.Enums({
   amended: 'amended',
   cancelled: 'cancelled',
   corrected: 'corrected',
@@ -31,7 +34,7 @@ export const ObservationStatus = Schema.Enums({
 } as const)
 
 /** Decoded status value for an {@link Observation}. */
-export type ObservationStatus = typeof ObservationStatus.Type
+type ObservationStatus = typeof ObservationStatus.Type
 
 // --- Observation ---
 
@@ -111,14 +114,22 @@ const fields = {
 const ObservationResource = Resource(DomainType)
 
 /** Encoded (wire-format) shape of an {@link Observation}. */
-export interface ObservationEncoded
+interface ObservationEncoded
   extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<DomainType> {}
 
 /**
  * Measurements and simple assertions made about a patient, device or other subject.
  */
-export class Observation extends ObservationResource.extend<Observation>(DomainType)(fields) {
+class Observation extends ObservationResource.extend<Observation>(DomainType)(fields) {
   static readonly DomainType = ObservationResource.DomainType
   static readonly UrlSchema = ObservationResource.UrlSchema
+  /** Searchable fields for this resource and their allowed condition types. */
+  static readonly SearchSchema = {
+    encounter: Search.field(Encounter.UrlSchema, ['Exactly', 'AnyOf']),
+    subject: Search.field(Patient.UrlSchema, ['Exactly']),
+  } as const satisfies Search.Schema
   readonly cloneWith = makeCloneWith(Observation, this)
 }
+
+export { ObservationStatus, Observation }
+export type { ObservationEncoded }

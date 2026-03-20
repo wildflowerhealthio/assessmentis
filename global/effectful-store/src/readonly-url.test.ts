@@ -1,11 +1,9 @@
-import { Arbitrary, Either, Schema } from 'effect'
+import { Either, Schema } from 'effect'
 import * as fc from 'fast-check'
 import { describe, expect, test } from 'vitest'
 
 import { ReadonlyUrl, UriEncodedOriginUrl } from './readonly-url'
-
-const readonlyUrlArb = Arbitrary.make(ReadonlyUrl)
-const wellFormedUrlArb = Arbitrary.make(ReadonlyUrl.FromString)
+import { readonlyUrlArb, wellFormedUrlArb } from './readonly-url.arbitrary'
 
 describe('ReadonlyUrl', () => {
   describe('base schema', () => {

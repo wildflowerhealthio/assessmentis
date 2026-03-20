@@ -1,5 +1,6 @@
 import { Schema } from 'effect'
 
+import type { Search } from '@assessmentis/effectful-store'
 import { AnnotateArrayWithArbitrary } from '@assessmentis/util'
 
 import { Resource } from '../../data-types/base/resource'
@@ -65,4 +66,6 @@ export interface QuestionnaireEncoded
 export class Questionnaire extends QuestionnaireResource.extend<Questionnaire>(DomainType)(fields) {
   static readonly DomainType = QuestionnaireResource.DomainType
   static readonly UrlSchema = QuestionnaireResource.UrlSchema
+  /** No search parameters configured for this resource. */
+  static readonly SearchSchema = {} as const satisfies Search.Schema
 }

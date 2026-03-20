@@ -14,8 +14,9 @@ import {
   Questionnaire,
   QuestionnaireResponse,
 } from '@assessmentis/clinical-domain'
-import { ReadonlyUrl } from '@assessmentis/effectful-store'
+import { ReadonlyUrl, Search } from '@assessmentis/effectful-store'
 import type { ResourceRequest } from '@assessmentis/effectful-store'
+import { stringConditionArb } from '@assessmentis/effectful-store/test'
 import { NotFoundError } from '@assessmentis/ontology'
 
 import { makeFhirR4ReadyOrigin } from './fhir-r4-origin'
@@ -32,10 +33,10 @@ const originUrl = ReadonlyUrl.make({
 /** Arbitrary FHIR-style id (alphanumeric + hyphens) */
 const fhirIdArb = fc.stringMatching(/^[a-zA-Z0-9][a-zA-Z0-9-]{0,63}$/).filter((s) => s.length > 0)
 
-/** Arbitrary search params: 0–3 key/value pairs */
+/** Arbitrary search params: 0–3 key/value pairs with SearchCondition values */
 const searchParamsArb = fc.dictionary(
   fc.stringMatching(/^[a-z][a-zA-Z]{0,9}$/),
-  fc.string({ maxLength: 20, minLength: 1 }),
+  stringConditionArb,
   { maxKeys: 3, minKeys: 0 }
 )
 
@@ -79,7 +80,7 @@ const makeGetRequest = (id: string) =>
     url: Patient.UrlSchema.make(originUrl.appendToPathname(`/Patient/${id}`)),
   })
 
-const makeSearchRequest = (params: Record<string, string | undefined> = {}) =>
+const makeSearchRequest = (params: Search.QueryFor<typeof Patient> = {}) =>
   Request.of<ResourceRequest.Search<typeof Patient>>()({
     _tag: 'Search',
     klass: Patient,
@@ -162,8 +163,16 @@ describe('FhirR4Origin', () => {
               Effect.request(makeSearchRequest(params), origin.resolver)
             )
 
+            // Verify params were serialized correctly
+            const expectedFlat: Record<string, string | readonly string[]> = {}
+            for (const [key, condition] of Object.entries(params)) {
+              expectedFlat[key] = Search.Condition.match(condition, {
+                Exactly: ({ value }) => String(value),
+                AnyOf: ({ values }) => values.map(String),
+              })
+            }
             expect(searchFn).toHaveBeenCalledWith(
-              expect.objectContaining({ domainType: 'Patient', ...params })
+              expect.objectContaining({ domainType: 'Patient', ...expectedFlat })
             )
             expect(results).toHaveLength(ids.length)
             for (const r of results) {

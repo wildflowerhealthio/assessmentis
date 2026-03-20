@@ -4,6 +4,7 @@ import type { RequestResolver } from 'effect'
 import type { ReadonlyUrl } from '../readonly-url'
 import type * as Resource from '../resource'
 import type * as ResourceRequest from '../resource-request'
+import type * as Search from '../search/index'
 
 import { whenOriginChanges } from './change-detection'
 import { resolveOriginForCreate, resolveOriginFromUrl } from './origin-resolution'
@@ -34,10 +35,7 @@ export const makeRepository = <Classes extends Resource.AnyDomainClass>(
       )
     )
   },
-  search<Klass extends Classes>(
-    klass: Klass,
-    params?: ResourceRequest.SearchParam<InstanceType<Klass>>
-  ) {
+  search<Klass extends Classes>(klass: Klass, params?: Search.QueryFor<Klass>) {
     return Effect.request(
       EffectRequest.of<ResourceRequest.Search<Klass>>()({
         _tag: 'Search',
@@ -126,10 +124,7 @@ export const makeRepository = <Classes extends Resource.AnyDomainClass>(
     )
   },
 
-  subscribeSearch<Klass extends Classes>(
-    klass: Klass,
-    params?: ResourceRequest.SearchParam<InstanceType<Klass>>
-  ) {
+  subscribeSearch<Klass extends Classes>(klass: Klass, params?: Search.QueryFor<Klass>) {
     return pipe(
       whenOriginChanges(stateRef.changes, klass, null),
       Stream.mapEffect(() => Effect.either(this.search(klass, params)))

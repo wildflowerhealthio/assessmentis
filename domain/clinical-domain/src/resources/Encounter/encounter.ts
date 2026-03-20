@@ -1,5 +1,6 @@
 import { Schema } from 'effect'
 
+import { Search } from '@assessmentis/effectful-store'
 import { AnnotateArrayWithArbitrary, makeCloneWith } from '@assessmentis/util'
 
 import { Resource } from '../../data-types/base/resource'
@@ -9,6 +10,7 @@ import { Coding } from '../../data-types/complex/coding'
 import { Identifier, Reference } from '../../data-types/complex/identifier-and-reference'
 import { Period } from '../../data-types/complex/period'
 import { Quantity } from '../../data-types/complex/quantity'
+import { Patient } from '../Patient/patient'
 import { EncounterClassHistory } from './encounter-class-history'
 import { EncounterDiagnosis } from './encounter-diagnosis'
 import { EncounterHospitalization } from './encounter-hospitalization'
@@ -92,5 +94,9 @@ export interface EncounterEncoded
 export class Encounter extends EncounterResource.extend<Encounter>(DomainType)(fields) {
   static readonly DomainType = EncounterResource.DomainType
   static readonly UrlSchema = EncounterResource.UrlSchema
+  /** Searchable fields for this resource and their allowed condition types. */
+  static readonly SearchSchema = {
+    patient: Search.field(Patient.UrlSchema, ['Exactly']),
+  } as const satisfies Search.Schema
   readonly cloneWith = makeCloneWith(Encounter, this)
 }
