@@ -54,8 +54,8 @@ describe('SearchCondition', () => {
 
   describe('AnyOf', () => {
     const anyOfValuesArb = fc
-      .array(conditionValueArb, { minLength: 2, maxLength: 5 })
-      .map((vs) => vs as [unknown, unknown, ...unknown[]])
+      .tuple(conditionValueArb, conditionValueArb, fc.array(conditionValueArb, { maxLength: 3 }))
+      .map(([a, b, rest]) => [a, b, ...rest] as const)
 
     test('property: match round-trips the values', () => {
       fc.assert(

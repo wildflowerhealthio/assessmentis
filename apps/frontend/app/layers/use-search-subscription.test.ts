@@ -43,10 +43,11 @@ describe('useSearchSubscription', () => {
     const mockHub = createMockHub({ subscribeSearch: subscribeSearchFn })
     vi.mocked(usePlatformContext).mockReturnValue(createMockPlatformContext({ hub: mockHub }))
 
-    const filters = { name: 'Smith' }
-    renderHook(() => useSearchSubscription(Patient, filters))
+    const encounterUrl = Schema.decodeSync(Encounter.UrlSchema)('http://fhir.test/Encounter/456')
+    const filters = { encounter: Search.Condition.Exactly(encounterUrl) }
+    renderHook(() => useSearchSubscription(Media, filters))
 
-    expect(subscribeSearchFn).toHaveBeenCalledWith(Patient, filters)
+    expect(subscribeSearchFn).toHaveBeenCalledWith(Media, filters)
   })
 
   it('returns the stream from hub.subscribeSearch', () => {
@@ -71,8 +72,9 @@ describe('useSearchSubscription', () => {
     const mockHub = createMockHub({ subscribeSearch: subscribeSearchFn })
     vi.mocked(usePlatformContext).mockReturnValue(createMockPlatformContext({ hub: mockHub }))
 
-    const filters = { name: 'Smith' }
-    const { rerender } = renderHook(() => useSearchSubscription(Patient, filters))
+    const encounterUrl = Schema.decodeSync(Encounter.UrlSchema)('http://fhir.test/Encounter/789')
+    const filters = { encounter: Search.Condition.Exactly(encounterUrl) }
+    const { rerender } = renderHook(() => useSearchSubscription(Media, filters))
 
     rerender()
     rerender()

@@ -123,6 +123,7 @@ interface ObservationEncoded
 class Observation extends ObservationResource.extend<Observation>(DomainType)(fields) {
   static readonly DomainType = ObservationResource.DomainType
   static readonly UrlSchema = ObservationResource.UrlSchema
+  /** Searchable fields for this resource and their allowed condition types. */
   static readonly SearchSchema = {
     encounter: Search.field(Encounter.UrlSchema, ['Exactly', 'AnyOf']),
     subject: Search.field(Patient.UrlSchema, ['Exactly']),

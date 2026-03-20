@@ -1,4 +1,4 @@
-import { Option, Schema } from 'effect'
+import { Array as EffectArray, Option, Schema } from 'effect'
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router'
 
@@ -12,23 +12,32 @@ const decodeEncounterUrl = Schema.decodeOption(Encounter.UrlSchema)
 
 type EncounterUrl = typeof Encounter.UrlSchema.Type
 
+/**
+ * Parses a comma-separated URL string into a typed search {@link Search.Condition.Condition}.
+ * Returns `Exactly` for a single valid URL, `AnyOf` for multiple, or `None` if
+ * the input is empty or contains no decodable encounter URLs.
+ */
 const buildEncounterCondition = (
   encounterUrlParam: string | null
 ): Option.Option<Search.Condition.Condition<EncounterUrl>> => {
   if (!encounterUrlParam) return Option.none()
   const urlStrings = encounterUrlParam.split(',').map((s) => s.trim())
   const decodedUrls = urlStrings.flatMap((s) => Option.toArray(decodeEncounterUrl(s)))
-  if (decodedUrls.length === 0) return Option.none()
-  const [first, second, ...rest] = decodedUrls
-  if (first !== undefined && second !== undefined) {
-    return Option.some(Search.Condition.AnyOf([first, second, ...rest]))
-  }
-  if (first !== undefined) {
-    return Option.some(Search.Condition.Exactly(first))
-  }
-  return Option.none()
+  // oxlint-disable-next-line unicorn/no-array-callback-reference -- false positive: matchLeft handlers are not iterator callbacks
+  return EffectArray.matchLeft(decodedUrls, {
+    onEmpty: () => Option.none(),
+    onNonEmpty: (first, rest) =>
+      rest.length > 0
+        ? Option.some(Search.Condition.AnyOf([first, rest[0], ...rest.slice(1)]))
+        : Option.some(Search.Condition.Exactly(first)),
+  })
 }
 
+/**
+ * Bridges URL search params (`patientUrl`, `encounterUrl`) to typed
+ * {@link Search.Condition.Condition} filters for Observation queries.
+ * Reads from and writes to the browser URL via `useSearchParams`.
+ */
 export function ObservationFiltersBridge({
   onFiltersChange: handleFiltersChange,
 }: {
@@ -40,7 +49,8 @@ export function ObservationFiltersBridge({
 
   useEffect(() => {
     const patientCondition = patientUrlParam
-      ? Option.map(decodePatientUrl(patientUrlParam), Search.Condition.Exactly)
+      ? // oxlint-disable-next-line unicorn/no-array-callback-reference -- false positive: Option.map is not an iterator method
+        Option.map(decodePatientUrl(patientUrlParam), Search.Condition.Exactly)
       : Option.none()
 
     const encounterCondition = buildEncounterCondition(encounterUrlParam)

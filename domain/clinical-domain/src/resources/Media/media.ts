@@ -89,6 +89,7 @@ interface MediaEncoded extends Schema.Struct.Encoded<typeof fields>, ResourceEnc
 class Media extends MediaResource.extend<Media>(DomainType)(fields) {
   static readonly DomainType = MediaResource.DomainType
   static readonly UrlSchema = MediaResource.UrlSchema
+  /** Searchable fields for this resource and their allowed condition types. */
   static readonly SearchSchema = {
     encounter: Search.field(Encounter.UrlSchema, ['Exactly']),
     url: Search.field(Media.UrlSchema, ['Exactly']),

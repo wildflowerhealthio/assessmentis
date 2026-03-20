@@ -10,11 +10,10 @@ import type { Condition } from './condition'
  * @typeParam Tags - Tuple of allowed condition tag literals
  */
 type Field<V, Tags extends readonly Condition<V>['_tag'][]> = {
+  // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- encoded type is irrelevant for field descriptors
   readonly schema: EffectSchema.Schema<V, any>
   readonly conditions: Tags
 }
-
-// type AnyField = Field<any, readonly Condition<any>['_tag'][]>
 
 /**
  * Creates a field descriptor pairing a value Schema with allowed condition tags.
@@ -28,6 +27,7 @@ type Field<V, Tags extends readonly Condition<V>['_tag'][]> = {
  * ```
  */
 const field = <V, const Tags extends readonly Condition<V>['_tag'][]>(
+  // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- encoded type is irrelevant for field descriptors
   schema: EffectSchema.Schema<V, any>,
   conditions: Tags
 ): Field<V, Tags> => ({ schema, conditions })

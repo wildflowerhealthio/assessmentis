@@ -68,6 +68,7 @@ export class QuestionnaireResponse extends QuestionnaireResponseResource.extend<
 }) {
   static readonly DomainType = QuestionnaireResponseResource.DomainType
   static readonly UrlSchema = QuestionnaireResponseResource.UrlSchema
+  /** Searchable fields for this resource and their allowed condition types. */
   static readonly SearchSchema = {
     encounter: Search.field(Encounter.UrlSchema, ['Exactly']),
   } as const satisfies Search.Schema

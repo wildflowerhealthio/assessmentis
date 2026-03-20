@@ -279,6 +279,7 @@ const arbitraryPermanentErrorOrigin = ({
           supportedResources: {
             TestResource: TestResource,
             OtherResource: OtherResource,
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test stub: error origin doesn't need real supportedResources
           } as any,
           resolver: undefined,
           errorStatus: error,

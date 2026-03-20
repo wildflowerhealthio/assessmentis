@@ -94,6 +94,7 @@ export interface EncounterEncoded
 export class Encounter extends EncounterResource.extend<Encounter>(DomainType)(fields) {
   static readonly DomainType = EncounterResource.DomainType
   static readonly UrlSchema = EncounterResource.UrlSchema
+  /** Searchable fields for this resource and their allowed condition types. */
   static readonly SearchSchema = {
     patient: Search.field(Patient.UrlSchema, ['Exactly']),
   } as const satisfies Search.Schema
