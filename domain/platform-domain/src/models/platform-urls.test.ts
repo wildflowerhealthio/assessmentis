@@ -28,9 +28,7 @@ const routes = new TestPlatformRoutes()
 // decodeURIComponent() round-trip. '/' is excluded (breaks path segments).
 // Leading/trailing whitespace is trimmed because new URL() strips it per
 // the WHATWG URL standard — that's a URL-level constraint, not ours.
-const idChar = fc.constantFrom(
-  ...'abcdefghijklmnopqrstuvwxyz0123456789-_.+@! '.split('')
-)
+const idChar = fc.constantFrom(...'abcdefghijklmnopqrstuvwxyz0123456789-_.+@! '.split(''))
 const slugArb = fc
   .array(idChar, { minLength: 3, maxLength: 10 })
   .map((chars) => OrgSlug.make(chars.join('').trim()))
