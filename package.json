@@ -37,7 +37,7 @@
     "codegen": "npm exec turbo run codegen",
     "dev": "npm exec turbo run dev",
     "docs": "typedoc",
-    "format": "npm exec oxfmt --write ./apps ./domain ./global ./infrastructure",
+    "format": "npm exec oxfmt -- --write ./apps ./domain ./global ./infrastructure",
     "lint": "npm run lint:projects && npm run lint:docs && npm run lint:comments",
     "lint:comments": "eslint ./apps ./domain ./global ./infrastructure",
     "lint:docs": "npm exec markdownlint-cli2 -- --config .local.markdownlint-cli2.mjs",
