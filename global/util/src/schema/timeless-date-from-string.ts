@@ -42,7 +42,7 @@ export const TimelessDateFromString = Schema.String.pipe(
         .filter((date) => date.getFullYear() >= 1900 && date.getFullYear() <= 2100)
         .map((date) => date.toISOString().slice(0, 10)),
   }),
-  Schema.brand('TimelessDate'),
+  Schema.brand('TimelessDate')
 )
 
 /** The branded type for a validated `YYYY-MM-DD` date string. */

@@ -3,13 +3,17 @@ import type { Effect, Scope } from 'effect'
 import React, { Suspense, useMemo } from 'react'
 import { Await } from 'react-router'
 
-import { AuthError, DataIntegrityError, NotFoundError, UnhandledError } from '@assessmentis/ontology'
+import {
+  AuthError,
+  DataIntegrityError,
+  NotFoundError,
+  UnhandledError,
+} from '@assessmentis/ontology'
 import { NoSelectedOrgError } from '@assessmentis/platform-domain'
 import type { Org, OrgSlug, User, UserId } from '@assessmentis/platform-domain'
-import { useStream } from '@assessmentis/react-util'
+import { useStream, cn } from '@assessmentis/react-util'
 import { StreamEither } from '@assessmentis/util'
 
-import { cn } from '../../../../../../../global/react-util/src/functions'
 import { signIn } from '../../../../firebase'
 import { OrgPicker } from '../../../../layers/org-picker'
 import { HeaderBreadcrumbs } from './header-breadcrumbs'
@@ -55,7 +59,6 @@ const NavHeaderContainer = ({
       never,
       Scope.Scope
     > = activeOrgStream.pipe(
-      // oxlint-disable-next-line unicorn/no-array-callback-reference -- false positive: Stream.map is not an array method
       Stream.map((either) =>
         Either.match(either, {
           onLeft(left) {
@@ -79,7 +82,6 @@ const NavHeaderContainer = ({
         setActiveOrgSlug={setActiveOrgSlug}
       />
     )).pipe(
-      // oxlint-disable-next-line unicorn/no-array-callback-reference -- false positive: Stream.map is not an array method
       Stream.map((either) =>
         Either.match(either, {
           onLeft: (error) => {
@@ -141,19 +143,25 @@ export const TextHeader = (props: {
   title: React.ReactNode
   onClick?: () => void
 }): React.JSX.Element => {
-  const title = props.onClick ? (
-    <button
-      onClick={props.onClick}
-      className={cn('element-button', 'button-1', 'ghost', 'text-alt-heading-3')}
-    >
-      {' '}
-      {props.title}
-    </button>
-  ) : (
-    <span className="text-alt-heading-3" style={{ color: 'var(--neutral-1)' }}>
-      {props.title}
-    </span>
-  )
+  let title: React.JSX.Element
+  if (props.onClick) {
+    title = (
+      <button
+        onClick={props.onClick}
+        className={cn('element-button', 'button-1', 'ghost', 'text-alt-heading-3')}
+        type="button"
+      >
+        {' '}
+        {props.title}
+      </button>
+    )
+  } else {
+    title = (
+      <span className="text-alt-heading-3" style={{ color: 'var(--neutral-1)' }}>
+        {props.title}
+      </span>
+    )
+  }
 
   return (
     <header className={classes.NavHeader}>

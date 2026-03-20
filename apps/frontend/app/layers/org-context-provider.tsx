@@ -20,21 +20,34 @@ export const OrgContextProvider: React.FC<React.PropsWithChildren> = ({ children
   const stream = useMemo(
     () =>
       orgService.activeOrgStream.pipe(
-        StreamEither.mapLeft((e) =>
-          e instanceof NotFoundError || e instanceof UnhandledError || e instanceof DataIntegrityError
-            ? e.asUnhandledError()
-            : e
-        ),
+        StreamEither.mapLeft((e) => {
+          if (
+            e instanceof NotFoundError ||
+            e instanceof UnhandledError ||
+            e instanceof DataIntegrityError
+          ) {
+            return e.asUnhandledError()
+          }
+          return e
+        }),
         StreamEither.mapEffect((org) =>
           userService.user.pipe(
-            Effect.mapError((e) =>
-              e instanceof DataIntegrityError || e instanceof NotFoundError ? e.asUnhandledError() : e
-            ),
-            Effect.flatMap((user) =>
-              org !== null && org !== undefined && Object.keys(user.org_roles).includes(org.slug)
-                ? Effect.succeed(org)
-                : Effect.fail(new NoSelectedOrgError())
-            )
+            Effect.mapError((e) => {
+              if (e instanceof DataIntegrityError || e instanceof NotFoundError) {
+                return e.asUnhandledError()
+              }
+              return e
+            }),
+            Effect.flatMap((user) => {
+              if (
+                org !== null &&
+                org !== undefined &&
+                Object.keys(user.org_roles).includes(org.slug)
+              ) {
+                return Effect.succeed(org)
+              }
+              return Effect.fail(new NoSelectedOrgError())
+            })
           )
         )
       ),
