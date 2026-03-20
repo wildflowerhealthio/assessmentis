@@ -1,4 +1,4 @@
-import { Array as EffectArray, Option, Schema } from 'effect'
+import { Array as EffectArray, Match, Option, Predicate, Schema } from 'effect'
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router'
 
@@ -23,14 +23,21 @@ const buildEncounterCondition = (
   if (!encounterUrlParam) return Option.none()
   const urlStrings = encounterUrlParam.split(',').map((s) => s.trim())
   const decodedUrls = urlStrings.flatMap((s) => Option.toArray(decodeEncounterUrl(s)))
-  // oxlint-disable-next-line unicorn/no-array-callback-reference -- false positive: matchLeft handlers are not iterator callbacks
-  return EffectArray.matchLeft(decodedUrls, {
-    onEmpty: () => Option.none(),
-    onNonEmpty: (first, rest) =>
-      rest.length > 0
-        ? Option.some(Search.Condition.AnyOf([first, rest[0], ...rest.slice(1)]))
-        : Option.some(Search.Condition.Exactly(first)),
-  })
+
+  return Match.value<EncounterUrl[]>(decodedUrls).pipe(
+    Match.withReturnType<Option.Option<Search.Condition.Condition<EncounterUrl>>>(),
+    Match.when(
+      (arr: EncounterUrl[]) => Predicate.isTupleOfAtLeast(2)(arr),
+      // oxlint-disable-next-line unicorn/no-array-callback-reference
+      (urls) => Option.some(Search.Condition.AnyOf(urls))
+    ),
+    Match.when(
+      (arr: EncounterUrl[]) => Predicate.isTupleOf(1)(arr),
+      // oxlint-disable-next-line unicorn/no-array-callback-reference
+      ([url]) => Option.some(Search.Condition.Exactly(url))
+    ),
+    Match.orElse(() => Option.none())
+  )
 }
 
 /**
