@@ -35,7 +35,7 @@ export class Org extends Schema.Class<Org>('Org')({
   domainType: Schema.optionalWith(Schema.Literal('Org'), {
     default: () => 'Org' as const,
   }),
-  /** Firebase URL identifying this org's location in the store. */
+  /** Branded URL identifying this org's location in the store. Set by the resolver. */
   url: Schema.optional(OrgUrlSchema),
   /** URL-safe unique identifier for the org (e.g. `"acme"`). Used in paths and URLs. */
   slug: OrgSlug,

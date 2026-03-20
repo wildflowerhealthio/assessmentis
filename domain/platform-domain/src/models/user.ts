@@ -23,7 +23,7 @@ export class User extends Schema.Class<User>('User')({
   domainType: Schema.optionalWith(Schema.Literal('User'), {
     default: () => 'User' as const,
   }),
-  /** Firebase URL identifying this user's location in the store. */
+  /** Branded URL identifying this user's location in the store. Set by the resolver. */
   url: Schema.optional(UserUrlSchema),
   /** Slug of the most recently selected org, for session restoration. */
   lastOrg: Schema.optional(Schema.String),
@@ -32,7 +32,7 @@ export class User extends Schema.Class<User>('User')({
     key: OrgSlug,
     value: Schema.Array(Role),
   }),
-  /** Firebase UID identifying the authenticated user. */
+  /** Unique identifier for the authenticated user. */
   uid: UserId,
 }) {
   static readonly DomainType = 'User' as const

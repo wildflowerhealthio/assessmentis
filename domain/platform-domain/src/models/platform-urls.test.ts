@@ -14,13 +14,13 @@ import {
   userOrgUrl,
   userUrl,
 } from './platform-urls'
-import type { FirebaseUrlConfig } from './platform-urls'
 import { UserId } from './user-id'
 
-const config: FirebaseUrlConfig = {
-  projectId: 'my-project',
-  databaseId: 'my-db',
-}
+const baseUrl = ReadonlyUrl.make({
+  protocol: 'https:',
+  host: 'store.example.com',
+  pathname: '/v1/main',
+})
 
 // URL-safe arbitraries — slugs and user IDs must survive URL round-trips
 const urlSafeChar = fc.constantFrom(...'abcdefghijklmnopqrstuvwxyz0123456789-_'.split(''))
@@ -33,19 +33,19 @@ const userIdArb = fc
 
 describe('platform-urls', () => {
   describe('orgUrl', () => {
-    test('produces a firebase:// URL with correct structure', () => {
+    test('appends org document path to base URL', () => {
       const slug = OrgSlug.make('acme')
-      const url = orgUrl(config, slug)
-      expect(url.protocol).toBe('firebase:')
-      expect(url.host).toBe('my-project')
-      expect(url.pathname).toContain('/firestore/my-db/orgs/acme')
+      const url = orgUrl(baseUrl, slug)
+      expect(url.protocol).toBe('https:')
+      expect(url.host).toBe('store.example.com')
+      expect(url.pathname).toContain('/v1/main/orgs/acme')
     })
 
     test('property: round-trip orgUrl → orgSlugFromUrl', () => {
       fc.assert(
         fc.property(slugArb, (slug) => {
-          const url = orgUrl(config, slug)
-          const extracted = orgSlugFromUrl(url)
+          const url = orgUrl(baseUrl, slug)
+          const extracted = orgSlugFromUrl(baseUrl, url)
           expect(extracted).toBe(slug)
         })
       )
@@ -53,19 +53,19 @@ describe('platform-urls', () => {
   })
 
   describe('userUrl', () => {
-    test('produces a firebase:// URL with correct structure', () => {
+    test('appends user document path to base URL', () => {
       const uid = UserId.make('user-123')
-      const url = userUrl(config, uid)
-      expect(url.protocol).toBe('firebase:')
-      expect(url.host).toBe('my-project')
-      expect(url.pathname).toContain('/firestore/my-db/users/user-123')
+      const url = userUrl(baseUrl, uid)
+      expect(url.protocol).toBe('https:')
+      expect(url.host).toBe('store.example.com')
+      expect(url.pathname).toContain('/v1/main/users/user-123')
     })
 
     test('property: round-trip userUrl → userIdFromUrl', () => {
       fc.assert(
         fc.property(userIdArb, (uid) => {
-          const url = userUrl(config, uid)
-          const extracted = userIdFromUrl(url)
+          const url = userUrl(baseUrl, uid)
+          const extracted = userIdFromUrl(baseUrl, url)
           expect(extracted).toBe(uid)
         })
       )
@@ -73,62 +73,57 @@ describe('platform-urls', () => {
   })
 
   describe('userOrgUrl', () => {
-    test('produces a firebase:// URL with correct structure', () => {
+    test('appends user-org document path to base URL', () => {
       const uid = UserId.make('user-123')
       const slug = OrgSlug.make('acme')
-      const url = userOrgUrl(config, uid, slug)
-      expect(url.protocol).toBe('firebase:')
-      expect(url.host).toBe('my-project')
-      expect(url.pathname).toContain('/firestore/my-db/users/user-123/orgs/acme')
+      const url = userOrgUrl(baseUrl, uid, slug)
+      expect(url.protocol).toBe('https:')
+      expect(url.host).toBe('store.example.com')
+      expect(url.pathname).toContain('/v1/main/users/user-123/orgs/acme')
     })
 
     test('property: round-trip userOrgUrl → userIdFromUserOrgUrl + orgSlugFromUserOrgUrl', () => {
       fc.assert(
         fc.property(slugArb, userIdArb, (slug, uid) => {
-          const url = userOrgUrl(config, uid, slug)
-          expect(userIdFromUserOrgUrl(url)).toBe(uid)
-          expect(orgSlugFromUserOrgUrl(url)).toBe(slug)
+          const url = userOrgUrl(baseUrl, uid, slug)
+          expect(userIdFromUserOrgUrl(baseUrl, url)).toBe(uid)
+          expect(orgSlugFromUserOrgUrl(baseUrl, url)).toBe(slug)
         })
       )
     })
   })
 
-  describe('ReadonlyUrl.hasChild with firebase:// URLs', () => {
-    test('org URL is a child of the firestore root', () => {
+  describe('ReadonlyUrl.hasChild', () => {
+    test('org URL is a child of the base URL', () => {
       const slug = OrgSlug.make('acme')
-      const url = orgUrl(config, slug)
-      const root = ReadonlyUrl.make({
-        protocol: 'firebase:',
-        host: 'my-project',
-        pathname: '/firestore/my-db',
-      })
-      expect(root.hasChild(url)).toBe(true)
+      const url = orgUrl(baseUrl, slug)
+      expect(baseUrl.hasChild(url)).toBe(true)
     })
 
     test('userOrg URL is a child of the user URL', () => {
       const uid = UserId.make('user-123')
       const slug = OrgSlug.make('acme')
-      const uUrl = userUrl(config, uid)
-      const uoUrl = userOrgUrl(config, uid, slug)
+      const uUrl = userUrl(baseUrl, uid)
+      const uoUrl = userOrgUrl(baseUrl, uid, slug)
       expect(uUrl.hasChild(uoUrl)).toBe(true)
     })
 
     test('org URL is not a child of a user URL', () => {
       const uid = UserId.make('user-123')
       const slug = OrgSlug.make('acme')
-      const uUrl = userUrl(config, uid)
-      const oUrl = orgUrl(config, slug)
+      const uUrl = userUrl(baseUrl, uid)
+      const oUrl = orgUrl(baseUrl, slug)
       expect(uUrl.hasChild(oUrl)).toBe(false)
     })
   })
 
   describe('UrlSchema round-trip', () => {
-    test('Org.UrlSchema decodes and encodes a firebase:// URL string', () => {
+    test('Org.UrlSchema decodes and encodes a URL string', () => {
       const slug = OrgSlug.make('acme')
-      const url = orgUrl(config, slug)
+      const url = orgUrl(baseUrl, slug)
       const urlString = url.toString()
       const decoded = Schema.decodeSync(Org.UrlSchema)(urlString)
-      expect(decoded.protocol).toBe('firebase:')
+      expect(decoded.protocol).toBe('https:')
       expect(decoded.pathname).toContain('orgs/acme')
     })
   })

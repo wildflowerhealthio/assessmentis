@@ -37,7 +37,7 @@ class UserOrg extends Schema.Class<UserOrg>('UserOrg')({
   domainType: Schema.optionalWith(Schema.Literal('UserOrg'), {
     default: () => 'UserOrg' as const,
   }),
-  /** Firebase URL identifying this user-org document's location in the store. */
+  /** Branded URL identifying this user-org document's location in the store. Set by the resolver. */
   url: Schema.optional(UserOrgUrlSchema),
   /** Map from origin URLs to user-specific configuration for each origin. */
   originUserConfigs: Schema.optionalWith(

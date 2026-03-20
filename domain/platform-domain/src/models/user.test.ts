@@ -96,7 +96,7 @@ describe('User', () => {
 
   describe('uid is branded UserId', () => {
     test('decoded uid matches input', () => {
-      const uid = UserId.make('firebase-uid-abc')
+      const uid = UserId.make('uid-abc')
       const result = decode({ org_roles: {}, uid })
       expect(result.uid).toBe(uid)
     })
