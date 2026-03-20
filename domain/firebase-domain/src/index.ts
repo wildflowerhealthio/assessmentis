@@ -5,4 +5,5 @@
  * @packageDocumentation
  */
 
+export * from './firebase-platform-routes'
 export * from './firebase-url'

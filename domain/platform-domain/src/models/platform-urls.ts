@@ -36,12 +36,7 @@ const userPath = (userId: UserId): string => `users/${userId}`
 const userOrgPath = (userId: UserId, slug: OrgSlug): string => `users/${userId}/orgs/${slug}`
 
 // ---------------------------------------------------------------------------
-// URL Builders — base URL + document path → branded URL
-//
-// Builders are pure (not Effects) because they construct from known-valid
-// inputs. URL-unsafe characters in slugs and user IDs are percent-encoded
-// by ReadonlyUrl.toString() via the URL constructor, and decoded back by
-// the parsers via decodeURIComponent — the round-trip is reliable.
+// Internal helpers
 // ---------------------------------------------------------------------------
 
 const decodeOrgUrl = Schema.decodeSync(Org.UrlSchema)
@@ -49,55 +44,11 @@ const decodeUserUrl = Schema.decodeSync(User.UrlSchema)
 const decodeUserOrgUrl = Schema.decodeSync(UserOrg.UrlSchema)
 
 /**
- * Builds a branded {@link OrgUrl} from a base URL and org slug.
- *
- * @param baseUrl - Store base URL (protocol and prefix are infrastructure-provided)
- * @param slug - The org's URL-safe slug
- * @returns A branded `Org/url` ReadonlyUrl
- */
-const orgUrl = (baseUrl: ReadonlyUrl, slug: OrgSlug): OrgUrl =>
-  decodeOrgUrl(baseUrl.appendToPathname(orgPath(slug)).toString())
-
-/**
- * Builds a branded {@link UserUrl} from a base URL and user ID.
- *
- * @param baseUrl - Store base URL (protocol and prefix are infrastructure-provided)
- * @param userId - The authenticated user's identifier
- * @returns A branded `User/url` ReadonlyUrl
- */
-const userUrl = (baseUrl: ReadonlyUrl, userId: UserId): UserUrl =>
-  decodeUserUrl(baseUrl.appendToPathname(userPath(userId)).toString())
-
-/**
- * Builds a branded {@link UserOrgUrl} from a base URL, user ID, and org slug.
- *
- * @param baseUrl - Store base URL (protocol and prefix are infrastructure-provided)
- * @param userId - The authenticated user's identifier
- * @param slug - The org's URL-safe slug
- * @returns A branded `UserOrg/url` ReadonlyUrl
- */
-const userOrgUrl = (baseUrl: ReadonlyUrl, userId: UserId, slug: OrgSlug): UserOrgUrl =>
-  decodeUserOrgUrl(baseUrl.appendToPathname(userOrgPath(userId, slug)).toString())
-
-// ---------------------------------------------------------------------------
-// URL Parsers — branded URL → document path segments
-//
-// Parsers are Effects because the URL may not match the expected base or
-// path structure. They strip the base URL prefix, validate the segment
-// count, and decode URI-encoded values.
-// ---------------------------------------------------------------------------
-
-/**
  * Strips the base URL pathname prefix from a full pathname.
- *
- * @param baseUrl - The expected base URL prefix
- * @param fullPathname - The full pathname to strip
- * @returns The relative path after the base prefix
  *
  * @remarks
  * Fails with {@link DataIntegrityError} if the pathname does not start with
- * the base URL prefix — this indicates the URL was not constructed from the
- * expected base.
+ * the base URL prefix.
  */
 const stripBase = (
   baseUrl: ReadonlyUrl,
@@ -115,10 +66,7 @@ const stripBase = (
   )
 }
 
-/**
- * Validates that a segments array has at least `minLength` elements and
- * extracts the segment at `index`, URI-decoding it.
- */
+/** Extracts and URI-decodes a segment at `index`, failing if it doesn't exist. */
 const segmentAt = (
   segments: readonly string[],
   index: number,
@@ -134,106 +82,123 @@ const segmentAt = (
   )
 }
 
-/**
- * Extracts the org slug from an {@link OrgUrl}.
- *
- * @param baseUrl - The store base URL used to construct the URL
- * @param url - A branded Org URL
- * @returns An Effect yielding the org slug, or {@link DataIntegrityError}
- *
- * @remarks
- * Expects relative path of the form `/orgs/{slug}`.
- */
-const orgSlugFromUrl = (
-  baseUrl: ReadonlyUrl,
-  url: OrgUrl
-): Effect.Effect<OrgSlug, DataIntegrityError> =>
-  Effect.gen(function* () {
-    const relative = yield* stripBase(baseUrl, url.pathname)
-    const segments = relative.split('/')
-    // ['', 'orgs', slug]
-    const slug = yield* segmentAt(segments, 2, 'slug')
-    return OrgSlug.make(slug)
-  })
+// ---------------------------------------------------------------------------
+// PlatformRoutes — abstract base class
+// ---------------------------------------------------------------------------
 
 /**
- * Extracts the user ID from a {@link UserUrl}.
- *
- * @param baseUrl - The store base URL used to construct the URL
- * @param url - A branded User URL
- * @returns An Effect yielding the user ID, or {@link DataIntegrityError}
+ * Abstract routing for platform entities. Provides URL builders and
+ * effectful parsers that operate relative to two base URLs.
  *
  * @remarks
- * Expects relative path of the form `/users/{userId}`.
+ * Subclasses provide the concrete base URLs (e.g. `firebase://` in
+ * {@link @assessmentis/firebase-domain!FirebasePlatformRoutes}). The
+ * methods on this class are infrastructure-agnostic — they only know
+ * the document path structure (`orgs/{slug}`, `users/{uid}`, etc.).
+ *
+ * URL-unsafe characters in slugs and user IDs are percent-encoded by
+ * `ReadonlyUrl.toString()` and decoded back by the parsers via
+ * `decodeURIComponent` — the round-trip is reliable.
  */
-const userIdFromUrl = (
-  baseUrl: ReadonlyUrl,
-  url: UserUrl
-): Effect.Effect<UserId, DataIntegrityError> =>
-  Effect.gen(function* () {
-    const relative = yield* stripBase(baseUrl, url.pathname)
-    const segments = relative.split('/')
-    // ['', 'users', userId]
-    const uid = yield* segmentAt(segments, 2, 'userId')
-    return UserId.make(uid)
-  })
+abstract class PlatformRoutes {
+  /** Base URL for document storage (orgs, users, user-orgs). */
+  abstract readonly documentBaseUrl: ReadonlyUrl
 
-/**
- * Extracts the user ID from a {@link UserOrgUrl}.
- *
- * @param baseUrl - The store base URL used to construct the URL
- * @param url - A branded UserOrg URL
- * @returns An Effect yielding the user ID, or {@link DataIntegrityError}
- *
- * @remarks
- * Expects relative path of the form `/users/{userId}/orgs/{slug}`.
- */
-const userIdFromUserOrgUrl = (
-  baseUrl: ReadonlyUrl,
-  url: UserOrgUrl
-): Effect.Effect<UserId, DataIntegrityError> =>
-  Effect.gen(function* () {
-    const relative = yield* stripBase(baseUrl, url.pathname)
-    const segments = relative.split('/')
-    // ['', 'users', userId, 'orgs', slug]
-    const uid = yield* segmentAt(segments, 2, 'userId')
-    return UserId.make(uid)
-  })
+  /** Base URL for auth credentials (e.g. proxy tokens). */
+  abstract readonly authBaseUrl: ReadonlyUrl
 
-/**
- * Extracts the org slug from a {@link UserOrgUrl}.
- *
- * @param baseUrl - The store base URL used to construct the URL
- * @param url - A branded UserOrg URL
- * @returns An Effect yielding the org slug, or {@link DataIntegrityError}
- *
- * @remarks
- * Expects relative path of the form `/users/{userId}/orgs/{slug}`.
- */
-const orgSlugFromUserOrgUrl = (
-  baseUrl: ReadonlyUrl,
-  url: UserOrgUrl
-): Effect.Effect<OrgSlug, DataIntegrityError> =>
-  Effect.gen(function* () {
-    const relative = yield* stripBase(baseUrl, url.pathname)
-    const segments = relative.split('/')
-    // ['', 'users', userId, 'orgs', slug]
-    const slug = yield* segmentAt(segments, 4, 'slug')
-    return OrgSlug.make(slug)
-  })
+  /** Builds a branded {@link OrgUrl} for an org document. */
+  orgUrl(slug: OrgSlug): OrgUrl {
+    return decodeOrgUrl(this.documentBaseUrl.appendToPathname(orgPath(slug)).toString())
+  }
+
+  /** Builds a branded {@link UserUrl} for a user document. */
+  userUrl(userId: UserId): UserUrl {
+    return decodeUserUrl(this.documentBaseUrl.appendToPathname(userPath(userId)).toString())
+  }
+
+  /** Builds a branded {@link UserOrgUrl} for a user-org subcollection document. */
+  userOrgUrl(userId: UserId, slug: OrgSlug): UserOrgUrl {
+    return decodeUserOrgUrl(
+      this.documentBaseUrl.appendToPathname(userOrgPath(userId, slug)).toString()
+    )
+  }
+
+  /**
+   * Extracts the org slug from an {@link OrgUrl}.
+   *
+   * @remarks
+   * Expects relative path of the form `/orgs/{slug}`.
+   */
+  orgSlugFromUrl(url: OrgUrl): Effect.Effect<OrgSlug, DataIntegrityError> {
+    return Effect.gen(
+      function* (this: PlatformRoutes) {
+        const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
+        const segments = relative.split('/')
+        const slug = yield* segmentAt(segments, 2, 'slug')
+        return OrgSlug.make(slug)
+      }.bind(this)
+    )
+  }
+
+  /**
+   * Extracts the user ID from a {@link UserUrl}.
+   *
+   * @remarks
+   * Expects relative path of the form `/users/{userId}`.
+   */
+  userIdFromUrl(url: UserUrl): Effect.Effect<UserId, DataIntegrityError> {
+    return Effect.gen(
+      function* (this: PlatformRoutes) {
+        const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
+        const segments = relative.split('/')
+        const uid = yield* segmentAt(segments, 2, 'userId')
+        return UserId.make(uid)
+      }.bind(this)
+    )
+  }
+
+  /**
+   * Extracts the user ID from a {@link UserOrgUrl}.
+   *
+   * @remarks
+   * Expects relative path of the form `/users/{userId}/orgs/{slug}`.
+   */
+  userIdFromUserOrgUrl(url: UserOrgUrl): Effect.Effect<UserId, DataIntegrityError> {
+    return Effect.gen(
+      function* (this: PlatformRoutes) {
+        const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
+        const segments = relative.split('/')
+        const uid = yield* segmentAt(segments, 2, 'userId')
+        return UserId.make(uid)
+      }.bind(this)
+    )
+  }
+
+  /**
+   * Extracts the org slug from a {@link UserOrgUrl}.
+   *
+   * @remarks
+   * Expects relative path of the form `/users/{userId}/orgs/{slug}`.
+   */
+  orgSlugFromUserOrgUrl(url: UserOrgUrl): Effect.Effect<OrgSlug, DataIntegrityError> {
+    return Effect.gen(
+      function* (this: PlatformRoutes) {
+        const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
+        const segments = relative.split('/')
+        const slug = yield* segmentAt(segments, 4, 'slug')
+        return OrgSlug.make(slug)
+      }.bind(this)
+    )
+  }
+}
 
 export {
   type OrgUrl,
   type UserOrgUrl,
   type UserUrl,
   orgPath,
-  orgSlugFromUrl,
-  orgSlugFromUserOrgUrl,
-  orgUrl,
-  userIdFromUrl,
-  userIdFromUserOrgUrl,
+  PlatformRoutes,
   userOrgPath,
-  userOrgUrl,
   userPath,
-  userUrl,
 }

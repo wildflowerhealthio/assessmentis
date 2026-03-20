@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@assessmentis/effectful-store": "*",
+    "@assessmentis/platform-domain": "*",
     "effect": "^3.19.9"
   },
   "devDependencies": {
