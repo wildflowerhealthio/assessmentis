@@ -1,4 +1,4 @@
-import { Schema, FastCheck as fc } from 'effect'
+import { Effect, Schema, FastCheck as fc } from 'effect'
 import { describe, expect, test } from 'vitest'
 
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
@@ -45,7 +45,7 @@ describe('platform-urls', () => {
       fc.assert(
         fc.property(slugArb, (slug) => {
           const url = orgUrl(baseUrl, slug)
-          const extracted = orgSlugFromUrl(baseUrl, url)
+          const extracted = Effect.runSync(orgSlugFromUrl(baseUrl, url))
           expect(extracted).toBe(slug)
         })
       )
@@ -65,7 +65,7 @@ describe('platform-urls', () => {
       fc.assert(
         fc.property(userIdArb, (uid) => {
           const url = userUrl(baseUrl, uid)
-          const extracted = userIdFromUrl(baseUrl, url)
+          const extracted = Effect.runSync(userIdFromUrl(baseUrl, url))
           expect(extracted).toBe(uid)
         })
       )
@@ -86,10 +86,36 @@ describe('platform-urls', () => {
       fc.assert(
         fc.property(slugArb, userIdArb, (slug, uid) => {
           const url = userOrgUrl(baseUrl, uid, slug)
-          expect(userIdFromUserOrgUrl(baseUrl, url)).toBe(uid)
-          expect(orgSlugFromUserOrgUrl(baseUrl, url)).toBe(slug)
+          expect(Effect.runSync(userIdFromUserOrgUrl(baseUrl, url))).toBe(uid)
+          expect(Effect.runSync(orgSlugFromUserOrgUrl(baseUrl, url))).toBe(slug)
         })
       )
+    })
+  })
+
+  describe('parsers fail on mismatched base URL', () => {
+    test('orgSlugFromUrl fails when base does not match', () => {
+      const slug = OrgSlug.make('acme')
+      const url = orgUrl(baseUrl, slug)
+      const wrongBase = ReadonlyUrl.make({
+        protocol: 'https:',
+        host: 'other.example.com',
+        pathname: '/wrong/prefix',
+      })
+      const exit = Effect.runSyncExit(orgSlugFromUrl(wrongBase, url))
+      expect(exit._tag).toBe('Failure')
+    })
+
+    test('userIdFromUrl fails when base does not match', () => {
+      const uid = UserId.make('user-123')
+      const url = userUrl(baseUrl, uid)
+      const wrongBase = ReadonlyUrl.make({
+        protocol: 'https:',
+        host: 'other.example.com',
+        pathname: '/wrong/prefix',
+      })
+      const exit = Effect.runSyncExit(userIdFromUrl(wrongBase, url))
+      expect(exit._tag).toBe('Failure')
     })
   })
 

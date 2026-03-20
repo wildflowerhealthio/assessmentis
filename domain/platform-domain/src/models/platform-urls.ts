@@ -1,6 +1,7 @@
-import { Schema } from 'effect'
+import { Effect, Predicate, Schema } from 'effect'
 
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
+import { DataIntegrityError } from '@assessmentis/ontology'
 
 import { OrgSlug } from './id-types'
 import { Org } from './org'
@@ -36,6 +37,11 @@ const userOrgPath = (userId: UserId, slug: OrgSlug): string => `users/${userId}/
 
 // ---------------------------------------------------------------------------
 // URL Builders — base URL + document path → branded URL
+//
+// Builders are pure (not Effects) because they construct from known-valid
+// inputs. URL-unsafe characters in slugs and user IDs are percent-encoded
+// by ReadonlyUrl.toString() via the URL constructor, and decoded back by
+// the parsers via decodeURIComponent — the round-trip is reliable.
 // ---------------------------------------------------------------------------
 
 const decodeOrgUrl = Schema.decodeSync(Org.UrlSchema)
@@ -76,18 +82,56 @@ const userOrgUrl = (baseUrl: ReadonlyUrl, userId: UserId, slug: OrgSlug): UserOr
 // ---------------------------------------------------------------------------
 // URL Parsers — branded URL → document path segments
 //
-// Parsers strip the base URL pathname prefix, then parse the remaining
-// relative path. This keeps them decoupled from infrastructure URL schemes.
+// Parsers are Effects because the URL may not match the expected base or
+// path structure. They strip the base URL prefix, validate the segment
+// count, and decode URI-encoded values.
 // ---------------------------------------------------------------------------
 
-/** Strips the base URL pathname prefix from a full pathname, returning the relative path. */
-const stripBase = (baseUrl: ReadonlyUrl, fullPathname: string): string => {
+/**
+ * Strips the base URL pathname prefix from a full pathname.
+ *
+ * @param baseUrl - The expected base URL prefix
+ * @param fullPathname - The full pathname to strip
+ * @returns The relative path after the base prefix
+ *
+ * @remarks
+ * Fails with {@link DataIntegrityError} if the pathname does not start with
+ * the base URL prefix — this indicates the URL was not constructed from the
+ * expected base.
+ */
+const stripBase = (
+  baseUrl: ReadonlyUrl,
+  fullPathname: string
+): Effect.Effect<string, DataIntegrityError> => {
   const base = baseUrl.pathname.replace(/\/+$/, '')
   const full = fullPathname.replace(/\/+$/, '')
   if (full.startsWith(base)) {
-    return full.slice(base.length)
+    return Effect.succeed(full.slice(base.length))
   }
-  return full
+  return Effect.fail(
+    new DataIntegrityError({
+      message: `URL pathname "${fullPathname}" does not start with base "${baseUrl.pathname}"`,
+    })
+  )
+}
+
+/**
+ * Validates that a segments array has at least `minLength` elements and
+ * extracts the segment at `index`, URI-decoding it.
+ */
+const segmentAt = (
+  segments: readonly string[],
+  index: number,
+  label: string
+): Effect.Effect<string, DataIntegrityError> => {
+  if (Predicate.isString(segments[index])) {
+    return Effect.succeed(decodeURIComponent(segments[index]))
+  }
+  return Effect.fail(
+    new DataIntegrityError({
+      message: `Expected segment at index ${index} (${label}) but path only has ${segments.length} segments`,
+    })
+  )
 }
 
 /**
@@ -95,64 +139,88 @@ const stripBase = (baseUrl: ReadonlyUrl, fullPathname: string): string => {
  *
  * @param baseUrl - The store base URL used to construct the URL
  * @param url - A branded Org URL
- * @returns The org slug extracted from the relative path
+ * @returns An Effect yielding the org slug, or {@link DataIntegrityError}
  *
  * @remarks
  * Expects relative path of the form `/orgs/{slug}`.
  */
-const orgSlugFromUrl = (baseUrl: ReadonlyUrl, url: OrgUrl): OrgSlug => {
-  const segments = stripBase(baseUrl, url.pathname).split('/')
-  // ['', 'orgs', slug]
-  return OrgSlug.make(decodeURIComponent(segments[2]))
-}
+const orgSlugFromUrl = (
+  baseUrl: ReadonlyUrl,
+  url: OrgUrl
+): Effect.Effect<OrgSlug, DataIntegrityError> =>
+  Effect.gen(function* () {
+    const relative = yield* stripBase(baseUrl, url.pathname)
+    const segments = relative.split('/')
+    // ['', 'orgs', slug]
+    const slug = yield* segmentAt(segments, 2, 'slug')
+    return OrgSlug.make(slug)
+  })
 
 /**
  * Extracts the user ID from a {@link UserUrl}.
  *
  * @param baseUrl - The store base URL used to construct the URL
  * @param url - A branded User URL
- * @returns The user ID extracted from the relative path
+ * @returns An Effect yielding the user ID, or {@link DataIntegrityError}
  *
  * @remarks
  * Expects relative path of the form `/users/{userId}`.
  */
-const userIdFromUrl = (baseUrl: ReadonlyUrl, url: UserUrl): UserId => {
-  const segments = stripBase(baseUrl, url.pathname).split('/')
-  // ['', 'users', userId]
-  return UserId.make(decodeURIComponent(segments[2]))
-}
+const userIdFromUrl = (
+  baseUrl: ReadonlyUrl,
+  url: UserUrl
+): Effect.Effect<UserId, DataIntegrityError> =>
+  Effect.gen(function* () {
+    const relative = yield* stripBase(baseUrl, url.pathname)
+    const segments = relative.split('/')
+    // ['', 'users', userId]
+    const uid = yield* segmentAt(segments, 2, 'userId')
+    return UserId.make(uid)
+  })
 
 /**
  * Extracts the user ID from a {@link UserOrgUrl}.
  *
  * @param baseUrl - The store base URL used to construct the URL
  * @param url - A branded UserOrg URL
- * @returns The user ID extracted from the relative path
+ * @returns An Effect yielding the user ID, or {@link DataIntegrityError}
  *
  * @remarks
  * Expects relative path of the form `/users/{userId}/orgs/{slug}`.
  */
-const userIdFromUserOrgUrl = (baseUrl: ReadonlyUrl, url: UserOrgUrl): UserId => {
-  const segments = stripBase(baseUrl, url.pathname).split('/')
-  // ['', 'users', userId, 'orgs', slug]
-  return UserId.make(decodeURIComponent(segments[2]))
-}
+const userIdFromUserOrgUrl = (
+  baseUrl: ReadonlyUrl,
+  url: UserOrgUrl
+): Effect.Effect<UserId, DataIntegrityError> =>
+  Effect.gen(function* () {
+    const relative = yield* stripBase(baseUrl, url.pathname)
+    const segments = relative.split('/')
+    // ['', 'users', userId, 'orgs', slug]
+    const uid = yield* segmentAt(segments, 2, 'userId')
+    return UserId.make(uid)
+  })
 
 /**
  * Extracts the org slug from a {@link UserOrgUrl}.
  *
  * @param baseUrl - The store base URL used to construct the URL
  * @param url - A branded UserOrg URL
- * @returns The org slug extracted from the relative path
+ * @returns An Effect yielding the org slug, or {@link DataIntegrityError}
  *
  * @remarks
  * Expects relative path of the form `/users/{userId}/orgs/{slug}`.
  */
-const orgSlugFromUserOrgUrl = (baseUrl: ReadonlyUrl, url: UserOrgUrl): OrgSlug => {
-  const segments = stripBase(baseUrl, url.pathname).split('/')
-  // ['', 'users', userId, 'orgs', slug]
-  return OrgSlug.make(decodeURIComponent(segments[4]))
-}
+const orgSlugFromUserOrgUrl = (
+  baseUrl: ReadonlyUrl,
+  url: UserOrgUrl
+): Effect.Effect<OrgSlug, DataIntegrityError> =>
+  Effect.gen(function* () {
+    const relative = yield* stripBase(baseUrl, url.pathname)
+    const segments = relative.split('/')
+    // ['', 'users', userId, 'orgs', slug]
+    const slug = yield* segmentAt(segments, 4, 'slug')
+    return OrgSlug.make(slug)
+  })
 
 export {
   type OrgUrl,
