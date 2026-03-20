@@ -1,4 +1,4 @@
-import type { Schema as S } from 'effect'
+import type { Schema as EffectSchema } from 'effect'
 
 import type { Condition } from './condition'
 
@@ -9,15 +9,12 @@ import type { Condition } from './condition'
  * @typeParam V - The value type for this field (e.g. a branded ReadonlyUrl)
  * @typeParam Tags - Tuple of allowed condition tag literals
  */
-// oxlint-disable-next-line @typescript-eslint/no-explicit-any
-type Field<
-  V = any,
-  Tags extends readonly Condition<V>['_tag'][] = readonly Condition<V>['_tag'][],
-> = {
-  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
-  readonly schema: S.Schema<V, any>
+type Field<V, Tags extends readonly Condition<V>['_tag'][]> = {
+  readonly schema: EffectSchema.Schema<V, any>
   readonly conditions: Tags
 }
+
+// type AnyField = Field<any, readonly Condition<any>['_tag'][]>
 
 /**
  * Creates a field descriptor pairing a value Schema with allowed condition tags.
@@ -30,10 +27,8 @@ type Field<
  * } as const satisfies Search.Schema
  * ```
  */
-// oxlint-disable-next-line @typescript-eslint/no-explicit-any
 const field = <V, const Tags extends readonly Condition<V>['_tag'][]>(
-  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
-  schema: S.Schema<V, any>,
+  schema: EffectSchema.Schema<V, any>,
   conditions: Tags
 ): Field<V, Tags> => ({ schema, conditions })
 

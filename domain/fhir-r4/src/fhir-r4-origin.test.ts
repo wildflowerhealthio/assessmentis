@@ -16,6 +16,7 @@ import {
 } from '@assessmentis/clinical-domain'
 import { ReadonlyUrl, Search } from '@assessmentis/effectful-store'
 import type { ResourceRequest } from '@assessmentis/effectful-store'
+import { stringConditionArb } from '@assessmentis/effectful-store/test'
 import { NotFoundError } from '@assessmentis/ontology'
 
 import { makeFhirR4ReadyOrigin } from './fhir-r4-origin'
@@ -31,14 +32,6 @@ const originUrl = ReadonlyUrl.make({
 
 /** Arbitrary FHIR-style id (alphanumeric + hyphens) */
 const fhirIdArb = fc.stringMatching(/^[a-zA-Z0-9][a-zA-Z0-9-]{0,63}$/).filter((s) => s.length > 0)
-
-/** Arbitrary for string-valued search conditions */
-const stringConditionArb: fc.Arbitrary<Search.Condition.Condition<string>> = fc.oneof(
-  fc.string({ maxLength: 20, minLength: 1 }).map(Search.Condition.Exactly),
-  fc
-    .array(fc.string({ maxLength: 20, minLength: 1 }), { minLength: 2, maxLength: 4 })
-    .map((vs) => Search.Condition.AnyOf(vs as [string, string, ...string[]]))
-)
 
 /** Arbitrary search params: 0–3 key/value pairs with SearchCondition values */
 const searchParamsArb = fc.dictionary(

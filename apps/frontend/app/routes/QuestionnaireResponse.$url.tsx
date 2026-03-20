@@ -58,22 +58,25 @@ export default function QuestionnaireResponseDetailsPage({
         questionnaireResponseUrl
       )
 
-      const questionnaireUrl = questionnaireResponse.questionnaire
-      const encounterRef = questionnaireResponse.encounter
+      type EncounterUrl = typeof Encounter.UrlSchema.Type
+      const encounterUrl = yield* Option.fromNullable(questionnaireResponse.encounter).pipe(
+        Option.map((ref) => ref.asResourceUrl(Encounter).pipe(Effect.option)),
+        Option.getOrElse(() => Effect.succeed(Option.none<EncounterUrl>()))
+      )
 
-      const questionnaire = questionnaireUrl
-        ? yield* clinicalHub.get(Questionnaire, questionnaireUrl)
-        : undefined
-
-      const encounterUrl = encounterRef
-        ? yield* encounterRef.asResourceUrl(Encounter).pipe(Effect.option)
-        : Option.none()
-
-      const observations = Option.isSome(encounterUrl)
-        ? yield* clinicalHub.search(Observation, {
-            encounter: Search.Condition.Exactly(encounterUrl.value),
-          })
-        : []
+      const [questionnaire, observations] = yield* Effect.all([
+        questionnaireResponse.questionnaire
+          ? clinicalHub.get(Questionnaire, questionnaireResponse.questionnaire)
+          : Effect.succeed(undefined),
+        encounterUrl.pipe(
+          Option.map((url) =>
+            clinicalHub.search(Observation, {
+              encounter: Search.Condition.Exactly(url),
+            })
+          ),
+          Option.getOrElse(() => Effect.succeed([] as readonly Observation[]))
+        ),
+      ])
 
       return {
         encounterUrl,
