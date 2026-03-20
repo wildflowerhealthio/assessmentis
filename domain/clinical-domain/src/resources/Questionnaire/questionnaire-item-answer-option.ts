@@ -1,8 +1,6 @@
 import { Schema, pipe } from 'effect'
 import type { Arbitrary, FastCheck } from 'effect'
 
-import { MergeClasses } from '@assessmentis/util'
-
 import { BackboneElement, DatatypeChoice } from '../../data-types'
 import type { BackboneElementEncoded } from '../../data-types'
 import FhirR4ChoiceElements from '../../data-types/fhir-r4-choice-elements'
@@ -32,6 +30,11 @@ export interface QuestionnaireItemAnswerOptionEncoded
   extends Schema.Struct.Encoded<typeof fields>, BackboneElementEncoded<DomainType> {}
 
 /** A permitted answer value for a questionnaire item, with a polymorphic value[x] choice. */
-export class QuestionnaireItemAnswerOption extends MergeClasses<QuestionnaireItemAnswerOption>(
+const QuestionnaireItemAnswerOptionBackboneElement = BackboneElement(DomainType)
+
+export class QuestionnaireItemAnswerOption extends QuestionnaireItemAnswerOptionBackboneElement.extend<QuestionnaireItemAnswerOption>(
   DomainType
-)([], BackboneElement(DomainType), fields) {}
+)(fields) {
+  static readonly DomainType = QuestionnaireItemAnswerOptionBackboneElement.DomainType
+  static readonly UrlSchema = QuestionnaireItemAnswerOptionBackboneElement.UrlSchema
+}

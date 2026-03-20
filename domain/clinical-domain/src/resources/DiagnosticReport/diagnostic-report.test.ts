@@ -7,6 +7,10 @@ import { DiagnosticReport } from './diagnostic-report'
 const reportArb = Arbitrary.make(DiagnosticReport)
 
 describe('DiagnosticReport model', () => {
+  test('DiagnosticReport.DomainType is "DiagnosticReport"', () => {
+    expect(DiagnosticReport.DomainType).toBe('DiagnosticReport')
+  })
+
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(reportArb, (report) => {

@@ -2,15 +2,16 @@ import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
 import { describe, expect, expectTypeOf, test } from 'vitest'
 
-import { MergeClasses } from '@assessmentis/util'
-
 import type { Extension } from '../special-purpose/extension'
 import { Resource } from './resource'
 import type { ResourceEncoded } from './resource'
 
-const ResourceMixin = Resource('TestResource')
+const TestResourceResource = Resource('TestResource')
 
-class TestResource extends MergeClasses<TestResource>('TestResource')([], ResourceMixin) {}
+class TestResource extends TestResourceResource.extend<TestResource>('TestResource')({}) {
+  static readonly DomainType = TestResourceResource.DomainType
+  static readonly UrlSchema = TestResourceResource.UrlSchema
+}
 
 describe('Resource', () => {
   describe('types', () => {

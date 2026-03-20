@@ -7,6 +7,10 @@ import { CodeableConcept } from './codeable-concept'
 const codeableConceptArb = Arbitrary.make(CodeableConcept)
 
 describe('CodeableConcept model', () => {
+  test('CodeableConcept.DomainType is "CodeableConcept"', () => {
+    expect(CodeableConcept.DomainType).toBe('CodeableConcept')
+  })
+
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(codeableConceptArb, (codeableConcept) => {

@@ -1,7 +1,5 @@
 import { Schema } from 'effect'
 
-import { MergeClasses } from '@assessmentis/util'
-
 import { Element } from '../base/element'
 import type { ElementEncoded } from '../base/element'
 import { Datatype } from '../datatype'
@@ -37,7 +35,7 @@ const fields = {
   // _version?: Element | undefined;
 } as const satisfies Schema.Struct.Fields
 
-const ElementMixin = Element(DomainType)
+const CodingElement = Element(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Coding}. */
 export interface CodingEncoded
@@ -47,7 +45,9 @@ export interface CodingEncoded
  * A reference to a code defined by a terminology system. Binds a `code` to
  * a `system` URI and optional `display` text.
  */
-export class Coding extends MergeClasses<Coding>(DomainType)([], ElementMixin, fields) {
+export class Coding extends CodingElement.extend<Coding>(DomainType)(fields) {
+  static readonly DomainType = CodingElement.DomainType
+  static readonly UrlSchema = CodingElement.UrlSchema
   static Datatype = Datatype('Coding', Coding)
 
   static makeLiteral = <C extends ConstructorParameters<typeof Coding>[0]>(params: C): Coding & C =>

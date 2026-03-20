@@ -1,7 +1,5 @@
 import { Schema } from 'effect'
 
-import { MergeClasses } from '@assessmentis/util'
-
 import { Element } from '../base/element'
 import type { ElementEncoded } from '../base/element'
 import { Code } from './code'
@@ -49,10 +47,13 @@ const fields = {
 export interface AttachmentEncoded
   extends Schema.Struct.Encoded<typeof fields>, ElementEncoded<typeof DomainType> {}
 
-const ElementMixin = Element(DomainType)
+const AttachmentElement = Element(DomainType)
 /**
  * For identifying specific representations or attachments.
  * This data type is used for all attachments including images, documents, etc.
  * Note: Per FHIR spec, if data is present, contentType SHALL be populated.
  */
-export class Attachment extends MergeClasses<Attachment>(DomainType)([], ElementMixin, fields) {}
+export class Attachment extends AttachmentElement.extend<Attachment>(DomainType)(fields) {
+  static readonly DomainType = AttachmentElement.DomainType
+  static readonly UrlSchema = AttachmentElement.UrlSchema
+}

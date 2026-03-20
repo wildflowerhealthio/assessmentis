@@ -8,6 +8,10 @@ import * as Location from './location'
 const locationArb = Arbitrary.make(Location.Location)
 
 describe('Location resource', () => {
+  test('Location.DomainType is "Location"', () => {
+    expect(Location.Location.DomainType).toBe('Location')
+  })
+
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(locationArb, (location) => {

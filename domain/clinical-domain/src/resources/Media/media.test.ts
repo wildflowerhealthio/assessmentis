@@ -7,6 +7,10 @@ import * as Media from './media'
 const mediaArb = Arbitrary.make(Media.Media)
 
 describe('Media model', () => {
+  test('Media.DomainType is "Media"', () => {
+    expect(Media.Media.DomainType).toBe('Media')
+  })
+
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(mediaArb, (media) => {

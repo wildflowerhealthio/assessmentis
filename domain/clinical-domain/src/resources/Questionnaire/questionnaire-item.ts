@@ -1,12 +1,6 @@
 import { Schema, pipe } from 'effect'
-import type { FastCheck } from 'effect'
 
-import {
-  AnnotateArrayWithArbitrary,
-  MergeClasses,
-  makeCloneWith,
-  mergeArbitraries,
-} from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary, makeCloneWith } from '@assessmentis/util'
 
 import { BackboneElement, Coding } from '../../data-types'
 import type { BackboneElementEncoded } from '../../data-types'
@@ -86,58 +80,26 @@ export interface QuestionnaireItemEncoded
   item?: readonly QuestionnaireItemEncoded[] | undefined
 }
 
-const BackboneElementMixin = BackboneElement('QuestionnaireItem')
+const QuestionnaireItemBackboneElement = BackboneElement('QuestionnaireItem')
 /**
  * The content of the questionnaire is constructed from an ordered,
  * hierarchical collection of items.
  */
-export class QuestionnaireItem extends MergeClasses<QuestionnaireItem>('QuestionnaireItem')(
-  [
-    {
-      arbitrary:
-        () =>
-        (fc: typeof FastCheck): FastCheck.Arbitrary<QuestionnaireItem> =>
-          fc.letrec<{ self: QuestionnaireItem }>((tie) => ({
-            self: mergeArbitraries(
-              (props) => new QuestionnaireItem(props),
-              questionnaireItemFields,
-              BackboneElementMixin,
-              (
-                fc
-              ): FastCheck.Arbitrary<{
-                item: readonly QuestionnaireItem[] | undefined
-              }> =>
-                fc.record({
-                  item: fc.oneof(
-                    {
-                      depthIdentifier: 'id:QuestionnaireItem',
-                      depthSize: 'small',
-                    },
-                    fc.constant<readonly never[]>([]),
-                    fc.constant<readonly never[]>([]),
-                    fc.array<QuestionnaireItem>(tie('self'), {
-                      depthIdentifier: 'id:self',
-                      maxLength: 2,
-                    })
-                  ),
-                })
-            )(fc),
-          })).self,
-    },
-  ],
-  BackboneElementMixin,
-  {
-    ...questionnaireItemFields,
-    item: Schema.optional(
-      pipe(
-        Schema.Array(
-          Schema.suspend(
-            (): Schema.Schema<QuestionnaireItem, QuestionnaireItemEncoded> => QuestionnaireItem
-          )
+export class QuestionnaireItem extends QuestionnaireItemBackboneElement.extend<QuestionnaireItem>(
+  'QuestionnaireItem'
+)({
+  ...questionnaireItemFields,
+  item: Schema.optional(
+    pipe(
+      Schema.Array(
+        Schema.suspend(
+          (): Schema.Schema<QuestionnaireItem, QuestionnaireItemEncoded> => QuestionnaireItem
         )
       )
-    ),
-  }
-) {
+    )
+  ),
+}) {
+  static readonly DomainType = QuestionnaireItemBackboneElement.DomainType
+  static readonly UrlSchema = QuestionnaireItemBackboneElement.UrlSchema
   readonly cloneWith = makeCloneWith(QuestionnaireItem, this)
 }

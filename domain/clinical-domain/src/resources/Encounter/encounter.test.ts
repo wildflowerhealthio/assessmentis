@@ -7,6 +7,14 @@ import { Encounter } from './encounter'
 const encounterArb = Arbitrary.make(Encounter)
 
 describe('Encounter resource', () => {
+  test('Encounter.DomainType is "Encounter"', () => {
+    expect(Encounter.DomainType).toBe('Encounter')
+  })
+
+  test('Encounter.UrlSchema is defined', () => {
+    expect(Encounter.UrlSchema).toBeDefined()
+  })
+
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(encounterArb, (encounter) => {

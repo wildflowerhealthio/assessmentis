@@ -1,7 +1,7 @@
 import { Schema, pipe } from 'effect'
 import type { Arbitrary, FastCheck } from 'effect'
 
-import { AnnotateArrayWithArbitrary, MergeClasses, makeCloneWith } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary, makeCloneWith } from '@assessmentis/util'
 
 import { Resource } from '../../data-types/base/resource'
 import type { ResourceEncoded } from '../../data-types/base/resource'
@@ -108,7 +108,7 @@ const fields = {
   ),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(DomainType)
+const ObservationResource = Resource(DomainType)
 
 /** Encoded (wire-format) shape of an {@link Observation}. */
 export interface ObservationEncoded
@@ -117,6 +117,8 @@ export interface ObservationEncoded
 /**
  * Measurements and simple assertions made about a patient, device or other subject.
  */
-export class Observation extends MergeClasses<Observation>(DomainType)([], resourceMixin, fields) {
+export class Observation extends ObservationResource.extend<Observation>(DomainType)(fields) {
+  static readonly DomainType = ObservationResource.DomainType
+  static readonly UrlSchema = ObservationResource.UrlSchema
   readonly cloneWith = makeCloneWith(Observation, this)
 }

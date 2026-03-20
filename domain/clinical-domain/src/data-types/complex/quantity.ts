@@ -1,7 +1,5 @@
 import { Schema } from 'effect'
 
-import { MergeClasses } from '@assessmentis/util'
-
 import { Element } from '../base/element'
 import type { ElementEncoded } from '../base/element'
 import { Datatype } from '../datatype'
@@ -40,7 +38,7 @@ const fields = {
   ),
 } as const satisfies Schema.Struct.Fields
 
-const elementMixin = Element('Quantity')
+const QuantityElement = Element('Quantity')
 
 /** Encoded (wire-format) shape of a {@link Quantity}. */
 export interface QuantityEncoded
@@ -56,6 +54,8 @@ export interface QuantityEncoded
  * of units can be used. The context of use may also restrict the values for the comparator.
  */
 
-export class Quantity extends MergeClasses<Quantity>('Quantity')([], elementMixin, fields) {
+export class Quantity extends QuantityElement.extend<Quantity>('Quantity')(fields) {
+  static readonly DomainType = QuantityElement.DomainType
+  static readonly UrlSchema = QuantityElement.UrlSchema
   static Datatype = Datatype('Quantity', Quantity)
 }

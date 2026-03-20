@@ -7,6 +7,14 @@ import * as Composition from './composition'
 const compositionArb = Arbitrary.make(Composition.Composition)
 
 describe('Composition', () => {
+  it('Composition.DomainType is "Composition"', () => {
+    expect(Composition.Composition.DomainType).toBe('Composition')
+  })
+
+  it('Composition.UrlSchema is defined', () => {
+    expect(Composition.Composition.UrlSchema).toBeDefined()
+  })
+
   it('should encode and decode', () => {
     fc.assert(
       fc.property(compositionArb, (comp) => {

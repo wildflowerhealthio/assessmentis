@@ -2,7 +2,6 @@ import { Schema } from 'effect'
 
 import {
   AnnotateArrayWithArbitrary,
-  MergeClasses,
   TimelessDateFromString,
   makeCloneWith,
 } from '@assessmentis/util'
@@ -58,7 +57,7 @@ const fields = {
   ),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(DomainType)
+const PractitionerResource = Resource(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Practitioner}. */
 export interface PractitionerEncoded
@@ -67,10 +66,8 @@ export interface PractitionerEncoded
 /**
  * A person who is directly or indirectly involved in the provisioning of healthcare.
  */
-export class Practitioner extends MergeClasses<Practitioner>(DomainType)(
-  [],
-  resourceMixin,
-  fields
-) {
+export class Practitioner extends PractitionerResource.extend<Practitioner>(DomainType)(fields) {
+  static readonly DomainType = PractitionerResource.DomainType
+  static readonly UrlSchema = PractitionerResource.UrlSchema
   readonly cloneWith = makeCloneWith(Practitioner, this)
 }

@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import { AnnotateArrayWithArbitrary, MergeClasses, makeCloneWith } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary, makeCloneWith } from '@assessmentis/util'
 
 import { Resource } from '../../data-types/base/resource'
 import type { ResourceEncoded } from '../../data-types/base/resource'
@@ -79,7 +79,7 @@ const fields = {
   ),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(DomainType)
+const EncounterResource = Resource(DomainType)
 
 /** Encoded (wire-format) shape of an {@link Encounter}. */
 export interface EncounterEncoded
@@ -89,6 +89,8 @@ export interface EncounterEncoded
  * An interaction between a patient and healthcare provider(s) for the purpose of
  * providing healthcare service(s) or assessing the health status of a patient.
  */
-export class Encounter extends MergeClasses<Encounter>(DomainType)([], resourceMixin, fields) {
+export class Encounter extends EncounterResource.extend<Encounter>(DomainType)(fields) {
+  static readonly DomainType = EncounterResource.DomainType
+  static readonly UrlSchema = EncounterResource.UrlSchema
   readonly cloneWith = makeCloneWith(Encounter, this)
 }

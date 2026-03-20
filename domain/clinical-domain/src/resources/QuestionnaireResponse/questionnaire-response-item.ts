@@ -1,7 +1,7 @@
 import { Schema, pipe } from 'effect'
 import type { Arbitrary, FastCheck } from 'effect'
 
-import { MergeClasses, makeCloneWith, mergeArbitraries } from '@assessmentis/util'
+import { makeCloneWith } from '@assessmentis/util'
 
 import { BackboneElement } from '../../data-types/base/backbone-element'
 import type { BackboneElementEncoded } from '../../data-types/base/backbone-element'
@@ -30,37 +30,31 @@ export interface QuestionnaireResponseItemAnswerEncoded
   item?: readonly QuestionnaireResponseItemEncoded[] | undefined
 }
 
-const AnswerBackboneElementMixin = BackboneElement('QuestionnaireResponseItemAnswer')
+const QuestionnaireResponseItemAnswerBackboneElement = BackboneElement(
+  'QuestionnaireResponseItemAnswer'
+)
 /**
  * The value is nested because we cannot have a repeating structure that has variable type.
  */
-export class QuestionnaireResponseItemAnswer extends MergeClasses<QuestionnaireResponseItemAnswer>(
+export class QuestionnaireResponseItemAnswer extends QuestionnaireResponseItemAnswerBackboneElement.extend<QuestionnaireResponseItemAnswer>(
   'QuestionnaireResponseItemAnswer'
-)(
-  [
-    {
-      arbitrary:
-        () =>
-        (fc: typeof FastCheck): FastCheck.Arbitrary<QuestionnaireResponseItemAnswer> =>
-          qrLetrec(fc).answer,
-    },
-  ],
-  AnswerBackboneElementMixin,
-  {
-    ...questionnaireResponseItemAnswerFields,
+)({
+  ...questionnaireResponseItemAnswerFields,
 
-    item: Schema.optional(
-      pipe(
-        Schema.Array(
-          Schema.suspend(
-            (): Schema.Schema<QuestionnaireResponseItem, QuestionnaireResponseItemEncoded> =>
-              QuestionnaireResponseItem
-          )
+  item: Schema.optional(
+    pipe(
+      Schema.Array(
+        Schema.suspend(
+          (): Schema.Schema<QuestionnaireResponseItem, QuestionnaireResponseItemEncoded> =>
+            QuestionnaireResponseItem
         )
       )
-    ),
-  }
-) {}
+    )
+  ),
+}) {
+  static readonly DomainType = QuestionnaireResponseItemAnswerBackboneElement.DomainType
+  static readonly UrlSchema = QuestionnaireResponseItemAnswerBackboneElement.UrlSchema
+}
 
 const questionnaireResponseItemFields = {
   definition: Schema.optional(Schema.String),
@@ -77,50 +71,41 @@ export interface QuestionnaireResponseItemEncoded
   answer?: readonly QuestionnaireResponseItemAnswerEncoded[] | undefined
 }
 
-const ItemBackboneElementMixin = BackboneElement('QuestionnaireResponseItem')
+const QuestionnaireResponseItemBackboneElement = BackboneElement('QuestionnaireResponseItem')
 /**
  * Groups cannot have answers and therefore must nest directly within item.
  * When dealing with questions, nesting must occur within each answer because
  * some questions may have multiple answers (and the nesting occurs for each answer).
  */
-export class QuestionnaireResponseItem extends MergeClasses<QuestionnaireResponseItem>(
+export class QuestionnaireResponseItem extends QuestionnaireResponseItemBackboneElement.extend<QuestionnaireResponseItem>(
   'QuestionnaireResponseItem'
-)(
-  [
-    {
-      arbitrary:
-        () =>
-        (fc: typeof FastCheck): FastCheck.Arbitrary<QuestionnaireResponseItem> =>
-          qrLetrec(fc).item,
-    },
-  ],
-  ItemBackboneElementMixin,
-  {
-    ...questionnaireResponseItemFields,
-    answer: Schema.optional(
-      pipe(
-        Schema.Array(
-          Schema.suspend(
-            (): Schema.Schema<
-              QuestionnaireResponseItemAnswer,
-              QuestionnaireResponseItemAnswerEncoded
-            > => QuestionnaireResponseItemAnswer
-          )
+)({
+  ...questionnaireResponseItemFields,
+  answer: Schema.optional(
+    pipe(
+      Schema.Array(
+        Schema.suspend(
+          (): Schema.Schema<
+            QuestionnaireResponseItemAnswer,
+            QuestionnaireResponseItemAnswerEncoded
+          > => QuestionnaireResponseItemAnswer
         )
       )
-    ),
-    item: Schema.optional(
-      pipe(
-        Schema.Array(
-          Schema.suspend(
-            (): Schema.Schema<QuestionnaireResponseItem, QuestionnaireResponseItemEncoded> =>
-              QuestionnaireResponseItem
-          )
+    )
+  ),
+  item: Schema.optional(
+    pipe(
+      Schema.Array(
+        Schema.suspend(
+          (): Schema.Schema<QuestionnaireResponseItem, QuestionnaireResponseItemEncoded> =>
+            QuestionnaireResponseItem
         )
       )
-    ),
-  }
-) {
+    )
+  ),
+}) {
+  static readonly DomainType = QuestionnaireResponseItemBackboneElement.DomainType
+  static readonly UrlSchema = QuestionnaireResponseItemBackboneElement.UrlSchema
   readonly cloneWith = makeCloneWith(QuestionnaireResponseItem, this);
 
   /** Yields all nested child {@link QuestionnaireResponseItem}s depth-first. */
@@ -144,77 +129,3 @@ export class QuestionnaireResponseItem extends MergeClasses<QuestionnaireRespons
     })
   }
 }
-
-/** Shared letrec for mutually recursive QRItem/QRItemAnswer arbitrary generation */
-const qrLetrec = (
-  fc: typeof FastCheck
-): {
-  item: FastCheck.Arbitrary<QuestionnaireResponseItem>
-  answer: FastCheck.Arbitrary<QuestionnaireResponseItemAnswer>
-} =>
-  fc.letrec<{
-    item: QuestionnaireResponseItem
-    answer: QuestionnaireResponseItemAnswer
-  }>((tie) => ({
-    answer: mergeArbitraries(
-      (props) => new QuestionnaireResponseItemAnswer(props),
-      questionnaireResponseItemAnswerFields,
-      AnswerBackboneElementMixin,
-      (
-        fc
-      ): FastCheck.Arbitrary<{
-        item: ReadonlyArray<QuestionnaireResponseItem> | undefined
-      }> =>
-        fc.record({
-          item: fc.oneof(
-            {
-              depthSize: 'small',
-              depthIdentifier: 'id:QRItem',
-            },
-            fc.constant<ReadonlyArray<never>>([]),
-            fc.constant<ReadonlyArray<never>>([]),
-            fc.array<QuestionnaireResponseItem>(tie('item'), {
-              depthIdentifier: 'id:QRItem',
-              maxLength: 2,
-            })
-          ),
-        })
-    )(fc),
-    item: mergeArbitraries(
-      (props) => new QuestionnaireResponseItem(props),
-      questionnaireResponseItemFields,
-      ItemBackboneElementMixin,
-      (
-        fc
-      ): FastCheck.Arbitrary<{
-        item: ReadonlyArray<QuestionnaireResponseItem> | undefined
-        answer: ReadonlyArray<QuestionnaireResponseItemAnswer> | undefined
-      }> =>
-        fc.record({
-          item: fc.oneof(
-            {
-              depthSize: 'small',
-              depthIdentifier: 'id:QRItem',
-            },
-            fc.constant<ReadonlyArray<never>>([]),
-            fc.constant<ReadonlyArray<never>>([]),
-            fc.array<QuestionnaireResponseItem>(tie('item'), {
-              depthIdentifier: 'id:QRItem',
-              maxLength: 2,
-            })
-          ),
-          answer: fc.oneof(
-            {
-              depthSize: 'small',
-              depthIdentifier: 'id:QRItemAnswer',
-            },
-            fc.constant<ReadonlyArray<never>>([]),
-            fc.constant<ReadonlyArray<never>>([]),
-            fc.array<QuestionnaireResponseItemAnswer>(tie('answer'), {
-              depthIdentifier: 'id:QRItemAnswer',
-              maxLength: 2,
-            })
-          ),
-        })
-    )(fc),
-  }))

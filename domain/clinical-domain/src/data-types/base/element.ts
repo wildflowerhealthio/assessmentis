@@ -64,7 +64,7 @@ type ElementClass<Self, TDomainType extends string> = {
  *
  * @typeParam TDomainType - The literal domain type string (e.g. `'Patient'`)
  * @param domainType - The domain type string literal
- * @returns A Schema.Class mixin to compose via `MergeClasses` or `.extend`
+ * @returns A Schema.Class mixin to compose via `.extend`
  *
  * @remarks
  * Both a factory function and a same-name type alias coexist via declaration
@@ -91,8 +91,8 @@ export const Element = <TDomainType extends string>(domainType: TDomainType) => 
     ),
     ...fields,
   }) {
-    static DomainType = domainType
-    static UrlSchema = urlSchema
+    static readonly DomainType = domainType
+    static readonly UrlSchema = urlSchema
   }
 
   return ElementMixin satisfies ElementClass<ElementMixin, TDomainType> as ElementClass<

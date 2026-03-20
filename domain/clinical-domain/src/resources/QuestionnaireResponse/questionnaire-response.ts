@@ -1,6 +1,6 @@
 import { DateTime, Option, Schema } from 'effect'
 
-import { AnnotateArrayWithArbitrary, MergeClasses, makeCloneWith } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary, makeCloneWith } from '@assessmentis/util'
 
 import { Resource } from '../../data-types/base/resource'
 import type { ResourceEncoded } from '../../data-types/base/resource'
@@ -40,7 +40,7 @@ const fields = {
   subject: Schema.optional(Schema.suspend(() => Reference)),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(DomainType)
+const QuestionnaireResponseResource = Resource(DomainType)
 
 /** Encoded (wire-format) shape of a {@link QuestionnaireResponse}, including recursive items. */
 export interface QuestionnaireResponseEncoded
@@ -51,21 +51,21 @@ export interface QuestionnaireResponseEncoded
 /**
  * A structured set of questions and their answers.
  */
-export class QuestionnaireResponse extends MergeClasses<QuestionnaireResponse>(DomainType)(
-  [],
-  resourceMixin,
-  fields,
-  {
-    item: Schema.optional(
-      Schema.Array(
-        Schema.suspend(
-          (): Schema.Schema<QuestionnaireResponseItem, QuestionnaireResponseItemEncoded> =>
-            QuestionnaireResponseItem
-        )
+export class QuestionnaireResponse extends QuestionnaireResponseResource.extend<QuestionnaireResponse>(
+  DomainType
+)({
+  ...fields,
+  item: Schema.optional(
+    Schema.Array(
+      Schema.suspend(
+        (): Schema.Schema<QuestionnaireResponseItem, QuestionnaireResponseItemEncoded> =>
+          QuestionnaireResponseItem
       )
-    ),
-  }
-) {
+    )
+  ),
+}) {
+  static readonly DomainType = QuestionnaireResponseResource.DomainType
+  static readonly UrlSchema = QuestionnaireResponseResource.UrlSchema
   readonly cloneWith = makeCloneWith(QuestionnaireResponse, this);
 
   /** Yields all nested {@link QuestionnaireResponseItem}s depth-first. */

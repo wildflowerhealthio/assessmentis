@@ -7,6 +7,10 @@ import * as Questionnaire from './questionnaire'
 const questionnaireArb = Arbitrary.make(Questionnaire.Questionnaire)
 
 describe('Questionnaire resource', () => {
+  test('Questionnaire.DomainType is "Questionnaire"', () => {
+    expect(Questionnaire.Questionnaire.DomainType).toBe('Questionnaire')
+  })
+
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(questionnaireArb, (questionnaire) => {

@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import { AnnotateArrayWithArbitrary, MergeClasses, makeCloneWith } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary, makeCloneWith } from '@assessmentis/util'
 
 import { Resource } from '../../data-types/base/resource'
 import type { ResourceEncoded } from '../../data-types/base/resource'
@@ -75,7 +75,7 @@ const fields = {
   width: Schema.optional(Schema.Int),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(DomainType)
+const MediaResource = Resource(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Media}. */
 export interface MediaEncoded
@@ -85,6 +85,8 @@ export interface MediaEncoded
  * A photo, video, or audio recording acquired or used in healthcare.
  * The actual content may be inline or provided by direct reference.
  */
-export class Media extends MergeClasses<Media>(DomainType)([], resourceMixin, fields) {
+export class Media extends MediaResource.extend<Media>(DomainType)(fields) {
+  static readonly DomainType = MediaResource.DomainType
+  static readonly UrlSchema = MediaResource.UrlSchema
   readonly cloneWith = makeCloneWith(Media, this)
 }

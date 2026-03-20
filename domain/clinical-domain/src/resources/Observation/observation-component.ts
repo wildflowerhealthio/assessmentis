@@ -1,7 +1,7 @@
 import { Schema, pipe } from 'effect'
 import type { Arbitrary, FastCheck } from 'effect'
 
-import { AnnotateArrayWithArbitrary, MergeClasses } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary } from '@assessmentis/util'
 
 import { BackboneElement, CodeableConcept, DatatypeChoice } from '../../data-types'
 import type { BackboneElementEncoded } from '../../data-types'
@@ -37,8 +37,11 @@ export interface ObservationComponentEncoded
   extends Schema.Struct.Encoded<typeof fields>, BackboneElementEncoded<DomainType> {}
 
 /** A component result within an {@link Observation}, carrying its own code and value[x] choice. */
-export class ObservationComponent extends MergeClasses<ObservationComponent>(DomainType)(
-  [],
-  BackboneElement(DomainType),
-  fields
-) {}
+const ObservationComponentBackboneElement = BackboneElement(DomainType)
+
+export class ObservationComponent extends ObservationComponentBackboneElement.extend<ObservationComponent>(
+  DomainType
+)(fields) {
+  static readonly DomainType = ObservationComponentBackboneElement.DomainType
+  static readonly UrlSchema = ObservationComponentBackboneElement.UrlSchema
+}

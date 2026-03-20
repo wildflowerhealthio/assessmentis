@@ -1,7 +1,4 @@
 import { Schema, pipe } from 'effect'
-import type { FastCheck } from 'effect'
-
-import { MergeClasses, mergeArbitraries } from '@assessmentis/util'
 
 import { BackboneElement } from '../../data-types/base/backbone-element'
 import type { BackboneElementEncoded } from '../../data-types/base/backbone-element'
@@ -27,54 +24,24 @@ export interface CompositionSectionEncoded
   section?: readonly CompositionSectionEncoded[] | undefined
 }
 
-const BackboneElementMixin = BackboneElement('CompositionSection')
+const CompositionSectionBackboneElement = BackboneElement('CompositionSection')
 /**
  * Composition is broken into sections
  */
-export class CompositionSection extends MergeClasses<CompositionSection>('CompositionSection')(
-  [
-    {
-      arbitrary:
-        () =>
-        (fc: typeof FastCheck): FastCheck.Arbitrary<CompositionSection> =>
-          fc.letrec<{ self: CompositionSection }>((tie) => ({
-            self: mergeArbitraries(
-              (props) => new CompositionSection(props),
-              fields,
-              BackboneElementMixin,
-              (
-                fc
-              ): FastCheck.Arbitrary<{
-                section: readonly CompositionSection[] | undefined
-              }> =>
-                fc.record({
-                  section: fc.oneof(
-                    {
-                      depthIdentifier: 'id:CompositionSection',
-                      depthSize: 'small',
-                    },
-                    fc.constant<readonly never[]>([]),
-                    fc.array<CompositionSection>(tie('self'), {
-                      depthIdentifier: 'id:CompositionSection',
-                      maxLength: 2,
-                    })
-                  ),
-                })
-            )(fc),
-          })).self,
-    },
-  ],
-  BackboneElementMixin,
-  {
-    ...fields,
-    section: Schema.optional(
-      pipe(
-        Schema.Array(
-          Schema.suspend(
-            (): Schema.Schema<CompositionSection, CompositionSectionEncoded> => CompositionSection
-          )
+export class CompositionSection extends CompositionSectionBackboneElement.extend<CompositionSection>(
+  'CompositionSection'
+)({
+  ...fields,
+  section: Schema.optional(
+    pipe(
+      Schema.Array(
+        Schema.suspend(
+          (): Schema.Schema<CompositionSection, CompositionSectionEncoded> => CompositionSection
         )
       )
-    ),
-  }
-) {}
+    )
+  ),
+}) {
+  static readonly DomainType = CompositionSectionBackboneElement.DomainType
+  static readonly UrlSchema = CompositionSectionBackboneElement.UrlSchema
+}

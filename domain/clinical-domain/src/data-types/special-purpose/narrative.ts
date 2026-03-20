@@ -1,7 +1,5 @@
 import { Schema } from 'effect'
 
-import { MergeClasses } from '@assessmentis/util'
-
 import { Element } from '../base/element'
 import type { ElementEncoded } from '../base/element'
 
@@ -30,7 +28,7 @@ const fields = {
   div: Schema.String,
 } as const satisfies Schema.Struct.Fields
 
-const ElementMixin = Element(DomainType)
+const NarrativeElement = Element(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Narrative}. */
 export interface NarrativeEncoded
@@ -40,6 +38,7 @@ export interface NarrativeEncoded
  * Human-readable XHTML summary of a resource, with a `status` indicating
  * whether the narrative is generated, additional, or empty.
  */
-export class Narrative extends MergeClasses<Narrative>(DomainType)([], ElementMixin, fields) {
+export class Narrative extends NarrativeElement.extend<Narrative>(DomainType)(fields) {
   static readonly DomainType = DomainType
+  static readonly UrlSchema = NarrativeElement.UrlSchema
 }

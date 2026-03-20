@@ -2,7 +2,6 @@ import { Schema } from 'effect'
 
 import {
   AnnotateArrayWithArbitrary,
-  MergeClasses,
   TimelessDateFromString,
   makeCloneWith,
 } from '@assessmentis/util'
@@ -70,7 +69,7 @@ const fields = {
   ),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(DomainType)
+const PatientResource = Resource(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Patient}. */
 export interface PatientEncoded
@@ -80,6 +79,8 @@ export interface PatientEncoded
  * Demographics and other administrative information about an individual or animal
  * receiving care or other health-related services.
  */
-export class Patient extends MergeClasses<Patient>(DomainType)([], resourceMixin, fields) {
+export class Patient extends PatientResource.extend<Patient>(DomainType)(fields) {
+  static readonly DomainType = PatientResource.DomainType
+  static readonly UrlSchema = PatientResource.UrlSchema
   readonly cloneWith = makeCloneWith(Patient, this)
 }

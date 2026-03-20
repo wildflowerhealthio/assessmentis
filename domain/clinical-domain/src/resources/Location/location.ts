@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import { AnnotateArrayWithArbitrary, MergeClasses, makeCloneWith } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary, makeCloneWith } from '@assessmentis/util'
 
 import { Resource } from '../../data-types/base/resource'
 import type { ResourceEncoded } from '../../data-types/base/resource'
@@ -64,7 +64,9 @@ export interface LocationEncoded
  * provided and resources and participants may be stored, found, contained,
  * or accommodated.
  */
-export class Location extends MergeClasses<Location>(DomainType)([], LocationResource, fields) {
+export class Location extends LocationResource.extend<Location>(DomainType)(fields) {
+  static readonly DomainType = LocationResource.DomainType
+  static readonly UrlSchema = LocationResource.UrlSchema
   readonly cloneWith = makeCloneWith(Location, this)
 }
 

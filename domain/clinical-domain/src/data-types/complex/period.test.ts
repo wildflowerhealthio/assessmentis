@@ -8,6 +8,10 @@ import type { PeriodEncoded } from './period'
 const periodArb = Arbitrary.make(Period)
 
 describe('Period model', () => {
+  test('Period.DomainType is "Period"', () => {
+    expect(Period.DomainType).toBe('Period')
+  })
+
   test('types', () => {
     expectTypeOf(Period.Encoded).toExtend<PeriodEncoded>()
   })

@@ -7,6 +7,10 @@ import * as Range from './range'
 const rangeArb = Arbitrary.make(Range.Range)
 
 describe('Range model', () => {
+  test('Range.DomainType is "Range"', () => {
+    expect(Range.Range.DomainType).toBe('Range')
+  })
+
   test('property: encode-decode cycle', () => {
     fc.assert(
       fc.property(rangeArb, (range) => {

@@ -1,7 +1,7 @@
 import { Schema, pipe } from 'effect'
 import type { Arbitrary, FastCheck } from 'effect'
 
-import { AnnotateArrayWithArbitrary, MergeClasses } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary } from '@assessmentis/util'
 
 import { Period } from '../../data-types'
 import { Resource } from '../../data-types/base/resource'
@@ -96,7 +96,7 @@ const fields = {
   subject: Schema.optional(Schema.suspend(() => Reference)),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(DomainType)
+const DiagnosticReportResource = Resource(DomainType)
 
 /** Encoded (wire-format) shape of a {@link DiagnosticReport}. */
 export interface DiagnosticReportEncoded
@@ -106,8 +106,9 @@ export interface DiagnosticReportEncoded
  * The findings and interpretation of diagnostic tests performed on patients,
  * groups of patients, devices, and locations, and/or specimens derived from these.
  */
-export class DiagnosticReport extends MergeClasses<DiagnosticReport>(DomainType)(
-  [],
-  resourceMixin,
+export class DiagnosticReport extends DiagnosticReportResource.extend<DiagnosticReport>(DomainType)(
   fields
-) {}
+) {
+  static readonly DomainType = DiagnosticReportResource.DomainType
+  static readonly UrlSchema = DiagnosticReportResource.UrlSchema
+}

@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import { AnnotateArrayWithArbitrary, MergeClasses, makeCloneWith } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary, makeCloneWith } from '@assessmentis/util'
 
 import { Resource } from '../../data-types/base/resource'
 import type { ResourceEncoded } from '../../data-types/base/resource'
@@ -46,7 +46,7 @@ const fields = {
   type: Schema.suspend(() => CodeableConcept),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(DomainType)
+const CompositionResource = Resource(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Composition}. */
 export interface CompositionEncoded
@@ -56,6 +56,8 @@ export interface CompositionEncoded
  * A set of resources composed into a single coherent clinical statement with
  * clinical attestation.
  */
-export class Composition extends MergeClasses<Composition>(DomainType)([], resourceMixin, fields) {
+export class Composition extends CompositionResource.extend<Composition>(DomainType)(fields) {
+  static readonly DomainType = CompositionResource.DomainType
+  static readonly UrlSchema = CompositionResource.UrlSchema
   readonly cloneWith = makeCloneWith(Composition, this)
 }

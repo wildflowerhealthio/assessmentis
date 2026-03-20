@@ -2,15 +2,16 @@ import { Arbitrary, Schema } from 'effect'
 import * as fc from 'fast-check'
 import { describe, expect, expectTypeOf, test } from 'vitest'
 
-import { MergeClasses } from '@assessmentis/util'
-
 import type { Extension } from '../special-purpose/extension'
 import { BackboneElement } from './backbone-element'
 import type { BackboneElementEncoded } from './backbone-element'
 
-const BackboneMixin = BackboneElement('TestBackbone')
+const TestBackboneBackboneElement = BackboneElement('TestBackbone')
 
-class TestBackbone extends MergeClasses<TestBackbone>('TestBackbone')([], BackboneMixin) {}
+class TestBackbone extends TestBackboneBackboneElement.extend<TestBackbone>('TestBackbone')({}) {
+  static readonly DomainType = TestBackboneBackboneElement.DomainType
+  static readonly UrlSchema = TestBackboneBackboneElement.UrlSchema
+}
 
 describe('BackboneElement', () => {
   describe('types', () => {

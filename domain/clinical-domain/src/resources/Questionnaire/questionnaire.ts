@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import { AnnotateArrayWithArbitrary, MergeClasses } from '@assessmentis/util'
+import { AnnotateArrayWithArbitrary } from '@assessmentis/util'
 
 import { Resource } from '../../data-types/base/resource'
 import type { ResourceEncoded } from '../../data-types/base/resource'
@@ -50,7 +50,7 @@ const fields = {
   version: Schema.optional(Schema.String),
 } as const satisfies Schema.Struct.Fields
 
-const resourceMixin = Resource(DomainType)
+const QuestionnaireResource = Resource(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Questionnaire}. */
 export interface QuestionnaireEncoded
@@ -62,8 +62,7 @@ export interface QuestionnaireEncoded
  * presentation, phraseology and grouping to allow coherent, consistent
  * data collection.
  */
-export class Questionnaire extends MergeClasses<Questionnaire>(DomainType)(
-  [],
-  resourceMixin,
-  fields
-) {}
+export class Questionnaire extends QuestionnaireResource.extend<Questionnaire>(DomainType)(fields) {
+  static readonly DomainType = QuestionnaireResource.DomainType
+  static readonly UrlSchema = QuestionnaireResource.UrlSchema
+}
