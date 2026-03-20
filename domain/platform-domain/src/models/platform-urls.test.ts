@@ -23,14 +23,22 @@ class TestPlatformRoutes extends PlatformRoutes {
 
 const routes = new TestPlatformRoutes()
 
-// URL-safe arbitraries — slugs and user IDs must survive URL round-trips
-const urlSafeChar = fc.constantFrom(...'abcdefghijklmnopqrstuvwxyz0123456789-_'.split(''))
+// Arbitraries include characters that require percent-encoding (.+@! and
+// interior spaces) to exercise the ReadonlyUrl.toString() →
+// decodeURIComponent() round-trip. '/' is excluded (breaks path segments).
+// Leading/trailing whitespace is trimmed because new URL() strips it per
+// the WHATWG URL standard — that's a URL-level constraint, not ours.
+const idChar = fc.constantFrom(
+  ...'abcdefghijklmnopqrstuvwxyz0123456789-_.+@! '.split('')
+)
 const slugArb = fc
-  .array(urlSafeChar, { minLength: 3, maxLength: 10 })
-  .map((chars) => OrgSlug.make(chars.join('')))
+  .array(idChar, { minLength: 3, maxLength: 10 })
+  .map((chars) => OrgSlug.make(chars.join('').trim()))
+  .filter((s) => s.length >= 3)
 const userIdArb = fc
-  .array(urlSafeChar, { minLength: 1, maxLength: 20 })
-  .map((chars) => UserId.make(chars.join('')))
+  .array(idChar, { minLength: 1, maxLength: 20 })
+  .map((chars) => UserId.make(chars.join('').trim()))
+  .filter((s) => s.length >= 1)
 
 describe('PlatformRoutes', () => {
   describe('orgUrl', () => {
