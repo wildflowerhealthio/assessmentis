@@ -2,6 +2,7 @@ import { Effect, Either, Stream } from 'effect'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { Encounter, Patient } from '@assessmentis/clinical-domain'
+import { Search } from '@assessmentis/effectful-store'
 
 import { renderHook } from '@testing-library/react'
 
@@ -57,7 +58,7 @@ describe('useResourceCollection', () => {
     const mockHub = createMockHub({ subscribeSearch: subscribeSearchFn })
     vi.mocked(usePlatformContext).mockReturnValue(createMockPlatformContext({ hub: mockHub }))
 
-    const filters = { status: 'planned' }
+    const filters = { patient: Search.Condition.Exactly('Patient/123') }
     renderHook(() => useResourceCollection(Encounter, filters))
 
     expect(subscribeSearchFn).toHaveBeenCalledWith(Encounter, filters)

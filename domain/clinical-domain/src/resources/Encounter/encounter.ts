@@ -92,5 +92,8 @@ export interface EncounterEncoded
 export class Encounter extends EncounterResource.extend<Encounter>(DomainType)(fields) {
   static readonly DomainType = EncounterResource.DomainType
   static readonly UrlSchema = EncounterResource.UrlSchema
+  static readonly SearchSchema = {
+    patient: ['Exactly'],
+  } as const
   readonly cloneWith = makeCloneWith(Encounter, this)
 }

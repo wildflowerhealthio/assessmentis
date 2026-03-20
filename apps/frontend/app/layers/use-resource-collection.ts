@@ -1,8 +1,9 @@
 import { Effect, Schema } from 'effect'
 import { useMemo } from 'react'
 
-import type { ClinicalDomainClasses, RepositoryFilters } from '@assessmentis/clinical-domain'
+import type { ClinicalDomainClasses } from '@assessmentis/clinical-domain'
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
+import type { Search } from '@assessmentis/effectful-store'
 import { useCollectionPromise, useEitherStream } from '@assessmentis/react-util'
 
 import { useHub } from './use-hub'
@@ -20,7 +21,7 @@ const urlKeyOf = <T extends { url?: ReadonlyUrl | undefined }>(item: T): string 
  * Combines Hub search subscription with optimistic create/delete support.
  *
  * @param ResourceSchema - The resource Schema class (e.g., Patient, Encounter)
- * @param filters - Optional search filters to narrow results
+ * @param filters - Optional search query to narrow results
  * @returns Collection promise with deleteItem and createItem actions
  *
  * @example
@@ -35,7 +36,7 @@ const urlKeyOf = <T extends { url?: ReadonlyUrl | undefined }>(item: T): string 
  */
 export function useResourceCollection<K extends ClinicalDomainClasses>(
   ResourceSchema: K,
-  filters?: RepositoryFilters<InstanceType<K>>
+  filters?: Search.QueryFor<K>
 ): {
   collectionPromise: Promise<readonly { data: InstanceType<K>; loading: boolean }[]>
   createItem: (t: InstanceType<K>) => void

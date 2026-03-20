@@ -69,5 +69,6 @@ export interface PractitionerEncoded
 export class Practitioner extends PractitionerResource.extend<Practitioner>(DomainType)(fields) {
   static readonly DomainType = PractitionerResource.DomainType
   static readonly UrlSchema = PractitionerResource.UrlSchema
+  static readonly SearchSchema = {} as const
   readonly cloneWith = makeCloneWith(Practitioner, this)
 }

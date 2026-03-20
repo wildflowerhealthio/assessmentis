@@ -111,4 +111,5 @@ export class DiagnosticReport extends DiagnosticReportResource.extend<Diagnostic
 ) {
   static readonly DomainType = DiagnosticReportResource.DomainType
   static readonly UrlSchema = DiagnosticReportResource.UrlSchema
+  static readonly SearchSchema = {} as const
 }

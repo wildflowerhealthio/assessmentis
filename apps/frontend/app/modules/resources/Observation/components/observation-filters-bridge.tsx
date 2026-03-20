@@ -1,28 +1,39 @@
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router'
 
-import type { Observation, RepositoryFilters } from '@assessmentis/clinical-domain'
+import type { Observation } from '@assessmentis/clinical-domain'
+import { Search } from '@assessmentis/effectful-store'
 
 import { ObservationFilters } from './ObservationFilters/observation-filters'
 
 export function ObservationFiltersBridge({
   onFiltersChange: handleFiltersChange,
 }: {
-  onFiltersChange: (filters: RepositoryFilters<Observation>) => void
+  onFiltersChange: (filters: Search.QueryFor<typeof Observation>) => void
 }): React.JSX.Element {
   const [searchParams, setSearchParams] = useSearchParams()
   const patientId = searchParams.get('patientId')
   const encounterId = searchParams.get('encounterId')
 
   useEffect(() => {
-    const filter: RepositoryFilters<Observation> = {}
-    if (patientId) {
-      filter.subject = `Patient/${patientId}`
+    const buildEncounterCondition = (): Search.Condition.Condition | undefined => {
+      if (!encounterId) return undefined
+      const encounterRefs = encounterId.split(',').map((id) => `Encounter/${id.trim()}`)
+      const [first, second, ...rest] = encounterRefs
+      if (first !== undefined && second !== undefined) {
+        return Search.Condition.AnyOf([first, second, ...rest])
+      }
+      if (first !== undefined) {
+        return Search.Condition.Exactly(first)
+      }
+      return undefined
     }
-    if (encounterId) {
-      filter.encounter = encounterId.split(',').map((id) => `Encounter/${id.trim()}`)
-    }
-    handleFiltersChange(filter)
+
+    const encounterCondition = buildEncounterCondition()
+    handleFiltersChange({
+      ...(patientId ? { subject: Search.Condition.Exactly(`Patient/${patientId}`) } : {}),
+      ...(encounterCondition ? { encounter: encounterCondition } : {}),
+    })
   }, [patientId, encounterId, handleFiltersChange])
 
   const handlePatientChange = (id: string | undefined): void => {

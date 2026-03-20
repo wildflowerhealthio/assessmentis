@@ -19,7 +19,7 @@ type DomainType = typeof DomainType
 /**
  * The status of the result value.
  */
-export const ObservationStatus = Schema.Enums({
+const ObservationStatus = Schema.Enums({
   amended: 'amended',
   cancelled: 'cancelled',
   corrected: 'corrected',
@@ -31,7 +31,7 @@ export const ObservationStatus = Schema.Enums({
 } as const)
 
 /** Decoded status value for an {@link Observation}. */
-export type ObservationStatus = typeof ObservationStatus.Type
+type ObservationStatus = typeof ObservationStatus.Type
 
 // --- Observation ---
 
@@ -111,14 +111,21 @@ const fields = {
 const ObservationResource = Resource(DomainType)
 
 /** Encoded (wire-format) shape of an {@link Observation}. */
-export interface ObservationEncoded
+interface ObservationEncoded
   extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<DomainType> {}
 
 /**
  * Measurements and simple assertions made about a patient, device or other subject.
  */
-export class Observation extends ObservationResource.extend<Observation>(DomainType)(fields) {
+class Observation extends ObservationResource.extend<Observation>(DomainType)(fields) {
   static readonly DomainType = ObservationResource.DomainType
   static readonly UrlSchema = ObservationResource.UrlSchema
+  static readonly SearchSchema = {
+    encounter: ['Exactly', 'AnyOf'],
+    subject: ['Exactly'],
+  } as const
   readonly cloneWith = makeCloneWith(Observation, this)
 }
+
+export { ObservationStatus, Observation }
+export type { ObservationEncoded }

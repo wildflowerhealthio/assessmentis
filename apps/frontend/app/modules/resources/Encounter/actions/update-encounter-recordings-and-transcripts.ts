@@ -3,6 +3,7 @@ import { Effect } from 'effect'
 import { ClinicalDomainHub, Encounter, Media } from '@assessmentis/clinical-domain'
 import { Reference } from '@assessmentis/clinical-domain/data-types'
 import type { Resource } from '@assessmentis/effectful-store'
+import { Search } from '@assessmentis/effectful-store'
 import type {
   AuthError,
   AuthzError,
@@ -54,7 +55,7 @@ export const updateEncounterRecordingsAndTranscripts = (
 
     // Fetch all existing Media resources
     const knownMediaItems = yield* hub.search(Media, {
-      encounter: `Encounter/${encounterUrl.asUriComponent()}`,
+      encounter: Search.Condition.Exactly(`Encounter/${encounterUrl.asUriComponent()}`),
     })
 
     // Get media with fresh URLs from the video call service

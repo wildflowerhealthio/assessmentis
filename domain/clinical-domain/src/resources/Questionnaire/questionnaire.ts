@@ -65,4 +65,5 @@ export interface QuestionnaireEncoded
 export class Questionnaire extends QuestionnaireResource.extend<Questionnaire>(DomainType)(fields) {
   static readonly DomainType = QuestionnaireResource.DomainType
   static readonly UrlSchema = QuestionnaireResource.UrlSchema
+  static readonly SearchSchema = {} as const
 }

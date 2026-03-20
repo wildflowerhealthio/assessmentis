@@ -31,6 +31,7 @@ import type * as ResourceRequest from './resource-request'
 class TestResource {
   static readonly DomainType = 'TestResource' as const
   static readonly UrlSchema = ReadonlyUrl.FromString
+  static readonly SearchSchema = {} as const
   readonly domainType = 'TestResource' as const
   readonly url?: ReadonlyUrl | undefined
   readonly name!: string
@@ -39,6 +40,7 @@ class TestResource {
 class OtherResource {
   static readonly DomainType = 'OtherResource' as const
   static readonly UrlSchema = ReadonlyUrl.FromString
+  static readonly SearchSchema = {} as const
   readonly domainType = 'OtherResource' as const
   readonly url?: ReadonlyUrl | undefined
   readonly value!: number

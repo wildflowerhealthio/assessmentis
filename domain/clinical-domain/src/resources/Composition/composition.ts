@@ -59,5 +59,6 @@ export interface CompositionEncoded
 export class Composition extends CompositionResource.extend<Composition>(DomainType)(fields) {
   static readonly DomainType = CompositionResource.DomainType
   static readonly UrlSchema = CompositionResource.UrlSchema
+  static readonly SearchSchema = {} as const
   readonly cloneWith = makeCloneWith(Composition, this)
 }

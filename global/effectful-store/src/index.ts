@@ -11,5 +11,6 @@ export * as Resource from './resource'
 // TODO: Eliminate the need for this export
 export type { WithId } from './resource'
 export * as ResourceRequest from './resource-request'
+export * as Search from './search/index'
 export * as Origin from './origin'
 export * from './hub-state-stream'

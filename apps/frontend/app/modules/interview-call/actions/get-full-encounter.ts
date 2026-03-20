@@ -8,6 +8,7 @@ import {
   QuestionnaireResponse,
 } from '@assessmentis/clinical-domain'
 import type { EncounterLocation } from '@assessmentis/clinical-domain'
+import { Search } from '@assessmentis/effectful-store'
 import type { ReadonlyUrl, Resource } from '@assessmentis/effectful-store'
 import { UnhandledError } from '@assessmentis/ontology'
 import type {
@@ -53,7 +54,7 @@ export const getFullEncounter = (
 
     // Fetch questionnaire responses for this encounter
     const responses = yield* hub.search(QuestionnaireResponse, {
-      encounter: encounterUrl.toString(),
+      encounter: Search.Condition.Exactly(encounterUrl.toString()),
     })
     const allQuestionnaires = yield* hub.search(Questionnaire)
 

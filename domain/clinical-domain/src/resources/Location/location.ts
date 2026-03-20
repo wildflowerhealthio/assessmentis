@@ -56,7 +56,7 @@ const fields = {
 const LocationResource = Resource(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Location}. */
-export interface LocationEncoded
+interface LocationEncoded
   extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<DomainType> {}
 
 /**
@@ -64,9 +64,10 @@ export interface LocationEncoded
  * provided and resources and participants may be stored, found, contained,
  * or accommodated.
  */
-export class Location extends LocationResource.extend<Location>(DomainType)(fields) {
+class Location extends LocationResource.extend<Location>(DomainType)(fields) {
   static readonly DomainType = LocationResource.DomainType
   static readonly UrlSchema = LocationResource.UrlSchema
+  static readonly SearchSchema = {} as const
   readonly cloneWith = makeCloneWith(Location, this)
 }
 
@@ -74,6 +75,9 @@ export class Location extends LocationResource.extend<Location>(DomainType)(fiel
  * Checks if a location entry represents a virtual location (e.g., video room).
  * Virtual locations are identified by a physical type coding with code 'vi'.
  */
-export const isVirtualLocation = (locationEntry: {
+const isVirtualLocation = (locationEntry: {
   physicalType?: { coding?: readonly { code?: Code }[] }
 }): boolean => locationEntry.physicalType?.coding?.some((c) => c.code === Code.make('vi')) ?? false
+
+export { Location, isVirtualLocation }
+export type { LocationEncoded }

@@ -66,6 +66,9 @@ export class QuestionnaireResponse extends QuestionnaireResponseResource.extend<
 }) {
   static readonly DomainType = QuestionnaireResponseResource.DomainType
   static readonly UrlSchema = QuestionnaireResponseResource.UrlSchema
+  static readonly SearchSchema = {
+    encounter: ['Exactly'],
+  } as const
   readonly cloneWith = makeCloneWith(QuestionnaireResponse, this);
 
   /** Yields all nested {@link QuestionnaireResponseItem}s depth-first. */

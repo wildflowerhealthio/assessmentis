@@ -17,7 +17,7 @@ type DomainType = typeof DomainType
 /**
  * The status of the media resource.
  */
-export const MediaStatus = Schema.Enums({
+const MediaStatus = Schema.Enums({
   completed: 'completed',
   'entered-in-error': 'entered-in-error',
   'in-progress': 'in-progress',
@@ -29,7 +29,7 @@ export const MediaStatus = Schema.Enums({
 } as const)
 
 /** Decoded status value for a {@link Media} resource. */
-export type MediaStatus = typeof MediaStatus.Type
+type MediaStatus = typeof MediaStatus.Type
 
 const fields = {
   basedOn: Schema.optional(
@@ -78,15 +78,21 @@ const fields = {
 const MediaResource = Resource(DomainType)
 
 /** Encoded (wire-format) shape of a {@link Media}. */
-export interface MediaEncoded
-  extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<DomainType> {}
+interface MediaEncoded extends Schema.Struct.Encoded<typeof fields>, ResourceEncoded<DomainType> {}
 
 /**
  * A photo, video, or audio recording acquired or used in healthcare.
  * The actual content may be inline or provided by direct reference.
  */
-export class Media extends MediaResource.extend<Media>(DomainType)(fields) {
+class Media extends MediaResource.extend<Media>(DomainType)(fields) {
   static readonly DomainType = MediaResource.DomainType
   static readonly UrlSchema = MediaResource.UrlSchema
+  static readonly SearchSchema = {
+    encounter: ['Exactly'],
+    url: ['Exactly'],
+  } as const
   readonly cloneWith = makeCloneWith(Media, this)
 }
+
+export { MediaStatus, Media }
+export type { MediaEncoded }

@@ -82,5 +82,6 @@ export interface PatientEncoded
 export class Patient extends PatientResource.extend<Patient>(DomainType)(fields) {
   static readonly DomainType = PatientResource.DomainType
   static readonly UrlSchema = PatientResource.UrlSchema
+  static readonly SearchSchema = {} as const
   readonly cloneWith = makeCloneWith(Patient, this)
 }

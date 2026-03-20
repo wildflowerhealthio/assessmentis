@@ -10,6 +10,7 @@ import {
   QuestionnaireResponse,
 } from '@assessmentis/clinical-domain'
 import type { QuestionnaireItemLink } from '@assessmentis/clinical-domain'
+import { Search } from '@assessmentis/effectful-store'
 import { UnhandledError } from '@assessmentis/ontology'
 import { gad7 } from '@assessmentis/questionnaire-entities'
 import { useEffectTs } from '@assessmentis/react-util'
@@ -62,9 +63,11 @@ export default function QuestionnaireResponseDetailsPage({
         ? yield* clinicalHub.get(Questionnaire, questionnaireUrl)
         : undefined
 
-      const observations = yield* clinicalHub.search(Observation, {
-        encounter: encounterUrl,
-      })
+      const observations = encounterUrl
+        ? yield* clinicalHub.search(Observation, {
+            encounter: Search.Condition.Exactly(encounterUrl),
+          })
+        : []
 
       return {
         encounterUrl,
@@ -124,7 +127,7 @@ const ResponsePage = ({
   )
 
   const mediaFilters = useMemo(
-    () => (encounterUrl ? { encounter: encounterUrl } : undefined),
+    () => (encounterUrl ? { encounter: Search.Condition.Exactly(encounterUrl) } : undefined),
     [encounterUrl]
   )
   const { collectionPromise: mediaPromise, deleteItem: deleteMedia } = useResourceCollection(
@@ -172,6 +175,7 @@ const ResponsePage = ({
           >
             Recordings:
             <button
+              type="button"
               className="element-button button-1"
               style={{
                 display: 'inline-block',
@@ -207,6 +211,7 @@ const ResponsePage = ({
                       Your browser does not support the video tag.
                     </video>
                     <button
+                      type="button"
                       className="element-button button-1 filled accent-red"
                       style={{
                         marginBottom: 'var(--space-5)',
@@ -234,6 +239,7 @@ const ResponsePage = ({
           >
             Observations:
             <button
+              type="button"
               className="element-button button-1"
               style={{
                 display: 'inline-block',

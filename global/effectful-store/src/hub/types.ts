@@ -16,6 +16,7 @@ import type * as Origin from '../origin'
 import type { ReadonlyUrl } from '../readonly-url'
 import type * as Resource from '../resource'
 import type * as ResourceRequest from '../resource-request'
+import type * as Search from '../search/index'
 
 // --- Pipeline types ---
 
@@ -109,13 +110,13 @@ export interface ResourceMethods<Klass extends Resource.AnyDomainClass> {
     never
   >
   readonly search: (
-    params?: ResourceRequest.SearchParam<InstanceType<Klass>>
+    params?: Search.QueryFor<Klass>
   ) => Effect.Effect<
     readonly Resource.WithResourceUrl<InstanceType<Klass>>[],
     ResourceRequest.CommonErrors
   >
   readonly subscribeSearch: (
-    params?: ResourceRequest.SearchParam<InstanceType<Klass>>
+    params?: Search.QueryFor<Klass>
   ) => Stream.Stream<
     Either.Either<
       readonly Resource.WithResourceUrl<InstanceType<Klass>>[],
