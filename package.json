@@ -15,6 +15,7 @@
     "domain/platform-domain",
     "domain/clinical-domain",
     "domain/config-domain",
+    "domain/firebase-domain",
     "domain/fhir-r4",
     "domain/questionnaire-entities",
     "domain/document-template-kinds",
