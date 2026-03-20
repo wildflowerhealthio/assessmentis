@@ -1,4 +1,4 @@
-import { Array as EffectArray, Match, Option, Predicate, Schema } from 'effect'
+import { Match, Option, Predicate, Schema } from 'effect'
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router'
 

@@ -222,12 +222,18 @@ type AllActionResolver<Klass extends Resource.AnyDomainClass> = RequestResolver.
   FhirR4Client | BaseUrl
 >
 
+const serializeValue = (v: unknown): string => {
+  if (typeof v === 'string') {
+    return v
+  }
+  return String(v)
+}
+
 const makeResolverSet = <Klass extends SupportedClasses>({
   klass,
   Schema: schema,
 }: {
   klass: Klass
-  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
   Schema: Schema.Schema<any, any, BaseUrl>
 }): AllActionResolver<Klass> => {
   const encode = Schema.encode(schema)
@@ -311,8 +317,6 @@ const makeResolverSet = <Klass extends SupportedClasses>({
     })
   )
 
-  const serializeValue = (v: unknown): string => (typeof v === 'string' ? v : String(v))
-
   const serializeConditions = (
     params: SearchDSL.QueryFor<SupportedClasses>
   ): Record<string, string | readonly string[]> => {
@@ -321,7 +325,7 @@ const makeResolverSet = <Klass extends SupportedClasses>({
       if (condition === undefined) continue
       flat[key] = SearchDSL.Condition.match(condition, {
         Exactly: ({ value }) => serializeValue(value),
-        AnyOf: ({ values }) => values.map(serializeValue),
+        AnyOf: ({ values }) => values.map((v) => serializeValue(v)),
       })
     }
     return flat

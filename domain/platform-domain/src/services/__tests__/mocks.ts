@@ -5,25 +5,24 @@ import { vi } from 'vitest'
 import { NotFoundError } from '@assessmentis/ontology'
 
 import { OrgSlug } from '../../models/id-types'
-import type { Org } from '../../models/org'
+import { Org } from '../../models/org'
 import type { DocumentData, DocumentPath, DocumentStore } from '../../tagClasses'
 
 type DocumentStoreService = Context.Tag.Service<typeof DocumentStore>
 
 /**
- * Default org literal for testing
+ * Default org instance for testing.
  */
-export const defaultOrg = (): Org => ({
-  emoji: '🏢',
-  originServerConfigs: {},
-  origins: {},
-  slug: OrgSlug.make('test-org'),
-})
+const defaultOrg = (): Org =>
+  Org.make({
+    emoji: '🏢',
+    slug: OrgSlug.make('test-org'),
+  })
 
 /**
  * Mock implementations for DocumentStore methods
  */
-export const mockDocumentStoreImplementations: {
+const mockDocumentStoreImplementations: {
   [k in keyof DocumentStoreService]: Record<
     string,
     // oxlint-disable-next-line @typescript-eslint/no-explicit-any
@@ -95,12 +94,12 @@ export const mockDocumentStoreImplementations: {
  * @param impl - Partial implementation to override defaults
  * @returns DocumentStore service with vitest mocks
  */
-export const mockDocumentStore = (
-  impl: Partial<DocumentStoreService> = {}
-): DocumentStoreService => ({
+const mockDocumentStore = (impl: Partial<DocumentStoreService> = {}): DocumentStoreService => ({
   get: vi.fn(mockDocumentStoreImplementations.get.notFound()),
   set: vi.fn(mockDocumentStoreImplementations.set.noop()),
   subscribeTo: vi.fn(mockDocumentStoreImplementations.subscribeTo.emptyStream()),
   update: vi.fn(mockDocumentStoreImplementations.update.noop()),
   ...impl,
 })
+
+export { defaultOrg, mockDocumentStore, mockDocumentStoreImplementations }

@@ -1,6 +1,6 @@
 import { Layer } from 'effect'
 
-import { FirebaseWeb } from '@assessmentis/firebase-web-infrastructure'
+import { FirebasePlatformRoutes, FirebaseWeb } from '@assessmentis/firebase-web-infrastructure'
 
 import { initializeApp } from 'firebase/app'
 import type { FirebaseOptions } from 'firebase/app'
@@ -17,17 +17,27 @@ const firebaseConfig = {
   storageBucket: 'assessmentis.firebasestorage.app',
 } satisfies FirebaseOptions
 
+const databaseId = 'assessmentis'
+
 // Initialize Firebase
-export const app = initializeApp(firebaseConfig)
+const app = initializeApp(firebaseConfig)
 app.automaticDataCollectionEnabled = false
 
-export const db = getFirestore(app, 'assessmentis')
+const db = getFirestore(app, databaseId)
 
 // Initialize Firebase Authentication and get a reference to the service
-export const auth = getAuth(app)
+const auth = getAuth(app)
 
-export const FirebaseWebLayer = Layer.succeed(FirebaseWeb, {
+/** Platform routes for the Assessmentis Firebase project. */
+const platformRoutes = new FirebasePlatformRoutes({
+  projectId: firebaseConfig.projectId,
+  databaseId,
+})
+
+const FirebaseWebLayer = Layer.succeed(FirebaseWeb, {
   app,
   auth,
   firestore: db,
 })
+
+export { app, auth, db, platformRoutes, FirebaseWebLayer }

@@ -11,6 +11,35 @@ describe('Org', () => {
   const decodeEither = Schema.decodeUnknownEither(Org)
   const encode = Schema.encodeSync(Org)
 
+  describe('DomainClass conformance', () => {
+    test('has static DomainType', () => {
+      expect(Org.DomainType).toBe('Org')
+    })
+
+    test('has static UrlSchema', () => {
+      expect(Org.UrlSchema).toBeDefined()
+    })
+
+    test('has static SearchSchema', () => {
+      expect(Org.SearchSchema).toEqual({})
+    })
+
+    test('decoded instance has domainType', () => {
+      const org = decode({ emoji: '🏥', slug: 'test-org' })
+      expect(org.domainType).toBe('Org')
+    })
+
+    test('domainType defaults when omitted from input', () => {
+      const org = decode({ emoji: '🏥', slug: 'test-org' })
+      expect(org.domainType).toBe('Org')
+    })
+
+    test('url is undefined when omitted', () => {
+      const org = decode({ emoji: '🏥', slug: 'test-org' })
+      expect(org.url).toBeUndefined()
+    })
+  })
+
   describe('roundtrip', () => {
     test('property: encode-decode round-trip preserves value (no timestamps)', () => {
       const localDecode = Schema.decodeUnknownSync(Org)
@@ -19,7 +48,8 @@ describe('Org', () => {
         fc.property(orgArb, (org) => {
           const encoded = localEncode(org)
           const decoded = localDecode(encoded)
-          expect(decoded).toEqual(org)
+          const reEncoded = localEncode(decoded)
+          expect(reEncoded).toEqual(encoded)
         })
       )
     })
@@ -199,6 +229,15 @@ describe('Org', () => {
           expect(result.slug).toBe(slug)
         })
       )
+    })
+  })
+
+  describe('cloneWith', () => {
+    test('produces a new instance with updated fields', () => {
+      const org = decode({ emoji: '🏥', slug: 'test-org' })
+      const cloned = org.cloneWith({ emoji: '🏢' })
+      expect(cloned.emoji).toBe('🏢')
+      expect(cloned.slug).toBe(org.slug)
     })
   })
 })

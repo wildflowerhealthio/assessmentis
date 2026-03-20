@@ -1,7 +1,7 @@
 {
-  "name": "@assessmentis/firebase-web-infrastructure",
+  "name": "@assessmentis/firebase-domain",
   "version": "0.0.1",
-  "description": "Firebase based infrastructure implementations",
+  "description": "Pure Firebase URL scheme and configuration types",
   "license": "UNLICENSED",
   "author": "Ruth Marks",
   "type": "module",
@@ -15,17 +15,13 @@
     "typecheck": "npx tsgo --noEmit"
   },
   "dependencies": {
-    "@assessmentis/clinical-domain": "*",
-    "@assessmentis/config-domain": "*",
-    "@assessmentis/firebase-domain": "*",
-    "@assessmentis/ontology": "*",
+    "@assessmentis/effectful-store": "*",
     "@assessmentis/platform-domain": "*",
-    "@assessmentis/video-call-domain": "*",
-    "effect": "^3.19.9",
-    "firebase": "^12.6.0"
+    "effect": "^3.19.9"
   },
   "devDependencies": {
     "@assessmentis/typescript-config": "*",
+    "fast-check": "^3.19.0",
     "vitest": "^4.0.15"
   }
 }

@@ -5,7 +5,7 @@ import type { NotFoundError, UnhandledError } from '@assessmentis/ontology'
 import { isDevelopment } from '@assessmentis/util'
 
 /** A plain key-value record representing a single document's fields. */
-export type DocumentData = Record<string, unknown>
+type DocumentData = Record<string, unknown>
 
 /**
  * A Firestore-style document path: an even-length tuple of alternating
@@ -13,7 +13,7 @@ export type DocumentData = Record<string, unknown>
  *
  * @example `['orgs', 'acme']` or `['orgs', 'acme', 'users', 'uid123']`).
  */
-export type DocumentPath = readonly string[] & {
+type DocumentPath = readonly string[] & {
   0: string
   1: string
   length: 2 | 4 | 6
@@ -28,7 +28,7 @@ let _strictValidation = isDevelopment()
  * Enable strict validation mode for {@link ensureIsDocumentData}.
  * Call this once at app startup in development environments.
  */
-export function setStrictDocumentValidation(enabled: boolean): void {
+function setStrictDocumentValidation(enabled: boolean): void {
   _strictValidation = enabled
 }
 
@@ -53,7 +53,7 @@ function describeNonObjectType(x: unknown): string {
   return typeof x
 }
 
-export function ensureIsDocumentData(x: unknown): DocumentData {
+function ensureIsDocumentData(x: unknown): DocumentData {
   if (typeof x !== 'object' || x === null || Array.isArray(x)) {
     if (_strictValidation) {
       throw new TypeError(
@@ -72,14 +72,13 @@ export function ensureIsDocumentData(x: unknown): DocumentData {
 }
 
 /**
- * Abstract document read/write service backed by a Firestore-like store.
+ * Abstract document read/write service backed by a hierarchical document store.
  *
  * @remarks
- * Infrastructure provides the concrete implementation (Firebase Web SDK on
- * the client, Firebase Admin SDK on the server). Domain code depends on
+ * Infrastructure provides the concrete implementation. Domain code depends on
  * this tag to stay pure and testable.
  */
-export class DocumentStore extends Context.Tag('DocumentStore')<
+class DocumentStore extends Context.Tag('DocumentStore')<
   DocumentStore,
   {
     /** Read a single document, failing with `NotFoundError` if it does not exist. */
@@ -115,3 +114,11 @@ export class DocumentStore extends Context.Tag('DocumentStore')<
     update(data: Partial<DocumentData>, path: DocumentPath): Effect.Effect<void, UnhandledError>
   }
 >() {}
+
+export {
+  type DocumentData,
+  type DocumentPath,
+  DocumentStore,
+  ensureIsDocumentData,
+  setStrictDocumentValidation,
+}

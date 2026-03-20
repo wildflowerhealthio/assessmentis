@@ -15,6 +15,7 @@
     "typecheck": "npx tsgo --noEmit"
   },
   "dependencies": {
+    "@assessmentis/firebase-domain": "*",
     "@assessmentis/firebase-web-infrastructure": "*",
     "@assessmentis/ontology": "*",
     "@assessmentis/platform-domain": "*",
