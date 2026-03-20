@@ -1,7 +1,8 @@
-import { Schema } from 'effect'
+import { Schema, pipe } from 'effect'
 
-import { UriEncodedOriginUrl } from '@assessmentis/effectful-store'
-import { DateTimeUtcFromFirebaseTimestamp } from '@assessmentis/util'
+import { ReadonlyUrl, UriEncodedOriginUrl } from '@assessmentis/effectful-store'
+import type { Search } from '@assessmentis/effectful-store'
+import { DateTimeUtcFromFirebaseTimestamp, makeCloneWith } from '@assessmentis/util'
 
 import { BaseOriginDefinition } from './base-origin-definition'
 import { OrgSlug } from './id-types'
@@ -18,10 +19,24 @@ const BaseOriginServerConfig = Schema.Struct({
   _tag: Schema.String,
 }).annotations({ parseOptions: { onExcessProperty: 'preserve' } })
 
+const OrgUrlSchema = pipe(ReadonlyUrl.FromString, Schema.brand('Org/url'))
+
 /**
- * Schema for an organization document stored in the `orgs` collection.
+ * Organization document stored in the `orgs` collection.
+ *
+ * @remarks
+ * Satisfies the `DomainClass` interface from effectful-store so orgs can
+ * be served through the Hub alongside clinical resources. The `domainType`
+ * field defaults to `'Org'` and `url` is optional, so existing Firestore
+ * documents decode without changes.
  */
-export const Org = Schema.Struct({
+export class Org extends Schema.Class<Org>('Org')({
+  /** String literal discriminant identifying this as an Org resource. */
+  domainType: Schema.optionalWith(Schema.Literal('Org'), {
+    default: () => 'Org' as const,
+  }),
+  /** Firebase URL identifying this org's location in the store. */
+  url: Schema.optional(OrgUrlSchema),
   /** URL-safe unique identifier for the org (e.g. `"acme"`). Used in paths and URLs. */
   slug: OrgSlug,
   /** Emoji displayed alongside the org name in the UI. */
@@ -49,5 +64,9 @@ export const Org = Schema.Struct({
   lastTranscriptSyncTimestamp: Schema.optional(DateTimeUtcFromFirebaseTimestamp),
   /** Human-readable error message from the most recent failed sync attempt, if any. */
   lastSyncError: Schema.optional(Schema.String),
-})
-export type Org = typeof Org.Type
+}) {
+  static readonly DomainType = 'Org' as const
+  static readonly UrlSchema = OrgUrlSchema
+  static readonly SearchSchema = {} as const satisfies Search.Schema
+  readonly cloneWith = makeCloneWith(Org, this)
+}

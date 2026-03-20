@@ -1,8 +1,7 @@
 import { Effect, Either, Stream } from 'effect'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { NoSelectedOrgError, OrgSlug } from '@assessmentis/platform-domain'
-import type { Org } from '@assessmentis/platform-domain'
+import { NoSelectedOrgError, Org, OrgSlug } from '@assessmentis/platform-domain'
 
 import { render, screen, waitFor } from '@testing-library/react'
 
@@ -16,12 +15,10 @@ vi.mock('./platform-context', () => ({
 }))
 
 describe('OrgContextProvider', () => {
-  const mockOrg: Org = {
+  const mockOrg = Org.make({
     emoji: '🏥',
-    originServerConfigs: {},
-    origins: {},
     slug: OrgSlug.make('test-org'),
-  }
+  })
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -99,12 +96,10 @@ describe('OrgContextProvider', () => {
   })
 
   it('should not render children when org is not in user orgs', async () => {
-    const unauthorizedOrg: Org = {
+    const unauthorizedOrg = Org.make({
       emoji: '🏢',
-      originServerConfigs: {},
-      origins: {},
       slug: OrgSlug.make('unauthorized-org'),
-    }
+    })
 
     vi.mocked(usePlatformContext).mockReturnValue(
       createMockPlatformContext({
