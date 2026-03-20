@@ -7,9 +7,10 @@ import {
   Reference,
 } from '@assessmentis/clinical-domain/data-types'
 import type { Resource } from '@assessmentis/effectful-store'
+import { TimelessDateFromString } from '@assessmentis/util'
 
 const fields = {
-  birthDate: Schema.optional(Schema.DateFromSelf),
+  birthDate: Schema.optional(TimelessDateFromString),
   familyName: Schema.String,
   gender: Schema.optional(AdministrativeGender),
   givenName: Schema.String,

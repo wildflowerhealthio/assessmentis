@@ -7,7 +7,7 @@
  *   These are ALWAYS displayed in the user's local timezone
  * - DateTime.Zoned: For local times meaningful in the user's space (e.g., appointment times)
  *   These show their timezone if it differs from local time
- * - Date (string): For timezone-independent dates (e.g., birthdays)
+ * - TimelessDate (branded YYYY-MM-DD string): For timezone-independent dates (e.g., birthdays)
  *
  * All functions that depend on the current time return Effects to enable:
  * - Testability (inject a test Clock with fixed time)
@@ -72,18 +72,20 @@ function isSameDay(date1: DateTime.DateTime, date2: DateTime.DateTime): boolean 
 /**
  * Format a timezone-independent date (e.g., birthdays, anniversaries)
  * Uses Clock to determine if the year should be included based on proximity to current date
- * @param date - Date object or undefined
+ * @param dateString - YYYY-MM-DD date string or undefined
  * @param fallback - Fallback string if date is undefined or invalid
  * @returns Effect that produces formatted date string (e.g., "January 15th" or "January 15th, 2024")
  */
 export const humanizeTimelessDate = (
-  date: Date | undefined,
+  dateString: string | undefined,
   fallback: string = 'Unknown'
 ): Effect.Effect<string, never, DateTime.CurrentTimeZone> =>
   Effect.gen(function* () {
-    if (date === undefined) {
+    if (dateString === undefined) {
       return fallback
     }
+
+    const date = new Date(dateString)
 
     if (isNaN(date.getTime())) {
       return fallback

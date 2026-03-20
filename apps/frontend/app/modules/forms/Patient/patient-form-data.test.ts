@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import { Practitioner } from '@assessmentis/clinical-domain'
 import type { AdministrativeGender } from '@assessmentis/clinical-domain/data-types'
+import { TimelessDateFromString } from '@assessmentis/util'
 
 import { PatientFormData } from './patient-form-data'
 
@@ -10,7 +11,7 @@ describe('PatientFormData', () => {
   describe('schema validation', () => {
     it('should validate correct form data', () => {
       const validData: typeof PatientFormData.Encoded = {
-        birthDate: new Date('1990-01-01'),
+        birthDate: '1990-01-01',
         familyName: 'Doe',
         gender: 'male',
         givenName: 'John',
@@ -19,7 +20,7 @@ describe('PatientFormData', () => {
 
       const result = Schema.decodeUnknownSync(PatientFormData)(validData)
       expect(result).toMatchObject({
-        birthDate: new Date('1990-01-01'),
+        birthDate: '1990-01-01',
         familyName: 'Doe',
         gender: 'male',
         givenName: 'John',
@@ -53,7 +54,7 @@ describe('PatientFormData', () => {
   describe('toCreatePayload', () => {
     it('should transform form data to Patient domain model', () => {
       const formData = PatientFormData.make({
-        birthDate: new Date('1990-01-01'),
+        birthDate: Schema.decodeSync(TimelessDateFromString)('1990-01-01'),
         familyName: 'Doe',
         gender: 'male',
         givenName: 'John',
@@ -66,7 +67,7 @@ describe('PatientFormData', () => {
 
       expect(patient).toMatchObject({
         active: true,
-        birthDate: new Date('1990-01-01'),
+        birthDate: '1990-01-01',
         domainType: 'Patient',
         gender: 'male',
         generalPractitioner: [
@@ -129,8 +130,7 @@ describe('PatientFormData', () => {
         birthDate: FastCheck.option(
           FastCheck.date()
             .map((d) => d.toISOString().split('T')[0])
-            .filter((s) => s.length === 10)
-            .map((s) => new Date(s)),
+            .filter((s) => s.length === 10),
           { nil: undefined }
         ),
         familyName: FastCheck.string({ minLength: 1, maxLength: 50 }),
@@ -176,8 +176,7 @@ describe('PatientFormData', () => {
         birthDate: FastCheck.option(
           FastCheck.date()
             .map((d) => d.toISOString().split('T')[0])
-            .filter((s) => s.length === 10)
-            .map((s) => new Date(s)),
+            .filter((s) => s.length === 10),
           { nil: undefined }
         ),
         familyName: FastCheck.string({ minLength: 1, maxLength: 50 }),

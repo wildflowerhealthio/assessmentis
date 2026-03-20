@@ -12,7 +12,7 @@ const meta: Meta<typeof DateField> = {
   render: function Render(args) {
     const [, updateArgs] = useArgs()
 
-    function onChange(val: Date | undefined): void {
+    function onChange(val: string | undefined): void {
       updateArgs({ value: val })
     }
 
@@ -43,7 +43,7 @@ export const WithValue: Story = {
   args: {
     label: 'Birth Date',
     name: 'birthDate',
-    value: new Date('1990-01-15'),
+    value: '1990-01-15',
   },
 }
 
@@ -78,6 +78,6 @@ export const Disabled: Story = {
   args: {
     label: 'Birth Date',
     name: 'birthDate',
-    value: new Date('1990-01-15'),
+    value: '1990-01-15',
   },
 }
