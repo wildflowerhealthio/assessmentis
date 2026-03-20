@@ -1,5 +1,6 @@
 import { Schema } from 'effect'
 
+import type { Search } from '@assessmentis/effectful-store'
 import { AnnotateArrayWithArbitrary, makeCloneWith } from '@assessmentis/util'
 
 import { Resource } from '../../data-types/base/resource'
@@ -67,7 +68,8 @@ interface LocationEncoded
 class Location extends LocationResource.extend<Location>(DomainType)(fields) {
   static readonly DomainType = LocationResource.DomainType
   static readonly UrlSchema = LocationResource.UrlSchema
-  static readonly SearchSchema = {} as const
+  /** No search parameters configured for this resource. */
+  static readonly SearchSchema = {} as const satisfies Search.Schema
   readonly cloneWith = makeCloneWith(Location, this)
 }
 

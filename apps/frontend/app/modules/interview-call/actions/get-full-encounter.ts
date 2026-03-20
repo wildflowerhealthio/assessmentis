@@ -54,7 +54,7 @@ export const getFullEncounter = (
 
     // Fetch questionnaire responses for this encounter
     const responses = yield* hub.search(QuestionnaireResponse, {
-      encounter: Search.Condition.Exactly(encounterUrl.toString()),
+      encounter: Search.Condition.Exactly(encounterUrl),
     })
     const allQuestionnaires = yield* hub.search(Questionnaire)
 

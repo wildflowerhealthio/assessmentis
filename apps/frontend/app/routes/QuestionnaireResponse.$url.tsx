@@ -4,12 +4,14 @@ import { Await, useNavigate } from 'react-router'
 
 import {
   ClinicalDomainHub,
+  Encounter,
   Media,
   Observation,
   Questionnaire,
   QuestionnaireResponse,
 } from '@assessmentis/clinical-domain'
 import type { QuestionnaireItemLink } from '@assessmentis/clinical-domain'
+import type { Resource } from '@assessmentis/effectful-store'
 import { Search } from '@assessmentis/effectful-store'
 import { UnhandledError } from '@assessmentis/ontology'
 import { gad7 } from '@assessmentis/questionnaire-entities'
@@ -57,15 +59,19 @@ export default function QuestionnaireResponseDetailsPage({
       )
 
       const questionnaireUrl = questionnaireResponse.questionnaire
-      const encounterUrl = questionnaireResponse.encounter?.reference ?? undefined
+      const encounterRef = questionnaireResponse.encounter
 
       const questionnaire = questionnaireUrl
         ? yield* clinicalHub.get(Questionnaire, questionnaireUrl)
         : undefined
 
-      const observations = encounterUrl
+      const encounterUrl = encounterRef
+        ? yield* encounterRef.asResourceUrl(Encounter).pipe(Effect.option)
+        : Option.none()
+
+      const observations = Option.isSome(encounterUrl)
         ? yield* clinicalHub.search(Observation, {
-            encounter: Search.Condition.Exactly(encounterUrl),
+            encounter: Search.Condition.Exactly(encounterUrl.value),
           })
         : []
 
@@ -110,7 +116,7 @@ const ResponsePage = ({
 }: {
   questionnaire: Questionnaire
   questionnaireResponse: QuestionnaireResponse
-  encounterUrl: string | undefined
+  encounterUrl: Option.Option<Resource.InferResourceUrl<Encounter>>
   observations: readonly Observation[]
 }): React.JSX.Element => {
   const navigate = useNavigate()
@@ -127,7 +133,10 @@ const ResponsePage = ({
   )
 
   const mediaFilters = useMemo(
-    () => (encounterUrl ? { encounter: Search.Condition.Exactly(encounterUrl) } : undefined),
+    () =>
+      Option.isSome(encounterUrl)
+        ? { encounter: Search.Condition.Exactly(encounterUrl.value) }
+        : undefined,
     [encounterUrl]
   )
   const { collectionPromise: mediaPromise, deleteItem: deleteMedia } = useResourceCollection(

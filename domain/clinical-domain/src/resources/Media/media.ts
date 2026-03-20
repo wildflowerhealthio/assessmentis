@@ -1,5 +1,6 @@
 import { Schema } from 'effect'
 
+import { Search } from '@assessmentis/effectful-store'
 import { AnnotateArrayWithArbitrary, makeCloneWith } from '@assessmentis/util'
 
 import { Resource } from '../../data-types/base/resource'
@@ -10,6 +11,7 @@ import { CodeableConcept } from '../../data-types/complex/codeable-concept'
 import { Identifier, Reference } from '../../data-types/complex/identifier-and-reference'
 import type { ReferenceEncoded } from '../../data-types/complex/identifier-and-reference'
 import { Period } from '../../data-types/complex/period'
+import { Encounter } from '../Encounter/encounter'
 
 const DomainType = 'Media' as const
 type DomainType = typeof DomainType
@@ -88,9 +90,9 @@ class Media extends MediaResource.extend<Media>(DomainType)(fields) {
   static readonly DomainType = MediaResource.DomainType
   static readonly UrlSchema = MediaResource.UrlSchema
   static readonly SearchSchema = {
-    encounter: ['Exactly'],
-    url: ['Exactly'],
-  } as const
+    encounter: Search.field(Encounter.UrlSchema, ['Exactly']),
+    url: Search.field(Media.UrlSchema, ['Exactly']),
+  } as const satisfies Search.Schema
   readonly cloneWith = makeCloneWith(Media, this)
 }
 

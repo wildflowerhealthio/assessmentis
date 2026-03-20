@@ -32,9 +32,9 @@ const originUrl = ReadonlyUrl.make({
 /** Arbitrary FHIR-style id (alphanumeric + hyphens) */
 const fhirIdArb = fc.stringMatching(/^[a-zA-Z0-9][a-zA-Z0-9-]{0,63}$/).filter((s) => s.length > 0)
 
-/** Arbitrary search condition values */
-const searchConditionArb: fc.Arbitrary<Search.Condition.Condition> = fc.oneof(
-  fc.string({ maxLength: 20, minLength: 1 }).map((v) => Search.Condition.Exactly(v)),
+/** Arbitrary for string-valued search conditions */
+const stringConditionArb: fc.Arbitrary<Search.Condition.Condition<string>> = fc.oneof(
+  fc.string({ maxLength: 20, minLength: 1 }).map(Search.Condition.Exactly),
   fc
     .array(fc.string({ maxLength: 20, minLength: 1 }), { minLength: 2, maxLength: 4 })
     .map((vs) => Search.Condition.AnyOf(vs as [string, string, ...string[]]))
@@ -43,7 +43,7 @@ const searchConditionArb: fc.Arbitrary<Search.Condition.Condition> = fc.oneof(
 /** Arbitrary search params: 0–3 key/value pairs with SearchCondition values */
 const searchParamsArb = fc.dictionary(
   fc.stringMatching(/^[a-z][a-zA-Z]{0,9}$/),
-  searchConditionArb,
+  stringConditionArb,
   { maxKeys: 3, minKeys: 0 }
 )
 
@@ -174,8 +174,8 @@ describe('FhirR4Origin', () => {
             const expectedFlat: Record<string, string | readonly string[]> = {}
             for (const [key, condition] of Object.entries(params)) {
               expectedFlat[key] = Search.Condition.match(condition, {
-                Exactly: ({ value }) => value,
-                AnyOf: ({ values }) => [...values],
+                Exactly: ({ value }) => String(value),
+                AnyOf: ({ values }) => values.map(String),
               })
             }
             expect(searchFn).toHaveBeenCalledWith(

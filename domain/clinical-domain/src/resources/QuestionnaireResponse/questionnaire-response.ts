@@ -1,10 +1,12 @@
 import { DateTime, Option, Schema } from 'effect'
 
+import { Search } from '@assessmentis/effectful-store'
 import { AnnotateArrayWithArbitrary, makeCloneWith } from '@assessmentis/util'
 
 import { Resource } from '../../data-types/base/resource'
 import type { ResourceEncoded } from '../../data-types/base/resource'
 import { Identifier, Reference } from '../../data-types/complex/identifier-and-reference'
+import { Encounter } from '../Encounter/encounter'
 import { Questionnaire } from '../Questionnaire/questionnaire'
 import { QuestionnaireItemAnsweredAtExtension } from '../Questionnaire/questionnaire-item-answered-at'
 import type { QuestionnaireItemLink } from '../Questionnaire/questionnaire-item-link'
@@ -67,8 +69,8 @@ export class QuestionnaireResponse extends QuestionnaireResponseResource.extend<
   static readonly DomainType = QuestionnaireResponseResource.DomainType
   static readonly UrlSchema = QuestionnaireResponseResource.UrlSchema
   static readonly SearchSchema = {
-    encounter: ['Exactly'],
-  } as const
+    encounter: Search.field(Encounter.UrlSchema, ['Exactly']),
+  } as const satisfies Search.Schema
   readonly cloneWith = makeCloneWith(QuestionnaireResponse, this);
 
   /** Yields all nested {@link QuestionnaireResponseItem}s depth-first. */

@@ -1,10 +1,33 @@
+import { Option, Schema } from 'effect'
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router'
 
-import type { Observation } from '@assessmentis/clinical-domain'
+import { Encounter, type Observation, Patient } from '@assessmentis/clinical-domain'
 import { Search } from '@assessmentis/effectful-store'
 
 import { ObservationFilters } from './ObservationFilters/observation-filters'
+
+const decodePatientUrl = Schema.decodeOption(Patient.UrlSchema)
+const decodeEncounterUrl = Schema.decodeOption(Encounter.UrlSchema)
+
+type EncounterUrl = typeof Encounter.UrlSchema.Type
+
+const buildEncounterCondition = (
+  encounterUrlParam: string | null
+): Option.Option<Search.Condition.Condition<EncounterUrl>> => {
+  if (!encounterUrlParam) return Option.none()
+  const urlStrings = encounterUrlParam.split(',').map((s) => s.trim())
+  const decodedUrls = urlStrings.flatMap((s) => Option.toArray(decodeEncounterUrl(s)))
+  if (decodedUrls.length === 0) return Option.none()
+  const [first, second, ...rest] = decodedUrls
+  if (first !== undefined && second !== undefined) {
+    return Option.some(Search.Condition.AnyOf([first, second, ...rest]))
+  }
+  if (first !== undefined) {
+    return Option.some(Search.Condition.Exactly(first))
+  }
+  return Option.none()
+}
 
 export function ObservationFiltersBridge({
   onFiltersChange: handleFiltersChange,
@@ -12,54 +35,46 @@ export function ObservationFiltersBridge({
   onFiltersChange: (filters: Search.QueryFor<typeof Observation>) => void
 }): React.JSX.Element {
   const [searchParams, setSearchParams] = useSearchParams()
-  const patientId = searchParams.get('patientId')
-  const encounterId = searchParams.get('encounterId')
+  const patientUrlParam = searchParams.get('patientUrl')
+  const encounterUrlParam = searchParams.get('encounterUrl')
 
   useEffect(() => {
-    const buildEncounterCondition = (): Search.Condition.Condition | undefined => {
-      if (!encounterId) return undefined
-      const encounterRefs = encounterId.split(',').map((id) => `Encounter/${id.trim()}`)
-      const [first, second, ...rest] = encounterRefs
-      if (first !== undefined && second !== undefined) {
-        return Search.Condition.AnyOf([first, second, ...rest])
-      }
-      if (first !== undefined) {
-        return Search.Condition.Exactly(first)
-      }
-      return undefined
-    }
+    const patientCondition = patientUrlParam
+      ? Option.map(decodePatientUrl(patientUrlParam), Search.Condition.Exactly)
+      : Option.none()
 
-    const encounterCondition = buildEncounterCondition()
+    const encounterCondition = buildEncounterCondition(encounterUrlParam)
+
     handleFiltersChange({
-      ...(patientId ? { subject: Search.Condition.Exactly(`Patient/${patientId}`) } : {}),
-      ...(encounterCondition ? { encounter: encounterCondition } : {}),
+      ...(Option.isSome(patientCondition) ? { subject: patientCondition.value } : {}),
+      ...(Option.isSome(encounterCondition) ? { encounter: encounterCondition.value } : {}),
     })
-  }, [patientId, encounterId, handleFiltersChange])
+  }, [patientUrlParam, encounterUrlParam, handleFiltersChange])
 
-  const handlePatientChange = (id: string | undefined): void => {
+  const handlePatientChange = (url: string | undefined): void => {
     const newParams = new URLSearchParams(searchParams)
-    if (id) {
-      newParams.set('patientId', id)
+    if (url) {
+      newParams.set('patientUrl', url)
     } else {
-      newParams.delete('patientId')
+      newParams.delete('patientUrl')
     }
     setSearchParams(newParams, { replace: false })
   }
 
-  const handleEncounterChange = (ids: readonly string[] | undefined): void => {
+  const handleEncounterChange = (urls: readonly string[] | undefined): void => {
     const newParams = new URLSearchParams(searchParams)
-    if (ids && ids.length > 0) {
-      newParams.set('encounterId', ids.join(','))
+    if (urls && urls.length > 0) {
+      newParams.set('encounterUrl', urls.join(','))
     } else {
-      newParams.delete('encounterId')
+      newParams.delete('encounterUrl')
     }
     setSearchParams(newParams, { replace: false })
   }
 
   return (
     <ObservationFilters
-      patientId={patientId}
-      encounterId={encounterId}
+      patientUrl={patientUrlParam}
+      encounterUrl={encounterUrlParam}
       onPatientChange={handlePatientChange}
       onEncounterChange={handleEncounterChange}
     />

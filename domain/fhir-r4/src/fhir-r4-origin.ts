@@ -311,6 +311,8 @@ const makeResolverSet = <Klass extends SupportedClasses>({
     })
   )
 
+  const serializeValue = (v: unknown): string => (typeof v === 'string' ? v : String(v))
+
   const serializeConditions = (
     params: SearchDSL.QueryFor<SupportedClasses>
   ): Record<string, string | readonly string[]> => {
@@ -318,8 +320,8 @@ const makeResolverSet = <Klass extends SupportedClasses>({
     for (const [key, condition] of Object.entries(params)) {
       if (condition === undefined) continue
       flat[key] = SearchDSL.Condition.match(condition, {
-        Exactly: ({ value }) => value,
-        AnyOf: ({ values }) => [...values],
+        Exactly: ({ value }) => serializeValue(value),
+        AnyOf: ({ values }) => values.map(serializeValue),
       })
     }
     return flat

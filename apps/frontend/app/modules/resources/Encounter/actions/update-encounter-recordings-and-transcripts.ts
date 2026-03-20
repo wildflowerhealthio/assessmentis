@@ -55,7 +55,7 @@ export const updateEncounterRecordingsAndTranscripts = (
 
     // Fetch all existing Media resources
     const knownMediaItems = yield* hub.search(Media, {
-      encounter: Search.Condition.Exactly(`Encounter/${encounterUrl.asUriComponent()}`),
+      encounter: Search.Condition.Exactly(encounterUrl),
     })
 
     // Get media with fresh URLs from the video call service

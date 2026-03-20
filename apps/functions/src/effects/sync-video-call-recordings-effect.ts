@@ -196,10 +196,13 @@ const syncMediaToFhir = (
     }
 
     // Check if Media with this identifier already exists
+    const decodedMediaUrl = yield* Schema.decode(Media.UrlSchema)(mediaUrl).pipe(
+      Effect.mapError((cause) => new UnhandledError({ cause, message: 'Invalid media URL' }))
+    )
     const mediaSearchResult = yield* hub
       .search(Media, {
-        encounter: Search.Condition.Exactly(encounterEntry.url.toString()),
-        url: Search.Condition.Exactly(mediaUrl),
+        encounter: Search.Condition.Exactly(encounterEntry.url),
+        url: Search.Condition.Exactly(decodedMediaUrl),
       })
       .pipe(
         Effect.mapError(

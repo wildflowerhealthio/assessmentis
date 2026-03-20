@@ -1,23 +1,26 @@
 import { Data } from 'effect'
 
-type ConditionDef = {
-  Exactly: { readonly value: string }
-  AnyOf: { readonly values: readonly [string, string, ...string[]] }
+/** Tagged union of typed constraints on a single search field, generic over value type `V`. */
+type Condition<V> = Data.TaggedEnum<{
+  Exactly: { readonly value: V }
+  AnyOf: { readonly values: readonly [V, V, ...V[]] }
+}>
+
+interface ConditionDefinition extends Data.TaggedEnum.WithGenerics<1> {
+  readonly taggedEnum: Condition<this['A']>
 }
 
-/** Tagged union of typed constraints on a single search field. */
-type Condition = Data.TaggedEnum<ConditionDef>
+/**
+ * Raw TaggedEnum constructors — not exported directly. Use the convenience
+ * constructors (Exactly, AnyOf) and pattern matching (match, is) instead.
+ */
+const _Condition = Data.taggedEnum<ConditionDefinition>()
 
-const _Condition = Data.taggedEnum<Condition>()
-
-/** Match a single exact value. */
-const Exactly = (value: string): Data.TaggedEnum.Value<Condition, 'Exactly'> =>
-  _Condition.Exactly({ value })
+/** Match a single exact value. Infers the value type `V` from the argument. */
+const Exactly = <V>(value: V) => _Condition.Exactly({ value })
 
 /** Match any of several values (OR semantics). Requires at least two values. */
-const AnyOf = (
-  values: readonly [string, string, ...string[]]
-): Data.TaggedEnum.Value<Condition, 'AnyOf'> => _Condition.AnyOf({ values })
+const AnyOf = <V>(values: readonly [V, V, ...V[]]) => _Condition.AnyOf({ values })
 
 /** Exhaustive pattern matching over {@link Condition} variants. */
 const match = _Condition.$match

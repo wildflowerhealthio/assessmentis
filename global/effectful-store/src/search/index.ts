@@ -1,2 +1,3 @@
 export * as Condition from './condition'
-export type { Schema, Query, QueryFor, InferSearchSchema } from './search'
+export { field } from './search'
+export type { Field, Schema, Query, QueryFor, InferSearchSchema } from './search'

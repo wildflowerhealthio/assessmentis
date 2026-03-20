@@ -4,20 +4,20 @@ import { ResourcePicker } from '../../../../ResourcePicker/resource-picker'
 import classes from './ObservationFilters.module.css'
 
 interface ObservationFiltersProps {
-  patientId: string | null
-  encounterId: string | null
-  onPatientChange: (id: string | undefined) => void
-  onEncounterChange: (ids: readonly string[] | undefined) => void
+  patientUrl: string | null
+  encounterUrl: string | null
+  onPatientChange: (url: string | undefined) => void
+  onEncounterChange: (urls: readonly string[] | undefined) => void
 }
 
 export function ObservationFilters({
-  patientId,
-  encounterId,
+  patientUrl,
+  encounterUrl,
   onPatientChange,
   onEncounterChange,
 }: ObservationFiltersProps): React.JSX.Element {
-  const selectedEncounterIds = encounterId
-    ? encounterId.split(',').filter((id) => id.trim())
+  const selectedEncounterUrls = encounterUrl
+    ? encounterUrl.split(',').filter((url) => url.trim())
     : undefined
 
   return (
@@ -29,7 +29,7 @@ export function ObservationFilters({
           picking={{
             multiple: false,
             onChange: onPatientChange,
-            value: patientId ?? undefined,
+            value: patientUrl ?? undefined,
           }}
           label="Filter by Patient"
           placeholder="All patients..."
@@ -39,7 +39,7 @@ export function ObservationFilters({
           picking={{
             multiple: true,
             onChange: onEncounterChange,
-            value: selectedEncounterIds,
+            value: selectedEncounterUrls,
           }}
           label="Filter by Encounters"
           placeholder="All encounters..."

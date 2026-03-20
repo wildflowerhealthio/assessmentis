@@ -1,5 +1,6 @@
 import { Schema } from 'effect'
 
+import type { Search } from '@assessmentis/effectful-store'
 import { AnnotateArrayWithArbitrary, makeCloneWith } from '@assessmentis/util'
 
 import { Resource } from '../../data-types/base/resource'
@@ -59,6 +60,7 @@ export interface CompositionEncoded
 export class Composition extends CompositionResource.extend<Composition>(DomainType)(fields) {
   static readonly DomainType = CompositionResource.DomainType
   static readonly UrlSchema = CompositionResource.UrlSchema
-  static readonly SearchSchema = {} as const
+  /** No search parameters configured for this resource. */
+  static readonly SearchSchema = {} as const satisfies Search.Schema
   readonly cloneWith = makeCloneWith(Composition, this)
 }
