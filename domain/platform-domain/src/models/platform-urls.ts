@@ -131,14 +131,12 @@ abstract class PlatformRoutes {
    * Expects relative path of the form `/orgs/{slug}`.
    */
   orgSlugFromUrl(url: OrgUrl): Effect.Effect<OrgSlug, DataIntegrityError> {
-    return Effect.gen(
-      function* (this: PlatformRoutes) {
-        const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
-        const segments = relative.split('/')
-        const slug = yield* segmentAt(segments, 2, 'slug')
-        return OrgSlug.make(slug)
-      }.bind(this)
-    )
+    return Effect.gen(this, function* () {
+      const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
+      const segments = relative.split('/')
+      const slug = yield* segmentAt(segments, 2, 'slug')
+      return OrgSlug.make(slug)
+    })
   }
 
   /**
