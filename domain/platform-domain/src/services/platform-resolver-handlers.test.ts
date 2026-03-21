@@ -20,7 +20,6 @@ import {
   handleUserGet,
   handleUserOrgGet,
   handleUserOrgUpdate,
-  handleUserUpdate,
   stripHubFields,
 } from './platform-resolver-handlers'
 import { PlatformRoutes } from './platform-routes'

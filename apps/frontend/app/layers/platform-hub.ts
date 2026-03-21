@@ -29,16 +29,8 @@ import type { PlatformDomainClasses } from './platform-credential-classes'
 // Credential handlers (one-liners via generic helpers)
 // ---------------------------------------------------------------------------
 
-const handleGoogleOAuthGet = makeDocumentStoreGetHandler(
-  GoogleUserOAuthToken,
-  GoogleUserOAuthToken,
-  userCredentialPath
-)
-const handleDailyCoApiKeyGet = makeDocumentStoreGetHandler(
-  DailyCoApiKeyToken,
-  DailyCoApiKeyToken,
-  serverCredentialPath
-)
+const handleGoogleOAuthGet = makeDocumentStoreGetHandler(GoogleUserOAuthToken, userCredentialPath)
+const handleDailyCoApiKeyGet = makeDocumentStoreGetHandler(DailyCoApiKeyToken, serverCredentialPath)
 const handleDailyCoProxyGet = makeAuthDataGetHandler(DailyCoProxyLiveCredential.fromAuthData)
 
 // ---------------------------------------------------------------------------

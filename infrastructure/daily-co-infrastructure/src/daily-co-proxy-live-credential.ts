@@ -8,7 +8,7 @@ import { makeCloneWith } from '@assessmentis/util'
 const tag = 'dailyco_proxy' as const
 
 /** Credential token for authenticating with the DailyCo proxy. */
-export class DailyCoProxyToken
+class DailyCoProxyToken
   extends Schema.TaggedClass<DailyCoProxyToken>('DailyCoProxyToken')(tag, {
     authToken: Schema.String,
     domainType: Schema.optionalWith(Schema.Literal('dailyco_proxy'), {
@@ -34,7 +34,7 @@ export class DailyCoProxyToken
 }
 
 /** Identity key for the DailyCo proxy credential. */
-export interface DailyCoProxyIdentifier {
+interface DailyCoProxyIdentifier {
   readonly _tag: typeof tag
 }
 
@@ -42,11 +42,11 @@ export interface DailyCoProxyIdentifier {
  * Live credential for authenticating with the DailyCo proxy,
  * derived from the AuthDataService stream.
  */
-export class DailyCoProxyLiveCredential extends AuthDataLiveCredential<
-  typeof tag,
-  DailyCoProxyToken
-> {
-  static fromAuthData(authData: AuthData): DailyCoProxyToken {
+class DailyCoProxyLiveCredential extends AuthDataLiveCredential<typeof tag, DailyCoProxyToken> {
+  static fromAuthData(this: void, authData: AuthData): DailyCoProxyToken {
     return new DailyCoProxyToken({ authToken: authData.authToken })
   }
 }
+
+export type { DailyCoProxyIdentifier }
+export { DailyCoProxyToken, DailyCoProxyLiveCredential }

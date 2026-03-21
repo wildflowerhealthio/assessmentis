@@ -42,15 +42,16 @@ const stripHubFields = (data: Record<string, unknown>): DocumentData => {
  * @param schema - The Schema to decode documents into instances
  * @param extractPath - Derives a DocumentPath from the request URL via PlatformRoutes
  */
-const makeDocumentStoreGetHandler = <K extends Resource.AnyDomainClass, I>(
+const makeDocumentStoreGetHandler = <
+  K extends Resource.AnyDomainClass & Schema.Schema<InstanceType<K>, any>,
+>(
   klass: K,
-  schema: Schema.Schema<InstanceType<K>, I>,
   extractPath: (
     routes: PlatformRoutesService,
     url: Resource.InferResourceUrl<InstanceType<K>>
   ) => Effect.Effect<DocumentPath, DataIntegrityError>
 ) => {
-  const decode = Schema.decodeUnknown(schema)
+  const decode = Schema.decodeUnknown(klass)
 
   return (request: ResourceRequest.Get<K>) =>
     Effect.gen(function* () {
@@ -60,11 +61,12 @@ const makeDocumentStoreGetHandler = <K extends Resource.AnyDomainClass, I>(
       const data = yield* store.get(path)
       return yield* decode({ ...data, url: request.url.toString() })
     }).pipe(
-      Effect.mapError((e) =>
-        e._tag === 'NotFoundError'
-          ? new NotFoundError({ resourceType: klass.DomainType, params: { url: request.url } })
-          : e
-      )
+      Effect.mapError((e) => {
+        if (e._tag === 'NotFoundError') {
+          return new NotFoundError({ resourceType: klass.DomainType, params: { url: request.url } })
+        }
+        return e
+      })
     )
 }
 
@@ -102,11 +104,9 @@ const makeAuthDataGetHandler =
  * @param extractPath - Derives a DocumentPath from the resource URL via PlatformRoutes
  */
 const makeDocumentStoreUpdateHandler = <
-  K extends Resource.AnyDomainClass,
-  I extends Record<string, unknown>,
+  K extends Resource.AnyDomainClass & Schema.Schema<InstanceType<K>, any>,
 >(
   klass: K,
-  schema: Schema.Schema<InstanceType<K>, I>,
   extractPath: (
     routes: PlatformRoutesService,
     url: Resource.InferResourceUrl<InstanceType<K>>
@@ -118,7 +118,7 @@ const makeDocumentStoreUpdateHandler = <
   DataIntegrityError | UnhandledError,
   PlatformRoutes | DocumentStore
 >) => {
-  const encode = Schema.encodeSync(schema)
+  const encode = Schema.encodeSync(klass)
 
   return (request) =>
     Effect.gen(function* () {
@@ -176,12 +176,12 @@ const serverCredentialPath = (routes: PlatformRoutesService, url: ServerCredenti
 // Entity handlers
 // ---------------------------------------------------------------------------
 
-const handleOrgGet = makeDocumentStoreGetHandler(Org, Org, orgPath)
-const handleOrgUpdate = makeDocumentStoreUpdateHandler(Org, Org, orgPath)
-const handleUserGet = makeDocumentStoreGetHandler(User, User, userPath)
-const handleUserUpdate = makeDocumentStoreUpdateHandler(User, User, userPath)
-const handleUserOrgGet = makeDocumentStoreGetHandler(UserOrg, UserOrg, userOrgPath)
-const handleUserOrgUpdate = makeDocumentStoreUpdateHandler(UserOrg, UserOrg, userOrgPath)
+const handleOrgGet = makeDocumentStoreGetHandler(Org, orgPath)
+const handleOrgUpdate = makeDocumentStoreUpdateHandler(Org, orgPath)
+const handleUserGet = makeDocumentStoreGetHandler(User, userPath)
+const handleUserUpdate = makeDocumentStoreUpdateHandler(User, userPath)
+const handleUserOrgGet = makeDocumentStoreGetHandler(UserOrg, userOrgPath)
+const handleUserOrgUpdate = makeDocumentStoreUpdateHandler(UserOrg, userOrgPath)
 
 export {
   handleOrgGet,

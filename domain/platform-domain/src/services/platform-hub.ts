@@ -1,7 +1,7 @@
 import { Context, Effect, Either, HashMap, RequestResolver, SubscriptionRef } from 'effect'
 
 import type { Hub as HubModule } from '@assessmentis/effectful-store'
-import { Hub, Origin, ReadonlyUrl, Resource, ResourceRequest } from '@assessmentis/effectful-store'
+import { Hub, Origin, ReadonlyUrl, Resource } from '@assessmentis/effectful-store'
 import { UnhandledError } from '@assessmentis/ontology'
 
 import type { PlatformEntityClasses } from '../models/platform-entity-classes'
