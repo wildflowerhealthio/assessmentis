@@ -6,10 +6,10 @@ import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import { CredentialId } from './credential-id'
 import { OrgSlug } from './id-types'
 import { Org } from './org'
-import { PlatformRoutes } from './platform-urls'
+import { PlatformRoutesService } from './platform-urls'
 import { UserId } from './user-id'
 
-class TestPlatformRoutes extends PlatformRoutes {
+class TestPlatformRoutesService extends PlatformRoutesService {
   readonly documentBaseUrl = ReadonlyUrl.make({
     protocol: 'https:',
     host: 'store.example.com',
@@ -22,7 +22,7 @@ class TestPlatformRoutes extends PlatformRoutes {
   })
 }
 
-const routes = new TestPlatformRoutes()
+const routes = new TestPlatformRoutesService()
 
 const slugArb = Arbitrary.make(OrgSlug)
 
@@ -37,7 +37,7 @@ const userIdArb = fc
   .map((chars) => UserId.make(chars.join('').trim()))
   .filter((s) => s.length >= 1)
 
-describe('PlatformRoutes', () => {
+describe('PlatformRoutesService', () => {
   describe('orgUrl', () => {
     test('appends org document path to base URL', () => {
       const slug = OrgSlug.make('acme')
@@ -101,7 +101,7 @@ describe('PlatformRoutes', () => {
 
   describe('parsers fail on mismatched base URL', () => {
     test('orgSlugFromUrl fails when base does not match', () => {
-      const otherRoutes = new (class extends PlatformRoutes {
+      const otherRoutes = new (class extends PlatformRoutesService {
         readonly documentBaseUrl = ReadonlyUrl.make({
           protocol: 'https:',
           host: 'other.example.com',

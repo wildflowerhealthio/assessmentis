@@ -1,4 +1,5 @@
 export * from './hub-state-updater'
+export * from './platform-routes'
 export * from './loaded-org'
 export * from './loaded-user'
 export * from './org-admin-service'

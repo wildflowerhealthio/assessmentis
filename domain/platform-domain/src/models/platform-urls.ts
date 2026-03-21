@@ -105,7 +105,7 @@ const segmentAt = (
 }
 
 // ---------------------------------------------------------------------------
-// PlatformRoutes — abstract base class
+// PlatformRoutesService — abstract base class
 // ---------------------------------------------------------------------------
 
 /**
@@ -114,7 +114,7 @@ const segmentAt = (
  *
  * @remarks
  * Subclasses provide the concrete base URLs (e.g. `firebase://` in
- * {@link @assessmentis/firebase-domain!FirebasePlatformRoutes}). The
+ * {@link @assessmentis/firebase-domain!FirebasePlatformRoutesService}). The
  * methods on this class are infrastructure-agnostic — they only know
  * the document path structure (`orgs/{slug}`, `users/{uid}`, etc.).
  *
@@ -122,7 +122,7 @@ const segmentAt = (
  * `ReadonlyUrl.toString()` and decoded back by the parsers via
  * `decodeURIComponent` — the round-trip is reliable.
  */
-abstract class PlatformRoutes {
+abstract class PlatformRoutesService {
   /** Base URL for document storage (orgs, users, user-orgs). */
   abstract readonly documentBaseUrl: ReadonlyUrl
 
@@ -188,7 +188,7 @@ abstract class PlatformRoutes {
    */
   userIdFromUrl(url: UserUrl): Effect.Effect<UserId, DataIntegrityError> {
     return Effect.gen(
-      function* (this: PlatformRoutes) {
+      function* (this: PlatformRoutesService) {
         const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
         const segments = relative.split('/')
         const uid = yield* segmentAt(segments, 2, 'userId')
@@ -205,7 +205,7 @@ abstract class PlatformRoutes {
    */
   userIdFromUserOrgUrl(url: UserOrgUrl): Effect.Effect<UserId, DataIntegrityError> {
     return Effect.gen(
-      function* (this: PlatformRoutes) {
+      function* (this: PlatformRoutesService) {
         const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
         const segments = relative.split('/')
         const uid = yield* segmentAt(segments, 2, 'userId')
@@ -222,7 +222,7 @@ abstract class PlatformRoutes {
    */
   orgSlugFromUserOrgUrl(url: UserOrgUrl): Effect.Effect<OrgSlug, DataIntegrityError> {
     return Effect.gen(
-      function* (this: PlatformRoutes) {
+      function* (this: PlatformRoutesService) {
         const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
         const segments = relative.split('/')
         const slug = yield* segmentAt(segments, 4, 'slug')
@@ -234,7 +234,7 @@ abstract class PlatformRoutes {
 
 export {
   type OrgUrl,
-  PlatformRoutes,
+  PlatformRoutesService,
   type UserOrgUrl,
   type UserUrl,
   orgPath,

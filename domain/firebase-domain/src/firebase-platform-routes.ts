@@ -1,11 +1,11 @@
 import type { ReadonlyUrl } from '@assessmentis/effectful-store'
-import { PlatformRoutes } from '@assessmentis/platform-domain'
+import { PlatformRoutesService } from '@assessmentis/platform-domain'
 
 import { buildAuthBaseUrl, buildFirestoreBaseUrl } from './firebase-url'
 import type { FirebaseUrlConfig } from './firebase-url'
 
 /**
- * Concrete {@link PlatformRoutes} for Firebase-backed deployments.
+ * Concrete {@link PlatformRoutesService} for Firebase-backed deployments.
  *
  * @remarks
  * Constructs `firebase://{projectId}/firestore/{databaseId}` as the document
@@ -22,7 +22,7 @@ import type { FirebaseUrlConfig } from './firebase-url'
  * // firebase://my-project/firestore/my-db/orgs/acme
  * ```
  */
-class FirebasePlatformRoutes extends PlatformRoutes {
+class FirebasePlatformRoutes extends PlatformRoutesService {
   readonly documentBaseUrl: ReadonlyUrl
   readonly currentUserUrl: ReadonlyUrl
 
