@@ -1,11 +1,12 @@
 import { Effect, Schema } from 'effect'
 
-import type { ReadonlyUrl, ResourceRequest } from '@assessmentis/effectful-store'
+import type { ResourceRequest } from '@assessmentis/effectful-store'
 import { Resource } from '@assessmentis/effectful-store'
 import { DataIntegrityError, NotFoundError, UnhandledError } from '@assessmentis/ontology'
 
+import type { ServerCredentialUrl, UserCredentialUrl } from '../models/credential-url-schemas'
 import { Org } from '../models/org'
-import type { PlatformRoutesService } from '../models/platform-urls'
+import type { OrgUrl, PlatformRoutesService, UserOrgUrl, UserUrl } from '../models/platform-urls'
 import { User } from '../models/user'
 import { UserOrg } from '../models/user-org'
 import { AuthDataService } from '../tagClasses/auth-data-service'
@@ -35,20 +36,21 @@ const stripHubFields = (data: Record<string, unknown>): DocumentData => {
 /**
  * Creates a Get handler that reads from DocumentStore. Extracts a document
  * path from the request URL, reads the document, and decodes it with the
- * given Schema class.
+ * given schema.
  *
- * @param klass - The DomainClass to decode into
- * @param extractPath - Derives a DocumentPath from the URL via PlatformRoutes
+ * @param klass - The DomainClass (for DomainType and URL type)
+ * @param schema - The Schema to decode documents into instances
+ * @param extractPath - Derives a DocumentPath from the request URL via PlatformRoutes
  */
-const makeDocumentStoreGetHandler = <K extends Resource.AnyDomainClass>(
+const makeDocumentStoreGetHandler = <K extends Resource.AnyDomainClass, I>(
   klass: K,
+  schema: Schema.Schema<InstanceType<K>, I>,
   extractPath: (
     routes: PlatformRoutesService,
-    url: ReadonlyUrl
+    url: Resource.InferResourceUrl<InstanceType<K>>
   ) => Effect.Effect<DocumentPath, DataIntegrityError>
 ) => {
-  // Schema.decodeUnknown requires the schema at a concrete level
-  const decode = Schema.decodeUnknown(klass as unknown as Schema.Schema<InstanceType<K>, unknown>)
+  const decode = Schema.decodeUnknown(schema)
 
   return (request: ResourceRequest.Get<K>) =>
     Effect.gen(function* () {
@@ -71,17 +73,19 @@ const makeDocumentStoreGetHandler = <K extends Resource.AnyDomainClass>(
  * DocumentStore. Used for credentials derived from Firebase Auth
  * (e.g. DailyCoProxyToken).
  *
- * @param fromAuthData - Factory that constructs the token from auth data
+ * @param fromAuthData - Factory that constructs a token with `cloneWith` from auth data
  */
 const makeAuthDataGetHandler =
-  <K extends Resource.AnyDomainClass>(fromAuthData: (authData: AuthData) => InstanceType<K>) =>
+  <K extends Resource.AnyDomainClass>(
+    fromAuthData: (
+      authData: AuthData
+    ) => InstanceType<K> & { cloneWith: (patch: object) => InstanceType<K> }
+  ) =>
   (request: ResourceRequest.Get<K>) =>
     Effect.gen(function* () {
       const authDataService = yield* AuthDataService
       const authData = yield* authDataService.authData
-      const token = fromAuthData(authData) as InstanceType<K> & {
-        cloneWith: (patch: object) => InstanceType<K>
-      }
+      const token = fromAuthData(authData)
       return token.cloneWith({ url: request.url })
     }).pipe(
       Effect.catchTag('AuthError', (e) =>
@@ -94,14 +98,18 @@ const makeAuthDataGetHandler =
  * document path from the resource URL, encodes the resource (stripping
  * Hub-only fields), and writes the update.
  *
- * @param klass - The DomainClass to encode from
- * @param extractPath - Derives a DocumentPath from the URL via PlatformRoutes
+ * @param schema - The Schema to encode instances for storage
+ * @param extractPath - Derives a DocumentPath from the resource URL via PlatformRoutes
  */
-const makeDocumentStoreUpdateHandler = <K extends Resource.AnyDomainClass>(
+const makeDocumentStoreUpdateHandler = <
+  K extends Resource.AnyDomainClass,
+  I extends Record<string, unknown>,
+>(
   klass: K,
+  schema: Schema.Schema<InstanceType<K>, I>,
   extractPath: (
     routes: PlatformRoutesService,
-    url: ReadonlyUrl
+    url: Resource.InferResourceUrl<InstanceType<K>>
   ) => Effect.Effect<DocumentPath, DataIntegrityError>
 ): ((
   request: ResourceRequest.Update<K>
@@ -110,9 +118,7 @@ const makeDocumentStoreUpdateHandler = <K extends Resource.AnyDomainClass>(
   DataIntegrityError | UnhandledError,
   PlatformRoutes | DocumentStore
 >) => {
-  const encode = Schema.encodeSync(
-    klass as unknown as Schema.Schema<InstanceType<K>, Record<string, unknown>>
-  )
+  const encode = Schema.encodeSync(schema)
 
   return (request) =>
     Effect.gen(function* () {
@@ -126,32 +132,29 @@ const makeDocumentStoreUpdateHandler = <K extends Resource.AnyDomainClass>(
 }
 
 // ---------------------------------------------------------------------------
-// Path extractors
+// Path extractors — typed to the branded URL each route parser expects
 // ---------------------------------------------------------------------------
 
-const orgPath = (routes: PlatformRoutesService, url: ReadonlyUrl) =>
+const orgPath = (routes: PlatformRoutesService, url: OrgUrl) =>
   routes
-    .orgSlugFromUrl(url as typeof Org.UrlSchema.Type)
+    .orgSlugFromUrl(url)
     .pipe(Effect.map((slug): DocumentPath => ['orgs', slug] satisfies DocumentPath))
 
-const userPath = (routes: PlatformRoutesService, url: ReadonlyUrl) =>
+const userPath = (routes: PlatformRoutesService, url: UserUrl) =>
   routes
-    .userIdFromUrl(url as typeof User.UrlSchema.Type)
+    .userIdFromUrl(url)
     .pipe(Effect.map((userId): DocumentPath => ['users', userId] satisfies DocumentPath))
 
-const userOrgPath = (routes: PlatformRoutesService, url: ReadonlyUrl) =>
-  Effect.all([
-    routes.userIdFromUserOrgUrl(url as typeof UserOrg.UrlSchema.Type),
-    routes.orgSlugFromUserOrgUrl(url as typeof UserOrg.UrlSchema.Type),
-  ]).pipe(
+const userOrgPath = (routes: PlatformRoutesService, url: UserOrgUrl) =>
+  Effect.all([routes.userIdFromUserOrgUrl(url), routes.orgSlugFromUserOrgUrl(url)]).pipe(
     Effect.map(
       ([userId, slug]): DocumentPath => ['users', userId, 'orgs', slug] satisfies DocumentPath
     )
   )
 
-const userCredentialPath = (routes: PlatformRoutesService, url: ReadonlyUrl) =>
+const userCredentialPath = (routes: PlatformRoutesService, url: UserCredentialUrl) =>
   routes
-    .userCredentialFromUrl(url as Parameters<PlatformRoutesService['userCredentialFromUrl']>[0])
+    .userCredentialFromUrl(url)
     .pipe(
       Effect.map(
         ({ userId, credentialId }): DocumentPath =>
@@ -159,9 +162,9 @@ const userCredentialPath = (routes: PlatformRoutesService, url: ReadonlyUrl) =>
       )
     )
 
-const serverCredentialPath = (routes: PlatformRoutesService, url: ReadonlyUrl) =>
+const serverCredentialPath = (routes: PlatformRoutesService, url: ServerCredentialUrl) =>
   routes
-    .serverCredentialFromUrl(url as Parameters<PlatformRoutesService['serverCredentialFromUrl']>[0])
+    .serverCredentialFromUrl(url)
     .pipe(
       Effect.map(
         ({ slug, credentialId }): DocumentPath =>
@@ -173,12 +176,12 @@ const serverCredentialPath = (routes: PlatformRoutesService, url: ReadonlyUrl) =
 // Entity handlers
 // ---------------------------------------------------------------------------
 
-const handleOrgGet = makeDocumentStoreGetHandler(Org, orgPath)
-const handleOrgUpdate = makeDocumentStoreUpdateHandler(Org, orgPath)
-const handleUserGet = makeDocumentStoreGetHandler(User, userPath)
-const handleUserUpdate = makeDocumentStoreUpdateHandler(User, userPath)
-const handleUserOrgGet = makeDocumentStoreGetHandler(UserOrg, userOrgPath)
-const handleUserOrgUpdate = makeDocumentStoreUpdateHandler(UserOrg, userOrgPath)
+const handleOrgGet = makeDocumentStoreGetHandler(Org, Org, orgPath)
+const handleOrgUpdate = makeDocumentStoreUpdateHandler(Org, Org, orgPath)
+const handleUserGet = makeDocumentStoreGetHandler(User, User, userPath)
+const handleUserUpdate = makeDocumentStoreUpdateHandler(User, User, userPath)
+const handleUserOrgGet = makeDocumentStoreGetHandler(UserOrg, UserOrg, userOrgPath)
+const handleUserOrgUpdate = makeDocumentStoreUpdateHandler(UserOrg, UserOrg, userOrgPath)
 
 export {
   handleOrgGet,

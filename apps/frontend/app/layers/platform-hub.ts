@@ -5,6 +5,7 @@ import {
   DailyCoProxyLiveCredential,
   DailyCoProxyToken,
 } from '@assessmentis/daily-co-infrastructure'
+import type { Hub } from '@assessmentis/effectful-store'
 import { GoogleUserOAuthToken } from '@assessmentis/google-account-infrastructure'
 import {
   AuthDataService,
@@ -28,8 +29,16 @@ import type { PlatformDomainClasses } from './platform-credential-classes'
 // Credential handlers (one-liners via generic helpers)
 // ---------------------------------------------------------------------------
 
-const handleGoogleOAuthGet = makeDocumentStoreGetHandler(GoogleUserOAuthToken, userCredentialPath)
-const handleDailyCoApiKeyGet = makeDocumentStoreGetHandler(DailyCoApiKeyToken, serverCredentialPath)
+const handleGoogleOAuthGet = makeDocumentStoreGetHandler(
+  GoogleUserOAuthToken,
+  GoogleUserOAuthToken,
+  userCredentialPath
+)
+const handleDailyCoApiKeyGet = makeDocumentStoreGetHandler(
+  DailyCoApiKeyToken,
+  DailyCoApiKeyToken,
+  serverCredentialPath
+)
 const handleDailyCoProxyGet = makeAuthDataGetHandler(DailyCoProxyLiveCredential.fromAuthData)
 
 // ---------------------------------------------------------------------------
@@ -57,7 +66,11 @@ const platformHandlerRegistry: HandlerRegistry<PlatformDomainClasses> = {
  * Creates the platform Hub with all entity and credential handlers wired up.
  * Requires PlatformRoutes, DocumentStore, and AuthDataService in the Effect context.
  */
-const makePlatformHub = Effect.gen(function* () {
+const makePlatformHub: Effect.Effect<
+  Hub.Hub<PlatformDomainClasses>,
+  never,
+  PlatformRoutes | DocumentStore | AuthDataService
+> = Effect.gen(function* () {
   const routes = yield* PlatformRoutes
   const store = yield* DocumentStore
   const authDataService = yield* AuthDataService
