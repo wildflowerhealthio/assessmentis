@@ -3,7 +3,7 @@ import { Effect, Predicate, Schema } from 'effect'
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import { DataIntegrityError } from '@assessmentis/ontology'
 
-import type { CredentialId } from './credential-id'
+import { CredentialId } from './credential-id'
 import {
   AuthCredentialUrlSchema,
   ServerCredentialUrlSchema,
@@ -105,7 +105,7 @@ const segmentAt = (
 }
 
 // ---------------------------------------------------------------------------
-// PlatformRoutes — abstract base class
+// PlatformRoutesService — abstract base class
 // ---------------------------------------------------------------------------
 
 /**
@@ -114,7 +114,7 @@ const segmentAt = (
  *
  * @remarks
  * Subclasses provide the concrete base URLs (e.g. `firebase://` in
- * {@link @assessmentis/firebase-domain!FirebasePlatformRoutes}). The
+ * {@link @assessmentis/firebase-domain!FirebasePlatformRoutesService}). The
  * methods on this class are infrastructure-agnostic — they only know
  * the document path structure (`orgs/{slug}`, `users/{uid}`, etc.).
  *
@@ -122,7 +122,7 @@ const segmentAt = (
  * `ReadonlyUrl.toString()` and decoded back by the parsers via
  * `decodeURIComponent` — the round-trip is reliable.
  */
-abstract class PlatformRoutes {
+abstract class PlatformRoutesService {
   /** Base URL for document storage (orgs, users, user-orgs). */
   abstract readonly documentBaseUrl: ReadonlyUrl
 
@@ -187,14 +187,12 @@ abstract class PlatformRoutes {
    * Expects relative path of the form `/users/{userId}`.
    */
   userIdFromUrl(url: UserUrl): Effect.Effect<UserId, DataIntegrityError> {
-    return Effect.gen(
-      function* (this: PlatformRoutes) {
-        const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
-        const segments = relative.split('/')
-        const uid = yield* segmentAt(segments, 2, 'userId')
-        return UserId.make(uid)
-      }.bind(this)
-    )
+    return Effect.gen(this, function* () {
+      const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
+      const segments = relative.split('/')
+      const uid = yield* segmentAt(segments, 2, 'userId')
+      return UserId.make(uid)
+    })
   }
 
   /**
@@ -204,14 +202,12 @@ abstract class PlatformRoutes {
    * Expects relative path of the form `/users/{userId}/orgs/{slug}`.
    */
   userIdFromUserOrgUrl(url: UserOrgUrl): Effect.Effect<UserId, DataIntegrityError> {
-    return Effect.gen(
-      function* (this: PlatformRoutes) {
-        const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
-        const segments = relative.split('/')
-        const uid = yield* segmentAt(segments, 2, 'userId')
-        return UserId.make(uid)
-      }.bind(this)
-    )
+    return Effect.gen(this, function* () {
+      const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
+      const segments = relative.split('/')
+      const uid = yield* segmentAt(segments, 2, 'userId')
+      return UserId.make(uid)
+    })
   }
 
   /**
@@ -221,20 +217,54 @@ abstract class PlatformRoutes {
    * Expects relative path of the form `/users/{userId}/orgs/{slug}`.
    */
   orgSlugFromUserOrgUrl(url: UserOrgUrl): Effect.Effect<OrgSlug, DataIntegrityError> {
-    return Effect.gen(
-      function* (this: PlatformRoutes) {
-        const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
-        const segments = relative.split('/')
-        const slug = yield* segmentAt(segments, 4, 'slug')
-        return OrgSlug.make(slug)
-      }.bind(this)
-    )
+    return Effect.gen(this, function* () {
+      const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
+      const segments = relative.split('/')
+      const slug = yield* segmentAt(segments, 4, 'slug')
+      return OrgSlug.make(slug)
+    })
+  }
+
+  /**
+   * Extracts user ID and credential ID from a {@link UserCredentialUrl}.
+   *
+   * @remarks
+   * Expects relative path of the form `/users/{userId}/credentials/{credentialId}`.
+   */
+  userCredentialFromUrl(
+    url: UserCredentialUrl
+  ): Effect.Effect<{ userId: UserId; credentialId: CredentialId }, DataIntegrityError> {
+    return Effect.gen(this, function* () {
+      const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
+      const segments = relative.split('/')
+      const userId = yield* segmentAt(segments, 2, 'userId')
+      const credentialId = yield* segmentAt(segments, 4, 'credentialId')
+      return { userId: UserId.make(userId), credentialId: CredentialId.make(credentialId) }
+    })
+  }
+
+  /**
+   * Extracts org slug and credential ID from a {@link ServerCredentialUrl}.
+   *
+   * @remarks
+   * Expects relative path of the form `/orgs/{slug}/credentials/{credentialId}`.
+   */
+  serverCredentialFromUrl(
+    url: ServerCredentialUrl
+  ): Effect.Effect<{ slug: OrgSlug; credentialId: CredentialId }, DataIntegrityError> {
+    return Effect.gen(this, function* () {
+      const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
+      const segments = relative.split('/')
+      const slug = yield* segmentAt(segments, 2, 'slug')
+      const credentialId = yield* segmentAt(segments, 4, 'credentialId')
+      return { slug: OrgSlug.make(slug), credentialId: CredentialId.make(credentialId) }
+    })
   }
 }
 
 export {
   type OrgUrl,
-  PlatformRoutes,
+  PlatformRoutesService,
   type UserOrgUrl,
   type UserUrl,
   orgPath,
