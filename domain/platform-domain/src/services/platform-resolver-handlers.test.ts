@@ -63,13 +63,21 @@ const makeDocumentStoreLayer = (documents: Record<string, DocumentData>) => {
   return Layer.succeed(DocumentStore, store)
 }
 
-const runWithLayers = <A, E>(
-  effect: Effect.Effect<A, E, PlatformRoutes | DocumentStore>,
+const testLayer = (documents: Record<string, DocumentData>) =>
+  Layer.merge(routesLayer, makeDocumentStoreLayer(documents))
+
+// oxlint-disable-next-line @typescript-eslint/no-explicit-any
+const runWithLayers = (
+  effect: Effect.Effect<any, any, any>,
   documents: Record<string, DocumentData>
-) =>
-  Effect.runPromise(
-    effect.pipe(Effect.provide(Layer.merge(routesLayer, makeDocumentStoreLayer(documents))))
-  )
+) => {
+  const provided = Effect.provide(effect, testLayer(documents)) as Effect.Effect<
+    unknown,
+    unknown,
+    never
+  >
+  return Effect.runPromise(provided)
+}
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -99,9 +107,9 @@ describe('handleOrgGet', () => {
       origin: testRoutes.documentBaseUrl,
     })
 
-    const result = await runWithLayers(handleOrgGet(request), {
+    const result = (await runWithLayers(handleOrgGet(request), {
       'orgs/acme': { slug: 'acme', emoji: '🏥' },
-    })
+    })) as Org
 
     expect(result.slug).toBe('acme')
     expect(result.emoji).toBe('🏥')
@@ -176,9 +184,9 @@ describe('handleUserGet', () => {
       origin: testRoutes.documentBaseUrl,
     })
 
-    const result = await runWithLayers(handleUserGet(request), {
+    const result = (await runWithLayers(handleUserGet(request), {
       'users/user-123': { uid: 'user-123', org_roles: {} },
-    })
+    })) as User
 
     expect(result.uid).toBe('user-123')
     expect(result.domainType).toBe('User')
@@ -198,9 +206,9 @@ describe('handleUserOrgGet', () => {
       origin: testRoutes.documentBaseUrl,
     })
 
-    const result = await runWithLayers(handleUserOrgGet(request), {
+    const result = (await runWithLayers(handleUserOrgGet(request), {
       'users/user-123/orgs/acme': {},
-    })
+    })) as UserOrg
 
     expect(result.domainType).toBe('UserOrg')
     expect(result.url).toBeDefined()

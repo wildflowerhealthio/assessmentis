@@ -17,28 +17,31 @@ import {
 import { PlatformRoutes } from './platform-routes'
 
 // ---------------------------------------------------------------------------
-// Handler registry
+// Handler registry — per-type shape
 // ---------------------------------------------------------------------------
 
 /**
- * A map from DomainType strings to handler functions for Get and Update
- * operations. The resolver dispatches to these by `klass.DomainType`.
+ * Per-type handler entry. Each DomainType maps to its supported operations.
+ * Operations not present for a type are treated as unsupported.
+ *
+ * Handler function types use `Resource.AnyDomainClass` because the dispatch
+ * table is heterogeneous — each entry handles a different concrete class.
+ * Type safety is ensured at handler construction (via the generic factories),
+ * not at dispatch time.
+ */
+interface TypeHandlers {
+  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
+  readonly get?: (request: any) => Effect.Effect<any, any, any>
+  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
+  readonly update?: (request: any) => Effect.Effect<any, any, any>
+}
+
+/**
+ * A map from DomainType strings to per-type handler entries, plus the
+ * `supportedResources` map needed by the Origin.
  */
 interface HandlerRegistry<Classes extends Resource.AnyDomainClass> {
-  readonly get: Readonly<
-    Record<
-      string,
-      // oxlint-disable-next-line @typescript-eslint/no-explicit-any
-      ((request: ResourceRequest.Get<any>) => Effect.Effect<any, any, any>) | undefined
-    >
-  >
-  readonly update: Readonly<
-    Record<
-      string,
-      // oxlint-disable-next-line @typescript-eslint/no-explicit-any
-      ((request: ResourceRequest.Update<any>) => Effect.Effect<any, any, any>) | undefined
-    >
-  >
+  readonly handlers: Readonly<Record<string, TypeHandlers | undefined>>
   readonly supportedResources: Origin.Ready<Classes>['supportedResources']
 }
 
@@ -46,17 +49,10 @@ interface HandlerRegistry<Classes extends Resource.AnyDomainClass> {
  * Entity handler registry for Org, User, and UserOrg. These handlers live
  * in domain because they only depend on DocumentStore and PlatformRoutes.
  */
-const entityHandlers: Pick<HandlerRegistry<PlatformEntityClasses>, 'get' | 'update'> = {
-  get: {
-    Org: handleOrgGet,
-    User: handleUserGet,
-    UserOrg: handleUserOrgGet,
-  },
-  update: {
-    Org: handleOrgUpdate,
-    User: handleUserUpdate,
-    UserOrg: handleUserOrgUpdate,
-  },
+const entityTypeHandlers: Record<PlatformEntityClasses['DomainType'], TypeHandlers> = {
+  Org: { get: handleOrgGet, update: handleOrgUpdate },
+  User: { get: handleUserGet, update: handleUserUpdate },
+  UserOrg: { get: handleUserOrgGet, update: handleUserOrgUpdate },
 }
 
 // ---------------------------------------------------------------------------
@@ -74,28 +70,26 @@ const makePlatformResolver = <Classes extends Resource.AnyDomainClass>(
   registry: HandlerRegistry<Classes>
 ) =>
   RequestResolver.fromEffect((request: Origin.AnyResourceRequest<Classes>) => {
+    const typeHandlers = registry.handlers[request.klass.DomainType]
+
     switch (request._tag) {
       case 'Get': {
-        const handler = registry.get[request.klass.DomainType]
-        if (handler === undefined) {
+        if (typeHandlers?.get === undefined) {
           return Effect.fail(
-            new UnhandledError({
-              message: `Get not supported for ${request.klass.DomainType}`,
-            })
+            new UnhandledError({ message: `Get not supported for ${request.klass.DomainType}` })
           )
         }
-        return handler(request)
+        return typeHandlers.get(request)
       }
       case 'Update': {
-        const handler = registry.update[request.klass.DomainType]
-        if (handler === undefined) {
+        if (typeHandlers?.update === undefined) {
           return Effect.fail(
             new UnhandledError({
               message: `Update not supported for ${request.klass.DomainType}`,
             })
           )
         }
-        return handler(request)
+        return typeHandlers.update(request)
       }
       case 'Search': {
         return Effect.fail(
@@ -178,4 +172,10 @@ class PlatformHub extends Context.Tag('PlatformHub')<
   Hub.Hub<Resource.AnyDomainClass>
 >() {}
 
-export { type HandlerRegistry, PlatformHub, entityHandlers, makeStaticPlatformHub }
+export {
+  type HandlerRegistry,
+  PlatformHub,
+  type TypeHandlers,
+  entityTypeHandlers,
+  makeStaticPlatformHub,
+}

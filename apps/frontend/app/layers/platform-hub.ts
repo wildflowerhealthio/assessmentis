@@ -1,13 +1,11 @@
-import { Context, Effect, Schema } from 'effect'
+import { Context, Effect } from 'effect'
 
 import {
   DailyCoApiKeyToken,
   DailyCoProxyLiveCredential,
   DailyCoProxyToken,
 } from '@assessmentis/daily-co-infrastructure'
-import type { ResourceRequest } from '@assessmentis/effectful-store'
 import { GoogleUserOAuthToken } from '@assessmentis/google-account-infrastructure'
-import { UnhandledError } from '@assessmentis/ontology'
 import {
   AuthDataService,
   DocumentStore,
@@ -15,78 +13,35 @@ import {
   PlatformRoutes,
   User,
   UserOrg,
-  entityHandlers,
+  entityTypeHandlers,
+  makeAuthDataGetHandler,
+  makeDocumentStoreGetHandler,
   makeStaticPlatformHub,
+  serverCredentialPath,
+  userCredentialPath,
 } from '@assessmentis/platform-domain'
-import type { DocumentPath, HandlerRegistry } from '@assessmentis/platform-domain'
+import type { HandlerRegistry } from '@assessmentis/platform-domain'
 
 import type { PlatformDomainClasses } from './platform-credential-classes'
 
 // ---------------------------------------------------------------------------
-// Credential handlers
+// Credential handlers (one-liners via generic helpers)
 // ---------------------------------------------------------------------------
 
-const handleGoogleOAuthGet = (request: ResourceRequest.Get<typeof GoogleUserOAuthToken>) =>
-  Effect.gen(function* () {
-    const routes = yield* PlatformRoutes
-    const store = yield* DocumentStore
-    const { userId, credentialId } = yield* routes.userCredentialFromUrl(request.url)
-    const data = yield* store.get([
-      'users',
-      userId,
-      'credentials',
-      credentialId,
-    ] satisfies DocumentPath)
-    return yield* Schema.decodeUnknown(GoogleUserOAuthToken)({
-      ...data,
-      url: request.url.toString(),
-    })
-  })
-
-const handleDailyCoApiKeyGet = (request: ResourceRequest.Get<typeof DailyCoApiKeyToken>) =>
-  Effect.gen(function* () {
-    const routes = yield* PlatformRoutes
-    const store = yield* DocumentStore
-    const { slug, credentialId } = yield* routes.serverCredentialFromUrl(request.url)
-    const data = yield* store.get([
-      'orgs',
-      slug,
-      'credentials',
-      credentialId,
-    ] satisfies DocumentPath)
-    return yield* Schema.decodeUnknown(DailyCoApiKeyToken)({
-      ...data,
-      url: request.url.toString(),
-    })
-  })
-
-const handleDailyCoProxyGet = (request: ResourceRequest.Get<typeof DailyCoProxyToken>) =>
-  Effect.gen(function* () {
-    const authDataService = yield* AuthDataService
-    const authData = yield* authDataService.authData
-    const token = DailyCoProxyLiveCredential.fromAuthData(authData)
-    return token.cloneWith({ url: request.url }) as DailyCoProxyToken & {
-      readonly url: NonNullable<DailyCoProxyToken['url']>
-    }
-  }).pipe(
-    Effect.catchTag('AuthError', (e) =>
-      Effect.fail(new UnhandledError({ cause: e, message: 'Auth error reading proxy token' }))
-    )
-  )
+const handleGoogleOAuthGet = makeDocumentStoreGetHandler(GoogleUserOAuthToken, userCredentialPath)
+const handleDailyCoApiKeyGet = makeDocumentStoreGetHandler(DailyCoApiKeyToken, serverCredentialPath)
+const handleDailyCoProxyGet = makeAuthDataGetHandler(DailyCoProxyLiveCredential.fromAuthData)
 
 // ---------------------------------------------------------------------------
 // Full handler registry and Hub creation
 // ---------------------------------------------------------------------------
 
 const platformHandlerRegistry: HandlerRegistry<PlatformDomainClasses> = {
-  get: {
-    ...entityHandlers.get,
-    [GoogleUserOAuthToken.DomainType]: handleGoogleOAuthGet,
-    [DailyCoApiKeyToken.DomainType]: handleDailyCoApiKeyGet,
-    [DailyCoProxyToken.DomainType]: handleDailyCoProxyGet,
-  },
-  update: {
-    ...entityHandlers.update,
+  handlers: {
+    ...entityTypeHandlers,
+    [GoogleUserOAuthToken.DomainType]: { get: handleGoogleOAuthGet },
+    [DailyCoApiKeyToken.DomainType]: { get: handleDailyCoApiKeyGet },
+    [DailyCoProxyToken.DomainType]: { get: handleDailyCoProxyGet },
   },
   supportedResources: {
     [Org.DomainType]: Org,
