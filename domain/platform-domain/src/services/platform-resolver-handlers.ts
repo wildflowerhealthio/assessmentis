@@ -1,6 +1,6 @@
-import { Effect, Schema } from 'effect'
+import { Effect, ParseResult, Schema } from 'effect'
 
-import type { ResourceRequest } from '@assessmentis/effectful-store'
+import type { ReadonlyUrl, ResourceRequest } from '@assessmentis/effectful-store'
 import { Resource } from '@assessmentis/effectful-store'
 import { DataIntegrityError, NotFoundError, UnhandledError } from '@assessmentis/ontology'
 
@@ -53,7 +53,16 @@ const makeDocumentStoreGetHandler = <
 ) => {
   const decode = Schema.decodeUnknown(klass)
 
-  return (request: ResourceRequest.Get<K>) =>
+  return (
+    request: ResourceRequest.Get<K>
+  ): Effect.Effect<
+    InstanceType<K>,
+    | DataIntegrityError
+    | NotFoundError<string, { url: ReadonlyUrl }>
+    | ParseResult.ParseError
+    | UnhandledError,
+    PlatformRoutes | DocumentStore
+  > =>
     Effect.gen(function* () {
       const routes = yield* PlatformRoutes
       const store = yield* DocumentStore
@@ -83,7 +92,9 @@ const makeAuthDataGetHandler =
       authData: AuthData
     ) => InstanceType<K> & { cloneWith: (patch: object) => InstanceType<K> }
   ) =>
-  (request: ResourceRequest.Get<K>) =>
+  (
+    request: ResourceRequest.Get<K>
+  ): Effect.Effect<InstanceType<K>, UnhandledError, AuthDataService> =>
     Effect.gen(function* () {
       const authDataService = yield* AuthDataService
       const authData = yield* authDataService.authData
@@ -135,24 +146,36 @@ const makeDocumentStoreUpdateHandler = <
 // Path extractors — typed to the branded URL each route parser expects
 // ---------------------------------------------------------------------------
 
-const orgPath = (routes: PlatformRoutesService, url: OrgUrl) =>
+const orgPath = (
+  routes: PlatformRoutesService,
+  url: OrgUrl
+): Effect.Effect<DocumentPath, DataIntegrityError> =>
   routes
     .orgSlugFromUrl(url)
     .pipe(Effect.map((slug): DocumentPath => ['orgs', slug] satisfies DocumentPath))
 
-const userPath = (routes: PlatformRoutesService, url: UserUrl) =>
+const userPath = (
+  routes: PlatformRoutesService,
+  url: UserUrl
+): Effect.Effect<DocumentPath, DataIntegrityError> =>
   routes
     .userIdFromUrl(url)
     .pipe(Effect.map((userId): DocumentPath => ['users', userId] satisfies DocumentPath))
 
-const userOrgPath = (routes: PlatformRoutesService, url: UserOrgUrl) =>
+const userOrgPath = (
+  routes: PlatformRoutesService,
+  url: UserOrgUrl
+): Effect.Effect<DocumentPath, DataIntegrityError> =>
   Effect.all([routes.userIdFromUserOrgUrl(url), routes.orgSlugFromUserOrgUrl(url)]).pipe(
     Effect.map(
       ([userId, slug]): DocumentPath => ['users', userId, 'orgs', slug] satisfies DocumentPath
     )
   )
 
-const userCredentialPath = (routes: PlatformRoutesService, url: UserCredentialUrl) =>
+const userCredentialPath = (
+  routes: PlatformRoutesService,
+  url: UserCredentialUrl
+): Effect.Effect<DocumentPath, DataIntegrityError> =>
   routes
     .userCredentialFromUrl(url)
     .pipe(
@@ -162,7 +185,10 @@ const userCredentialPath = (routes: PlatformRoutesService, url: UserCredentialUr
       )
     )
 
-const serverCredentialPath = (routes: PlatformRoutesService, url: ServerCredentialUrl) =>
+const serverCredentialPath = (
+  routes: PlatformRoutesService,
+  url: ServerCredentialUrl
+): Effect.Effect<DocumentPath, DataIntegrityError> =>
   routes
     .serverCredentialFromUrl(url)
     .pipe(

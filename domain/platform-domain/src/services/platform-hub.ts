@@ -68,7 +68,8 @@ const entityTypeHandlers: Record<PlatformEntityClasses['DomainType'], TypeHandle
  */
 const makePlatformResolver = <Classes extends Resource.AnyDomainClass>(
   registry: HandlerRegistry<Classes>
-) =>
+  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
+): RequestResolver.RequestResolver<Origin.AnyResourceRequest<Classes>, any> =>
   RequestResolver.fromEffect((request: Origin.AnyResourceRequest<Classes>) => {
     const typeHandlers = registry.handlers[request.klass.DomainType]
 
@@ -126,7 +127,7 @@ const makePlatformResolver = <Classes extends Resource.AnyDomainClass>(
 const makeStaticPlatformHub = <Classes extends Resource.AnyDomainClass, R>(
   registry: HandlerRegistry<Classes>,
   resolverContext: Context.Context<R>
-) =>
+): Effect.Effect<Hub.Hub<Classes>, never, PlatformRoutes> =>
   Effect.gen(function* () {
     const routes = yield* PlatformRoutes
 
