@@ -1,4 +1,5 @@
 export * from './hub-state-updater'
+export * from './platform-hub'
 export * from './platform-resolver-handlers'
 export * from './platform-routes'
 export * from './loaded-org'

@@ -1,7 +1,8 @@
-import { Effect, Either, Layer, Schema, Stream } from 'effect'
+import { Effect, Either, Layer, Request, Schema, Stream } from 'effect'
 import { describe, expect, test } from 'vitest'
 
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
+import type { ResourceRequest } from '@assessmentis/effectful-store'
 import { NotFoundError, UnhandledError } from '@assessmentis/ontology'
 
 import { OrgSlug } from '../models/id-types'
@@ -91,12 +92,12 @@ describe('stripHubFields', () => {
 describe('handleOrgGet', () => {
   test('reads org from DocumentStore and attaches URL', async () => {
     const url = testRoutes.orgUrl(OrgSlug.make('acme'))
-    const request = {
-      _tag: 'Get' as const,
+    const request = Request.of<ResourceRequest.Get<typeof Org>>()({
+      _tag: 'Get',
       klass: Org,
       url,
       origin: testRoutes.documentBaseUrl,
-    }
+    })
 
     const result = await runWithLayers(handleOrgGet(request), {
       'orgs/acme': { slug: 'acme', emoji: '🏥' },
@@ -110,12 +111,12 @@ describe('handleOrgGet', () => {
 
   test('fails with NotFoundError when document is missing', async () => {
     const url = testRoutes.orgUrl(OrgSlug.make('missing'))
-    const request = {
-      _tag: 'Get' as const,
+    const request = Request.of<ResourceRequest.Get<typeof Org>>()({
+      _tag: 'Get',
       klass: Org,
       url,
       origin: testRoutes.documentBaseUrl,
-    }
+    })
 
     const exit = await Effect.runPromiseExit(
       handleOrgGet(request).pipe(
@@ -147,12 +148,12 @@ describe('handleOrgUpdate', () => {
       },
     })
 
-    const request = {
-      _tag: 'Update' as const,
+    const request = Request.of<ResourceRequest.Update<typeof Org>>()({
+      _tag: 'Update',
       klass: Org,
       resource: orgWithUrl,
       origin: testRoutes.documentBaseUrl,
-    }
+    })
 
     await Effect.runPromise(
       handleOrgUpdate(request).pipe(Effect.provide(Layer.merge(routesLayer, storeLayer)))
@@ -168,12 +169,12 @@ describe('handleUserGet', () => {
   test('reads user from DocumentStore and attaches URL', async () => {
     const uid = UserId.make('user-123')
     const url = testRoutes.userUrl(uid)
-    const request = {
-      _tag: 'Get' as const,
+    const request = Request.of<ResourceRequest.Get<typeof User>>()({
+      _tag: 'Get',
       klass: User,
       url,
       origin: testRoutes.documentBaseUrl,
-    }
+    })
 
     const result = await runWithLayers(handleUserGet(request), {
       'users/user-123': { uid: 'user-123', org_roles: {} },
@@ -190,12 +191,12 @@ describe('handleUserOrgGet', () => {
     const uid = UserId.make('user-123')
     const slug = OrgSlug.make('acme')
     const url = testRoutes.userOrgUrl(uid, slug)
-    const request = {
-      _tag: 'Get' as const,
+    const request = Request.of<ResourceRequest.Get<typeof UserOrg>>()({
+      _tag: 'Get',
       klass: UserOrg,
       url,
       origin: testRoutes.documentBaseUrl,
-    }
+    })
 
     const result = await runWithLayers(handleUserOrgGet(request), {
       'users/user-123/orgs/acme': {},
@@ -228,12 +229,12 @@ describe('handleUserOrgUpdate', () => {
       },
     })
 
-    const request = {
-      _tag: 'Update' as const,
+    const request = Request.of<ResourceRequest.Update<typeof UserOrg>>()({
+      _tag: 'Update',
       klass: UserOrg,
       resource: userOrgWithUrl,
       origin: testRoutes.documentBaseUrl,
-    }
+    })
 
     await Effect.runPromise(
       handleUserOrgUpdate(request).pipe(Effect.provide(Layer.merge(routesLayer, storeLayer)))

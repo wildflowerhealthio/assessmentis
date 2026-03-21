@@ -187,14 +187,12 @@ abstract class PlatformRoutesService {
    * Expects relative path of the form `/users/{userId}`.
    */
   userIdFromUrl(url: UserUrl): Effect.Effect<UserId, DataIntegrityError> {
-    return Effect.gen(
-      function* (this: PlatformRoutesService) {
-        const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
-        const segments = relative.split('/')
-        const uid = yield* segmentAt(segments, 2, 'userId')
-        return UserId.make(uid)
-      }.bind(this)
-    )
+    return Effect.gen(this, function* () {
+      const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
+      const segments = relative.split('/')
+      const uid = yield* segmentAt(segments, 2, 'userId')
+      return UserId.make(uid)
+    })
   }
 
   /**
@@ -204,14 +202,12 @@ abstract class PlatformRoutesService {
    * Expects relative path of the form `/users/{userId}/orgs/{slug}`.
    */
   userIdFromUserOrgUrl(url: UserOrgUrl): Effect.Effect<UserId, DataIntegrityError> {
-    return Effect.gen(
-      function* (this: PlatformRoutesService) {
-        const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
-        const segments = relative.split('/')
-        const uid = yield* segmentAt(segments, 2, 'userId')
-        return UserId.make(uid)
-      }.bind(this)
-    )
+    return Effect.gen(this, function* () {
+      const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
+      const segments = relative.split('/')
+      const uid = yield* segmentAt(segments, 2, 'userId')
+      return UserId.make(uid)
+    })
   }
 
   /**
@@ -221,14 +217,12 @@ abstract class PlatformRoutesService {
    * Expects relative path of the form `/users/{userId}/orgs/{slug}`.
    */
   orgSlugFromUserOrgUrl(url: UserOrgUrl): Effect.Effect<OrgSlug, DataIntegrityError> {
-    return Effect.gen(
-      function* (this: PlatformRoutesService) {
-        const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
-        const segments = relative.split('/')
-        const slug = yield* segmentAt(segments, 4, 'slug')
-        return OrgSlug.make(slug)
-      }.bind(this)
-    )
+    return Effect.gen(this, function* () {
+      const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
+      const segments = relative.split('/')
+      const slug = yield* segmentAt(segments, 4, 'slug')
+      return OrgSlug.make(slug)
+    })
   }
 
   /**
@@ -240,15 +234,13 @@ abstract class PlatformRoutesService {
   userCredentialFromUrl(
     url: UserCredentialUrl
   ): Effect.Effect<{ userId: UserId; credentialId: CredentialId }, DataIntegrityError> {
-    return Effect.gen(
-      function* (this: PlatformRoutesService) {
-        const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
-        const segments = relative.split('/')
-        const userId = yield* segmentAt(segments, 2, 'userId')
-        const credentialId = yield* segmentAt(segments, 4, 'credentialId')
-        return { userId: UserId.make(userId), credentialId: CredentialId.make(credentialId) }
-      }.bind(this)
-    )
+    return Effect.gen(this, function* () {
+      const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
+      const segments = relative.split('/')
+      const userId = yield* segmentAt(segments, 2, 'userId')
+      const credentialId = yield* segmentAt(segments, 4, 'credentialId')
+      return { userId: UserId.make(userId), credentialId: CredentialId.make(credentialId) }
+    })
   }
 
   /**
@@ -260,15 +252,13 @@ abstract class PlatformRoutesService {
   serverCredentialFromUrl(
     url: ServerCredentialUrl
   ): Effect.Effect<{ slug: OrgSlug; credentialId: CredentialId }, DataIntegrityError> {
-    return Effect.gen(
-      function* (this: PlatformRoutesService) {
-        const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
-        const segments = relative.split('/')
-        const slug = yield* segmentAt(segments, 2, 'slug')
-        const credentialId = yield* segmentAt(segments, 4, 'credentialId')
-        return { slug: OrgSlug.make(slug), credentialId: CredentialId.make(credentialId) }
-      }.bind(this)
-    )
+    return Effect.gen(this, function* () {
+      const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
+      const segments = relative.split('/')
+      const slug = yield* segmentAt(segments, 2, 'slug')
+      const credentialId = yield* segmentAt(segments, 4, 'credentialId')
+      return { slug: OrgSlug.make(slug), credentialId: CredentialId.make(credentialId) }
+    })
   }
 }
 
