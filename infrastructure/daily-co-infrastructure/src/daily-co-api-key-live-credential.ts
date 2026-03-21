@@ -1,8 +1,12 @@
 import { Duration, Effect, Schema } from 'effect'
 import type { Either, Scope, SubscriptionRef } from 'effect'
 
+import type { Search } from '@assessmentis/effectful-store'
 import type { DataIntegrityError, NotFoundError, UnhandledError } from '@assessmentis/ontology'
-import { DocumentStoreLiveCredential } from '@assessmentis/platform-domain'
+import {
+  DocumentStoreLiveCredential,
+  ServerCredentialUrlSchema,
+} from '@assessmentis/platform-domain'
 import type {
   CredentialError,
   CredentialToken,
@@ -10,6 +14,7 @@ import type {
   DocumentStore,
   TokenStreamError,
 } from '@assessmentis/platform-domain'
+import { makeCloneWith } from '@assessmentis/util'
 
 const tag = 'dailyco_api_key' as const
 
@@ -17,9 +22,17 @@ const tag = 'dailyco_api_key' as const
 export class DailyCoApiKeyToken
   extends Schema.TaggedClass<DailyCoApiKeyToken>('DailyCoApiKeyToken')(tag, {
     apiKey: Schema.String,
+    domainType: Schema.optionalWith(Schema.Literal('dailyco_api_key'), {
+      default: () => 'dailyco_api_key' as const,
+    }),
+    url: Schema.optional(ServerCredentialUrlSchema),
   })
   implements CredentialToken<DailyCoApiKeyToken, typeof tag>
 {
+  static readonly DomainType = 'dailyco_api_key' as const
+  static readonly UrlSchema = ServerCredentialUrlSchema
+  static readonly SearchSchema = {} as const satisfies Search.Schema
+  readonly cloneWith = makeCloneWith(DailyCoApiKeyToken, this)
   readonly expiresAt = undefined
 
   asInvalidated(): DailyCoApiKeyToken {

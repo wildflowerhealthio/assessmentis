@@ -3,6 +3,17 @@ import { Effect, Predicate, Schema } from 'effect'
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import { DataIntegrityError } from '@assessmentis/ontology'
 
+import type { CredentialId } from './credential-id'
+import {
+  AuthCredentialUrlSchema,
+  ServerCredentialUrlSchema,
+  UserCredentialUrlSchema,
+} from './credential-url-schemas'
+import type {
+  AuthCredentialUrl,
+  ServerCredentialUrl,
+  UserCredentialUrl,
+} from './credential-url-schemas'
 import { OrgSlug } from './id-types'
 import { Org } from './org'
 import { User } from './user'
@@ -10,7 +21,7 @@ import { UserId } from './user-id'
 import { UserOrg } from './user-org'
 
 // ---------------------------------------------------------------------------
-// Types
+// Types — entity URLs
 // ---------------------------------------------------------------------------
 
 /** Branded URL type for {@link Org} resources. */
@@ -35,6 +46,14 @@ const userPath = (userId: UserId): string => `users/${userId}`
 /** Relative path for a user-org document: `users/{userId}/orgs/{slug}`. */
 const userOrgPath = (userId: UserId, slug: OrgSlug): string => `users/${userId}/orgs/${slug}`
 
+/** Relative path for a user credential: `users/{userId}/credentials/{credentialId}`. */
+const userCredentialPath = (userId: UserId, credentialId: CredentialId): string =>
+  `users/${userId}/credentials/${credentialId}`
+
+/** Relative path for a server credential: `orgs/{slug}/credentials/{credentialId}`. */
+const serverCredentialPath = (slug: OrgSlug, credentialId: CredentialId): string =>
+  `orgs/${slug}/credentials/${credentialId}`
+
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
@@ -42,6 +61,9 @@ const userOrgPath = (userId: UserId, slug: OrgSlug): string => `users/${userId}/
 const decodeOrgUrl = Schema.decodeSync(Org.UrlSchema)
 const decodeUserUrl = Schema.decodeSync(User.UrlSchema)
 const decodeUserOrgUrl = Schema.decodeSync(UserOrg.UrlSchema)
+const decodeUserCredentialUrl = Schema.decodeSync(UserCredentialUrlSchema)
+const decodeServerCredentialUrl = Schema.decodeSync(ServerCredentialUrlSchema)
+const decodeAuthCredentialUrl = Schema.decodeSync(AuthCredentialUrlSchema)
 
 /**
  * Strips the base URL pathname prefix from a full pathname.
@@ -124,6 +146,25 @@ abstract class PlatformRoutes {
     )
   }
 
+  /** Builds a branded {@link UserCredentialUrl} for a user-scoped credential. */
+  userCredentialUrl(userId: UserId, credentialId: CredentialId): UserCredentialUrl {
+    return decodeUserCredentialUrl(
+      this.documentBaseUrl.appendToPathname(userCredentialPath(userId, credentialId)).toString()
+    )
+  }
+
+  /** Builds a branded {@link ServerCredentialUrl} for an org-scoped server credential. */
+  serverCredentialUrl(slug: OrgSlug, credentialId: CredentialId): ServerCredentialUrl {
+    return decodeServerCredentialUrl(
+      this.documentBaseUrl.appendToPathname(serverCredentialPath(slug, credentialId)).toString()
+    )
+  }
+
+  /** Builds a branded {@link AuthCredentialUrl} for an auth-derived credential. */
+  authCredentialUrl(tokenName: string): AuthCredentialUrl {
+    return decodeAuthCredentialUrl(this.currentUserUrl.appendToPathname(tokenName).toString())
+  }
+
   /**
    * Extracts the org slug from an {@link OrgUrl}.
    *
@@ -193,10 +234,10 @@ abstract class PlatformRoutes {
 
 export {
   type OrgUrl,
+  PlatformRoutes,
   type UserOrgUrl,
   type UserUrl,
   orgPath,
-  PlatformRoutes,
   userOrgPath,
   userPath,
 }
