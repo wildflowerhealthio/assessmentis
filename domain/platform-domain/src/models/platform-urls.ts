@@ -3,7 +3,7 @@ import { Effect, Predicate, Schema } from 'effect'
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import { DataIntegrityError } from '@assessmentis/ontology'
 
-import type { CredentialId } from './credential-id'
+import { CredentialId } from './credential-id'
 import {
   AuthCredentialUrlSchema,
   ServerCredentialUrlSchema,
@@ -227,6 +227,46 @@ abstract class PlatformRoutesService {
         const segments = relative.split('/')
         const slug = yield* segmentAt(segments, 4, 'slug')
         return OrgSlug.make(slug)
+      }.bind(this)
+    )
+  }
+
+  /**
+   * Extracts user ID and credential ID from a {@link UserCredentialUrl}.
+   *
+   * @remarks
+   * Expects relative path of the form `/users/{userId}/credentials/{credentialId}`.
+   */
+  userCredentialFromUrl(
+    url: UserCredentialUrl
+  ): Effect.Effect<{ userId: UserId; credentialId: CredentialId }, DataIntegrityError> {
+    return Effect.gen(
+      function* (this: PlatformRoutesService) {
+        const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
+        const segments = relative.split('/')
+        const userId = yield* segmentAt(segments, 2, 'userId')
+        const credentialId = yield* segmentAt(segments, 4, 'credentialId')
+        return { userId: UserId.make(userId), credentialId: CredentialId.make(credentialId) }
+      }.bind(this)
+    )
+  }
+
+  /**
+   * Extracts org slug and credential ID from a {@link ServerCredentialUrl}.
+   *
+   * @remarks
+   * Expects relative path of the form `/orgs/{slug}/credentials/{credentialId}`.
+   */
+  serverCredentialFromUrl(
+    url: ServerCredentialUrl
+  ): Effect.Effect<{ slug: OrgSlug; credentialId: CredentialId }, DataIntegrityError> {
+    return Effect.gen(
+      function* (this: PlatformRoutesService) {
+        const relative = yield* stripBase(this.documentBaseUrl, url.pathname)
+        const segments = relative.split('/')
+        const slug = yield* segmentAt(segments, 2, 'slug')
+        const credentialId = yield* segmentAt(segments, 4, 'credentialId')
+        return { slug: OrgSlug.make(slug), credentialId: CredentialId.make(credentialId) }
       }.bind(this)
     )
   }
