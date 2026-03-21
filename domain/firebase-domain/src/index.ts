@@ -5,6 +5,5 @@
  * @packageDocumentation
  */
 
-export * from './firebase-credential-urls'
 export * from './firebase-platform-routes'
 export * from './firebase-url'

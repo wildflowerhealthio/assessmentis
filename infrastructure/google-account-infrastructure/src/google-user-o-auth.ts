@@ -3,11 +3,14 @@ import { DateTime, Effect, Option, Schema, pipe } from 'effect'
 import type { Either, Scope, SubscriptionRef } from 'effect'
 
 import { makeCredentialId } from '@assessmentis/config-domain'
-import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import type { Search } from '@assessmentis/effectful-store'
 import { AuthError, UnhandledError } from '@assessmentis/ontology'
 import type { DataIntegrityError, NotFoundError } from '@assessmentis/ontology'
-import { AuthDataService, DocumentStoreLiveCredential } from '@assessmentis/platform-domain'
+import {
+  AuthDataService,
+  DocumentStoreLiveCredential,
+  UserCredentialUrlSchema,
+} from '@assessmentis/platform-domain'
 import type {
   CredentialError,
   DocumentPath,
@@ -18,11 +21,6 @@ import type {
 import { DateTimeUtcFromFirebaseTimestamp, makeCloneWith } from '@assessmentis/util'
 
 const tag = 'google_user_oauth_token' as const
-
-const GoogleUserOAuthTokenUrlSchema = pipe(
-  ReadonlyUrl.FromString,
-  Schema.brand('google_user_oauth_token/url')
-)
 
 /** Decoded OAuth token for a Google user */
 export class GoogleUserOAuthToken
@@ -35,12 +33,12 @@ export class GoogleUserOAuthToken
     domainType: Schema.optionalWith(Schema.Literal('google_user_oauth_token'), {
       default: () => 'google_user_oauth_token' as const,
     }),
-    url: Schema.optional(GoogleUserOAuthTokenUrlSchema),
+    url: Schema.optional(UserCredentialUrlSchema),
   })
   implements RefreshableCredentialToken<GoogleUserOAuthToken, typeof tag>
 {
   static readonly DomainType = 'google_user_oauth_token' as const
-  static readonly UrlSchema = GoogleUserOAuthTokenUrlSchema
+  static readonly UrlSchema = UserCredentialUrlSchema
   static readonly SearchSchema = {} as const satisfies Search.Schema
   readonly cloneWith = makeCloneWith(GoogleUserOAuthToken, this)
 

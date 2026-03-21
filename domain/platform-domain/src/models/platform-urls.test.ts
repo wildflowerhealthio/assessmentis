@@ -157,4 +157,85 @@ describe('PlatformRoutes', () => {
       expect(decoded.pathname).toContain('orgs/acme')
     })
   })
+
+  describe('userCredentialUrl', () => {
+    test('appends user credential path to base URL', () => {
+      const uid = UserId.make('user-123')
+      const url = routes.userCredentialUrl(uid, 'google_user_oauth_token:user@example.com')
+      expect(url.protocol).toBe('https:')
+      expect(url.host).toBe('store.example.com')
+      expect(url.pathname).toContain(
+        '/v1/main/users/user-123/credentials/google_user_oauth_token:user@example.com'
+      )
+    })
+
+    test('is a child of the document base URL', () => {
+      const uid = UserId.make('user-123')
+      const url = routes.userCredentialUrl(uid, 'cred-id')
+      expect(routes.documentBaseUrl.hasChild(url)).toBe(true)
+    })
+
+    test('is not a child of the auth base URL', () => {
+      const uid = UserId.make('user-123')
+      const url = routes.userCredentialUrl(uid, 'cred-id')
+      expect(routes.currentUserUrl.hasChild(url)).toBe(false)
+    })
+  })
+
+  describe('serverCredentialUrl', () => {
+    test('appends server credential path to base URL', () => {
+      const slug = OrgSlug.make('acme')
+      const url = routes.serverCredentialUrl(slug, 'dailyco')
+      expect(url.protocol).toBe('https:')
+      expect(url.host).toBe('store.example.com')
+      expect(url.pathname).toContain('/v1/main/orgs/acme/credentials/dailyco')
+    })
+
+    test('is a child of the document base URL', () => {
+      const slug = OrgSlug.make('acme')
+      const url = routes.serverCredentialUrl(slug, 'dailyco')
+      expect(routes.documentBaseUrl.hasChild(url)).toBe(true)
+    })
+
+    test('is not a child of the auth base URL', () => {
+      const slug = OrgSlug.make('acme')
+      const url = routes.serverCredentialUrl(slug, 'dailyco')
+      expect(routes.currentUserUrl.hasChild(url)).toBe(false)
+    })
+  })
+
+  describe('authCredentialUrl', () => {
+    test('appends token name to auth base URL', () => {
+      const url = routes.authCredentialUrl('DailyCoProxyToken')
+      expect(url.protocol).toBe('https:')
+      expect(url.host).toBe('store.example.com')
+      expect(url.pathname).toBe('/auth/currentUser/DailyCoProxyToken')
+    })
+
+    test('is a child of the auth base URL', () => {
+      const url = routes.authCredentialUrl('DailyCoProxyToken')
+      expect(routes.currentUserUrl.hasChild(url)).toBe(true)
+    })
+
+    test('is not a child of the document base URL', () => {
+      const url = routes.authCredentialUrl('DailyCoProxyToken')
+      expect(routes.documentBaseUrl.hasChild(url)).toBe(false)
+    })
+  })
+
+  describe('credential URL isolation', () => {
+    test('user credential is not a child of server credential', () => {
+      const userUrl = routes.userCredentialUrl(UserId.make('user-123'), 'cred-id')
+      const serverUrl = routes.serverCredentialUrl(OrgSlug.make('acme'), 'dailyco')
+      expect(serverUrl.hasChild(userUrl)).toBe(false)
+    })
+
+    test('auth credential is not a child of document-based credentials', () => {
+      const authUrl = routes.authCredentialUrl('DailyCoProxyToken')
+      const userUrl = routes.userCredentialUrl(UserId.make('user-123'), 'cred-id')
+      const serverUrl = routes.serverCredentialUrl(OrgSlug.make('acme'), 'dailyco')
+      expect(userUrl.hasChild(authUrl)).toBe(false)
+      expect(serverUrl.hasChild(authUrl)).toBe(false)
+    })
+  })
 })
