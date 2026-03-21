@@ -6,6 +6,8 @@
  */
 
 export * from './hostedServices'
+export * from './models/credential-id'
+export * from './models/credential-url-schemas'
 export * from './models/org-role'
 export * from './models/id-types'
 export * from './models/user'

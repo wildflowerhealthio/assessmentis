@@ -1,8 +1,19 @@
-import { Effect, Predicate, Schema, pipe } from 'effect'
+import { Effect, Predicate, Schema } from 'effect'
 
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
 import { DataIntegrityError } from '@assessmentis/ontology'
 
+import type { CredentialId } from './credential-id'
+import {
+  AuthCredentialUrlSchema,
+  ServerCredentialUrlSchema,
+  UserCredentialUrlSchema,
+} from './credential-url-schemas'
+import type {
+  AuthCredentialUrl,
+  ServerCredentialUrl,
+  UserCredentialUrl,
+} from './credential-url-schemas'
 import { OrgSlug } from './id-types'
 import { Org } from './org'
 import { User } from './user'
@@ -23,28 +34,6 @@ type UserUrl = typeof User.UrlSchema.Type
 type UserOrgUrl = typeof UserOrg.UrlSchema.Type
 
 // ---------------------------------------------------------------------------
-// Credential URL schemas
-// ---------------------------------------------------------------------------
-
-/** Schema for user-scoped credential URLs (e.g. Google OAuth tokens). */
-const UserCredentialUrlSchema = pipe(ReadonlyUrl.FromString, Schema.brand('UserCredential/url'))
-
-/** Branded URL type for user-scoped credentials. */
-type UserCredentialUrl = typeof UserCredentialUrlSchema.Type
-
-/** Schema for org-scoped (server) credential URLs (e.g. DailyCo API keys). */
-const ServerCredentialUrlSchema = pipe(ReadonlyUrl.FromString, Schema.brand('ServerCredential/url'))
-
-/** Branded URL type for org-scoped server credentials. */
-type ServerCredentialUrl = typeof ServerCredentialUrlSchema.Type
-
-/** Schema for auth-derived credential URLs (e.g. DailyCo proxy tokens). */
-const AuthCredentialUrlSchema = pipe(ReadonlyUrl.FromString, Schema.brand('AuthCredential/url'))
-
-/** Branded URL type for auth-derived credentials. */
-type AuthCredentialUrl = typeof AuthCredentialUrlSchema.Type
-
-// ---------------------------------------------------------------------------
 // Document paths — domain owns the path structure
 // ---------------------------------------------------------------------------
 
@@ -58,11 +47,11 @@ const userPath = (userId: UserId): string => `users/${userId}`
 const userOrgPath = (userId: UserId, slug: OrgSlug): string => `users/${userId}/orgs/${slug}`
 
 /** Relative path for a user credential: `users/{userId}/credentials/{credentialId}`. */
-const userCredentialPath = (userId: UserId, credentialId: string): string =>
+const userCredentialPath = (userId: UserId, credentialId: CredentialId): string =>
   `users/${userId}/credentials/${credentialId}`
 
 /** Relative path for a server credential: `orgs/{slug}/credentials/{credentialId}`. */
-const serverCredentialPath = (slug: OrgSlug, credentialId: string): string =>
+const serverCredentialPath = (slug: OrgSlug, credentialId: CredentialId): string =>
   `orgs/${slug}/credentials/${credentialId}`
 
 // ---------------------------------------------------------------------------
@@ -158,14 +147,14 @@ abstract class PlatformRoutes {
   }
 
   /** Builds a branded {@link UserCredentialUrl} for a user-scoped credential. */
-  userCredentialUrl(userId: UserId, credentialId: string): UserCredentialUrl {
+  userCredentialUrl(userId: UserId, credentialId: CredentialId): UserCredentialUrl {
     return decodeUserCredentialUrl(
       this.documentBaseUrl.appendToPathname(userCredentialPath(userId, credentialId)).toString()
     )
   }
 
   /** Builds a branded {@link ServerCredentialUrl} for an org-scoped server credential. */
-  serverCredentialUrl(slug: OrgSlug, credentialId: string): ServerCredentialUrl {
+  serverCredentialUrl(slug: OrgSlug, credentialId: CredentialId): ServerCredentialUrl {
     return decodeServerCredentialUrl(
       this.documentBaseUrl.appendToPathname(serverCredentialPath(slug, credentialId)).toString()
     )
@@ -173,9 +162,7 @@ abstract class PlatformRoutes {
 
   /** Builds a branded {@link AuthCredentialUrl} for an auth-derived credential. */
   authCredentialUrl(tokenName: string): AuthCredentialUrl {
-    return decodeAuthCredentialUrl(
-      this.currentUserUrl.appendToPathname(tokenName).toString()
-    )
+    return decodeAuthCredentialUrl(this.currentUserUrl.appendToPathname(tokenName).toString())
   }
 
   /**
@@ -246,14 +233,8 @@ abstract class PlatformRoutes {
 }
 
 export {
-  type AuthCredentialUrl,
-  AuthCredentialUrlSchema,
   type OrgUrl,
   PlatformRoutes,
-  type ServerCredentialUrl,
-  ServerCredentialUrlSchema,
-  type UserCredentialUrl,
-  UserCredentialUrlSchema,
   type UserOrgUrl,
   type UserUrl,
   orgPath,

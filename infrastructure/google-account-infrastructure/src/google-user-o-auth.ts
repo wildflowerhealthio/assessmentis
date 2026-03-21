@@ -2,7 +2,6 @@ import { HttpBody, HttpClient } from '@effect/platform'
 import { DateTime, Effect, Option, Schema, pipe } from 'effect'
 import type { Either, Scope, SubscriptionRef } from 'effect'
 
-import { makeCredentialId } from '@assessmentis/config-domain'
 import type { Search } from '@assessmentis/effectful-store'
 import { AuthError, UnhandledError } from '@assessmentis/ontology'
 import type { DataIntegrityError, NotFoundError } from '@assessmentis/ontology'
@@ -10,6 +9,7 @@ import {
   AuthDataService,
   DocumentStoreLiveCredential,
   UserCredentialUrlSchema,
+  makeCredentialId,
 } from '@assessmentis/platform-domain'
 import type {
   CredentialError,

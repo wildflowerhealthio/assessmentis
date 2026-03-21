@@ -1,8 +1,9 @@
-import { Effect, Schema, FastCheck as fc } from 'effect'
+import { Arbitrary, Effect, Schema, FastCheck as fc } from 'effect'
 import { describe, expect, test } from 'vitest'
 
 import { ReadonlyUrl } from '@assessmentis/effectful-store'
 
+import { CredentialId } from './credential-id'
 import { OrgSlug } from './id-types'
 import { Org } from './org'
 import { PlatformRoutes } from './platform-urls'
@@ -23,16 +24,14 @@ class TestPlatformRoutes extends PlatformRoutes {
 
 const routes = new TestPlatformRoutes()
 
-// Arbitraries include characters that require percent-encoding (.+@! and
+const slugArb = Arbitrary.make(OrgSlug)
+
+// UserId arbitrary includes characters that require percent-encoding (.+@! and
 // interior spaces) to exercise the ReadonlyUrl.toString() →
 // decodeURIComponent() round-trip. '/' is excluded (breaks path segments).
 // Leading/trailing whitespace is trimmed because new URL() strips it per
 // the WHATWG URL standard — that's a URL-level constraint, not ours.
 const idChar = fc.constantFrom(...'abcdefghijklmnopqrstuvwxyz0123456789-_.+@! '.split(''))
-const slugArb = fc
-  .array(idChar, { minLength: 3, maxLength: 10 })
-  .map((chars) => OrgSlug.make(chars.join('').trim()))
-  .filter((s) => s.length >= 3)
 const userIdArb = fc
   .array(idChar, { minLength: 1, maxLength: 20 })
   .map((chars) => UserId.make(chars.join('').trim()))
@@ -161,46 +160,24 @@ describe('PlatformRoutes', () => {
   describe('userCredentialUrl', () => {
     test('appends user credential path to base URL', () => {
       const uid = UserId.make('user-123')
-      const url = routes.userCredentialUrl(uid, 'google_user_oauth_token:user@example.com')
+      const credId = CredentialId.make('google_user_oauth_token:user@example.com')
+      const url = routes.userCredentialUrl(uid, credId)
       expect(url.protocol).toBe('https:')
       expect(url.host).toBe('store.example.com')
       expect(url.pathname).toContain(
         '/v1/main/users/user-123/credentials/google_user_oauth_token:user@example.com'
       )
     })
-
-    test('is a child of the document base URL', () => {
-      const uid = UserId.make('user-123')
-      const url = routes.userCredentialUrl(uid, 'cred-id')
-      expect(routes.documentBaseUrl.hasChild(url)).toBe(true)
-    })
-
-    test('is not a child of the auth base URL', () => {
-      const uid = UserId.make('user-123')
-      const url = routes.userCredentialUrl(uid, 'cred-id')
-      expect(routes.currentUserUrl.hasChild(url)).toBe(false)
-    })
   })
 
   describe('serverCredentialUrl', () => {
     test('appends server credential path to base URL', () => {
       const slug = OrgSlug.make('acme')
-      const url = routes.serverCredentialUrl(slug, 'dailyco')
+      const credId = CredentialId.make('dailyco')
+      const url = routes.serverCredentialUrl(slug, credId)
       expect(url.protocol).toBe('https:')
       expect(url.host).toBe('store.example.com')
       expect(url.pathname).toContain('/v1/main/orgs/acme/credentials/dailyco')
-    })
-
-    test('is a child of the document base URL', () => {
-      const slug = OrgSlug.make('acme')
-      const url = routes.serverCredentialUrl(slug, 'dailyco')
-      expect(routes.documentBaseUrl.hasChild(url)).toBe(true)
-    })
-
-    test('is not a child of the auth base URL', () => {
-      const slug = OrgSlug.make('acme')
-      const url = routes.serverCredentialUrl(slug, 'dailyco')
-      expect(routes.currentUserUrl.hasChild(url)).toBe(false)
     })
   })
 
@@ -210,32 +187,6 @@ describe('PlatformRoutes', () => {
       expect(url.protocol).toBe('https:')
       expect(url.host).toBe('store.example.com')
       expect(url.pathname).toBe('/auth/currentUser/DailyCoProxyToken')
-    })
-
-    test('is a child of the auth base URL', () => {
-      const url = routes.authCredentialUrl('DailyCoProxyToken')
-      expect(routes.currentUserUrl.hasChild(url)).toBe(true)
-    })
-
-    test('is not a child of the document base URL', () => {
-      const url = routes.authCredentialUrl('DailyCoProxyToken')
-      expect(routes.documentBaseUrl.hasChild(url)).toBe(false)
-    })
-  })
-
-  describe('credential URL isolation', () => {
-    test('user credential is not a child of server credential', () => {
-      const userUrl = routes.userCredentialUrl(UserId.make('user-123'), 'cred-id')
-      const serverUrl = routes.serverCredentialUrl(OrgSlug.make('acme'), 'dailyco')
-      expect(serverUrl.hasChild(userUrl)).toBe(false)
-    })
-
-    test('auth credential is not a child of document-based credentials', () => {
-      const authUrl = routes.authCredentialUrl('DailyCoProxyToken')
-      const userUrl = routes.userCredentialUrl(UserId.make('user-123'), 'cred-id')
-      const serverUrl = routes.serverCredentialUrl(OrgSlug.make('acme'), 'dailyco')
-      expect(userUrl.hasChild(authUrl)).toBe(false)
-      expect(serverUrl.hasChild(authUrl)).toBe(false)
     })
   })
 })

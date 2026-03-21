@@ -4,11 +4,10 @@ import { onRequest } from 'firebase-functions/https'
 import type { Request } from 'firebase-functions/https'
 import { error, info } from 'firebase-functions/logger'
 
-import { parseCredentialId } from '@assessmentis/config-domain'
 import { GoogleUserOAuthLiveCredential } from '@assessmentis/google-account-infrastructure'
 import type { GoogleUserCredentialIdentifier } from '@assessmentis/google-account-infrastructure'
 import { AuthError, NotFoundError, UnhandledError } from '@assessmentis/ontology'
-import { CurrentUserId } from '@assessmentis/platform-domain'
+import { CurrentUserId, parseCredentialId } from '@assessmentis/platform-domain'
 import type { DocumentStore } from '@assessmentis/platform-domain'
 
 import { makeAuthedRequestRuntime } from '../util/base-layer'

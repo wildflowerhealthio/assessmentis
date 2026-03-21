@@ -40,6 +40,31 @@ describe('IdTypes', () => {
       )
     })
 
+    test('rejects empty string', () => {
+      const result = Schema.decodeUnknownEither(OrgSlug)('')
+      expect(Either.isLeft(result)).toBe(true)
+    })
+
+    test('rejects strings with uppercase letters', () => {
+      const result = Schema.decodeUnknownEither(OrgSlug)('Acme')
+      expect(Either.isLeft(result)).toBe(true)
+    })
+
+    test('rejects strings with periods', () => {
+      const result = Schema.decodeUnknownEither(OrgSlug)('acme.inc')
+      expect(Either.isLeft(result)).toBe(true)
+    })
+
+    test('rejects strings starting with a hyphen', () => {
+      const result = Schema.decodeUnknownEither(OrgSlug)('-acme')
+      expect(Either.isLeft(result)).toBe(true)
+    })
+
+    test('accepts valid slug', () => {
+      const result = Schema.decodeUnknownEither(OrgSlug)('acme-org-1')
+      expect(Either.isRight(result)).toBe(true)
+    })
+
     test('property: non-string values always fail to decode', () => {
       // Property: Any non-string value should fail to decode
       fc.assert(

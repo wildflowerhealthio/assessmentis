@@ -3,7 +3,10 @@ import type { Either, Scope, SubscriptionRef } from 'effect'
 
 import type { Search } from '@assessmentis/effectful-store'
 import type { DataIntegrityError, NotFoundError, UnhandledError } from '@assessmentis/ontology'
-import { DocumentStoreLiveCredential, ServerCredentialUrlSchema } from '@assessmentis/platform-domain'
+import {
+  DocumentStoreLiveCredential,
+  ServerCredentialUrlSchema,
+} from '@assessmentis/platform-domain'
 import type {
   CredentialError,
   CredentialToken,
