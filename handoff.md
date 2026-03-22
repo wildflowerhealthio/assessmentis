@@ -1,6 +1,34 @@
-# Handoff: Create GitHub Issues for Test Quality Epic
+# Handoff: Create GitHub Issues + PR for Test Quality Epic
 
-## Context
+## Step 1: Create the PR
+
+```bash
+gh pr create \
+  --head claude/add-fast-check-skill-BJqJq \
+  --title "Add javascript-testing-expert skill and test quality epic handoff" \
+  --body "$(cat <<'PREOF'
+## Summary
+- Adds a new \`javascript-testing-expert\` Claude Code skill with comprehensive guidance on property-based testing (fast-check), test structure, and indeterminism prevention
+- Includes \`handoff.md\` with 18 test quality tickets and a \`gh\` CLI script for creating GitHub issues (to be removed before merge)
+
+## Details
+The skill covers:
+- Property-based testing with fast-check (arbitraries, shrinking, strategies)
+- Test structure conventions (Arrange/Act/Assert, naming, helpers placement)
+- Indeterminism guards (time pinning, mock cleanup, fake timers)
+- Effect-ts testing patterns
+
+The handoff contains a prioritized epic of 18 tickets identified from a comprehensive test suite audit. An agent with \`gh\` access will run the script to create issues, then remove \`handoff.md\` before merging.
+
+## Test plan
+- [ ] Verify skill loads correctly via \`/javascript-testing-expert\`
+- [ ] Run \`handoff.md\` script on a machine with \`gh\` CLI to create the 18 issues
+- [ ] Remove \`handoff.md\` before merging
+PREOF
+)"
+```
+
+## Step 2: Create GitHub Issues
 
 A comprehensive audit of the test suite was performed. 18 actionable tickets were identified (ticket 13 was subsumed by 17). These need to be created as GitHub issues.
 
@@ -294,3 +322,13 @@ chmod +x create-issues.sh
 16. Standardize test() → it()
 17. Prefix test names with "should"
 18. Move helpers below tests
+
+## Step 3: Clean up
+
+After creating the PR and issues, remove `handoff.md` from the branch and push:
+
+```bash
+git rm handoff.md
+git commit -m "Remove handoff.md after creating issues"
+git push origin claude/add-fast-check-skill-BJqJq
+```
