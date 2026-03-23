@@ -14,6 +14,9 @@ const config = {
     'ol-prefix': {
       style: 'one_or_ordered',
     },
+    'first-line-heading': {
+      front_matter_title: '^\\s*(name|title)\\s*:',
+    },
   },
   globs: ['**/*.md'],
   ignores: ['**/node_modules', 'docs-html/**', '.agents/**'],

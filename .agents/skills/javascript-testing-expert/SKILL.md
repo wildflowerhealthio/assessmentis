@@ -428,8 +428,8 @@ This project uses `.test.ts` colocated with source files (e.g., `foo.ts` → `fo
 Many test files in this project use `@effect/vitest`'s `it` for `it.effect` (running Effect-based tests). Since `@fast-check/vitest` also exports `it` (for `it.prop`), you must alias one of them:
 
 ```ts
-import { it } from '@effect/vitest'              // it.effect for Effect tests
-import { it as fcIt, fc } from '@fast-check/vitest'  // fcIt.prop for property tests
+import { it } from '@effect/vitest' // it.effect for Effect tests
+import { it as fcIt, fc } from '@fast-check/vitest' // fcIt.prop for property tests
 ```
 
 Use `it.effect(...)` for Effect generator tests and `fcIt.prop(...)` for property-based tests. Both work inside the same `describe`.
