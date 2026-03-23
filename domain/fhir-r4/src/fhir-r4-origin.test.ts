@@ -74,7 +74,9 @@ const makeOrigin = (overrides: Partial<FhirR4Client['Type']> = {}) => {
 
 const makeGetRequest = (id: string) =>
   Request.of<ResourceRequest.Get<typeof Patient>>()({
-    _tag: 'Get',
+    _tag: `${Patient.DomainType}.Get`,
+    domainType: Patient.DomainType,
+    operation: 'Get',
     klass: Patient,
     origin: originUrl,
     url: Patient.UrlSchema.make(originUrl.appendToPathname(`/Patient/${id}`)),
@@ -82,7 +84,9 @@ const makeGetRequest = (id: string) =>
 
 const makeSearchRequest = (params: Search.QueryFor<typeof Patient> = {}) =>
   Request.of<ResourceRequest.Search<typeof Patient>>()({
-    _tag: 'Search',
+    _tag: `${Patient.DomainType}.Search`,
+    domainType: Patient.DomainType,
+    operation: 'Search',
     klass: Patient,
     origin: originUrl,
     params,
@@ -90,7 +94,9 @@ const makeSearchRequest = (params: Search.QueryFor<typeof Patient> = {}) =>
 
 const makeDeleteRequest = (id: string) =>
   Request.of<ResourceRequest.Delete<typeof Patient>>()({
-    _tag: 'Delete',
+    _tag: `${Patient.DomainType}.Delete`,
+    domainType: Patient.DomainType,
+    operation: 'Delete',
     klass: Patient,
     origin: originUrl,
     resource: {

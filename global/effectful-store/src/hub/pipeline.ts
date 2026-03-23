@@ -40,11 +40,11 @@ export const fanOutSearches = <Classes extends Resource.AnyDomainClass>(
       ResourceRequest.Search<Classes> & {
         readonly origin: null
       }
-    > => entry.request._tag === 'Search' && entry.request.origin === null
+    > => entry.request.operation === 'Search' && entry.request.origin === null
   )
   const otherEntries = entries.filter(
     (entry): entry is OriginBoundEntry<Classes> =>
-      entry.request._tag !== 'Search' || entry.request.origin !== null
+      entry.request.operation !== 'Search' || entry.request.origin !== null
   )
 
   const searchActions = globalSearches.map((entry) =>
@@ -265,7 +265,9 @@ export const fanOutSearch = <Classes extends Resource.AnyDomainClass>(
     // Request instances across origins would silently drop results.
     return Effect.request(
       EffectRequest.of<ResourceRequest.Search<Classes>>()({
-        _tag: 'Search',
+        _tag: `${searchRequest.klass.DomainType}.Search`,
+        domainType: searchRequest.klass.DomainType,
+        operation: 'Search',
         klass: searchRequest.klass,
         origin: readyOrigin.originUrl,
         params: searchRequest.params,

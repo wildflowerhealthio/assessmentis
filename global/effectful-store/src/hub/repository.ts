@@ -26,7 +26,9 @@ export const makeRepository = <Classes extends Resource.AnyDomainClass>(
     return Effect.flatMap(resolveOriginFromUrl(stateRef, url, klass), (origin) =>
       Effect.request(
         EffectRequest.of<ResourceRequest.Get<Klass>>()({
-          _tag: 'Get',
+          _tag: `${klass.DomainType}.Get`,
+          domainType: klass.DomainType,
+          operation: 'Get',
           klass,
           url,
           origin,
@@ -38,7 +40,9 @@ export const makeRepository = <Classes extends Resource.AnyDomainClass>(
   search<Klass extends Classes>(klass: Klass, params?: Search.QueryFor<Klass>) {
     return Effect.request(
       EffectRequest.of<ResourceRequest.Search<Klass>>()({
-        _tag: 'Search',
+        _tag: `${klass.DomainType}.Search`,
+        domainType: klass.DomainType,
+        operation: 'Search',
         klass,
         params: params ?? {},
         origin: null,
@@ -51,7 +55,9 @@ export const makeRepository = <Classes extends Resource.AnyDomainClass>(
     return Effect.flatMap(resolveOriginForCreate(stateRef, klass, origin), (resolvedOrigin) =>
       Effect.request(
         EffectRequest.of<ResourceRequest.Create<Klass>>()({
-          _tag: 'Create',
+          _tag: `${klass.DomainType}.Create`,
+          domainType: klass.DomainType,
+          operation: 'Create',
           klass,
           resource,
           origin: resolvedOrigin,
@@ -71,7 +77,9 @@ export const makeRepository = <Classes extends Resource.AnyDomainClass>(
         resources.map((resource) =>
           Effect.request(
             EffectRequest.of<ResourceRequest.Create<Klass>>()({
-              _tag: 'Create',
+              _tag: `${klass.DomainType}.Create`,
+              operation: 'Create',
+              domainType: klass.DomainType,
               klass,
               resource,
               origin: resolvedOrigin,
@@ -91,7 +99,9 @@ export const makeRepository = <Classes extends Resource.AnyDomainClass>(
     return Effect.flatMap(resolveOriginFromUrl(stateRef, resource.url, klass), (origin) =>
       Effect.request(
         EffectRequest.of<ResourceRequest.Update<Klass>>()({
-          _tag: 'Update',
+          _tag: `${klass.DomainType}.Update`,
+          domainType: klass.DomainType,
+          operation: 'Update',
           klass,
           resource,
           origin,
@@ -105,7 +115,9 @@ export const makeRepository = <Classes extends Resource.AnyDomainClass>(
     return Effect.flatMap(resolveOriginFromUrl(stateRef, url, klass), (origin) =>
       Effect.request(
         EffectRequest.of<ResourceRequest.Delete<Klass>>()({
-          _tag: 'Delete',
+          _tag: `${klass.DomainType}.Delete`,
+          domainType: klass.DomainType,
+          operation: 'Delete',
           klass,
           resource: { url },
           origin,

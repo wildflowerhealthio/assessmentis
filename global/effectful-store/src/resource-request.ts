@@ -13,7 +13,7 @@ import type * as Resource from './resource'
 import type * as SearchModule from './search/index'
 
 /** Union of the five CRUD operation names supported by the store. */
-type RequestName = 'Get' | 'Search' | 'Create' | 'Update' | 'Delete'
+type OperationName = 'Get' | 'Search' | 'Create' | 'Update' | 'Delete'
 
 /**
  * Error types common to all resource requests — authentication, authorization,
@@ -31,7 +31,9 @@ interface Get<out Klass extends Resource.AnyDomainClass> extends Request.Request
   | CommonErrors
   | NotFoundError<Klass['DomainType'], { url: Resource.InferResourceUrl<InstanceType<Klass>> }>
 > {
-  readonly _tag: 'Get'
+  readonly _tag: `${Klass['DomainType']}.Get`
+  readonly domainType: Klass['DomainType']
+  readonly operation: 'Get'
   readonly klass: Klass
   readonly url: Resource.InferResourceUrl<InstanceType<Klass>>
   readonly origin: ReadonlyUrl
@@ -48,7 +50,9 @@ interface Search<out Klass extends Resource.AnyDomainClass> extends Request.Requ
   readonly Resource.WithResourceUrl<InstanceType<Klass>>[],
   CommonErrors
 > {
-  readonly _tag: 'Search'
+  readonly _tag: `${Klass['DomainType']}.Search`
+  readonly domainType: Klass['DomainType']
+  readonly operation: 'Search'
   readonly klass: Klass
   readonly params: SearchModule.QueryFor<Klass>
   readonly origin: ReadonlyUrl | null
@@ -63,7 +67,9 @@ interface Create<out Klass extends Resource.AnyDomainClass> extends Request.Requ
   Resource.WithResourceUrl<InstanceType<Klass>>,
   CommonErrors
 > {
-  readonly _tag: 'Create'
+  readonly _tag: `${Klass['DomainType']}.Create`
+  readonly domainType: Klass['DomainType']
+  readonly operation: 'Create'
   readonly klass: Klass
   readonly requestId?: symbol
   readonly resource: InstanceType<Klass>
@@ -81,7 +87,9 @@ interface Update<out Klass extends Resource.AnyDomainClass> extends Request.Requ
   | CommonErrors
   | NotFoundError<Klass['DomainType'], { url: Resource.InferResourceUrl<InstanceType<Klass>> }>
 > {
-  readonly _tag: 'Update'
+  readonly _tag: `${Klass['DomainType']}.Update`
+  readonly domainType: Klass['DomainType']
+  readonly operation: 'Update'
   readonly klass: Klass
   readonly resource: Resource.WithResourceUrl<InstanceType<Klass>>
   readonly origin: ReadonlyUrl
@@ -97,7 +105,9 @@ interface Delete<out Klass extends Resource.AnyDomainClass> extends Request.Requ
   | CommonErrors
   | NotFoundError<Klass['DomainType'], { url: Resource.InferResourceUrl<InstanceType<Klass>> }>
 > {
-  readonly _tag: 'Delete'
+  readonly _tag: `${Klass['DomainType']}.Delete`
+  readonly domainType: Klass['DomainType']
+  readonly operation: 'Delete'
   readonly klass: Klass
   readonly resource: {
     readonly url: Resource.InferResourceUrl<InstanceType<Klass>>
@@ -124,4 +134,4 @@ interface MultiResolver<
   Dep
 > {}
 
-export type { RequestName, CommonErrors, Get, Search, Create, Update, Delete, MultiResolver }
+export type { OperationName, CommonErrors, Get, Search, Create, Update, Delete, MultiResolver }

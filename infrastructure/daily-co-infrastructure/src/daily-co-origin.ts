@@ -1,10 +1,9 @@
 import type { HttpClient } from '@effect/platform/HttpClient'
-import { Effect, Match, RequestResolver } from 'effect'
-import type { Request } from 'effect'
+import { Effect } from 'effect'
 
 import { Location, Media, Observation } from '@assessmentis/clinical-domain'
 import type { Origin, ResourceRequest } from '@assessmentis/effectful-store'
-import { ReadonlyUrl } from '@assessmentis/effectful-store'
+import { DiscriminatedRequestResolver, ReadonlyUrl } from '@assessmentis/effectful-store'
 import { UnhandledError } from '@assessmentis/ontology'
 import type { AuthError, AuthzError } from '@assessmentis/ontology'
 
@@ -90,51 +89,16 @@ const makeDailyCoReadyOrigin = ({
     protocol: 'https:',
   })
 
-  // Each resolver handles a single domain class, but at runtime we dispatch
-  // By DomainType. The contravariant request type prevents a clean union, so
-  // We widen to AnyDomainClass (same approach as FhirR4Origin).
-  const resolvers = {
-    [Location.DomainType]: makeLocationResolver(httpClient, baseUrl, auth, config),
-    [Media.DomainType]: makeMediaResolver(httpClient, baseUrl, auth),
-    [Observation.DomainType]: makeObservationResolver(httpClient, baseUrl, auth),
-  } as const
-
-  // Each per-class resolver is contravariant in its request type, so it can't
-  // Directly unify with the multi-class resolver signature. This helper widens
-  // The resolver type once, keeping each Match branch concise.
-  // K is inferred from the resolver only; the request stays at the union type
-  // Because Match.when narrows klass but not the branded url field.
-  const dispatch = <K extends SupportedClasses>(
-    request: Origin.AnyResourceRequest<SupportedClasses>,
-    resolver: RequestResolver.RequestResolver<Origin.AnyResourceRequest<K>>
-  ): Effect.Effect<
-    Request.Request.Success<Origin.AnyResourceRequest<SupportedClasses>>,
-    Request.Request.Error<Origin.AnyResourceRequest<SupportedClasses>>
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-  > => Effect.request(request, resolver as ResourceRequest.MultiResolver<SupportedClasses, never>)
-
-  const resolver: ResourceRequest.MultiResolver<SupportedClasses, never> =
-    RequestResolver.fromEffect((request: Origin.AnyResourceRequest<SupportedClasses>) =>
-      Match.value(request).pipe(
-        Match.when({ klass: { DomainType: 'Location' } }, (locationReq) =>
-          dispatch(locationReq, resolvers['Location'])
-        ),
-        Match.when({ klass: { DomainType: 'Media' } }, (mediaReq) =>
-          dispatch(mediaReq, resolvers['Media'])
-        ),
-        Match.when({ klass: { DomainType: 'Observation' } }, (observationReq) =>
-          dispatch(observationReq, resolvers['Observation'])
-        ),
-        Match.orElse((a) =>
-          Effect.fail(
-            new UnhandledError({
-              cause: a,
-              message: `Unsupported request DomainType: ${a.klass.DomainType}`,
-            })
-          )
-        )
-      )
-    )
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- per-class resolvers are contravariant; cast widens to the multi-class union
+  const resolver = DiscriminatedRequestResolver.fromRequestResolvers(
+    'domainType',
+    ['Location', 'Media', 'Observation'] as const,
+    {
+      Location: makeLocationResolver(httpClient, baseUrl, auth, config),
+      Media: makeMediaResolver(httpClient, baseUrl, auth),
+      Observation: makeObservationResolver(httpClient, baseUrl, auth),
+    }
+  ) as ResourceRequest.MultiResolver<SupportedClasses, never>
 
   return {
     errorStatus: undefined,

@@ -94,7 +94,7 @@ type AnyTestRequest = Origin.AnyResourceRequest<typeof TestResource | typeof Oth
 const makeTrackedResolver = (originUrl: ReadonlyUrl) => {
   const tag = originUrl.toString()
   const handler = vi.fn((request: AnyTestRequest) => {
-    switch (request._tag) {
+    switch (request.operation) {
       case 'Get': {
         return Effect.succeed({
           domainType: request.klass.DomainType,
@@ -131,7 +131,9 @@ const makeTrackedResolver = (originUrl: ReadonlyUrl) => {
     requestGenerators: {
       Get: () => {
         const req = Request.of<ResourceRequest.Get<typeof TestResource>>()({
-          _tag: 'Get',
+          _tag: `${TestResource.DomainType}.Get`,
+          domainType: TestResource.DomainType,
+          operation: 'Get',
           klass: TestResource,
           url: originUrl.appendToPathname('/TestResource/1'),
           origin: originUrl,
@@ -140,7 +142,9 @@ const makeTrackedResolver = (originUrl: ReadonlyUrl) => {
       },
       Search: () => {
         const req = Request.of<ResourceRequest.Search<typeof TestResource>>()({
-          _tag: 'Search',
+          _tag: `${TestResource.DomainType}.Search`,
+          domainType: TestResource.DomainType,
+          operation: 'Search',
           klass: TestResource,
           params: {},
           origin: originUrl,
@@ -149,7 +153,9 @@ const makeTrackedResolver = (originUrl: ReadonlyUrl) => {
       },
       SearchAll: () => {
         const req = Request.of<ResourceRequest.Search<typeof TestResource>>()({
-          _tag: 'Search',
+          _tag: `${TestResource.DomainType}.Search`,
+          domainType: TestResource.DomainType,
+          operation: 'Search',
           klass: TestResource,
           params: {},
           origin: null,
@@ -158,7 +164,9 @@ const makeTrackedResolver = (originUrl: ReadonlyUrl) => {
       },
       Create: () => {
         const req = Request.of<ResourceRequest.Create<typeof TestResource>>()({
-          _tag: 'Create',
+          _tag: `${TestResource.DomainType}.Create`,
+          domainType: TestResource.DomainType,
+          operation: 'Create',
           klass: TestResource,
           resource: { domainType: 'TestResource', name: 'new' },
           origin: originUrl,
@@ -167,7 +175,9 @@ const makeTrackedResolver = (originUrl: ReadonlyUrl) => {
       },
       Update: () => {
         const req = Request.of<ResourceRequest.Update<typeof TestResource>>()({
-          _tag: 'Update',
+          _tag: `${TestResource.DomainType}.Update`,
+          domainType: TestResource.DomainType,
+          operation: 'Update',
           klass: TestResource,
           resource: {
             domainType: 'TestResource',
@@ -180,7 +190,9 @@ const makeTrackedResolver = (originUrl: ReadonlyUrl) => {
       },
       Delete: () => {
         const req = Request.of<ResourceRequest.Delete<typeof TestResource>>()({
-          _tag: 'Delete',
+          _tag: `${TestResource.DomainType}.Delete`,
+          domainType: TestResource.DomainType,
+          operation: 'Delete',
           klass: TestResource,
           resource: { url: originUrl.appendToPathname('/TestResource/1') },
           origin: originUrl,
@@ -427,7 +439,9 @@ describe('Hub', () => {
 
           const results = yield* Effect.request(
             Request.of<ResourceRequest.Search<typeof TestResource>>()({
-              _tag: 'Search',
+              _tag: `${TestResource.DomainType}.Search`,
+              domainType: TestResource.DomainType,
+              operation: 'Search',
               klass: TestResource,
               origin: null,
               params: {},
@@ -437,7 +451,7 @@ describe('Hub', () => {
 
           expect(results).toHaveLength(origins.length)
           origins.forEach((o) => {
-            expect(o.handler).toHaveBeenCalledWith(expect.objectContaining({ _tag: 'Search' }))
+            expect(o.handler).toHaveBeenCalledWith(expect.objectContaining({ operation: 'Search' }))
           })
         })
     )
@@ -471,7 +485,9 @@ describe('Hub', () => {
 
           const exit = yield* Effect.request(
             Request.of<ResourceRequest.Search<typeof TestResource>>()({
-              _tag: 'Search',
+              _tag: `${TestResource.DomainType}.Search`,
+              domainType: TestResource.DomainType,
+              operation: 'Search',
               klass: TestResource,
               origin: null,
               params: {},
@@ -572,7 +588,9 @@ describe('Hub', () => {
 
           const fiber = yield* Effect.request(
             Request.of<ResourceRequest.Search<typeof TestResource>>()({
-              _tag: 'Search',
+              _tag: `${TestResource.DomainType}.Search`,
+              domainType: TestResource.DomainType,
+              operation: 'Search',
               klass: TestResource,
               origin: null,
               params: {},
@@ -584,7 +602,7 @@ describe('Hub', () => {
 
           const results = yield* Fiber.join(fiber)
           expect(results.length).toBeGreaterThan(0)
-          expect(ready.handler).toHaveBeenCalledWith(expect.objectContaining({ _tag: 'Search' }))
+          expect(ready.handler).toHaveBeenCalledWith(expect.objectContaining({ operation: 'Search' }))
         })
     )
   })
@@ -602,7 +620,9 @@ describe('Hub', () => {
 
           const exit = yield* Effect.request(
             Request.of<ResourceRequest.Search<typeof TestResource>>()({
-              _tag: 'Search',
+              _tag: `${TestResource.DomainType}.Search`,
+              domainType: TestResource.DomainType,
+              operation: 'Search',
               klass: TestResource,
               origin,
               params: {},
@@ -1171,7 +1191,7 @@ describe('Hub', () => {
           const result = yield* hub.get(TestResource, url)
 
           expect(result.url).toEqual(url)
-          expect(ready.handler).toHaveBeenCalledWith(expect.objectContaining({ _tag: 'Get', url }))
+          expect(ready.handler).toHaveBeenCalledWith(expect.objectContaining({ operation: 'Get', url }))
         })
     )
 
@@ -1244,7 +1264,7 @@ describe('Hub', () => {
 
           expect(results).toHaveLength(origins.length)
           origins.forEach((o) => {
-            expect(o.handler).toHaveBeenCalledWith(expect.objectContaining({ _tag: 'Search' }))
+            expect(o.handler).toHaveBeenCalledWith(expect.objectContaining({ operation: 'Search' }))
           })
         })
     )
@@ -1273,7 +1293,7 @@ describe('Hub', () => {
           expect(result.url).toBeDefined()
           expect(ready.handler).toHaveBeenCalledWith(
             expect.objectContaining({
-              _tag: 'Create',
+              operation: 'Create',
               origin: ready.url,
             })
           )
@@ -1301,7 +1321,7 @@ describe('Hub', () => {
           })
 
           expect(result.url).toBeDefined()
-          expect(ready.handler).toHaveBeenCalledWith(expect.objectContaining({ _tag: 'Create' }))
+          expect(ready.handler).toHaveBeenCalledWith(expect.objectContaining({ operation: 'Create' }))
         })
     )
 
@@ -1372,7 +1392,7 @@ describe('Hub', () => {
           })
 
           expect(result.url).toEqual(url)
-          expect(ready.handler).toHaveBeenCalledWith(expect.objectContaining({ _tag: 'Update' }))
+          expect(ready.handler).toHaveBeenCalledWith(expect.objectContaining({ operation: 'Update' }))
         })
     )
 
@@ -1394,7 +1414,7 @@ describe('Hub', () => {
           const url = ready.url.appendToPathname('/TestResource/1')
           yield* hub.delete(TestResource, url)
 
-          expect(ready.handler).toHaveBeenCalledWith(expect.objectContaining({ _tag: 'Delete' }))
+          expect(ready.handler).toHaveBeenCalledWith(expect.objectContaining({ operation: 'Delete' }))
         })
     )
   })

@@ -23,7 +23,7 @@ import {
 } from '@assessmentis/clinical-domain'
 import type { ClinicalDomainClasses } from '@assessmentis/clinical-domain'
 import type { Origin, ReadonlyUrl, ResourceRequest } from '@assessmentis/effectful-store'
-import { Resource, Search as SearchDSL } from '@assessmentis/effectful-store'
+import { DiscriminatedRequestResolver, Resource, Search as SearchDSL } from '@assessmentis/effectful-store'
 import { FhirR4Client } from '@assessmentis/fhir-r4'
 import { ExternalAssertionError, NotFoundError, UnhandledError } from '@assessmentis/ontology'
 import type { AuthError, AuthzError } from '@assessmentis/ontology'
@@ -412,40 +412,11 @@ const makeResolverSet = <Klass extends SupportedClasses>({
     )
   )
 
-  return RequestResolver.fromEffect((request) => {
-    switch (request._tag) {
-      case 'Get': {
-        return Effect.request(
-          request,
-          Get.pipe(RequestResolver.contextFromServices(FhirR4Client, BaseUrl))
-        )
-      }
-      case 'Search': {
-        return Effect.request(
-          request,
-          Search.pipe(RequestResolver.contextFromServices(FhirR4Client, BaseUrl))
-        )
-      }
-      case 'Create': {
-        return Effect.request(
-          request,
-          Create.pipe(RequestResolver.contextFromServices(FhirR4Client, BaseUrl))
-        )
-      }
-      case 'Update': {
-        return Effect.request(
-          request,
-          Update.pipe(RequestResolver.contextFromServices(FhirR4Client, BaseUrl))
-        )
-      }
-      case 'Delete': {
-        return Effect.request(
-          request,
-          Delete.pipe(RequestResolver.contextFromServices(FhirR4Client, BaseUrl))
-        )
-      }
-    }
-  })
+  return DiscriminatedRequestResolver.fromRequestResolvers(
+    'operation',
+    ['Get', 'Search', 'Create', 'Update', 'Delete'] as const,
+    { Get, Search, Create, Update, Delete }
+  )
 }
 
 export { fhirProtocols, makeFhirR4ReadyOrigin }
