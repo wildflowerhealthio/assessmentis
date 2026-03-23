@@ -50,14 +50,14 @@ description: Expert-level JavaScript testing skill focused on writing high-quali
 ```ts
 it('should...', () => {
   // Arrange
-  code;
+  code
 
   // Act
-  code;
+  code
 
   // Assert
-  code;
-});
+  code
+})
 ```
 
 **✅ Do** keep tests focused, try to assert on one precise aspect
@@ -107,16 +107,16 @@ Example of test content
 const user: User = {
   name: 'Paul', // unused
   birthday: '2010-02-03',
-};
-const age = computeAge(user);
+}
+const age = computeAge(user)
 //...
 ```
 
 **👍 Prefer** leveraging `@fast-check/vitest`, if installed
 
 ```ts
-import { describe } from 'vitest';
-import { it, fc } from '@fast-check/vitest';
+import { describe } from 'vitest'
+import { it, fc } from '@fast-check/vitest'
 
 describe('computeAge', () => {
   it('should compute a positive age', ({ g }) => {
@@ -124,15 +124,15 @@ describe('computeAge', () => {
     const user: User = {
       name: g(fc.string), // unused
       birthday: '2010-02-03',
-    };
+    }
 
     // Act
-    const age = computeAge(user);
+    const age = computeAge(user)
 
     // Assert
-    expect(age).toBeGreaterThan(0);
-  });
-});
+    expect(age).toBeGreaterThan(0)
+  })
+})
 ```
 
 **👍 Prefer** leveraging `fast-check`, if installed but not `@fast-check/vitest`
@@ -148,11 +148,11 @@ Why? Contrary to `vi.setSystemTime` alone you check the code against one new tod
 
 ```ts
 // Arrange
-vi.setSystemTime(g(fc.date, { min: new Date('2010-02-04'), noInvalidDate: true }));
+vi.setSystemTime(g(fc.date, { min: new Date('2010-02-04'), noInvalidDate: true }))
 const user: User = {
   name: g(fc.string), // unused
   birthday: '2010-02-03',
-};
+}
 ```
 
 **👎 Avoid** writing tests depending on random values or entities
@@ -173,15 +173,15 @@ Why? Property-based testing and example-based testing are complementary. Propert
 // b is a substring of a + b + c
 it.prop([fc.string(), fc.string(), fc.string()])('should detect the substring', (a, b, c) => {
   // Arrange
-  const text = a + b + c;
-  const pattern = b;
+  const text = a + b + c
+  const pattern = b
 
   // Act
-  const result = isSubstring(text, pattern);
+  const result = isSubstring(text, pattern)
 
   // Assert
-  expect(result).toBe(true);
-});
+  expect(result).toBe(true)
+})
 ```
 
 **✅ Do** extract complex logic from components into dedicated and testable functions
@@ -253,16 +253,19 @@ Turn:
 ```ts
 it('should resolve in call order', async () => {
   // Arrange
-  const seenAnswers = [];
-  const call = vi.fn().mockImplementation((v) => Promise.resolve(v));
+  const seenAnswers = []
+  const call = vi.fn().mockImplementation((v) => Promise.resolve(v))
 
   // Act
-  const queued = queue(call);
-  await Promise.all([queued(1).then((v) => seenAnswers.push(v)), queued(2).then((v) => seenAnswers.push(v))]);
+  const queued = queue(call)
+  await Promise.all([
+    queued(1).then((v) => seenAnswers.push(v)),
+    queued(2).then((v) => seenAnswers.push(v)),
+  ])
 
   // Assert
-  expect(seenAnswers).toEqual([1, 2]);
-});
+  expect(seenAnswers).toEqual([1, 2])
+})
 ```
 
 Into:
@@ -272,20 +275,23 @@ it('should resolve in call order', async () => {
   await fc.assert(
     fc.asyncProperty(fc.scheduler(), async (s) => {
       // Arrange
-      const seenAnswers = [];
-      const call = vi.fn().mockImplementation((v) => Promise.resolve(v));
+      const seenAnswers = []
+      const call = vi.fn().mockImplementation((v) => Promise.resolve(v))
 
       // Act
-      const queued = queue(s.scheduleFunction(call));
+      const queued = queue(s.scheduleFunction(call))
       await s.waitFor(
-        Promise.all([queued(1).then((v) => seenAnswers.push(v)), queued(2).then((v) => seenAnswers.push(v))]),
-      );
+        Promise.all([
+          queued(1).then((v) => seenAnswers.push(v)),
+          queued(2).then((v) => seenAnswers.push(v)),
+        ])
+      )
 
       // Assert
-      expect(seenAnswers).toEqual([1, 2]);
-    }),
-  );
-});
+      expect(seenAnswers).toEqual([1, 2])
+    })
+  )
+})
 ```
 
 ## Recommendation for faker users
@@ -294,31 +300,31 @@ If using `faker` to fake data, we recommend wiring any fake data generation with
 
 ```ts
 // Source: https://fast-check.dev/blog/2024/07/18/integrating-faker-with-fast-check/
-import { Faker, Randomizer, base } from '@faker-js/faker';
-import fc from 'fast-check';
+import { Faker, Randomizer, base } from '@faker-js/faker'
+import fc from 'fast-check'
 
 class FakerBuilder<TValue> extends fc.Arbitrary<TValue> {
   constructor(private readonly generator: (faker: Faker) => TValue) {
-    super();
+    super()
   }
   generate(mrng: fc.Random, biasFactor: number | undefined): fc.Value<TValue> {
     const randomizer: Randomizer = {
       next: (): number => mrng.nextDouble(),
       seed: () => {}, // no-op, no support for updates of the seed, could even throw
-    };
-    const customFaker = new Faker({ locale: base, randomizer });
-    return new fc.Value(this.generator(customFaker), undefined);
+    }
+    const customFaker = new Faker({ locale: base, randomizer })
+    return new fc.Value(this.generator(customFaker), undefined)
   }
   canShrinkWithoutContext(value: unknown): value is TValue {
-    return false;
+    return false
   }
   shrink(value: TValue, context: unknown): fc.Stream<fc.Value<TValue>> {
-    return fc.Stream.nil();
+    return fc.Stream.nil()
   }
 }
 
 function fakerToArb<TValue>(generator: (faker: Faker) => TValue): fc.Arbitrary<TValue> {
-  return new FakerBuilder(generator);
+  return new FakerBuilder(generator)
 }
 ```
 
@@ -331,9 +337,9 @@ fc.assert(
     fakerToArb((faker) => faker.person.lastName),
     (firstName, lastName) => {
       // code
-    },
-  ),
-);
+    }
+  )
+)
 ```
 
 ## Equivalence `fast-check` and `@fast-check/vitest`
@@ -342,61 +348,92 @@ Example 1.
 
 ```ts
 // with @fast-check/vitest
-import { it, fc } from '@fast-check/vitest';
+import { it, fc } from '@fast-check/vitest'
 it('...', ({ g }) => {
   //...
-});
+})
 
 // with fast-check
-import { it } from 'vitest';
-import fc from 'fast-check';
+import { it } from 'vitest'
+import fc from 'fast-check'
 it('...', () => {
   fc.assert(
     fc.property(fc.gen(), (g) => {
       //...
-    }),
-  );
-});
+    })
+  )
+})
 ```
 
 Example 2.
 
 ```ts
 // with @fast-check/vitest
-import { it, fc } from '@fast-check/vitest';
+import { it, fc } from '@fast-check/vitest'
 it.prop([...arbitraries])('...', (...values) => {
   //...
-});
+})
 
 // with fast-check
-import { it } from 'vitest';
-import fc from 'fast-check';
+import { it } from 'vitest'
+import fc from 'fast-check'
 it('...', () => {
   fc.assert(
     fc.property(...arbitraries, (...values) => {
       //...
-    }),
-  );
-});
+    })
+  )
+})
 ```
 
 Example 3. If the predicate of `it` or `it.prop` is asynchronous, when using only `fast-check` the property has to be instantiated via `asyncProperty` and `assert` has to be awaited.
 
 ```ts
 // with @fast-check/vitest
-import { it, fc } from '@fast-check/vitest';
+import { it, fc } from '@fast-check/vitest'
 it.prop([...arbitraries])('...', async (...values) => {
   //...
-});
+})
 
 // with fast-check
-import { it } from 'vitest';
-import fc from 'fast-check';
+import { it } from 'vitest'
+import fc from 'fast-check'
 it('...', async () => {
   await fc.assert(
     fc.asyncProperty(...arbitraries, async (...values) => {
       //...
-    }),
-  );
-});
+    })
+  )
+})
 ```
+
+## Appendix: Project-specific notes (Assessment.is)
+
+### Running tests for a specific package
+
+`npx vitest run <file>` runs ALL workspace projects, not just the one containing the file. To target a single package, pass its vitest config explicitly:
+
+```bash
+npx vitest run --config global/effectful-store/vitest.config.ts --reporter=verbose
+```
+
+Each package has its own `vitest.config.ts` (or `vitest.unit.config.ts`). Check the package directory for the correct config file.
+
+### Test file extension is `.test.ts`, not `.spec.ts`
+
+This project uses `.test.ts` colocated with source files (e.g., `foo.ts` → `foo.test.ts`). Do not use `.spec.ts`.
+
+### `@effect/vitest` and `@fast-check/vitest` both export `it`
+
+Many test files in this project use `@effect/vitest`'s `it` for `it.effect` (running Effect-based tests). Since `@fast-check/vitest` also exports `it` (for `it.prop`), you must alias one of them:
+
+```ts
+import { it } from '@effect/vitest'              // it.effect for Effect tests
+import { it as fcIt, fc } from '@fast-check/vitest'  // fcIt.prop for property tests
+```
+
+Use `it.effect(...)` for Effect generator tests and `fcIt.prop(...)` for property-based tests. Both work inside the same `describe`.
+
+### Avoid `effect`'s `FastCheck` re-export for new tests
+
+Some existing tests import `FastCheck as fc` from `effect` and use raw `fc.assert(fc.asyncProperty(...))`. Prefer importing from `@fast-check/vitest` instead — `fcIt.prop(...)` gives automatic seed reporting in test names and better vitest integration.

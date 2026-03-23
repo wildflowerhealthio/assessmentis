@@ -8,9 +8,9 @@
 export * as Hub from './hub'
 export * from './readonly-url'
 export * as Resource from './resource'
-// TODO: Eliminate the need for this export
-export type { WithId } from './resource'
+
 export * as ResourceRequest from './resource-request'
 export * as Search from './search/index'
 export * as Origin from './origin'
+export * as DiscriminatedRequestResolver from './discriminated-request-resolver'
 export * from './hub-state-stream'

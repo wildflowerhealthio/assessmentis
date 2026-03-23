@@ -2,28 +2,6 @@ import type { Schema } from 'effect'
 import type { ReadonlyUrl } from './readonly-url'
 
 /**
- * String literal `'domainType'` used as the discriminant property key on resources.
- * @deprecated Use the string literal `'domainType'` directly.
- */
-export const ResourceType = 'domainType' as const
-/**
- * The literal type `'domainType'`.
- * @deprecated Use the string literal `'domainType'` directly.
- */
-export type ResourceType = typeof ResourceType
-
-/**
- * String literal `'url'` used as the URL property key on resources.
- * @deprecated Use the string literal `'url'` directly.
- */
-export const ResourceUrl = 'url' as const
-/**
- * The literal type `'url'`.
- * @deprecated Use the string literal `'url'` directly.
- */
-export type ResourceUrl = typeof ResourceUrl
-
-/**
  * Base type for any resource managed by the store. Every resource carries a
  * `domainType` discriminant and an optional `url` identifying its location.
  *
@@ -95,10 +73,3 @@ export interface DomainClass<
 /** Shorthand for a {@link DomainClass} with unconstrained type parameters. */
 // oxlint-disable-next-line @typescript-eslint/no-explicit-any
 export type AnyDomainClass = DomainClass<Resource<string>, string, any>
-
-/**
- * @deprecated Use {@link WithResourceUrl} instead.
- */
-export type WithId<T extends { readonly id?: string | undefined }> = T & {
-  readonly id: NonNullable<T['id']>
-}

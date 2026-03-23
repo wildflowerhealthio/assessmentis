@@ -11,8 +11,9 @@ Read [AGENTS Explanation](./docs/Agents/Explanation.md) for what this file is an
 ### Agents MUST read relevant docs before certain tasks
 
 - [Testing](./docs/Testing/Testing%20Reference.md)
-  - [Unit Testing](./docs/Testing/Unit%20Testing%20How-To.md)
-  - [Property Testing](./docs/Testing/Property%20Testing%20Reference.md)
+  - Use the [javascript-testing-expert](./.claude/commands/javascript-testing-expert.md) slash command (`/javascript-testing-expert`) when writing or reviewing tests. It enforces project testing standards including property-based testing with fast-check and guards against indeterministic test code.
+  - Supplement with [Unit Testing](./docs/Testing/Unit%20Testing%20How-To.md) and [Property Testing](./docs/Testing/Property%20Testing%20Reference.md) if needed
+
 - [Doc Comments](./docs/Documentation/Doc%20Comments%20Reference.md)
 
 ### Agents SHOULD Clarify before building or planning

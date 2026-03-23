@@ -7,6 +7,7 @@
 export * from './create-logging-proxy'
 export * from './either-catch-tag'
 export * from './effect'
+export * as MappedRecord from './mapped-record'
 export * from './is-development'
 export * from './predicates'
 export * from './safe-debug-string'

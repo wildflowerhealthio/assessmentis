@@ -34,7 +34,7 @@ export type AnyEntry<Classes extends Resource.AnyDomainClass> = EffectRequest.En
  * before reaching this type.
  */
 export type OriginBoundEntry<Classes extends Resource.AnyDomainClass> = EffectRequest.Entry<
-  | Exclude<AnyRequest<Classes>, { readonly _tag: 'Search' }>
+  | Exclude<AnyRequest<Classes>, { readonly operation: 'Search' }>
   | (ResourceRequest.Search<Classes> & {
       readonly origin: ReadonlyUrl
     })

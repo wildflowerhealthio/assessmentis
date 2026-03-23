@@ -14,7 +14,6 @@ For step-by-step Clinical Resource implementation, see [Adding Resource Types Ho
 - Prefer value sets under data-types/complex/ (e.g., AdministrativeGender) or alongside resources under resources/{ResourceName}/ for constrained coded values.
 - Use TimelessDateFromString for date-only fields when applicable.
 - Use Schema.DateTimeUtc for instants and timestamps.
-- Resource ids are optional on create but required on read/update results; use WithId + assertId where needed.
 
 ## Choice elements (value\[x\])
 
