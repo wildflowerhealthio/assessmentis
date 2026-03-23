@@ -9,7 +9,7 @@ import { MappedRecord } from '@assessmentis/util'
  * A batch handler that receives grouped requests and completes each one
  * via `Request.succeed` / `Request.fail`, mirroring `RequestResolver.makeBatched`.
  */
-interface GroupHandler<
+interface BatchedRequestRunner<
   KeyName extends string,
   TReq extends EffectRequest.Request<any, any> & ReadonlyRecord<KeyName, string>,
   R,
@@ -17,13 +17,17 @@ interface GroupHandler<
   (requests: readonly TReq[]): Effect.Effect<void, never, R>
 }
 
-type Req<Fn> = Fn extends GroupHandler<infer _KeyName, infer TReq, infer _R> ? TReq : never
+type BatchedRequestRunnerRequest<Fn> =
+  Fn extends BatchedRequestRunner<infer _KeyName, infer TReq, infer _R> ? TReq : never
 
-type RType<Fn> = Fn extends GroupHandler<infer _KeyName, infer _TReq, infer R> ? R : never
+type BatchedRequestRunnerContext<Fn> =
+  Fn extends BatchedRequestRunner<infer _KeyName, infer _TReq, infer R> ? R : never
 
-type ResolverReq<T> = T extends RequestResolver.RequestResolver<infer A, infer _R> ? A : never
+type RequestResolverRequest<T> =
+  T extends RequestResolver.RequestResolver<infer A, infer _R> ? A : never
 
-type ResolverR<T> = T extends RequestResolver.RequestResolver<infer _A, infer R> ? R : never
+type RequestResolverContext<T> =
+  T extends RequestResolver.RequestResolver<infer _A, infer R> ? R : never
 
 /**
  * Creates a batched `RequestResolver` that dispatches incoming requests
@@ -61,15 +65,22 @@ function fromBatchedRunners<
   Fns extends MappedRecord.MappedRecord<
     Keys,
     {
-      readonly [K in Keys[number]]: GroupHandler<KeyName, any, RType<Fns[Keys[number]]>>
+      readonly [K in Keys[number]]: BatchedRequestRunner<
+        KeyName,
+        any,
+        BatchedRequestRunnerContext<Fns[Keys[number]]>
+      >
     }
   >,
 >(
   keyName: KeyName,
   keys: Keys,
   fnsIn: Omit<Fns, MappedRecord.KeyList>
-): RequestResolver.RequestResolver<Req<Fns[Keys[number]]>, RType<Fns[Keys[number]]>> {
-  type AllReqs = Req<Fns[Keys[number]]>
+): RequestResolver.RequestResolver<
+  BatchedRequestRunnerRequest<Fns[Keys[number]]>,
+  BatchedRequestRunnerContext<Fns[Keys[number]]>
+> {
+  type AllReqs = BatchedRequestRunnerRequest<Fns[Keys[number]]>
   const fns: Fns = { ...fnsIn, [MappedRecord.KeyList]: keys } as any
   return RequestResolver.makeBatched((requests: Array<AllReqs>) =>
     Effect.gen(function* () {
@@ -79,7 +90,7 @@ function fromBatchedRunners<
       const effectGroups = MappedRecord.map<
         Keys,
         typeof groupsAndHandlers,
-        Effect.Effect<void, never, RType<Fns[Keys[number]]>>
+        Effect.Effect<void, never, BatchedRequestRunnerContext<Fns[Keys[number]]>>
         // oxlint-disable-next-line unicorn/no-array-callback-reference
       >(groupsAndHandlers, (pair) =>
         pair[1](pair[0]).pipe(
@@ -92,7 +103,8 @@ function fromBatchedRunners<
         )
       )
       const effects = MappedRecord.entriesOf(effectGroups).map(
-        ([, eff]) => eff as Effect.Effect<void, never, RType<Fns[Keys[number]]>>
+        ([, eff]) =>
+          eff as Effect.Effect<void, never, BatchedRequestRunnerContext<Fns[Keys[number]]>>
       )
       yield* Effect.all(effects, {
         concurrency: 'unbounded',
@@ -133,9 +145,12 @@ function fromRequestResolvers<
   keyName: KeyName,
   keys: Keys,
   resolversIn: Omit<Rs, MappedRecord.KeyList>
-): RequestResolver.RequestResolver<ResolverReq<Rs[Keys[number]]>, ResolverR<Rs[Keys[number]]>> {
-  type AllReqs = ResolverReq<Rs[Keys[number]]> & ReadonlyRecord<KeyName, string>
-  type AllR = ResolverR<Rs[Keys[number]]>
+): RequestResolver.RequestResolver<
+  RequestResolverRequest<Rs[Keys[number]]>,
+  RequestResolverContext<Rs[Keys[number]]>
+> {
+  type AllReqs = RequestResolverRequest<Rs[Keys[number]]> & ReadonlyRecord<KeyName, string>
+  type AllR = RequestResolverContext<Rs[Keys[number]]>
 
   const resolvers: Rs = { ...resolversIn, [MappedRecord.KeyList]: keys } as any
 
@@ -151,7 +166,7 @@ function fromRequestResolvers<
     return Effect.request(request, resolver).pipe(
       Effect.catchAllDefect((defect) => Effect.fail(UnhandledError.fromUnknown(defect) as any))
     )
-  }) as RequestResolver.RequestResolver<ResolverReq<Rs[Keys[number]]>, AllR>
+  }) as RequestResolver.RequestResolver<RequestResolverRequest<Rs[Keys[number]]>, AllR>
 }
-export type { GroupHandler }
+export type { BatchedRequestRunner as GroupHandler }
 export { fromBatchedRunners, fromRequestResolvers }
